@@ -26,7 +26,7 @@ import java.util.List;
 public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBasedTestCases
 {
     @Override
-    public void verifyUnitemporalDeltaNoDeleteIndNoAuditing(GeneratorResult operations)
+    public void verifyUnitemporalDeltaNoDeleteIndNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -67,7 +67,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaNoDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyUnitemporalDeltaNoDeleteIndNoDedupAllVersionsWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
@@ -108,7 +108,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithDeleteIndNoDataSplits(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithDeleteIndFilterDupsNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();

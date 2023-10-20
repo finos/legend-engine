@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.unitemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
+import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
@@ -23,13 +24,15 @@ import org.finos.legend.engine.persistence.components.testcases.ingestmode.unite
 import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
+import static org.finos.legend.engine.persistence.components.common.ErrorStatistics.MAX_DATA_ERRORS;
 
 public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBasedTestCases
 {
     @Override
-    public void verifyUnitemporalDeltaNoDeleteIndNoAuditing(GeneratorResult operations)
+    public void verifyUnitemporalDeltaNoDeleteIndNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -75,7 +78,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaNoDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyUnitemporalDeltaNoDeleteIndNoDedupAllVersionsWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink " +
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
@@ -106,6 +109,9 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(1).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
 
+        Assertions.assertTrue(operations.get(0).deduplicationAndVersioningSql().isEmpty());
+        Assertions.assertTrue(operations.get(0).deduplicationAndVersioningErrorChecksSqlPlan().isEmpty());
+
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1";
         String rowsDeleted = "SELECT 0 as \"rowsDeleted\"";
@@ -116,17 +122,19 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithDeleteIndNoDataSplits(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithDeleteIndFilterDupsNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
+        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
                 "WHERE " +
                 "(sink.\"batch_id_out\" = 999999999) AND " +
-                "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
+                "(EXISTS (SELECT * FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
                 "WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) " +
                 "AND ((sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" IN ('yes','1','true')))))";
 
@@ -134,7 +142,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id_in\", \"batch_id_out\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')," +
-                "999999999 FROM \"mydb\".\"staging\" as stage " +
+                "999999999 FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
                 "WHERE (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
                 "WHERE (sink.\"batch_id_out\" = 999999999) AND (sink.\"digest\" = stage.\"digest\") " +
                 "AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))) AND " +
@@ -145,6 +153,16 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+
+        String expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+                "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"delete_indicator\", \"legend_persistence_count\") " +
+                "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",stage.\"delete_indicator\"," +
+                "COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
+                "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\", stage.\"digest\", stage.\"delete_indicator\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertEquals(expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
 
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage";
         String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1) AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\")) AND (sink2.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))))";
