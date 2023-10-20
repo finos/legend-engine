@@ -100,7 +100,7 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
                 {
                     throw new IllegalStateException("Cannot build BitemporalDelta, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }
-                if (allVersionsStrategyAbstract.performVersioning())
+                if (allVersionsStrategyAbstract.performStageVersioning())
                 {
                     throw new IllegalStateException("Cannot build BitemporalDelta, perform versioning not allowed");
                 }

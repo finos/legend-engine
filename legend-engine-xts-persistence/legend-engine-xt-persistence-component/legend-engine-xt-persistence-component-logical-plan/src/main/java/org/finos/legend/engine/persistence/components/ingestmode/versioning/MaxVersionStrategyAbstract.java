@@ -37,7 +37,7 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     Optional<VersionResolver> versionResolver();
 
     @Value.Default
-    default boolean performVersioning()
+    default boolean performStageVersioning()
     {
         return true;
     }

@@ -59,7 +59,7 @@ public class DatasetDeduplicator implements VersioningStrategyVisitor<Dataset>
     public Dataset visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
     {
         Dataset enrichedStagingDataset = this.stagingDataset;
-        if (maxVersionStrategy.performVersioning())
+        if (maxVersionStrategy.performStageVersioning())
         {
             OrderedField orderByField = OrderedField.builder()
                     .fieldName(maxVersionStrategy.versioningField())

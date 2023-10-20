@@ -124,7 +124,7 @@ public class TestDedupAndVersioning extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
         IngestMode ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performStageVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .build();
 
         performDedupAndVersioining(datasets, ingestMode);
@@ -178,7 +178,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
                 .digestField("digest")
                 .deduplicationStrategy(AllowDuplicates.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version").performVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("version").performStageVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .build();
 
         performDedupAndVersioining(datasets, ingestMode);
@@ -198,7 +198,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .digestField("digest")
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
-                        .versionResolver(VersionResolver.DIGEST_BASED).performVersioning(true).build())
+                        .versionResolver(VersionResolver.DIGEST_BASED).performStageVersioning(true).build())
                 .build();
 
         createStagingTableWithVersion();
@@ -254,7 +254,7 @@ public class TestDedupAndVersioning extends BaseTest
         IngestMode ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performStageVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .build();
 
         createStagingTableWithVersion();
@@ -314,7 +314,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .digestField("digest")
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
-                        .versionResolver(VersionResolver.DIGEST_BASED).performVersioning(false).build())
+                        .versionResolver(VersionResolver.DIGEST_BASED).performStageVersioning(false).build())
                 .build();
 
         createStagingTableWithVersion();
@@ -339,7 +339,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .digestField("digest")
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
-                        .versionResolver(VersionResolver.DIGEST_BASED).performVersioning(true).build())
+                        .versionResolver(VersionResolver.DIGEST_BASED).performStageVersioning(true).build())
                 .build();
 
         createStagingTableWithVersion();
@@ -401,7 +401,7 @@ public class TestDedupAndVersioning extends BaseTest
         IngestMode ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performStageVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .build();
 
         // Happy scenario
@@ -439,7 +439,7 @@ public class TestDedupAndVersioning extends BaseTest
         IngestMode ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .build();
 
         // Happy scenario
@@ -480,7 +480,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .digestField("digest")
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
-                        .versionResolver(VersionResolver.DIGEST_BASED).performVersioning(false).build())
+                        .versionResolver(VersionResolver.DIGEST_BASED).performStageVersioning(false).build())
                 .build();
 
         // Happy scenario
@@ -520,7 +520,7 @@ public class TestDedupAndVersioning extends BaseTest
                 .digestField("digest")
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
-                        .versionResolver(VersionResolver.DIGEST_BASED).performVersioning(true).build())
+                        .versionResolver(VersionResolver.DIGEST_BASED).performStageVersioning(true).build())
                 .build();
 
         // Happy scenario

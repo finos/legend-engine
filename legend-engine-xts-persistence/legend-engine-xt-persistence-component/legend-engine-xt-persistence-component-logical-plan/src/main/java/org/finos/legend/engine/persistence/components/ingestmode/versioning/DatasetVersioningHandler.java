@@ -47,7 +47,7 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     @Override
     public Dataset visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
     {
-        if (!maxVersionStrategy.performVersioning())
+        if (!maxVersionStrategy.performStageVersioning())
         {
             return this.dataset;
         }
@@ -87,7 +87,7 @@ public class DatasetVersioningHandler implements VersioningStrategyVisitor<Datas
     @Override
     public Dataset visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
     {
-        if (!allVersionsStrategyAbstract.performVersioning())
+        if (!allVersionsStrategyAbstract.performStageVersioning())
         {
             return this.dataset;
         }

@@ -59,7 +59,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
                         .dateTimeOutName(batchTimeOutField)
                         .build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).performVersioning(false).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).performStageVersioning(false).build())
                 .build();
 
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
@@ -94,7 +94,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).performVersioning(true).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).performStageVersioning(true).build())
                 .build();
 
         return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);

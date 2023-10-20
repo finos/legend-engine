@@ -52,13 +52,13 @@ public class VersioningVisitors
         @Override
         public Boolean visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
         {
-            return maxVersionStrategy.performVersioning();
+            return maxVersionStrategy.performStageVersioning();
         }
 
         @Override
         public Boolean visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
         {
-            return allVersionsStrategyAbstract.performVersioning();
+            return allVersionsStrategyAbstract.performStageVersioning();
         }
     };
 

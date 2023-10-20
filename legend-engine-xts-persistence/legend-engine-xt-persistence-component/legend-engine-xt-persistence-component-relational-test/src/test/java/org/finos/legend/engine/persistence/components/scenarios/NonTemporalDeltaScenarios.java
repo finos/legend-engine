@@ -79,7 +79,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performStageVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
@@ -123,7 +123,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
-                .performVersioning(true)
+                .performStageVersioning(true)
                 .build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
@@ -138,7 +138,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
-                .performVersioning(false)
+                .performStageVersioning(false)
                 .build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .build();
@@ -153,7 +153,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
-                .performVersioning(false)
+                .performStageVersioning(false)
                 .build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);
@@ -167,7 +167,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
                 .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
-                .performVersioning(true)
+                .performStageVersioning(true)
                 .build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .build();

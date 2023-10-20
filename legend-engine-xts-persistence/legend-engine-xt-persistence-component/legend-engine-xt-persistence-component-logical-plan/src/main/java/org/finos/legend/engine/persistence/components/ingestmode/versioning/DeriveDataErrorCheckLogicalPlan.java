@@ -48,7 +48,7 @@ public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisito
     @Override
     public LogicalPlan visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
     {
-        if (maxVersionStrategy.performVersioning())
+        if (maxVersionStrategy.performStageVersioning())
         {
             return getLogicalPlanForDataErrorCheck(maxVersionStrategy.versioningField());
         }
@@ -61,7 +61,7 @@ public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisito
     @Override
     public LogicalPlan visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
     {
-        if (allVersionsStrategyAbstract.performVersioning())
+        if (allVersionsStrategyAbstract.performStageVersioning())
         {
             return getLogicalPlanForDataErrorCheck(allVersionsStrategyAbstract.versioningField());
         }

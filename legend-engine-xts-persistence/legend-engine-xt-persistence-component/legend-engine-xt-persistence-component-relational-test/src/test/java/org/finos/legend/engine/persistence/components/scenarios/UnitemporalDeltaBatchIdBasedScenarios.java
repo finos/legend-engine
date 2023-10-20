@@ -60,7 +60,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).versionResolver(VersionResolver.DIGEST_BASED).performVersioning(false).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).versionResolver(VersionResolver.DIGEST_BASED).performStageVersioning(false).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
@@ -177,7 +177,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performVersioning(true).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(true).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithFilterAndVersion, ingestMode);
@@ -191,7 +191,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performVersioning(false).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(false).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithFilterAndVersion, ingestMode);
     }
@@ -204,7 +204,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performVersioning(false).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(false).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithVersion, ingestMode);
@@ -218,7 +218,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performVersioning(true).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(true).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithVersion, ingestMode);
     }

@@ -57,7 +57,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
 
         List<String> primaryKeys = Arrays.asList("id", "name");
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
         Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
@@ -87,7 +87,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
                 .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.LESS_THAN, "2020-01-03"))
                 .build();
 
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
         Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
 
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
