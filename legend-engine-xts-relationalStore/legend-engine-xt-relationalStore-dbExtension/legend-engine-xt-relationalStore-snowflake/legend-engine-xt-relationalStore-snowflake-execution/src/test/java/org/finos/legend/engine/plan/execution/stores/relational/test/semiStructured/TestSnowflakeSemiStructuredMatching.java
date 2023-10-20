@@ -115,7 +115,7 @@ public class TestSnowflakeSemiStructuredMatching extends AbstractTestSnowflakeSe
                 "        (\n" +
                 "          type = TDS[(Max Amount Flag, Boolean, \"\", \"\")]\n" +
                 "          resultColumns = [(\"Max Amount Flag\", \"\")]\n" +
-                "          sql = select case when \"root\".CUSTOMER['transactionDetails']['payment']['@type']::varchar in ('CashOnDeliveryPayment') then case when \"root\".CUSTOMER['transactionDetails']['payment']['amountToBePaid'] < ${maxAmount} then 'true' else 'false' end when \"root\".CUSTOMER['transactionDetails']['payment']['@type']::varchar in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then case when \"root\".CUSTOMER['transactionDetails']['payment']['amountPaid'] < ${maxAmount} then 'true' else 'false' end else null end as \"Max Amount Flag\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
+                "          sql = select case when \"root\".CUSTOMER['transactionDetails']['payment']['@type']::varchar in ('CashOnDeliveryPayment') then case when \"root\".CUSTOMER['transactionDetails']['payment']['amountToBePaid'] < ${maxAmount} then true else false end when \"root\".CUSTOMER['transactionDetails']['payment']['@type']::varchar in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then case when \"root\".CUSTOMER['transactionDetails']['payment']['amountPaid'] < ${maxAmount} then true else false end else null end as \"Max Amount Flag\" from ORDER_SCHEMA.ORDER_TABLE as \"root\"\n" +
                 "          connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "        )\n" +
                 "      ) \n" +
