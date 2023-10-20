@@ -286,7 +286,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     | ^$query(expression = processRestrict($expected.alias, $renamed)),
     | $renamed);
 
-  let aliases = $final.columns.name->map(c | ^SQLColumnAlias(name=$c));
+  let aliases = $final.columns.name->map(c | ^SQLColumnAlias(name = $c));
 
   ^$final(aliases = $aliases);
 }
@@ -815,7 +815,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let right = wrapWithFrom($rightRenamed);
 
   //all of the child contexts are in scope for joining on so the new context needs to know about them
-  let newContext = ^$context(contexts = $left->concatenate($left.contexts)->concatenate($right)->concatenate($right.contexts));
+  let leftContexts = if ($join.left->instanceOf(Join), | $left.contexts, | $left);
+  let rightContexts = if ($join.right->instanceOf(Join), | $right.contexts, | $right);
+  let newContext = ^$context(contexts = $leftContexts->concatenate($rightContexts));
 
   let row1 = ^VariableExpression(multiplicity = PureOne, name = 'row1', genericType = ^GenericType(rawType = TDSRow));
   let row2 = ^VariableExpression(multiplicity = PureOne, name = 'row2', genericType = ^GenericType(rawType = TDSRow));
@@ -2349,7 +2351,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   assert($simplified.type == ArithmeticType.ADD || $simplified.type == ArithmeticType.SUBTRACT, | 'arithmetic type ' + $simplified.type.name + ' not currently supported for dates');
   //note we are making assumption here that Any is fine. This results from a function call that is generic return type (e.g. max)
-  assert($leftTypeNormalized == Date || $leftTypeNormalized == Any, | 'left side of date arithmetic must be non interval date');
+  assert($leftTypeNormalized == Date || $leftTypeNormalized == String || $leftTypeNormalized == Any, | 'left side of date arithmetic must be non interval date');
 
   assert($rightTypeNormalized == Number || $rightTypeNormalized == String || $simplified.right->instanceOf(IntervalLiteralWrapper) || $simplified.right->instanceOf(NullLiteral) || ($rightTypeNormalized == Date && $simplified.type == ArithmeticType.SUBTRACT), | 'right side of date arithmetic must be numeric or interval');
 
@@ -2365,7 +2367,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         let cast = ^Cast(expression = ^NullLiteral(), type = ^ColumnType(name = 'DATE'));
         processCastAsCast($cast, processExpression($cast, $expContext, $context), $expContext, $context);
       }),
-      pair($leftTypeNormalized == Date && ($rightTypeNormalized == Date || $rightTypeNormalized == String) && $simplified.type == ArithmeticType.SUBTRACT && !$simplified.right->instanceOf(IntervalLiteralWrapper), {|
+      pair(($leftTypeNormalized == Date || $leftTypeNormalized == String) && ($rightTypeNormalized == Date || $rightTypeNormalized == String) && $simplified.type == ArithmeticType.SUBTRACT && !$simplified.right->instanceOf(IntervalLiteralWrapper), {|
         let left = $simplified.left->processExpression($expContext, $context);
         let right = $simplified.right->processExpression($expContext, $context);
 
@@ -2855,6 +2857,7 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
 
     let foundContext = $this.contexts->filter(c | $c.name == $contextName);
     let context = if ($contextName->isEmpty() || $foundContext->isEmpty(), | $this, | $foundContext->toOne());
+
     $context.columnByName($name, $failIfNotFound);
   }:TDSColumn[0..1];
   columnByName(name:String[1], failIfNotFound:Boolean[1]){

@@ -1324,6 +1324,49 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithMultiCommonTableAliases():Boolean[1]
+{
+  test(
+    'SELECT "t0"."int"           AS "int",' +
+    '       "t1"."Integer"       AS "Integer"' +
+    'FROM service."/service/service1" "t1"' +
+    'INNER JOIN (' +
+    '    SELECT "t1"."Integer"      AS "int",' +
+    '           "t1"."String"       AS "str"' +
+    '    FROM service."/service/service2" "t1"' +
+    ') "t0" ON (("t1"."Integer" = "t0"."int") AND ("t1"."String" = "t0"."str"))',
+
+    {|meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+        ->project([x|$x.booleanIn, x|$x.integerIn, x|$x.floatIn, x|$x.decimalIn, x|$x.strictDateIn, x|$x.dateTimeIn, x|$x.stringIn],
+        ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+        ->renameColumns([
+          pair('Boolean', 'Boolean_t1'),
+          pair('Integer', 'Integer_t1'),
+          pair('Float', 'Float_t1'),
+          pair('Decimal', 'Decimal_t1'),
+          pair('StrictDate', 'StrictDate_t1'),
+          pair('DateTime', 'DateTime_t1'),
+          pair('String', 'String_t1')])
+        ->join(meta::external::query::sql::transformation::queryToPure::tests::FlatInput.all()
+          ->project([x|$x.idIn, x|$x.integerIn, x|$x.stringIn], ['ID', 'Integer', 'String'])
+            ->restrict(['Integer', 'String'])
+            ->renameColumns([
+              pair('Integer', 'int'),
+              pair('String', 'str')])
+            ->renameColumns([
+              pair('int', 'int_t0'),
+              pair('str', 'str_t0')]),
+          meta::relational::metamodel::join::JoinType->extractEnumValue('INNER'),
+          {row1, row2|(($row2.getInteger('Integer_t1') == $row2.getInteger('int_t0')) && ($row2.getString('String_t1') == $row2.getString('str_t0')))})
+        ->restrict(['int_t0', 'Integer_t1'])
+        ->renameColumns([
+          pair('int_t0', 'int'),
+          pair('Integer_t1', 'Integer')])
+      }, false
+  )
+}
+
+
 
 //UNION
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUnion():Boolean[1]
@@ -1502,7 +1545,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         'CAST((DATE_TRUNC( \'DAY\', CAST("StrictDate" AS DATE) ) + (EXTRACT(DOW FROM "StrictDate") * INTERVAL \'1 DAY\')) AS DATE) AS "INTERVAL_MIX3", ' +
         'StrictDate - DateTime AS "DATE_SUBTRACT", ' +
         'StrictDate - INTERVAL \'1 DAY\' AS "INTERVAL_SUBTRACT", ' +
-        'StrictDate - \'2023-01-01\' AS "STRING_SUBSTRACT"' +
+        'StrictDate - \'2023-01-01\' AS "STRING_SUBSTRACT", ' +
+        '\'2023-01-01\' - StrictDate AS "STRING_SUBSTRACT2" ' +
         'FROM service."/service/service1"',
 
         {|
@@ -1522,7 +1566,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | $row.getStrictDate('StrictDate')->firstHourOfDay()->adjust(($row.getStrictDate('StrictDate')->dayOfWeekNumber() * 1), DurationUnit.DAYS), 'INTERVAL_MIX3'),
                 col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), $row.getDateTime('DateTime'), DurationUnit.DAYS), 'DATE_SUBTRACT'),
                 col(row:TDSRow[1] | adjust($row.getStrictDate('StrictDate'), -1, DurationUnit.DAYS), 'INTERVAL_SUBTRACT'),
-                col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), parseDate('2023-01-01'), DurationUnit.DAYS), 'STRING_SUBSTRACT')
+                col(row:TDSRow[1] | dateDiff($row.getStrictDate('StrictDate'), parseDate('2023-01-01'), DurationUnit.DAYS), 'STRING_SUBSTRACT'),
+                col(row:TDSRow[1] | dateDiff(parseDate('2023-01-01'), $row.getStrictDate('StrictDate'), DurationUnit.DAYS), 'STRING_SUBSTRACT2')
               ])
       })
 }
