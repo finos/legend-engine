@@ -22,9 +22,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-public abstract class CredentialBuilder<SPEC extends AuthenticationConfiguration, INPUT_CRED extends Credential, OUTPUT_CRED extends Credential>
+public abstract class CredentialBuilder<CONFIG extends AuthenticationConfiguration, INPUT_CRED extends Credential, OUTPUT_CRED extends Credential>
 {
-    public abstract OUTPUT_CRED makeCredential(Identity identity, SPEC spec, INPUT_CRED cred, EnvironmentConfiguration configuration) throws Exception;
+    public abstract OUTPUT_CRED makeCredential(Identity identity, CONFIG config, INPUT_CRED cred, LegendEnvironment environment) throws Exception;
 
     public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
     {

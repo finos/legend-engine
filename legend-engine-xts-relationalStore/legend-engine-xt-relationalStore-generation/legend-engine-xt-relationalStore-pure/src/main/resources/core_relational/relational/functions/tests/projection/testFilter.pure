@@ -15,6 +15,7 @@
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
@@ -24,13 +25,13 @@ function <<test.Test, test.ToFix>> meta::relational::tests::projection::filter::
    let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName, f|$f.employees.lastName->filter(s|$s->in(['Hill','Roberts']))->map(e|$e+'eee')], ['firm', 'firstName' ,'lastName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    false;
    // Should return the SQL
-//    select 
-// 	root.LEGALNAME as "firm", 
-// 	personTable_d_d_d_d_m2.FIRSTNAME as "firstName", 
+//    select
+// 	root.LEGALNAME as "firm",
+// 	personTable_d_d_d_d_m2.FIRSTNAME as "firstName",
 //         (select concat(x.LASTNAME,'eee') from personTable as x where personTable_d_d_d_d_m2 .ID = x.ID and x.LASTNAME in ('Johnson', 'Roberts')) as "lastName"
-//    from firmTable as root 
-// 	left outer join personTable 
-// 	as personTable_d_d_d_d_m2 
+//    from firmTable as root
+// 	left outer join personTable
+// 	as personTable_d_d_d_d_m2
 // 	on (root.ID = personTable_d_d_d_d_m2.FIRMID)
 }
 
@@ -86,9 +87,9 @@ function <<test.Test>> meta::relational::tests::projection::filter::testCompress
 {
 
    let result = execute(|Person.all()->project(  [col( x |$x.name,'Name' ),
-   col( x |$x.locations->filter( f| $f.place -> in(['Hoboken', 'New York']) ).place ,'place' ), 
-   col( x |$x.locations->filter( f| $f.place -> in(['Hoboken','New York']) ).censusdate ,'CD' )  ]), 
-   meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), debug());
+   col( x |$x.locations->filter( f| $f.place -> in(['Hoboken', 'New York']) ).place ,'place' ),
+   col( x |$x.locations->filter( f| $f.place -> in(['Hoboken','New York']) ).censusdate ,'CD' )  ]),
+   meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), debug());
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "Name", "locationtable_0".PLACE as "place", "locationtable_0".date as "CD" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID and "locationtable_0".PLACE in (\'Hoboken\', \'New York\'))', $result->sqlRemoveFormatting());
 
 }
@@ -96,19 +97,20 @@ function <<test.Test>> meta::relational::tests::projection::filter::testCompress
 function <<test.Test>> meta::relational::tests::projection::filter::testCompressSQLforINFilter2():Boolean[1]
 {
    let result = execute(|Person.all()->project(  [col( x |$x.name,'Name' ),
-   col( x |$x.locations->filter( f| $f.place -> in([ 'New York']) ).place ,'place' ), 
-   col( x |$x.locations->filter( f| $f.place -> in(['New York','Hoboken']) ).censusdate ,'CD' )  ]), 
-   meta::relational::tests::simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   col( x |$x.locations->filter( f| $f.place -> in([ 'New York']) ).place ,'place' ),
+   col( x |$x.locations->filter( f| $f.place -> in(['New York','Hoboken']) ).censusdate ,'CD' )  ]),
+   meta::relational::tests::simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "Name", "locationtable_0".PLACE as "place", "locationtable_1".date as "CD" from personTable as "root" left outer join locationTable as "locationtable_0" on ("root".ID = "locationtable_0".PERSONID and "locationtable_0".PLACE = \'New York\') left outer join locationTable as "locationtable_1" on ("root".ID = "locationtable_1".PERSONID and "locationtable_1".PLACE in (\'New York\', \'Hoboken\'))', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::filter::testParametrizedEnumFilter(): Boolean[1]
 {
-  let runtime = meta::relational::tests::testRuntime();
-  let connection = $runtime.connections->at(0)->cast(@meta::relational::runtime::TestDatabaseConnection);
-  
+  let runtime = meta::external::store::relational::tests::testRuntime();
+  let connectionStore = $runtime.connectionStores->at(0);
+  let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+
   let runtimeWithTestData = ^$runtime(
-    connections = ^$connection(
+    connectionStores = ^$connectionStore(connection=^$connection(
       testDataSetupCsv =
         'default\n'+
         'addressTable\n'+
@@ -116,9 +118,9 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::filt
         '1,1,Address_1\n'+
         '2,2,Address_2\n'+
         '-----\n'
-      )
+      ))
   );
- 
+
   let func = {g: GeographicEntityType[1]|
     Address.all()
       ->filter(a | $a.type == $g)
@@ -126,7 +128,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::projection::filt
       ->meta::pure::graphFetch::execution::serialize(#{Address{ name }}#)
       ->meta::pure::mapping::from(simpleRelationalMapping, $runtimeWithTestData);
   };
-  
+
   let res = meta::legend::executeLegendQuery($func, [pair('g', 'CITY')], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());
 
   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":{"name":"Address_1"}}', $res);

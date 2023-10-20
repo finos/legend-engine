@@ -12,16 +12,16 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
- 
+
  /*
   Test cases where ( forking at root level)
 
-  1) Only Forking : there are two sets for root level prop and below properties belong to correpsonding joint sets 
+  1) Only Forking : there are two sets for root level prop and below properties belong to correpsonding joint sets
                              {}
                            /    \
                         set11    set12                    (root level property)
-                        
-  
+
+
                              {}
                            /    \
                         set11   set12                    (root level property)
@@ -35,28 +35,28 @@
                         set11   set12                    (root level property)
                           \       /
                             set21                         (level 1 property)
- 
- 
+
+
  */
 
 
 
 import meta::relational::graphFetch::tests::union::rootLevel::*;
- 
+
 Class meta::relational::graphFetch::tests::union::rootLevel::Trade
 {
    tradeId : Integer[1];
    traderKerb: String[0..1];
    quantity : Integer[1];
 }
- 
+
 Class meta::relational::graphFetch::tests::union::rootLevel::Product
 {
    productId : String[1];
    productName : String[1];
    description : String[1];
 }
- 
+
 Association meta::relational::graphFetch::tests::union::rootLevel::Trade_Product
 {
    product : Product[1];
@@ -88,7 +88,7 @@ Database meta::relational::graphFetch::tests::union::rootLevel::dbUnion_XStore
 )
 
 // ================================================================================
-//         Same Store 
+//         Same Store
 // ==================================================================================
 
 ###Mapping
@@ -175,6 +175,7 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping2
 
 
 ###Pure
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
@@ -183,13 +184,16 @@ import meta::pure::graphFetch::execution::*;
 import meta::relational::graphFetch::tests::union::rootLevel::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
+
+
 import meta::pure::graphFetcha::tests::XStore::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::rootLevel::createTablesInDb():Boolean[1]
 {
   // dbUnion
-   let dbConn  = ^TestDatabaseConnection(element=dbUnion, type=DatabaseType.H2);
+   let dbConn  = ^TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion, 'tradeTable', $dbConn);
    dropAndCreateTableInDb(dbUnion, 'productTable', $dbConn);
@@ -214,7 +218,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::root
    executeInDb('insert into productTable2 (productId, productname, description) values (41, \'Prod_4\', \'Product 4 description\');', $dbConn);
 
    //dbUnionXStore
-   let dbConn_XStore  = ^TestDatabaseConnection(element=dbUnion_XStore, type=DatabaseType.H2);
+   let dbConn_XStore  = ^TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion_XStore, 'tradeTable_XStore', $dbConn_XStore);
    dropAndCreateTableInDb(dbUnion_XStore, 'productTable_XStore', $dbConn_XStore);
@@ -239,8 +243,8 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping;
-   let runtime = meta::relational::tests::testRuntime();
-   
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
@@ -275,7 +279,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping =  meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping;
 
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
  let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
 
@@ -309,7 +313,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping =  meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping2;
 
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
  let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
 
@@ -380,7 +384,7 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping
    }
 )
 
-//there are two disjoint sets for root level and below property comes from Same 3rd set 
+//there are two disjoint sets for root level and below property comes from Same 3rd set
 Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping2
 (
    Trade[trade_set_relational1] : Relational
@@ -422,6 +426,7 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping
 
 
 ###Pure
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
@@ -430,7 +435,10 @@ import meta::pure::graphFetch::execution::*;
 import meta::relational::graphFetch::tests::union::rootLevel::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
+
+
 import meta::pure::graphFetcha::tests::XStore::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_CrossStore():Boolean[1]
@@ -444,7 +452,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -479,7 +487,7 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::re
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping =  meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping;
 
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
  let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
 
@@ -489,7 +497,7 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::re
        '{"product":{"productId":"40","description":"Product 3 description","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":5},'+
        '{"product":{"productId":"41","description":"Product 4 description","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":6},'+
 
-       
+
        '{"product":{"productId":"30","description":"Product 5 description XStore","productName":"Prod_5"},"quantity":100,"traderKerb":"abc_XStore","tradeId":9},'+
        '{"product":{"productId":"31","description":"Product 6 description XStore","productName":"Prod_6"},"quantity":200,"traderKerb":"abc_XStore","tradeId":10}]',
       $result
@@ -513,18 +521,18 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::re
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping =  meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping2;
 
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
  let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
 
- 
+
  assertJsonStringsEqual(
       '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc","tradeId":1},'+
        '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc","tradeId":2},'+
        '{"product":{"productId":"40","description":"Product 3 description","productName":"Prod_3"},"quantity":100,"traderKerb":"abc","tradeId":5},'+
        '{"product":{"productId":"41","description":"Product 4 description","productName":"Prod_4"},"quantity":200,"traderKerb":"abc","tradeId":6}'+
 
-       
+
        '{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"quantity":100,"traderKerb":"abc_XStore","tradeId":9},'+
        '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"quantity":200,"traderKerb":"abc_XStore","tradeId":10}]',
       $result
@@ -538,7 +546,7 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::re
 // ==================================================================================
 
 ###Relational
-Database meta::relational::graphFetch::tests::union::rootLevel::BasicDB 
+Database meta::relational::graphFetch::tests::union::rootLevel::BasicDB
 (
   Schema TEST_SCHEMA
   (
@@ -572,18 +580,18 @@ Database meta::relational::graphFetch::tests::union::rootLevel::BasicDB
 ###Pure
 import meta::relational::graphFetch::tests::union::rootLevel::*;
 
-Class meta::relational::graphFetch::tests::union::rootLevel::Person 
+Class meta::relational::graphFetch::tests::union::rootLevel::Person
 {
   name: String[1];
   age: Integer[1];
 }
 
-Class meta::relational::graphFetch::tests::union::rootLevel::Firm 
+Class meta::relational::graphFetch::tests::union::rootLevel::Firm
 {
   name: String[1];
-} 
+}
 
-Class meta::relational::graphFetch::tests::union::rootLevel::VettedEmployer 
+Class meta::relational::graphFetch::tests::union::rootLevel::VettedEmployer
 {
   name: String[1];
 }
@@ -593,7 +601,7 @@ Class meta::relational::graphFetch::tests::union::rootLevel::RestrictedPerson
   name: String[1];
 }
 
-Association meta::relational::graphFetch::tests::union::rootLevel::Employment 
+Association meta::relational::graphFetch::tests::union::rootLevel::Employment
 {
   firm: Firm[1];
   employees: Person[*];
@@ -612,8 +620,8 @@ import meta::relational::graphFetch::tests::union::rootLevel::*;
 Mapping meta::relational::graphFetch::tests::union::rootLevel::FirmsAndEmployees_Relational
 (
   *Person: Operation
-  {                                              
-    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)   
+  {
+    meta::pure::router::operations::special_union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)
   }
 
   Person[p1]: Relational {
@@ -641,14 +649,14 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::FirmsAndEmployees
   *meta::relational::graphFetch::tests::union::rootLevel::VettedEmployer: Pure
   {
     ~src meta::relational::graphFetch::tests::union::rootLevel::Firm
-    
+
     name: $src.name
   }
 
   *meta::relational::graphFetch::tests::union::rootLevel::RestrictedPerson: Pure
   {
     ~src meta::relational::graphFetch::tests::union::rootLevel::Person
-    
+
     name: $src.name,
     firm: $src.firm
   }
@@ -659,7 +667,10 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::relational::graphFetch::tests::union::rootLevel::*;
@@ -679,11 +690,14 @@ meta::relational::graphFetch::tests::union::rootLevel::testSpecialUnion_m2m2r():
   let mapping = FirmsAndEmployees_M2M;
   let runtime = ^EngineRuntime(
     mappings = $mapping,
-    connections = [
-      ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+    connectionStores = [
+    ^meta::core::runtime::ConnectionStore(
+      element = BasicDB,
+      connection =
+      ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
         type = DatabaseType.H2,
         datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(
-          testDataSetupCsv = 
+          testDataSetupCsv =
             'TEST_SCHEMA\n' +
             'PEOPLE\n' +
             'ID,NAME,AGE,FIRM_ID\n' +
@@ -706,16 +720,15 @@ meta::relational::graphFetch::tests::union::rootLevel::testSpecialUnion_m2m2r():
             '2,Cadillac\n' +
             '---\n'
         ),
-        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
-        element = BasicDB
-      ),
-      ^ModelChainConnection(element = ^ModelStore(), mappings = [FirmsAndEmployees_Relational])
+        authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+      )),
+      ^meta::core::runtime::ConnectionStore(element = ^ModelStore(), connection=^ModelChainConnection(mappings = [FirmsAndEmployees_Relational]))
     ]
   );
   let extensions = meta::relational::extension::relationalExtensions();
 
   let executionResults = meta::legend::executeLegendQuery(
-    {| 
+    {|
       RestrictedPerson.all()
       ->graphFetch($tree)->serialize($tree)
       ->from($mapping, $runtime)
@@ -723,20 +736,20 @@ meta::relational::graphFetch::tests::union::rootLevel::testSpecialUnion_m2m2r():
     [],
     $extensions
   );
-  
+
   let expected = '{"builder":{"_type":"json"},"values":[' +
     '{"name":"Alice","firm":{"name":"Toyota"}},' +
     '{"name":"Bob","firm":{"name":"Cadillac"}},' +
-    '{"name":"Charlie","firm":{"name":"Ford"}},' + 
+    '{"name":"Charlie","firm":{"name":"Ford"}},' +
     '{"name":"Dan","firm":{"name":"Cadillac"}},' +
-    '{"name":"Eve","firm":{"name":"Ford"}},' + 
-    '{"name":"Frank","firm":{"name":"Ford"}}' + 
+    '{"name":"Eve","firm":{"name":"Ford"}},' +
+    '{"name":"Frank","firm":{"name":"Ford"}}' +
     ']}';
-  
+
   assertJsonStringsEqual($expected, $executionResults);
 
   let executionResults2 = meta::legend::executeLegendQuery(
-    {| 
+    {|
       RestrictedPerson.all()
       ->filter(x | $x.name->in(['Bob', 'Eve']))
       ->graphFetch($tree)->serialize($tree)
@@ -750,6 +763,6 @@ meta::relational::graphFetch::tests::union::rootLevel::testSpecialUnion_m2m2r():
     '{"name":"Bob","firm":{"name":"Cadillac"}},' +
     '{"name":"Eve","firm":{"name":"Ford"}}' +
     ']}';
-  
+
   assertJsonStringsEqual($expected2, $executionResults2);
 }

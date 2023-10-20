@@ -14,7 +14,11 @@
 
 ###Pure
 
+import meta::core::runtime::*;
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::csv::*;
@@ -28,7 +32,7 @@ import meta::relational::tests::mapping::embedded::advanced::*;
 
 function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Runtime[1]
 {
-  meta::relational::tests::testRuntime(eDB);
+  meta::external::store::relational::tests::testRuntime(eDB);
 }
 
  function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testProjection():Boolean[1]
@@ -78,8 +82,11 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                   ), testMappingEmbedded,testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('Bond Type,Profit\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
-   assertEquals( 'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"', $result->sqlRemoveFormatting());
-
+   assertEqualsH2Compatible(
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then 5.0 else 1.0 end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"',
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".MARKET_NAME = \'LSE\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "Profit" from PRODUCT_DENORM as "root" group by "Bond Type"',
+    $result->sqlRemoveFormatting()
+  );
  }
 
  function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testGroupByComplexAgg():Boolean[1]
@@ -92,8 +99,11 @@ function  meta::relational::tests::mapping::embedded::advanced::testRuntime():Ru
                                   ), testMappingEmbedded, testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEquals('Bond Type,sum\n' + '5 years,10.0\n' + '7 weeks,1.0\n', $result.values->toOne()->toCSV());
-   assertEquals( 'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"', $result->sqlRemoveFormatting());
-
+   assertEqualsH2Compatible(
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then 5.0 else 1.0 end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"',
+    'select "root".BOND_TYPE as "Bond Type", sum(case when "root".BOND_TYPE like \'5%\' then CAST(5.0 AS FLOAT) else CAST(1.0 AS FLOAT) end) as "sum" from PRODUCT_DENORM as "root" group by "Bond Type"',
+    $result->sqlRemoveFormatting()
+  );
  }
 
  function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testQualifierProperty():Boolean[1]
@@ -160,7 +170,7 @@ function meta::relational::tests::mapping::embedded::advanced::store::createTabl
   executeInDb($c + '(5, \'Party 3\');', $connection);
 
   let d = 'insert into BondClassificationTable(PRODUCT_ID, TYPE) values ';
-   
+
   executeInDb($d + '(1, \'Corporate\');', $connection);
 
   let e = 'insert into Person (id, state, unitNumber, in_z, out_z ) values ';
@@ -190,12 +200,12 @@ Enum meta::relational::tests::mapping::embedded::advanced::model::PartyType
 Class meta::relational::tests::mapping::embedded::advanced::model::Party
 {
   name : String[1];
-  type:  PartyType[1]; 
+  type:  PartyType[1];
   address: Address[1];
   description(){
      $this.name+$this.type->toString();
-  }:String[1]; 
-   
+  }:String[1];
+
 }
 
 
@@ -205,8 +215,8 @@ Class meta::relational::tests::mapping::embedded::advanced::model::BondDetail
   type : String[1];
   status: Status[1];
   issuer:Party[1];
-  holder:Party[1]; 
-   
+  holder:Party[1];
+
   isBond(){true}:Boolean[1];
   duration(){if($this.type->startsWith('5'),|5,|0)}:Integer[1];
   durationStartsWith(start:String[1]){ $this.type->startsWith($start)}:Boolean[1];
@@ -225,7 +235,7 @@ Class meta::relational::tests::mapping::embedded::advanced::model::Product
 
 Class meta::relational::tests::mapping::embedded::advanced::model::BondClassification
 {
-   type : String[1];  
+   type : String[1];
 }
 
 Association meta::relational::tests::mapping::embedded::advanced::model::BondDetailBondClassification
@@ -314,13 +324,13 @@ Database meta::relational::tests::mapping::embedded::advanced::store::eDB
       STATUS VARCHAR(10),
       HOLDERID INT
   )
-   
+
   Table Party
   (
      id INT PRIMARY KEY,
      name VARCHAR(200)
   )
-            
+
   Table BondClassificationTable
   (
      PRODUCT_ID INT PRIMARY KEY,
@@ -379,18 +389,18 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
          type: BOND_TYPE
       )
    }
-     
+
    meta::relational::tests::mapping::embedded::advanced::model::BondClassification[BondClassification] : Relational
    {
       type : [eDB]BondClassificationTable.type
    }
-      
+
 )
 
 Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedParent
 (
    include meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbedded
-   
+
    meta::relational::tests::mapping::embedded::advanced::model::BondDetailBondClassification : Relational
    {
       AssociationMapping

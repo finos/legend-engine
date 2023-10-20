@@ -34,7 +34,9 @@ import meta::relational::metamodel::execute::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::relation::*;
 import meta::pure::metamodel::path::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::milestoning::*;
 import meta::pure::router::routing::*;
@@ -148,7 +150,7 @@ function meta::relational::mapping::generateSQLExecutionNode(query:SQLQuery[1], 
 function meta::relational::mapping::updateConnection(conn:Connection[1], extensions:Extension[*]):Connection[1]
 {
    $conn->match($extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_updateConnection)->concatenate([
-      c:DatabaseConnection[1] | $c 
+      c:DatabaseConnection[1] | $c
    ])->toOneMany())
 }
 
@@ -195,8 +197,8 @@ function meta::relational::mapping::relationalPlanSupportFunctions(c:DatabaseCon
 function meta::relational::mapping::varPlaceHolderToStringFunction():String[*]
 {
    '<#function varPlaceHolderToString optionalParameter prefix suffix replacementMap defaultValue>' +
-         '<#if optionalParameter?is_enumerable && !optionalParameter?has_content>'+               
-               '<#return defaultValue>'+                    
+         '<#if optionalParameter?is_enumerable && !optionalParameter?has_content>'+
+               '<#return defaultValue>'+
          '<#else>' +
          '<#assign newParam = optionalParameter>' +
          '<#list replacementMap as oldValue, newValue>' +
@@ -213,7 +215,7 @@ function meta::relational::mapping::optionalVarPlaceHolderOperationSelectorFunct
             '<#return trueClause>'+
          '<#else>'+
             '<#return falseClause></#if>'+
-   '</#function>';   
+   '</#function>';
 }
 
 function meta::relational::mapping::equalEnumOperationSelectorFunction():String[1]
@@ -224,7 +226,7 @@ function meta::relational::mapping::equalEnumOperationSelectorFunction():String[
             '<#return equalDyna>'+
          '<#else>'+
             '<#return inDyna></#if>'+
-   '</#function>';   
+   '</#function>';
 }
 
 function meta::relational::mapping::collectionSizeFunction():String[1]
@@ -274,12 +276,13 @@ function meta::relational::mapping::execution(store: Database[1], f:FunctionExpr
    let originalQuery = $f->toSQLQuery($m, $inScopeVars, $relationalExecutionContext, $debug, $extensions);
    let toSqlQueryDurationMilliseconds = ($toSqlQueryStart->dateDiff(now(),DurationUnit.MILLISECONDS));
 
-   let connections = $runtime.connections->filter(c | $c->instanceOf(DatabaseConnection));
+   let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(DatabaseConnection));
    let storeRuntime = if($connections->size() <= 1,
                          | $runtime->toOne(),
                          | let oldRuntime = $runtime->toOne();
                            let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
-                           ^$oldRuntime(connections = $dbConn);
+                           let dbConnectionStore = $oldRuntime.connectionStores->filter(c|$c.connection==$dbConn);
+                           ^$oldRuntime(connectionStores = $dbConnectionStore);
                       );
 
    let postProcessorResult = postProcessQuery($exeCtx, $originalQuery, $storeRuntime, $store, $extensions);
@@ -316,7 +319,7 @@ function meta::relational::mapping::execution(store: Database[1], f:FunctionExpr
 
 function meta::relational::mapping::sqlCommentPureExecution(): String[1]
 {
-  '-- "executionTraceID" : "' + meta::pure::runtime::generateGuid() + '"';
+  '-- "executionTraceID" : "' + meta::core::runtime::generateGuid() + '"';
 }
 
 function meta::relational::mapping::executeQuery(sql:String[1], query:SQLQuery[0..1], paths: Pair<String, PathInformation>[*], connection : DatabaseConnection[1], runtime: Runtime[1], class:Type[0..1], ext:RoutedValueSpecification[0..1], m: Mapping[1], sqlGenerationTimeInNanoSecond:Integer[0..1], g_queryTimeOutInSeconds: Integer[0..1], exeCtx:ExecutionContext[1], extensions: Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
@@ -580,13 +583,13 @@ function meta::relational::mapping::processProperty(o:Any[1], property:Property<
            let keyInformation = $o->getHiddenPayload()->cast(@KeyInformation);
            let setImplementation = $keyInformation.static.setImplementation->toOne()->cast(@RelationalInstanceSetImplementation);
            let extensions = $keyInformation.static.extensions;
-       
+
            let mapping = $keyInformation.static.mapping;
 
            let state = ^State(inScopeVars = ^Map<String,List<Any>>(), mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth= 0, inProjectFunctions=false, processingProjectionThread = false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
 
-           let sourceDb = $keyInformation.sourceConnection->cast(@DatabaseConnection).element;
-           let db = if ($sourceDb->instanceOf(Database),|$sourceDb,|[])->cast(@Database);
+           let sourceDb = $keyInformation.static.runtime.connectionStores->filter(c|$c.connection==$keyInformation.sourceConnection).element;
+           let db = if($sourceDb->isEmpty() || !$sourceDb->toOne()->instanceOf(Database),|[],|$sourceDb->toOne())->cast(@Database);
 
            let sqlQueryToStringStart = now();
            let targetImplSqlQueryPair = generatePropertySql($setImplementation, $property, JoinType.INNER, $keyInformation.pk, $mapping, $keyInformation.static.runtime, $db, $keyInformation.static.exeCtx, $extensions);
@@ -625,7 +628,7 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
                               | getRelationalElementWithInnerJoin($srcSetImplementation, $mainTable, [], '', $state, $context, $extensions),
                               | $mainTable
                            );
-   
+
    let currentNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $updatedMainTable));
 
    let base = ^SelectWithCursor(

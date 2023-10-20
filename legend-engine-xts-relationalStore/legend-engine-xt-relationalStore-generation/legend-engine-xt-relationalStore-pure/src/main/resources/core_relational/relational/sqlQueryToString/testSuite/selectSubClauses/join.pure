@@ -14,15 +14,17 @@
 
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::tds::tdsJoin::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::join::testJoinByMultiColumnName(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(
     |testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
         ->join(
@@ -39,7 +41,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::join::testJoinBySingleColumnName(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(
     |testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
         ->join(
@@ -56,10 +58,10 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::join::testInnerJoinSimple(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
                       ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]), JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');}), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-  
+
   runDataAssertion($result, $config,
   | assertSameElements(['1,Smith,1,Firm X,1', '2,Johnson,1,Firm X,1', '3,Hill,1,Firm X,1', '4,Allen,1,Firm X,1',
                        '5,Roberts,2,Firm A,2', '6,Hill,3,Firm B,3', '7,Harris,4,Firm C,4'], $result.values.rows->map(r|$r.values->makeString(',')));
@@ -67,10 +69,10 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::join::testLeftOuterJoinSimple(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
                       ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]), JoinType.LEFT_OUTER, {a,b|($a.getInteger('eID') + 2) == $b.getInteger('fID')}), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-                      
+
   runDataAssertion($result, $config,
   | assertSameElements(['1,Smith,1,Firm B,3', '2,Johnson,1,Firm B,3', '3,Hill,1,Firm B,3', '4,Allen,1,Firm B,3',
                        '5,Roberts,2,Firm C,4', '6,Hill,3,TDSNull,TDSNull', '7,Harris,4,TDSNull,TDSNull'], $result.values.rows->map(r|$r.values->makeString(',')));
@@ -81,7 +83,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 {
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
                       ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]), JoinType.RIGHT_OUTER, {a,b|($a.getInteger('eID') + 2) == $b.getInteger('fID');}), testJoinTDSMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-                  
+
   runDataAssertion($result, $config,
   | assertEquals([Integer , String, Integer, String, Integer], $result.values.columns.type);
     assertSameElements(['1,Smith,1,Firm B,3', '2,Johnson,1,Firm B,3', '3,Hill,1,Firm B,3', '4,Allen,1,Firm B,3',
@@ -90,7 +92,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::join::testSelfJoinInner(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let type = JoinType.INNER;
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/managerID!mID#])
                       ->join(testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!pID#, #/testJoinTDS_Person/lastName!managerName#]), $type, {a,b |$a.getInteger('mID')  == $b.getInteger('pID');})
@@ -102,7 +104,7 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::join::testSelfJoinOuter(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let type = JoinType.LEFT_OUTER;
   let result = executeViaPlan(|testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/managerID!mID#])
                       ->join(testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!pID#, #/testJoinTDS_Person/lastName!managerName#]), $type, {a,b |$a.getInteger('mID')  == $b.getInteger('pID');})

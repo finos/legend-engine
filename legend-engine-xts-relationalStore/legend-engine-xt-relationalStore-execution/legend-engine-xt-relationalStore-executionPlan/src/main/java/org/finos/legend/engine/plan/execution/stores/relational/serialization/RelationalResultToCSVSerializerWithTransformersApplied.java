@@ -38,6 +38,7 @@ public class RelationalResultToCSVSerializerWithTransformersApplied extends CsvS
 {
     private final RelationalResult relationalResult;
     private final CSVFormat csvFormat;
+    private final ValueTransformer valueTransformer = new ValueTransformer();
 
     public RelationalResultToCSVSerializerWithTransformersApplied(RelationalResult relationalResult)
     {
@@ -97,7 +98,7 @@ public class RelationalResultToCSVSerializerWithTransformersApplied extends CsvS
         {
             for (int i = 1; i <= columnCount; ++i)
             {
-                csvPrinter.print(transformers.get(i - 1).valueOf(relationalResult.getValue(i)));
+                csvPrinter.print(valueTransformer.transformRelationalValue(relationalResult.getValue(i), transformers.get(i - 1)));
             }
             csvPrinter.println();
         }

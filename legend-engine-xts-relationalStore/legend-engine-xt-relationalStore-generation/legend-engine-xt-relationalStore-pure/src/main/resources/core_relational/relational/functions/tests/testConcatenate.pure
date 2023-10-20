@@ -17,9 +17,11 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 import meta::relational::tests::projection::function::concatenate::model::*;
 import meta::relational::functions::toDDL::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 
@@ -197,32 +199,32 @@ function <<test.Test>> meta::relational::tests::projection::function::concatenat
 function <<test.BeforePackage>> meta::relational::tests::projection::function::concatenate::setUp():Boolean[1]
 {
    let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
-   
+
    let schema = 'CONCATENATE';
 
    dropAndCreateSchemaInDb($schema, $connection);
-   
-   dropAndCreateTableInDb(myDb, $schema, 'TRADE', $connection); 
+
+   dropAndCreateTableInDb(myDb, $schema, 'TRADE', $connection);
    dropAndCreateTableInDb(myDb, $schema, 'OE', $connection);
    dropAndCreateTableInDb(myDb, $schema, 'SUBACCOUNT', $connection);
    dropAndCreateTableInDb(myDb, $schema, 'EXTERNALACCOUNT', $connection);
-   
+
 
    executeInDb('insert into CONCATENATE.TRADE (ID, SUBACCOUNT_ID, EXTERNALACCOUNT_ID, OE_ID) values (1, 1, null, null);', $connection);
    executeInDb('insert into CONCATENATE.TRADE (ID, SUBACCOUNT_ID, EXTERNALACCOUNT_ID, OE_ID) values (2, null, 1, 2);', $connection);
-   
-   
+
+
    executeInDb('insert into CONCATENATE.OE (ID, NAME) values (1, \'OE 1\');', $connection);
    executeInDb('insert into CONCATENATE.OE (ID, NAME) values (2, \'OE 2\');', $connection);
-   
-   
+
+
    executeInDb('insert into CONCATENATE.SUBACCOUNT (ID, OE_ID, OE_NAME) values (1, 1, \'OE 1\');', $connection);
    executeInDb('insert into CONCATENATE.SUBACCOUNT (ID, OE_ID, OE_NAME) values (2, 2, \'OE 2\');', $connection);
-   
+
    executeInDb('insert into CONCATENATE.EXTERNALACCOUNT (EA_ID, EA_OE_ID, EA_OE_NAME) values (1, 2, \'OE 2\');', $connection);
-   
+
    true;
-}  
+}
 
 
 
@@ -232,19 +234,19 @@ Class  meta::relational::tests::projection::function::concatenate::model::NewTra
    subAccount:SubAccount[0..1];
    otherOrgEntity:OrganizationalEntity[0..1];
    otherAccount:OtherAccount[0..1];
-   
+
 
    organizationalEntity()
    {
       $this.subAccount.oe->concatenate($this.otherOrgEntity)->toOne()
    }:OrganizationalEntity[0..1];
-   
-   
+
+
    accountOrganizationalEntity()
    {
       $this.subAccount.oe->concatenate($this.otherAccount.oe)->toOne()
    }:OrganizationalEntity[0..1];
-   
+
 }
 
 Class meta::relational::tests::projection::function::concatenate::model::OrganizationalEntity
@@ -278,13 +280,13 @@ Database meta::relational::tests::projection::function::concatenate::store::myDb
       EXTERNALACCOUNT_ID INTEGER,
       OE_ID INTEGER
    )
-   
+
    Table OE
    (
       ID INTEGER PRIMARY KEY,
       NAME VARCHAR(32)
    )
-   
+
    Table SUBACCOUNT
    (
       ID INTEGER PRIMARY KEY,
@@ -292,7 +294,7 @@ Database meta::relational::tests::projection::function::concatenate::store::myDb
       OE_ID INTEGER,
       OE_NAME VARCHAR(32)
    )
-   
+
    Table EXTERNALACCOUNT
    (
       EA_ID INTEGER PRIMARY KEY,
@@ -300,10 +302,10 @@ Database meta::relational::tests::projection::function::concatenate::store::myDb
       EA_OE_ID INTEGER,
       EA_OE_NAME VARCHAR(32)
    )
-   
+
 
    )
-   
+
    Join tradeSubAccount(CONCATENATE.TRADE.SUBACCOUNT_ID = CONCATENATE.SUBACCOUNT.ID)
    Join tradeOtherAccount(CONCATENATE.TRADE.EXTERNALACCOUNT_ID = CONCATENATE.EXTERNALACCOUNT.EA_ID)
    Join tradeOE(CONCATENATE.TRADE.OE_ID = CONCATENATE.OE.ID)
@@ -328,14 +330,14 @@ Mapping meta::relational::tests::projection::function::concatenate::mapping::tes
       otherAccount: [myDb]@tradeOtherAccount,
       otherOrgEntity: [myDb]@tradeOE
    }
-   
+
    SubAccount: Relational
    {
       name: [myDb]CONCATENATE.SUBACCOUNT.NAME,
       oe: [myDb]@subAccountOE
    }
-   
-   
+
+
    OtherAccount: Relational
    {
       name: [myDb]CONCATENATE.EXTERNALACCOUNT.EA_NAME,
@@ -359,17 +361,17 @@ Mapping meta::relational::tests::projection::function::concatenate::mapping::tes
       otherAccount: [myDb]@tradeOtherAccount,
       otherOrgEntity: [myDb]@tradeOE
    }
-   
+
    SubAccount: Relational
    {
       name: [myDb]CONCATENATE.SUBACCOUNT.NAME,
-      oe 
+      oe
       (
          name:[myDb]CONCATENATE.SUBACCOUNT.OE_NAME
       )
    }
-   
-   
+
+
    OtherAccount: Relational
    {
       name: [myDb]CONCATENATE.EXTERNALACCOUNT.EA_NAME,
@@ -378,7 +380,7 @@ Mapping meta::relational::tests::projection::function::concatenate::mapping::tes
          name:[myDb]CONCATENATE.EXTERNALACCOUNT.EA_OE_NAME
       )
    }
-   
+
    OrganizationalEntity: Relational
    {
       name: [myDb]CONCATENATE.OE.NAME
@@ -397,17 +399,17 @@ Mapping meta::relational::tests::projection::function::concatenate::mapping::tes
       otherAccount: [myDb]@tradeOtherAccount,
       otherOrgEntity: [myDb]@tradeOE
    }
-   
+
    SubAccount: Relational
    {
       name: [myDb]CONCATENATE.SUBACCOUNT.NAME,
-      oe 
+      oe
       (
          name:[myDb]CONCATENATE.SUBACCOUNT.OE_NAME
       )
    }
-   
-   
+
+
    OtherAccount: Relational
    {
       name: [myDb]CONCATENATE.EXTERNALACCOUNT.EA_NAME,

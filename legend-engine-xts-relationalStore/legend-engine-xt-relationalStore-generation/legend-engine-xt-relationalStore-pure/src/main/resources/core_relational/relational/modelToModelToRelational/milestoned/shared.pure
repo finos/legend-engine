@@ -21,13 +21,14 @@ import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::relational::runtime::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
-function meta::pure::graphFetch::tests::m2m2r::milestoning::getModelChainRuntime(m2m:meta::pure::mapping::Mapping[1]):Runtime[1]
+function meta::pure::graphFetch::tests::m2m2r::milestoning::getModelChainRuntime(m2m:meta::pure::mapping::Mapping[1]):meta::core::runtime::Runtime[1]
 {
- ^meta::pure::runtime::Runtime(
-      connections=[
+ ^meta::core::runtime::Runtime(
+      connectionStores=[
         meta::pure::graphFetch::tests::milestoning::getAlloyTestH2Connection(),
-        ^meta::pure::mapping::modelToModel::ModelChainConnection(element = ^meta::pure::mapping::modelToModel::ModelStore(), mappings = [$m2m])
+        ^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(), connection=^meta::external::store::model::ModelChainConnection(mappings = [$m2m]))
       ]
   );
 }
@@ -97,23 +98,23 @@ import meta::relational::tests::milestoning::*;
 Mapping meta::relational::tests::milestoning::milestoningMapSmall
 (
    meta::relational::tests::milestoning::ProductMilestoned : Relational{
-      id : [db]ProductTable.id, 
+      id : [db]ProductTable.id,
       name : [db]ProductTable.name,
       type : [db]ProductTable.type,
       synonymsMilestoned : [db]@Product_Synonym,
        synonymsMilestonedViaAssociation : [db]@Product_Synonym,
       synonymsNonMilestoned : [db]@Product_Synonym
-   }  
-   
+   }
+
    meta::relational::tests::milestoning::ProductSynonymMilestoned : Relational{
       synonym : [db]ProductSynonymTable.synonym,
       type : [db]ProductSynonymTable.type
-   }  
-   
+   }
+
   meta::relational::tests::milestoning::ProductSynonymNonMilestoned : Relational{
       synonym : [meta::relational::tests::milestoning::db]ProductSynonymTable.synonym,
       type : [meta::relational::tests::milestoning::db]ProductSynonymTable.type
-   }  
+   }
 
-)   
+)
 

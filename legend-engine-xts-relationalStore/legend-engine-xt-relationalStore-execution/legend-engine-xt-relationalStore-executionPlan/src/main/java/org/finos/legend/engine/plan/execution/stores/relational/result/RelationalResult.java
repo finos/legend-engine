@@ -25,6 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +114,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
     public MutableList<SetImplTransformers> setTransformers = Lists.mutable.empty();
 
     public Builder builder;
+    private Calendar calendar;
 
     public RelationalResult(MutableList<ExecutionActivity> activities, RelationalExecutionNode node, List<SQLResultColumn> sqlResultColumns, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
     {
@@ -444,16 +446,7 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         if (resultDBColumnsMetaData.isTimestampColumn(columnIndex))
         {
             Timestamp ts;
-            if (getRelationalDatabaseTimeZone() != null)
-            {
-                ts = resultSet.getTimestamp(columnIndex, new GregorianCalendar(TimeZone.getTimeZone(getRelationalDatabaseTimeZone())));
-            }
-            else
-            {
-                //TODO, throw exception, TZ should always be specified
-                //Till then, default to PURE default which is "GMT"
-                ts = resultSet.getTimestamp(columnIndex, new GregorianCalendar(TimeZone.getTimeZone("GMT")));
-            }
+            ts = resultSet.getTimestamp(columnIndex, getCalendar());
             result = ts;
         }
         else if (resultDBColumnsMetaData.isDateColumn(columnIndex))
@@ -649,6 +642,25 @@ public class RelationalResult extends StreamingResult implements IRelationalResu
         };
 
         return StreamSupport.stream(spliterator, false).onClose(this::close);
+    }
+
+
+    private Calendar getCalendar()
+    {
+        String timeZoneId = getRelationalDatabaseTimeZone();
+        TimeZone timeZone = (timeZoneId != null) ? TimeZone.getTimeZone(timeZoneId) : TimeZone.getTimeZone("GMT");
+        if (calendar == null)
+        {
+            //TODO, throw exception, TZ should always be specified
+            //Till then, default to PURE default which is "GMT"
+            calendar = new GregorianCalendar(timeZone);
+        }
+        else
+        {
+            calendar.clear();
+            calendar.setTimeZone(timeZone);
+        }
+        return calendar;
     }
 
     @Override

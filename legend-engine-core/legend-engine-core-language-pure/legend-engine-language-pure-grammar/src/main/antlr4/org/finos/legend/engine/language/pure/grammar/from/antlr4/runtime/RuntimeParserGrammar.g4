@@ -13,6 +13,7 @@ options
 identifier:                             VALID_STRING | STRING
                                         | RUNTIME | IMPORT
                                         | MAPPINGS | CONNECTIONS
+                                        | CONNECTIONSTORES
 ;
 
 
@@ -28,7 +29,7 @@ importStatement:                        IMPORT packagePath PATH_SEPARATOR STAR S
 ;
 runtime:                                RUNTIME qualifiedName
                                             BRACE_OPEN
-                                                (mappings | connections)*
+                                                (mappings | connections | connectionStoresList)*
                                             BRACE_CLOSE
 ;
 mappings:                               MAPPINGS COLON
@@ -41,14 +42,26 @@ connections:                            CONNECTIONS COLON
                                                 (storeConnections (COMMA storeConnections)*)?
                                             BRACKET_CLOSE SEMI_COLON
 ;
+connectionStoresList:                   CONNECTIONSTORES COLON
+                                            BRACKET_OPEN
+                                                (connectionStores (COMMA connectionStores)*)?
+                                            BRACKET_CLOSE SEMI_COLON
+;
 storeConnections:                       qualifiedName COLON
                                             BRACKET_OPEN
                                                 (identifiedConnection (COMMA identifiedConnection)*)?
                                             BRACKET_CLOSE
 ;
-identifiedConnection:                   identifier COLON (connectionPointer | embeddedConnection)
+connectionStores:                       connection COLON
+                                            BRACKET_OPEN
+                                                (packageableElementPointer (COMMA packageableElementPointer)*)?
+                                            BRACKET_CLOSE
 ;
-connectionPointer:                      qualifiedName
+identifiedConnection:                   identifier COLON (packageableElementPointer | embeddedConnection)
+;
+connection:                             packageableElementPointer
+;
+packageableElementPointer:              qualifiedName
 ;
 embeddedConnection:                     ISLAND_OPEN (embeddedConnectionContent)*
 ;

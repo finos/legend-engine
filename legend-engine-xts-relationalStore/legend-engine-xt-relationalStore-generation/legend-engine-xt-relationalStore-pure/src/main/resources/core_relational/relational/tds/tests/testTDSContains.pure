@@ -14,8 +14,10 @@
 
 import meta::relational::functions::sqlstring::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::metamodel::tds::*;
 import meta::pure::profiles::*;
 import meta::relational::tests::model::simple::*;

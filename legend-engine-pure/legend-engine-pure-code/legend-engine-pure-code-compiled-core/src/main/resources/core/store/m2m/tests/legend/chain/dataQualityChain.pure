@@ -17,10 +17,12 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
@@ -33,14 +35,13 @@ meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::constraintFa
    }#;
 
    let sourceFirms = '[{"name":"Firm1"},{"name":"Firm2"},{"name":"Firm3"},{"name":"Firm4"}]';
-   
+
    let result = execute(
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMapping,
-      ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+      ^Runtime(connectionStores= [
+            ^ConnectionStore(element = ^ModelStore(),connection=^ModelChainConnection( mappings = [SrcToBridgeMapping])),
+            ^ConnectionStore(element = ^ModelStore(),connection=^JsonModelConnection( class = __Firm, url = 'data:application/json,' + $sourceFirms))
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -225,14 +226,13 @@ meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::constraintFa
    }#;
 
    let sourceFirms = '{"name":"Firm1", "employees": [{"fullName": "Person1"}, {"fullName": "Person2"}, {"fullName": "Person3"}]}';
-   
+
    let result = execute(
       {|Firm.all()->graphFetchChecked($tree)->serialize($tree)},
       BridgeToDestMapping,
-      ^Runtime(
-         connections = [
-            ^ModelChainConnection(element = ^ModelStore(), mappings = [SrcToBridgeMapping]),
-            ^JsonModelConnection(element = ^ModelStore(), class = __Firm, url = 'data:application/json,' + $sourceFirms)
+      ^Runtime(connectionStores= [
+            ^ConnectionStore(element = ^ModelStore(),connection=^ModelChainConnection( mappings = [SrcToBridgeMapping])),
+            ^ConnectionStore(element = ^ModelStore(),connection=^JsonModelConnection( class = __Firm, url = 'data:application/json,' + $sourceFirms))
          ]
       ),
       meta::pure::extension::defaultExtensions()
@@ -334,7 +334,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::_
 
 Association meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::src::__Firm___Person
 {
-   firm      : __Firm[1];        
+   firm      : __Firm[1];
    employees : __Person[*];
 }
 
@@ -356,7 +356,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge
 
 Association meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::bridge::_Firm__Person
 {
-   firm      : _Firm[1];        
+   firm      : _Firm[1];
    employees : _Person[*];
 }
 
@@ -375,7 +375,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::
 
 Association meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::dest::Firm_Person
 {
-   firm      : Firm[1];        
+   firm      : Firm[1];
    employees : Person[*];
 }
 
@@ -391,7 +391,7 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::Brid
       name      : '|' + $src.name + '|',
       employees : $src.employees
    }
-   
+
    Person: Pure {
       ~src _Person
       fullName : '|' + $src.fullName + '|'
@@ -405,7 +405,7 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::chain::dataQuality::SrcT
       name      : '$' + $src.name + '$',
       employees : $src.employees
    }
-   
+
    _Person: Pure {
       ~src __Person
       fullName : '$' + $src.fullName + '$'

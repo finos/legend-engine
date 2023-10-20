@@ -2296,6 +2296,66 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     }
 
     @Test
+    public void testMilestoningPropertiesQualfiedExpressionForToOne()
+    {
+        String grammar = "###Pure\n" +
+                "Class <<temporal.processingtemporal>> test::ProcessingTemporalAddress\n" +
+                "{\n" +
+                "  DunmmyProperty : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.businesstemporal>> test::BusinessTemporalAddress\n" +
+                "{\n" +
+                "  DunmmyProperty : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class <<temporal.bitemporal>> test::BiTemporalAddress\n" +
+                "{\n" +
+                "  DunmmyProperty : String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::Person\n" +
+                "{\n" +
+                "  processingTemporalAddress1 : test::ProcessingTemporalAddress[1];\n" +
+                "  businessTemporalAddress1 : test::BusinessTemporalAddress[1];\n" +
+                "  biTemporalAddress1 : test::BiTemporalAddress[1];\n" +
+                "  processingTemporalAddress2 : test::ProcessingTemporalAddress[0..1];\n" +
+                "  businessTemporalAddress2 : test::BusinessTemporalAddress[0..1];\n" +
+                "  biTemporalAddress2 : test::BiTemporalAddress[0..1];\n" +
+                "  processingTemporalAddress3 : test::ProcessingTemporalAddress[*];\n" +
+                "  businessTemporalAddress3 : test::BusinessTemporalAddress[*];\n" +
+                "  biTemporalAddress3 : test::BiTemporalAddress[*];\n" +
+                "}";
+        PureModel pm = test(grammar).getTwo();
+
+        RichIterable<? extends QualifiedProperty<?>> personQualifiedProperties = pm.getClass("test::Person")._qualifiedProperties();
+        boolean checkQualifiedExpressionForprocessingTemporalAddress1 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("processingTemporalAddress1")));
+        boolean checkQualifiedExpressionForbusinessTemporalAddress1 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("businessTemporalAddress1")));
+        boolean checkQualifiedExpressionForbiTemporalAddress1 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress1")));
+        boolean checkQualifiedExpressionForprocessingTemporalAddress2 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("processingTemporalAddress2")));
+        boolean checkQualifiedExpressionForbusinessTemporalAddress2 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("businessTemporalAddress2")));
+        boolean checkQualifiedExpressionForbiTemporalAddress2 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress2")));
+        boolean checkQualifiedExpressionForprocessingTemporalAddress3 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("processingTemporalAddress3")));
+        boolean checkQualifiedExpressionForbusinessTemporalAddress3 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("businessTemporalAddress3")));
+        boolean checkQualifiedExpressionForbiTemporalAddress3 = checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(personQualifiedProperties.detect(p -> p.getName().equals("biTemporalAddress3")));
+        Assert.assertTrue("Qualfied expression generated for processingTemporalAddress should have toOne() as topLevel functionExpression", checkQualifiedExpressionForprocessingTemporalAddress1);
+        Assert.assertTrue("Qualfied expression generated for BusinessTemporalAddress should have toOne() as topLevel functionExpression", checkQualifiedExpressionForbusinessTemporalAddress1);
+        Assert.assertTrue("Qualfied expression generated for BiTemporalAddress should have toOne() as topLevel functionExpression", checkQualifiedExpressionForbiTemporalAddress1);
+        Assert.assertTrue("Qualfied expression generated for processingTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForprocessingTemporalAddress2);
+        Assert.assertTrue("Qualfied expression generated for BusinessTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbusinessTemporalAddress2);
+        Assert.assertTrue("Qualfied expression generated for BiTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbiTemporalAddress2);
+        Assert.assertTrue("Qualfied expression generated for processingTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForprocessingTemporalAddress3);
+        Assert.assertTrue("Qualfied expression generated for BusinessTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbusinessTemporalAddress3);
+        Assert.assertTrue("Qualfied expression generated for BiTemporalAddress should not have toOne() as topLevel functionExpression", !checkQualifiedExpressionForbiTemporalAddress3);
+    }
+
+    private boolean checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(QualifiedProperty generatedMilestoningClassQualifiedProperty)
+    {
+        FunctionExpression topLevelExpression = ((FunctionExpression) generatedMilestoningClassQualifiedProperty._expressionSequence().getFirst());
+         return topLevelExpression._func()._functionName().equals("toOne");
+    }
+
+    @Test
     public void testMilestoningSimplePropertiesAreNotOverridenByUserProperties()
     {
         String grammar = "###Pure\n" +
@@ -2353,13 +2413,22 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
 
     private boolean generatedMilestoningQualifgiedPropertyUsesGeneratedMilestoningProperty(Property generatedMilestoningClassSimpleProperty, QualifiedProperty generatedMilestoningClassQualifiedProperty)
     {
-        FunctionExpression topLevelExpression = (FunctionExpression) ((LambdaFunction) ((InstanceValue) ((FunctionExpression) generatedMilestoningClassQualifiedProperty._expressionSequence().getFirst())._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
-        if (topLevelExpression._func()._functionName().equals("and"))
+        FunctionExpression topLevelExpression = ((FunctionExpression) generatedMilestoningClassQualifiedProperty._expressionSequence().getFirst());
+        FunctionExpression simplifiedExpression;
+        if (topLevelExpression._func()._functionName().equals("toOne"))
+        {
+            simplifiedExpression = (FunctionExpression) ((LambdaFunction) ((InstanceValue) ((FunctionExpression) (topLevelExpression._parametersValues().toList().get(0)))._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
+        }
+        else
+        {
+            simplifiedExpression = (FunctionExpression) ((LambdaFunction) ((InstanceValue) topLevelExpression._parametersValues().toList().get(1))._values().getOnly())._expressionSequence().getOnly();
+        }
+        if (simplifiedExpression._func()._functionName().equals("and"))
         {
             int idx = generatedMilestoningClassSimpleProperty.getName().equals("processingDate") ? 0 : 1;
-            topLevelExpression = (FunctionExpression) topLevelExpression._parametersValues().toList().get(idx);
+            simplifiedExpression = (FunctionExpression) simplifiedExpression._parametersValues().toList().get(idx);
         }
-        Property filterMilestoningDateProperty = (Property) ((FunctionExpression) topLevelExpression._parametersValues().toList().get(0))._func();
+        Property filterMilestoningDateProperty = (Property) ((FunctionExpression) simplifiedExpression._parametersValues().toList().get(0))._func();
         return generatedMilestoningClassSimpleProperty.equals(filterMilestoningDateProperty);
     }
 

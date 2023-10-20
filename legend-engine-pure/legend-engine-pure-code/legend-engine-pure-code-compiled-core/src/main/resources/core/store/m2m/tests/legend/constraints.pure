@@ -16,22 +16,27 @@
 import meta::pure::executionPlan::engine::java::roadmap::*;
 import meta::json::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::mapping::modelToModel::test::alloy::constraints::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  serverVersion.start='v1_19_0' }
 meta::pure::mapping::modelToModel::test::alloy::constraints::testTargetConstraintsWhenRequiredPropertiesAreNotSpecifiedOnGraphFetchTree():Boolean[1]
 {
     let result = execute( |Firm.all()->graphFetchChecked(#{Firm {name} }#)->serialize(#{Firm {name} }#),
                            m2mconstraintmapping1,
-                           ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm, 
+                           ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
+                                class=_Firm,
                                 url='data:application/json,{"name":"FirmX"}'
                              )
+                            )
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -39,16 +44,18 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testTargetConstrain
    assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::Firm","message":"Constraint :[0] violated in the Class Firm"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"FirmX\\"}"},"value":{"name":"FirmX","employees":[]}},"value":{"name":"FirmX"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  serverVersion.start='v1_19_0' }
 meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnTypeWithFailingConstraintSucceedsWithConstraintsDisabled():Boolean[1]
 {
     let result = execute( |Firm.all()->graphFetch(#{Firm {name} }#)->serialize(#{Firm {name} }#),
                            m2mconstraintmapping1,
-                           ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm, 
-                                url='data:application/json,{"name":"FirmX"}')),
+                           ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
+                                class=_Firm,
+                                url='data:application/json,{"name":"FirmX"}'))),
                            ^ExecutionContext(enableConstraints=false),
                            meta::pure::extension::defaultExtensions()
    );
@@ -56,38 +63,42 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnTypeWith
    assert(jsonEquivalent('{"name":"FirmX"}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  serverVersion.start='v1_19_0' }
 meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnSourceTypeWithFailingConstraintSucceedsWithConstraintsDisabled():Boolean[1]
 {
    let result = execute( |Firm2.all()->graphFetch(#{Firm2 {name} }#)->serialize(#{Firm2 {name} }#),
                           m2mconstraintmapping2,
-                          ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm2, 
-                                url='data:application/json,{"name":"FirmX"}')),
+                          ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
+                                class=_Firm2,
+                                url='data:application/json,{"name":"FirmX"}'))),
                           ^ExecutionContext(enableConstraints=false),
                           meta::pure::extension::defaultExtensions()
                      );
-  
+
    assert(jsonEquivalent('{"name":"FirmX"}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  serverVersion.start='v1_19_0' }
 meta::pure::mapping::modelToModel::test::alloy::constraints::testSourceConstraintsWhenRelatedTargetPropertiesAreNotSpecifiedOnGraphFetchTree():Boolean[1]
 {
     let result = execute( |Firm2.all()->graphFetchChecked(#{Firm2 {name} }#)->serialize(#{Firm2 {name} }#),
                            m2mconstraintmapping2,
-                           ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm2, 
+                           ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
+                                class=_Firm2,
                                 url='data:application/json,{"name":"FirmX","employees":[{"firstName":"David","lastName":"Roe"}]}'
-                             )
+                             ))
                            ),
                            meta::pure::extension::defaultExtensions()
                   );
-   
+
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::_Firm2","message":"Constraint :[0] violated in the Class _Firm2"},{"path":[{"propertyName":"employees","index":0}],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::_Person2","message":"Constraint :[0] violated in the Class _Person2"}],"source":{"number":1,"record":"{\\"name\\":\\"FirmX\\",\\"employees\\":[{\\"firstName\\":\\"David\\",\\"lastName\\":\\"Roe\\"}]}"},"value":{"name":"FirmX","employees":[{"firm":null,"address":null}]}},"value":{"name":"FirmX"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
@@ -97,11 +108,13 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testSourceConstrain
 {
    let result = execute( |Car.all()->graphFetchChecked(#{Car {engineSize}}#)->serialize(#{Car {engineSize}}#),
                           m2mconstraintnewmapping,
-                          ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+                          ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_Car,
                              url='data:application/json,{"make" : "Ford", "engineSize" : "big", "numOfDoors" : 1}'
-                             )
+                             ))
                            ),
                            meta::pure::extension::defaultExtensions()
                      );
@@ -115,15 +128,17 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testSourceConstrain
 {
    let result = execute( |ProductTaxonomy.all()->graphFetchChecked(#{ProductTaxonomy {id}}#)->serialize(#{ProductTaxonomy {id}}#),
                           m2mconstraintnewmapping2,
-                          ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+                          ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=ProductTaxonomy,
                              url='data:application/json,{"id":"1"}'
-                             )
+                             ))
                            ),
                            meta::pure::extension::defaultExtensions()
                        );
-  
+
    assert(jsonEquivalent('{"defects":[],"source":{"defects":[],"source":{"number":1,"record":"{\\"id\\":\\"1\\"}"},"value":{"id":"1"}},"value":{"id":"1"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
@@ -133,11 +148,13 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testIsEqualConstrai
 {
    let result = execute(|B.all()->graphFetchChecked(#{B { b }}#)->serialize(#{B { b }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::isEqualTest,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_B,
                              url='data:application/json,{"b":true}'
-                             )
+                             ))
                           ),
                           meta::pure::extension::defaultExtensions()
                 );
@@ -151,11 +168,14 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testIsDistinctConst
 {
    let result = execute(|C.all()->graphFetchChecked(#{C { b }}#)->serialize(#{C { b }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::isDistinctTest,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_C,
                              url='data:application/json,{"b":true}'
                              )
+                            )
                          ),
                          meta::pure::extension::defaultExtensions()
                 );
@@ -169,11 +189,14 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnOptiona
 {
    let result = execute(|D.all()->graphFetchChecked(#{D { maybe, i }}#)->serialize(#{D { maybe, i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2dMaybeNotMapped,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_Num,
                              url='data:application/json,{"n":5}'
                              )
+                            )
                          ),
                          meta::pure::extension::defaultExtensions()
                 );
@@ -187,11 +210,14 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnOptiona
 {
    let result = execute(|D.all()->graphFetchChecked(#{D { maybe, i }}#)->serialize(#{D { maybe, i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2dMaybeNotMapped,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_Num,
                              url='data:application/json,{"n":20}'
                              )
+                            )
                          ),
                          meta::pure::extension::defaultExtensions()
                 );
@@ -205,11 +231,14 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 {
    let result = execute(|E.all()->graphFetchChecked(#{E { i }}#)->serialize(#{E { i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2eExpectedNotMapped,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_Num,
                              url='data:application/json,{"n":5}'
                              )
+                            )
                          ),
                          meta::pure::extension::defaultExtensions()
                 );
@@ -223,11 +252,14 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 {
    let result = execute(|E.all()->graphFetchChecked(#{E { i }}#)->serialize(#{E { i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2eExpectedNotMapped,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_Num,
                              url='data:application/json,{"n":20}'
                              )
+                            )
                          ),
                          meta::pure::extension::defaultExtensions()
                 );
@@ -242,11 +274,14 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 {
    let result = execute(|F.all()->graphFetchChecked(#{F { i }}#)->serialize(#{F { i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2fExpectedNotMapped,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_Num,
                              url='data:application/json,{"n":20}'
                              )
+                            )
                          ),
                          meta::pure::extension::defaultExtensions()
                 );
@@ -260,11 +295,14 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 {
    let result = execute(|F.all()->graphFetchChecked(#{F { i }}#)->serialize(#{F { i }}#),
                         meta::pure::mapping::modelToModel::test::alloy::constraints::n2fExpectedNotMapped,
-                         ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(),
+                         ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                                 class=_Num,
                              url='data:application/json,{"n":5}'
                              )
+                            )
                          ),
                          meta::pure::extension::defaultExtensions()
                 );
@@ -278,11 +316,13 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::constraintOnUnmappe
 {
   let result = execute(|meta::pure::mapping::modelToModel::test::alloy::constraints::Loan.all()->graphFetchChecked(#{meta::pure::mapping::modelToModel::test::alloy::constraints::Loan {id}}#)->serialize(#{meta::pure::mapping::modelToModel::test::alloy::constraints::Loan {id}}#),
                       meta::pure::mapping::modelToModel::test::alloy::constraints::LoanMapping,
-                      ^Runtime(connections = ^JsonModelConnection(
-                        element = ^ModelStore(),
+                      ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
                         class = meta::pure::mapping::modelToModel::test::alloy::constraints::From,
                         url='data:application/json,{"id":20}'
-                      )),
+                      ))),
                       meta::pure::extension::defaultExtensions()
   );
 
@@ -298,7 +338,10 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testIsDistinctConst
    let result = execute(
       |Product.all()->graphFetchChecked(#{Product{id,name,synonyms{type,name}}}#)->serialize(#{Product{id,name,synonyms{type,name}}}#),
       meta::pure::mapping::modelToModel::test::alloy::constraints::ProductMapping,
-      ^Runtime(connections = ^JsonModelConnection(element =^ ModelStore(), class = _Product, url = 'data:application/json,' + $inputData)),
+      ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(class = _Product, url = 'data:application/json,' + $inputData))),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -357,7 +400,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::constraints::Person
 }
 
 Class meta::pure::mapping::modelToModel::test::alloy::constraints::_Firm
-{   
+{
   name: String[1];
   employees:meta::pure::mapping::modelToModel::test::alloy::constraints::_Person[*];
 }
@@ -366,7 +409,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::constraints::_Firm2
 [
    $this.employees.address.street->isNotEmpty()
 ]
-{   
+{
   name: String[1];
   employees:meta::pure::mapping::modelToModel::test::alloy::constraints::_Person2[*];
 }
@@ -404,7 +447,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::constraints::CurrentCarDat
 {
    allowed : CarManufacturer[*];
    numAllowed(){$this.allowed->size();}:Integer[1];
-   
+
 }
 
 
@@ -525,7 +568,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::constraints::Country
 Class meta::pure::mapping::modelToModel::test::alloy::constraints::From
 {
   id:Integer[1];
-} 
+}
 
 Class meta::pure::mapping::modelToModel::test::alloy::constraints::Product
 [
@@ -554,7 +597,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::constraints::_Product
 Class meta::pure::mapping::modelToModel::test::alloy::constraints::_Synonym
 {
    value: String[1];
-} 
+}
 
 ###Mapping
 Mapping meta::pure::mapping::modelToModel::test::alloy::constraints::isEqualTest
@@ -625,7 +668,7 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::constraints::m2mconstrai
    {
       ~src meta::pure::mapping::modelToModel::test::alloy::constraints::ProductTaxonomy
       id : $src.id
-  }   
+  }
 )
 
 

@@ -1,0 +1,157 @@
+import meta::rel::mapping::*;
+import meta::pure::mapping::*;
+import meta::pure::store::*;
+import meta::rel::metamodel::*;
+import meta::rel::utils::*;
+
+
+Class meta::rel::mapping::RelSetImplementation extends InstanceSetImplementation { 
+  // We demand an expression that defines the class we are implementing.
+  classExpr: Expr[1];
+}
+
+Class meta::rel::mapping::RelPropertyMapping extends PropertyMapping { 
+  target: Expr[1];
+}
+
+/////////////////////////
+/// Constructor methods
+/////////////////////////
+
+function meta::rel::mapping::propertyMapping(
+  property: Property<Nil,Any|*>[1], 
+  target: Expr[1],
+  owner: RelSetImplementation[0..1],
+  store: Store[0..1]
+): RelPropertyMapping[1] {
+  let targetSetImplementationId = 
+    if ($property->isPrimitiveValueProperty(), 
+      | [],
+      | $property.name
+          ->map({n: String[1] |
+            if ($property.owner->instanceOf(Association), {| 
+              $property.owner
+                  ->cast(@Association)
+                  ->propertyByName($n)
+                  ->map(property | 
+                    $property.genericType.rawType
+                      ->map(type | $type->elementToPath('_')));
+            },
+            {|
+              //$property->ownerClass()->elementToPath('_');
+              $property.genericType.rawType->toOne()->elementToPath('_')
+            })
+          })
+    );
+
+  ^RelPropertyMapping(
+    targetSetImplementationId=$targetSetImplementationId->else(| ''),
+    sourceSetImplementationId=$property->ownerClass()->elementToPath('_'),
+    property=$property,
+    target=$target,
+    store=$store,
+    owner=$owner
+  );
+}
+
+function meta::rel::mapping::propertyMapping<T>(
+  sourceClass: Class<T>[1], 
+  property: String[1], 
+  target: Expr[1],
+  owner: RelSetImplementation[0..1],
+  store: Store[0..1]
+): RelPropertyMapping[0..1] {
+  $sourceClass
+    ->propertyByName($property)
+    ->map({prop | 
+      propertyMapping(
+        $prop->cast(@Property<Nil,Any|*>),
+        $target,
+        $owner,
+        $store
+      )
+    });
+}
+
+function meta::rel::mapping::classMapping<T>(
+  sourceClass: Class<T>[1], 
+  classExpr: Expr[1],
+  mapping: Mapping[1], 
+  stores: Store[*]
+): RelSetImplementation[1] {
+  ^RelSetImplementation(
+    id=$sourceClass->elementToPath('_'),
+    root=true,
+    class=$sourceClass,
+    parent=$mapping,
+    stores=$stores,
+    classExpr=$classExpr
+  );
+}
+
+function meta::rel::mapping::withPropertyMapping(
+  setImpl: RelSetImplementation[1],
+  propertyMapping: RelPropertyMapping[1]
+): RelSetImplementation[1] {
+  $setImpl->mutateAdd(
+    'propertyMappings',
+    $propertyMapping
+  );
+
+  if(!$propertyMapping.store->in($setImpl.stores), | $setImpl->mutateAdd('stores', $propertyMapping.store), | $setImpl);
+}
+
+function meta::rel::mapping::withPropertyMapping(
+  setImpl: RelSetImplementation[1],
+  source: Property<Nil,Any|*>[1], 
+  target: Expr[1],
+  store: Store[0..1]
+): RelSetImplementation[1] {
+  $setImpl->withPropertyMapping(propertyMapping($source, $target, $setImpl, $store));
+}
+
+function meta::rel::mapping::withPropertyMapping(
+  setImpl: RelSetImplementation[0..1],
+  property: String[1], 
+  target: Expr[1],
+  store: Store[0..1]
+): RelSetImplementation[0..1] {
+  $setImpl->map(set | 
+    propertyMapping($set.class, $property, $target, $set, $store)
+      ->map(m | $set->withPropertyMapping($m))
+  );
+}
+
+function meta::rel::mapping::withPropertyMapping(
+  setImpl: RelSetImplementation[0..1],
+  property: String[1], 
+  target: Expr[1]
+): RelSetImplementation[0..1] {
+  $setImpl->withPropertyMapping($property, $target, []);
+}
+
+
+function meta::rel::mapping::withClassMapping<T>(
+  mapping: Mapping[1],
+  sourceClass: Class<T>[1],
+  classExpr: Expr[1],
+  stores: Store[*],
+  logic: FunctionDefinition<{RelSetImplementation[1]->RelSetImplementation[1]}>[1]
+): Mapping[1] {
+  $mapping->mutateAdd(
+    'classMappings', 
+    $logic->eval(
+      $sourceClass->classMapping($classExpr, $mapping, $stores)
+    )
+  );
+  $mapping;
+}
+
+function meta::rel::mapping::withClassMapping<T>(
+  mapping: Mapping[1],
+  sourceClass: Class<T>[1],
+  classExpr: Expr[1],
+  logic: FunctionDefinition<{RelSetImplementation[1]->RelSetImplementation[1]}>[1]
+): Mapping[1] {
+  $mapping->withClassMapping($sourceClass, $classExpr, [], $logic);
+}

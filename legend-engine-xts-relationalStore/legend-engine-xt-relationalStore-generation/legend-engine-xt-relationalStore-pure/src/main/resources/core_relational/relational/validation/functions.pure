@@ -16,8 +16,10 @@ import meta::pure::router::execution::*;
 import meta::pure::router::clustering::*;
 import meta::json::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::functions::io::http::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::*;
@@ -28,6 +30,7 @@ import meta::pure::constraints::functions::util::*;
 import meta::relational::validation::utils::*;
 import meta::relational::validation::*;
 import meta::pure::constraints::functions::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::mapping::*;
@@ -55,36 +58,36 @@ function meta::relational::validation::functions::generateConstraintNegatedProje
    let class = $func->functionType().returnType.rawType->toOne()->cast(@Class<Any>);
    let constraintFilteredQuery = generateConstraintNegatedFilteredQuery($class, $func.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@FunctionExpression)->resolveVars($func->openVariableValues())->cast(@FunctionExpression), $constraint);
    let constraintInfo = getContextInformationForConstraint($constraint, $constraintInformation);
-  
-   ^SimpleFunctionExpression 
-   ( 
+
+   ^SimpleFunctionExpression
+   (
       func = project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_,
       multiplicity = PureOne,
       genericType  = ^GenericType(rawType = TabularDataSet),
       importGroup  = system::imports::coreImport,
-      parametersValues = 
-      [  $constraintFilteredQuery, 
+      parametersValues =
+      [  $constraintFilteredQuery,
          ^InstanceValue (
-            genericType = ^GenericType(rawType = FunctionDefinition, typeArguments = ^GenericType(rawType = Any)), 
-            multiplicity = ZeroMany, 
+            genericType = ^GenericType(rawType = FunctionDefinition, typeArguments = ^GenericType(rawType = Any)),
+            multiplicity = ZeroMany,
             values = [
                generateProjection($class, $constraint.name->toOne()),
                generateProjection($class, $constraintInfo.enforcementLevel.name),
-               $constraintInfo.message->isEmpty()->if( 
+               $constraintInfo.message->isEmpty()->if(
                   | $constraintInfo.messageFunction->isEmpty()->if(
                      | generateProjection($class, ''),
                      | $constraintInfo.messageFunction->toOne()
                     ),
                   | generateProjection($class, $constraintInfo.message->toOne())
                )
-            ]->concatenate($projections->map(col | 
+            ]->concatenate($projections->map(col |
                                              let colfn = $col.func->cast(@LambdaFunction<Any>);
                                              ^$colfn(openVariables=[], expressionSequence=$colfn.expressionSequence->evaluateAndDeactivate()->toOne()->resolveVars($colfn->openVariableValues()));
                                             ))
          ),
          ^InstanceValue (
-            genericType = ^GenericType(rawType = String), 
-            multiplicity = ZeroMany, 
+            genericType = ^GenericType(rawType = String),
+            multiplicity = ZeroMany,
             values = getConstraintValidationColumns().name->concatenate($projections->map(col | $col.name))
          )
      ]
@@ -96,20 +99,20 @@ function meta::relational::validation::functions::generateConstraintNegatedFilte
    let constraintExprSequence = $constraint.functionDefinition.expressionSequence->evaluateAndDeactivate()->toOne();
    let negatedExprSequence = $constraintExprSequence->negatedFunctionExpression();
    let dummyLambda = {|'ok'};
-   ^SimpleFunctionExpression 
-   ( 
+   ^SimpleFunctionExpression
+   (
       func = filter_T_MANY__Function_1__T_MANY_,
       multiplicity = ZeroMany,
       genericType  = ^GenericType(rawType = $c),
       importGroup  = system::imports::coreImport,
-      parametersValues = 
-      [  $f, 
+      parametersValues =
+      [  $f,
          ^InstanceValue (
-            genericType = $constraint.functionDefinition.classifierGenericType->toOne(), 
-            multiplicity = PureOne, 
-            values = ^$dummyLambda 
+            genericType = $constraint.functionDefinition.classifierGenericType->toOne(),
+            multiplicity = PureOne,
+            values = ^$dummyLambda
             (
-               classifierGenericType = $constraint.functionDefinition.classifierGenericType, 
+               classifierGenericType = $constraint.functionDefinition.classifierGenericType,
                expressionSequence = $negatedExprSequence
             )
          )
@@ -122,8 +125,8 @@ meta::relational::validation::functions::negatedFunctionExpression(f: ValueSpeci
 {
    if($f->instanceOf(SimpleFunctionExpression) && $f->cast(@SimpleFunctionExpression).func->evaluateAndDeactivate() == not_Boolean_1__Boolean_1_,
       | $f->cast(@SimpleFunctionExpression).parametersValues->evaluateAndDeactivate()->at(0),
-      | ^SimpleFunctionExpression 
-         ( 
+      | ^SimpleFunctionExpression
+         (
             func = not_Boolean_1__Boolean_1_,
             multiplicity = PureOne,
             genericType  = ^GenericType(rawType = Boolean),
@@ -182,7 +185,7 @@ meta::relational::validation::functions::getConstraintValidationColumns():TDSCol
 {
    [
       ^TDSColumn(offset = 0, name = 'CONSTRAINT_ID', type = String),
-      ^TDSColumn(offset = 1, name = 'ENFORCEMENT_LEVEL', type = String),      
+      ^TDSColumn(offset = 1, name = 'ENFORCEMENT_LEVEL', type = String),
       ^TDSColumn(offset = 2, name = 'MESSAGE', type = String)
    ]
 }
@@ -194,7 +197,7 @@ function meta::relational::validation::functions::getTables(r:RelationalTreeNode
                                                     ->concatenate(if(!$j.join.target->isEmpty(), | $j.join.target->toOne()->getTables(), | []))
                                                     ->concatenate($j.alias->getTables())
                                                     ->concatenate($j.childrenData->map(c | $c->cast(@JoinTreeNode)->getTables())),
-                 r:RelationalTreeNode[1] | $r.alias->getTables()->concatenate($r.childrenData->map(c | $c->cast(@JoinTreeNode)->getTables()))                                    
+                 r:RelationalTreeNode[1] | $r.alias->getTables()->concatenate($r.childrenData->map(c | $c->cast(@JoinTreeNode)->getTables()))
      ])->removeDuplicates();
 }
 

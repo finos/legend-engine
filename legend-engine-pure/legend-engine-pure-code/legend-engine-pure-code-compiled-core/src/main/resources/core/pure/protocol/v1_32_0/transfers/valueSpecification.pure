@@ -454,7 +454,7 @@ function <<access.private>> meta::protocols::pure::v1_32_0::transformation::from
                         _type = 'packageableElementPtr',
                         fullPath = $m->elementToPath()->toOne()
                      ),
-                 r:meta::pure::runtime::Runtime[1]|
+                 r:meta::core::runtime::Runtime[1]|
                      ^meta::protocols::pure::v1_32_0::metamodel::valueSpecification::ClassInstance
                       (
                         _type = 'classInstance',
@@ -689,11 +689,11 @@ function meta::protocols::pure::v1_32_0::transformation::fromPureGraph::toPureGr
 
   let fControlToFunctionMapping = $imports.children->map(e|$e->match([c:Function<Any>[1]|$c, a:Any[*]|[]]))
                                                    ->map(c|pair($c.name->toOne(), $c))
-                                                   ->concatenate(meta::pure::router::routing::shouldStopFunctions($extensions)->map(f | pair($f.name->toOne(), $f))) 
+                                                   ->concatenate(meta::pure::router::routing::shouldStopFunctions($extensions)->map(f | pair($f.name->toOne(), $f)))
                                                    ->concatenate([
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__TabularDataSet_1_),
                                                       pair(meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_.name->toOne(), meta::pure::mapping::from_TabularDataSet_1__Mapping_1__Runtime_1__ExecutionContext_1__TabularDataSet_1_),
-                                                      pair(meta::pure::runtime::currentUserId__String_1_.name->toOne(), meta::pure::runtime::currentUserId__String_1_)
+                                                      pair(meta::core::runtime::currentUserId__String_1_.name->toOne(), meta::core::runtime::currentUserId__String_1_)
                                                    ])
                                                    ->removeDuplicatesBy(p | $p.second)
                                                    ->newMultiValueMap();

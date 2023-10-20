@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.30.1-SNAPSHOT</version>
+    <version>4.32.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -46,6 +46,9 @@
         <module>legend-engine-xts-relationalStore</module>
         <module>legend-engine-xts-mongodb</module>
         <module>legend-engine-xts-elasticsearch</module>
+
+        <!-- RelationalAI -->
+        <module>legend-engine-xts-relationalai</module>
 
         <!-- External Formats -->
         <module>legend-engine-xts-xml</module>
@@ -101,7 +104,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.8.0</legend.pure.version>
+        <legend.pure.version>4.10.0</legend.pure.version>
         <legend.shared.version>0.24.1</legend.shared.version>
 
         <!-- SONAR -->
@@ -969,12 +972,22 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-sparksql-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-hive-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-presto-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalai-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1465,6 +1478,39 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-class-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-class-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-function-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-function-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-binding-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-binding-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 

@@ -1,0 +1,348 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+Class match::model::Order
+{
+  orderId: Integer[1];
+  orderName: String[1];
+  customer: match::model::Customer[1];
+}
+
+Class match::model::Customer
+{
+  customerId: String[1];
+  customerAddress: match::model::CustomerAddress[1];
+  transactionDetails: match::model::TransactionDetails[1];
+}
+
+Class match::model::CustomerAddress
+{
+  name: String[1];
+}
+
+Class match::model::BillingAddress extends match::model::CustomerAddress
+{
+  billAddress: String[1];
+}
+
+Class match::model::ShippingAddress extends match::model::CustomerAddress
+{
+  shipAddress: String[1];
+}
+
+Class match::model::TransactionDetails
+{
+  payment: match::model::Payment[1];
+}
+
+Class match::model::Payment
+{
+  paymentId: String[1];
+}
+
+Class match::model::CashOnDeliveryPayment extends match::model::Payment
+{
+  amountToBePaid: Integer[1];
+}
+
+Class match::model::PrepaidPayment extends match::model::Payment
+{
+  amountPaid: Integer[1];
+}
+
+Class match::model::WalletPrepaidPayment extends match::model::PrepaidPayment
+{
+  walletTransactionAmount: Integer[1];
+}
+
+Class match::model::CardPrepaidPayment extends match::model::PrepaidPayment
+{
+  cardTransactionAmount: Integer[1];
+}
+
+###Relational
+Database match::store::MemSQLDB
+(
+  Schema ORDER_SCHEMA
+  (
+    Table ORDER_TABLE
+    (
+      ORDERID INTEGER PRIMARY KEY,
+      ORDERNAME VARCHAR(100),
+      CUSTOMER JSON
+    )
+  )
+)
+
+Database match::store::H2DB
+(
+  Schema ORDER_SCHEMA
+  (
+    Table ORDER_TABLE
+    (
+      ORDERID INTEGER PRIMARY KEY,
+      ORDERNAME VARCHAR(100),
+      CUSTOMER VARCHAR(1000)
+    )
+  )
+)
+
+###ExternalFormat
+Binding match::store::OrderBinding
+{
+  contentType: 'application/json';
+  modelIncludes: [
+    match::model::Order,
+    match::model::Customer,
+    match::model::CustomerAddress,
+    match::model::BillingAddress,
+    match::model::ShippingAddress,
+    match::model::TransactionDetails,
+    match::model::Payment,
+    match::model::CashOnDeliveryPayment,
+    match::model::PrepaidPayment,
+    match::model::WalletPrepaidPayment,
+    match::model::CardPrepaidPayment
+  ];
+}
+
+###Mapping
+Mapping match::mapping::MemSQLMapping
+(
+  match::model::Order: Relational
+  {
+    ~primaryKey
+    (
+      [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID
+    )
+    ~mainTable [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE
+    orderId: [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.ORDERID,
+    orderName: [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.ORDERNAME,
+    customer: Binding match::store::OrderBinding : [match::store::MemSQLDB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
+  }
+)
+
+Mapping match::mapping::H2Mapping
+(
+  match::model::Order: Relational
+  {
+    ~primaryKey
+     (
+       [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.ORDERID
+     )
+     ~mainTable [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE
+     orderId: [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.ORDERID,
+     orderName: [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.ORDERNAME,
+     customer: Binding match::store::OrderBinding : [match::store::H2DB]ORDER_SCHEMA.ORDER_TABLE.CUSTOMER
+  }
+)
+
+
+###Runtime
+Runtime match::runtime::MemSQLRuntime
+{
+    mappings :
+    [
+        match::mapping::MemSQLMapping
+    ];
+    connections :
+    [
+        match::store::MemSQLDB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: match::store::MemSQLDB;
+                    type: MemSQL;
+                    specification: LocalH2{};
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+Runtime match::runtime::H2Runtime
+{
+    mappings :
+    [
+        match::mapping::H2Mapping
+    ];
+    connections :
+    [
+        match::store::H2DB :
+        [
+            connection_1 : #{
+                RelationalDatabaseConnection {
+                    store: match::store::H2DB;
+                    type: H2;
+                    specification: LocalH2{
+                        testDataSetupSqls: [
+                            'DROP SCHEMA IF EXISTS ORDER_SCHEMA CASCADE;',
+                            'CREATE SCHEMA ORDER_SCHEMA;',
+                            'CREATE TABLE ORDER_SCHEMA.ORDER_TABLE(ORDERID INT PRIMARY KEY, ORDERNAME VARCHAR(100), CUSTOMER VARCHAR(1000));',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (1,\'Order1\',\'{"customerId": "Customer1", "customerAddress": {"@type":"BillingAddress","name": "A1","billAddress":"B1"},"transactionDetails": {"payment":{"@type":"CashOnDeliveryPayment","paymentId": "P1","amountToBePaid": 200}}}\');',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (2,\'Order2\',\'{"customerId": "Customer2", "customerAddress": {"@type":"BillingAddress","name": "A2","billAddress":"B2"},"transactionDetails": {"payment":{"@type":"CashOnDeliveryPayment","paymentId": "P2","amountToBePaid": 180}}}\');',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (3,\'Order3\',\'{"customerId": "Customer3", "customerAddress": {"@type":"BillingAddress","name": "A3","billAddress":"B3"},"transactionDetails": {"payment":{"@type":"CashOnDeliveryPayment","paymentId": "P3","amountToBePaid": 290}}}\');',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (4,\'Order4\',\'{"customerId": "Customer4", "customerAddress": {"name": "A4"},"transactionDetails": {"payment":{"@type":"PrepaidPayment","paymentId": "P4","amountPaid": 150}}}\');',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (6,\'Order6\',\'{"customerId": "Customer6", "customerAddress": {"@type":"ShippingAddress","name": "A6","shipAddress":"S2"},"transactionDetails": {"payment":{"@type":"PrepaidPayment","paymentId": "P6","amountPaid": 120}}}\')',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (5,\'Order5\',\'{"customerId": "Customer5", "customerAddress": {"@type":"ShippingAddress","name": "A5","shipAddress":"S1"},"transactionDetails": {"payment":{"@type":"PrepaidPayment","paymentId": "P5","amountPaid": 185}}}\')',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (7,\'Order7\',\'{"customerId": "Customer7", "customerAddress": {"@type":"ShippingAddress","name": "A7","shipAddress":"S3"},"transactionDetails": {"payment":{"@type":"WalletPrepaidPayment","paymentId": "P7","amountPaid": 180,"walletTransactionAmount":200}}}\')',
+                            'INSERT INTO ORDER_SCHEMA.ORDER_TABLE(ORDERID,ORDERNAME,CUSTOMER) VALUES (8,\'Order8\',\'{"customerId": "Customer8", "customerAddress": {"@type":"ShippingAddress","name": "A8","shipAddress":"S4"},"transactionDetails": {"payment":{"@type":"CardPrepaidPayment","paymentId": "P8","amountPaid": 160, "cardTransactionAmount":190}}}\')'
+
+                        ];
+                    };
+                    auth: Test;
+                }
+            }#
+        ]
+    ];
+}
+
+
+
+###Pure
+function match::semiStructuredMatchComplexProperty(): TabularDataSet[1]
+{
+    match::model::Order.all()->project(
+        [
+            x | $x.customer.customerAddress->match(
+                [
+                    s: match::model::BillingAddress[1] | $s.billAddress,
+                    s: match::model::ShippingAddress[1] | $s.shipAddress,
+                    s: Any[1] | 'Default Address'
+                ]
+            )
+        ],
+        [
+            'Customer Address'
+        ]
+    );
+}
+
+function match::semiStructuredMatchWithMultipleProject(): TabularDataSet[1]
+{
+    match::model::Order.all()->project(
+        [
+            x | $x.customer.customerAddress->match(
+                [
+                    s: match::model::BillingAddress[1] | $s.billAddress,
+                    s: match::model::ShippingAddress[1] | $s.shipAddress
+                ]
+            ),
+            x | $x.customer.transactionDetails.payment->match(
+                [
+                    s:match::model::CashOnDeliveryPayment[1] | $s.amountToBePaid,
+                    s:match::model::PrepaidPayment[1] | $s.amountPaid
+                ]
+            )
+        ],
+        [
+            'Customer Address',
+            'Order Price'
+        ]
+    );
+}
+
+function match::semiStructuredMatchWithComplexFilter(): TabularDataSet[1]
+{
+    match::model::Order.all()
+        ->filter(
+            x | $x.customer.transactionDetails.payment->match(
+                [
+                    s:match::model::CashOnDeliveryPayment[1] | $s.amountToBePaid,
+                    s:match::model::PrepaidPayment[1] | $s.amountPaid
+                ]
+            )<200
+        )
+        ->project(
+            [
+                x | $x.customer.customerAddress->match(
+                    [
+                        s: match::model::BillingAddress[1] | $s.billAddress,
+                        s: match::model::ShippingAddress[1] | $s.shipAddress
+                    ]
+                )
+            ],
+            [
+                'Customer Address'
+            ]
+        );
+}
+
+function match::semiStructuredMatchWithVariableAccess(): TabularDataSet[1]
+{
+    let maxAmount = 200;
+    match::model::Order.all()->project(
+        [
+            x | $x.customer.transactionDetails.payment->match(
+                [
+                    s:match::model::CashOnDeliveryPayment[1] |
+                        if($s.amountToBePaid < $maxAmount,
+                           |true,
+                           |false
+                          ),
+                    s:match::model::PrepaidPayment[1]  |
+                        if($s.amountPaid  < $maxAmount,
+                            |true,
+                            |false
+                          )
+                ]
+            )
+        ],
+        [
+            'Max Amount Flag'
+        ]
+    );
+
+}
+
+function match::semiStructuredMatchMultilevel(): TabularDataSet[1]
+{
+    match::model::Order.all()->project(
+        [
+            x | $x.customer.transactionDetails.payment->match(
+                [
+                    s: match::model::PrepaidPayment[1] | $s->match(
+                        [
+                            k:match::model::WalletPrepaidPayment[1] | $k.walletTransactionAmount ,
+                            k:match::model::CardPrepaidPayment[1]  | $k.cardTransactionAmount,
+                            k:match::model::PrepaidPayment[1] | $k.amountPaid
+                        ]
+                    ),
+                    s: match::model::CashOnDeliveryPayment[1] | $s.amountToBePaid
+                ]
+            )
+        ],
+        [
+            'Amount'
+        ]
+    );
+}
+
+function match::semiStructuredMatchWithMultipleProjectUsingCol(): TabularDataSet[1]
+{
+    match::model::Order.all()->project([
+        col(x | $x.customer.customerAddress->match(
+            [
+                s: match::model::BillingAddress[1] | $s.billAddress,
+                s: match::model::ShippingAddress[1] | $s.shipAddress
+            ]),'Customer Address'),
+        col(x | $x.customer.transactionDetails.payment->match(
+            [
+               s:match::model::CashOnDeliveryPayment[1] | $s.amountToBePaid,
+               s:match::model::PrepaidPayment[1] | $s.amountPaid
+            ]),'Order Price')
+    ]);
+}

@@ -26,7 +26,8 @@ import java.util.List;
 
 public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerationExtension
 {
-    private static final String ROOT_PATH = "Snowflake App ";
+    private static final String ROOT_PATH = "snowflakeApp";
+    private static final String FILENAME = "snowflakeArtifact.json";
 
     @Override
     public String getKey()

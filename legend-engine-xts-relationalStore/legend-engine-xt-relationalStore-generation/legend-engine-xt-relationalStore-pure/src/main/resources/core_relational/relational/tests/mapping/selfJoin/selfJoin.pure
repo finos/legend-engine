@@ -15,9 +15,11 @@
 import meta::relational::tests::mapping::selfJoin::model::domain::*;
 import meta::relational::tests::mapping::selfJoin::model::store::*;
 import meta::relational::tests::mapping::selfJoin::model::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import meta::relational::runtime::authentication::*;
+import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
@@ -65,13 +67,13 @@ function <<test.Test>> meta::relational::tests::mapping::selfJoin::testSelfJoinP
    let result = execute(|Org.all()->project([o | $o.name,
                                              o | $o.parent.parent.parent.name,
                                              o | $o.parent.parent.parent.parent.name,
-                                             o | $o.parent.parent.parent.parent.name->isEmpty() && $o.parent.parent.parent.name->isEmpty()], 
+                                             o | $o.parent.parent.parent.parent.name->isEmpty() && $o.parent.parent.parent.name->isEmpty()],
                                             ['orgName',
                                              '3rd parent',
                                              '4th parent',
                                              'dyna operation']), meta::relational::tests::mapping::selfJoin::model::mapping::orgTestMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions(), debug());
    let tds = $result.values->at(0);
-   
+
    assertEquals('select "root".name as "orgName", "orgtable_3".name as "3rd parent", "orgtable_4".name as "4th parent", ("orgtable_4".name is null and "orgtable_3".name is null) as "dyna operation" from orgTable as "root" left outer join orgTable as "orgtable_1" on ("root".parentId = "orgtable_1".id) left outer join orgTable as "orgtable_2" on ("orgtable_1".parentId = "orgtable_2".id) left outer join orgTable as "orgtable_3" on ("orgtable_2".parentId = "orgtable_3".id) left outer join orgTable as "orgtable_4" on ("orgtable_3".parentId = "orgtable_4".id)', $result->sqlRemoveFormatting());
    assertSameElements(['orgName', '3rd parent', '4th parent', 'dyna operation'], $tds.columns.name);
    assertEquals(9, $tds.rows->size());
@@ -100,7 +102,7 @@ Class meta::relational::tests::mapping::selfJoin::model::domain::Org
 
 function meta::relational::tests::mapping::selfJoin::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(myDB);
+   meta::external::store::relational::tests::testRuntime(myDB);
 }
 
 
@@ -133,12 +135,12 @@ Database meta::relational::tests::mapping::selfJoin::model::store::myDB
         parentId INT,
         name VARCHAR(200)
     )
-    
+
     Join OrgOrgParent
     (
        orgTable.parentId = {target}.id
     )
-    
+
     Join OrgParentOrg
     (
        orgTable.id = {target}.parentId

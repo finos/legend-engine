@@ -17,13 +17,15 @@ import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::multiStep::*;
 import meta::pure::mapping::modelToModel::test::multiStep::src::*;
 import meta::pure::mapping::modelToModel::test::multiStep::bridge::*;
 import meta::pure::mapping::modelToModel::test::multiStep::dest::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {
    serverVersion.start='v1_19_0',
    doc.doc='Given: a multi step function',
@@ -34,9 +36,9 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
 {
    let sourceData = '[{"sName": "S1", "sEmployees": [{"sFirstName": "F1", "sLastName": "L1"}, {"sFirstName": "F2", "sLastName": "L2"}]},' +
                     '{"sName": "S2", "sEmployees": [{"sFirstName": "F3", "sLastName": "L3"}, {"sFirstName": "F4", "sLastName": "L4"}]}]';
-   
-   let sourceRuntime = ^Runtime(connections = ^JsonModelConnection(element = ^ModelStore(), class = SourceFirm,  url = 'data:application/json,' + $sourceData));
-   
+
+   let sourceRuntime = ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^JsonModelConnection(class = SourceFirm,  url = 'data:application/json,' + $sourceData)));
+
    let bridgeTree = #{
       BridgeFirm {
          bName,
@@ -44,9 +46,9 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
             bFirstName,
             bLastName
          }
-      }      
+      }
    }#;
-   
+
    let destTree = #{
       DestFirm {
          dName,
@@ -54,9 +56,9 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
             dFirstName,
             dLastName
          }
-      }      
+      }
    }#;
-   
+
    let result = execute(
       {|
          let bridgeFirms = BridgeFirm.all()->graphFetch($bridgeTree)->from(SourceToBridgeMapping, $sourceRuntime);
@@ -66,7 +68,7 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
       ^Runtime(),
       meta::pure::extension::defaultExtensions()
    );
-   
+
    let expected = '['+
                      '{"dName":"S1_B_D","dEmployees":[{"dLastName":"L1_B_D","dFirstName":"F1_B_D"},{"dLastName":"L2_B_D","dFirstName":"F2_B_D"}]},'+
                      '{"dName":"S2_B_D","dEmployees":[{"dLastName":"L3_B_D","dFirstName":"F3_B_D"},{"dLastName":"L4_B_D","dFirstName":"F4_B_D"}]}'+
@@ -75,7 +77,7 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
    assert(jsonEquivalent($expected->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {
    serverVersion.start='v1_19_0',
    doc.doc='Given: a multi step function using graphFetchChecked',
@@ -86,9 +88,9 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
 {
    let sourceData = '[{"sName": "S1", "sEmployees": [{"sFirstName": "F1", "sLastName": "L1"}, {"sFirstName": "F2", "sLastName": "L2"}]},' +
                     '{"sName": "S2", "sEmployees": [{"sFirstName": "F3", "sLastName": "L3"}, {"sFirstName": "F4", "sLastName": "L4"}]}]';
-   
-   let sourceRuntime = ^Runtime(connections = ^JsonModelConnection(element = ^ModelStore(), class = SourceFirm,  url = 'data:application/json,' + $sourceData));
-   
+
+   let sourceRuntime = ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^JsonModelConnection(class = SourceFirm,  url = 'data:application/json,' + $sourceData)));
+
    let bridgeTree = #{
       BridgeFirm {
          bName,
@@ -96,9 +98,9 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
             bFirstName,
             bLastName
          }
-      }      
+      }
    }#;
-   
+
    let destTree = #{
       DestFirm {
          dName,
@@ -106,9 +108,9 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
             dFirstName,
             dLastName
          }
-      }      
+      }
    }#;
-   
+
    let result = execute(
       {|
          let bridgeFirms = BridgeFirm.all()->graphFetch($bridgeTree)->from(SourceToBridgeMapping, $sourceRuntime);
@@ -118,7 +120,7 @@ meta::pure::mapping::modelToModel::test::alloy::multiStep::testMultiLevelModelTo
       ^Runtime(),
       meta::pure::extension::defaultExtensions()
    );
-   
+
    let expected = '['+
                      '{"defects":[],"source":{"defects":[],"source":null,"value":{"bName":"S1_B","bEmployees":[{"bFirstName":"F1_B","bLastName":"L1_B"},{"bFirstName":"F2_B","bLastName":"L2_B"}]}},"value":{"dName":"S1_B_D","dEmployees":[{"dLastName":"L1_B_D","dFirstName":"F1_B_D"},{"dLastName":"L2_B_D","dFirstName":"F2_B_D"}]}},'+
                      '{"defects":[],"source":{"defects":[],"source":null,"value":{"bName":"S2_B","bEmployees":[{"bFirstName":"F3_B","bLastName":"L3_B"},{"bFirstName":"F4_B","bLastName":"L4_B"}]}},"value":{"dName":"S2_B_D","dEmployees":[{"dLastName":"L3_B_D","dFirstName":"F3_B_D"},{"dLastName":"L4_B_D","dFirstName":"F4_B_D"}]}}'+
@@ -179,7 +181,7 @@ Mapping meta::pure::mapping::modelToModel::test::multiStep::SourceToBridgeMappin
       bName      : $src.sName + '_B',
       bEmployees : $src.sEmployees
    }
-   
+
    BridgePerson : Pure {
       ~src SourcePerson
       bFirstName : $src.sFirstName + '_B',
@@ -194,7 +196,7 @@ Mapping meta::pure::mapping::modelToModel::test::multiStep::BridgeToDestMapping
       dName      : $src.bName + '_D',
       dEmployees : $src.bEmployees
    }
-   
+
    DestPerson : Pure {
       ~src BridgePerson
       dFirstName : $src.bFirstName + '_D',

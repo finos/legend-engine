@@ -326,26 +326,19 @@ public class PureDate implements org.finos.legend.pure.m4.coreinstance.primitive
                             throw new IllegalArgumentException("Date has no sub-second: " + this);
                         }
                         int count = getCharCountFrom(character, formatString, i);
-                        if (count < 3)
+                         int maxLen = count + 1;
+                        int len = this.subsecond.length();
+                        if (len <= maxLen)
                         {
-                            int maxLen = count + 1;
-                            int len = this.subsecond.length();
-                            if (len <= maxLen)
-                            {
-                                appendable.append(this.subsecond);
-                            }
-                            else
-                            {
-                                int j = 0;
-                                while (j < maxLen)
-                                {
-                                    appendable.append(this.subsecond.charAt(j++));
-                                }
-                            }
+                            appendable.append(this.subsecond);
                         }
                         else
                         {
-                            appendable.append(this.subsecond);
+                            int j = 0;
+                            while (j < maxLen)
+                            {
+                                appendable.append(this.subsecond.charAt(j++));
+                            }
                         }
                         i += count;
                         break;

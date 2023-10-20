@@ -1463,6 +1463,16 @@ public class SimpleTypesContext
     {
         private final Pattern WITH_TIMEZONE = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:?\\d{2})");
         private final Pattern WITHOUT_TIMEZONE = Pattern.compile("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?");
+        private final Pattern WITH_TIMEZONE_NO_TIME = Pattern.compile("\\d{4}-\\d{2}-\\d{2}(Z|\\+\\d{2}:?\\d{2})");
+        private final Pattern WITHOUT_TIMEZONE_NO_TIME = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
+
+        private final DateTimeFormatter WITH_TIMEZONE_NO_TIME_FORMATTER = new DateTimeFormatterBuilder()
+                .append(DateTimeFormatter.ISO_OFFSET_DATE)
+                .parseDefaulting(ChronoField.HOUR_OF_DAY, 0)
+                .parseDefaulting(ChronoField.MINUTE_OF_HOUR, 0)
+                .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
+                .parseDefaulting(ChronoField.NANO_OF_SECOND, 0)
+                .toFormatter();
 
         private DateTimeHandler(QName name)
         {
@@ -1481,6 +1491,14 @@ public class SimpleTypesContext
                 else if (WITHOUT_TIMEZONE.matcher(text).matches())
                 {
                     return LocalDateTime.parse(text).atZone(defaultTimezone).toInstant();
+                }
+                else if (WITH_TIMEZONE_NO_TIME.matcher(text).matches())
+                {
+                    return ZonedDateTime.parse(text, WITH_TIMEZONE_NO_TIME_FORMATTER);
+                }
+                else if (WITHOUT_TIMEZONE_NO_TIME.matcher(text).matches())
+                {
+                    return LocalDate.parse(text);
                 }
             }
             catch (Exception e)

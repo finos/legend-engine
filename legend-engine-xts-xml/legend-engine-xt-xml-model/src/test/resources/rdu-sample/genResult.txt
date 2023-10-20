@@ -206,7 +206,7 @@ Class {meta::pure::profiles::doc.doc = 'Derivative trailer information'} test::g
 >>>test::gen::ExceptionType
 Class test::gen::ExceptionType
 [
-  c1_values: $this.type->in(['INFO', 'WARN', 'ERROR'])
+  c1_values_ExceptionType: $this.type->in(['INFO', 'WARN', 'ERROR'])
 ]
 {
   type: String[1];
@@ -349,7 +349,7 @@ Class test::gen::NcaMifidNcaMifidsContractType
 >>>test::gen::ParamInfoType
 Class test::gen::ParamInfoType
 [
-  c1_values: $this.fullOrDelta->forAll(x: String[1]|$x->in(['FULL', 'DELTA']))
+  c1_values_ParamInfoType: $this.fullOrDelta->forAll(x: String[1]|$x->in(['FULL', 'DELTA']))
 ]
 {
   assetTypeFilter: String[*];

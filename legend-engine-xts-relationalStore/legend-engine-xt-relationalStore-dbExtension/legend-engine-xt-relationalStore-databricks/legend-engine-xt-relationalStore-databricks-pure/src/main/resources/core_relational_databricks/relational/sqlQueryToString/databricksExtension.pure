@@ -5,6 +5,7 @@ import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -94,7 +95,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='date_trunc(\'DAY\', %s)')),
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'SECOND\', %s)')),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'HOUR\', %s)')),
-    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'MINUTE\', %s)')),    
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='locate(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isNumeric',              $allStates,            ^ToSql(format='(lower(%s) = upper(%s))')),
@@ -130,7 +131,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
-    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),    
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as string)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='weekofyear(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
@@ -186,8 +187,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::datab
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::databricks::processLimitDatabricks(
    s:SelectSQLQuery[1],
-   dbConfig: DbConfig[1], 
-   format:Format[1], 
+   dbConfig: DbConfig[1],
+   format:Format[1],
    extensions:Extension[*],
    takeProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[1],
    offsetProcessor:meta::pure::metamodel::function::Function<{SelectSQLQuery[1], Format[1], DbConfig[1], Extension[*] -> String[1]}>[1],

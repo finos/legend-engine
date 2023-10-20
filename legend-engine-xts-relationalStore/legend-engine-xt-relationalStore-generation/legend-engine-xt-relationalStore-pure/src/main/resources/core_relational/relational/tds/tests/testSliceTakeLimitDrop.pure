@@ -15,6 +15,7 @@
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
 
@@ -37,7 +38,7 @@ function <<test.Test>> meta::relational::tests::tds::slice::testSimpleSliceZeroS
 {
    let resultA = execute(|Person.all()->project([#/Person/firstName!name#])->slice(0,2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    let resultB = execute(|Person.all()->project([#/Person/firstName!name#])->take(2), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    assertEquals($resultA->sqlRemoveFormatting(), $resultB->sqlRemoveFormatting());
 }
 

@@ -34,7 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.exe
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.context.Elasticsearch7ExecutionContext;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime.Elasticsearch7StoreConnection;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7Store;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 
 public class ElasticsearchCompilerExtension implements CompilerExtension
@@ -52,7 +52,7 @@ public class ElasticsearchCompilerExtension implements CompilerExtension
     }
 
     @Override
-    public List<Function2<Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
+    public List<Function2<Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Lists.fixedSize.with(
                 (connectionValue, context) ->

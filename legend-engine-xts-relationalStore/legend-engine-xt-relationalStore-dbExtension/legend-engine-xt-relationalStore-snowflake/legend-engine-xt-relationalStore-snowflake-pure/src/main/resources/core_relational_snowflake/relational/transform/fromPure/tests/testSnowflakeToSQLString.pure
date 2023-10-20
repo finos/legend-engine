@@ -17,27 +17,29 @@ import meta::pure::mapping::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithAggregationSnowflake():Boolean[1]
 {
-   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
+   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName],
                                                 agg(e|$e.age, y|$y->sum()),
-                                                ['firstName', 'age']), 
-                                                meta::relational::tests::simpleRelationalMapping, 
+                                                ['firstName', 'age']),
+                                                meta::relational::tests::simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "firstName"', $s);
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithOrderbySnowflake():Boolean[1]
 {
-   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName], 
+   let s = toSQLString(|Person.all()->groupBy([p:Person[1]|$p.firstName],
                                                 agg(e|$e.age, y|$y->sum()),
-                                                ['firstName', 'age'])->sort(asc('age'))->limit(5), 
-                                                meta::relational::tests::simpleRelationalMapping, 
+                                                ['firstName', 'age'])->sort(asc('age'))->limit(5),
+                                                meta::relational::tests::simpleRelationalMapping,
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "firstName", sum("root".AGE) as "age" from personTable as "root" group by "firstName" order by "age" limit 5', $s);
 }
@@ -47,14 +49,14 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSq
    let expected = [
       pair(DatabaseType.Snowflake, 'select CHARINDEX(\'Jo\', "root".FIRSTNAME) as "index" from personTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |meta::relational::tests::model::simple::Person.all()->project(p|$p.firstName->indexOf('Jo'), 'index'),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -66,15 +68,15 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testDayO
    let expected = [
       pair(DatabaseType.Snowflake, 'select DAYOFYEAR("root".tradeDate) as "doy" from tradeTable as "root"')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->dayOfYear(), 'doy')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -114,11 +116,11 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testTrim
    let expected = [
     pair(DatabaseType.Snowflake, $common)
   ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
         |Person.all()->project([
           a | $a.firstName->ltrim(),
@@ -126,7 +128,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testTrim
           a | $a.firstName->rtrim()
          ],
          ['ltrim', 'trim', 'rtrim']),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -140,17 +142,17 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testCbrt
    let expected = [
     pair(DatabaseType.Snowflake, $common)
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
         |Trade.all()->project([
           a | $a.quantity->cbrt()
          ],
          ['cbrt']),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -159,27 +161,27 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testCbrt
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithQuoteIdentifiersFlag():Boolean[1]
 {
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
                                                                                      type = DatabaseType.Snowflake,
                                                                                      quoteIdentifiers = true
-                                                                                  ));
+                                                                                  )));
 
    let result = toSQLStringPretty(|Synonym.all()->filter(s | $s.type != 'ISIN')->project([s | $s.name],['name']),
                                   simpleRelationalMappingWithEnumConstant, $runtime, meta::relational::extension::relationalExtensions());
-   
+
    assertEquals('select 	"root"."NAME" as "name" from "productSchema"."synonymTable" as "root" where (\'CUSIP\' <> \'ISIN\')', $result->replace('\n', ''));
 }
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithQuoteIdentifiersFlagInColumnName():Boolean[1]
 {
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection=^TestDatabaseConnection(
                                                                                      type = DatabaseType.Snowflake,
                                                                                      quoteIdentifiers = true
-                                                                                  ));
+                                                                                  )));
 
    let result = toSQLStringPretty(|Product.all()->project([#/Product/name!prodName#])->sort(asc('prodName'))->drop(2)->limit(5),
                                    simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
-   
+
    assertEquals('select 	"prodName" as "prodName" from (		select 			"root"."NAME" as "prodName" 		from "productSchema"."productTable" as "root" 		order by "prodName"		 limit \'\' offset 2) as "subselect" limit 5', $result->replace('\n', ''));
 }
 

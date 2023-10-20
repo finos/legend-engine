@@ -15,6 +15,7 @@
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
@@ -24,6 +25,7 @@ import meta::external::format::shared::binding::*;
 import meta::external::format::shared::executionPlan::*;
 
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
@@ -49,7 +51,7 @@ function <<access.private>> meta::relational::mutation::executionPlan::validateP
 
 function <<access.private>> meta::relational::mutation::executionPlan::collectPropertyGraphFetchTrees(parent: GraphFetchTree[1]): PropertyGraphFetchTree[*]
 {
-  if($parent->instanceOf(PropertyGraphFetchTree), 
+  if($parent->instanceOf(PropertyGraphFetchTree),
     | $parent.subTrees->map(tree | $tree->collectPropertyGraphFetchTrees())->concatenate($parent->cast(@PropertyGraphFetchTree)),
     | $parent.subTrees->map(tree | $tree->collectPropertyGraphFetchTrees()));
 }
@@ -69,13 +71,13 @@ function <<access.private>> meta::relational::mutation::executionPlan::validateG
 function meta::relational::mutation::executionPlan::planMutationExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
   let rootType = $sq.fe.genericType.rawType->toOne();
-  
+
   // validate mapping is allowed -- currently only simple relational mappings against table columns are supported
   let rootMapping = validateMappingIsSupportedForMutation($mapping, $rootType);
   // validate graph fetch tree -- cannot specify properties deeper than the mapping supports, must include primary key properties
   let rootGraphFetchTree = $sq.fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->cast(@RootGraphFetchTree<Any>)->toOne();
   let propertyNamesInTree = validateGraphFetchTreeForMapping($rootMapping, $rootGraphFetchTree);
-  
+
   let inScopePropertyMappings = $rootMapping.propertyMappings->cast(@RelationalPropertyMapping)->filter(pm | $pm.property.name->in($propertyNamesInTree));
   let propertyMappingHasBindingFunction = {pm: RelationalPropertyMapping[1] | $pm.transformer->isNotEmpty() && $pm.transformer->toOne()->instanceOf(BindingTransformer)};
 
@@ -87,13 +89,13 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
   let uniquifyColumnNames = {p: String[1] | 'generatedColumnName_' + $p->toUpper()->toOne()};
 
   let columnValueGenerators = $inScopePropertyMappings
-    ->map(pm | 
+    ->map(pm |
       pair(
-        $pm, 
+        $pm,
         ^PureExpressionPlatformExecutionNode(
           resultType = if($propertyMappingHasBindingFunction->eval($pm),| ^ClassResultType(type = $pm.property.genericType.rawType->toOne()), | ^DataTypeResultType(type = $pm.property.genericType.rawType->toOne())),
           requiredVariableInputs = $generatedVariableInput,
-          expression = 
+          expression =
             ^SimpleFunctionExpression(
               multiplicity = $pm.property.multiplicity,
               importGroup =  system::imports::coreImport,
@@ -110,12 +112,12 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
         )
       )
     )
-    ->map(p | 
+    ->map(p |
       let pm = $p.first;
       pair(
         $uniquifyColumnNames->eval($pm.relationalOperationElement->cast(@TableAliasColumn).column.name),
         if($propertyMappingHasBindingFunction->eval($pm),
-          | 
+          |
             let bindingTransfomer = $pm.transformer->toOne()->cast(@BindingTransformer<Any>);
             let propertyTree = $rootGraphFetchTree->collectPropertyGraphFetchTrees()->filter(pt | $pt.property == $pm.property)->toOne();
             let tree = ^RootGraphFetchTree<Any>(class = $pm.property.genericType.rawType->toOne()->cast(@Class<Any>), subTrees = $propertyTree.subTrees);
@@ -127,15 +129,15 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
               tree            = $tree,
               binding         = $bindingTransfomer.binding,
               executionNodes  = $p.second);
-              ,  
+              ,
           | $p.second
         )
       );
     )
     ->newMap();
 
-  let databaseColumnToFreeMarkerVariable = 
-    $inScopePropertyMappings->map(pm | 
+  let databaseColumnToFreeMarkerVariable =
+    $inScopePropertyMappings->map(pm |
       pair(
         $pm.relationalOperationElement->cast(@TableAliasColumn).column.name,
         ^Literal(
@@ -149,9 +151,9 @@ function meta::relational::mutation::executionPlan::planMutationExecution(sq: St
     )->newMap();
 
   let mainTable = $rootMapping.mainTableAlias.relationalElement->cast(@Table);
-  let dbConnection = $runtime.connections->at(0)->cast(@DatabaseConnection);
-  
-  let upsertQuery = 
+  let dbConnection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
+
+  let upsertQuery =
     ^UpsertSQLQuery(
       data = $mainTable,
       equalityStatements = $databaseColumnToFreeMarkerVariable

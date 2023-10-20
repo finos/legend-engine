@@ -14,11 +14,10 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Style;
+import org.immutables.value.Value;
 
-@Immutable
-@Style(
+@Value.Immutable
+@Value.Style(
     typeAbstract = "*Abstract",
     typeImmutable = "*",
     jdkOnly = true,

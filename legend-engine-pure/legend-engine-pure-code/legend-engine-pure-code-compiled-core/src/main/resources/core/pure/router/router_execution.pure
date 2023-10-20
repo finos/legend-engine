@@ -23,6 +23,7 @@ import meta::pure::router::printer::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::utils::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 
@@ -60,7 +61,7 @@ function meta::pure::router::execution::executeExpression(clusters:ClusteredValu
 {
    let current = $clusters->head()->toOne()->evaluateAndDeactivate();
    print(if($debug.debug,|'\n'+$debug.space+'Start Execution: '+$current.val->asString()+'\n',|''));
-   
+
    let fe = $current.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
    if($fe.func == letFunction_String_1__T_m__T_m_,
       | let params        = $fe.parametersValues->evaluateAndDeactivate();
@@ -70,25 +71,25 @@ function meta::pure::router::execution::executeExpression(clusters:ClusteredValu
         let newVars       = $inScopeVars->put($paramName, ^List<Any>(values=$fullyRes));
         let allActivities = $activities->concatenate($paramResult.activities);
         let tail          = $clusters->tail();
-        if($tail->isEmpty(), 
-          | ^Result<Any|*>(values = $fullyRes, activities=$allActivities), 
+        if($tail->isEmpty(),
+          | ^Result<Any|*>(values = $fullyRes, activities=$allActivities),
           |  executeExpression($tail, $newVars, $allActivities, $exeCtx, $extensions, ^$debug(space = $debug.space));
-        );,     
-      | 
+        );,
+      |
     if($current->instanceOf(StoreMappingClusteredValueSpecification),
       | let storeCluster  = $current->cast(@StoreMappingClusteredValueSpecification);
         let storeQuery    = getStoreQuery($storeCluster.store, $fe, $inScopeVars);
         let result        = $storeCluster.s.executeStoreQuery->toOne()->eval($storeQuery, $storeCluster.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $storeCluster.mapping, $storeCluster.runtime, $exeCtx, $extensions, ^$debug(space = $debug.space+' '));
         let allActivities = $activities->concatenate($result.activities);
         let tail          = $clusters->tail();
-        if($tail->isEmpty(), 
+        if($tail->isEmpty(),
           | ^Result<Any|*>(values=$result.values, activities=$allActivities),
           |  executeExpression($tail, $inScopeVars, $allActivities, $exeCtx, $extensions, ^$debug(space = $debug.space));
         );,
       | let result          = meta::pure::router::platform::execution::execute($fe, $inScopeVars, $extensions, ^$debug(space = $debug.space+' '));
         let allActivities   = $activities->concatenate($result.activities);
         let tail            = $clusters->tail();
-        if($tail->isEmpty(), 
+        if($tail->isEmpty(),
           | ^Result<Any|*>(values=$result.values, activities=$allActivities),
           |  executeExpression($tail, $inScopeVars, $allActivities, $exeCtx, $extensions, ^$debug(space = $debug.space));
         );

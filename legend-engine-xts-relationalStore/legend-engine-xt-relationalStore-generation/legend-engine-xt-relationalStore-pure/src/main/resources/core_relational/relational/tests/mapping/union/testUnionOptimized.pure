@@ -17,7 +17,9 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::union::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 

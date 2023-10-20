@@ -37,8 +37,8 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
 {
    let n = $node->match($extensions.serializerExtension('v1_18_0')->cast(@meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0).transfers_executionPlan_transformNode->map(f|$f->eval($mapping, $extensions))->concatenate(
       [
-         
-         rel:meta::pure::mapping::modelToModel::ModelToModelExecutionNode[1]|
+
+         rel:meta::external::store::model::ModelToModelExecutionNode[1]|
             ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::ModelToModelExecutionNode(
                _type = 'm2m',
                resultType = $rel.resultType->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
@@ -47,7 +47,7 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
                jsonPropertyPaths = $rel.jsonPropertyPaths->map(j|$j->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::transformLambda($extensions)),
                pathToMapping = $rel.mapping->elementToPath()->toOne(),
                pathToClasses = $rel.classes->map(c|$c->elementToPath()),
-               connection = $rel.connection->cast(@meta::pure::mapping::modelToModel::ModelConnection)->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::connection::transformModelConnection(),
+               connection = $rel.connection->cast(@meta::external::store::model::ModelConnection)->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::connection::transformModelConnection(),
                pureModelContextData = $rel.mapping->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::buildBasePureModelFromMapping( {m:meta::pure::mapping::Mapping[1], p:	meta::protocols::Protocol[1] |[]}, $extensions).second
          ),
          platform:meta::pure::executionPlan::PureExpressionPlatformExecutionNode[1]|
@@ -87,16 +87,13 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
                resultSizeRange = $alloc.resultSizeRange->isEmpty()->if(|[],|$alloc.resultSizeRange->toOne()->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::domain::transformMultiplicity()),
                varName = $alloc.varName
             ),
-         g:meta::pure::mapping::modelToModel::GraphFetchM2MExecutionNode[1]|
+         g:meta::external::store::model::GraphFetchM2MExecutionNode[1]|
             ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::GraphFetchM2MExecutionNode(
                _type = 'graphFetchM2M',
                resultType = $g.resultType->transformResultType($mapping, $extensions),
                resultSizeRange = $g.resultSizeRange->isEmpty()->if(|[],|$g.resultSizeRange->toOne()->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::domain::transformMultiplicity()),
                trees = $g.trees->map(t|$t->meta::protocols::pure::v1_18_0::transformation::fromPureGraph::valueSpecification::transformGraphFetchTree([], newMap([]->cast(@Pair<String,List<Any>>)), $extensions)),
-               enableConstraints = $g.enableConstraints,
-               store=$g.connections->map(c|$c.element->match($extensions.serializerExtension('v1_18_0')->cast(@meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0).transfers_executionPlan_transformNode_GraphFetchM2MExecutionNode->concatenate([
-                  any: Any[*] | []
-               ])->toOneMany()))->first()
+               enableConstraints = $g.enableConstraints
             );,
          exp:meta::pure::executionPlan::FunctionParametersValidationNode[1]|
            ^meta::protocols::pure::v1_18_0::metamodel::executionPlan::FunctionParametersValidationNode(
@@ -200,7 +197,7 @@ function meta::protocols::pure::v1_18_0::transformation::fromPureGraph::executio
                                                     enumMapping = $extensions.serializerExtension('v1_18_0')->cast(@meta::protocols::pure::v1_18_0::extension::SerializerExtension_v1_18_0).transfers_executionPlan_transformSetImplementation
                                                                         ->filter(v|$v.first->eval($p))->map(x|$x.second->eval($p))->first()
                                                  )
-                                                 
+
                                             )
    );
 

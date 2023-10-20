@@ -15,6 +15,7 @@
 import meta::pure::executionPlan::toString::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::relational::tests::milestoning::*;
 import meta::pure::executionPlan::profiles::*;
@@ -22,13 +23,13 @@ import meta::pure::graphFetch::execution::*;
 
 function <<meta::pure::profiles::test.BeforePackage>>  meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::setUp():Boolean[1]
 {
-   let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
-  
+   let connection = meta::external::store::relational::tests::testRuntime(db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+
    executeInDb('drop table if exists OrderTable;',$connection);
    executeInDb('create table OrderTable (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);
    executeInDb('insert into OrderTable values(\'2015-8-26 00:00:00\', 1,1);',$connection);
 
-   
+
    executeInDb('drop table if exists OrderTable2;',$connection);
    executeInDb('create table OrderTable2 (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);
    executeInDb('insert into OrderTable2 values(\'2015-8-26 00:00:00\', 2,2);',$connection);
@@ -37,12 +38,12 @@ function <<meta::pure::profiles::test.BeforePackage>>  meta::relational::graphFe
    executeInDb('create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
    executeInDb('insert into ProductTable values(1,\'ProductName1\',\'STOCK\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2015-8-15 00:00:00\', \'2015-8-26 00:00:00\');',$connection);
    executeInDb('insert into ProductTable values(2,\'ProductName2\',\'OPTION\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-16 00:00:00\', \'2015-8-26 00:00:00\');',$connection);
-   
+
    executeInDb('drop table if exists MilestonedProductTable2;',$connection);
    executeInDb('create table MilestonedProductTable2 (id Integer, name VARCHAR(200),type VARCHAR(200),exchange VARCHAR(200), referenceSystemName VARCHAR(200), EXTERNALREFERENCESYSTEMNAME VARCHAR(200), classificationSystemId Integer, from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
    executeInDb('insert into MilestonedProductTable2 values(1,\'ProductName3\',\'OPTION\',\'ISE\', \'SYS1\',\'SYS1\', 1, \'2015-8-15 00:00:00\', \'2015-10-24 00:00:00\');',$connection);
    executeInDb('insert into MilestonedProductTable2 values(2,\'ProductName4\',\'STOCK\',\'LNSE\', \'SYS1\',\'SYS1\', 1, \'2015-8-16 00:00:00\', \'2015-10-16 00:00:00\');',$connection);
-   
+
 
    executeInDb('drop table if exists ProductSynonymTable;',$connection);
    executeInDb('create table ProductSynonymTable (prodId Integer, name VARCHAR(200), synonym VARCHAR(200), type VARCHAR(10), createdBy VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
@@ -57,7 +58,7 @@ function <<meta::pure::profiles::test.BeforePackage>>  meta::relational::graphFe
    executeInDb('insert into ProductSynonymTableNoMilestoning values(6, \'ProductName1\',\'GS-Mod-S2\',\'STOCK\',\'Scottd\');',$connection);
    executeInDb('insert into ProductSynonymTableNoMilestoning values(7, \'ProductName2\',\'GS-Mod-S0\',\'CUSIP\',\'smith\');',$connection);
    executeInDb('insert into ProductSynonymTableNoMilestoning values(8, \'ProductName2\',\'GS-Mod-S1\',\'CUSIP\',\'smith\');',$connection);
-   
+
    executeInDb('drop table if exists ProductClassificationTable;',$connection);
    executeInDb('create table ProductClassificationTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
    executeInDb('insert into ProductClassificationTable values(\'STOCK\',\'STOCK DESC-V1\',\'SYS1\', \'LNSE\', \'2015-8-15 00:00:00\', \'2015-8-17 00:00:00\');',$connection);
@@ -73,7 +74,7 @@ function <<meta::pure::profiles::test.BeforePackage>>  meta::relational::graphFe
    executeInDb('insert into ProductClassificationTable2 values(\'STOCK\',\'STOCK DESC-V3\',\'SYS1\', \'LNSE\', \'2015-9-15 00:00:00\',\'2015-10-17 00:00:00\');',$connection);
    executeInDb('insert into ProductClassificationTable2 values(\'STOCK\',\'STOCK DESC-V4\',\'SYS1\', \'LNSE\', \'2015-10-17 00:00:00\',\'2015-12-31 00:00:00\');',$connection);
    executeInDb('insert into ProductClassificationTable2 values(\'OPTION\',\'OPTION DESC-V1\',\'SYS1\', \'ISE\', \'2015-8-17 00:00:00\',\'2020-8-23 00:00:00\');',$connection);
-   
+
 
    executeInDb('drop table if exists ProductExchangeTable;',$connection);
    executeInDb('create table ProductExchangeTable (name VARCHAR(200), city VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
@@ -96,14 +97,14 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
             {
               type
             },
-            classificationTypeStr           
+            classificationTypeStr
          }
       }
    }#;
 
    let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let queryresult = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -125,14 +126,14 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
              classificationExchangeName1,
              classificationExchangeName2,
              classificationExchangeName3
-                   
+
          }
       }
    }#;
 
    let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let queryresult = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -154,14 +155,14 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
             synonyms(%2015-8-20){
               type,
               synonym
-            }                  
+            }
          }
       }
    }#;
 
    let query = {|Order.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let queryresult = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
    assertJsonStringsEqual(
@@ -174,17 +175,17 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
 ###Mapping
 import meta::relational::tests::milestoning::*;
 Mapping meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::MilestoningUnionMap
-(  
+(
   *Order : Operation
   {
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(o1, o2)
   }
-  
+
   *Product : Operation
   {
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(p1, p2)
   }
-  
+
   *ProductClassification : Operation
   {
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(c1, c2)
@@ -199,7 +200,7 @@ Mapping meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWit
   {
     meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(s1, s2)
   }
-  
+
   meta::relational::tests::milestoning::Order[o1] : Relational{
     id : [db]OrderTable.id,
     product[p1] : [db]@Order_Product,
@@ -211,18 +212,18 @@ Mapping meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWit
     product[p1] : [db]@Order2_Product,
     product[p2] : [db]@Order2_MilestonedProductTable2
   }
-  
+
   meta::relational::tests::milestoning::Product[p1] : Relational{
-    id : [db]ProductTable.id, 
+    id : [db]ProductTable.id,
     name : [db]ProductTable.name,
     classification[c1] : [db]@Product_Classification,
     classification[c2] : [db]@Product_Classification2,
     synonyms[s1] : [db]@Product_Synonym,
     synonyms[s2] : [db]@Product_SynonymNoMilestoning
   }
-  
+
   meta::relational::tests::milestoning::Product[p2] : Relational{
-    id : [db]MilestonedProductTable2.id, 
+    id : [db]MilestonedProductTable2.id,
     name : [db]MilestonedProductTable2.name,
     classification[c1] : [db]@MilestonedProductTable2_Classification,
     classification[c2] : [db]@MilestonedProductTable2_Classification2,
@@ -234,22 +235,22 @@ Mapping meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWit
     type : [db]ProductClassificationTable.type,
     description : [db]ProductClassificationTable.type_description,
     exchange[e1] : [db]@Classification_Exchange,
-    exchange[e2] : [db]@Classification_ExchangeNoMilestoning 
+    exchange[e2] : [db]@Classification_ExchangeNoMilestoning
   }
-  
+
   meta::relational::tests::milestoning::ProductClassification[c2] : Relational{
     type : [db]ProductClassificationTable2.type,
     description : [db]ProductClassificationTable2.type_description,
     exchange[e1] : [db]@Classification2_Exchange,
-    exchange[e2] : [db]@Classification2_ExchangeNoMilestoning 
+    exchange[e2] : [db]@Classification2_ExchangeNoMilestoning
   }
 
-  meta::relational::tests::milestoning::ProductSynonym[s1] : Relational{ 
+  meta::relational::tests::milestoning::ProductSynonym[s1] : Relational{
     type : [db]ProductSynonymTable.type,
     synonym : [db]ProductSynonymTable.synonym
   }
 
-  meta::relational::tests::milestoning::ProductSynonym[s2] : Relational{ 
+  meta::relational::tests::milestoning::ProductSynonym[s2] : Relational{
     type : [db]ProductSynonymTableNoMilestoning.type,
     synonym : [db]ProductSynonymTableNoMilestoning.synonym
   }

@@ -14,6 +14,7 @@
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.TimeZone;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -31,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -44,6 +46,7 @@ import static org.mockito.ArgumentMatchers.any;
 public class TestArrowNodeExecutor
 
 {
+
     @Test
     public void testExternalize() throws Exception
     {
@@ -55,24 +58,69 @@ public class TestArrowNodeExecutor
 
         mockExecutionNode.connection = mockDatabaseConnection;
         Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
-        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test", "sa", "");
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "sa", "");
              ByteArrayOutputStream outputStream = new ByteArrayOutputStream())
+        {
+            //setup table
+            conn.createStatement().execute("DROP TABLE IF EXISTS testtable");
+            conn.createStatement().execute("DROP TABLE IF EXISTS testtableJoin");
+
+            conn.createStatement().execute("Create Table testtable (testInt INTEGER, testString VARCHAR(255), testDate TIMESTAMP, testBool BOOLEAN)");
+            conn.createStatement().execute("Create Table testtableJoin (testIntR INTEGER, testStringR VARCHAR(255)  PRIMARY KEY )");
+
+            conn.createStatement().execute("INSERT INTO  testtable (testInt, testString, testDate, testBool) VALUES(1,'A', '2020-01-01 00:00:00-05:00',true),( 2,null, '2020-01-01 00:00:00-02:00',false ),( 3,'B', '2020-01-01 00:00:00-05:00',false )");
+            conn.createStatement().execute("INSERT INTO  testtableJoin (testIntR, testStringR) VALUES(6,'A'), (1,'B')");
+
+            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable left join  testtableJoin on testtable.testInt=testtableJoin.testIntR", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testStringR", "VARCHAR"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, null, null, null, new RequestContext());
+
+            ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, null, null);
+
+
+            nodeExecute.stream(outputStream, SerializationFormat.DEFAULT);
+
+            String expected = "TESTINT\tTESTSTRING\tTESTDATE\tTESTBOOL\tTESTINTR\tTESTSTRINGR\n" +
+                    "1\tA\t1577854800000\ttrue\t1\tB\n" +
+                    "2\tnull\t1577844000000\tfalse\tnull\tnull\n" +
+                    "3\tB\t1577854800000\tfalse\tnull\tnull\n";
+            assertArrow(outputStream, expected);
+        }
+
+    }
+
+    @Test
+    public void testExternalizeAsString() throws Exception
+    {
+        ArrowRuntimeExtension extension = new ArrowRuntimeExtension();
+        ExternalFormatExternalizeTDSExecutionNode node = new ExternalFormatExternalizeTDSExecutionNode();
+        //create a real result from H2
+        RelationalExecutionNode mockExecutionNode = Mockito.mock(RelationalExecutionNode.class);
+        DatabaseConnection mockDatabaseConnection = Mockito.mock(DatabaseConnection.class);
+
+        mockExecutionNode.connection = mockDatabaseConnection;
+        Mockito.when(mockDatabaseConnection.accept(any())).thenReturn(false);
+        try (Connection conn = DriverManager.getConnection("jdbc:h2:~/test;TIME ZONE=America/New_York", "sa", "");
+        )
+
         {
             //setup table
             conn.createStatement().execute("DROP TABLE IF EXISTS testtable");
             conn.createStatement().execute("Create Table testtable (testInt INTEGER, testString VARCHAR(255), testDate TIMESTAMP, testBool BOOLEAN)");
             conn.createStatement().execute("INSERT INTO  testtable (testInt, testString, testDate, testBool) VALUES(1,'A', '2020-01-01 00:00:00-05:00',true),( 2,'B', '2020-01-01 00:00:00-02:00',false ),( 3,'B', '2020-01-01 00:00:00-05:00',false )");
 
-            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "GMT", conn, null, null, null, new RequestContext());
+            RelationalResult result = new RelationalResult(FastList.newListWith(new RelationalExecutionActivity("SELECT * FROM testtable", null)), mockExecutionNode, FastList.newListWith(new SQLResultColumn("testInt", "INTEGER"), new SQLResultColumn("testString", "VARCHAR"), new SQLResultColumn("testDate", "TIMESTAMP"), new SQLResultColumn("testBool", "TIMESTAMP")), null, "America/New_York", conn, null, null, null, new RequestContext());
 
             ExternalFormatSerializeResult nodeExecute = (ExternalFormatSerializeResult) extension.executeExternalizeTDSExecutionNode(node, result, null, null);
-            Assert.assertEquals(nodeExecute.resultFormat, "application/x.arrow");
-            nodeExecute.stream(outputStream, SerializationFormat.DEFAULT);
-            assertArrow(outputStream, "TESTINT\tTESTSTRING\tTESTDATE\tTESTBOOL\n" +
+
+            String expected = "TESTINT\tTESTSTRING\tTESTDATE\tTESTBOOL\n" +
                     "1\tA\t1577854800000\ttrue\n" +
                     "2\tB\t1577844000000\tfalse\n" +
-                    "3\tB\t1577854800000\tfalse\n");
+                    "3\tB\t1577854800000\tfalse\n";
+
+            String outputasString = nodeExecute.flush(nodeExecute.getSerializer(SerializationFormat.DEFAULT));
+
+            Assert.assertEquals(expected, outputasString);
         }
+
 
     }
 
@@ -104,27 +152,4 @@ public class TestArrowNodeExecutor
 
 
     }
-
-    /*
-     * This is a utility for generating arrow raw data to a file  for test setup
-     */
-    protected void arrowFileCreationUtility(VectorSchemaRoot vectorSchemaRoot, String file)
-    {
-
-        try (
-                FileOutputStream fileOutputStream = new FileOutputStream(file);
-                ArrowFileWriter writer = new ArrowFileWriter(vectorSchemaRoot, null, fileOutputStream.getChannel())
-        )
-        {
-            writer.start();
-            writer.writeBatch();
-            writer.end();
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
-
-    }
-
 }

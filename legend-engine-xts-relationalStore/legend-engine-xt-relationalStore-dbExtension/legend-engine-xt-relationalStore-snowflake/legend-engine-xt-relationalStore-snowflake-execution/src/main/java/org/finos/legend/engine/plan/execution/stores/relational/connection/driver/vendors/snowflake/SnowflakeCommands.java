@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.snowflake;
 
+import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.Column;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.IngestionMethod;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
@@ -25,6 +27,8 @@ import java.util.stream.Collectors;
 
 public class SnowflakeCommands extends RelationalDatabaseCommands
 {
+    private static final ImmutableMap<String, String> columnTypeToSqlTextMap = Maps.immutable.of("BIT", "BOOLEAN");
+
     @Override
     public String processTempTableName(String tempTableName)
     {
@@ -50,7 +54,7 @@ public class SnowflakeCommands extends RelationalDatabaseCommands
             optionalCSVFileLocation = optionalCSVFileLocation.substring(1);
         }
         List<String> strings = Arrays.asList(
-                "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + c.type).collect(Collectors.joining(",", "(", ")")),
+                "CREATE TEMPORARY TABLE " + tableName + " " + columns.stream().map(c -> c.name + " " + columnTypeToSqlTextMap.getIfAbsentValue(c.type, c.type)).collect(Collectors.joining(",", "(", ")")),
                 "CREATE OR REPLACE TEMPORARY STAGE " + tempStageName(),
                 "PUT file:///" + optionalCSVFileLocation + " @" + tempStageName() + "/" + optionalCSVFileLocation + " PARALLEL = 16 AUTO_COMPRESS = TRUE",
                 "COPY INTO " + tableName + " FROM @" + tempStageName() + "/" + optionalCSVFileLocation + " file_format = (type = CSV field_optionally_enclosed_by= '\"')",

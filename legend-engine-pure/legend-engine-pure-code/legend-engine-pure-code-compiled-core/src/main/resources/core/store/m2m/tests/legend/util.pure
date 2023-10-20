@@ -13,15 +13,21 @@
 // limitations under the License.
 
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::pure::mapping::modelToModel::test::alloy::utils::testJsonRuntime(class:Class<Any>[1], json:String[1]) : Runtime[1]
 {
    ^Runtime(
-      connections = ^JsonModelConnection(
-         element=^ModelStore(),
-         class = $class,
-         url = 'data:application/json,'+$json
-      )
+      connectionStores = [
+        ^ConnectionStore(
+          element=^ModelStore(),
+          connection=^JsonModelConnection(
+            class = $class,
+            url = 'data:application/json,'+$json
+          )
+        )
+      ]
    );
 }

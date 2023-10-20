@@ -70,19 +70,6 @@ public class SnowflakeAppTreeWalker
                 ? Collections.emptyList() : ctx.activationConnection().qualifiedName().packagePath().identifier(), ctx.activationConnection().qualifiedName().identifier());
         pointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.activationConnection().qualifiedName());
         config.activationConnection = pointer;
-        String stage = ctx.stage().getText();
-        if (stage.equals("PRODUCTION"))
-        {
-            config.stage = DeploymentStage.PRODUCTION;
-        }
-        else if (stage.equals("SANDBOX"))
-        {
-            config.stage = DeploymentStage.SANDBOX;
-        }
-        else
-        {
-            throw new EngineException("Valid types for deployment stage are: SANDBOX, PRODUCTION");
-        }
         return config;
     }
 

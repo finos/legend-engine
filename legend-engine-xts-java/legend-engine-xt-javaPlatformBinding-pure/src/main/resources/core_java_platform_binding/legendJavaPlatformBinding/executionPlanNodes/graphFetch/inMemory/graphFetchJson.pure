@@ -30,6 +30,7 @@ import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legend
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
 function meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::jsonReaderClass(conventions:Conventions[1], path:String[1], srcTreeClass:meta::pure::metamodel::type::Class<Any>[1]): meta::external::language::java::metamodel::Class[1]
@@ -571,14 +572,14 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::json::addMethodExist(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
 {
    let methodName = j_parameter(javaString(), 'name');
-   
+
    $class->addMethod(javaMethod('private', javaBoolean(), 'readMethodExists', $methodName,
-                                    
+
       'Method[] methods = this.getClass().getDeclaredMethods();\n' +
       'for (int i = 0; i < methods.length; i++) {\n' +
       '   if (methods[i].getName().equals(name)) return true;\n' +
       '};\n' +
-      'return false;'                                
+      'return false;'
    ));
 }
 
@@ -586,17 +587,17 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
 {
    let methodName = j_parameter(javaString(), 'name');
    let jsonNode   = j_parameter(jsonNode(), 'node');
-   
+
    $class->addMethod(javaMethod('private', javaObject(), 'readMethodInvoke', [$methodName, $jsonNode],
       'Method m = null;\n' +
       'try{\n' +
       '   m = this.getClass().getMethod(name, JsonNode.class);\n' +
       '}\n' +
       'catch (NoSuchMethodException e){throw new RuntimeException(e.getMessage());}\n' +
-      'try{\n' +         
+      'try{\n' +
       '   return m.invoke(this, node);\n' +
       '}\n' +
-      'catch (IllegalAccessException e){throw new RuntimeException(e.getMessage());}catch (InvocationTargetException e){throw new RuntimeException(e.getMessage());}' 
+      'catch (IllegalAccessException e){throw new RuntimeException(e.getMessage());}catch (InvocationTargetException e){throw new RuntimeException(e.getMessage());}'
    ));
 }
 

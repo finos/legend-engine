@@ -2225,9 +2225,121 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      connection_1: relational::graphFetch::OneMappingConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}\n", null, Collections.singletonList("COMPILATION error at [101:21-70]: Multiple RelationalDatabaseConnections are Not Supported for the same Store - relational::graphFetch::dbInc"));
+                "}\n", "COMPILATION error at [90:1-108:1]: Found 2 connections against store [dbInc] under a single runtime.");
     }
-    
+
+    @Test
+    public void testForRelationalRuntimeErrors()
+    {
+        test("###Relational\n" +
+                "Database relational::graphFetch::dbInc\n" +
+                "(\n" +
+                "  Table firmTable\n" +
+                "  (\n" +
+                "    FirmCode INTEGER PRIMARY KEY,\n" +
+                "    FirmName VARCHAR(200)\n" +
+                "  )\n" +
+                ")\n" +
+                "\n" +
+                "###Pure\n" +
+                "Class relational::graphFetch::Target_Firm\n" +
+                "{\n" +
+                "  firmName: String[1];\n" +
+                "  firmCode: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class relational::graphFetch::Firm\n" +
+                "{\n" +
+                "  name: String[1];\n" +
+                "  id: Integer[1];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping relational::graphFetch::Relational_Mapping\n" +
+                "(\n" +
+                "  *relational::graphFetch::Firm: Relational\n" +
+                "  {\n" +
+                "    ~primaryKey\n" +
+                "    (\n" +
+                "      [relational::graphFetch::dbInc]firmTable.FirmCode\n" +
+                "    )\n" +
+                "    ~mainTable [relational::graphFetch::dbInc]firmTable\n" +
+                "    name: [relational::graphFetch::dbInc]firmTable.FirmName,\n" +
+                "    id: [relational::graphFetch::dbInc]firmTable.FirmCode\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "Mapping relational::graphFetch::M2M_Mapping\n" +
+                "(\n" +
+                "  relational::graphFetch::Target_Firm: Pure\n" +
+                "  {\n" +
+                "    ~src relational::graphFetch::Firm\n" +
+                "    firmName: $src.name->toUpper(),\n" +
+                "    firmCode: $src.id\n" +
+                "  }\n" +
+                ")\n" +
+                "\n" +
+                "###Connection\n" +
+                "RelationalDatabaseConnection relational::graphFetch::RelationalConnection\n" +
+                "{\n" +
+                "  store: relational::graphFetch::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: Test\n" +
+                "  {\n" +
+                "  };\n" +
+                "}\n" +
+                "\n" +
+                "RelationalDatabaseConnection relational::graphFetch::SecondRelationalConnection\n" +
+                "{\n" +
+                "  store: relational::graphFetch::dbInc;\n" +
+                "  type: H2;\n" +
+                "  specification: Static\n" +
+                "  {\n" +
+                "    name: 'name';\n" +
+                "    host: 'host';\n" +
+                "    port: 1234;\n" +
+                "  };\n" +
+                "  auth: Test\n" +
+                "  {\n" +
+                "  };\n" +
+                "}\n" +
+                "\n" +
+                "ModelChainConnection relational::graphFetch::OneMappingConnection\n" +
+                "{\n" +
+                "  mappings: [\n" +
+                "    relational::graphFetch::Relational_Mapping\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime relational::graphFetch::ModelChainConnectionRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    relational::graphFetch::M2M_Mapping\n" +
+                "  ];\n" +
+                "  connectionStores:\n" +
+                "  [\n" +
+                "    relational::graphFetch::RelationalConnection:\n" +
+                "    [\n" +
+                "      relational::graphFetch::dbInc\n" +
+                "    ],\n" +
+                "    relational::graphFetch::SecondRelationalConnection:\n" +
+                "    [\n" +
+                "      relational::graphFetch::dbInc\n" +
+                "    ]\n" +
+                "  ];\n" +
+                "}\n", "COMPILATION error at [90:1-107:1]: Found 2 connections against store [dbInc] under a single runtime.");
+    }
+
     @Test
     public void testCompilationMissingEnumMapping() throws Exception
     {

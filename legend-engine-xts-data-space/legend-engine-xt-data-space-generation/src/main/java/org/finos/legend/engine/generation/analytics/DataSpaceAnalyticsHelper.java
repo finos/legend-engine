@@ -46,6 +46,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBui
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
+import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
@@ -56,7 +57,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
@@ -65,7 +68,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
+import org.finos.legend.pure.generated.Root_meta_analytics_binding_modelCoverage_BindingModelCoverageAnalysisResult;
+import org.finos.legend.pure.generated.Root_meta_analytics_function_modelCoverage_FunctionModelCoverageAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureMultiExecution;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
@@ -75,22 +81,30 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analyt
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAssociationDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceBasicDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceClassDocumentationEntry;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceCoverageAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceEnumerationDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceExecutionContextAnalysisResult;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_analytics_DataSpacePropertyDocumentationEntry;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_diagram_analytics_modelCoverage_DiagramModelCoverageAnalysisResult;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.core_analytics_binding_modelCoverage_analytics;
+import org.finos.legend.pure.generated.core_analytics_function_modelCoverage_analytics;
 import org.finos.legend.pure.generated.core_analytics_mapping_modelCoverage_serializer;
 import org.finos.legend.pure.generated.core_data_space_analytics_analytics;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.finos.legend.engine.shared.core.ObjectMapperFactory.withStandardConfigurations;
 
@@ -142,9 +156,152 @@ public class DataSpaceAnalyticsHelper
         return null;
     }
 
+    private static MappingModelCoverageAnalysisResult buildMappingModelCoverageAnalysisResult(Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult, DataSpaceExecutionContextAnalysisResult excResult, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions, Boolean returnDataSets)
+    {
+        try
+        {
+            MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResultProtocol = DataSpaceAnalyticsHelper.objectMapper.readValue(core_analytics_mapping_modelCoverage_serializer.Root_meta_analytics_mapping_modelCoverage_serialization_json_getSerializedMappingModelCoverageAnalysisResult_MappingModelCoverageAnalysisResult_1__String_1_(mappingModelCoverageAnalysisResult, pureModel.getExecutionSupport()), MappingModelCoverageAnalysisResult.class);
+            if (returnDataSets)
+            {
+                excResult.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, excResult.defaultRuntime, pureModel.getRuntime(excResult.defaultRuntime), excResult.mapping, pureModel.getMapping(excResult.mapping), pureModelContextData, pureModel)).toList();
+            }
+            PureModelContextData.Builder builder = PureModelContextData.newBuilder();
+
+            // Here we prune the bindings to have just packageableIncludes part of ModelUnit
+            // because we only need that as a part of analytics.
+            List<String> bindingPaths = pureModelContextData.getElements().stream().filter(el -> el instanceof  Binding).map(b ->
+            {
+                Binding _binding = new Binding();
+                _binding.name = b.name;
+                _binding.contentType = ((Binding) b).contentType;
+                _binding._package = b._package;
+                _binding.modelUnit = ((Binding) b).modelUnit;
+                _binding.modelUnit.packageableElementExcludes = org.eclipse.collections.api.factory.Lists.mutable.empty();
+                builder.addElement(_binding);
+                return b.getPath();
+            }).collect(Collectors.toList());
+            RichIterable<? extends Root_meta_external_format_shared_binding_Binding> bindings = org.eclipse.collections.api.factory.Lists.mutable.ofAll(bindingPaths.stream().map(path ->
+            {
+                Root_meta_external_format_shared_binding_Binding binding;
+                try
+                {
+                    binding = (Root_meta_external_format_shared_binding_Binding) pureModel.getPackageableElement(path);
+                    return binding;
+                }
+                catch (Exception ignored)
+                {
+
+                }
+                return null;
+            }).filter(c -> c != null).collect(Collectors.toList()));
+            Root_meta_analytics_binding_modelCoverage_BindingModelCoverageAnalysisResult bindingAnalysisResult = core_analytics_binding_modelCoverage_analytics.Root_meta_analytics_binding_modelCoverage_getBindingModelCoverage_Binding_MANY__BindingModelCoverageAnalysisResult_1_(bindings, pureModel.getExecutionSupport());
+            List<String> functionPaths = pureModelContextData.getElements().stream().filter(el -> el instanceof Function).map(e -> e.getPath()).collect(Collectors.toList());
+            List<String> allExtraElements = functionPaths;
+            allExtraElements.add(dataSpaceProtocol.getPath());
+            pureModelContextData.getElements().stream().filter(el -> allExtraElements.contains(el.getPath())).forEach(builder::addElement);
+            List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = builder.build().getElements();
+            RichIterable<? extends ConcreteFunctionDefinition<? extends  Object>> functions = org.eclipse.collections.api.factory.Lists.mutable.ofAll(functionPaths.stream().map(path ->
+            {
+                ConcreteFunctionDefinition<? extends Object> function = null;
+                try
+                {
+                    function = pureModel.getConcreteFunctionDefinition_safe(path);
+                    if (function == null)
+                    {
+                        Function _function = (Function) elements.stream().filter(e -> e.getPath().equals(path)).findFirst().get();
+                        function = pureModel.getConcreteFunctionDefinition_safe(path + HelperValueSpecificationGrammarComposer.getFunctionSignature(_function));
+
+                    }
+                    return function;
+                }
+                catch (Exception ignored)
+                {
+
+                }
+                return null;
+            }).filter(c -> c != null).collect(Collectors.toList()));
+            Root_meta_analytics_function_modelCoverage_FunctionModelCoverageAnalysisResult functionCoverageAnalysisResult = core_analytics_function_modelCoverage_analytics.Root_meta_analytics_function_modelCoverage_getFunctionModelCoverage_ConcreteFunctionDefinition_MANY__FunctionModelCoverageAnalysisResult_1_(org.eclipse.collections.impl.factory.Lists.mutable.ofAll(functions), pureModel.getExecutionSupport());
+            MutableList<? extends Class<? extends Object>> coveredClasses = mappingModelCoverageAnalysisResult._classes().toList();
+            List<String> coveredClassesPaths = coveredClasses.stream().map(c -> HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport())).collect(Collectors.toList());
+            coveredClasses = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(Stream.concat(Stream.concat(functionCoverageAnalysisResult._classes().toList().stream().filter(c -> !coveredClassesPaths.contains(HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport()))),
+                    bindingAnalysisResult._classes().toList().stream().filter(c -> !coveredClassesPaths.contains(HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport())))).distinct(),
+                    mappingModelCoverageAnalysisResult._classes().toList().stream()).collect(Collectors.toList()));
+            MutableList<Enumeration<? extends Enum>> coveredEnumerations = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(Stream.concat(mappingModelCoverageAnalysisResult._enumerations().toList().stream(), functionCoverageAnalysisResult._enumerations().toList().stream()).distinct().collect(Collectors.toList()));
+            PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(coveredClasses, clientVersion, pureModel.getExecutionSupport());
+            PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(coveredEnumerations, clientVersion, pureModel.getExecutionSupport());
+            PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) mappingModelCoverageAnalysisResult._profiles(), clientVersion, pureModel.getExecutionSupport());
+            PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(mappingModelCoverageAnalysisResult._associations(), clientVersion, pureModel.getExecutionSupport());
+            mappingModelCoverageAnalysisResultProtocol.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
+            return mappingModelCoverageAnalysisResultProtocol;
+        }
+        catch (Exception ignored)
+        {
+        }
+        return null;
+    }
+
     public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion)
     {
         return analyzeDataSpace(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)), EntitlementServiceExtensionLoader.extensions());
+    }
+
+    public static DataSpaceAnalysisResult analyzeDataSpaceCoverage(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions)
+    {
+        Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceCoverageAnalysisResult analysisResult = core_data_space_analytics_analytics.Root_meta_pure_metamodel_dataSpace_analytics_analyzeDataSpaceCoverage_DataSpace_1__PackageableRuntime_MANY__DataSpaceCoverageAnalysisResult_1_(
+                dataSpace,
+                ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class).collect(runtime -> pureModel.getPackageableRuntime(runtime.getPath(), runtime.sourceInformation)),
+                pureModel.getExecutionSupport()
+        );
+
+        DataSpaceAnalysisResult result = new DataSpaceAnalysisResult();
+        result.name = dataSpaceProtocol.name;
+        result._package = dataSpaceProtocol._package;
+        result.path = dataSpaceProtocol.getPath();
+        result.title = dataSpaceProtocol.title;
+        result.description = dataSpaceProtocol.description;
+
+        result.taggedValues = ListIterate.collect(dataSpace._taggedValues().toList(), taggedValue ->
+        {
+            DataSpaceTaggedValueInfo info = new DataSpaceTaggedValueInfo();
+            info.profile = HelperModelBuilder.getElementFullPath(taggedValue._tag()._profile(), pureModel.getExecutionSupport());
+            info.tag = taggedValue._tag()._value();
+            info.value = taggedValue._value();
+            return info;
+        });
+
+        result.stereotypes = ListIterate.collect(dataSpace._stereotypes().toList(), stereotype ->
+        {
+            DataSpaceStereotypeInfo info = new DataSpaceStereotypeInfo();
+            info.profile = HelperModelBuilder.getElementFullPath(stereotype._profile(), pureModel.getExecutionSupport());
+            info.value = stereotype._value();
+            return info;
+        });
+
+        result.executionContexts = dataSpace._executionContexts().toList().collect(executionContext ->
+        {
+            Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceExecutionContextAnalysisResult executionContextAnalysisResult = analysisResult._executionContexts().detect(context -> context._name().equals(executionContext._name()));
+            DataSpaceExecutionContextAnalysisResult excResult = new DataSpaceExecutionContextAnalysisResult();
+            excResult.name = executionContext._name();
+            excResult.title = executionContext._title();
+            excResult.description = executionContext._description();
+            excResult.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
+            excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
+            excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
+            Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult = executionContextAnalysisResult._mappingCoverage();
+            excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, false);
+            return excResult;
+        });
+        result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
+        // elements
+        result.elements = dataSpace._elements() != null ? dataSpace._elements().toList().collect(el -> HelperModelBuilder.getElementFullPath(el, pureModel.getExecutionSupport())) : Lists.mutable.empty();
+        // support
+        result.supportInfo = dataSpaceProtocol.supportInfo;
+        if (result.supportInfo != null)
+        {
+            result.supportInfo.sourceInformation = null;
+        }
+
+        return result;
     }
 
     public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions)
@@ -179,7 +336,6 @@ public class DataSpaceAnalyticsHelper
             return info;
         });
 
-        // execution contexts
         result.executionContexts = dataSpace._executionContexts().toList().collect(executionContext ->
         {
             Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceExecutionContextAnalysisResult executionContextAnalysisResult = analysisResult._executionContexts().detect(context -> context._name().equals(executionContext._name()));
@@ -191,14 +347,7 @@ public class DataSpaceAnalyticsHelper
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
             excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
             Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult = executionContextAnalysisResult._mappingCoverage();
-            try
-            {
-                excResult.mappingModelCoverageAnalysisResult = DataSpaceAnalyticsHelper.objectMapper.readValue(core_analytics_mapping_modelCoverage_serializer.Root_meta_analytics_mapping_modelCoverage_serialization_json_getSerializedMappingModelCoverageAnalysisResult_MappingModelCoverageAnalysisResult_1__String_1_(mappingModelCoverageAnalysisResult, pureModel.getExecutionSupport()), MappingModelCoverageAnalysisResult.class);
-                excResult.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, excResult.defaultRuntime, pureModel.getRuntime(excResult.defaultRuntime), excResult.mapping, pureModel.getMapping(excResult.mapping), pureModelContextData, pureModel)).toList();
-            }
-            catch (Exception ignored)
-            {
-            }
+           excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, true);
             return excResult;
         });
         result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
@@ -290,7 +439,7 @@ public class DataSpaceAnalyticsHelper
                     }
                     Service serviceProtocol = (Service) _el;
                     Mapping mapping = null;
-                    Root_meta_pure_runtime_Runtime runtime = null;
+                    Root_meta_core_runtime_Runtime runtime = null;
                     LambdaFunction<?> lambdaFunc = null;
                     if (service._execution() instanceof Root_meta_legend_service_metamodel_PureSingleExecution)
                     {

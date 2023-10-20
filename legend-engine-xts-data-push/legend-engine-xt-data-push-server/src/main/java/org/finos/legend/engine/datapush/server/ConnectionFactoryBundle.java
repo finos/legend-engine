@@ -21,14 +21,15 @@ import io.dropwizard.setup.Environment;
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
+import org.finos.legend.connection.AuthenticationMechanismConfiguration;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.DefaultAuthenticationMechanismProvider;
-import org.finos.legend.connection.DefaultConnectionBuilderProvider;
-import org.finos.legend.connection.DefaultCredentialBuilderProvider;
-import org.finos.legend.connection.EnvironmentConfiguration;
+import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
 import org.finos.legend.connection.IdentityFactory;
+import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.RelationalDatabaseStoreSupport;
+import org.finos.legend.connection.StoreInstanceProvider;
+import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 
 import java.util.List;
@@ -36,8 +37,9 @@ import java.util.function.Function;
 
 public class ConnectionFactoryBundle<C extends Configuration> implements ConfiguredBundle<C>
 {
-    private static EnvironmentConfiguration environmentConfiguration;
+    private static LegendEnvironment environment;
     private static IdentityFactory identityFactory;
+    private static StoreInstanceProvider storeInstanceProvider;
     private static ConnectionFactory connectionFactory;
     private final List<CredentialVault> credentialVaults;
     private final Function<C, ConnectionFactoryConfiguration> configSupplier;
@@ -56,39 +58,39 @@ public class ConnectionFactoryBundle<C extends Configuration> implements Configu
     @Override
     public void run(C configuration, Environment environment)
     {
-        environmentConfiguration = new EnvironmentConfiguration.Builder()
+        ConnectionFactoryBundle.environment = new LegendEnvironment.Builder()
                 // TODO: @akphi - add a property credential vault and load its content up from the config
 //                .withVault(propertiesFileCredentialVault)
                 .withVault(new SystemPropertiesCredentialVault())
                 .withVault(new EnvironmentCredentialVault())
                 .withVaults(this.credentialVaults)
-                .withStoreSupport(new RelationalDatabaseStoreSupport.Builder()
+                .withStoreSupport(new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
                         .withIdentifier("Postgres")
-                        .withDatabase(DatabaseType.POSTGRES)
-                        .withAuthenticationMechanisms(
-                                AuthenticationMechanismType.USER_PASSWORD
+                        .withAuthenticationMechanismConfigurations(
+                                new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(UserPasswordAuthenticationConfiguration.class).build()
                         ).build())
-                .withAuthenticationMechanismProvider(new DefaultAuthenticationMechanismProvider()) // can also use service loader
                 .build();
 
-        identityFactory = new IdentityFactory.Builder(environmentConfiguration)
+        identityFactory = new IdentityFactory.Builder(ConnectionFactoryBundle.environment)
                 .build();
 
-        connectionFactory = new ConnectionFactory.Builder(environmentConfiguration)
-                .withCredentialBuilderProvider(new DefaultCredentialBuilderProvider()) // can also use service loader
-                .withConnectionBuilderProvider(new DefaultConnectionBuilderProvider()) // can also use service loader
+        storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().build();
+
+        connectionFactory = new ConnectionFactory.Builder(ConnectionFactoryBundle.environment, storeInstanceProvider)
+//                .withCredentialBuilderProvider(new DefaultCredentialBuilderProvider()) // can also use service loader
+//                .withConnectionBuilderProvider(new DefaultConnectionBuilderProvider()) // can also use service loader
                 .build();
 
         // TODO: register store instances
     }
 
-    public static EnvironmentConfiguration getEnvironmentConfiguration()
+    public static LegendEnvironment getEnvironment()
     {
-        if (environmentConfiguration == null)
+        if (environment == null)
         {
             throw new IllegalStateException("Environment configuration has not been set!");
         }
-        return environmentConfiguration;
+        return environment;
     }
 
     public static IdentityFactory getIdentityFactory()

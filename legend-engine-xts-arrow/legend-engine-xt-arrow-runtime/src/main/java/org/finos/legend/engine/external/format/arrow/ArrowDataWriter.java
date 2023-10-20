@@ -14,13 +14,14 @@
 
 package org.finos.legend.engine.external.format.arrow;
 
+import java.nio.charset.Charset;
 import java.util.Calendar;
-import java.util.Locale;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
-import org.apache.arrow.adapter.jdbc.ArrowVectorIterator;
-import org.apache.arrow.adapter.jdbc.JdbcToArrow;
+
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfig;
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfigBuilder;
+import org.apache.arrow.adapter.jdbc.LegendArrowVectorIterator;
 import org.apache.arrow.memory.BufferAllocator;
 import org.apache.arrow.memory.RootAllocator;
 import org.apache.arrow.vector.VectorSchemaRoot;
@@ -29,38 +30,40 @@ import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatWrite
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 
 public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseable
 {
-    private final ArrowVectorIterator iterator;
+    private final LegendArrowVectorIterator iterator;
     private final BufferAllocator allocator;
 
-    public ArrowDataWriter(ResultSet resultSet) throws SQLException, IOException
+    public ArrowDataWriter(RelationalResult resultSet) throws SQLException
     {
+
         this.allocator = new RootAllocator();
-        JdbcToArrowConfig config = new JdbcToArrowConfigBuilder(allocator, Calendar.getInstance(TimeZone.getDefault(), Locale.ROOT)).build();
-        this.iterator = JdbcToArrow.sqlToArrowVectorIterator(resultSet, config);
+        Calendar calendar = resultSet.getRelationalDatabaseTimeZone() == null ?
+                new GregorianCalendar(TimeZone.getTimeZone("GMT")) :
+                new GregorianCalendar(TimeZone.getTimeZone(resultSet.getRelationalDatabaseTimeZone()));
+        JdbcToArrowConfig config = new JdbcToArrowConfigBuilder(allocator, calendar).setReuseVectorSchemaRoot(true).build();
+        this.iterator = LegendArrowVectorIterator.create(resultSet.getResultSet(), config);
 
     }
-
 
     @Override
     public void writeData(OutputStream outputStream) throws IOException
     {
-
-        try
+        try (VectorSchemaRoot vector = iterator.next();
+             ArrowStreamWriter writer = new ArrowStreamWriter(vector, null, outputStream);
+        )
         {
+            writer.start();
+            writer.writeBatch();
             while (this.iterator.hasNext())
             {
-                try (VectorSchemaRoot vector = iterator.next();
-                     ArrowStreamWriter writer = new ArrowStreamWriter(vector, null, outputStream)
-                )
-                {
-                    writer.start();
-                    writer.writeBatch();
-                }
+                iterator.next();
+                writer.writeBatch();
+
             }
         }
         catch (Exception e)
@@ -69,6 +72,28 @@ public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseab
             throw e;
         }
 
+    }
+
+    @Override
+    public void writeDataAsString(OutputStream outputStream) throws IOException
+    {
+        try
+        {
+            while (this.iterator.hasNext())
+            {
+                try (VectorSchemaRoot vector = iterator.next())
+                {
+                    outputStream.write(vector.contentToTSVString().getBytes(Charset.forName("UTF-8")));
+                }
+
+            }
+            this.close();
+        }
+        catch (Exception e)
+        {
+            this.close();
+            throw e;
+        }
     }
 
     @Override

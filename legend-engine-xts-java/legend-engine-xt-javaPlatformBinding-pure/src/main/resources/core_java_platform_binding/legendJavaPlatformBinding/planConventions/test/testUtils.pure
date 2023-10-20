@@ -25,6 +25,7 @@ import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class meta::pure::executionPlan::platformBinding::legendJava::tests::utils::JavaExpressionTest
@@ -52,8 +53,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::a
 {
    let test = ^JavaExpressionTest(
       name          = $name,
-      lambda        = $lambda->cast(@FunctionDefinition<{->Any[*]}>), 
-      codeAssertion = $expectedCode, 
+      lambda        = $lambda->cast(@FunctionDefinition<{->Any[*]}>),
+      codeAssertion = $expectedCode,
       conventions   = $tests.conventions,
       project       = newProject()
    );
@@ -65,8 +66,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::a
 {
    let test = ^JavaExpressionTest(
       name          = $name,
-      lambda        = $lambda->cast(@FunctionDefinition<{->Any[*]}>), 
-      codeAssertion = j_code($expectedCode, $expectedType), 
+      lambda        = $lambda->cast(@FunctionDefinition<{->Any[*]}>),
+      codeAssertion = j_code($expectedCode, $expectedType),
       conventions   = $tests.conventions,
       project       = newProject()
    );
@@ -114,18 +115,18 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::r
 
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::runTests(tests:JavaExpressionTest[*], extensions:Extension[*], debug:DebugContext[1]): Boolean[1]
 {
-   let failures = j_variable(javaStringBuilder(), 'failures');  
-   let result   = j_variable(javaStringBuilder(), 'result');  
+   let failures = j_variable(javaStringBuilder(), 'failures');
+   let result   = j_variable(javaStringBuilder(), 'result');
 
    let allAssertions = $tests->map(
       {test|
          let java = $test.lambda->cast(@FunctionDefinition<{->Any[*]}>)->evaluateAndDeactivate().expressionSequence->toOne()->cast(@ValueSpecification)->generateJava($test.conventions, $debug);
          let expectedCode = $test.codeAssertion->codeToString();
          let actualCode = $java->codeToString()->split('\n')->map(x | $x->trim())->joinStrings(' ')->replace(' .', '.');
-         assertEquals($expectedCode, $actualCode, |$test.name+' code is incorrect\nexpected: '+$expectedCode+'\nactual  : '+$actualCode+'\n');   
-         assertEquals($test.codeAssertion.type, $java.type, |$test.name+' expected type of \''+$test.codeAssertion.type->typeToString()+'\' but got \''+$java.type->typeToString()+'\'');   
+         assertEquals($expectedCode, $actualCode, |$test.name+' code is incorrect\nexpected: '+$expectedCode+'\nactual  : '+$actualCode+'\n');
+         assertEquals($test.codeAssertion.type, $java.type, |$test.name+' expected type of \''+$test.codeAssertion.type->typeToString()+'\' but got \''+$java.type->typeToString()+'\'');
          assert($test.assertionPatterns->isNotEmpty(), 'You must make some assertions');
-        
+
          let assertions = $test.assertionPatterns->map(
             {a |
                let assert = $a->format($actualCode);
@@ -140,18 +141,18 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::r
                      $failures->j_invoke('append', $fail)
                   ]->j_block()
                );
-               
+
                merge([$testAssert, $java]);
             }
-         );            
+         );
       }
    );
-   
+
    let functionTests = newProject()
       ->addClass(
          testClass()
             ->addMethod(
-               javaMethod(['public', 'static'], javaString(), 'execute', [], 
+               javaMethod(['public', 'static'], javaString(), 'execute', [],
                   [
                      $result->j_declare(javaStringBuilder()->j_new(j_string('\n'))),
                      $failures->j_declare(javaStringBuilder()->j_new([]))
@@ -163,12 +164,12 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::r
                         javaIllegalStateException()->j_new($failures->j_invoke('toString', []))
                      ),
                      $result->j_invoke('toString', [])->j_return()
-                  ])               
+                  ])
                )
             )
       )
-      ->addMavenDependency('junit', 'junit', '4.11');         
-   
+      ->addMavenDependency('junit', 'junit', '4.11');
+
    executeTests(mergeProjects($tests.project->concatenate($functionTests)->concatenate($allAssertions->dependencies()->resolveAndGetProjects())->toOneMany()), [], $debug);
 }
 
@@ -186,7 +187,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::j
 function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaPureTests(conventions:Conventions[1], pureTests:FunctionDefinition<{->Boolean[1]}>[*]): JavaPureTestSet[1]
 {
    ^JavaPureTestSet(
-      pureTests = $pureTests, 
+      pureTests = $pureTests,
       context   = ^GenerationContext(typeInfos=newTypeInfoSet(), conventions=$conventions)
    );
 }
@@ -246,12 +247,12 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::r
       }
    );
 
-   let failures = j_variable(javaStringBuilder(), 'failures');  
-   let result   = j_variable(javaStringBuilder(), 'result');  
+   let failures = j_variable(javaStringBuilder(), 'failures');
+   let result   = j_variable(javaStringBuilder(), 'result');
 
    let typesProject = meta::pure::executionPlan::platformBinding::legendJava::shared::generateTypes($tests.context, $debug);
 
-   let executeCode = 
+   let executeCode =
       [
          $result->j_declare(javaStringBuilder()->j_new(j_string('\n'))),
          $failures->j_declare(javaStringBuilder()->j_new([]))
@@ -261,14 +262,14 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::r
             {p|
                let name = $p.first->cast(@PackageableElement)->elementToPath();
                let call = $p.second;
-                        
+
                let ex   = j_parameter(javaException(), 'e');
                let pass = j_string('PASS '+$name+'\n');
                let fail = j_string('FAIL '+$name+'\n')->j_plus($ex->j_invoke('getMessage', []))->j_plus(j_string('\n'));
-                                                                                                    
+
                j_try(
                   [
-                     $call, 
+                     $call,
                      $result->j_invoke('append', $pass)
                   ],
                   j_catch($ex,
@@ -289,8 +290,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::tests::utils::r
          $result->j_invoke('toString', [])->j_return()
       ])->j_block();
 
-   let functionTests = newProject()->addClass(javaClass(testClass(), pair(javaMethod(['public', 'static'], javaString(), 'execute', []), $executeCode))); 
-   
+   let functionTests = newProject()->addClass(javaClass(testClass(), pair(javaMethod(['public', 'static'], javaString(), 'execute', []), $executeCode)));
+
    let dependencies = $generatedTestCalls.second->dependencies();
    let toMerge      = [$typesProject, $functionTests]->concatenate($generatedTestCalls.second->dependencies()->resolveAndGetProjects());
    let merged       = mergeProjects($toMerge->toOneMany());
@@ -308,7 +309,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                           executionMethodName    = 'execute'
                        )
     );
-   
+
    let plan = ^ExecutionPlan
    (
       func              = {|true},

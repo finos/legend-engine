@@ -17,6 +17,7 @@ import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testTempTableSqlStatementsForSnowflake(): Boolean[*]
@@ -30,5 +31,5 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testTemp
    'DROP STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE',
    'Drop table if exists LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.temp_table_test;'
   ];
-  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  
+  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);
 }

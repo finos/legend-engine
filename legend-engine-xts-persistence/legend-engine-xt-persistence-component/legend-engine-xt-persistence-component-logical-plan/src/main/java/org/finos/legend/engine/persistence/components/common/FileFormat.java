@@ -16,20 +16,8 @@ package org.finos.legend.engine.persistence.components.common;
 
 public enum FileFormat
 {
-    CSV("CSV"),
-    JSON("JSON"),
-    AVRO("AVRO"),
-    PARQUET("PARQUET");
-
-    String name;
-
-    FileFormat(String name)
-    {
-        this.name = name;
-    }
-
-    public String getName()
-    {
-        return this.name;
-    }
+    CSV,
+    JSON,
+    AVRO,
+    PARQUET;
 }

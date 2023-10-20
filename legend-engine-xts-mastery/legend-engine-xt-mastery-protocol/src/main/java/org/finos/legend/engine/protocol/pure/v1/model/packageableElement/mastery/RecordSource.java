@@ -26,8 +26,8 @@ public class RecordSource
 {
     public String parseService;
     public String transformService;
-    public List<String> tags = new ArrayList<String>();
-    public List<RecordSourcePartition> partitions = Collections.emptyList();
+    public List<String> tags;
+    public List<RecordSourcePartition> partitions;
     public String id;
     public String description;
     public RecordSourceStatus status;

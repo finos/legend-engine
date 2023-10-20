@@ -40,7 +40,7 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
 
         Map<String, Object> loadOptionsMap = new HashMap<>();
         FileFormat fileFormat = datasetProperties.fileFormat();
-        loadOptionsMap.put("format", fileFormat.getName());
+        loadOptionsMap.put("format", fileFormat.name());
         datasetProperties.loadOptions().ifPresent(options -> retrieveLoadOptions(fileFormat, options, loadOptionsMap));
 
         StagedFilesTable stagedFilesTable = new StagedFilesTable(datasetProperties.files(), loadOptionsMap);

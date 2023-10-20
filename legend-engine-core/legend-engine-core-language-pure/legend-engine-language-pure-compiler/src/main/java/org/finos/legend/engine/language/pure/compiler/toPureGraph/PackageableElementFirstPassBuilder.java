@@ -53,13 +53,13 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enumeration_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Measure_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime_Impl;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype;
@@ -264,7 +264,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         metamodel._classifierGenericType(packageableRuntimeGenericType);
 
         // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        Root_meta_pure_runtime_Runtime pureRuntime = new Root_meta_pure_runtime_Runtime_Impl("Root::meta::pure::runtime::Runtime", null, this.context.pureModel.getClass("meta::pure::runtime::Runtime"));
+        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", null, this.context.pureModel.getClass("meta::core::runtime::Runtime"));
         this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), pureRuntime);
 
         return setNameAndPackage(metamodel, packageableRuntime);
@@ -276,7 +276,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, null, this.context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
         this.context.pureModel.packageableConnectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), metamodel);
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
-        Root_meta_pure_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
+        Root_meta_core_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
         this.context.pureModel.connectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), connection);
         return setNameAndPackage(metamodel, packageableConnection);
     }

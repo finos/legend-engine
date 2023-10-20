@@ -48,9 +48,11 @@ public class TestPureDate
         Assert.assertEquals("2014-03-10", date.format("yyyy-MM-d"));
         Assert.assertEquals("2014-03-10", date.format("yyyy-MM-dd"));
         Assert.assertEquals("2014-03-10 4:12:35PM", date.format("yyyy-MM-dd h:mm:ssa"));
-        Assert.assertEquals("2014-03-10 16:12:35.070004235 GMT", date.format("yyyy-MM-dd HH:mm:ss.SSSS z"));
-        Assert.assertEquals("2014-03-10T16:12:35.070004235+0000", date.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSSZ"));
+        Assert.assertEquals("2014-03-10 16:12:35.0700 GMT", date.format("yyyy-MM-dd HH:mm:ss.SSSS z"));
+        Assert.assertEquals("2014-03-10T16:12:35.0700+0000", date.format("yyyy-MM-dd\"T\"HH:mm:ss.SSSSZ"));
         Assert.assertEquals("2014-03-10 16:12:35.070Z", date.format("yyyy-MM-dd HH:mm:ss.SSSX"));
+        Assert.assertEquals("2014-03-10 16:12:35.070004", date.format("yyyy-MM-dd HH:mm:ss.SSSSSS"));
+        Assert.assertEquals("2014-03-10 16:12:35.070004235", date.format("yyyy-MM-dd HH:mm:ss.SSSSSSSSS"));
     }
 
     @Test

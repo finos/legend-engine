@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::mapping::modelToModel::test::createInstances::*;
 import meta::relational::postProcessor::*;
 import meta::pure::extension::*;
@@ -25,6 +26,7 @@ import meta::pure::executionPlan::tests::datetime::*;
 import meta::relational::tests::tds::tabletds::*;
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::mapping::inheritance::relational::*;
 import meta::relational::metamodel::join::*;
@@ -36,7 +38,9 @@ import meta::relational::tests::groupBy::datePeriods::*;
 import meta::relational::tests::groupBy::datePeriods::domain::*;
 import meta::pure::executionPlan::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
@@ -53,9 +57,9 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      ->filter(p|$x>now()->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
 
-   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
-   let expected =
+   let expectedLegacyH2 =
    'Sequence\n'+
    '(\n'+
    '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
@@ -85,11 +89,45 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '  )\n'+
    ')\n';
 
-   assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
+   let expectedNewH2 =
+   'Sequence\n'+
+   '(\n'+
+   '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+   '  (\n'+
+   '    Allocation\n'+
+   '    (\n'+
+   '      type = DateTime\n'+
+   '      resultSizeRange = 1\n'+
+   '      name = x\n'+
+   '      value = \n'+
+   '        (\n'+
+   '          PureExp\n'+
+   '          (\n'+
+   '            type = DateTime\n'+
+   '            resultSizeRange = 1\n'+
+   '            expression = now()\n'+
+   '          )\n'+
+   '        )\n'+
+   '    )\n'+
+   '    Relational\n'+
+   '    (\n'+
+   '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+   '      resultColumns = [("firstName", VARCHAR(200))]\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      connection = TestDatabaseConnection(type = "H2")\n'+
+   '    )\n'+
+   '  )\n'+
+   ')\n';
+
+   assertEqualsH2Compatible(
+    $expectedLegacyH2,
+    $expectedNewH2,
+    $res->planToString(meta::relational::extension::relationalExtensions())
+   );
 
    let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
 
-   let expectedJava =
+   let expectedJavaLegacyH2 =
    'Sequence\n' +
    '(\n' +
    '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
@@ -123,7 +161,45 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '  )\n' +
    ')\n';
 
-   assertEquals($expectedJava, $withJava->planToString(meta::relational::extension::relationalExtensions()));
+   let expectedJavaNewH2 =
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    Allocation\n' +
+   '    (\n' +
+   '      type = DateTime\n' +
+   '      resultSizeRange = 1\n'+
+   '      name = x\n' +
+   '      value = \n' +
+   '        (\n' +
+   '          PureExp\n' +
+   '          (\n' +
+   '            type = DateTime\n' +
+   '            resultSizeRange = 1\n'+
+   '            expression = now()\n' +
+   '            implementation\n' +
+   '            (\n' +
+   '              calls = org.finos.legend.engine.plan.dependencies.store.platform.PredefinedExpressions.now\n' +
+   '            )\n' +
+   '          )\n' +
+   '        )\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("firstName", VARCHAR(200))]\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n';
+
+   assertEqualsH2Compatible(
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
+    $withJava->planToString(meta::relational::extension::relationalExtensions())
+   );
 }
 
 function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJava::tests::withNestedSequenceNode() : Boolean[1]
@@ -134,15 +210,16 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
          employeeCount
       }
    }#;
-   
+
    let query = {|meta::relational::graphFetch::tests::chain::Target_Firm.all()->graphFetch($tree)->serialize($tree)};
-  
-   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+
+   let modelChainConnection = ^meta::core::runtime::ConnectionStore(
+    element = ^meta::external::store::model::ModelStore(),
+    connection=^meta::external::store::model::ModelChainConnection(
       mappings = [meta::relational::tests::simpleRelationalMapping]
-   );
-   let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+   ));
+   let runtime = ^meta::core::runtime::Runtime(
+      connectionStores = meta::external::store::relational::tests::testRuntime().connectionStores->concatenate($modelChainConnection)
    );
 
    let res = meta::pure::executionPlan::executionPlan($query, meta::relational::graphFetch::tests::chain::M2M_Mapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -155,7 +232,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    let newGlobalGraphFetchWithSequence = ^$globalGraphFetch(localGraphFetchExecutionNode = $newLocalGraphFetchWithSequence);
    let newRoot = ^$root(executionNodes = $newGlobalGraphFetchWithSequence);
 
-   let plan = ^$res(rootExecutionNode = $newRoot);  
+   let plan = ^$res(rootExecutionNode = $newRoot);
 
    let expected =
     'PureExp\n'+
@@ -267,8 +344,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      meta::relational::tests::model::simple::Person.all()
                      ->filter(p|$x>now()->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
-   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   let expected =
+   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let expectedLegacyH2 =
    'Sequence\n'+
    '(\n'+
    '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
@@ -298,11 +375,45 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '  )\n'+
    ')\n';
 
-   assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
+   let expectedNewH2 =
+   'Sequence\n'+
+   '(\n'+
+   '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+   '  (\n'+
+   '    Allocation\n'+
+   '    (\n'+
+   '      type = Date\n'+
+   '      resultSizeRange = 1\n'+
+   '      name = x\n'+
+   '      value = \n'+
+   '        (\n'+
+   '          PureExp\n'+
+   '          (\n'+
+   '            type = Date\n'+
+   '            resultSizeRange = 1\n'+
+   '            expression = now() -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n'+
+   '          )\n'+
+   '        )\n'+
+   '    )\n'+
+   '    Relational\n'+
+   '    (\n'+
+   '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+   '      resultColumns = [("firstName", VARCHAR(200))]\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n'+
+   '      connection = TestDatabaseConnection(type = "H2")\n'+
+   '    )\n'+
+   '  )\n'+
+   ')\n';
+
+   assertEqualsH2Compatible(
+    $expectedLegacyH2,
+    $expectedNewH2,
+    $res->planToString(meta::relational::extension::relationalExtensions())
+   );
 
    let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
 
-   let expectedJava =
+   let expectedJavaLegacyH2 =
    'Sequence\n' +
    '(\n' +
    '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
@@ -364,7 +475,74 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0023     }\n' +
    '      0024 }\n' +
    ')\n';
-   assertEquals($expectedJava, $withJava->planToString(true, meta::relational::extension::relationalExtensions()));
+
+   let expectedJavaNewH2 =
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    Allocation\n' +
+   '    (\n' +
+   '      type = Date\n' +
+   '      resultSizeRange = 1\n'+
+   '      name = x\n' +
+   '      value = \n' +
+   '        (\n' +
+   '          PureExp\n' +
+   '          (\n' +
+   '            type = Date\n' +
+   '            resultSizeRange = 1\n'+
+   '            expression = now() -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n' +
+   '            implementation\n' +
+   '            (\n' +
+   '              calls = _pure.plan.root.n1.n1.Execute.execute\n' +
+   '            )\n' +
+   '          )\n' +
+   '        )\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("firstName", VARCHAR(200))]\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, current_timestamp())\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n' +
+   'globalImplementationSupport\n' +
+   '(\n' +
+   '  classes =\n' +
+   '      _pure.plan.root.n1.n1.Execute\n' +
+   '      0001 package _pure.plan.root.n1.n1;\n' +
+   '      0002 \n' +
+   '      0003 import java.util.Date;\n' +
+   '      0004 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;\n' +
+   '      0005 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n' +
+   '      0006 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n' +
+   '      0007 import org.finos.legend.engine.plan.dependencies.util.Library;\n' +
+   '      0008 \n' +
+   '      0009 public class Execute\n' +
+   '      0010 {\n' +
+   '      0011     public static PureDate execute(IExecutionNodeContext context)\n' +
+   '      0012     {\n' +
+   '      0013         try\n' +
+   '      0014         {\n' +
+   '      0015             return Library.adjustDate(PureDate.fromDate(new Date()),\n' +
+   '      0016                                       1L,\n' +
+   '      0017                                       DurationUnit.getEnumFromPureName("DAYS"));\n' +
+   '      0018         }\n' +
+   '      0019         catch (Exception e)\n' +
+   '      0020         {\n' +
+   '      0021             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
+   '      0022         }\n' +
+   '      0023     }\n' +
+   '      0024 }\n' +
+   ')\n';
+   assertEqualsH2Compatible(
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
+    $withJava->planToString(true, meta::relational::extension::relationalExtensions())
+   );
 }
 
 function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJava::tests::letVariableFunctionAdjustDateLiteral() : Boolean[1]
@@ -374,8 +552,8 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      ->filter(p|$x>%2005-10-10->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
 
-   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-   let expected =
+   let res = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let expectedLegacyH2 =
    'Sequence\n'+
    '(\n'+
    '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
@@ -404,12 +582,45 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    )\n'+
    '  )\n'+
    ')\n';
+   let expectedNewH2 =
+   'Sequence\n'+
+   '(\n'+
+   '  type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+   '  (\n'+
+   '    Allocation\n'+
+   '    (\n'+
+   '      type = Date\n'+
+   '      resultSizeRange = 1\n'+
+   '      name = x\n'+
+   '      value = \n'+
+   '        (\n'+
+   '          PureExp\n'+
+   '          (\n'+
+   '            type = Date\n'+
+   '            resultSizeRange = 1\n'+
+   '            expression = 2005-10-10 -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n'+
+   '          )\n'+
+   '        )\n'+
+   '    )\n'+
+   '    Relational\n'+
+   '    (\n'+
+   '      type = TDS[(firstName, String, VARCHAR(200), "")]\n'+
+   '      resultColumns = [("firstName", VARCHAR(200))]\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, DATE\'2005-10-10\')\n'+
+   '      connection = TestDatabaseConnection(type = "H2")\n'+
+   '    )\n'+
+   '  )\n'+
+   ')\n';
 
-   assertEquals($expected, $res->planToString(meta::relational::extension::relationalExtensions()));
+   assertEqualsH2Compatible(
+    $expectedLegacyH2,
+    $expectedNewH2,
+    $res->planToString(meta::relational::extension::relationalExtensions())
+   );
 
    let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
 
-   let expectedJava =
+   let expectedJavaLegacyH2 =
    'Sequence\n' +
    '(\n' +
    '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
@@ -470,7 +681,73 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0022     }\n' +
    '      0023 }\n' +
    ')\n';
-   assertEquals($expectedJava, $withJava->planToString(true, meta::relational::extension::relationalExtensions()));
+
+   let expectedJavaNewH2 =
+   'Sequence\n' +
+   '(\n' +
+   '  type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+   '  (\n' +
+   '    Allocation\n' +
+   '    (\n' +
+   '      type = Date\n' +
+   '      resultSizeRange = 1\n'+
+   '      name = x\n' +
+   '      value = \n' +
+   '        (\n' +
+   '          PureExp\n' +
+   '          (\n' +
+   '            type = Date\n' +
+   '            resultSizeRange = 1\n'+
+   '            expression = 2005-10-10 -> adjust(1, Enumeration DurationUnit -> extractEnumValue(\'DAYS\'))\n' +
+   '            implementation\n' +
+   '            (\n' +
+   '              calls = _pure.plan.root.n1.n1.Execute.execute\n' +
+   '            )\n' +
+   '          )\n' +
+   '        )\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(firstName, String, VARCHAR(200), "")]\n' +
+   '      resultColumns = [("firstName", VARCHAR(200))]\n' +
+   '      sql = select "root".FIRSTNAME as "firstName" from personTable as "root" where TIMESTAMP\'${x}\' > dateadd(DAY, -1, DATE\'2005-10-10\')\n' +
+   '      connection = TestDatabaseConnection(type = "H2")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n' +
+   'globalImplementationSupport\n' +
+   '(\n' +
+   '  classes =\n' +
+   '      _pure.plan.root.n1.n1.Execute\n' +
+   '      0001 package _pure.plan.root.n1.n1;\n' +
+   '      0002 \n' +
+   '      0003 import org.finos.legend.engine.plan.dependencies.domain.date.DurationUnit;\n' +
+   '      0004 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n' +
+   '      0005 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n' +
+   '      0006 import org.finos.legend.engine.plan.dependencies.util.Library;\n' +
+   '      0007 \n' +
+   '      0008 public class Execute\n' +
+   '      0009 {\n' +
+   '      0010     public static PureDate execute(IExecutionNodeContext context)\n' +
+   '      0011     {\n' +
+   '      0012         try\n' +
+   '      0013         {\n' +
+   '      0014             return Library.adjustDate(PureDate.parsePureDate("2005-10-10"),\n' +
+   '      0015                                       1L,\n' +
+   '      0016                                       DurationUnit.getEnumFromPureName("DAYS"));\n' +
+   '      0017         }\n' +
+   '      0018         catch (Exception e)\n' +
+   '      0019         {\n' +
+   '      0020             throw new RuntimeException("Failed in node: root.n1.n1", e);\n' +
+   '      0021         }\n' +
+   '      0022     }\n' +
+   '      0023 }\n' +
+   ')\n';
+   assertEqualsH2Compatible(
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
+    $withJava->planToString(true, meta::relational::extension::relationalExtensions())
+   );
 }
 
 function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJava::tests::javaGenerationLetVariablePureExpression() : Boolean[1]
@@ -480,10 +757,10 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                                                                       ->filter(p|$p.classification($asOf).type==$CLSFtype)
                                                                       ->project([x|$x.classification($asOf).type], ['classificationType'])->distinct();};
 
-   let res = meta::pure::executionPlan::executionPlan($lambda,meta::relational::tests::milestoning::milestoningmap, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let res = meta::pure::executionPlan::executionPlan($lambda,meta::relational::tests::milestoning::milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let withJava = $res->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
 
-   let expectedJava =
+   let expectedJavaLegacyH2 =
    'Sequence\n'+
    '(\n' +
    '  type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
@@ -516,7 +793,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '    (\n' +
    '      type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
    '      resultColumns = [(\"classificationType\", VARCHAR(200))]\n' +
-   '      sql = select distinct \"productclassificationtable_0\".type as \"classificationType\" from ProductTable as \"root\" left outer join ProductClassificationTable as \"productclassificationtable_0\" on (\"root\".type = \"productclassificationtable_0\".type and \"productclassificationtable_0\".from_z <= \'${asOf}\' and \"productclassificationtable_0\".thru_z > \'${asOf}\') where \"productclassificationtable_0\".type = \'${CLSFtype?replace("\'", "\'\'")}\' and \"root\".from_z <= \'${asOf}\' and \"root\".thru_z > \'${asOf}\'\n' +
+   '      sql = select distinct "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'${asOf}\' and "productclassificationtable_0".thru_z > \'${asOf}\') where "productclassificationtable_0".type = \'${CLSFtype?replace("\'", "\'\'")}\' and "root".from_z <= \'${asOf}\' and "root".thru_z > \'${asOf}\'\n' +
    '      connection = TestDatabaseConnection(type = \"H2\")\n' +
    '    )\n' +
    '  )\n' +
@@ -552,7 +829,80 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
    '      0025     }\n' +
    '      0026 }\n' +
    ')\n';
-   assertEquals($expectedJava, $withJava->planToString(true, meta::relational::extension::relationalExtensions()));
+   let expectedJavaNewH2 =
+   'Sequence\n'+
+   '(\n' +
+   '  type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
+   '  (\n' +
+   '    FunctionParametersValidationNode\n' +
+   '    (\n' +
+   '      functionParameters = [businessDate:StrictDate[0..1], CLSFtype:String[1]]\n' +
+   '    )\n' +
+   '    Allocation\n' +
+   '    (\n' +
+   '      type = Date\n' +
+   '      resultSizeRange = 1\n'+
+   '      name = asOf\n' +
+   '      value = \n' +
+   '        (\n' +
+   '          PureExp\n' +
+   '          (\n' +
+   '            type = Date\n' +
+   '            resultSizeRange = 1\n'+
+   '            requires = [businessDate(StrictDate[0..1])]\n' +
+   '            expression = $businessDate -> isNotEmpty() -> if([Routed Func: | $businessDate -> toOne();], [Routed Func: | now();])\n' +
+   '            implementation\n' +
+   '            (\n' +
+   '              calls = _pure.plan.root.n2.n1.Execute.execute\n'+
+   '            )\n' +
+   '          )\n' +
+   '        )\n' +
+   '    )\n' +
+   '    Relational\n' +
+   '    (\n' +
+   '      type = TDS[(classificationType, String, VARCHAR(200), \"\")]\n' +
+   '      resultColumns = [(\"classificationType\", VARCHAR(200))]\n' +
+   '      sql = select distinct "productclassificationtable_0".type as "classificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= TIMESTAMP\'${asOf}\' and "productclassificationtable_0".thru_z > TIMESTAMP\'${asOf}\') where "productclassificationtable_0".type = \'${CLSFtype?replace("\'", "\'\'")}\' and "root".from_z <= TIMESTAMP\'${asOf}\' and "root".thru_z > TIMESTAMP\'${asOf}\'\n' +
+   '      connection = TestDatabaseConnection(type = \"H2\")\n' +
+   '    )\n' +
+   '  )\n' +
+   ')\n' +
+   'globalImplementationSupport\n' +
+   '(\n' +
+   '  classes =\n' +
+   '      _pure.plan.root.n2.n1.Execute\n' +
+   '      0001 package _pure.plan.root.n2.n1;\n' +
+   '      0002 \n' +
+   '      0003 import java.util.Date;\n' +
+   '      0004 import java.util.function.Supplier;\n' +
+   '      0005 import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;\n' +
+   '      0006 import org.finos.legend.engine.plan.dependencies.store.shared.IExecutionNodeContext;\n' +
+   '      0007 import org.finos.legend.engine.plan.dependencies.util.Library;\n' +
+   '      0008 \n' +
+   '      0009 public class Execute\n' +
+   '      0010 {\n' +
+   '      0011     public static PureDate execute(IExecutionNodeContext context)\n' +
+   '      0012     {\n' +
+   '      0013         try\n' +
+   '      0014         {\n' +
+   '      0015             PureDate businessDate = context.getResult(\"businessDate\", PureDate.class);\n' +
+   '      0016             return businessDate != null ? ((Supplier<PureDate>) () -> Library.toOne(businessDate))\n' +
+   '      0017                                                                              .get()\n' +
+   '      0018                                         : ((Supplier<PureDate>) () -> PureDate.fromDate(new Date()))\n' +
+   '      0019                                                                               .get();\n' +
+   '      0020         }\n' +
+   '      0021         catch (Exception e)\n' +
+   '      0022         {\n' +
+   '      0023             throw new RuntimeException(\"Failed in node: root.n2.n1\", e);\n' +
+   '      0024         }\n' +
+   '      0025     }\n' +
+   '      0026 }\n' +
+   ')\n';
+   assertEqualsH2Compatible(
+    $expectedJavaLegacyH2,
+    $expectedJavaNewH2,
+    $withJava->planToString(true, meta::relational::extension::relationalExtensions())
+   );
 }
 
 function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJava::tests::javaGenerationWithMatchInMapping() : Boolean[1]
@@ -575,7 +925,7 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
                      ->filter(p|$x>%2005-10-10->adjust(-1, DurationUnit.DAYS))
                      ->project([col({p:meta::relational::tests::model::simple::Person[1]|$p.firstName}, 'firstName')]);};
 
-   let unbound = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let unbound = meta::pure::executionPlan::executionPlan($lambda,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let withoutPlanId        = $unbound->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
    let withoutPlanIdPackage = $withoutPlanId.globalImplementationSupport->cast(@JavaPlatformImplementation).classes.package->removeDuplicates();
@@ -600,11 +950,11 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
 
   let query = {|meta::pure::executionPlan::constraints::tests::Person.all()->graphFetchChecked($tree)->serialize($tree)};
   let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
   let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
- 
+
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
   let firmTree = $generatedTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('firm'))->toOne();
   let employeesTree = $firmTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('employees'))->toOne()->cast(@RoutedPropertyGraphFetchTree);
@@ -630,12 +980,12 @@ function <<test.Test>> meta::relational::executionPlan::platformBinding::legendJ
 
   let query = {|meta::pure::executionPlan::constraints::tests::Person.all()->graphFetchChecked($tree)->serialize($tree)};
   let mapping = meta::pure::executionPlan::constraints::tests::simpleRel;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
   let withJava = $plan->generatePlatformCode(meta::pure::executionPlan::platformBinding::legendJava::legendJavaPlatformBindingId(), ^meta::pure::executionPlan::platformBinding::legendJava::LegendJavaPlatformBindingConfig(), relationalExtensionsWithLegendJavaPlatformBinding());
-   
- 
+
+
   let generatedTree = $withJava.rootExecutionNode->cast(@PureExpressionPlatformExecutionNode).executionNodes->at(0)->cast(@GlobalGraphFetchExecutionNode).graphFetchTree.tree;
   let firmTree = $generatedTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('firm'))->toOne();
   let employeesTree = $firmTree.subTrees->filter(g | $g->cast(@RoutedPropertyGraphFetchTree).property.name->toOne()->equal('employees'))->toOne()->cast(@RoutedPropertyGraphFetchTree);

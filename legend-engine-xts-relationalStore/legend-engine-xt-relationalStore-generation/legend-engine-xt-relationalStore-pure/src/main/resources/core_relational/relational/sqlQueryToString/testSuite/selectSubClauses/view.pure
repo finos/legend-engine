@@ -16,6 +16,8 @@ import meta::relational::tests::projection::view::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
@@ -23,7 +25,7 @@ import meta::pure::test::*;
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::view::testViewAllOneSimpleProperty(config:DbTestConfig[1]):Boolean[1]
 {
   let result = executeViaPlan(|OrderPnl.all()->project(#/OrderPnl/pnl#), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-  
+
   runDataAssertion($result, $config,
   | assertSameElements(['100.0', '200.0', '150.0'], $result.values.rows->map(r|$r.values->makeString('')));
   );

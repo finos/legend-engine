@@ -16,10 +16,12 @@ import meta::relational::tests::query::paginate::helper::*;
 import meta::json::*;
 import meta::pure::mapping::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 
@@ -34,14 +36,15 @@ function meta::relational::tests::query::paginate::helper::runtime(): Runtime[1]
             'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (5, \'Fabrice\', \'Roberts\',34, 5,2,null);' +
             'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (6, \'Oliver\', \'Hill\',32, 6,3,null);' +
             'insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (7, \'David\', \'Harris\',35, 7,4,null);';
-  ^Runtime(connections=[
-    ^meta::pure::alloy::connections::RelationalDatabaseConnection
-      (
+  ^Runtime(connectionStores=[
+    ^ConnectionStore(
         element = meta::relational::tests::db,
+        connection=^meta::external::store::relational::runtime::RelationalDatabaseConnection
+      (
         type = meta::relational::runtime::DatabaseType.H2,
         datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupSqls=[$sqls]),
         authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
-      ) 
+      ))
     ]);
 }
 
@@ -83,7 +86,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::paginate:
     |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(2,4)->graphFetch(#{Person{firstName}}#)->serialize(#{Person{firstName}}#),
     3
   );
-  
+
   runTest(
     |Person.all()->from(simpleRelationalMapping, runtime())->sortBy(#/Person/firstName!fn#)->paginated(1,4),
     'select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".FIRSTNAME as "o_fn" from personTable as "root" order by "root".FIRSTNAME offset 0 rows fetch next 4 rows only',
@@ -104,7 +107,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::paginate:
 }
 
 function <<test.Test>> meta::relational::tests::query::paginate::testPaginatedByVendor():Boolean[1]
-{               
+{
    // First type of function - simple query
 
    let f1 = {|Person.all()->sortBy(#/Person/firstName!fn#)->paginated(1,4);};

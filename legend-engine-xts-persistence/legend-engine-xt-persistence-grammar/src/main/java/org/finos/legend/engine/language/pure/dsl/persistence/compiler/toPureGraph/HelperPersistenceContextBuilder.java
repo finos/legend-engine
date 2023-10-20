@@ -69,7 +69,7 @@ public class HelperPersistenceContextBuilder
         }
         else if (serviceParameter.value instanceof ConnectionValue)
         {
-            Root_meta_pure_runtime_Connection value = buildConnection(((ConnectionValue) serviceParameter.value).connection, context);
+            Root_meta_core_runtime_Connection value = buildConnection(((ConnectionValue) serviceParameter.value).connection, context);
             pureServiceParameter._value(Lists.fixedSize.of(value));
             return pureServiceParameter;
         }
@@ -77,14 +77,14 @@ public class HelperPersistenceContextBuilder
         throw new EngineException(String.format("Unable to build service parameter of type '%s'.", serviceParameter.value.getClass()));
     }
 
-    public static Root_meta_pure_runtime_Connection buildConnection(Connection connection, CompileContext context)
+    public static Root_meta_core_runtime_Connection buildConnection(Connection connection, CompileContext context)
     {
         if (connection == null)
         {
             return null;
         }
 
-        Root_meta_pure_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
+        Root_meta_core_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
         connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
         return pureConnection;
     }

@@ -12,9 +12,12 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::analytics::store::entitlements::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
@@ -23,7 +26,7 @@ function meta::analytics::store::entitlements::getGeneralRelationalTablesFromMap
    let relationalDatabaseConnections = getRelationalDatabaseConnection($runtime);
    let tablesFromMapping = getTablesFromMapping($mapping);
    let tablesWithTypeFromRuntime = $relationalDatabaseConnections->map(c| let tables = getTablesFromDatabase($c.element->cast(@Database));
-                                                                       $tables->map(tb|^TableWithType(table = $tb, type = $c.type.name)););
+                                                                       $tables->map(tb|^TableWithType(table = $tb, type = $c.connection->cast(@RelationalDatabaseConnection).type.name)););
    let tablesWithType = $tablesWithTypeFromRuntime->filter(tb|$tb.table->in($tablesFromMapping));
    $tablesWithType->map(ltb| ^$ltb(table=runMappersOnTables($ltb.table, $runtime)->toOne()));
 }
@@ -33,6 +36,6 @@ function meta::analytics::store::entitlements::getGeneralRelationalTablesFromQue
    let relationalDatabaseConnections = getRelationalDatabaseConnection($runtime);
    let tablesFromQuery = getTablesFromQuery($query, $mapping, $runtime, meta::relational::extension::relationalExtensions(), []);
    let tablesWithTypeFromRuntime = $relationalDatabaseConnections->map(c| let tables = getTablesFromDatabase($c.element->cast(@Database));
-                                                                       $tables->map(tb|^TableWithType(table = runMappersOnTables($tb, $runtime)->toOne(), type = $c.type.name)););
+                                                                       $tables->map(tb|^TableWithType(table = runMappersOnTables($tb, $runtime)->toOne(), type = $c.connection->cast(@RelationalDatabaseConnection).type.name)););
    $tablesWithTypeFromRuntime->filter(tb|$tb.table->in($tablesFromQuery));
 }

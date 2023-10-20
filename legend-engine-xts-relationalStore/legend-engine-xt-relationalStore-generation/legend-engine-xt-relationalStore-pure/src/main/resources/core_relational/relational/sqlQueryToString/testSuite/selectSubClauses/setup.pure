@@ -15,9 +15,11 @@
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::relational::dbTestRunner::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::test::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 
 function <<paramTest.BeforePackage>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::setUp(config:DbTestConfig[1]):Boolean[1]
 {

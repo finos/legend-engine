@@ -31,8 +31,14 @@ public class AddEnumToObject<T, V extends Enum<?>> implements ValueProcessor<T>
     private final ExternalDataObjectAdder<T, V> dataAdder;
     private final Method getNameMethod;
     private final V[] enumConstants;
+    private String typePath;
 
     public AddEnumToObject(ExternalDataAdder<T> dataAdder, SimpleTypeHandler<String> handler, Class<V> clazz)
+    {
+        this(dataAdder, handler, clazz, "");
+    }
+
+    public AddEnumToObject(ExternalDataAdder<T> dataAdder, SimpleTypeHandler<String> handler, Class<V> clazz, String typePath)
     {
         this.dataAdder = (ExternalDataObjectAdder<T, V>) dataAdder;
         this.handler = handler;
@@ -46,18 +52,21 @@ public class AddEnumToObject<T, V extends Enum<?>> implements ValueProcessor<T>
             throw new RuntimeException("getName does not exist in : " + clazz.getSimpleName(), e);
         }
         this.enumConstants = clazz.getEnumConstants();
+        this.typePath = typePath;
     }
 
     @Override
     public void process(DeserializeContext<?> context, String rawValue)
     {
         String text = handler.parse(rawValue);
+
+        String textWithoutPath = text.startsWith(typePath) ? text.substring(typePath.length()) : text;
         V value = null;
         for (V v : enumConstants)
         {
             try
             {
-                if (XmlUtils.lenientMatch((String) getNameMethod.invoke(v), text))
+                if (XmlUtils.lenientMatch((String) getNameMethod.invoke(v), textWithoutPath))
                 {
                     value = v;
                 }

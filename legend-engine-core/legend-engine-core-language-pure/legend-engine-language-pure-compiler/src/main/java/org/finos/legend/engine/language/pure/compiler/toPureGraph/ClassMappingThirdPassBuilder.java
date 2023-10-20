@@ -36,7 +36,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.InstanceSetImplem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.PropertyMapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PureInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -80,7 +80,7 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
         PureInstanceSetImplementation s = (PureInstanceSetImplementation) parentMapping._classMappings().select(c -> c._id().equals(HelperMappingBuilder.getClassMappingId(classMapping, this.context))).getFirst();
         s._propertyMappings().forEachWithIndex((ObjectIntProcedure<PropertyMapping>) ((p, i) ->
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping pm = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping) p;
+            org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PurePropertyMapping pm = (org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PurePropertyMapping) p;
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> property = pm._property();
             SourceInformation pSourceInformation = SourceInformationHelper.fromM3SourceInformation(p.getSourceInformation());
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification last = pm._transform()._expressionSequence().getLast();
@@ -110,9 +110,9 @@ public class ClassMappingThirdPassBuilder implements ClassMappingVisitor<SetImpl
                 List<? extends InstanceSetImplementation> setImpls = setImplementation != null ? core_pure_router_operations_router_operations.Root_meta_pure_router_routing_resolveOperation_SetImplementation_MANY__Mapping_1__InstanceSetImplementation_MANY_(Lists.immutable.of(setImplementation), parentMapping, this.context.pureModel.getExecutionSupport()).toList() : Collections.emptyList();
                 typesToCheck = setImpls.stream().map(setImpl -> ((PureInstanceSetImplementation) setImpl)._srcClass()).collect(Collectors.toList());
             }
-            else if (((org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping) p)._transformer() != null)
+            else if (((org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PurePropertyMapping) p)._transformer() != null)
             {
-                EnumerationMapping<Object> m = ((EnumerationMapping<Object>) ((org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.modelToModel.PurePropertyMapping) p)._transformer());
+                EnumerationMapping<Object> m = ((EnumerationMapping<Object>) ((org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PurePropertyMapping) p)._transformer());
                 Object val = m._enumValueMappings().getFirst()._sourceValues().getFirst();
                 if (val instanceof String)
                 {

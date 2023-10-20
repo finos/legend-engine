@@ -17,6 +17,7 @@ import meta::pure::graphFetch::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::utils::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
@@ -36,22 +37,22 @@ function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], 
    $f->executionPlan($context, $extensions, noDebug());
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
    $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, noDebug());
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], shouldDebug:Boolean[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], shouldDebug:Boolean[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
    $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, if($shouldDebug,|debug(),|noDebug()));
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
    $f->executionPlan($m, $runtime, $context, $extensions, noDebug());
 }
@@ -87,30 +88,30 @@ Class meta::pure::executionPlan::PlanSetPlaceHolder
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let routed = $f->routeFunction($context, $extensions, $debugContext);
-   meta::pure::executionPlan::executionPlan($routed, $f, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^Runtime(), $context, $extensions, $debugContext);
+   meta::pure::executionPlan::executionPlan($routed, $f, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^meta::core::runtime::Runtime(), $context, $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let routed = $f->routeFunction($m, $runtime, $context, $extensions, $debugContext);
    meta::pure::executionPlan::executionPlan($routed, $f, $m, $runtime, $context, $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
 
    let openVars = $f->openVariableValues();
    let functionParameters = $f->stubFuncParameters();
    let inScopeVars = $functionParameters->map(ep|pair($ep.name, ^List<Any>(values=$ep)))->newMap()->putAll($openVars);
-   
+
    meta::pure::executionPlan::executionPlan($clusters, $routedFunction, $f, $m, $runtime, $context, $inScopeVars, $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecification[*], routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:Runtime[1], context:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecification[*], routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let functionParameters = $f->stubFuncParameters();
-   
+
    print(if($debugContext.debug,|'\nGenerating Execution Plan:\n',|''));
    let node = if ($clusters->size() == 1,
        | print(if($debugContext.debug,|'Generating plan for cluster: '+$clusters->at(0)->meta::pure::router::printer::asString()+'\n',|''));
@@ -171,7 +172,7 @@ function <<access.private>> meta::pure::executionPlan::addFunctionParametersVali
    let collectionEnumParams = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration) && $p.multiplicity == ZeroMany);
    assert($collectionEnumParams->size() == 0, |'Collection of Enums is not supported as service parameter ' + $collectionEnumParams->map(p | $p.name)->makeString('[',', ',']'));
    let enumValidationContext = $planVarPlaceHolders->filter(p | $p.type->instanceOf(Enumeration))->map(e | ^meta::pure::executionPlan::EnumValidationContext(varName = $e.name, validEnumValues = $e.type->cast(@Enumeration<Any>)->enumValues()->map(e |$e->id())));
-   let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput(); 
+   let paramsSupportedForStreamInput = $routedFunction->findParamsSupportedForStreamInput();
    if($planVarPlaceHolders->isNotEmpty(),| let functionParameters = $planVarPlaceHolders->map(p|^FunctionParameter(name=$p.name, supportsStream = $p.name->in($paramsSupportedForStreamInput), multiplicity=$p.multiplicity, type=$p.type));
                                                                              let functionParametersValidationNode = ^FunctionParametersValidationNode(functionParameters = $functionParameters, resultType=^ResultType(type = Boolean), parameterValidationContext = $enumValidationContext);
                                                                              $node->match([s:SequenceExecutionNode[1]|^$s(executionNodes=$functionParametersValidationNode->concatenate($s.executionNodes)),

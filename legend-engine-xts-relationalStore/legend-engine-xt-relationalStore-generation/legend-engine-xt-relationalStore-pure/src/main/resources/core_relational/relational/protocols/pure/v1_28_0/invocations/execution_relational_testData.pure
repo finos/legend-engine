@@ -18,6 +18,7 @@ import meta::protocols::pure::v1_28_0::invocation::execution::execute::*;
 import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::*;
 import meta::protocols::pure::v1_28_0::transformation::fromPureGraph::runtime::*;
 import meta::pure::functions::io::http::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::alloy::metadataServer::*;
@@ -94,7 +95,7 @@ function meta::protocols::pure::v1_28_0::invocation::execution::testDataGenerati
       runtime = transformRuntime($pureRuntime, $extensions),
       context = $transformedContext,
       model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
-                  |let stores =  $pureRuntime.connections.element->cast(@meta::pure::store::Store)
+                  |let stores =  $pureRuntime.connectionStores.element->cast(@meta::pure::store::Store)
                                     ->map(s|$s->findAllStoreIncludes())
                                     ->removeDuplicates()
                                     ->map(c|^meta::protocols::pure::v1_28_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_28_0::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
@@ -164,7 +165,7 @@ function meta::protocols::pure::v1_28_0::invocation::execution::testDataGenerati
       runtime = transformRuntime($pureRuntime, $extensions),
       context = $transformedContext,
       model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
-                  |let stores =  $pureRuntime.connections.element->cast(@meta::pure::store::Store)
+                  |let stores =  $pureRuntime.connectionStores.element->cast(@meta::pure::store::Store)
                                     ->map(s|$s->findAllStoreIncludes())
                                     ->removeDuplicates()
                                     ->map(c|^meta::protocols::pure::v1_28_0::metamodel::PackageableElementPointer(type=meta::protocols::pure::v1_28_0::metamodel::PackageableElementType.STORE,path=$c->elementToPath()));
@@ -235,7 +236,7 @@ function meta::protocols::pure::v1_28_0::invocation::execution::testDataGenerati
       runtime = transformRuntime($pureRuntime, $extensions),
       context = $transformedContext,
       model = if($execMode == ExecutionMode.SEMI_INTERACTIVE,
-                  |let stores =  $pureRuntime.connections.element->map(element |
+                  |let stores =  $pureRuntime.connectionStores.element->map(element |
                      $element->match([
                         store:meta::pure::store::Store[1] | $store->map(s|$s->findAllStoreIncludes())
                                     ->removeDuplicates()

@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::milestoning::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mergerules::setUp():Any[0..1]
@@ -24,7 +26,7 @@ function <<test.BeforePackage>> meta::relational::tests::mergerules::setUp():Any
 }
 
 //It is valid for ..1 properties' JoinTreeNodes to merge across filter and project e.g. if you filter all Synonyms where their product.name == 'Firm C'
-//Then when it comes time to project from the Synonym then all Synonyms will meet this criteria. 
+//Then when it comes time to project from the Synonym then all Synonyms will meet this criteria.
 function <<test.Test>> meta::relational::tests::mergerules::testToOneJoinTreeNodesForFilterAndProjectMerge():Boolean[1]
 {
    let result = execute(|Synonym.all()->filter(s| $s.product.name == 'Firm C')->project([s|$s.name, s|$s.product.name],['synonymName','productName']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
@@ -67,7 +69,11 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mergerules::m
 {
    let result = execute(|meta::relational::tests::milestoning::Product.all(%2015-10-16)->filter(p|$p.classification(%2015-10-16).type=='STOCK')->project([p|$p.name, p|$p.classification(%2015-10-16).type],['productName','productClassificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['ProductName2~STOCK'], $result.values.rows->map(r|$r.getString('productName')+'~'+$r.getString('productClassificationType')));
-   assertSameSQL('select "root".name as "productName", "productclassificationtable_0".type as "productClassificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+   assertEqualsH2Compatible(
+    'select "root".name as "productName", "productclassificationtable_0".type as "productClassificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= \'2015-10-16\' and "productclassificationtable_0".thru_z > \'2015-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', 
+    'select "root".name as "productName", "productclassificationtable_0".type as "productClassificationType" from ProductTable as "root" left outer join ProductClassificationTable as "productclassificationtable_0" on ("root".type = "productclassificationtable_0".type and "productclassificationtable_0".from_z <= DATE\'2015-10-16\' and "productclassificationtable_0".thru_z > DATE\'2015-10-16\') where "productclassificationtable_0".type = \'STOCK\' and "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\'', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 // Alloy exclusion reason: 12. Milestoning not supported
@@ -75,5 +81,9 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mergerules::m
 {
    let result = execute(|meta::relational::tests::milestoning::Product.all(%2015-10-16)->filter(p|$p.synonyms(%2015-10-16)->exists(s|$s.synonym=='GS-Mod-S1'))->project([p|$p.name, p|$p.synonyms(%2015-10-16).synonym],['productName','productSynonymsName']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['ProductName2~GS-Mod-S1', 'ProductName2~GS-Mod-S2'], $result.values.rows->map(r|$r.getString('productName')+'~'+$r.getString('productSynonymsName')));
-   assertSameSQL('select "root".name as "productName", "productsynonymtable_2".synonym as "productSynonymsName" from ProductTable as "root" left outer join (select distinct "productsynonymtable_1".name from ProductSynonymTable as "productsynonymtable_1" where "productsynonymtable_1".from_z <= \'2015-10-16\' and "productsynonymtable_1".thru_z > \'2015-10-16\' and "productsynonymtable_1".synonym = \'GS-Mod-S1\') as "productsynonymtable_0" on ("root".name = "productsynonymtable_0".name) left outer join ProductSynonymTable as "productsynonymtable_2" on ("root".name = "productsynonymtable_2".name and "productsynonymtable_2".from_z <= \'2015-10-16\' and "productsynonymtable_2".thru_z > \'2015-10-16\') where "productsynonymtable_0".name is not null and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', $result);
+   assertEqualsH2Compatible(
+    'select "root".name as "productName", "productsynonymtable_2".synonym as "productSynonymsName" from ProductTable as "root" left outer join (select distinct "productsynonymtable_1".name from ProductSynonymTable as "productsynonymtable_1" where "productsynonymtable_1".from_z <= \'2015-10-16\' and "productsynonymtable_1".thru_z > \'2015-10-16\' and "productsynonymtable_1".synonym = \'GS-Mod-S1\') as "productsynonymtable_0" on ("root".name = "productsynonymtable_0".name) left outer join ProductSynonymTable as "productsynonymtable_2" on ("root".name = "productsynonymtable_2".name and "productsynonymtable_2".from_z <= \'2015-10-16\' and "productsynonymtable_2".thru_z > \'2015-10-16\') where "productsynonymtable_0".name is not null and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'', 
+    'select "root".name as "productName", "productsynonymtable_2".synonym as "productSynonymsName" from ProductTable as "root" left outer join (select distinct "productsynonymtable_1".name from ProductSynonymTable as "productsynonymtable_1" where "productsynonymtable_1".from_z <= DATE\'2015-10-16\' and "productsynonymtable_1".thru_z > DATE\'2015-10-16\' and "productsynonymtable_1".synonym = \'GS-Mod-S1\') as "productsynonymtable_0" on ("root".name = "productsynonymtable_0".name) left outer join ProductSynonymTable as "productsynonymtable_2" on ("root".name = "productsynonymtable_2".name and "productsynonymtable_2".from_z <= DATE\'2015-10-16\' and "productsynonymtable_2".thru_z > DATE\'2015-10-16\') where "productsynonymtable_0".name is not null and "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\'', 
+    $result->sqlRemoveFormatting()
+   );
 }

@@ -45,7 +45,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOpt
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionOptionContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_service_service_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -92,7 +92,7 @@ public class ServicePlanGenerator
     public static SingleExecutionPlan generateSingleExecutionPlan(PureSingleExecution singleExecution, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         Mapping mapping = singleExecution.mapping != null ? pureModel.getMapping(singleExecution.mapping) : null;
-        Root_meta_pure_runtime_Runtime runtime = singleExecution.runtime != null ? HelperRuntimeBuilder.buildPureRuntime(singleExecution.runtime, pureModel.getContext()) : null;
+        Root_meta_core_runtime_Runtime runtime = singleExecution.runtime != null ? HelperRuntimeBuilder.buildPureRuntime(singleExecution.runtime, pureModel.getContext()) : null;
         LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(singleExecution.func.body, singleExecution.func.parameters, pureModel.getContext());
         return getSingleExecutionPlan(singleExecution.executionOptions, context, pureModel, clientVersion, platform, planId, extensions, transformers, mapping, runtime, lambda);
     }
@@ -122,7 +122,7 @@ public class ServicePlanGenerator
         throw new IllegalArgumentException("Unsupported execution type: " + execution);
     }
 
-    private static SingleExecutionPlan getSingleExecutionPlan(List<ExecutionOption> executionOptions, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, Mapping mapping, Root_meta_pure_runtime_Runtime runtime, LambdaFunction<?> lambda)
+    private static SingleExecutionPlan getSingleExecutionPlan(List<ExecutionOption> executionOptions, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, String planId, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, Mapping mapping, Root_meta_core_runtime_Runtime runtime, LambdaFunction<?> lambda)
     {
         return PlanGenerator.generateExecutionPlan(lambda, mapping, runtime, (executionOptions == null) ? context : getExecutionOptionContext(executionOptions, pureModel), pureModel, clientVersion, platform, planId, extensions, transformers);
     }

@@ -14,6 +14,7 @@
 
 import meta::pure::lineage::scanExecutes::*;
 import meta::pure::lineage::scanMapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
@@ -49,6 +50,7 @@ Mapping meta::pure::lineage::scanExecutes::test::MyMapping
 // Test scanExecute together with scanProperties
 
 ###Pure
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::lineage::scanProperties::*;
@@ -57,8 +59,8 @@ import meta::pure::lineage::scanExecutes::*;
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanExecutes::test::testScanExecutes():Boolean[1]
 {
    let exec = meta::pure::lineage::scanExecutes::test::testFunction2__Any_1_->scanExecutes()->at(0);
-   let p = $exec.funcEntryPoint->scanProperties().result; 
-   
+   let p = $exec.funcEntryPoint->scanProperties().result;
+
    assertEquals('ClassA->b\n'+
                 'ClassA->b, ClassB->c', $p->printPropertyNodeLists(''));
    let tree = $p->buildPropertyTree();

@@ -15,6 +15,7 @@
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::relational::tests::query::routing::*;
@@ -57,8 +58,8 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingTwoEx
 {
    let fn = {| let personName = 'John';
                Person.all()->filter(p|$p.firstName == $personName);};
-               
-               
+
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 2);
    assertEquals(['Johnson', 'Hill'], $result.values.lastName);
@@ -72,8 +73,8 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
                let legalName = $firm.legalName;
                Person.all()->filter(p|$p.firm->exists(f | $f.legalName == $legalName->toOne()));
                };
-               
-               
+
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Roberts'], $result.values.lastName);
@@ -88,8 +89,8 @@ function <<test.Test, test.ExcludeAlloy>> {test.excludePlatform = 'Java compiled
    let fn = {| let firm = Firm.all()->filter(f|$f.legalName->startsWith('Firm A') || $f.legalName->startsWith('Firm X'));
                let legalNames = $firm.legalName->makeString(',');
                };
-               
-               
+
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm X,Firm A', $result.values);
@@ -104,8 +105,8 @@ function <<test.ToFix>>   meta::relational::tests::query::routing::testRoutingUs
                let people = Person.all()->filter(p|$p.lastName == $name1 || $p.lastName == $name2);
                $people->filter(p|$p.lastName == $name2);
                };
-               
-               
+
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Firm X,Firm A', $result.values);
@@ -119,7 +120,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routin
    let fn = {| let name2 = 'Smith';
                ['Johnson', 'Smith']->filter(p|$p == $name2);
                };
-                              
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals('Smith', $result.values);
@@ -131,8 +132,8 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routin
    let fn = {| let firm = ^Firm(legalName='Firm A');
                Person.all()->filter(p|$p.firm->exists(f | $f.legalName == $firm.legalName));
                };
-               
-               
+
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Roberts'], $result.values.lastName);
@@ -145,8 +146,8 @@ function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingTwoF
    let fn = {| let firm = Firm.all()->filter(f | $f.legalName =='Firm A');
                Person.all()->filter(p|$p.firm->exists(f | $f.legalName == $firm.legalName));
                };
-               
-               
+
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Roberts'], $result.values.lastName);
@@ -160,7 +161,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::query::routin
    let fn = {| let firm = Firm.all()->filter(f | $f.legalName =='Firm A')->toOne();
                Person.all()->project([p | $p.nameWithTitle($firm.legalName)], 'title');
                };
-               
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
    assertEquals(['Firm A Peter Smith', 'Firm A John Johnson', 'Firm A John Hill', 'Firm A Anthony Allen', 'Firm A Fabrice Roberts', 'Firm A Oliver Hill', 'Firm A David Harris', 'Firm A No address Smith', 'Firm A No firm no Firm', 'Firm A New York', 'Firm A Elena Firm B', 'Firm A Don New York'], $result.values->toOne().rows.values);
@@ -182,7 +183,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
 {
    let f = {|Firm.all()->project([f | $f.nameAndAddress()],'nameAndAddress')};
    let routed = $f->routeFunction(simpleRelationalMapping, testRuntime(), ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
-  
+
    let wrappedFunc = $routed.expressionSequence->evaluateAndDeactivate()->cast(@meta::pure::router::metamodel::clustering::ClusteredValueSpecification).val->toOne()->byPassValueSpecificationWrapper()->cast(@SimpleFunctionExpression);
    let lambda = $wrappedFunc.parametersValues->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0)->cast(@LambdaFunction<Any>);
    let nameAndAddressQp = $lambda.expressionSequence->cast(@FunctionExpression).func->cast(@QualifiedProperty<Any>);
@@ -190,7 +191,7 @@ function <<test.Test>> meta::relational::tests::query::routing::testRoutingOfSim
    let routedParams = $plusFunc.parametersValues->cast(@InstanceValue).values;
    let lhsRouted=$routedParams->at(0)->evaluateAndDeactivate();
    let rhsRouted=$routedParams->at(2)->evaluateAndDeactivate();
-   
+
    assert($lhsRouted->instanceOf(StoreMappingRoutedValueSpecification));
    assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).sets.class.name == 'Firm');
    assert($lhsRouted->cast(@StoreMappingRoutedValueSpecification).value->instanceOf(SimpleFunctionExpression));
@@ -206,7 +207,7 @@ function <<test.Test>> meta::relational::tests::projection::simple::testRoutingW
 function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingPureFunctionWithMultipleExpressions():Boolean[1]
 {
    let fn = {| doSomething(3)};
-   
+
    let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('A chicken', $result.values);
 }
@@ -214,11 +215,11 @@ function <<test.ToFix>> meta::relational::tests::query::routing::testRoutingPure
 function <<test.Test>> meta::relational::tests::query::routing::multipleexpressions::testPlatformExpressionDependencyOnAFromExpression():Boolean[1]
 {
    let f = {| let firstFirmLegalName = Firm.all()->meta::pure::mapping::from(simpleRelationalMapping, testRuntime())->at(0).legalName;
-      
+
               let otherLegalName = $firstFirmLegalName + 'Test';
-      
+
             };
-   
+
    let routingResult = routeFunction($f, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), noDebug());
    assertEquals(1, $routingResult->size());
    assertEquals(' | {Platform> [strategy_wrapper /let firstFirmLegalName = {Platform> {Platform> [1 meta_relational_tests_model_simple_Firm/{meta::relational::tests::db> [1 meta_relational_tests_model_simple_Firm/[1 meta_relational_tests_model_simple_Firm/Class Firm].all()]} -> at(0)]}.legalName}]};\n   {Platform> [strategy_wrapper /let otherLegalName = [$firstFirmLegalName, \'Test\'] -> plus()]};', $routingResult->map(f|$f->meta::pure::router::printer::asString())->joinStrings(''));

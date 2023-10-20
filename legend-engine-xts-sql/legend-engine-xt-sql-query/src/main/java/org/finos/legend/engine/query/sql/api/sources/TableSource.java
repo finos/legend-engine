@@ -59,6 +59,11 @@ public class TableSource
         return ListIterate.select(this.arguments, a -> name.equals(a.getName())).getFirstOptional();
     }
 
+    public List<TableSourceArgument> getArguments()
+    {
+        return this.arguments;
+    }
+
     @Override
     public boolean equals(Object o)
     {
