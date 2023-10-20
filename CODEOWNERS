@@ -1,4 +1,4 @@
-*                                        @pierredebelen @epsstan @davidharte-gs @gs-ssh16 @rafaelbey @aormerod-gs
+*                                        @pierredebelen @epsstan @davidharte-gs @gs-ssh16 @rafaelbey @aormerod-gs @yasirmod17
 /.github/**                              @finos/legend-engine-maintainers
 /docs/**                                 @finos/legend-engine-maintainers
 /legend-engine-application-query/**      @finos/legend-engine-maintainers
@@ -15,10 +15,11 @@
 /legend-engine-xts-diagram/**            @finos/legend-engine-maintainers
 /legend-engine-xts-elasticsearch/**      @finos/legend-engine-maintainers
 /legend-engine-xts-flatdata/**           @finos/legend-engine-maintainers
-/legend-engine-xts-functionActivator/**  @finos/legend-engine-maintainers
+/legend-engine-xts-functionActivator/**  @finos/legend-engine-maintainers @yasirmod17
 /legend-engine-xts-generation/**         @finos/legend-engine-maintainers
 /legend-engine-xts-graphQL/**            @pierredebelen @epsstan @davidharte-gs @gs-ssh16 @rafaelbey @aormerod-gs
 /legend-engine-xts-haskell/**            @finos/legend-engine-maintainers
+/legend-engine-xts-hostedService/**      @finos/legend-engine-maintainers @yasirmod17
 /legend-engine-xts-iceberg/**            @finos/legend-engine-maintainers
 /legend-engine-xts-java/**               @finos/legend-engine-maintainers
 /legend-engine-xts-json/**               @finos/legend-engine-maintainers
@@ -30,9 +31,9 @@
 /legend-engine-xts-protobuf/**           @finos/legend-engine-maintainers
 /legend-engine-xts-relationalStore/**    @finos/legend-engine-maintainers
 /legend-engine-xts-rosetta/**            @finos/legend-engine-maintainers
-/legend-engine-xts-service/**            @finos/legend-engine-maintainers
+/legend-engine-xts-service/**            @finos/legend-engine-maintainers @yasirmod17
 /legend-engine-xts-serviceStore/**       @finos/legend-engine-maintainers
-/legend-engine-xts-snowflakeApp/**       @finos/legend-engine-maintainers
+/legend-engine-xts-snowflakeApp/**       @finos/legend-engine-maintainers @yasirmod17
 /legend-engine-xts-sql/**                @finos/legend-engine-maintainers
 /legend-engine-xts-text/**               @finos/legend-engine-maintainers
 /legend-engine-xts-xml/**                @finos/legend-engine-maintainers
