@@ -389,7 +389,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spark
    'position',
    'primary',
    'range',
-   'reference',
+   'references',
    'revoke',
    'right',
    'rollback',
