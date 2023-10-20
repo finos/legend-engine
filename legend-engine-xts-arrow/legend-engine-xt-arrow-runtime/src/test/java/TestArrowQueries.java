@@ -55,6 +55,7 @@ import static org.finos.legend.pure.generated.core_relational_java_platform_bind
 public class TestArrowQueries
 {
 
+
     @Test
     public void runTest()
     {
@@ -62,6 +63,7 @@ public class TestArrowQueries
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
         )
         {
+
             ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
             ExecuteInput input = objectMapper.readValue(getClass().getClassLoader().getResource("arrowService.json"), ExecuteInput.class);
 
@@ -81,7 +83,8 @@ public class TestArrowQueries
                     .build();
             StreamingResult streamingResult = (StreamingResult) executor.executeWithArgs(executeArgs);
             streamingResult.stream(baos, SerializationFormat.DEFAULT);
-           assertAndValidateArrow(new ByteArrayInputStream(baos.toByteArray()), "expectedArrowServiceData.arrow");
+            assertAndValidateArrow(new ByteArrayInputStream(baos.toByteArray()), "expectedArrowServiceData.arrow");
+
         }
         catch (Exception e)
         {

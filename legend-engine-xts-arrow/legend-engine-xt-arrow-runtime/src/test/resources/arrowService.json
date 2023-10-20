@@ -24,8 +24,8 @@
               {
                 "_type": "collection",
                 "multiplicity": {
-                  "lowerBound": 5,
-                  "upperBound": 5
+                  "lowerBound": 4,
+                  "upperBound": 4
                 },
                 "values": [
                   {
@@ -102,27 +102,6 @@
                             "name": "x"
                           }
                         ],
-                        "property": "settlementDateTime"
-                      }
-                    ],
-                    "parameters": [
-                      {
-                        "_type": "var",
-                        "name": "x"
-                      }
-                    ]
-                  },
-                  {
-                    "_type": "lambda",
-                    "body": [
-                      {
-                        "_type": "property",
-                        "parameters": [
-                          {
-                            "_type": "var",
-                            "name": "x"
-                          }
-                        ],
                         "property": "tradeDate"
                       }
                     ],
@@ -138,8 +117,8 @@
               {
                 "_type": "collection",
                 "multiplicity": {
-                  "lowerBound": 5,
-                  "upperBound": 5
+                  "lowerBound": 4,
+                  "upperBound": 4
                 },
                 "values": [
                   {
@@ -153,10 +132,6 @@
                   {
                     "_type": "string",
                     "value": "Quantity"
-                  },
-                  {
-                    "_type": "string",
-                    "value": "Settlement Date Time"
                   },
                   {
                     "_type": "string",
@@ -447,6 +422,7 @@
           {
             "connection": {
               "_type": "RelationalDatabaseConnection",
+              "timeZone" : "America/New_York",
               "authenticationStrategy": {
                 "_type": "h2Default"
               },
