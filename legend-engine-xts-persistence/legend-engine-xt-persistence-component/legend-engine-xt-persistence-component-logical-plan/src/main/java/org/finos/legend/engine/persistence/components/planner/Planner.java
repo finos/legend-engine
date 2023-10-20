@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
@@ -339,33 +339,33 @@ public abstract class Planner
         return postRunStatisticsResult;
     }
 
-    public Map<ErrorStatistics, LogicalPlan> buildLogicalPlanForDeduplicationAndVersioningErrorChecks(Resources resources)
+    public Map<DedupAndVersionErrorStatistics, LogicalPlan> buildLogicalPlanForDeduplicationAndVersioningErrorChecks(Resources resources)
     {
-        Map<ErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks = new HashMap<>();
+        Map<DedupAndVersionErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks = new HashMap<>();
         addMaxDuplicatesErrorCheck(dedupAndVersioningErrorChecks);
         addDataErrorCheck(dedupAndVersioningErrorChecks);
         return dedupAndVersioningErrorChecks;
     }
 
-    protected void addMaxDuplicatesErrorCheck(Map<ErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
+    protected void addMaxDuplicatesErrorCheck(Map<DedupAndVersionErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
     {
         if (ingestMode.deduplicationStrategy() instanceof FailOnDuplicates)
         {
             FunctionImpl maxCount = FunctionImpl.builder()
                     .functionName(FunctionName.MAX)
                     .addValue(FieldValue.builder().datasetRef(tempStagingDataset().datasetReference()).fieldName(COUNT).build())
-                    .alias(ErrorStatistics.MAX_DUPLICATES.name())
+                    .alias(DedupAndVersionErrorStatistics.MAX_DUPLICATES.name())
                     .build();
             Selection selectMaxDupsCount = Selection.builder()
                     .source(tempStagingDataset())
                     .addFields(maxCount)
                     .build();
             LogicalPlan maxDuplicatesCountPlan = LogicalPlan.builder().addOps(selectMaxDupsCount).build();
-            dedupAndVersioningErrorChecks.put(ErrorStatistics.MAX_DUPLICATES, maxDuplicatesCountPlan);
+            dedupAndVersioningErrorChecks.put(DedupAndVersionErrorStatistics.MAX_DUPLICATES, maxDuplicatesCountPlan);
         }
     }
 
-    protected void addDataErrorCheck(Map<ErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
+    protected void addDataErrorCheck(Map<DedupAndVersionErrorStatistics, LogicalPlan> dedupAndVersioningErrorChecks)
     {
         List<String> remainingColumns = getDigestOrRemainingColumns();
         if (ingestMode.versioningStrategy().accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED))
@@ -373,7 +373,7 @@ public abstract class Planner
             LogicalPlan logicalPlan = ingestMode.versioningStrategy().accept(new DeriveDataErrorCheckLogicalPlan(primaryKeys, remainingColumns, tempStagingDataset()));
             if (logicalPlan != null)
             {
-                dedupAndVersioningErrorChecks.put(ErrorStatistics.MAX_DATA_ERRORS, logicalPlan);
+                dedupAndVersioningErrorChecks.put(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS, logicalPlan);
             }
         }
     }

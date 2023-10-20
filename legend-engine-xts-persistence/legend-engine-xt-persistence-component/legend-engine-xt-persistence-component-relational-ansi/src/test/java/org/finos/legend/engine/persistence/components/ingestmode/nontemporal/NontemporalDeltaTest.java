@@ -15,7 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
-import static org.finos.legend.engine.persistence.components.common.ErrorStatistics.MAX_DATA_ERRORS;
-import static org.finos.legend.engine.persistence.components.common.ErrorStatistics.MAX_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DATA_ERRORS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DUPLICATES;
 
 public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 {
@@ -55,7 +55,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         List<String> initializeLockSql = operations.initializeLockSql();
         List<String> acquireLockSql = operations.acquireLockSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
             "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
@@ -97,7 +97,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink " +
             "SET sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +

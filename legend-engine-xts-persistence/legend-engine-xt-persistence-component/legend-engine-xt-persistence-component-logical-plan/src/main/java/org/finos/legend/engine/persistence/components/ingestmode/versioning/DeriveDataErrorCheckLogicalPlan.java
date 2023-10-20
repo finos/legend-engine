@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
@@ -73,7 +73,7 @@ public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisito
 
     private LogicalPlan getLogicalPlanForDataErrorCheck(String versionField)
     {
-        String maxDataErrorAlias = ErrorStatistics.MAX_DATA_ERRORS.name();
+        String maxDataErrorAlias = DedupAndVersionErrorStatistics.MAX_DATA_ERRORS.name();
         String distinctRowCount = "legend_persistence_distinct_rows";
         List<Value> pKsAndVersion = new ArrayList<>();
         for (String pk: primaryKeys)

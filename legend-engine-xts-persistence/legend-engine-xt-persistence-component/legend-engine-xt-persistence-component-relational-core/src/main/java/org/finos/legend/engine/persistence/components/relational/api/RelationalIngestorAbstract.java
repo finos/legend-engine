@@ -327,13 +327,13 @@ public abstract class RelationalIngestorAbstract
         {
             LOGGER.info("Executing Deduplication and Versioning");
             executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
-            Map<ErrorStatistics, Object> errorStatistics = executeDeduplicationAndVersioningErrorChecks(executor, generatorResult.deduplicationAndVersioningErrorChecksSqlPlan());
+            Map<DedupAndVersionErrorStatistics, Object> errorStatistics = executeDeduplicationAndVersioningErrorChecks(executor, generatorResult.deduplicationAndVersioningErrorChecksSqlPlan());
             /* Error Checks
             1. if Dedup = fail on dups, Fail the job if count > 1
             2. If versioining = Max Version/ All Versioin, Check for data error
             */
-            Optional<Long> maxDuplicatesValue = retrieveValueAsLong(errorStatistics.get(ErrorStatistics.MAX_DUPLICATES));
-            Optional<Long> maxDataErrorsValue = retrieveValueAsLong(errorStatistics.get(ErrorStatistics.MAX_DATA_ERRORS));
+            Optional<Long> maxDuplicatesValue = retrieveValueAsLong(errorStatistics.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
+            Optional<Long> maxDataErrorsValue = retrieveValueAsLong(errorStatistics.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
             if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
             {
                 String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
@@ -664,11 +664,11 @@ public abstract class RelationalIngestorAbstract
         return results;
     }
 
-    private Map<ErrorStatistics, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                                      Map<ErrorStatistics, SqlPlan> errorChecksPlan)
+    private Map<DedupAndVersionErrorStatistics, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                                                                     Map<DedupAndVersionErrorStatistics, SqlPlan> errorChecksPlan)
     {
-        Map<ErrorStatistics, Object> results = new HashMap<>();
-        for (Map.Entry<ErrorStatistics, SqlPlan> entry: errorChecksPlan.entrySet())
+        Map<DedupAndVersionErrorStatistics, Object> results = new HashMap<>();
+        for (Map.Entry<DedupAndVersionErrorStatistics, SqlPlan> entry: errorChecksPlan.entrySet())
         {
             List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue());
             Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));

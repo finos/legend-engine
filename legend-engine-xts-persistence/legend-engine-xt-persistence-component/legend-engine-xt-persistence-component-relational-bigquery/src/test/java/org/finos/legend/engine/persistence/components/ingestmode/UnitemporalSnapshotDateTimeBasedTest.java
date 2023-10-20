@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
@@ -70,7 +70,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
@@ -97,8 +97,8 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
-        Assertions.assertEquals(BigQueryTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DUPLICATES));
-        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DATA_ERRORS));
+        Assertions.assertEquals(BigQueryTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
+        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
     }
 
     @Override

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -46,7 +46,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> initializeLockSql = operations.initializeLockSql();
         List<String> acquireLockSql = operations.acquireLockSql();
-        Map<ErrorStatistics, String> andVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> andVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage)";
 
@@ -70,7 +70,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
         Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
@@ -95,7 +95,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"batch_update_time\") " +
@@ -110,8 +110,8 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(1));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-        Assertions.assertEquals(maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DUPLICATES));
-        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DATA_ERRORS));
+        Assertions.assertEquals(maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
+        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));

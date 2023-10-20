@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.memsql.MemSqlSink;
@@ -69,7 +69,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
@@ -89,7 +89,7 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(2));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
-        Assertions.assertEquals(MemsqlTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DUPLICATES));
+        Assertions.assertEquals(MemsqlTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));

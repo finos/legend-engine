@@ -14,10 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
-import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.memsql.MemSqlSink;
 import org.finos.legend.engine.persistence.components.testcases.ingestmode.unitemporal.UnitmemporalSnapshotBatchIdDateTimeBasedTestCases;
@@ -71,7 +69,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1,sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
@@ -95,7 +93,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicates, deduplicationAndVersioningSql.get(1));
-        Assertions.assertEquals(MemsqlTestArtifacts.dataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DATA_ERRORS));
+        Assertions.assertEquals(MemsqlTestArtifacts.dataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
@@ -122,7 +120,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink SET sink.`BATCH_ID_OUT` = " +
                 "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE " +
@@ -143,7 +141,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQueryInUpperCase, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase, deduplicationAndVersioningSql.get(1));
-        Assertions.assertEquals(MemsqlTestArtifacts.dataErrorCheckSqlUpperCase, deduplicationAndVersioningErrorChecksSql.get(ErrorStatistics.MAX_DATA_ERRORS));
+        Assertions.assertEquals(MemsqlTestArtifacts.dataErrorCheckSqlUpperCase, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));

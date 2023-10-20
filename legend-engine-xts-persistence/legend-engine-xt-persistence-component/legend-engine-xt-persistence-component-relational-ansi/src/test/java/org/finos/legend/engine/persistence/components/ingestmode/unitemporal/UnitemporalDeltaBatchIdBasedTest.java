@@ -15,7 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.unitemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
-import org.finos.legend.engine.persistence.components.common.ErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
-import static org.finos.legend.engine.persistence.components.common.ErrorStatistics.MAX_DATA_ERRORS;
 
 public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBasedTestCases
 {
@@ -128,7 +127,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<ErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
