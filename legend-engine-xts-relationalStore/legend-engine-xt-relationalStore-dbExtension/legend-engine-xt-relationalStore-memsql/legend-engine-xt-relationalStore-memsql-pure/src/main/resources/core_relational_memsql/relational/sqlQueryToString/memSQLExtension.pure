@@ -190,7 +190,9 @@ function  <<access.private>> meta::relational::functions::sqlQueryToString::mems
      {| format('(%s)', [
         'timestampdiff(SECOND, %s , %s)'
      ])},
-     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';}
+     {| format('(%s)', [
+        'floor(timestampdiff(MICROSECOND, %s , %s)/1000)'
+     ])}
   ];
 
   format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);
