@@ -25,9 +25,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -193,7 +193,7 @@ class AppendOnlyTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
@@ -242,7 +242,7 @@ class AppendOnlyTest extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
@@ -293,7 +293,7 @@ class AppendOnlyTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
@@ -350,7 +350,7 @@ class AppendOnlyTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())

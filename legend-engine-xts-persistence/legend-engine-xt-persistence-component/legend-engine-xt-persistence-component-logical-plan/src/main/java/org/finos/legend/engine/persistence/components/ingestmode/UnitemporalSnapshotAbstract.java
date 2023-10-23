@@ -22,7 +22,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Vers
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MergeDataVersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolverAbstract;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -102,12 +103,12 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                Optional<VersionResolver> versionResolver = maxVersionStrategy.versionResolver();
+                Optional<MergeDataVersionResolver> versionResolver = maxVersionStrategy.mergeDataVersionResolver();
                 if (!versionResolver.isPresent())
                 {
-                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, VersioningResolver is mandatory for MaxVersionStrategy");
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, MergeDataVersionResolver is mandatory for MaxVersionStrategy");
                 }
-                if (versionResolver.orElseThrow(IllegalStateException::new) != VersionResolver.DIGEST_BASED)
+                if (!(versionResolver.orElseThrow(IllegalStateException::new) instanceof DigestBasedResolverAbstract))
                 {
                     throw new IllegalStateException("Cannot build UnitemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }

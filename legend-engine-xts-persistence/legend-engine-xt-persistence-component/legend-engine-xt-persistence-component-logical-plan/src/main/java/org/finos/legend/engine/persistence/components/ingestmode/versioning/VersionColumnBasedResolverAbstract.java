@@ -16,42 +16,22 @@ package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
 import org.immutables.value.Value;
 
-import java.util.Optional;
-
-import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Style;
-
-@Immutable
-@Style(
+@Value.Immutable
+@Value.Style(
     typeAbstract = "*Abstract",
     typeImmutable = "*",
     jdkOnly = true,
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface AllVersionsStrategyAbstract extends VersioningStrategy
+public interface VersionColumnBasedResolverAbstract extends MergeDataVersionResolver
 {
-    String DATA_SPLIT = "legend_persistence_data_split";
-
-    String versioningField();
-
-    Optional<MergeDataVersionResolver> mergeDataVersionResolver();
-
-    @Value.Default
-    default boolean performStageVersioning()
-    {
-        return true;
-    }
-
-    @Value.Default
-    default String dataSplitFieldName()
-    {
-        return DATA_SPLIT;
-    }
+    @Value.Parameter(order = 0)
+    VersionComparator versionComparator();
 
     @Override
-    default <T> T accept(VersioningStrategyVisitor<T> visitor)
+    default <T> T accept(MergeDataVersionResolverVisitor<T> visitor)
     {
-        return visitor.visitAllVersionsStrategy(this);
+        return visitor.visitVersionColumnBasedResolver(this);
     }
 }

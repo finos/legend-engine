@@ -49,26 +49,46 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
     @Override
     public Condition visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
     {
-        FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
-        FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(maxVersionStrategy.versioningField()).build();
-        VersionResolver versionResolver = maxVersionStrategy.versionResolver().orElseThrow(IllegalStateException::new);
-        return getVersioningCondition(mainVersioningField, stagingVersioningField, versionResolver);
+        MergeDataVersionResolver versionResolver = maxVersionStrategy.mergeDataVersionResolver().orElseThrow(IllegalStateException::new);
+        return versionResolver.accept(new VersioningCondition(maxVersionStrategy.versioningField()));
     }
 
     @Override
     public Condition visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategy)
     {
-        FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(allVersionsStrategy.versioningField()).build();
-        FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(allVersionsStrategy.versioningField()).build();
-        VersionResolver versionResolver = allVersionsStrategy.versionResolver().orElseThrow(IllegalStateException::new);
-        return getVersioningCondition(mainVersioningField, stagingVersioningField, versionResolver);
+        MergeDataVersionResolver versionResolver = allVersionsStrategy.mergeDataVersionResolver().orElseThrow(IllegalStateException::new);
+        return versionResolver.accept(new VersioningCondition(allVersionsStrategy.versioningField()));
     }
 
-    private Condition getVersioningCondition(FieldValue mainVersioningField, FieldValue stagingVersioningField, VersionResolver versionResolver)
+    private class VersioningCondition implements MergeDataVersionResolverVisitor<Condition>
     {
-        switch (versionResolver)
+        private String versioningField;
+
+        public VersioningCondition(String versioningField)
         {
-            case GREATER_THAN_ACTIVE_VERSION:
+            this.versioningField = versioningField;
+        }
+
+        @Override
+        public Condition visitDigestBasedResolver(DigestBasedResolverAbstract digestBasedResolver)
+        {
+            return getDigestBasedVersioningCondition();
+        }
+
+        @Override
+        public Condition visitVersionColumnBasedResolver(VersionColumnBasedResolverAbstract versionColumnBasedResolver)
+        {
+            FieldValue mainVersioningField = FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(versioningField).build();
+            FieldValue stagingVersioningField = FieldValue.builder().datasetRef(stagingDataset.datasetReference()).fieldName(versioningField).build();
+            return getVersioningCondition(mainVersioningField, stagingVersioningField, versionColumnBasedResolver.versionComparator());
+        }
+    }
+
+    private Condition getVersioningCondition(FieldValue mainVersioningField, FieldValue stagingVersioningField, VersionComparator versionComparator)
+    {
+        switch (versionComparator)
+        {
+            case GREATER_THAN:
                 if (invertComparison)
                 {
                     return LessThanEqualTo.of(stagingVersioningField, mainVersioningField);
@@ -77,7 +97,7 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
                 {
                     return GreaterThan.of(stagingVersioningField, mainVersioningField);
                 }
-            case GREATER_THAN_EQUAL_TO_ACTIVE_VERSION:
+            case GREATER_THAN_EQUAL_TO:
                 if (invertComparison)
                 {
                     return LessThan.of(stagingVersioningField, mainVersioningField);
@@ -86,8 +106,6 @@ public class VersioningConditionVisitor implements VersioningStrategyVisitor<Con
                 {
                     return GreaterThanEqualTo.of(stagingVersioningField, mainVersioningField);
                 }
-            case DIGEST_BASED:
-                return getDigestBasedVersioningCondition();
             default:
                 throw new IllegalStateException("Unsupported versioning comparator type");
         }

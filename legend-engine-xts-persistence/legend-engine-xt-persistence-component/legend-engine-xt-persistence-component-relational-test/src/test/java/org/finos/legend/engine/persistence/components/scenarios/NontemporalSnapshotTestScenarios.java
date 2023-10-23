@@ -20,9 +20,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 
 public class NontemporalSnapshotTestScenarios extends BaseTest
 {
@@ -63,7 +63,7 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchema, ingestMode);

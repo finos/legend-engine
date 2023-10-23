@@ -22,9 +22,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.A
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 
 public class AppendOnlyScenarios extends BaseTest
 {
@@ -127,7 +127,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
                     .dataSplitFieldName(dataSplitField)
-                    .versionResolver(VersionResolver.DIGEST_BASED)
+                    .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                     .performStageVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -145,7 +145,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
                     .dataSplitFieldName(dataSplitField)
-                    .versionResolver(VersionResolver.DIGEST_BASED)
+                    .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                     .performStageVersioning(true)
                     .build())
                 .auditing(NoAuditing.builder().build())
@@ -162,7 +162,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
                     .dataSplitFieldName(dataSplitField)
-                    .versionResolver(VersionResolver.DIGEST_BASED)
+                    .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                     .performStageVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -178,7 +178,7 @@ public class AppendOnlyScenarios extends BaseTest
             .deduplicationStrategy(FailOnDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(bizDateField)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -194,7 +194,7 @@ public class AppendOnlyScenarios extends BaseTest
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(bizDateField)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(true)
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())

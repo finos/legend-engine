@@ -18,8 +18,8 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 
 import java.util.Arrays;
 
@@ -63,7 +63,7 @@ public class UnitemporalSnapshotDateTimeBasedScenarios extends BaseTest
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);

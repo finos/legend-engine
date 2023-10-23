@@ -14,9 +14,24 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-public enum VersionResolver
+import org.immutables.value.Value;
+
+@Value.Immutable
+@Value.Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface DigestBasedResolverAbstract extends MergeDataVersionResolver
 {
-    GREATER_THAN_ACTIVE_VERSION,
-    GREATER_THAN_EQUAL_TO_ACTIVE_VERSION,
-    DIGEST_BASED
+
+    org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver INSTANCE = org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver.builder().build();
+
+    @Override
+    default <T> T accept(MergeDataVersionResolverVisitor<T> visitor)
+    {
+        return visitor.visitDigestBasedResolver(this);
+    }
 }

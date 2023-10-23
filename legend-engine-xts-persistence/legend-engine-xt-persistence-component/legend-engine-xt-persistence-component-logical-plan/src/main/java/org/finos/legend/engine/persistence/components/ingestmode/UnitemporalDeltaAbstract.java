@@ -76,9 +76,9 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                if (!maxVersionStrategy.versionResolver().isPresent())
+                if (!maxVersionStrategy.mergeDataVersionResolver().isPresent())
                 {
-                    throw new IllegalStateException("Cannot build UnitemporalDelta, VersioningResolver is mandatory for MaxVersionStrategy");
+                    throw new IllegalStateException("Cannot build UnitemporalDelta, MergeDataVersionResolver is mandatory for MaxVersionStrategy");
                 }
                 return null;
             }
@@ -86,9 +86,9 @@ public interface UnitemporalDeltaAbstract extends IngestMode, TransactionMilesto
             @Override
             public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
             {
-                if (!allVersionsStrategyAbstract.versionResolver().isPresent())
+                if (!allVersionsStrategyAbstract.mergeDataVersionResolver().isPresent())
                 {
-                    throw new IllegalStateException("Cannot build UnitemporalDelta, VersioningResolver is mandatory for AllVersionsStrategy");
+                    throw new IllegalStateException("Cannot build UnitemporalDelta, MergeDataVersionResolver is mandatory for AllVersionsStrategy");
                 }
                 return null;
             }

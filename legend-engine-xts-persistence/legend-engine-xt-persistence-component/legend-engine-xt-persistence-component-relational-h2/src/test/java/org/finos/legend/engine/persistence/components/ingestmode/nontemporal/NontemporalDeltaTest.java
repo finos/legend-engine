@@ -23,8 +23,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionComparator;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
@@ -47,7 +48,6 @@ import static org.finos.legend.engine.persistence.components.TestUtils.idName;
 import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
 import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
 import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
 import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
 
 class NontemporalDeltaTest extends BaseTest
@@ -341,7 +341,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
                 .performStageVersioning(false)
                 .build())
             .build();
@@ -394,7 +394,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
                 .performStageVersioning(false)
                 .build())
             .build();
@@ -447,7 +447,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
                 .performStageVersioning(true)
                 .build())
             .build();
@@ -500,7 +500,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
                 .performStageVersioning(true)
                 .build())
             .build();
@@ -605,7 +605,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
                 .performStageVersioning(false)
                 .build())
             .build();
@@ -661,7 +661,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
                 .performStageVersioning(false)
                 .build())
             .build();
@@ -717,7 +717,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
                 .performStageVersioning(true)
                 .build())
             .build();
@@ -773,7 +773,7 @@ class NontemporalDeltaTest extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
                 .performStageVersioning(true)
                 .build())
             .build();

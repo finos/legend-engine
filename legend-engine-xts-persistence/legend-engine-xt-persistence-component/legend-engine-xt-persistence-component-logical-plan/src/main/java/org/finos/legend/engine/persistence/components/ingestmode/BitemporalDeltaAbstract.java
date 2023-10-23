@@ -25,7 +25,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MergeDataVersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolverAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
 
@@ -91,12 +92,12 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
             @Override
             public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
             {
-                Optional<VersionResolver> versionResolver = allVersionsStrategyAbstract.versionResolver();
+                Optional<MergeDataVersionResolver> versionResolver = allVersionsStrategyAbstract.mergeDataVersionResolver();
                 if (!versionResolver.isPresent())
                 {
                     throw new IllegalStateException("Cannot build BitemporalDelta, VersioningResolver is mandatory");
                 }
-                if (versionResolver.orElseThrow(IllegalStateException::new) != VersionResolver.DIGEST_BASED)
+                if (!(versionResolver.orElseThrow(IllegalStateException::new) instanceof DigestBasedResolverAbstract))
                 {
                     throw new IllegalStateException("Cannot build BitemporalDelta, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
                 }

@@ -19,6 +19,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.IngestModeTest;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionComparator;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -38,8 +40,6 @@ import java.util.List;
 import java.util.Map;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
-import static org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver.GREATER_THAN_ACTIVE_VERSION;
-
 public class LogicalPlanUtilsTest extends IngestModeTest
 {
 
@@ -57,7 +57,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
 
         List<String> primaryKeys = Arrays.asList("id", "name");
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build();
         Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
@@ -87,7 +87,7 @@ public class LogicalPlanUtilsTest extends IngestModeTest
                 .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.LESS_THAN, "2020-01-03"))
                 .build();
 
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).versionResolver(GREATER_THAN_ACTIVE_VERSION).build();
+        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build();
         Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
 
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();

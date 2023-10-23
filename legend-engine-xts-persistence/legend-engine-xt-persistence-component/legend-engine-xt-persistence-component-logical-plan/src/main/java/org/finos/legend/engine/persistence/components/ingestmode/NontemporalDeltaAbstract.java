@@ -68,7 +68,7 @@ public interface NontemporalDeltaAbstract extends IngestMode
             @Override
             public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
             {
-                if (!maxVersionStrategy.versionResolver().isPresent())
+                if (!maxVersionStrategy.mergeDataVersionResolver().isPresent())
                 {
                     throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for MaxVersionStrategy");
                 }
@@ -78,7 +78,7 @@ public interface NontemporalDeltaAbstract extends IngestMode
             @Override
             public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
             {
-                if (!allVersionsStrategyAbstract.versionResolver().isPresent())
+                if (!allVersionsStrategyAbstract.mergeDataVersionResolver().isPresent())
                 {
                     throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for AllVersionsStrategy");
                 }

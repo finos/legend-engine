@@ -23,10 +23,12 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 
 public class NonTemporalDeltaScenarios extends BaseTest
 {
@@ -68,7 +70,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigest, ingestMode);
@@ -79,7 +81,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performStageVersioning(false).versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performStageVersioning(false).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
@@ -100,7 +102,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
@@ -122,7 +124,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.builder().versionComparator(VersionComparator.GREATER_THAN).build())
                 .performStageVersioning(true)
                 .build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
@@ -137,7 +139,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
                 .performStageVersioning(false)
                 .build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
@@ -152,7 +154,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
                 .performStageVersioning(false)
                 .build())
             .build();
@@ -166,7 +168,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
                 .performStageVersioning(true)
                 .build())
             .deduplicationStrategy(AllowDuplicates.builder().build())

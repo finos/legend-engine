@@ -20,8 +20,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.A
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.DeleteTargetData;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 
 import java.util.Arrays;
 
@@ -72,7 +72,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
                         .dateTimeOutName(batchTimeOutField)
                         .build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .emptyDatasetHandling(DeleteTargetData.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
@@ -89,7 +89,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
                         .dateTimeOutName(batchTimeOutField)
                         .build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .emptyDatasetHandling(DeleteTargetData.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);

@@ -19,12 +19,14 @@ import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 
 import java.util.Arrays;
 
@@ -60,7 +62,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).versionResolver(VersionResolver.DIGEST_BASED).performStageVersioning(false).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).performStageVersioning(false).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
@@ -94,7 +96,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
-                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").versionResolver(VersionResolver.DIGEST_BASED).dataSplitFieldName(dataSplitField).build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).build())
                 .build();
 
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);
@@ -177,7 +179,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(true).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(true).versioningField(version.name()).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithFilterAndVersion, ingestMode);
@@ -191,7 +193,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(false).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(false).versioningField(version.name()).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithFilterAndVersion, ingestMode);
     }
@@ -204,7 +206,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(false).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(false).versioningField(version.name()).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithVersion, ingestMode);
@@ -218,7 +220,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .build())
-                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(true).versioningField(version.name()).versionResolver(VersionResolver.GREATER_THAN_EQUAL_TO_ACTIVE_VERSION).build())
+                .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(true).versioningField(version.name()).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO)).build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithVersion, ingestMode);
     }

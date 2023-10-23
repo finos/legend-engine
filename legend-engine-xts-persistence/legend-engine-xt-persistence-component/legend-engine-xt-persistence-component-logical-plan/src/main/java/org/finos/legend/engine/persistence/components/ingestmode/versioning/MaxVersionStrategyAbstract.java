@@ -34,7 +34,7 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     @Value.Parameter(order = 0)
     String versioningField();
 
-    Optional<VersionResolver> versionResolver();
+    Optional<MergeDataVersionResolver> mergeDataVersionResolver();
 
     @Value.Default
     default boolean performStageVersioning()

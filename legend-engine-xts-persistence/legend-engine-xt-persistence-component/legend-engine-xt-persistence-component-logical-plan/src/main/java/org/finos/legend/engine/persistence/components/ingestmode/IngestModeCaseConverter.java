@@ -49,6 +49,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 
 import java.util.Optional;
 import java.util.List;
@@ -346,7 +348,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         {
             return MaxVersionStrategy
                     .builder()
-                    .versionResolver(maxVersionStrategy.versionResolver())
+                    .mergeDataVersionResolver(maxVersionStrategy.mergeDataVersionResolver())
                     .versioningField(strategy.apply(maxVersionStrategy.versioningField()))
                     .performStageVersioning(maxVersionStrategy.performStageVersioning())
                     .build();
@@ -357,7 +359,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         {
             return AllVersionsStrategy
                     .builder()
-                    .versionResolver(allVersionsStrategyAbstract.versionResolver())
+                    .mergeDataVersionResolver(allVersionsStrategyAbstract.mergeDataVersionResolver())
                     .versioningField(strategy.apply(allVersionsStrategyAbstract.versioningField()))
                     .dataSplitFieldName(strategy.apply(allVersionsStrategyAbstract.dataSplitFieldName()))
                     .performStageVersioning(allVersionsStrategyAbstract.performStageVersioning())

@@ -21,8 +21,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -265,7 +265,7 @@ class NontemporalSnapshotTest extends BaseTest
         // Generate the milestoning object
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").versionResolver(VersionResolver.DIGEST_BASED).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
 

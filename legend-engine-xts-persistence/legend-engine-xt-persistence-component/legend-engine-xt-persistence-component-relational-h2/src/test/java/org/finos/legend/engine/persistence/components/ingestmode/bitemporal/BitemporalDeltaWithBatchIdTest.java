@@ -24,7 +24,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -516,7 +516,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
@@ -598,7 +598,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
@@ -788,7 +788,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
@@ -871,7 +871,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
@@ -1121,7 +1121,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
@@ -1202,7 +1202,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
@@ -1390,7 +1390,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
@@ -1475,7 +1475,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
                 .dataSplitFieldName(dataSplitName)
-                .versionResolver(VersionResolver.DIGEST_BASED)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
                 .performStageVersioning(false)
                 .build())
             .transactionMilestoning(BatchId.builder()
