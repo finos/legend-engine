@@ -191,6 +191,7 @@ function  <<access.private>> meta::relational::functions::sqlQueryToString::mems
         'timestampdiff(SECOND, %s , %s)'
      ])},
      {| format('(%s)', [
+        // Since SingleStore doesn't support millisecond diff, using microsecond diff to calculate required value (https://docs.singlestore.com/cloud/reference/sql-reference/date-and-time-functions/timestampdiff/)
         'floor(timestampdiff(MICROSECOND, %s , %s)/1000)'
      ])}
   ];
