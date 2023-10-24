@@ -6,6 +6,8 @@ Class {doc.doc = 'Firm class representing a physical entity of Firm'} meta::exte
   {doc.doc = 'All employees of the firm'} employees : meta::external::query::graphQL::transformation::introspection::tests::Person[*];
   {doc.doc = 'Is firm a public entity?'} isPublicEntity: Boolean[1];
   {doc.doc = 'Type of the firm'} firmType: Firm_Type[1];
+  anyProperty: Any[1];
+  anyQualifiedProperty() {'LegalName: ' + $this.legalName}: Any[1];
 }
 
 Enum meta::external::query::graphQL::transformation::introspection::tests::Firm_Type
