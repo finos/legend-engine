@@ -67,8 +67,8 @@ public class FunctionActivatorAPI
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
     private  List<FunctionActivatorDeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
     private MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>>  availableActivatorServices = Lists.mutable.empty();
+    private IdentityFactory identityFactory;
 
-    private IdentityFactory identityFactory ;
     public FunctionActivatorAPI(ModelManager modelManager, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         this.modelManager = modelManager;
