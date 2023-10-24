@@ -294,8 +294,10 @@ function <<access.private>> meta::external::function::description::openapi::tran
     pair(Boolean, 'boolean'),
     pair(Integer, 'integer'),
     pair(Float, 'float'),
+    pair(Decimal, 'float'),
+    pair(Byte, 'string'),
     pair(Number, 'float')
-  ]->filter(t|$t.first==$type).second->toOne();
+  ]->filter(t|$t.first==$type).second->toOne('Cannot find type match for primitive type: '+ $type.name->toOne());
 }
 
 
