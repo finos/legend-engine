@@ -29,7 +29,8 @@ public class UserListOwnerValidator implements HostedServiceOwnerValidator<Root_
     public boolean isOwner(Identity identity, Root_meta_external_function_activator_hostedService_UserList users)
     {
         Subject subject = null;
-        try {
+        try
+        {
             subject = identity.getCredential(LegendKerberosCredential.class).get().getSubject();
         }
         catch (NoSuchElementException e)

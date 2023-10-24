@@ -81,7 +81,7 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         LOGGER.info("Starting deployment");
         SnowflakeDeploymentResult result;
         //use the system connection if available (as would be the case in sandbox flow) , else use artifact connection (production flow)
-        try (Connection jdbcConnection = availableRuntimeConfigurations.isEmpty()? this.getDeploymentConnection(identity, artifact): this.getDeploymentConnection(identity, availableRuntimeConfigurations.get(0).connection))
+        try (Connection jdbcConnection = availableRuntimeConfigurations.isEmpty() ? this.getDeploymentConnection(identity, artifact) : this.getDeploymentConnection(identity, availableRuntimeConfigurations.get(0).connection))
         {
             String appName = ((SnowflakeAppContent)artifact.content).applicationName;
             jdbcConnection.setAutoCommit(false);

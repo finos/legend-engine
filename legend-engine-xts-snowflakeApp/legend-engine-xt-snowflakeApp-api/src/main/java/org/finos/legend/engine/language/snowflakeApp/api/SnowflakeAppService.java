@@ -88,18 +88,28 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+        return validate(artifact);
+    }
+
+    public MutableList<? extends FunctionActivatorError> validate(SnowflakeAppArtifact artifact)
+    {
         int size = ((SnowflakeAppContent)artifact.content).sqlExpressions.size();
         return size != 1 ?
                 Lists.mutable.with(new SnowflakeAppError("SnowflakeApp can't be used with a plan containing '" + size + "' SQL expressions", ((SnowflakeAppContent)artifact.content).sqlExpressions)) :
                 Lists.mutable.empty();
-
     }
 
     @Override
     public SnowflakeDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
-        return this.snowflakeDeploymentManager.deploy(identity, artifact, runtimeConfigurations);
+        MutableList<? extends  FunctionActivatorError> validationError = validate(artifact);
+        if (validationError.isEmpty())
+        {
+            return this.snowflakeDeploymentManager.deploy(identity, artifact, runtimeConfigurations);
+        }
+        return new SnowflakeDeploymentResult(validationError.collect(v -> v.message));
+
     }
 
     @Override
