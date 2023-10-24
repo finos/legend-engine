@@ -71,6 +71,7 @@ import org.finos.legend.engine.language.pure.grammar.to.RedshiftGrammarComposerE
 import org.finos.legend.engine.language.pure.grammar.to.DatabricksGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.SnowflakeAppCompilerExtension;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGrammarComposer;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
@@ -452,7 +453,8 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
                 .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
                 .with(SearchDocumentArtifactGenerationExtension.class)
-                .with(OpenApiArtifactGenerationExtension.class);
+                .with(OpenApiArtifactGenerationExtension.class)
+                .with(SnowflakeAppArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()

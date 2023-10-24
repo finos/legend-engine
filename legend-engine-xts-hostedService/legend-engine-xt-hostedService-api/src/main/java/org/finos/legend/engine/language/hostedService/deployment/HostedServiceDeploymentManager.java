@@ -15,11 +15,10 @@
 package org.finos.legend.engine.language.hostedService.deployment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import java.util.List;
 
@@ -33,13 +32,13 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
         return element instanceof HostedServiceArtifact;
     }
 
-    public HostedServiceDeploymentResult deploy(MutableList<CommonProfile> profiles, HostedServiceArtifact artifact)
+    public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact)
     {
         return new HostedServiceDeploymentResult();
     }
 
 
-    public HostedServiceDeploymentResult deploy(MutableList<CommonProfile> profiles, HostedServiceArtifact artifact, List<HostedServiceDeploymentConfiguration> availableRuntimeConfigurations)
+    public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact, List<HostedServiceDeploymentConfiguration> availableRuntimeConfigurations)
     {
         String host;
         String path;
