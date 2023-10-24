@@ -51,8 +51,8 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     private SnowflakeAppDeploymentTool snowflakeAppDeploymentTool;
     private PlanExecutor planExecutor;
     private ConnectionManagerSelector connectionManager;
-    private static final String deploymentSchema = "LEGEND_GOVERNANCE";
-    private static final  String deploymentTable = "BUSINESS_OBJECTS";
+    private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
+    private static final  String deploymentTable = "APP_METADATA";
 
     public SnowflakeDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
     {
@@ -131,8 +131,9 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
 
         //String createTableSQL = String.format("create table %s (id INTEGER, message VARCHAR(1000)) if not exists", deploymentTableName);
         //boolean createTableStatus = statement.execute(createTableSQL);
-        String insertSQL = String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER) values('%s', '%s', '%s', '%s', '%s')", deploymentTableName, context.creationTime, context.applicationName, context.sqlExpressions.getFirst(), context.getVersionInfo(), Lists.mutable.withAll(context.owners).makeString(","));
-        boolean insertStatus = statement.execute(insertSQL);
+        String insertSQL = String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER, DESCRIPTION) values('%s', '%s', '%s', '%s', '%s', '%s')",
+                deploymentTableName, context.creationTime, context.applicationName, context.sqlExpressions.getFirst(), context.getVersionInfo(), Lists.mutable.withAll(context.owners).makeString(","), context.description);
+        statement.execute(insertSQL);
     }
 
     public String getDeploymentTableName(Connection jdbcConnection) throws SQLException
