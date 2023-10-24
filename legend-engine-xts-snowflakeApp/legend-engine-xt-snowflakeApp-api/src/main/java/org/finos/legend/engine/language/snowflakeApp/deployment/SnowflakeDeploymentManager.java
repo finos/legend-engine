@@ -72,7 +72,7 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     @Override
     public SnowflakeDeploymentResult deploy(Identity identity, SnowflakeAppArtifact artifact)
     {
-        return new SnowflakeDeploymentResult("",true);
+        return deploy(identity, artifact, Lists.mutable.empty());
     }
 
     @Override
