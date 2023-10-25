@@ -20,7 +20,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 
@@ -35,7 +34,7 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
     3) Versioning: No Versioning, Max Versioning
 
     Valid Scenarios:
-    1. No Auditing , Default Dedup [Allow Dups] , Default Versioning [No Versioining]
+    1. No Auditing , Allow Dups , No Versioining
     2. With Auditing, Filter Dups, No Versioining
     3. With Auditing, Fail on duplicates, Max version
 
@@ -43,13 +42,13 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
     1. All Versioning
     */
 
-    public TestScenario NO_AUDTING__DEFAULT_DEDUP_AND_VERSIONING()
+    public TestScenario NO_AUDTING__NO_DEDUP__NO_VERSIONING()
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
         return new TestScenario(mainTableWithBaseSchema, stagingTableWithBaseSchema, ingestMode);
     }
 
-    public TestScenario WITH_AUDTING__FILTER_DUPLICATE_NO_VERSIONING()
+    public TestScenario WITH_AUDTING__FILTER_DUPLICATES__NO_VERSIONING()
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -59,11 +58,11 @@ public class NontemporalSnapshotTestScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchema, ingestMode);
     }
 
-    public TestScenario WITH_AUDTING__FAIL_ON_DUP_MAX_VERSIONING()
+    public TestScenario WITH_AUDTING__FAIL_ON_DUP__MAX_VERSION()
     {
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField(bizDateField).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingAuditField, stagingTableWithBaseSchema, ingestMode);

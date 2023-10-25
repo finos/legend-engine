@@ -96,7 +96,6 @@ public class BaseTest
     {{
         put("biz_date", new HashSet<>(Arrays.asList("2000-01-01 00:00:00", "2000-01-02 00:00:00")));
     }};
-    protected String[] bitemporalPartitionKeys = new String[]{validityFromReferenceField};
 
     // Base Columns: Primary keys : id, name
     protected Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
@@ -155,46 +154,10 @@ public class BaseTest
         .addFields(bizDate)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithDataSplit = SchemaDefinition.builder()
-            .addFields(id)
-            .addFields(name)
-            .addFields(amount)
-            .addFields(bizDate)
-            .addFields(dataSplit)
-            .build();
-
     protected SchemaDefinition baseTableShortenedSchema = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
-        .build();
-
-    protected SchemaDefinition stagingTableEvolvedSize = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(nameModified)
-        .addFields(amount)
-        .addFields(bizDate)
-        .build();
-
-    protected SchemaDefinition stagingTableImplicitDatatypeChange = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(floatAmount)
-        .addFields(bizDate)
-        .build();
-
-    protected SchemaDefinition stagingTableNonBreakingDatatypeChange = SchemaDefinition.builder()
-        .addFields(tinyIntId)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .build();
-
-    protected SchemaDefinition stagingTableBreakingDatatypeChange = SchemaDefinition.builder()
-        .addFields(tinyIntString)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
         .build();
 
     protected SchemaDefinition mainTableSchemaWithBatchIdAndTime = SchemaDefinition.builder()
@@ -332,15 +295,6 @@ public class BaseTest
             .addFields(batchUpdateTime)
             .build();
 
-    protected SchemaDefinition baseTableSchemaWithUpdateBatchTimeFieldNotPk = SchemaDefinition.builder()
-            .addFields(id)
-            .addFields(name)
-            .addFields(amount)
-            .addFields(bizDate)
-            .addFields(digest)
-            .addFields(batchUpdateTimeNonPK)
-            .build();
-
     protected SchemaDefinition stagingTableSchemaWithLimitedColumns = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
@@ -355,16 +309,6 @@ public class BaseTest
         .addFields(bizDate)
         .addFields(digest)
         .addFields(deleteIndicator)
-        .build();
-
-    protected SchemaDefinition stagingTableSchemaWithDeleteIndicatorWithDataSplit = SchemaDefinition.builder()
-        .addFields(id)
-        .addFields(name)
-        .addFields(amount)
-        .addFields(bizDate)
-        .addFields(digest)
-        .addFields(deleteIndicator)
-        .addFields(dataSplit)
         .build();
 
     protected SchemaDefinition stagingTableSchemaWithBooleanDeleteIndicator = SchemaDefinition.builder()
@@ -683,19 +627,9 @@ public class BaseTest
             .schema(baseTableSchemaWithUpdateBatchTimeField)
             .build();
 
-    protected Dataset mainTableWithBaseSchemaHavingAuditFieldNotPk = DatasetDefinition.builder()
-            .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithUpdateBatchTimeFieldNotPk)
-            .build();
-
     protected Dataset stagingTableWithBaseSchemaHavingDigestAndDataSplit = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithDigestAndDataSplit)
-            .build();
-
-    protected Dataset stagingTableWithBaseSchemaHavingDataSplit = DatasetDefinition.builder()
-            .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDataSplit)
             .build();
 
     protected Dataset mainTableWithBatchIdBasedSchema = DatasetDefinition.builder()
@@ -721,13 +655,6 @@ public class BaseTest
             .name(stagingTableName)
             .alias(stagingTableAlias)
             .schema(stagingTableSchemaWithBooleanDeleteIndicator)
-            .build();
-
-    protected Dataset stagingTableWithDeleteIndicatorWithDataSplit = DatasetDefinition.builder()
-            .database(stagingDbName)
-            .name(stagingTableName)
-            .alias(stagingTableAlias)
-            .schema(stagingTableSchemaWithDeleteIndicatorWithDataSplit)
             .build();
 
     protected Dataset mainTableWithBatchIdAndTime = DatasetDefinition.builder()

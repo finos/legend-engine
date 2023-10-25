@@ -40,13 +40,15 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     String rowsTerminated = "SELECT 0 as \"rowsTerminated\"";
 
     @Override
-    public void verifyNontemporalSnapshotNoAuditingDefaultDedupDefaultVersioning(GeneratorResult operations)
+    public void verifyNontemporalSnapshotNoAuditingNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> initializeLockSql = operations.initializeLockSql();
         List<String> acquireLockSql = operations.acquireLockSql();
+        List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
         Map<DedupAndVersionErrorStatistics, String> andVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+
         String insertSql = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"biz_date\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage)";
 
@@ -58,6 +60,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
         Assertions.assertEquals(lockInitializedQuery, initializeLockSql.get(0));
         Assertions.assertEquals(lockAcquiredQuery, acquireLockSql.get(0));
+        Assertions.assertTrue(deduplicationAndVersioningSql.isEmpty());
         Assertions.assertTrue(andVersioningErrorChecksSql.isEmpty());
 
         // Stats
@@ -71,7 +74,6 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
         Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
-        Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"batch_update_time\") " +
@@ -83,6 +85,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
+        Assertions.assertTrue(deduplicationAndVersioningErrorChecksSql.isEmpty());
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
         // Stats
@@ -90,7 +93,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     }
 
     @Override
-    public void verifyNontemporalSnapshotWithAuditingFailOnDupMaxVersioning(GeneratorResult operations)
+    public void verifyNontemporalSnapshotWithAuditingFailOnDupMaxVersion(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -110,11 +113,11 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(1));
         Assertions.assertEquals(cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-        Assertions.assertEquals(maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
-        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
+        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
 
         // Stats
         verifyStats(operations, "staging");

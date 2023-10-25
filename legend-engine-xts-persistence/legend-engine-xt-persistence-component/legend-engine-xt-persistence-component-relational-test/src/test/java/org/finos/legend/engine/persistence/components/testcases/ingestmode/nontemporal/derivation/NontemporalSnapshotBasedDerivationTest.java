@@ -23,8 +23,6 @@ import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
 import static org.finos.legend.engine.persistence.components.BaseTest.assertDerivedMainDataset;
 
 public class NontemporalSnapshotBasedDerivationTest
@@ -33,18 +31,18 @@ public class NontemporalSnapshotBasedDerivationTest
     NontemporalSnapshotTestScenarios scenarios = new NontemporalSnapshotTestScenarios();
 
     @Test
-    void testNontemporalSnapshotNoAuditingDefaultDedupAndVersioning()
+    void testNontemporalSnapshotNoAuditingNoDedupNoVersioning()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__DEFAULT_DEDUP_AND_VERSIONING();
+        TestScenario scenario = scenarios.NO_AUDTING__NO_DEDUP__NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
     }
 
     @Test
-    void testNontemporalSnapshotWithAuditingFilterDupNoVersioning()
+    void testNontemporalSnapshotWithAuditingFilterDupsNoVersioning()
     {
-        TestScenario scenario = scenarios.WITH_AUDTING__FILTER_DUPLICATE_NO_VERSIONING();
+        TestScenario scenario = scenarios.WITH_AUDTING__FILTER_DUPLICATES__NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
@@ -53,9 +51,9 @@ public class NontemporalSnapshotBasedDerivationTest
     }
 
     @Test
-    void testNontemporalSnapshotWithAuditingFailOnDupMaxVersioining()
+    void testNontemporalSnapshotWithAuditingFailOnDupMaxVersion()
     {
-        TestScenario scenario = scenarios.WITH_AUDTING__FAIL_ON_DUP_MAX_VERSIONING();
+        TestScenario scenario = scenarios.WITH_AUDTING__FAIL_ON_DUP__MAX_VERSION();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);

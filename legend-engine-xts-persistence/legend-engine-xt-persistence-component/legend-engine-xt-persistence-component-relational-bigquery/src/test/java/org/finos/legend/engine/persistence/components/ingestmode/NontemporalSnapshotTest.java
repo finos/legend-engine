@@ -33,7 +33,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     String rowsTerminated = "SELECT 0 as `rowsTerminated`";
 
     @Override
-    public void verifyNontemporalSnapshotNoAuditingDefaultDedupDefaultVersioning(GeneratorResult operations)
+    public void verifyNontemporalSnapshotNoAuditingNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -70,7 +70,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     }
 
     @Override
-    public void verifyNontemporalSnapshotWithAuditingFailOnDupMaxVersioning(GeneratorResult operations)
+    public void verifyNontemporalSnapshotWithAuditingFailOnDupMaxVersion(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
