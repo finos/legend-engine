@@ -35,6 +35,12 @@ public interface AllVersionsStrategyAbstract extends VersioningStrategy
 
     String versioningField();
 
+    @Value.Default
+    default VersioningOrder versioningOrder()
+    {
+        return VersioningOrder.ASC;
+    }
+
     Optional<MergeDataVersionResolver> mergeDataVersionResolver();
 
     @Value.Default
@@ -53,5 +59,42 @@ public interface AllVersionsStrategyAbstract extends VersioningStrategy
     default <T> T accept(VersioningStrategyVisitor<T> visitor)
     {
         return visitor.visitAllVersionsStrategy(this);
+    }
+
+    @Value.Check
+    default void validate()
+    {
+        // For VersionColumnBasedResolver,
+        // Versioning Order ASC: allowed comparators: > , >=
+        // Versioning Order DESC: allowed comparators: < , <=
+        mergeDataVersionResolver().ifPresent(mergeDataVersionResolver -> new MergeDataVersionResolverVisitor<Void>()
+        {
+            @Override
+            public Void visitDigestBasedResolver(DigestBasedResolverAbstract digestBasedResolver)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitVersionColumnBasedResolver(VersionColumnBasedResolverAbstract versionColumnBasedResolver)
+            {
+                if (versioningOrder().equals(VersioningOrder.ASC) &&
+                        (versionColumnBasedResolver.versionComparator().equals(VersionComparator.LESS_THAN) ||
+                        versionColumnBasedResolver.versionComparator().equals(VersionComparator.LESS_THAN_EQUAL_TO)))
+                {
+                    throw new IllegalStateException("Cannot build AllVersionsStrategy, Invalid comparator :" +
+                            versionColumnBasedResolver.versionComparator());
+                }
+
+                if (versioningOrder().equals(VersioningOrder.DESC) &&
+                        (versionColumnBasedResolver.versionComparator().equals(VersionComparator.GREATER_THAN) ||
+                                versionColumnBasedResolver.versionComparator().equals(VersionComparator.GREATER_THAN_EQUAL_TO)))
+                {
+                    throw new IllegalStateException("Cannot build AllVersionsStrategy, Invalid comparator :" +
+                            versionColumnBasedResolver.versionComparator());
+                }
+                return null;
+            }
+        });
     }
 }

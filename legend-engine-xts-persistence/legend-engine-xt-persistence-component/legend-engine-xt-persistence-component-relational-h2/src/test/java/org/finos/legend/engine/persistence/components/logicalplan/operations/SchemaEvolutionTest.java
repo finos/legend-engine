@@ -144,7 +144,7 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(1, 0, 1, 0 , 0);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
@@ -252,7 +252,7 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(1, 0, 1, 0 , 0);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
@@ -307,7 +307,7 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(1, 0, 1, 0 , 0);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
@@ -363,7 +363,7 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadStagingDataForDecimalIncome(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(1, 0, 1, 0 , 0);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
@@ -415,7 +415,7 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadStagingDataForWithoutName(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(1, 0, 1, 0 , 0);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
