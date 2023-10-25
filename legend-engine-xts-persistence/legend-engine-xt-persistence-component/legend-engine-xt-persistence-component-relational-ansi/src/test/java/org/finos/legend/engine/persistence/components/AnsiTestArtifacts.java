@@ -511,7 +511,7 @@ public class AnsiTestArtifacts
             "OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" DESC) as \"legend_persistence_rank\" " +
             "FROM \"mydb\".\"staging\" as stage) as stage WHERE stage.\"legend_persistence_rank\" = 1)";
 
-    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase = "INSERT INTO " +
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicatesUpperCase = "INSERT INTO " +
             "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" " +
             "(\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"LEGEND_PERSISTENCE_COUNT\") " +
             "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\",stage.\"LEGEND_PERSISTENCE_COUNT\" as \"LEGEND_PERSISTENCE_COUNT\" FROM " +

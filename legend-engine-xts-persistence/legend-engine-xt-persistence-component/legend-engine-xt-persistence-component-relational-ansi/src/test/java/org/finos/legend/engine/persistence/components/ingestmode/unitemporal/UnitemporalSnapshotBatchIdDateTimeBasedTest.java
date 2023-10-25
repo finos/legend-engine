@@ -135,7 +135,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
         Assertions.assertEquals(getExpectedMetadataTableCreateQueryWithUpperCase(), preActionsSql.get(1));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQueryInUpperCase, deduplicationAndVersioningSql.get(0));
-        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase, deduplicationAndVersioningSql.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicatesUpperCase, deduplicationAndVersioningSql.get(1));
         Assertions.assertEquals(AnsiTestArtifacts.dataErrorCheckSqlWithBizDateAsVersionUpperCase, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));

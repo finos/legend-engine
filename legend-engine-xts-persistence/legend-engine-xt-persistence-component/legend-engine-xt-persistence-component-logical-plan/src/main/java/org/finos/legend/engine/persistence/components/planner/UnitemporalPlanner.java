@@ -108,7 +108,7 @@ abstract class UnitemporalPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(stagingDataset());
+        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(originalStagingDataset());
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
     }
 

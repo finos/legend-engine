@@ -47,4 +47,31 @@ public interface MaxVersionStrategyAbstract extends VersioningStrategy
     {
         return visitor.visitMaxVersionStrategy(this);
     }
+
+
+    @Value.Check
+    default void validate()
+    {
+        // For VersionColumnBasedResolver, allowed comparators: > , >=
+        mergeDataVersionResolver().ifPresent(mergeDataVersionResolver -> new MergeDataVersionResolverVisitor<Void>()
+        {
+            @Override
+            public Void visitDigestBasedResolver(DigestBasedResolverAbstract digestBasedResolver)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitVersionColumnBasedResolver(VersionColumnBasedResolverAbstract versionColumnBasedResolver)
+            {
+                if (versionColumnBasedResolver.versionComparator().equals(VersionComparator.LESS_THAN) ||
+                 versionColumnBasedResolver.versionComparator().equals(VersionComparator.LESS_THAN_EQUAL_TO))
+                {
+                    throw new IllegalStateException("Cannot build MaxVersionStrategy, Invalid comparator :" +
+                            versionColumnBasedResolver.versionComparator());
+                }
+                return null;
+            }
+        });
+    }
 }

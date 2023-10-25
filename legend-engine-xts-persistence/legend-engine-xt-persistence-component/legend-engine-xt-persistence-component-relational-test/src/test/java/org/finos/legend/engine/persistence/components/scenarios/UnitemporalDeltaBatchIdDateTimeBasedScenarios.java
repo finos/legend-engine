@@ -124,7 +124,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).performStageVersioning(true).build())
                 .build();
 
-        return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithDeleteIndicator, ingestMode);
     }
 
 }

@@ -96,6 +96,6 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).performStageVersioning(true).build())
                 .build();
 
-        return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);
+        return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicator, ingestMode);
     }
 }

@@ -1006,6 +1006,7 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }
@@ -1070,6 +1071,7 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }
@@ -1118,6 +1120,7 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }
@@ -1164,6 +1167,7 @@ public class TestUtils
                 .addFields(income)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }

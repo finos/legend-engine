@@ -66,7 +66,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
         // Stats
-        verifyStats(operations, "staging_legend_persistence_temp_staging");
+        verifyStats(operations, "staging");
     }
 
     @Override
@@ -91,7 +91,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
         // Stats
-        verifyStats(operations, "staging_legend_persistence_temp_staging");
+        verifyStats(operations, "staging");
     }
 
     @Override

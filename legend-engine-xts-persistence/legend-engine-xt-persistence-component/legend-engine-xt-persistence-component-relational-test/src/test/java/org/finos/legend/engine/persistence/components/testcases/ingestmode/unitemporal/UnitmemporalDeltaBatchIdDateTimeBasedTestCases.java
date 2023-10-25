@@ -38,7 +38,7 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
     UnitemporalDeltaBatchIdDateTimeBasedScenarios scenarios = new UnitemporalDeltaBatchIdDateTimeBasedScenarios();
 
     @Test
-    void testUnitemporalDeltaNoDeleteIndNoDataSplits()
+    void testUnitemporalDeltaNoDeleteIndNoDedupNoVersion()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__NO_DEL_IND__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -48,13 +48,13 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalDeltaNoDeleteIndNoAuditing(operations);
+        verifyUnitemporalDeltaNoDeleteIndNoDedupNoVersion(operations);
     }
 
-    public abstract void verifyUnitemporalDeltaNoDeleteIndNoAuditing(GeneratorResult operations);
+    public abstract void verifyUnitemporalDeltaNoDeleteIndNoDedupNoVersion(GeneratorResult operations);
 
     @Test
-    void testUnitemporalDeltaNoDeleteIndWithDataSplits()
+    void testUnitemporalDeltaNoDeleteIndFilterDupsAllVersionWithoutPerform()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__NO_DEL_IND__FILTER_DUPS_ALL_VERSION_WITHOUT_PERFORM();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -64,13 +64,13 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
                 .collectStatistics(true)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
-        verifyUnitemporalDeltaNoDeleteIndWithDataSplits(operations, dataSplitRangesOneToTwo);
+        verifyUnitemporalDeltaNoDeleteIndFilterDupsAllVersionWithoutPerform(operations, dataSplitRangesOneToTwo);
     }
 
-    public abstract void verifyUnitemporalDeltaNoDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
+    public abstract void verifyUnitemporalDeltaNoDeleteIndFilterDupsAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
 
     @Test
-    void testUnitemporalDeltaWithDeleteIndMultiValuesNoDataSplits()
+    void testUnitemporalDeltaWithDeleteIndMultiValuesNoDedupNoVersion()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND_MULTI_VALUES__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -80,13 +80,13 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalDeltaWithDeleteIndMultiValuesNoDataSplits(operations);
+        verifyUnitemporalDeltaWithDeleteIndMultiValuesNoDedupNoVersion(operations);
     }
 
-    public abstract void verifyUnitemporalDeltaWithDeleteIndMultiValuesNoDataSplits(GeneratorResult operations);
+    public abstract void verifyUnitemporalDeltaWithDeleteIndMultiValuesNoDedupNoVersion(GeneratorResult operations);
 
     @Test
-    void testUnitemporalDeltaWithDeleteIndNoDataSplits()
+    void testUnitemporalDeltaWithDeleteInd()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__NO_DEDUP_NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -96,13 +96,13 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalDeltaWithDeleteIndNoDataSplits(operations);
+        verifyUnitemporalDeltaWithDeleteInd(operations);
     }
 
-    public abstract void verifyUnitemporalDeltaWithDeleteIndNoDataSplits(GeneratorResult operations);
+    public abstract void verifyUnitemporalDeltaWithDeleteInd(GeneratorResult operations);
 
     @Test
-    void testUnitemporalDeltaWithDeleteIndWithDataSplits()
+    void testUnitemporalDeltaWithDeleteIndFailOnDupsAllVersion()
     {
         TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__FAIL_ON_DUP_ALL_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
@@ -112,10 +112,10 @@ public abstract class UnitmemporalDeltaBatchIdDateTimeBasedTestCases extends Bas
                 .collectStatistics(true)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
-        verifyUnitemporalDeltaWithDeleteIndWithDataSplits(operations, dataSplitRangesOneToTwo);
+        verifyUnitemporalDeltaWithDeleteIndFailOnDupsAllVersion(operations, dataSplitRangesOneToTwo);
     }
 
-    public abstract void verifyUnitemporalDeltaWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
+    public abstract void verifyUnitemporalDeltaWithDeleteIndFailOnDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges);
 
     @Test
     void testUnitemporalDeltaWithUpperCaseOptimizer()
