@@ -406,7 +406,7 @@ public class GraphQLExecute extends GraphQL
         return modifiedListOfExtensions.get(0);
     }
 
-    private List<SerializedNamedPlans> buildExtensionsPlanWithParameter(String rootFieldName, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Mapping mapping, Root_meta_pure_runtime_Runtime runtime, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
+    private List<SerializedNamedPlans> buildExtensionsPlanWithParameter(String rootFieldName, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Mapping mapping, Root_meta_core_runtime_Runtime runtime, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
     {
         List<Directive> directives = GraphQLExecutionHelper.findDirectives(query);
         List<SerializedNamedPlans> serializedNamedPlans = Lists.mutable.empty();
@@ -441,7 +441,7 @@ public class GraphQLExecute extends GraphQL
 
         Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = getDataspaceDefaultExecutionContext(dataspacePath, pureModel);
         Mapping mapping = executionContext._mapping();
-        Root_meta_pure_runtime_Runtime runtime = executionContext._defaultRuntime()._runtimeValue();
+        Root_meta_core_runtime_Runtime runtime = executionContext._defaultRuntime()._runtimeValue();
         return getSerializedNamedPlans(pureModel, extensions, _class, mapping, runtime, document, query, queryDoc, graphQLCacheKey);
     }
 
@@ -453,7 +453,6 @@ public class GraphQLExecute extends GraphQL
 
         Mapping mapping = pureModel.getMapping(mappingPath);
         Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
-        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
         return getSerializedNamedPlans(pureModel, extensions, _class, mapping, runtime, document, query, queryDoc, graphQLCacheKey);
     }
 
