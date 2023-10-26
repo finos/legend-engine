@@ -37,7 +37,6 @@ public abstract class BulkLoadDatasetUtilsTest
     private final TransformOptions transformOptions = TransformOptions
             .builder()
             .executionTimestampClock(Clock.fixed(executionZonedDateTime.toInstant(), ZoneOffset.UTC))
-            .bulkLoadBatchIdValue("batch_id_123")
             .bulkLoadBatchStatusPattern("<BATCH_STATUS_PATTERN>")
             .build();
 

@@ -16,11 +16,9 @@ package org.finos.legend.engine.external.format.arrow;
 
 import java.nio.charset.Charset;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Locale;
+import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
-import org.apache.arrow.adapter.jdbc.JdbcFieldInfo;
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfig;
 import org.apache.arrow.adapter.jdbc.JdbcToArrowConfigBuilder;
 import org.apache.arrow.adapter.jdbc.LegendArrowVectorIterator;
@@ -32,39 +30,40 @@ import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatWrite
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 
 public class ArrowDataWriter extends ExternalFormatWriter implements AutoCloseable
 {
     private final LegendArrowVectorIterator iterator;
     private final BufferAllocator allocator;
 
-    public ArrowDataWriter(ResultSet resultSet) throws SQLException
+    public ArrowDataWriter(RelationalResult resultSet) throws SQLException
     {
 
-        HashMap<Integer, JdbcFieldInfo> map = new HashMap<Integer, JdbcFieldInfo>();
-
         this.allocator = new RootAllocator();
-        JdbcToArrowConfig config = new JdbcToArrowConfigBuilder(allocator, Calendar.getInstance(TimeZone.getDefault(), Locale.ROOT)).build();
-        this.iterator = LegendArrowVectorIterator.create(resultSet, config);
+        Calendar calendar = resultSet.getRelationalDatabaseTimeZone() == null ?
+                new GregorianCalendar(TimeZone.getTimeZone("GMT")) :
+                new GregorianCalendar(TimeZone.getTimeZone(resultSet.getRelationalDatabaseTimeZone()));
+        JdbcToArrowConfig config = new JdbcToArrowConfigBuilder(allocator, calendar).setReuseVectorSchemaRoot(true).build();
+        this.iterator = LegendArrowVectorIterator.create(resultSet.getResultSet(), config);
 
     }
 
     @Override
     public void writeData(OutputStream outputStream) throws IOException
     {
-        try
+        try (VectorSchemaRoot vector = iterator.next();
+             ArrowStreamWriter writer = new ArrowStreamWriter(vector, null, outputStream);
+        )
         {
+            writer.start();
+            writer.writeBatch();
             while (this.iterator.hasNext())
             {
-                try (VectorSchemaRoot vector = iterator.next();
-                     ArrowStreamWriter writer = new ArrowStreamWriter(vector, null, outputStream)
-                )
-                {
-                    writer.start();
-                    writer.writeBatch();
-                }
+                iterator.next();
+                writer.writeBatch();
+
             }
         }
         catch (Exception e)

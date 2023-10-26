@@ -18,7 +18,6 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.hostedService.generation.control.HostedServiceOwnerValidationService;
 import org.finos.legend.engine.language.hostedService.generation.control.HostedServiceOwnerValidator;
 import org.finos.legend.engine.language.hostedService.generation.model.GenerationInfoData;
@@ -32,12 +31,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Ownership;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_hostedservice_generation_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Map;
 
@@ -73,10 +72,10 @@ public class HostedServiceArtifactGenerator
         }
     }
 
-    public boolean validateOwner(MutableList<CommonProfile> profiles, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public boolean validateOwner(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_Ownership> service = getOwnerValidatorService(activator,pureModel);
-        return  service.isOwner(profiles, activator._ownership());
+        return  service.isOwner(identity, activator._ownership());
     }
 
     public HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_Ownership> getOwnerValidatorService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModel pureModel)

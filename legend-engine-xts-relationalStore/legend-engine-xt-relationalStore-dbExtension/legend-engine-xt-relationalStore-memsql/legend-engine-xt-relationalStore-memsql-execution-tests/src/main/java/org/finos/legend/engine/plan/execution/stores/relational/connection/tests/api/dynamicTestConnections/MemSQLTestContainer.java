@@ -51,6 +51,7 @@ public class MemSQLTestContainer implements DynamicTestConnection
              Statement statement = connection.createStatement())
         {
             statement.execute("create schema if not exists " + DATABASE_NAME + ";");
+            statement.execute("SET GLOBAL maximum_blob_cache_size_mb = 1024");
         }
         catch (Exception e)
         {

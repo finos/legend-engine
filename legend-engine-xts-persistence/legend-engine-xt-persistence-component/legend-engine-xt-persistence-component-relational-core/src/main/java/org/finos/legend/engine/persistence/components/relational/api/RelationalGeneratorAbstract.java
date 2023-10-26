@@ -114,11 +114,7 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
-    @Default
-    public String bulkLoadBatchIdValue()
-    {
-        return UUID.randomUUID().toString();
-    }
+    public abstract Optional<String> bulkLoadTaskIdValue();
 
     @Default
     public String bulkLoadBatchStatusPattern()
@@ -141,6 +137,7 @@ public abstract class RelationalGeneratorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
+            .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
             .build();
     }
 
@@ -152,7 +149,6 @@ public abstract class RelationalGeneratorAbstract
             .batchStartTimestampPattern(batchStartTimestampPattern())
             .batchEndTimestampPattern(batchEndTimestampPattern())
             .infiniteBatchIdValue(infiniteBatchIdValue())
-            .bulkLoadBatchIdValue(bulkLoadBatchIdValue())
             .bulkLoadBatchStatusPattern(bulkLoadBatchStatusPattern())
             .batchIdPattern(batchIdPattern());
 
@@ -192,7 +188,7 @@ public abstract class RelationalGeneratorAbstract
         Datasets datasetsWithCaseConversion = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
         Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion, ingestModeWithCaseConversion);
         Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);
-        Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions());
+        Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions(), relationalSink().capabilities());
         return generateOperations(enrichedDatasets, resources, planner, ingestModeWithCaseConversion);
     }
 
@@ -243,11 +239,11 @@ public abstract class RelationalGeneratorAbstract
             schemaEvolutionDataset = Optional.of(schemaEvolutionResult.evolvedDataset());
 
             // update main dataset with evolved schema and re-initialize planner
-            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions());
+            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions(), relationalSink().capabilities());
         }
 
         // ingest
-        LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources, relationalSink().capabilities());
+        LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
 
         // metadata-ingest

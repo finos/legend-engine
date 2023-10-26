@@ -49,9 +49,9 @@ import java.util.stream.Collectors;
 
 class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 {
-    UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions)
+    UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // validate
         if (ingestMode.partitioned())
@@ -72,7 +72,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = keyValuesForMilestoningUpdate();
 
@@ -177,7 +177,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
        sink."batch_id_out" = 999999999 and
        not exists
        (
-        sink."digest" <> stage."digest" and sink.primaryKeys = stage.primaryKeys
+        sink."digest" = stage."digest" and sink.primaryKeys = stage.primaryKeys
        )
 
       Partition :

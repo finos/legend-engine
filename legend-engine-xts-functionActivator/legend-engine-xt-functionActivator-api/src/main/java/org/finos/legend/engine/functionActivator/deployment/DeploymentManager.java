@@ -14,17 +14,16 @@
 
 package org.finos.legend.engine.functionActivator.deployment;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.List;
 
 public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends FunctionActivatorDeploymentConfiguration>
 {
 
-    public V deploy(MutableList<CommonProfile> profiles, U artifact);
+    public V deploy(Identity identity, U artifact);
 
-    public V deploy(MutableList<CommonProfile> profiles, U artifact, List<W> availableRuntimeConfigurations);
+    public V deploy(Identity identity, U artifact, List<W> availableRuntimeConfigurations);
 
 
     public boolean canDeploy(FunctionActivatorArtifact activatorArtifact);

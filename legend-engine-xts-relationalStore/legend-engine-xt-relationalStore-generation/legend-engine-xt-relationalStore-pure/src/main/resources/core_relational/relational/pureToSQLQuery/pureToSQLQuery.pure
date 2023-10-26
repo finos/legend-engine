@@ -2352,7 +2352,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
   let functionCount = $functions->size();
   let allFunctionsSubtypes = $functions->size()->range()->map(ind | let functionType = $functions->at($ind)->meta::pure::functions::meta::functionType().parameters->at(0).genericType.rawType->toOne();
                                                                     assertFalse($functionType->instanceOf(PrimitiveType), 'Match does not support checking on primitive data type..! Currently checking on : ' + $functionType->toString());
-                                                                    if($functionType->isAnyClass(),
+                                                                    if($functionType == Any,
                                                                     | assert($ind == $functionCount-1, 'Any should be used as a default type at the end of match');
                                                                       [];,
                                                                     |

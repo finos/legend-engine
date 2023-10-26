@@ -97,18 +97,22 @@ public abstract class Planner
         {
             return false;
         }
+
+        Optional<String> bulkLoadTaskIdValue();
     }
 
     private final Datasets datasets;
     private final IngestMode ingestMode;
     private final PlannerOptions plannerOptions;
+    protected final Set<Capability> capabilities;
     protected final List<String> primaryKeys;
 
-    Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions)
+    Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         this.datasets = datasets;
         this.ingestMode = ingestMode;
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
+        this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
     }
 
@@ -153,7 +157,7 @@ public abstract class Planner
         return plannerOptions;
     }
 
-    public abstract LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities);
+    public abstract LogicalPlan buildLogicalPlanForIngest(Resources resources);
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {

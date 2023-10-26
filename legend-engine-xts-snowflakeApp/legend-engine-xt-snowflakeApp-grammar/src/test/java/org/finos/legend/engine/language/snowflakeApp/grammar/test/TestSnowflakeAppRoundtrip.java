@@ -29,6 +29,7 @@ public class TestSnowflakeAppRoundtrip extends TestGrammarRoundtrip.TestGrammarR
                 "   function : zxx(Integer[1]):String[1];\n" +
                 "   owner : 'pierre';\n" +
                 "   description : 'A super nice app!';\n" +
+                "   activationConfiguration : a::b::connection;\n" +
                 "}\n");
     }
 

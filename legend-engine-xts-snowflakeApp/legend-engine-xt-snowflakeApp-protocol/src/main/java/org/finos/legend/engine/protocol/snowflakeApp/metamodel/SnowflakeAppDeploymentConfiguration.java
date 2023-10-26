@@ -17,14 +17,18 @@ package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 
-public class SnowflakeDeploymentConfiguration extends DeploymentConfiguration
+public class SnowflakeAppDeploymentConfiguration extends DeploymentConfiguration
 {
     public ConnectionPointer activationConnection;
 
 //    public String applicationName;
 
-    public SnowflakeDeploymentConfiguration()
+    public SnowflakeAppDeploymentConfiguration()
     {
+    }
 
+    public SnowflakeAppDeploymentConfiguration(ConnectionPointer cp)
+    {
+        activationConnection = cp;
     }
 }
