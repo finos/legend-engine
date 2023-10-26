@@ -22,7 +22,6 @@ import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
@@ -32,7 +31,6 @@ import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDepl
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,8 +49,8 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     private SnowflakeAppDeploymentTool snowflakeAppDeploymentTool;
     private PlanExecutor planExecutor;
     private ConnectionManagerSelector connectionManager;
-    private static final String deploymentSchema = "LEGEND_GOVERNANCE";
-    private static final  String deploymentTable = "BUSINESS_OBJECTS";
+    private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
+    private static final  String deploymentTable = "APP_METADATA";
 
     public SnowflakeDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
     {
@@ -72,17 +70,18 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     }
 
     @Override
-    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact)
+    public SnowflakeDeploymentResult deploy(Identity identity, SnowflakeAppArtifact artifact)
     {
         return new SnowflakeDeploymentResult("",true);
     }
 
     @Override
-    public SnowflakeDeploymentResult deploy(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact, List<SnowflakeAppDeploymentConfiguration> availableRuntimeConfigurations)
+    public SnowflakeDeploymentResult deploy(Identity identity, SnowflakeAppArtifact artifact, List<SnowflakeAppDeploymentConfiguration> availableRuntimeConfigurations)
     {
         LOGGER.info("Starting deployment");
         SnowflakeDeploymentResult result;
-        try (Connection jdbcConnection = this.getDeploymentConnection(profiles, artifact))
+        //use the system connection if available (as would be the case in sandbox flow) , else use artifact connection (production flow)
+        try (Connection jdbcConnection = availableRuntimeConfigurations.isEmpty() ? this.getDeploymentConnection(identity, artifact) : this.getDeploymentConnection(identity, availableRuntimeConfigurations.get(0).connection))
         {
             String appName = ((SnowflakeAppContent)artifact.content).applicationName;
             jdbcConnection.setAutoCommit(false);
@@ -119,9 +118,9 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         }
     }
 
-    public java.sql.Connection getDeploymentConnection(MutableList<CommonProfile> profiles, RelationalDatabaseConnection connection)
+    public java.sql.Connection getDeploymentConnection(Identity identity, RelationalDatabaseConnection connection)
     {
-        return this.connectionManager.getDatabaseConnection(profiles, (DatabaseConnection) connection);
+        return this.connectionManager.getDatabaseConnection(identity, (DatabaseConnection) connection);
     }
 
     public void deployImpl(Connection jdbcConnection, SnowflakeAppContent context) throws Exception
@@ -131,8 +130,9 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
 
         //String createTableSQL = String.format("create table %s (id INTEGER, message VARCHAR(1000)) if not exists", deploymentTableName);
         //boolean createTableStatus = statement.execute(createTableSQL);
-        String insertSQL = String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER) values('%s', '%s', '%s', '%s', '%s')", deploymentTableName, context.creationTime, context.applicationName, context.sqlExpressions.getFirst(), context.getVersionInfo(), Lists.mutable.withAll(context.owners).makeString(","));
-        boolean insertStatus = statement.execute(insertSQL);
+        String insertSQL = String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER, DESCRIPTION) values('%s', '%s', '%s', '%s', '%s', '%s')",
+                deploymentTableName, context.creationTime, context.applicationName, context.sqlExpressions.getFirst(), context.getVersionInfo(), Lists.mutable.withAll(context.owners).makeString(","), context.description);
+        statement.execute(insertSQL);
     }
 
     public String getDeploymentTableName(Connection jdbcConnection) throws SQLException
@@ -141,10 +141,10 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         return String.format("%s.%s." + deploymentTable, catalogName, deploymentSchema);
     }
 
-    public java.sql.Connection getDeploymentConnection(MutableList<CommonProfile> profiles, SnowflakeAppArtifact artifact)
+    public java.sql.Connection getDeploymentConnection(Identity identity, SnowflakeAppArtifact artifact)
     {
         RelationalDatabaseConnection connection = extractConnectionFromArtifact(artifact);
-        return this.connectionManager.getDatabaseConnection(profiles, connection);
+        return this.connectionManager.getDatabaseConnection(identity, connection);
     }
 
     public RelationalDatabaseConnection extractConnectionFromArtifact(SnowflakeAppArtifact artifact)
@@ -152,12 +152,12 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
         return ((SnowflakeAppDeploymentConfiguration)artifact.deploymentConfiguration).connection;
     }
 
-    public ImmutableList<DeploymentInfo> getDeployed(MutableList<CommonProfile> profiles, RelationalDatabaseConnection connection) throws Exception
+    public ImmutableList<DeploymentInfo> getDeployed(Identity identity, RelationalDatabaseConnection connection) throws Exception
     {
         ImmutableList<DeploymentInfo> deployments = null;
 
         LOGGER.info("Querying deployment");
-        try (Connection jdbcConnection = this.getDeploymentConnection(profiles, connection))
+        try (Connection jdbcConnection = this.getDeploymentConnection(identity, connection))
         {
             deployments = this.getDeployedImpl(jdbcConnection);
             LOGGER.info("Completed querying deployments successfully");

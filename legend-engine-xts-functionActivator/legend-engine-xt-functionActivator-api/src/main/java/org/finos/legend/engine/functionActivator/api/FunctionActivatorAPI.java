@@ -32,12 +32,13 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 //import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentResult;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -66,12 +67,14 @@ public class FunctionActivatorAPI
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
     private  List<FunctionActivatorDeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
     private MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>>  availableActivatorServices = Lists.mutable.empty();
+    private IdentityFactory identityFactory;
 
     public FunctionActivatorAPI(ModelManager modelManager, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         this.modelManager = modelManager;
         this.routerExtensions = routerExtensions;
         this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, null);
+        this.identityFactory = new DefaultIdentityFactory();
     }
 
     public FunctionActivatorAPI(ModelManager modelManager,  List<FunctionActivatorDeploymentConfiguration> activatorConfigurations, MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>> availableActivatorServices, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
@@ -107,7 +110,7 @@ public class FunctionActivatorAPI
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.validate(profiles, pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok(objectMapper.writeValueAsString(service.validate(identityFactory.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
@@ -130,7 +133,7 @@ public class FunctionActivatorAPI
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(profiles, pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(this.identityFactory.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
