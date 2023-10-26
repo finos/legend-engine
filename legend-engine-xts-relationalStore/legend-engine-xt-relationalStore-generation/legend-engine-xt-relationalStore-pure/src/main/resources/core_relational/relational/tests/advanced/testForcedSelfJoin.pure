@@ -66,13 +66,15 @@ Association meta::relational::tests::advanced::forcedselfjoin::OrgPerson
 import meta::relational::mapping::*;
 import meta::relational::tests::csv::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::tests::advanced::forcedselfjoin::*;
 
 function meta::relational::tests::advanced::forcedselfjoin::testRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(meta::relational::tests::advanced::forcedselfjoin::IsolationTestDb);
+   meta::external::store::relational::tests::testRuntime(meta::relational::tests::advanced::forcedselfjoin::IsolationTestDb);
 }
 
 function <<test.BeforePackage>> meta::relational::tests::advanced::forcedselfjoin::setUp(): Any[*]
@@ -83,14 +85,14 @@ function <<test.BeforePackage>> meta::relational::tests::advanced::forcedselfjoi
    executeInDb('insert into PersonTable (id, firstName, lastName, orgId, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',17, 1,1,2);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, orgId, addressId, firmId, managerId) values (2, \'David\', \'Scott\',18, 2,1,4);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, orgId, addressId, firmId, managerId) values (3, \'John\', \'Hill\',18, 3,2,2);', $connection);
-   
+
    executeInDb('Drop table if exists FirmTable;', $connection);
    executeInDb('Create Table FirmTable(id INT, legalName VARCHAR(200), addressId INT, ceoId INT);', $connection);
    executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (1, \'Firm X\', 8, 1);', $connection);
    executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (2, \'Firm A\', 9, 5);', $connection);
    executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (3, \'Firm B\', 10, 3);', $connection);
    executeInDb('insert into FirmTable (id, legalName, addressId, ceoId) values (4, \'Firm C\', 11, 7);', $connection);
-   
+
    executeInDb('Drop table if exists organizationTable;',$connection);
    executeInDb('Create Table organizationTable(orgId INT, name VARCHAR(200), parentId INT);', $connection);
    executeInDb('insert into organizationtable(orgId, name, parentId) values (17, \'NIC\',0 )',$connection);
@@ -102,7 +104,7 @@ function <<test.BeforePackage>> meta::relational::tests::advanced::forcedselfjoi
 
    executeInDb('insert into productTable(id, ownerId, name, orgId) values (30,1,\'prod1\',17);',$connection);
    executeInDb('insert into productTable(id, ownerId, name, orgId) values (31,1,\'prod2\',18);',$connection);
-   executeInDb('insert into productTable(id, ownerId, name, orgId) values (32,3,\'prod3\',17);',$connection);   
+   executeInDb('insert into productTable(id, ownerId, name, orgId) values (32,3,\'prod3\',17);',$connection);
 
    true;
 }
@@ -126,7 +128,7 @@ function <<test.Test>> meta::relational::tests::advanced::forcedselfjoin::isolat
                              col(x|$x.employees.group.children->filter(c|$c.coveredProduct.name == $x.employees.product.name).name->toOne() , 'testCol')
                           ])
                        ,IsolationTestMapping,testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    let expectedCSV = 'firmname,employeeProductName,testCol\n'+
                       'Firm X,Peter Smith,NICDev\n'+
                       'Firm X,David Scott,\n'+
@@ -141,7 +143,7 @@ function <<test.Test>> meta::relational::tests::advanced::forcedselfjoin::isolat
 import meta::relational::tests::advanced::forcedselfjoin::*;
 Mapping meta::relational::tests::advanced::forcedselfjoin::IsolationTestMapping
 (
-   
+
    Person: Relational
    {
       scope([IsolationTestDb]default.personTable)
@@ -152,7 +154,7 @@ Mapping meta::relational::tests::advanced::forcedselfjoin::IsolationTestMapping
          group: @Org_Person
       )
    }
-   
+
    Firm: Relational
    {
       scope([IsolationTestDb]default.firmTable)
@@ -161,7 +163,7 @@ Mapping meta::relational::tests::advanced::forcedselfjoin::IsolationTestMapping
          employees: @Firm_Person
       )
    }
-      
+
    Organization: Relational
    {
       scope([IsolationTestDb]default.organizationTable)
@@ -171,7 +173,7 @@ Mapping meta::relational::tests::advanced::forcedselfjoin::IsolationTestMapping
          coveredProduct: @Org_product
       )
    }
-   
+
    CoveredProduct: Relational
    {
       scope([IsolationTestDb]default.productTable)
@@ -181,7 +183,7 @@ Mapping meta::relational::tests::advanced::forcedselfjoin::IsolationTestMapping
          owner: @Person_product
       )
    }
-      
+
 )
 
 ###Relational
@@ -191,11 +193,11 @@ Database meta::relational::tests::advanced::forcedselfjoin::IsolationTestDb
    Table firmTable(ID INT PRIMARY KEY, legalName VARCHAR(200), ADDRESSID INT, CEOID INT)
    Table organizationTable(name VARCHAR(200) , orgId INT PRIMARY KEY, parentId Int)
    Table productTable (Id INT PRIMARY KEY , ownerId INT, name VARCHAR(200), orgId INT)
-   
+
    Join Firm_Person(firmTable.ID = personTable.FIRMID)
    Join Org_Person(organizationTable.orgId = personTable.orgId)
    Join Person_product( personTable.ID = productTable.ownerId)
    Join Org_product (productTable.orgId  = organizationTable.orgId)
-   Join Org_org (organizationTable.orgId  = {target}.parentId)   
-) 
+   Join Org_org (organizationTable.orgId  = {target}.parentId)
+)
 

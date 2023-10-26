@@ -14,6 +14,7 @@
 
 package org.finos.legend.connection;
 
+import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.connection.protocol.AuthenticationConfiguration;
@@ -33,20 +34,19 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class ConnectionFactory
 {
-    private final EnvironmentConfiguration environmentConfiguration;
+    private final LegendEnvironment environment;
+    private final StoreInstanceProvider storeInstanceProvider;
     private final Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex = new LinkedHashMap<>();
     private final Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex = new LinkedHashMap<>();
-    private final Map<String, StoreInstance> storeInstancesIndex;
 
-    private ConnectionFactory(EnvironmentConfiguration environmentConfiguration, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, Map<String, StoreInstance> storeInstancesIndex)
+    private ConnectionFactory(LegendEnvironment environment, StoreInstanceProvider storeInstanceProvider, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders)
     {
-        this.environmentConfiguration = environmentConfiguration;
+        this.environment = environment;
+        this.storeInstanceProvider = storeInstanceProvider;
         for (ConnectionBuilder<?, ?, ?> builder : connectionBuilders)
         {
             this.connectionBuildersIndex.put(new ConnectionBuilder.Key(builder.getConnectionSpecificationType(), builder.getCredentialType()), builder);
@@ -55,76 +55,91 @@ public class ConnectionFactory
         {
             this.credentialBuildersIndex.put(new CredentialBuilder.Key(builder.getAuthenticationConfigurationType(), builder.getInputCredentialType(), builder.getOutputCredentialType()), builder);
         }
-        this.storeInstancesIndex = storeInstancesIndex;
     }
 
-    public void registerStoreInstance(StoreInstance storeInstance)
+    public LegendEnvironment getEnvironment()
     {
-        if (this.storeInstancesIndex.containsKey(storeInstance.getIdentifier()))
-        {
-            throw new RuntimeException(String.format("Can't register store instance: found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
-        }
-        this.storeInstancesIndex.put(storeInstance.getIdentifier(), storeInstance);
+        return environment;
     }
 
-    private StoreInstance findStoreInstance(String identifier)
+    public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier, AuthenticationMechanism authenticationMechanism)
     {
-        return Objects.requireNonNull(this.storeInstancesIndex.get(identifier), String.format("Can't find store instance with identifier '%s'", identifier));
+        return this.getAuthenticator(identity, this.storeInstanceProvider.lookup(storeInstanceIdentifier), authenticationMechanism);
+    }
+
+    public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationMechanism authenticationMechanism)
+    {
+        AuthenticationMechanismConfiguration authenticationMechanismConfiguration = Objects.requireNonNull(storeInstance.getAuthenticationMechanismConfiguration(authenticationMechanism), String.format("Store '%s' does not support authentication mechanism '%s'. Supported mechanism(s):\n%s",
+                storeInstance.getIdentifier(),
+                authenticationMechanism.getLabel(),
+                ListIterate.collect(storeInstance.getAuthenticationMechanisms(), mechanism -> "- " + mechanism.getLabel()).makeString("\n")
+        ));
+        Function0<AuthenticationConfiguration> generator = authenticationMechanismConfiguration.getDefaultAuthenticationConfigurationGenerator();
+        AuthenticationConfiguration authenticationConfiguration = Objects.requireNonNull(generator != null ? generator.get() : null, String.format("Can't auto-generate authentication configuration for store '%s' with authentication mechanism '%s'. Please provide a configuration of one of the following type(s):\n%s",
+                storeInstance.getIdentifier(),
+                authenticationMechanism.getLabel(),
+                authenticationMechanismConfiguration.getAuthenticationConfigurationTypes().collect(configType -> "- " + configType.getSimpleName()).makeString("\n")
+        ));
+        return this.getAuthenticator(identity, storeInstance, authenticationMechanism, authenticationConfiguration);
     }
 
     public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier, AuthenticationConfiguration authenticationConfiguration)
     {
-        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier), authenticationConfiguration);
+        return this.getAuthenticator(identity, this.storeInstanceProvider.lookup(storeInstanceIdentifier), authenticationConfiguration);
     }
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
     {
-        AuthenticationMechanism authenticationMechanism = environmentConfiguration.findAuthenticationMechanismForConfiguration(authenticationConfiguration);
-        String authenticationMechanismLabel = authenticationMechanism != null ? ("authentication mechanism '" + authenticationMechanism.getLabel() + "'") : ("authentication mechanism with configuration '" + authenticationConfiguration.getClass().getSimpleName() + "'");
-        if (!storeInstance.getAuthenticationConfigurationTypes().contains(authenticationConfiguration.getClass()))
-        {
-            throw new RuntimeException(String.format("Can't get authenticator: %s is not supported by store '%s'. Supported mechanism(s):\n%s",
-                    authenticationMechanismLabel,
-                    storeInstance.getIdentifier(),
-                    storeInstance.getAuthenticationMechanisms().stream().map(mechanism -> "- " + mechanism.getLabel() + " (config: " + mechanism.getAuthenticationConfigurationType().getSimpleName() + ")").collect(Collectors.joining("\n")))
-            );
-        }
-        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
+        AuthenticationMechanism authenticationMechanism = Objects.requireNonNull(storeInstance.getAuthenticationMechanism(authenticationConfiguration.getClass()), String.format("Store '%s' does not accept authentication configuration type '%s'. Supported configuration type(s):\n%s",
+                storeInstance.getIdentifier(),
+                authenticationConfiguration.getClass().getSimpleName(),
+                ListIterate.collect(storeInstance.getAuthenticationConfigurationTypes(), configType -> "- " + configType.getSimpleName()).makeString("\n")
+        ));
+        return this.getAuthenticator(identity, storeInstance, authenticationMechanism, authenticationConfiguration);
+    }
+
+    private Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance, AuthenticationMechanism authenticationMechanism, AuthenticationConfiguration authenticationConfiguration)
+    {
+        AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationMechanism, authenticationConfiguration, storeInstance.getConnectionSpecification());
         if (result == null)
         {
-            throw new RuntimeException(String.format("Can't get authenticator: no authentication flow for store '%s' can be resolved for the specified identity using %s (authentication configuration: %s, connection specification: %s)",
+            throw new RuntimeException(String.format("No authentication flow for store '%s' can be resolved for the specified identity (authentication configuration: %s, connection specification: %s)",
                     storeInstance.getIdentifier(),
-                    authenticationMechanismLabel,
                     authenticationConfiguration.getClass().getSimpleName(),
-                    storeInstance.getConnectionSpecification().getClass().getSimpleName())
-            );
+                    storeInstance.getConnectionSpecification().getClass().getSimpleName()
+            ));
         }
-        return new Authenticator(identity, storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
+        return new Authenticator(storeInstance, authenticationMechanism, authenticationConfiguration, result.sourceCredentialType, result.targetCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)), this.environment);
     }
 
     public Authenticator getAuthenticator(Identity identity, String storeInstanceIdentifier)
     {
-        return this.getAuthenticator(identity, this.findStoreInstance(storeInstanceIdentifier));
+        return this.getAuthenticator(identity, this.storeInstanceProvider.lookup(storeInstanceIdentifier));
     }
 
     public Authenticator getAuthenticator(Identity identity, StoreInstance storeInstance)
     {
-        List<AuthenticationConfiguration> authenticationConfigurations = ListIterate.collect(storeInstance.getAuthenticationMechanisms(), AuthenticationMechanism::generateConfiguration).select(Objects::nonNull);
         Authenticator authenticator = null;
-        for (AuthenticationConfiguration authenticationConfiguration : authenticationConfigurations)
+        for (AuthenticationMechanism authenticationMechanism : storeInstance.getAuthenticationMechanisms())
         {
-            AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationConfiguration, storeInstance.getConnectionSpecification());
-            if (result != null)
+            AuthenticationMechanismConfiguration authenticationMechanismConfiguration = storeInstance.getAuthenticationMechanismConfiguration(authenticationMechanism);
+            Function0<AuthenticationConfiguration> generator = authenticationMechanismConfiguration.getDefaultAuthenticationConfigurationGenerator();
+            AuthenticationConfiguration authenticationConfiguration = generator != null ? generator.get() : null;
+            if (authenticationConfiguration != null)
             {
-                authenticator = new Authenticator(identity, storeInstance, authenticationConfiguration, result.sourceCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)));
-                break;
+                AuthenticationFlowResolver.ResolutionResult result = AuthenticationFlowResolver.run(this.credentialBuildersIndex, this.connectionBuildersIndex, identity, authenticationMechanism, authenticationConfiguration, storeInstance.getConnectionSpecification());
+                if (result != null)
+                {
+                    authenticator = new Authenticator(storeInstance, authenticationMechanism, authenticationConfiguration, result.sourceCredentialType, result.targetCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(storeInstance.getConnectionSpecification().getClass(), result.targetCredentialType)), this.environment);
+                    break;
+                }
             }
         }
         if (authenticator == null)
         {
-            throw new RuntimeException(String.format("Can't get authenticator: no authentication flow for store '%s' can be resolved for the specified identity using auto-generated authentication configuration. Try specifying an authentication mechanism by providing a configuration of one of the following types:\n%s",
+            throw new RuntimeException(String.format("No authentication flow for store '%s' can be resolved for the specified identity. Try specifying an authentication mechanism or authentication configuration. Supported configuration type(s):\n%s",
                     storeInstance.getIdentifier(),
-                    ListIterate.select(storeInstance.getAuthenticationMechanisms(), mechanism -> mechanism.generateConfiguration() == null).collect(mechanism -> "- " + mechanism.getAuthenticationConfigurationType().getSimpleName() + " (mechanism: " + mechanism.getLabel() + ")").makeString("\n")
+                    ListIterate.collect(storeInstance.getAuthenticationConfigurationTypes(), configType -> "- " + configType.getSimpleName() + " (" + storeInstance.getAuthenticationMechanism(configType).getLabel() + ")").makeString("\n")
             ));
         }
         return authenticator;
@@ -152,7 +167,7 @@ public class ConnectionFactory
          * NOTE:
          * - Since some credential builders do not require a specific input credential type, we added a generic `Credential` node
          * to Identity (start node)
-         * - We want to differentiate credential and credential-type nodes because we want to account for (short-circuit) case where
+         * - We want to differentiate credential and credential-type nodes because we want to account for (short-circuit) cases where
          * no resolution is needed: some credentials that belong to the identity is enough to build the connection (e.g. Kerberos).
          * We want to be very explicit about this case, we don't want this behavior to be generic for all types of credentials; for example,
          * just because an identity comes with a username-password credential, does not mean this credential is appropriate to be used to
@@ -160,7 +175,7 @@ public class ConnectionFactory
          * <p>
          * With this setup, we can use a basic graph search algorithm (e.g. BFS) to resolve the shortest path to build a connection
          */
-        private AuthenticationFlowResolver(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationConfiguration authenticationConfiguration, ConnectionSpecification connectionSpecification)
+        private AuthenticationFlowResolver(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationConfiguration authenticationConfiguration, AuthenticationMechanism authenticationMechanism, ConnectionSpecification connectionSpecification)
         {
             // add start node (i.e. identity node)
             this.startNode = new FlowNode(identity);
@@ -173,7 +188,7 @@ public class ConnectionFactory
                     .filter(builder -> builder.getAuthenticationConfigurationType().equals(authenticationConfiguration.getClass()))
                     .forEach(builder ->
                     {
-                        if (!(builder instanceof CredentialExtractor))
+                        if (!(builder.getInputCredentialType().equals(builder.getOutputCredentialType())))
                         {
                             this.processEdge(new FlowNode(builder.getInputCredentialType()), new FlowNode(builder.getOutputCredentialType()));
                         }
@@ -188,7 +203,7 @@ public class ConnectionFactory
                     .forEach(builder -> this.processEdge(new FlowNode(builder.getCredentialType()), this.endNode));
         }
 
-        public static String createCredentialBuilderKey(String inputCredentialType, String outputCredentialType)
+        static String createCredentialBuilderKey(String inputCredentialType, String outputCredentialType)
         {
             return inputCredentialType + "__" + outputCredentialType;
         }
@@ -213,10 +228,10 @@ public class ConnectionFactory
         /**
          * Resolves the authentication flow in order to build a connection for a specified identity
          */
-        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationConfiguration authenticationConfiguration, ConnectionSpecification connectionSpecification)
+        public static ResolutionResult run(Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex, Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex, Identity identity, AuthenticationMechanism authenticationMechanism, AuthenticationConfiguration authenticationConfiguration, ConnectionSpecification connectionSpecification)
         {
             // using BFS algo to search for the shortest (non-cyclic) path
-            AuthenticationFlowResolver state = new AuthenticationFlowResolver(credentialBuildersIndex, connectionBuildersIndex, identity, authenticationConfiguration, connectionSpecification);
+            AuthenticationFlowResolver state = new AuthenticationFlowResolver(credentialBuildersIndex, connectionBuildersIndex, identity, authenticationConfiguration, authenticationMechanism, connectionSpecification);
             boolean found = false;
 
             Set<FlowNode> visitedNodes = new HashSet<>(); // Create a set to keep track of visited vertices
@@ -358,119 +373,95 @@ public class ConnectionFactory
 
     public <T> T getConnection(Identity identity, StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstance, authenticationConfiguration));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstance, authenticationConfiguration));
     }
 
     public <T> T getConnection(Identity identity, String storeInstanceIdentifier, AuthenticationConfiguration authenticationConfiguration) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier, authenticationConfiguration));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstanceIdentifier, authenticationConfiguration));
     }
 
     public <T> T getConnection(Identity identity, StoreInstance storeInstance) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstance));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstance));
     }
 
     public <T> T getConnection(Identity identity, String storeInstanceIdentifier) throws Exception
     {
-        return this.getConnection(this.getAuthenticator(identity, storeInstanceIdentifier));
+        return this.getConnection(identity, this.getAuthenticator(identity, storeInstanceIdentifier));
     }
 
-    public <T> T getConnection(Authenticator authenticator) throws Exception
+    public <T> T getConnection(Identity identity, Authenticator authenticator) throws Exception
     {
-        Credential credential = authenticator.makeCredential(this.environmentConfiguration);
         ConnectionBuilder<T, Credential, ConnectionSpecification> flow = (ConnectionBuilder<T, Credential, ConnectionSpecification>) authenticator.getConnectionBuilder();
-        return flow.getConnection(credential, authenticator.getStoreInstance().getConnectionSpecification(), authenticator.getStoreInstance());
+        return flow.getConnection(authenticator.getStoreInstance().getConnectionSpecification(), flow.getAuthenticatorCompatible(authenticator), identity);
     }
 
     public static class Builder
     {
-        private final EnvironmentConfiguration environmentConfiguration;
-        private CredentialBuilderProvider credentialBuilderProvider;
-        private ConnectionBuilderProvider connectionBuilderProvider;
-        private final List<CredentialBuilder<?, ?, ?>> credentialBuilders = Lists.mutable.empty();
-        private final List<ConnectionBuilder<?, ?, ?>> connectionBuilders = Lists.mutable.empty();
-        private final Map<String, StoreInstance> storeInstancesIndex = new HashMap<>();
+        private final LegendEnvironment environment;
+        private final StoreInstanceProvider storeInstanceProvider;
+        private final List<CredentialBuilder> credentialBuilders = Lists.mutable.empty();
+        private final List<ConnectionBuilder> connectionBuilders = Lists.mutable.empty();
 
-        public Builder(EnvironmentConfiguration environmentConfiguration)
+        public Builder(LegendEnvironment environment, StoreInstanceProvider storeInstanceProvider)
         {
-            this.environmentConfiguration = environmentConfiguration;
+            this.environment = environment;
+            this.storeInstanceProvider = storeInstanceProvider;
         }
 
-        public Builder withCredentialBuilderProvider(CredentialBuilderProvider provider)
-        {
-            this.credentialBuilderProvider = provider;
-            return this;
-        }
-
-        public Builder withConnectionBuilderProvider(ConnectionBuilderProvider provider)
-        {
-            this.connectionBuilderProvider = provider;
-            return this;
-        }
-
-        public Builder withCredentialBuilders(List<CredentialBuilder<?, ?, ?>> credentialBuilders)
+        public Builder withCredentialBuilders(List<CredentialBuilder> credentialBuilders)
         {
             this.credentialBuilders.addAll(credentialBuilders);
             return this;
         }
 
-        public Builder withCredentialBuilder(CredentialBuilder<?, ?, ?> credentialBuilder)
+        public Builder withCredentialBuilders(CredentialBuilder... credentialBuilders)
+        {
+            this.credentialBuilders.addAll(Lists.mutable.with(credentialBuilders));
+            return this;
+        }
+
+        public Builder withCredentialBuilder(CredentialBuilder credentialBuilder)
         {
             this.credentialBuilders.add(credentialBuilder);
             return this;
         }
 
-        public Builder withConnectionBuilders(List<ConnectionBuilder<?, ?, ?>> connectionBuilders)
+        public Builder withConnectionBuilders(List<ConnectionBuilder> connectionBuilders)
         {
             this.connectionBuilders.addAll(connectionBuilders);
             return this;
         }
 
-        public Builder withConnectionBuilder(ConnectionBuilder<?, ?, ?> connectionBuilder)
+        public Builder withConnectionBuilders(ConnectionBuilder... connectionBuilders)
+        {
+            this.connectionBuilders.addAll(Lists.mutable.with(connectionBuilders));
+            return this;
+        }
+
+        public Builder withConnectionBuilder(ConnectionBuilder connectionBuilder)
         {
             this.connectionBuilders.add(connectionBuilder);
             return this;
         }
 
-        public Builder withStoreInstances(List<StoreInstance> storeInstances)
-        {
-            storeInstances.forEach(this::registerStoreInstance);
-            return this;
-        }
-
-        public Builder withStoreInstance(StoreInstance storeInstance)
-        {
-            this.registerStoreInstance(storeInstance);
-            return this;
-        }
-
-        private void registerStoreInstance(StoreInstance storeInstance)
-        {
-            if (this.storeInstancesIndex.containsKey(storeInstance.getIdentifier()))
-            {
-                throw new RuntimeException(String.format("Can't register store instance: found multiple store instances with identifier '%s'", storeInstance.getIdentifier()));
-            }
-            this.storeInstancesIndex.put(storeInstance.getIdentifier(), storeInstance);
-        }
-
         public ConnectionFactory build()
         {
-            List<CredentialBuilder> credentialBuilders = this.credentialBuilderProvider != null ? this.credentialBuilderProvider.getBuilders() : Lists.mutable.empty();
-            credentialBuilders.addAll(this.credentialBuilders);
-            List<ConnectionBuilder> connectionBuilders = this.connectionBuilderProvider != null ? this.connectionBuilderProvider.getBuilders() : Lists.mutable.empty();
-            connectionBuilders.addAll(this.connectionBuilders);
-
-            for (ConnectionManager connectionManager : ServiceLoader.load(ConnectionManager.class))
+            for (ConnectionBuilder connectionBuilder : connectionBuilders)
             {
-                connectionManager.initialize();
+                ConnectionManager connectionManager = connectionBuilder.getConnectionManager();
+                if (connectionManager != null)
+                {
+                    connectionManager.initialize(environment);
+                }
             }
 
             return new ConnectionFactory(
-                    this.environmentConfiguration,
-                    credentialBuilders,
-                    connectionBuilders,
-                    this.storeInstancesIndex
+                    this.environment,
+                    this.storeInstanceProvider,
+                    this.credentialBuilders,
+                    this.connectionBuilders
             );
         }
     }

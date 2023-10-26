@@ -32,6 +32,13 @@ public class EnvironmentCredentialVaultSecret extends CredentialVaultSecret
     }
 
     @Override
+    public String shortId()
+    {
+        return "EnvironmentCredentialVaultSecret" +
+                "--envVariableName=" + envVariableName;
+    }
+
+    @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)
     {
         return visitor.visit(this);

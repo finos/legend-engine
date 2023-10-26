@@ -34,6 +34,14 @@ public class AWSStaticCredentials extends AWSCredentials
     }
 
     @Override
+    public String shortId()
+    {
+        return "AWSStaticCredentials" +
+                "--accessKeyId=" + accessKeyId.shortId() +
+                "--secretAccessKey=" + secretAccessKey.shortId();
+    }
+
+    @Override
     public <T> T accept(AWSCredentialsVisitor<T> visitor)
     {
         return visitor.visit(this);

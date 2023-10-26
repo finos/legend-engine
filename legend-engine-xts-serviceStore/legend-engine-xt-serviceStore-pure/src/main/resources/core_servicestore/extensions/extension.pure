@@ -23,6 +23,7 @@ import meta::pure::mapping::*;
 import meta::pure::router::clustering::*;
 import meta::pure::extension::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 import meta::java::generation::code::*;

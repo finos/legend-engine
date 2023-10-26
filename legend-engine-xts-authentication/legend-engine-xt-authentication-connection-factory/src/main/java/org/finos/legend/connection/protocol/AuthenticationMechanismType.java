@@ -18,54 +18,31 @@ import org.finos.legend.connection.impl.ApiKeyAuthenticationConfiguration;
 import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.connection.impl.KerberosAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.credential.ApiTokenCredential;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
+import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
 public enum AuthenticationMechanismType implements AuthenticationMechanism
 {
-    USER_PASSWORD
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return UserPasswordAuthenticationConfiguration.class;
-                }
-            },
+    USER_PASSWORD("UsernamePassword"),
+    API_KEY("APIKey"),
+    KEY_PAIR("KeyPair"),
+    KERBEROS("Kerberos"),
+    OAUTH("OAuth");
 
-    API_KEY
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return ApiKeyAuthenticationConfiguration.class;
-                }
-            },
+    private final String label;
 
-    KEY_PAIR
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return EncryptedPrivateKeyPairAuthenticationConfiguration.class;
-                }
-            },
-
-    KERBEROS
-            {
-                @Override
-                public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType()
-                {
-                    return KerberosAuthenticationConfiguration.class;
-                }
-
-                @Override
-                public AuthenticationConfiguration generateConfiguration()
-                {
-                    return new KerberosAuthenticationConfiguration();
-                }
-            };
+    private AuthenticationMechanismType(String label)
+    {
+        this.label = label;
+    }
 
     @Override
     public String getLabel()
     {
-        return this.toString();
+        return this.label;
     }
 }

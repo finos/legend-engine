@@ -15,6 +15,7 @@
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::path::*;
 import meta::relational::tests::projection::simple::*;
@@ -31,6 +32,22 @@ function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSi
    assertSize($result.values.rows, 7 );
    assertEquals('Anthony,David,Fabrice,John,John,Oliver,Peter', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
    assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root"', $result->sqlRemoveFormatting());
+}
+
+function meta::relational::tests::projection::simple::getCols():ColumnSpecification<Person>[*]
+{
+  [
+    col(x : Person[1] | $x.firstName, 'firstName'),
+    col(x : Person[1] | $x.lastName, 'lastName')
+  ];
+}
+
+function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSimplePropertyWithColsFromFunction():Boolean[1]
+{
+   let result = execute(|Person.all()->project(meta::relational::tests::projection::simple::getCols()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 7 );
+   assertEquals('Allen,Anthony,David,Fabrice,Harris,Hill,Hill,John,John,Johnson,Oliver,Peter,Roberts,Smith', $result.values.rows->map(r|$r.values)->sort()->makeString(','));
+   assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::simple::testAllOneSimplePropertyUsingVariable():Boolean[1]
@@ -59,7 +76,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::projection::s
    let result = execute({|
          let p = [#/Person/firstName#];
          let n = ['First Name'];
-      
+
          Person.all()->project($p, $n);
          }, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );
@@ -71,7 +88,7 @@ function <<test.ToFix>> meta::relational::tests::projection::simple::testAllOneS
 {
    let result = execute({|
          let n = 'First Name';
-      
+
          Person.all()->project(col({p2:Person[1]|$p2.firstName}, $n));
          }, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7 );

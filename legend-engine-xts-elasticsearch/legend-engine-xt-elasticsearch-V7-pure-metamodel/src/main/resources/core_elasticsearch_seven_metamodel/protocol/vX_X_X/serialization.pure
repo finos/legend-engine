@@ -39,26 +39,26 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
 
       transfers_store_transformStore2 = {extensions:meta::pure::extension::Extension[*] |
            [
-              s:meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store[1] | 
+              s:meta::external::store::elasticsearch::v7::metamodel::store::Elasticsearch7Store[1] |
                 ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7Store(
                   name    = $s.name->toOne(),
                   package = $s.package->map(p | $p->elementToPath()),
-                  indices = $s.indices->map(i | 
+                  indices = $s.indices->map(i |
                     ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndex(
                       indexName = $i.indexName,
-                      properties = $i.properties->map(p | 
+                      properties = $i.properties->map(p |
                         ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::store::Elasticsearch7StoreIndexProperty(
                           propertyName = $p.propertyName,
                           property = $p.property
                         )
                       )
                     )
-                  )  
+                  )
                 )
            ]
       },
 
-      invocation_execution_transformContext = 
+      invocation_execution_transformContext =
       [
         e: meta::external::store::elasticsearch::v7::metamodel::executionPlan::context::Elasticsearch7ExecutionContext[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::context::Elasticsearch7ExecutionContext()
       ],
@@ -79,11 +79,11 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::elasticsear
                     _type = 'tDSMetadata',
                     columnResultPaths = $tds.columnResultPaths
                         ->map(c | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSColumnResultPath(
-                            index = $c.index, 
+                            index = $c.index,
                             resultPath = $c.resultPath->meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::transformResultPath($extensions)
                           )
                         )
-                    )                   
+                    )
                 ])
               )
           ]
@@ -114,7 +114,7 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPl
     id: _IDResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::_IDResultPath(
       _type = '_IDResultPath',
       fieldPath = $id.fieldPath
-    )                                                   
+    )
   ]);
 }
 
@@ -122,8 +122,8 @@ function meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::tr
 {
   ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreConnection(
     _type = 'elasticsearch7StoreConnection',
-    element = $conn.element->cast(@PackageableElement)->elementToPath(),
-    sourceSpec = ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification(            
+    element = '',
+    sourceSpec = ^meta::external::store::elasticsearch::v7::protocol::vX_X_X::runtime::Elasticsearch7StoreURLSourceSpecification(
             url = '%s://%s:%d%s'->format([$conn.sourceSpec.url.scheme->defaultIfEmpty(URLScheme.http)->toOne(), $conn.sourceSpec.url.host, $conn.sourceSpec.url.port, $conn.sourceSpec.url.path])
           ),
     authSpec = $conn.authSpec->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)
@@ -143,12 +143,12 @@ Class <<typemodifiers.abstract>> meta::external::store::elasticsearch::v7::proto
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSMetadata extends meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::RequestResultMetadata
-{   
+{
    columnResultPaths: meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSColumnResultPath[1..*];
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::vX_X_X::executionPlan::tds::TDSColumnResultPath
-{     
+{
   index: Integer[1];
   resultPath: meta::external::store::elasticsearch::v7::protocol::vX_X_X::tds::ResultPath[1];
 }

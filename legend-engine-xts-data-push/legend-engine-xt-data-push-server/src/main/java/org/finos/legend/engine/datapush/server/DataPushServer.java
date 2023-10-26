@@ -15,6 +15,7 @@
 package org.finos.legend.engine.datapush.server;
 
 import io.dropwizard.setup.Bootstrap;
+import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.datapush.server.config.DataPushServerConfiguration;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
@@ -32,7 +33,7 @@ public class DataPushServer extends BaseDataPushServer
     {
         super.initialize(bootstrap);
 
-//        bootstrap.addBundle(new ConnectionFactoryBundle<>(DataPushServerConfiguration::getConnectionFactoryConfiguration));
+        bootstrap.addBundle(new ConnectionFactoryBundle<>(DataPushServerConfiguration::getConnectionFactoryConfiguration, Lists.mutable.empty()));
         bootstrap.addBundle(new LegendPac4jBundle<>(BaseServerConfiguration::getPac4jConfiguration));
     }
 

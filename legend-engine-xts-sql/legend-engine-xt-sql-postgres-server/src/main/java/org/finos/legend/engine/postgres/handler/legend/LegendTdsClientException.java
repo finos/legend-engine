@@ -21,4 +21,9 @@ public class LegendTdsClientException extends RuntimeException
     {
         super(message);
     }
+
+    public LegendTdsClientException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
 }

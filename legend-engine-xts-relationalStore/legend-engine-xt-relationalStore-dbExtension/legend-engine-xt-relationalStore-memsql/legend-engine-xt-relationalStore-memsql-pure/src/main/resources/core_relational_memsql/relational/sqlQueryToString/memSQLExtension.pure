@@ -5,6 +5,7 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -80,7 +81,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
     dynaFnToSql('convertVarchar128',         $allStates,            ^ToSql(format='convert(%s, CHAR)')),
-    dynaFnToSql('dateDiff',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(1), $p->at(0), $p->at(2)->replace('\'', '')])})),
+    dynaFnToSql('dateDiff',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(0), $p->at(1), $p->at(2)->replace('\'', '')])})),
     dynaFnToSql('datePart',                  $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('dayOfMonth',                $allStates,            ^ToSql(format='day(%s)')),
     dynaFnToSql('dayOfWeekNumber',           $allStates,            ^ToSql(format='dayofweek(%s)')),
@@ -154,10 +155,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::transformToTimestampMemSQL(params:String[2]):String[1]
 {
-  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
    assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
-   let timestampFormat = $params->at(1);   
-   'to_timestamp('+$params->at(0)+','+$timestampFormat+')';   
+   let timestampFormat = $params->at(1);
+   'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
 }
 
 function  <<access.private>> meta::relational::functions::sqlQueryToString::memsql::generateDateDiffExpressionForMemSQL(params:String[*]):String[1]
@@ -168,18 +169,31 @@ function  <<access.private>> meta::relational::functions::sqlQueryToString::mems
 
   let dbSpecificUnits = [
 
-     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
-     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
-     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
      {| format('(%s)', [
-        'datediff(%s , %s)'
+        'timestampdiff(YEAR, %s , %s)'
      ])},
-     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
-     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';},
      {| format('(%s)', [
-        'time_to_sec(timediff(%s , %s))'
+        'timestampdiff(MONTH, %s , %s)'
      ])},
-     {| fail('The DurationUnit \''+$params->at(2)+'\' is not supported yet!');'';}
+     {| format('(%s)', [
+        'timestampdiff(WEEK, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(DAY, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(HOUR, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(MINUTE, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        'timestampdiff(SECOND, %s , %s)'
+     ])},
+     {| format('(%s)', [
+        // Since SingleStore doesn't support millisecond diff, using microsecond diff to calculate required value (https://docs.singlestore.com/cloud/reference/sql-reference/date-and-time-functions/timestampdiff/)
+        'floor(timestampdiff(MICROSECOND, %s , %s)/1000)'
+     ])}
   ];
 
   format($dbSpecificUnits->at($indexOfDiff)->eval(), [$params->at(0), $params->at(1)]);

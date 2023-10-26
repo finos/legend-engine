@@ -14,15 +14,14 @@
 
 package org.finos.legend.engine.language.hostedService.generation.control;
 
-import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Deployment;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Ownership;
-import org.pac4j.core.profile.CommonProfile;
 
 public class DeploymentOwnerValidator implements HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_Deployment>
 {
     @Override
-    public boolean isOwner(MutableList<CommonProfile> profiles, Root_meta_external_function_activator_hostedService_Deployment ownershipModel)
+    public boolean isOwner(Identity identity, Root_meta_external_function_activator_hostedService_Deployment ownershipModel)
     {
         return ownershipModel._id() > 10;
     }

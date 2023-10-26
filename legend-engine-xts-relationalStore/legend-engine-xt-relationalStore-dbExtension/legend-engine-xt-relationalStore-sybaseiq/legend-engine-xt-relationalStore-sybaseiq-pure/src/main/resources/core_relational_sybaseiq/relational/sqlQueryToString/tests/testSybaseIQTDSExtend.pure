@@ -17,7 +17,9 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testStringConcatSQLGeneration():Boolean[1]
 {
@@ -26,7 +28,7 @@ function <<test.Test>> meta::relational::tests::tds::sybaseIQ::testStringConcatS
                      col({p:meta::relational::tests::model::simple::Person[1]|$p.lastName}, 'lastName'),
                      col({p:meta::relational::tests::model::simple::Person[1]|$p.age}, 'age')])
 	      ->extend(col({row:TDSRow[1]|$row.getString('firstName') + $row.getString('lastName')}, 'exprString3'))};
-   
+
    let mapping = meta::relational::tests::simpleRelationalMapping;
 
    let sqlResultSybaseIQ = meta::relational::functions::sqlstring::toSQLString($func, $mapping, meta::relational::runtime::DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());

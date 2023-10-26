@@ -71,6 +71,7 @@ import org.finos.legend.engine.language.pure.grammar.to.RedshiftGrammarComposerE
 import org.finos.legend.engine.language.pure.grammar.to.DatabricksGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.SnowflakeAppCompilerExtension;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGrammarComposer;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
@@ -452,7 +453,8 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
                 .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
                 .with(SearchDocumentArtifactGenerationExtension.class)
-                .with(OpenApiArtifactGenerationExtension.class);
+                .with(OpenApiArtifactGenerationExtension.class)
+                .with(SnowflakeAppArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()
@@ -470,6 +472,9 @@ public class TestExtensions
                 .with("core_generation")
                 .with("core_service")
                 .with("core_functions")
+                .with("core_analytics_binding")
+                .with("core_analytics_class")
+                .with("core_analytics_function")
                 .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
                 .with("core_analytics_search")
@@ -509,6 +514,7 @@ public class TestExtensions
                 .with("core_relational_presto")
                 .with("core_relational_sybase")
                 .with("core_relational_sybaseiq")
+                .with("core_relational_sparksql")
                 .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")

@@ -15,11 +15,10 @@
 
 package org.finos.legend.engine.postgres.handler.empty;
 
+import java.sql.ParameterMetaData;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
-
-import java.sql.ParameterMetaData;
 
 public class EmptyPreparedStatement implements PostgresPreparedStatement
 {

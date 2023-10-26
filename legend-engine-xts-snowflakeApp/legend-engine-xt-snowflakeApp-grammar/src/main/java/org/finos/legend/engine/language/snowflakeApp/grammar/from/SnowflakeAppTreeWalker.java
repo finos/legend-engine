@@ -28,7 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
-import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -56,34 +56,6 @@ public class SnowflakeAppTreeWalker
         {
             ctx.snowflakeApp().stream().map(this::visitSnowflakeApp).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
         }
-        if (ctx.deploymentConfig() != null && !ctx.deploymentConfig().isEmpty())
-        {
-            ctx.deploymentConfig().stream().map(this::visitDeploymentConfig).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-        }
-    }
-
-    private SnowflakeDeploymentConfiguration visitDeploymentConfig(SnowflakeAppParserGrammar.DeploymentConfigContext ctx)
-    {
-        SnowflakeDeploymentConfiguration config = new SnowflakeDeploymentConfiguration();
-        ConnectionPointer pointer = new ConnectionPointer();
-        pointer.connection = PureGrammarParserUtility.fromQualifiedName(ctx.activationConnection().qualifiedName().packagePath() == null
-                ? Collections.emptyList() : ctx.activationConnection().qualifiedName().packagePath().identifier(), ctx.activationConnection().qualifiedName().identifier());
-        pointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.activationConnection().qualifiedName());
-        config.activationConnection = pointer;
-        String stage = ctx.stage().getText();
-        if (stage.equals("PRODUCTION"))
-        {
-            config.stage = DeploymentStage.PRODUCTION;
-        }
-        else if (stage.equals("SANDBOX"))
-        {
-            config.stage = DeploymentStage.SANDBOX;
-        }
-        else
-        {
-            throw new EngineException("Valid types for deployment stage are: SANDBOX, PRODUCTION");
-        }
-        return config;
     }
 
     private SnowflakeApp visitSnowflakeApp(SnowflakeAppParserGrammar.SnowflakeAppContext ctx)
@@ -108,6 +80,15 @@ public class SnowflakeAppTreeWalker
         if (descriptionContext != null)
         {
             snowflakeApp.description = PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true);
+        }
+        SnowflakeAppParserGrammar.ActivationContext activationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.activation(), "activation", snowflakeApp.sourceInformation);
+        if (activationContext != null)
+        {
+            ConnectionPointer p = new ConnectionPointer();
+            p.connection = PureGrammarParserUtility.fromQualifiedName(activationContext.qualifiedName().packagePath() == null
+                    ? Collections.emptyList() : activationContext.qualifiedName().packagePath().identifier(), activationContext.qualifiedName().identifier());
+            p.sourceInformation = walkerSourceInformation.getSourceInformation(activationContext.qualifiedName());
+            snowflakeApp.activationConfiguration = new SnowflakeAppDeploymentConfiguration(p);
         }
         return snowflakeApp;
     }

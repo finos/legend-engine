@@ -31,4 +31,12 @@ public class UserPasswordAuthenticationConfiguration extends AuthenticationConfi
         this.username = username;
         this.password = password;
     }
+
+    @Override
+    public String shortId()
+    {
+        return "UserPassword" +
+                "--username=" + username +
+                "--password=" + password.shortId();
+    }
 }

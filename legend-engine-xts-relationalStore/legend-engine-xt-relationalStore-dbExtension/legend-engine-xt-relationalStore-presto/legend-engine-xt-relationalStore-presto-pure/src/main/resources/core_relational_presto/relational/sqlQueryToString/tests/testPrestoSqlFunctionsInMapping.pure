@@ -29,14 +29,17 @@ import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::authentication::*;
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::parseDate::testToSQLStringWithParseDateInQueryForPresto():Boolean[1]
 {
-  let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());  
+  let prestoSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, meta::relational::runtime::DatabaseType.Presto, meta::relational::extension::relationalExtensions());
   assertEquals('select date_parse("root".string2date,\'%Y-%m-%d %H:%i:%s\') as "timestamp" from dataTable as "root"',$prestoSql->sqlRemoveFormatting());
 }
 
@@ -259,7 +262,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::presto::te
       |SqlFunctionDemo.all()->project([s | $s.adjustDate], ['Dt']),
       testMapping,
       testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    assertEquals([%2003-07-12T00:00:00.000000000+0000, %2003-07-13T00:00:00.000000000+0000], $result.values->at(0).rows.values);
    meta::relational::functions::asserts::assertSameSQL('select dateadd(DAY, -7, "root".dateTime) as "Dt" from dataTable as "root"', $result);
 }

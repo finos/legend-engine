@@ -22,6 +22,7 @@ import meta::external::language::java::transform::convention::*;
 import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::router::metamodel::*;
 
@@ -44,7 +45,7 @@ function <<access.private>> meta::external::language::java::transform::statement
                			$x->generateJavaInternal($conventions, $debug););
    $generated->match([
          {c0: Code[0] | []},
-         {cs: Code[*] | 
+         {cs: Code[*] |
             let toLast = $cs->init();
             let last   = $cs->last()->toOne();
 
@@ -68,7 +69,7 @@ function meta::external::language::java::transform::generateJava(vs:ValueSpecifi
 function meta::external::language::java::transform::generateJava(vs:ValueSpecification[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
 {
    let expr = $vs->generateJavaInternal($conventions, $debug);
-   
+
    if($expr->isAssignment() || $expr->isDeclarationWithAssignment(),
       | $expr->expressionAssigned(),
       | $expr
@@ -115,13 +116,13 @@ function <<access.private>> meta::external::language::java::transform::processVa
 
 function <<access.private>> meta::external::language::java::transform::extractTypeName(type:meta::external::language::java::metamodel::Type[1]):String[*]
 {
-  if($type->instanceOf(meta::external::language::java::metamodel::ParameterizedType), 
+  if($type->instanceOf(meta::external::language::java::metamodel::ParameterizedType),
       | let clazz = $type->cast(@meta::external::language::java::metamodel::ParameterizedType);
         if($clazz.typeArguments->at(0)->instanceOf(meta::external::language::java::metamodel::ParameterizedType),
             | $clazz.typeArguments->at(0)->cast(@meta::external::language::java::metamodel::ParameterizedType).typeArguments->cast(@meta::external::language::java::metamodel::Class).simpleName,
             | $clazz.typeArguments->cast(@meta::external::language::java::metamodel::Class).simpleName;
           );,
-      | if($type->instanceOf(meta::external::language::java::metamodel::PrimitiveType), 
+      | if($type->instanceOf(meta::external::language::java::metamodel::PrimitiveType),
             | $type->cast(@meta::external::language::java::metamodel::PrimitiveType).simpleName,
             | $type->cast(@meta::external::language::java::metamodel::Class).simpleName
           )
@@ -138,7 +139,7 @@ function meta::external::language::java::transform::validateVarType(v:Code[1], t
 function <<access.private>> meta::external::language::java::transform::processVariableExpressionAsParameter(v: VariableExpression[1], conventions: Conventions[1], debug: meta::pure::tools::DebugContext[1]):Code[1]
 {
    print(if($debug.debug,|$debug.space+'processVariableExpressionAsParameter: \''+($v.name)+'\'\n',|''));
-   let c        = $v.genericType.rawType->toOne();   
+   let c        = $v.genericType.rawType->toOne();
    let javaType = $conventions->pureTypeToJavaType($c, $v.multiplicity)->toBoxed();
    let varName  = if($v.name == 'this', |$v.name, |$conventions->identifier($v.name));
    j_parameter($javaType, $varName);
@@ -155,7 +156,7 @@ function <<access.private>> meta::external::language::java::transform::processIn
    print(if($debug.debug,|$debug.space+'InstanceValue: '+$i.values->size()->toString()+' values\n',|''));
    let values = $i.values->map({v|
       $v->match([
-         {s:String[1]      | $conventions->stringLiteral($s);}, 
+         {s:String[1]      | $conventions->stringLiteral($s);},
          {i:Integer[1]     | $conventions->integerLiteral($i);},
          {f:Float[1]       | $conventions->floatLiteral($f);},
          {d:Decimal[1]     | $conventions->decimalLiteral($d);},
@@ -164,7 +165,7 @@ function <<access.private>> meta::external::language::java::transform::processIn
          {d:Date[1]        | $conventions->dateLiteral($d);},
          {b:Boolean[1]     | $conventions->booleanLiteral($b);},
          {l:LambdaFunction<Any>[1] | $l->processLambda($conventions, $debug)},
-         {e:Enum[1] | 
+         {e:Enum[1] |
             let enumeration = $e->type()->cast(@meta::pure::metamodel::type::Enumeration<Any>);
             let javaType    = $conventions->pureTypeToJavaType($enumeration, PureOne);
             $javaType->j_invoke('getEnumFromPureName', j_string($e.name), $javaType);
@@ -175,7 +176,7 @@ function <<access.private>> meta::external::language::java::transform::processIn
          {t:meta::pure::metamodel::type::Type[1] |
             j_null($conventions->pureTypeToJavaType($t, PureOne));
          },
-         {a:Any[1] | 
+         {a:Any[1] |
             fail('Unhandled value type: ' + $v->type()->elementToPath());
             j_null();
          }
@@ -183,32 +184,32 @@ function <<access.private>> meta::external::language::java::transform::processIn
    });
 
    let type  = $conventions->pureTypeToJavaType($i.genericType, $i.multiplicity);
-   
+
    let converted = if($i.genericType.rawType->toOne()->instanceOf(Unit),
                       {|
                          let unitImpl = $conventions->implClassName($i.genericType.rawType->toOne()->cast(@Unit));
-                         $values->map(v| $unitImpl->j_new($v)); 
+                         $values->map(v| $unitImpl->j_new($v));
                       },
                       | $values
                    );
-   
+
    let result = $converted->match([
-      {c0:Code[0] | if($type->isJavaList(), |j_emptyList($type), |j_null($type))},                                             
-      {c :Code[1] | 
+      {c0:Code[0] | if($type->isJavaList(), |j_emptyList($type), |j_null($type))},
+      {c :Code[1] |
          // TODO Simplify this once lambdas handled better above
          if($c.type->instanceOf(meta::external::language::java::metamodel::FunctionType), |$c, |$c->j_cast($type));
-      },                                             
-      {cs:Code[*] | 
+      },
+      {cs:Code[*] |
          // If the types in the list differ to $type that the list iS being cast to, then we need to explicitly type the asList() function
          // otherwise Java generics falls over when trying to type unify the cast type and the type of the list returning by asList()
          // For example this is requried to type lists such as [1,2.0] where the list should be cast as Number but the elements of the list are subtypes of Number
          let types         = $values.type->removeDuplicates();
-         let typeArguments = if($types->size() == 1, 
-                                | [], 
+         let typeArguments = if($types->size() == 1,
+                                | [],
                                 | if($type->isJavaList(), | $type->elementTypeOfJavaList(), | $type)
-                             );        
+                             );
          j_invoke(javaArrays(), $typeArguments, 'asList', $cs, $type)->j_cast($type);
-   }                                             
+   }
    ]);
    $result->debugAndReturn($debug);
 }
@@ -217,9 +218,9 @@ function <<access.private>> meta::external::language::java::transform::processFu
 {
    let params = $fe.parametersValues->evaluateAndDeactivate();
    let result = $fe.func->match([
-      {p:Property<Nil,Any|*>[1] | 
+      {p:Property<Nil,Any|*>[1] |
          print(if($debug.debug,|$debug.space+'Property: \''+($fe.func.name->toOne())+'\'\n',|''));
-         let src  = $params->at(0)->generateJava($conventions, $debug->indent());         
+         let src  = $params->at(0)->generateJava($conventions, $debug->indent());
          $src->j_invoke($conventions->getterName($p), [], $conventions->pureTypeToJavaType($p));
       },
       {q:QualifiedProperty<Any>[1] |
@@ -228,11 +229,11 @@ function <<access.private>> meta::external::language::java::transform::processFu
          let args = $params->tail()->map(p| $p->generateJava($conventions, $debug->indent()));
          $src->j_invoke($conventions->getterName($q), $args, $conventions->pureTypeToJavaType($q));
       },
-      {z:Any[1] | 
+      {z:Any[1] |
          print(if($debug.debug,|$debug.space+'func: \''+($fe.func.name->toOne())+'\'\n',|''));
          assert(!$conventions->isProhibitedFunction($fe.func), |$fe.func.name->toOne()+' is prohibited!');
          let toEval = $conventions->getFunctionCoder($fe.func);
-         assert($toEval->isNotEmpty() || $fe.func->instanceOf(ConcreteFunctionDefinition), 
+         assert($toEval->isNotEmpty() || $fe.func->instanceOf(ConcreteFunctionDefinition),
                 {|
                    let f = $fe.func->toOne();
                    let p = if($f->instanceOf(PackageableElement), |$f->cast(@PackageableElement).package, |[]);
@@ -260,7 +261,7 @@ function <<access.private>> meta::external::language::java::transform::processCo
       {i|
          let arg     = $args->at($i);
          let argType = $argTypes->at($i);
-         
+
          if($argType->isJavaList(), |$arg->j_listOf($argType), |$arg)->j_cast($argType);
       }
    );
@@ -272,7 +273,7 @@ function <<access.private>> meta::external::language::java::transform::processCo
         $name,
         {state|
         print(if($debug.debug,|$debug.space+'Implementation of: \''+$fe.func->elementToPath()+'\'\n',|''));
-        
+
         let implBody    = $fe.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($newCon, $debug->indent());
         let classesUsed = $signature.method->typesUsed()->concatenate($implBody->typesUsed())->typesToClasses();
         let withImports = javaClass('public', $signature.class)
@@ -285,9 +286,9 @@ function <<access.private>> meta::external::language::java::transform::processCo
         $withDependencies->addDependencyProject($name, $project);
         }
       );
-      
+
       j_invoke($signature.class, $signature.method.name, $castArgs, $signature.method.returnType)->dependsOn($dependency);,
-      
+
       |j_invoke($signature.class, $signature.method.name, $castArgs, $signature.method.returnType);
    );
 }

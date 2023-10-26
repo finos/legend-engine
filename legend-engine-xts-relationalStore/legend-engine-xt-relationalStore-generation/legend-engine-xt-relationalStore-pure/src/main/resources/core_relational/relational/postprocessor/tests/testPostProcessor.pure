@@ -17,6 +17,8 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
@@ -36,7 +38,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableP
    let oldTable = db->schema('default')->toOne()->table('personTable')->toOne();
    let newTable = db->schema('default')->toOne()->table('differentPersonTable')->toOne();
    let result = execute(|Person.all(), simpleRelationalMapping, runtimeWithTableReplace(pair($oldTable, $newTable)), meta::relational::extension::relationalExtensions());
-   
+
    assertSameSQL('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from differentPersonTable as "root"', $result);
 }
 
@@ -46,13 +48,16 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableM
    let oldTable = db->schema('default')->toOne()->table('personTable')->toOne();
    let newTable = db->schema('default')->toOne()->table('differentPersonTable')->toOne();
 
-   let runtime = ^meta::pure::runtime::Runtime
+   let runtime = ^meta::core::runtime::Runtime
    (
-      connections = ^TestDatabaseConnection(
-                        element = db,
+      connectionStores =
+      ^meta::core::runtime::ConnectionStore(
+        element = db,
+        connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | replaceTables($query, pair($oldTable, $newTable)) }, {query:SelectSQLQuery[1] | replaceTables($query, pair($newTable, $oldTable))}]
                     )
+      )
    );
 
    let result = execute(|Person.all(), simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -65,7 +70,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTables
    let pair1 = pair(db->schema('default')->toOne()->table('personTable')->toOne(),db->schema('default')->toOne()->table('differentPersonTable')->toOne());
    let pair2 = pair(db->schema('default')->toOne()->table('firmTable')->toOne(),db->schema('default')->toOne()->table('otherFirmTable')->toOne());
    let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.firstName],['firm', 'employee']), simpleRelationalMapping, runtimeWithTableReplace([$pair1, $pair2]), meta::relational::extension::relationalExtensions());
-   
+
    assertSameSQL('select "root".LEGALNAME as "firm", "persontable_0".FIRSTNAME as "employee" from otherFirmTable as "root" left outer join differentPersonTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID)', $result);
 }
 
@@ -95,16 +100,18 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableP
    assertSameSQL('select "root".ID as "pk_0", "root".ID as "id", "root".quantity as "quantity", "root".orderDate as "date", "root".settlementDateTime as "settlementDateTime" from orderTable as "root" left outer join (select distinct "salespersontable_1".ACCOUNT_ID from (select "salespersontable_1".ACCOUNT_ID as ACCOUNT_ID, "personfirmview_0".firm_name as firm_name from salesPersonTable as "salespersontable_1" inner join (select "root".ID as PERSON_ID, "root".LASTNAME as lastName, "firmtable_0".LEGALNAME as firm_name from differentPersonTable as "root" left outer join firmTable as "firmtable_0" on ("firmtable_0".ID = "root".FIRMID)) as "personfirmview_0" on ("salespersontable_1".PERSON_ID = "personfirmview_0".PERSON_ID)) as "salespersontable_1" where "salespersontable_1".firm_name = \'Johnson\') as "salespersontable_0" on ("root".accountID = "salespersontable_0".ACCOUNT_ID) where "salespersontable_0".ACCOUNT_ID is not null', $result);
 }
 
-function meta::relational::tests::postProcessor::runtimeWithTableReplace(oldToNewPairs:Pair<Table,Table>[*] ):meta::pure::runtime::Runtime[1]
+function meta::relational::tests::postProcessor::runtimeWithTableReplace(oldToNewPairs:Pair<Table,Table>[*] ):meta::core::runtime::Runtime[1]
 {
-   
-   let runtime = ^meta::pure::runtime::Runtime
+
+   let runtime = ^meta::core::runtime::Runtime
    (
-      connections = ^TestDatabaseConnection(
-                        element = db,
+      connectionStores =
+      ^meta::core::runtime::ConnectionStore(
+        element = db,
+        connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessorsConnectionAware = [{query:SelectSQLQuery[1],conn:DatabaseConnection[1] | replaceTables($query, $oldToNewPairs) }]
-                    )
+                    ))
    );
 }
 
@@ -121,16 +128,18 @@ function <<test.Test>> meta::relational::tests::postProcessor::nonExecutable::te
 }
 
 
-function meta::relational::tests::postProcessor::nonExecutable::runtimeWithNonExecutable():meta::pure::runtime::Runtime[1]
+function meta::relational::tests::postProcessor::nonExecutable::runtimeWithNonExecutable():meta::core::runtime::Runtime[1]
 {
-   
-   let runtime = ^meta::pure::runtime::Runtime
+
+   let runtime = ^meta::core::runtime::Runtime
    (
-      connections = ^TestDatabaseConnection(
-                        element = db,
+    connectionStores =
+      ^meta::core::runtime::ConnectionStore(
+        element = db,
+        connection=^TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | nonExecutable($query, meta::relational::extension::relationalExtensions()) }]
-                    )
+                    ))
    );
 }
 
@@ -222,7 +231,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSqlRealiasVie
 function <<test.Test>> meta::relational::tests::postProcessor::testSqlRealiasFreeMarker():Boolean[1]
 {
    let result = execute({| let type = meta::relational::tests::model::simple::ProductSynonymType.CUSIP;
-                           meta::relational::tests::model::simple::Trade.all()->filter(x|$x.product->toOne().synonymByType(meta::relational::tests::model::simple::ProductSynonymType.CUSIP).type == $type)->project([t|$t.product.name],['id'])->distinct();}, 
+                           meta::relational::tests::model::simple::Trade.all()->filter(x|$x.product->toOne().synonymByType(meta::relational::tests::model::simple::ProductSynonymType.CUSIP).type == $type)->project([t|$t.product.name],['id'])->distinct();},
                            simpleRelationalMapping,  testRuntime(), meta::relational::extension::relationalExtensions());
    assertSameElements(['Firm A,Firm C,Firm X'], $result.values.rows->map(r|$r.values)->makeString(','));
    assertSameSQL('select distinct "producttable_0".NAME as "id" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) left outer join productSchema.synonymTable as "synonymtable_0" on ("synonymtable_0".PRODID = "producttable_0".ID and "synonymtable_0".TYPE = \'CUSIP\') where "synonymtable_0".TYPE = \'CUSIP\'', $result);
@@ -236,7 +245,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSQLRealiasCas
 
 function <<test.Test>> meta::relational::tests::postProcessor::testDb2ColumnRename():Boolean[1]
 {
-   let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::mapping::union::myDB, type = DatabaseType.DB2));
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type = DatabaseType.DB2)));
    let result = meta::relational::functions::sqlstring::toSQL(|Person.all()->project([p|$p.lastName], ['name']), meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DB2, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "unionBase"."concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" as "name" from (select "root".ID as "pk_0_0", null as "pk_0_1", (\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' concat (\'ForTestPurposesOnly\' concat "root".lastName_s1)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", (\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' concat (\'ForTestPurposesOnly\' concat "root".lastName_s2)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" from PersonSet2 as "root") as "unionBase"',$result);
 }
@@ -244,9 +253,10 @@ function <<test.Test>> meta::relational::tests::postProcessor::testDb2ColumnRena
 function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessTransformJoinOp():Boolean[1]
 {
    let runtime = testRuntime();
-   let conn = $runtime.connections->at(0)->cast(@TestDatabaseConnection);
-   let runtimeWithPostProcessor = ^$runtime(connections = ^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel->match([t:TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Integer), | ^Literal(value=2), |$t ) , r:RelationalOperationElement[1] |$r])}) }]));
-   
+   let connectionStore = $runtime.connectionStores->at(0);
+   let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let runtimeWithPostProcessor = ^$runtime(connectionStores = ^$connectionStore(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel->match([t:TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Integer), | ^Literal(value=2), |$t ) , r:RelationalOperationElement[1] |$r])}) }])));
+
    let result = meta::relational::functions::sqlstring::toSQL(|Trade.all()->project([x|$x.id, x|$x.initiator.name], ['TradeID', 'Initiator']), simpleRelationalMapping, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.H2, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select 2 as "TradeID", concat("persontable_0".FIRSTNAME, \' \', "persontable_0".LASTNAME) as "Initiator" from tradeTable as "root" left outer join tradeEventTable as "tradeeventtable_0" on (2 = 2 and "tradeeventtable_0".eventDate = "root".tradeDate) left outer join personTable as "persontable_0" on (2 = 2)', $result);
 }

@@ -427,8 +427,8 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         List<?> values3 = serviceParameter3._value().toList();
         assertEquals(1, values3.size());
         Object o3 = values3.get(0);
-        assertTrue(o3 instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
-        Root_meta_pure_alloy_connections_RelationalDatabaseConnection con1 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) o3;
+        assertTrue(o3 instanceof Root_meta_external_store_relational_runtime_RelationalDatabaseConnection);
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection con1 = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) o3;
         assertEquals("H2", con1._type()._name());
 
         Root_meta_pure_persistence_metamodel_service_ServiceParameter serviceParameter4 = serviceParameters.get(3);
@@ -436,14 +436,14 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
         List<?> values4 = serviceParameter4._value().toList();
         assertEquals(1, values4.size());
         Object o4 = values4.get(0);
-        assertTrue(o4 instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
-        Root_meta_pure_alloy_connections_RelationalDatabaseConnection con2 = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) o4;
+        assertTrue(o4 instanceof Root_meta_external_store_relational_runtime_RelationalDatabaseConnection);
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection con2 = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) o4;
         assertEquals("H2", con2._type()._name());
 
-        Root_meta_pure_runtime_Connection connection = context._sinkConnection();
+        Root_meta_core_runtime_Connection connection = context._sinkConnection();
         assertNotNull(connection);
-        assertTrue(connection instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
-        Root_meta_pure_alloy_connections_RelationalDatabaseConnection sinkConnection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) connection;
+        assertTrue(connection instanceof Root_meta_external_store_relational_runtime_RelationalDatabaseConnection);
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection sinkConnection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) connection;
         assertEquals("H2", sinkConnection._type()._name());
     }
 
@@ -600,10 +600,10 @@ public class TestPersistenceContextCompilationFromGrammar extends TestCompilatio
 
         Root_meta_pure_persistence_metamodel_PersistenceContext context = (Root_meta_pure_persistence_metamodel_PersistenceContext) packageableElement;
 
-        Root_meta_pure_runtime_Connection connection = context._sinkConnection();
+        Root_meta_core_runtime_Connection connection = context._sinkConnection();
         assertNotNull(connection);
-        assertTrue(connection instanceof Root_meta_pure_alloy_connections_RelationalDatabaseConnection);
-        Root_meta_pure_alloy_connections_RelationalDatabaseConnection sinkConnection = (Root_meta_pure_alloy_connections_RelationalDatabaseConnection) connection;
+        assertTrue(connection instanceof Root_meta_external_store_relational_runtime_RelationalDatabaseConnection);
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection sinkConnection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) connection;
         assertEquals("H2", sinkConnection._type()._name());
     }
 }

@@ -35,6 +35,7 @@ import meta::pure::lineage::scanProperties::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::milestoning::*;
@@ -128,7 +129,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    $infos->filter(c | !$c.constraint.name->in($constraintsToExclude))->fold(
       {info, project|
          let thisProject = $javaClass->generateConstraintMethod($info, $class, $conventions, $debug);
-         
+
          mergeProjects([$project, $thisProject]);
       },
       newProject()
@@ -142,10 +143,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 
    let optionalDefect = javaOptional($conventions->defectClass());
    let enfLevelClass  = $conventions->enforcementLevelClass();
-         
+
    let messageVar     = j_variable(javaString(), 'message');
    let ex             = j_parameter(javaException(), 'e');
-         
+
    let testExpr       = $constraint.functionDefinition.expressionSequence->toOne()->evaluateAndDeactivate()->generateJava($conventions, $debug->indent());
    let externalIdCode = if($constraint.externalId->isEmpty(), |j_null(), |j_string($constraint.externalId->toOne()));
    let message        = if($constraint.messageFunction->isEmpty(),
@@ -169,7 +170,7 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
          j_catch($ex,
             [
                $messageVar->j_declare(j_string('Unable to evaluate constraint ['+$info.id+']: ')->j_plus(j_conditional(j_eq($ex->j_invoke('getMessage', []), j_null()), j_string('data not available - check your mappings')  , $ex->j_invoke('getMessage', [])))),
-               $returnDefect                  
+               $returnDefect
             ]
          )
       )
@@ -256,7 +257,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
 
    let jClass           = $state.conventions->dataClass($state.class, $state.path);
 
-   let project          = $constraints->map(c | $c.first->generateConstraintMethods($jClass, $c.second, [], $state.conventions, $debug))->concatenate(newProject())->toOneMany()->mergeProjects(); 
+   let project          = $constraints->map(c | $c.first->generateConstraintMethods($jClass, $c.second, [], $state.conventions, $debug))->concatenate(newProject())->toOneMany()->mergeProjects();
 
    let complexSubTrees = $state.gfTree.subTrees
       ->cast(@PropertyGraphFetchTree)
@@ -264,16 +265,16 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
       ->groupBy(st| $st.property);
 
    let complexSubTreesKeyValues = $complexSubTrees->keyValues()->sortBy(p | $p.first);
-   let subTreeClauses = $complexSubTreesKeyValues->map( 
+   let subTreeClauses = $complexSubTreesKeyValues->map(
       {kv|
           let childIndex  = $complexSubTreesKeyValues->indexOf($kv);
           let childPath   = $state.treePath + '_' + $childIndex->toString();
           let prop        = $kv.first;
           let subTrees    = $kv.second.values;
-        
+
           let propJType   = $state.conventions->pureTypeToJavaType($prop);
           let getterName  = $state.conventions->getterName($prop);
-          
+
           if($propJType->isJavaList(),
             {|
               let i      = j_variable(javaInt(), 'i'+$childPath);
@@ -281,7 +282,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
 
               let subToCheck = $state.toCheck->j_invoke($getterName, [], $propJType)->j_invoke('get', $i);
               let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()), $j);
-              let childConstraintCodes = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);                                                            
+              let childConstraintCodes = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);
               if($childConstraintCodes->isEmpty(),
                 | [],
                 | let getter = $state.toCheck->j_invoke($getterName, [], $propJType);
@@ -296,8 +297,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
             },
             {|
               let subToCheck = $state.toCheck->j_invoke($getterName, [], $propJType);
-              let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()));    
-              let  childConstraintCodes  = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);                        
+              let pathNode   = $state.conventions->newRelativePathNode(j_string($prop.name->toOne()));
+              let  childConstraintCodes  = getChildContraintCodes($subTrees, $state, $childPath, $pathNode,$subToCheck, $debug);
               if($childConstraintCodes->isEmpty(),
                   | [],
                   | pair(
@@ -322,9 +323,9 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
                                                                           | $propTree.subType->toOne()
                                                                         );
                                                         let subDataType = $state.conventions->dataClass($propType, $state.path);
-                                                        let subVar      = j_variable($subDataType, 'child'+$childPath); 
+                                                        let subVar      = j_variable($subDataType, 'child'+$childPath);
                                                         let subState    = ^$state(
-                                                                                  gfTree   = $propTree,  
+                                                                                  gfTree   = $propTree,
                                                                                   class    = $propType,
                                                                                   toCheck  = $subVar,
                                                                                   treePath = $childPath,
@@ -332,7 +333,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
                                                                                   );
                                                         let childCode = $subState->createConstraintCheckingForTree_recurse($debug);
                                                         let subVarDeclarationCode = $subVar->j_declare($subToCheck->j_cast($subDataType));
-                      
+
                                                         let subTypeCheck = $subToCheck->j_instanceof($subDataType);
                                                         if($childCode->isEmpty(),
                                                           | [],
@@ -411,7 +412,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::shared::constra
                  ->concatenate(
                     if($constraintContext.enableConstraints,
                        {|
-                          $allConstraints->filter(c | !$c.constraint.name->in($constraintContext.constraintsToExclude))->toNumbered() 
+                          $allConstraints->filter(c | !$c.constraint.name->in($constraintContext.constraintsToExclude))->toNumbered()
                             ->map(nc| j_this($jClass)->j_invoke(constraintMethodName($nc.second), [], javaOptional($defect))->j_invoke('ifPresent', $result->j_methodReference('add', javaFunctionType($defect, javaVoid())), javaVoid()))
                             ->concatenate($propertyConstraintCalls->sortBy(pc | $pc->codeToString($jClass)))
                        },

@@ -17,6 +17,7 @@ import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 
 function <<test.Test>> meta::relational::tests::sqlToString::sybaseIQ::testTempTableSqlStatementsForSybaseIQ(): Boolean[*]
@@ -32,5 +33,5 @@ function <<test.Test>> meta::relational::tests::sqlToString::sybaseIQ::testTempT
    '\nROW DELIMITED BY \'\r\n\'']->joinStrings(''),
    'Drop table if exists temp_table_test;'
   ];
-  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);  
+  meta::relational::functions::sqlQueryToString::tests::compareSqls($actualSqls, $expectedSqls);
 }

@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::mapping::*;
 

@@ -19,7 +19,9 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.language.hostedService.deployment.HostedServiceArtifact;
+import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.hostedService.generation.model.GenerationInfoData;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
@@ -27,15 +29,15 @@ import org.finos.legend.engine.functionActivator.service.FunctionActivatorServic
 import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentResult;
+//import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
+import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentResult;
 import org.finos.legend.engine.language.hostedService.generation.HostedServiceArtifactGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.*;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 
@@ -71,12 +73,12 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> validate(MutableList<CommonProfile> profiles, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         MutableList<HostedServiceError> errors =  Lists.mutable.empty();
         try
         {
-            this.hostedServiceArtifactgenerator.validateOwner(profiles, pureModel, activator, routerExtensions);
+            this.hostedServiceArtifactgenerator.validateOwner(identity, pureModel, activator, routerExtensions);
             core_hostedservice_generation_generation.Root_meta_external_function_activator_hostedService_validator_validateService_HostedService_1__Boolean_1_(activator, pureModel.getExecutionSupport()); //returns true or errors out
 
         }
@@ -95,18 +97,18 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     }
 
     @Override
-    public List<HostedServiceDeploymentConfiguration> selectConfig(List<DeploymentConfiguration> configurations, DeploymentStage stage)
+    public List<HostedServiceDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
-        return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration && e.stage.equals(stage)).collect(e -> (HostedServiceDeploymentConfiguration)e);
+        return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration).collect(e -> (HostedServiceDeploymentConfiguration)e);
     }
 
 
     @Override
-    public HostedServiceDeploymentResult publishToSandbox(MutableList<CommonProfile> profiles, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, List<HostedServiceDeploymentConfiguration> runtimeConfigs, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public HostedServiceDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, List<HostedServiceDeploymentConfiguration> runtimeConfigs, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X",routerExtensions);
         HostedServiceArtifact artifact = new HostedServiceArtifact(generation, fetchHostedService(activator, (PureModelContextData)inputModel, pureModel));
-        return this.hostedServiceDeploymentManager.deploy(profiles, artifact, activator, runtimeConfigs);
+        return this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
 //        return new HostedServiceDeploymentResult();
     }
 

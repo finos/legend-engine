@@ -235,16 +235,16 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     {
         String fullPath = this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name);
         Root_meta_pure_runtime_PackageableRuntime metamodel = this.context.pureModel.getPackageableRuntime(fullPath, packageableRuntime.sourceInformation);
-        Root_meta_pure_runtime_Runtime runtime = this.context.pureModel.getRuntime(fullPath);
+        Root_meta_core_runtime_Runtime runtime = this.context.pureModel.getRuntime(fullPath);
         HelperRuntimeBuilder.buildEngineRuntime(packageableRuntime.runtimeValue, runtime, this.context);
-        metamodel._runtimeValue(new Root_meta_pure_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::pure::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)))._connections(runtime._connections()));
+        metamodel._runtimeValue(new Root_meta_core_runtime_EngineRuntime_Impl("", null, context.pureModel.getClass("meta::core::runtime::EngineRuntime"))._mappings(ListIterate.collect(packageableRuntime.runtimeValue.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)))._connectionStores(runtime._connectionStores()));
         return metamodel;
     }
 
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
-        final Root_meta_pure_runtime_Connection pureConnection = this.context.pureModel.getConnection(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), packageableConnection.sourceInformation);
+        final Root_meta_core_runtime_Connection pureConnection = this.context.pureModel.getConnection(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), packageableConnection.sourceInformation);
         packageableConnection.connectionValue.accept(new ConnectionSecondPassBuilder(this.context, pureConnection));
         return null;
     }

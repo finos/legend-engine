@@ -16,19 +16,22 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_19_0' } 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_19_0' }
 meta::pure::mapping::modelToModel::test::alloy::simple::testEqualityOperationsWithEmptyValues(): Boolean[1]
 {
   let tree    = #{Target {accountNumber, isTestAccount, isAccountTypeMissing, trueExpressionField} }#;
   let mapping = EqualityTestMapping;
-  let runtime = ^Runtime(connections = ^JsonModelConnection(
-                              element = ^ModelStore(), 
-                              class   = Source, 
+  let runtime = ^Runtime(connectionStores = ^ConnectionStore(
+                              element = ^ModelStore(),
+                              connection=^JsonModelConnection(
+                              class   = Source,
                               url     = 'data:application/json,[{"accountNumber":1}, {"accountNumber":1, "accountDetails": {"accountType": "TEST_ACCOUNT"}}]'
-                            ));
+                            )));
 
   let result = execute(
     | Target.all()->graphFetch($tree)->serialize($tree),

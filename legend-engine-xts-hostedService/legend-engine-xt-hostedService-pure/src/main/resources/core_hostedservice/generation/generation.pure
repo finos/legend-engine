@@ -1,5 +1,6 @@
 import meta::pure::model::unit::*;
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::mapping::*;
 import meta::legend::service::*;
 import meta::external::format::shared::binding::*;
@@ -29,14 +30,14 @@ function meta::external::function::activator::hostedService::validator::validate
 {
   if($s.function->functionReturnType().rawType->in(allowedReturnTypes()),
     | true;,
-    | assert($s.binding->isNotEmpty() || $s.contentType->isNotEmpty(), 'Service must return a serializable:  '+ allowedReturnTypes().name->joinStrings('[',',',']')+ ', or must use binding/contentType to externalize') 
+    | assert($s.binding->isNotEmpty() || $s.contentType->isNotEmpty(), 'Service must return a serializable:  '+ allowedReturnTypes().name->joinStrings('[',',',']')+ ', or must use binding/contentType to externalize')
   );
 }
 
 function meta::external::function::activator::hostedService::validator::validateFunction(func:Function<Any>[1]): Boolean[1]
 {
   $func->match([
-    lf: LambdaFunction<Any>[1]| 
+    lf: LambdaFunction<Any>[1]|
                                 $lf.expressionSequence->map(es| $es->evaluateAndDeactivate()->validateExpression()); ,
 
     cd: ConcreteFunctionDefinition<Any>[1]| $cd.expressionSequence->map(es| $es->evaluateAndDeactivate()->validateExpression()); ,
@@ -49,8 +50,8 @@ function meta::external::function::activator::hostedService::validator::validate
 {
   $expression->match([
     sfe:SimpleFunctionExpression[1]|
-                                    if($sfe.func == letFunction_String_1__T_m__T_m_ && $sfe.parametersValues->at(1)->instanceOf(SimpleFunctionExpression), 
-                                      |assert($sfe.parametersValues->at(1)->cast(@SimpleFunctionExpression).func->in(allowedPlatformFunctions()), 
+                                    if($sfe.func == letFunction_String_1__T_m__T_m_ && $sfe.parametersValues->at(1)->instanceOf(SimpleFunctionExpression),
+                                      |assert($sfe.parametersValues->at(1)->cast(@SimpleFunctionExpression).func->in(allowedPlatformFunctions()),
                                               'Usage of platform function not allowed during service registration, Function: '+$sfe.parametersValues->at(1)->cast(@SimpleFunctionExpression).functionName->toOne()); ,
                                       | true;
                                       );,
@@ -100,7 +101,7 @@ function meta::external::function::activator::hostedService::generation::getTree
 {
   let functionReturn = $func->functionReturnType();
   $func->match([
-    cd: ConcreteFunctionDefinition<Any>[1]| 
+    cd: ConcreteFunctionDefinition<Any>[1]|
           let expr = $cd.expressionSequence->evaluateAndDeactivate()->filter(es| $es->instanceOf(SimpleFunctionExpression) && $es->cast(@SimpleFunctionExpression).genericType.rawType == $functionReturn.rawType)->last()->cast(@SimpleFunctionExpression);
           assertEquals(1, $expr->size(), 'unexpected size');
           assertEquals('from', $expr->cast(@SimpleFunctionExpression).functionName, 'unexpected function');
@@ -172,7 +173,7 @@ function meta::external::function::activator::hostedService::generation::rebuild
       let newFunc = rebuildFromExpression($h.function, $p->cast(@SingleExecutionParameters));
       let newHostedService = ^$h(function=$newFunc);
       pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
-    );  
+    );
 }
 
 function meta::external::function::activator::hostedService::generation::rebuildFromExpression(func: PackageableFunction<Any>[1], executionParam:SingleExecutionParameters[1]): PackageableFunction<Any>[1]
@@ -229,7 +230,7 @@ function meta::external::function::activator::hostedService::generation::getExec
 
 function meta::external::function::activator::hostedService::validator::allowedPlatformFunctions():Function<Any>[*]
 {
-   
+
   [
     today__StrictDate_1_,
     new_Class_1__String_1__KeyExpression_MANY__T_1_,
@@ -239,7 +240,7 @@ function meta::external::function::activator::hostedService::validator::allowedP
 
 function meta::external::function::activator::hostedService::validator::allowedReturnTypes():Type[*]
 {
-   
+
   [
     TabularDataSet,
     String,

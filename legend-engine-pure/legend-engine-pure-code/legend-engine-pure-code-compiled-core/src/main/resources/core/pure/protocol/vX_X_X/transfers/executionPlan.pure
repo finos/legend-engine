@@ -36,8 +36,8 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
 {
    let n = $node->match($extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_executionPlan_transformNode->map(f|$f->eval($mapping, $extensions))->concatenate(
       [
-         
-         rel:meta::pure::mapping::modelToModel::ModelToModelExecutionNode[1]|
+
+         rel:meta::external::store::model::ModelToModelExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::ModelToModelExecutionNode(
                _type = 'm2m',
                resultType = $rel.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
@@ -46,7 +46,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                jsonPropertyPaths = $rel.jsonPropertyPaths->map(j|$j->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::transformLambda($extensions)),
                pathToMapping = $rel.mapping->elementToPath()->toOne(),
                pathToClasses = $rel.classes->map(c|$c->elementToPath()),
-               connection = $rel.connection->cast(@meta::pure::mapping::modelToModel::ModelConnection)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformModelConnection(),
+               connection = $rel.connection->cast(@meta::external::store::model::ModelConnection)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformModelConnection(),
                pureModelContextData = $rel.mapping->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::buildBasePureModelFromMapping( {m:meta::pure::mapping::Mapping[1], p:	meta::protocols::Protocol[1] |[]}, $extensions).second
          ),
          platform:meta::pure::executionPlan::PureExpressionPlatformExecutionNode[1]|
@@ -180,7 +180,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                resultType = $f.resultType->transformResultType($mapping, $extensions),
                resultSizeRange = $f.resultSizeRange->isEmpty()->if(|[],|$f.resultSizeRange->toOne()->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformMultiplicity())
             ),
-         v:meta::pure::executionPlan::VariableResolutionExecutionNode[1]|  
+         v:meta::pure::executionPlan::VariableResolutionExecutionNode[1]|
             ^meta::protocols::pure::vX_X_X::metamodel::executionPlan::VariableResolutionExecutionNode(
                 _type      = 'varResolution',
                 resultType = $v.resultType->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
@@ -304,7 +304,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                     enumMapping = $extensions.serializerExtension('vX_X_X')->cast(@meta::protocols::pure::vX_X_X::extension::SerializerExtension_vX_X_X).transfers_executionPlan_transformSetImplementation
                                                                         ->filter(v|$v.first->eval($p))->map(x|$x.second->eval($p))->first()
                                                  )
-                                                 
+
                                             )
    );
 
@@ -347,7 +347,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::execution
                                                                                                   enumMapping = if($c.enumMappingId->isEmpty(),|[],|meta::protocols::pure::vX_X_X::transformation::fromPureGraph::executionPlan::transformEnumMapping($mapping->enumerationMappingByName($c.enumMappingId->toOne())->toOne()))
                                                                                                 )
                                                                                           )
-                                                          ),                                                              
+                                                          ),
          rt:meta::pure::executionPlan::ResultType[1]|^meta::protocols::pure::vX_X_X::metamodel::executionPlan::DataTypeResultType
                                                       (
                                                          _type='dataType',

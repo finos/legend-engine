@@ -15,6 +15,7 @@
 import meta::relational::tests::injection::model::*;
 import meta::relational::tests::injection::store::*;
 import meta::relational::tests::injection::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;

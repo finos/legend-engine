@@ -18,6 +18,7 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 
@@ -86,10 +87,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stdev(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(getdate() as date)')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
-    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float)')),    
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='varp(%s)')),
-    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var(%s)')),    
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var(%s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='datepart(wk, %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(wk, %s)'))
   ];

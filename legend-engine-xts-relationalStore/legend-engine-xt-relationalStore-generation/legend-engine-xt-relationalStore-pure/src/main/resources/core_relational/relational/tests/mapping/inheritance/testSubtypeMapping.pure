@@ -16,8 +16,10 @@ import meta::relational::functions::asserts::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::mapping::subType::*;
 import meta::pure::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 
 
@@ -90,6 +92,7 @@ Association meta::relational::tests::mapping::subType::ProductRating
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::mapping::subType::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 Mapping meta::relational::tests::mapping::subType::SubTypeMappingValidWhenMappedExplicitly
 (
@@ -99,25 +102,26 @@ Mapping meta::relational::tests::mapping::subType::SubTypeMappingValidWhenMapped
    {
       description:[MyDb]PRODUCT_RATING.RATING
    }
-   
+
    MyProduct extends [meta_relational_tests_model_simple_Product] : Relational
    {
-     
+
    }
-   
+
    ProductRating: Relational
    {
       AssociationMapping
       (
          product[rating,meta_relational_tests_mapping_subType_MyProduct]:[MyDb]@Product_Rating,
-         rating[meta_relational_tests_mapping_subType_MyProduct, rating]:[MyDb]@Product_Rating   
-      )      
+         rating[meta_relational_tests_mapping_subType_MyProduct, rating]:[MyDb]@Product_Rating
+      )
    }
 )
 
 ###Mapping
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::mapping::subType::*;
 
 Mapping meta::relational::tests::mapping::subType::MyMapping
@@ -143,6 +147,7 @@ Mapping meta::relational::tests::mapping::subType::MyMapping
 
 ###Mapping
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::mapping::subType::*;
 
 Mapping meta::relational::tests::mapping::subType::MyMappingWithIds
@@ -165,8 +170,8 @@ Mapping meta::relational::tests::mapping::subType::MyMappingWithIds
 Database meta::relational::tests::mapping::subType::MyDb
 (
    include meta::relational::tests::db
-   
+
    Table PRODUCT_RATING(PRODUCT_ID INTEGER PRIMARY KEY, RATING VARCHAR(24))
-   
-   Join Product_Rating(productSchema.productTable.ID = PRODUCT_RATING.PRODUCT_ID) 
+
+   Join Product_Rating(productSchema.productTable.ID = PRODUCT_RATING.PRODUCT_ID)
 )

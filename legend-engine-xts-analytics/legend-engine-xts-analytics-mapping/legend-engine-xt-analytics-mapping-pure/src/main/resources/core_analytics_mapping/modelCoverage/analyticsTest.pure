@@ -17,7 +17,7 @@ import meta::pure::mapping::*;
 
 function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics(mapping: Mapping[1]): MappingModelCoverageAnalysisResult[1]
 {
-  meta::analytics::mapping::modelCoverage::analyze($mapping, false, false);
+  meta::analytics::mapping::modelCoverage::analyze($mapping, false, false, false);
 }
 
 // Relational

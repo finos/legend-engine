@@ -31,4 +31,10 @@ public class EmptyStatement implements PostgresStatement
     {
         return null;
     }
+
+    @Override
+    public void close() throws Exception
+    {
+
+    }
 }

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::runtime::connection::authentication::*;
 import meta::external::store::mongodb::metamodel::runtime::*;
@@ -25,9 +26,9 @@ Enum meta::external::store::mongodb::metamodel::runtime::DatabaseType
 }
 
 Class meta::external::store::mongodb::metamodel::pure::runtime::MongoDBConnection extends Connection
-[
-   $this.element->instanceOf(MongoDatabase)
-]
+// [
+//    $this.element->instanceOf(MongoDatabase)
+// ]
 {
    type: meta::external::store::mongodb::metamodel::runtime::DatabaseType[1];
    dataSourceSpecification: MongoDBDatasourceSpecification[1];

@@ -150,25 +150,30 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreMapping
 
 ###Pure
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade():JsonModelConnection[1]
 {
-   ^JsonModelConnection(element = ^ModelStore(),
-                        class = meta::pure::graphFetch::tests::XStore::inMemory::S_Trade,
+   ^JsonModelConnection(class = meta::pure::graphFetch::tests::XStore::inMemory::S_Trade,
                         url = 'data:application/json,\n{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}\n{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}\n{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}\n{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}\n')
 }
 
 function meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct():JsonModelConnection[1]
 {
-   ^JsonModelConnection(element = ^ModelStore(),
+   ^JsonModelConnection(
                         class = meta::pure::graphFetch::tests::XStore::inMemory::S_Product,
                         url = 'data:application/json,\n{"s_productId": "30", "s_productName": "Product 30", "s_description": "Product 30 description", "s_synonyms": [{"s_name":"product 30 synonym 1", "s_type":"isin"}, {"s_name":"product 30 synonym 2", "s_type":"cusip"}]}\n{"s_productId": "31", "s_productName": "Product 31", "s_description": "Product 31 description", "s_synonyms": [{"s_name":"product 31 synonym 1", "s_type":"isin"}, {"s_name":"product 31 synonym 2", "s_type":"cusip"}]}\n')
 }
 
 function meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime():Runtime[1]
 {
-   ^Runtime(connections = [meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade(), meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct()]);
+   ^Runtime(
+    connectionStores = [
+      ^ConnectionStore(connection=meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade(),element=^ModelStore()),
+      ^ConnectionStore(connection=meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionProduct(),element=^ModelStore())
+    ]);
 }
 
 
@@ -199,13 +204,13 @@ function <<test.Test, test.AlloyOnly>> {meta::pure::executionPlan::profiles::ser
          }
       }
    }#;
-   
+
    let query   = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreMapping;
    let runtime = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime();
-   
+
    let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -254,13 +259,13 @@ function <<test.Test, test.AlloyOnly, test.ToFix>> {meta::pure::executionPlan::p
          }
       }
    }#;
-   
+
    let query   = {|Trade.all()->graphFetchChecked($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreMapping;
    let runtime = meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreRuntime();
-   
+
    let result = execute($query, $mapping, $runtime, defaultExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +

@@ -19,6 +19,7 @@ import meta::pure::extension::*;
 import meta::pure::functions::io::http::*;
 import meta::pure::test::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::external::store::mongodb::executionTest::utils::*;
 
@@ -31,7 +32,7 @@ Class meta::external::store::mongodb::executionTest::TestConfig
 {
   tag: String[1];
   mapping: meta::pure::mapping::Mapping[1];
-  runtime: meta::pure::runtime::Runtime[1];
+  runtime: meta::core::runtime::Runtime[1];
 }
 
 function meta::external::store::mongodb::executionTest::getCompiledTestConfig(tag: String[1], mongoDBHost: String[1], mongoDBPort: Integer[1], pureSetupToCompileFileLoc: String[1]):meta::external::store::mongodb::executionTest::TestConfig[1]
@@ -44,7 +45,7 @@ let detokenizedFile = $tokenizedFile->replace('serverURLs: [__HOST_TOKEN__:__POR
 
 let compiled = meta::legend::compile($detokenizedFile);
 let compiledMapping = $compiled->at(3)->cast(@meta::pure::mapping::Mapping)->toOne();
-let compiledRuntime = $compiled->at(1)->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue->cast(@meta::pure::runtime::Runtime);
+let compiledRuntime = $compiled->at(1)->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue->cast(@meta::core::runtime::Runtime);
 
  let testConfig = ^meta::external::store::mongodb::executionTest::TestConfig(
         tag = $tag,
@@ -78,7 +79,7 @@ function  meta::external::store::mongodb::executionTest::personTreeSmall(): meta
     age
   }
 }#;
-  
+
 }
 
 
@@ -417,14 +418,14 @@ function meta::external::store::mongodb::executionTest::executeAndAssert(f: Func
   ];
 
  let executionContext = ^meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext(queryTimeOutInSeconds=5, enableConstraints=false);
-  
+
    let result = meta::legend::execute(
     $f,
     [],
     $executionContext,
     $extensions
   )->meta::json::parseJSON()->meta::json::toPrettyJSONString();
-  
+
   assertEquals($expectedResult, $result);
 }
 
@@ -438,7 +439,7 @@ testFilterExecution($config, $filterLambda, $expectedResultFileLoc, personTreeFu
 
 function meta::external::store::mongodb::executionTest::testCase::utils::testFilterExecution(config:TestConfig[1], filterLambda:LambdaFunction<{Person[1]->Boolean[1]}>[1], expectedResultFileLoc: String[1], graphFetch: meta::pure::graphFetch::RootGraphFetchTree<Person>[1]):Boolean[1]
 {
-    
+
   let mapping = $config.mapping;
   let runtime = $config.runtime;
 
@@ -483,5 +484,5 @@ function <<access.private>> meta::external::store::mongodb::executionTest::v7::c
 
 function <<test.TestCollection>> meta::external::store::mongodb::executionTest::v7::test_4_4_1(): PureTestCollection[1]
 {
-  '4.4.1'->meta::external::store::mongodb::executionTest::v7::collectTest();  
+  '4.4.1'->meta::external::store::mongodb::executionTest::v7::collectTest();
 }

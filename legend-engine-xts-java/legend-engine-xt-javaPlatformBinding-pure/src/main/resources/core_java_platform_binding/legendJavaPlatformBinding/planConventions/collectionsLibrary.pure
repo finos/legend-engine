@@ -48,22 +48,22 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
          fc1(max_X_MANY__X_$0_1$_,                                               {ctx,collection               | if( $collection.type->isJavaList(), | max($ctx, $collection, $library), | $collection )}),
          fc1(min_X_MANY__X_$0_1$_,                                               {ctx,collection               | if( $collection.type->isJavaList(), | min($ctx, $collection, $library), | $collection )}),
 
-         fc1(range_Integer_1__Integer_MANY_,                                     {ctx,stop                     | javaLongStream()->j_invoke('range', [j_long(0), $stop])->j_invoke('boxed', [])}), 
-         fc2(range_Integer_1__Integer_1__Integer_MANY_,                          {ctx,start,stop               | javaLongStream()->j_invoke('range', [$start, $stop])->j_invoke('boxed', [])}), 
+         fc1(range_Integer_1__Integer_MANY_,                                     {ctx,stop                     | javaLongStream()->j_invoke('range', [j_long(0), $stop])->j_invoke('boxed', [])}),
+         fc2(range_Integer_1__Integer_1__Integer_MANY_,                          {ctx,start,stop               | javaLongStream()->j_invoke('range', [$start, $stop])->j_invoke('boxed', [])}),
          fc3(range_Integer_1__Integer_1__Integer_1__Integer_MANY_,               {ctx,start,stop,step          | $library->j_invoke('range', [$start, $stop, $step], javaStream(javaLongBoxed()))}),
 
          fc (add_T_MANY__T_1__T_$1_MANY$_,                                       fcAlias(                        concatenate_T_MANY__T_MANY__T_MANY_)),
          fc2(concatenate_T_MANY__T_MANY__T_MANY_,                                {ctx,collection1,collection2  | javaStream()->j_invoke('concat', [$collection1->j_streamOf(), $collection2->j_streamOf()], javaStream($ctx.returnType()->elementType()))}),
          fc1(distinct_T_MANY__T_MANY_,                                           {ctx,collection               | $collection->j_streamOf()->js_distinct()}),
-   
+
          fc1(removeDuplicates_T_MANY__T_MANY_,                                   {ctx,collection               | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, j_null(), j_null()], $collection.type), | j_null($ctx.returnType->elementType()))}),
          fc2(removeDuplicates_T_MANY__Function_1__T_MANY_,                       {ctx,collection,eqlf          | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, j_null(), $eqlf   ], $collection.type), | j_null($ctx.returnType->elementType()))}),
-         fc2(removeDuplicatesBy_T_MANY__Function_1__T_MANY_,                     {ctx,collection,keyf          | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, $keyf,    j_null()], $collection.type), | j_null($ctx.returnType->elementType()))}),  
+         fc2(removeDuplicatesBy_T_MANY__Function_1__T_MANY_,                     {ctx,collection,keyf          | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, $keyf,    j_null()], $collection.type), | j_null($ctx.returnType->elementType()))}),
          fc3(removeDuplicates_T_MANY__Function_$0_1$__Function_$0_1$__T_MANY_,   {ctx,collection,keyf,eqlf     | if($collection.type->isJavaList(), |$library->j_invoke('removeDuplicates', [$collection, $keyf,    $eqlf   ], $collection.type), | j_null($ctx.returnType->elementType()))}),
-         
+
          fc2(removeAll_T_MANY__T_MANY__T_MANY_,                                  {ctx,col1,col2                | removeAll($ctx, $col1, $col2, j_null(), $library)}),
          fc3(removeAll_T_MANY__T_MANY__Function_1__T_MANY_,                      {ctx,col1,col2,eqlf           | removeAll($ctx, $col1, $col2, $eqlf, $library)}),
-         
+
          fc1(init_T_MANY__T_MANY_,                                               {ctx,collection               | if($collection.type->isJavaList(), |$library->j_invoke('init', $collection, $collection.type), | j_null($ctx.returnType->elementType())) }),
          fc1(tail_T_MANY__T_MANY_,                                               {ctx,collection               | $collection->j_streamOf()->js_skip(j_long(1))}),
          fc1(last_T_MANY__T_$0_1$_,                                              {ctx,collection               | last($collection, $library)}),
@@ -84,13 +84,13 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
          fc3(paginated_T_MANY__Integer_1__Integer_1__T_MANY_,                    {ctx,collection,pageNumber,pageSize | $collection->j_streamOf()->js_skip(pinToZero($pageSize)->j_multiply(pinToZero($pageNumber)->j_minus(j_int(1))))->js_limit($pageSize)}),
          fc2(take_T_MANY__Integer_1__T_MANY_,                                    {ctx,collection,limit         | $collection->j_streamOf()->js_limit($limit)}),
          fc2(union_T_MANY__T_MANY__T_MANY_,                                      {ctx,collection1,collection2  | javaStream()->j_invoke('concat', [$collection1->j_streamOf(), $collection2->j_streamOf()], javaStream($ctx.returnType()->elementType()))->js_distinct()}),
-         fc2(intersection_T_MANY__T_MANY__T_MANY_,                               {ctx,collection1,collection2  | intersect($ctx, $collection1, $collection2)}), 
-         
+         fc2(intersection_T_MANY__T_MANY__T_MANY_,                               {ctx,collection1,collection2  | intersect($ctx, $collection1, $collection2)}),
+
          fc2(defaultIfEmpty_T_MANY__T_$1_MANY$__T_$1_MANY$_,                     {ctx,collection1,collection2  | j_conditional($collection1->j_streamOf()->js_count()->j_eq(j_int(0)), $library->j_invoke('toOneMany', $collection2, $ctx.returnType()), $library->j_invoke('toOneMany', $collection1, $ctx.returnType()))}),
 
          fc2(contains_Any_MANY__Any_1__Boolean_1_,                               {ctx,collection,obj           | if($collection.type->isJavaList(), |$collection->j_invoke('contains', $obj), |javaObjects()->j_invoke('equals', [$collection, $obj]))}),
          fc3(contains_Z_MANY__Z_1__Function_1__Boolean_1_,                       {ctx,collection,obj,eqlf      | $library->j_invoke('contains', [$collection, $obj, $eqlf], javaBoolean())}),
-         
+
          fc2(exists_T_MANY__Function_1__Boolean_1_,                              {ctx,collection,func          | $collection->j_streamOf()->js_anyMatch($func)}),
          fc2(forAll_T_MANY__Function_1__Boolean_1_,                              {ctx,collection,func          | $collection->j_streamOf()->js_allMatch($func)}),
          fc2(in_Any_1__Any_MANY__Boolean_1_,                                     {ctx,obj,collection           | if($collection.type->isJavaList(), |$collection->j_invoke('contains', $obj), |javaObjects()->j_invoke('equals', [$collection, $obj]))}),
@@ -121,23 +121,23 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::dropAt(ctx:FuncCoderContext[1], collection:Code[1], index:Code[1], cnt:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
-{ 
+{
   let c = if($collection.type->isJavaList(), | $collection, | javaArrays()->j_invoke('asList', [$collection], $collection.type));
   $library->j_invoke('dropAt', [$collection, $index, $cnt], $collection.type);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::removeAll(ctx:FuncCoderContext[1], collection1:Code[1], collection2:Code[1], eqlf:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
-{ 
+{
   let c1 = if($collection1.type->isJavaList(), | $collection1, | javaArrays()->j_invoke('asList', [$collection1], $collection1.type));
   let c2 = if($collection2.type->isJavaList(), | $collection2, | javaArrays()->j_invoke('asList', [$collection2], $collection1.type));
   $library->j_invoke('removeAll', [$c1, $c2, $eqlf], $c1.type);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::intersect(ctx:FuncCoderContext[1], collection1:Code[1], collection2:Code[1]) : Code[1]
-{  
+{
   let c2 = if($collection2.type->isJavaList(), | $collection2, | javaArrays()->j_invoke('asList', [$collection2], $collection2.type));
   let comp = $c2->j_methodReference('contains', javaFunctionType(javaObject(), javaBoolean()));
-  $collection1->j_streamOf()->js_filter($comp); 
+  $collection1->j_streamOf()->js_filter($comp);
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::maxComp(ctx:FuncCoderContext[1], collection:Code[1], comp:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
@@ -175,7 +175,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::sortComp(ctx:FuncCoderContext[1], collection:Code[1], comp:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
 {
    let adapted = $library->j_invoke('adaptPureComparator',$comp, javaComparator($collection.type->elementType()));
-   $library->j_invoke($collection.type->elementType(), 'sort', [$collection, $adapted], javaList($collection.type->elementType()));   
+   $library->j_invoke($collection.type->elementType(), 'sort', [$collection, $adapted], javaList($collection.type->elementType()));
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::sortBy(collection:Code[1], key:Code[1], library:meta::external::language::java::metamodel::Class[1]) : Code[1]
@@ -210,14 +210,14 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
    // The identity may be a subtype of the return type but we can treat it as the supertype and avoid Nil
    let safeIdentity = $identity->upcastIdentity($rtn)->j_listOf($rtn);
    print(if($ctx.debug.debug,|$ctx.debug.space+' safeIdentity: ('+ $safeIdentity.type->typeToString()+')  '+$safeIdentity->codeToString()+'\n', |''));
-   
+
    //Same goes for the second parameter of the acc function
    let accType = $acc.type->cast(@meta::external::language::java::metamodel::FunctionType);
    let safeAcc = $acc->j_cast(javaFunctionType([$accType.parameterTypes->at(0), $rtn->toBoxed()], $rtn->toBoxed()));
    print(if($ctx.debug.debug,|$ctx.debug.space+' safeAcc: ('+ $safeAcc.type->typeToString()+')  '+ $safeAcc->codeToString()+'\n', |''));
 
    let safeCol = $collection->j_listOf(javaList($accType.parameterTypes->at(0)));
-   
+
    $library->j_invoke('fold', [$safeCol, $safeAcc, $safeIdentity], $ctx.returnType());
 }
 
@@ -235,11 +235,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 }
 
 function meta::pure::executionPlan::platformBinding::legendJava::library::collection::IsDistinctFetchTreeCoder(fe:FunctionExpression[1], conventions:Conventions[1], debug:meta::pure::tools::DebugContext[1]):Code[1]
-{   
+{
    let args = $fe.parametersValues->evaluateAndDeactivate();
    let coll = $args->at(0)->generateJava($conventions, $debug);
 
-   let guid = meta::pure::runtime::generateGuid()->replace('-','');
+   let guid = meta::core::runtime::generateGuid()->replace('-','');
    let name = 'isDistinct'+$guid;
    let cls = javaClass(['public'], '_pure.internal.EqualityGraphFetch'+$guid);
 
@@ -276,29 +276,29 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
 {
    print(if($debug.debug,|$debug.space+'process isEqual: \n',|''));
    let args = $fe.parametersValues->evaluateAndDeactivate();
-      
+
    let cls1 = $args->at(0)->generateJava($conventions, $debug);
    let cls2 = $args->at(1)->generateJava($conventions, $debug);
-   let guid = meta::pure::runtime::generateGuid()->replace('-','');
+   let guid = meta::core::runtime::generateGuid()->replace('-','');
 
    let name =  'isEqual'+$guid;
    let cls = javaClass(['public'], '_pure.internal.EqualityGraphFetch'+$guid);
 
    let dep = newDependency(
       $name,
-      {state | 
+      {state |
             let fetchTree = $args->at(2)->cast(@InstanceValue).values->cast(@meta::pure::graphFetch::RootGraphFetchTree<Any>)->toOne();
             let javaClass = $cls1.type;
 
             let m = generateIsEqualMethod($javaClass, $fetchTree, $conventions);
-         
+
             let cls1 = $cls->addMethod($m);
 
             let project = newProject()->addClass($cls1);
             $state->addDependencyProject($name, $project);
       }
    );
-   
+
    let invoke = $cls->j_invoke([javaObject(), javaObject()],'isEqualWithFetchTree', [$cls1, $cls2], javaBoolean());
    $invoke->dependsOn($dep);
 }
@@ -308,11 +308,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
    let o1 = j_parameter($type, 'o1');
    let o2 = j_parameter($type, 'o2');
 
-   let fields = $gf.subTrees->map(st| assert($st.subTrees->isEmpty(), 'Nested property trees not supported yet'); 
+   let fields = $gf.subTrees->map(st| assert($st.subTrees->isEmpty(), 'Nested property trees not supported yet');
                                       assert($st->instanceOf(meta::pure::graphFetch::PropertyGraphFetchTree) && !$st->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).isQualifiedProperty(),
                                              'Qualified properties not supported');
                                       $st->cast(@meta::pure::graphFetch::PropertyGraphFetchTree).property->toOne(););
-         
+
             let bool_condition = $fields->fold({f,b|
                                                 let fieldType = $conventions->pureTypeToJavaType($f);
                                                 let o1getter = $o1->j_invoke([], $conventions->getterName($f), [], $conventions->pureTypeToJavaType($f));
@@ -320,9 +320,9 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
                                                  if(isPrimitive($fieldType), |j_and(j_eq($o1getter, $o2getter), $b),
                                                                              |j_and($o1getter->j_invoke('equals', $o2getter), $b));
                                                }, j_true());
-   
+
             let body = $bool_condition->j_return();
 
             let m = javaMethod(['public', 'static'], javaBoolean(), 'isEqualWithFetchTree', [$o1,$o2], $body->codeToString());
-   
+
 }

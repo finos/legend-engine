@@ -50,25 +50,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Connection;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 
+import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.*;
 import java.util.function.Consumer;
-import javax.ws.rs.core.MediaType;
+
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder.getElement;
 
 @Deprecated
 public class MappingTestRunner
@@ -81,7 +73,7 @@ public class MappingTestRunner
     public final MappingTest_Legacy mappingTestLegacy;
     private final Iterable<? extends PlanTransformer> planTransformers;
     private final RichIterable<? extends Root_meta_pure_extension_Extension> extensions;
-    private final Root_meta_pure_runtime_Runtime_Impl runtime;
+    private final Root_meta_core_runtime_Runtime_Impl runtime;
     private final String pureVersion;
 
     public MappingTestRunner(PureModel pureModel, String mappingPath, MappingTest_Legacy mappingTestLegacy, PlanExecutor executor, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion)
@@ -90,7 +82,7 @@ public class MappingTestRunner
         this.executor = executor;
         this.mappingPath = mappingPath;
         this.mappingTestLegacy = mappingTestLegacy;
-        this.runtime = new Root_meta_pure_runtime_Runtime_Impl("");
+        this.runtime = new Root_meta_core_runtime_Runtime_Impl("");
         this.planTransformers = transformers;
         this.extensions = extensions;
         this.pureVersion = pureVersion;
@@ -104,8 +96,15 @@ public class MappingTestRunner
 
     public void setupTestData()
     {
-        ConnectionVisitor<Root_meta_pure_runtime_Connection> connectionVisitor = new ConnectionFirstPassBuilder(this.pureModel.getContext());
-        this.buildTestConnection(conn -> this.runtime._connectionsAdd(conn.accept(connectionVisitor)));
+        ConnectionVisitor<Root_meta_core_runtime_Connection> connectionVisitor = new ConnectionFirstPassBuilder(this.pureModel.getContext());
+        this.buildTestConnection(conn ->
+        {
+            CompileContext context = this.pureModel.getContext();
+            Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("")
+                    ._connection(conn.accept(connectionVisitor))
+                    ._element(getElement(conn.element, conn.elementSourceInformation, context));
+            this.runtime._connectionStoresAdd(connectionStore);
+        });
     }
 
     private void buildTestConnection(Consumer<? super Connection> connectionRegistrar)
@@ -121,6 +120,7 @@ public class MappingTestRunner
             if (ObjectInputType.JSON.equals(objectInputData.inputType))
             {
                 JsonModelConnection jsonModelConnection = new JsonModelConnection();
+                jsonModelConnection.element = "ModelStore";
                 jsonModelConnection._class = objectInputData.sourceClass;
                 jsonModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_JSON + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(jsonModelConnection);
@@ -129,6 +129,7 @@ public class MappingTestRunner
             {
                 XmlModelConnection xmlModelConnection = new XmlModelConnection();
                 xmlModelConnection._class = objectInputData.sourceClass;
+                xmlModelConnection.element = "ModelStore";
                 xmlModelConnection.url = DataProtocolHandler.DATA_PROTOCOL_NAME + ":" + MediaType.APPLICATION_XML + ";base64," + Base64.getEncoder().encodeToString(objectInputData.data.getBytes(StandardCharsets.UTF_8));
                 connectionRegistrar.accept(xmlModelConnection);
             }

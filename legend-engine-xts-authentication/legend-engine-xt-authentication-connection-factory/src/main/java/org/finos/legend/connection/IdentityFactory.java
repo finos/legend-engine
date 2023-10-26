@@ -17,21 +17,21 @@ package org.finos.legend.connection;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 
 import java.util.List;
 
 public class IdentityFactory
 {
-    private final EnvironmentConfiguration environmentConfiguration;
+    private final LegendEnvironment environment;
 
-    private IdentityFactory(EnvironmentConfiguration environmentConfiguration)
+    private IdentityFactory(LegendEnvironment environment)
     {
-        this.environmentConfiguration = environmentConfiguration;
+        this.environment = environment;
     }
 
-    // TODO: @akphi - this clones the logic from IdentityFactoryProvider, we should
-    // think of when we can unify them
+    // TODO: @akphi - this clones the logic from IdentityFactoryProvider, we should think about unifying them
     private static final DefaultIdentityFactory DEFAULT = new DefaultIdentityFactory();
 
     public Identity createIdentity(IdentitySpecification identitySpecification)
@@ -39,23 +39,33 @@ public class IdentityFactory
         List<Credential> credentials = Lists.mutable.empty();
         credentials.addAll(identitySpecification.getCredentials());
         // TODO: @akphi - should we restrict here that we can only either specify the subject/profiles?
-        credentials.addAll(DEFAULT.makeIdentity(identitySpecification.getSubject()).getCredentials().toList());
-        credentials.addAll(DEFAULT.makeIdentity(Lists.mutable.withAll(identitySpecification.getProfiles())).getCredentials().toList());
+        if (identitySpecification.getSubject() != null)
+        {
+            credentials.addAll(DEFAULT.makeIdentity(identitySpecification.getSubject()).getCredentials().toList());
+        }
+        if (!identitySpecification.getProfiles().isEmpty())
+        {
+            credentials.addAll(DEFAULT.makeIdentity(Lists.mutable.withAll(identitySpecification.getProfiles())).getCredentials().toList());
+        }
+        if (credentials.isEmpty())
+        {
+            return identitySpecification.getName() != null ? new Identity(identitySpecification.getName(), new AnonymousCredential()) : DEFAULT.makeUnknownIdentity();
+        }
         return new Identity(identitySpecification.getName(), credentials);
     }
 
     public static class Builder
     {
-        private final EnvironmentConfiguration environmentConfiguration;
+        private final LegendEnvironment environment;
 
-        public Builder(EnvironmentConfiguration environmentConfiguration)
+        public Builder(LegendEnvironment environment)
         {
-            this.environmentConfiguration = environmentConfiguration;
+            this.environment = environment;
         }
 
         public IdentityFactory build()
         {
-            return new IdentityFactory(this.environmentConfiguration);
+            return new IdentityFactory(this.environment);
         }
     }
 }

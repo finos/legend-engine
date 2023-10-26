@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::graphFetch::execution::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<test.Test>> meta::pure::graphFetch::tests::routing::testSimpleM2MTreeRouting():Boolean[1]

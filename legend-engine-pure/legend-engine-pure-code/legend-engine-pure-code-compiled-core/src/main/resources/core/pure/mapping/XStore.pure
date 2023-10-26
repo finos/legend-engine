@@ -22,6 +22,7 @@ import meta::pure::router::printer::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::pure::mapping::xStore::crossGetterOverrideToMany(o:Any[1], property:Property<Nil,Any|*>[1]):Any[*]
@@ -66,10 +67,10 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
 {
    let objectInfo = $o->getHiddenPayload()->cast(@MappingInstanceData);
    let debug = $objectInfo.static.debug;
-   
+
    print(if(!$debug.debug, |'',
             | $debug.space+'\nBuilding XStore query for property:\''+$p.property.name->toOne()+'\' ['+$p.sourceSetImplementationId+'->'+$p.targetSetImplementationId+']\n'));
-   
+
    let sourceSetImpl = $objectInfo.static.mapping->classMappingById($p.sourceSetImplementationId)->cast(@InstanceSetImplementation);
    let targetSetImpl = $objectInfo.static.mapping->classMappingById($p.targetSetImplementationId)->cast(@InstanceSetImplementation);
    let sourceType = ^GenericType(rawType=if($sourceSetImpl.mappingClass->isEmpty(),|$sourceSetImpl.class, |$sourceSetImpl.mappingClass->toOne()));
@@ -90,7 +91,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                  functionName = 'filter',
                  importGroup = system.children->at(0)->cast(@Package).children->at(0)->cast(@ImportGroup),
                  genericType = $returnType,
-                 multiplicity = ZeroMany, 
+                 multiplicity = ZeroMany,
                  parametersValues = [
                                        ^StoreMappingRoutedValueSpecification
                                        (
@@ -144,22 +145,22 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
               ),
       routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
    )->evaluateAndDeactivate();
-   
+
    print(if(!$debug.debug, |'',
             | $debug.space+'  New routed query expression built: '+$newExpr->asString()+'\n'));
-   
+
    let clustered = list($newExpr)->doCluster(^LambdaFunction<{->Any[1]}>(expressionSequence=^InstanceValue(values='', genericType=^GenericType(rawType=String), multiplicity=PureOne)),
                                              $objectInfo.static.mapping,
                                              $objectInfo.static.runtime,
                                              $objectInfo.static.exeCtx,
                                              $extensions,
                                              noDebug());
-   
+
    print(if(!$debug.debug, |'',
             | $debug.space+'  New routed query clustered: '+$clustered->at(0)->asString()+'\n'));
 
    let cluster = $clustered->at(0).expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification);
-   
+
    let res = $cluster->executeExpression($cluster.openVars->toOne(), [], $objectInfo.static.exeCtx, $extensions, $debug);
 
    $extensions.logActivities->map(e|$e->eval($res.activities));
@@ -191,7 +192,7 @@ function meta::pure::mapping::xStore::reprocessLambda(l:LambdaFunction<Any>[1], 
                                                  )
                                ),
        expressionSequence = $l.expressionSequence->at(0)->evaluateAndDeactivate()->reprocessElement($sourceType.rawType->cast(@Class<Any>)->toOne(), $o, $extra).second->cast(@ValueSpecification)
-    );   
+    );
 }
 
 function meta::pure::mapping::xStore::reprocessElement(vs:Any[1], sourceType:Class<Any>[1], o:Any[1], extra:MappingInstanceData[1]):Pair<Boolean, Any>[1]
@@ -200,9 +201,9 @@ function meta::pure::mapping::xStore::reprocessElement(vs:Any[1], sourceType:Cla
       [
          f:FunctionExpression[1]|if ($f.propertyName->isEmpty(),
                                         |let params = $f.parametersValues->map(p|$p->reprocessElement($sourceType, $o, $extra));
-                                         if($params->forAll(p|$p.first),  
+                                         if($params->forAll(p|$p.first),
                                             | pair(true, ^InstanceValue(values=^$f(parametersValues=$params.second->cast(@ValueSpecification))->reactivate(), genericType = $f.func->functionReturnType(), multiplicity=$f.func->functionReturnMultiplicity())), | pair(false, ^$f(parametersValues=$params.second->cast(@ValueSpecification))->cast(@ValueSpecification)));,
-                                        |if($sourceType == $f.parametersValues->at(0).genericType.rawType, 
+                                        |if($sourceType == $f.parametersValues->at(0).genericType.rawType,
                                             |let owner = $f.func->cast(@Property<Nil,Any|*>).owner;
                                              if ($owner->isEmpty() || $owner->toOne()->instanceOf(MappingClass),
                                                  |pair(true, ^InstanceValue(

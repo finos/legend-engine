@@ -18,7 +18,7 @@ import meta::pure::executionPlan::*;
 
 import meta::pure::mapping::*;
 
-import meta::pure::runtime::*;
+import meta::core::runtime::*;
 
 Class meta::legend::service::metamodel::Service extends PackageableElement, meta::pure::test::Testable
 [

@@ -13,18 +13,20 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::functions::sqlstring::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::functions::sqlstring::*;
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testToSQLStringWithAdjust_MemSQL():Boolean[1]
 {
-   let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(10000000, DurationUnit.MICROSECONDS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']), 
-         meta::relational::tests::simpleRelationalMapping, 
+   let s1 = toSQLString(|Trade.all()->filter(t|$t.settlementDateTime > today()->adjust(10000000, DurationUnit.MICROSECONDS))->project([t| $t.id, t| $t.settlementDateTime] ,['id', 'settlementDateTime']),
+         meta::relational::tests::simpleRelationalMapping,
          meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-   
+
    assertEquals('select `root`.ID as `id`, `root`.settlementDateTime as `settlementDateTime` from tradeTable as `root` where (`root`.settlementDateTime is not null and `root`.settlementDateTime > adddate(curdate(), INTERVAL 10000000 MICROSECOND))', $s1);
 }
 
@@ -34,7 +36,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
                                      agg(x|$x.employees.firstName,y|$y->joinStrings('*')),
                                      ['legalName', 'employeesFirstName']
                                   )};
-   
+
    let memSqlSql = toSQLString($fn, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertEquals('select `root`.LEGALNAME as `legalName`, group_concat(`personTable_d#4_d_m1`.FIRSTNAME separator \'*\') as `employeesFirstName` from firmTable as `root` left outer join personTable as `personTable_d#4_d_m1` on (`root`.ID = `personTable_d#4_d_m1`.FIRMID) group by `legalName`', $memSqlSql);
 }
@@ -68,7 +70,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
    let s1 = toSQLString(
            |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1StdDevPopulation, 'stdDevPopulation'),
             meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
-            
+
    assertEquals('select stddev_pop(`root`.int1) as `stdDevPopulation` from dataTable as `root`', $s1);
 }
 
@@ -77,15 +79,15 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
    let expected = [
       pair(DatabaseType.MemSQL, 'select subdate(`root`.tradeDate, INTERVAL dayofmonth(`root`.tradeDate) - 1 DAY)  as `date` from tradeTable as `root`')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfMonth(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
@@ -97,17 +99,17 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
    let expected = [
       pair(DatabaseType.MemSQL, 'select subdate(`root`.tradeDate, INTERVAL dayofyear(`root`.tradeDate) - 1 DAY) as `date` from tradeTable as `root`')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfYear(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -117,17 +119,17 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
    let expected = [
       pair(DatabaseType.MemSQL, 'select subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY) as `date` from tradeTable as `root`')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|firstDayOfThisYear(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -137,17 +139,17 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
    let expected = [
       pair(DatabaseType.MemSQL, 'select adddate(subdate(curdate(), INTERVAL dayofyear(current_date()) - 1 DAY), INTERVAL (quarter(curdate()) -1) QUARTER) as `date` from tradeTable as `root`')
    ];
-   
+
    $expected->map(p|
       let driver = $p.first;
       let expectedSql = $p.second;
-               
+
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|firstDayOfThisQuarter(), 'date')),
-         simpleRelationalMapping, 
+         simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
-   
+
       assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
    )->distinct() == [true];
 }
@@ -161,14 +163,14 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 {
    let query = {|Trade.all()->filter(t | $t.id == 2)->map(t | $t.quantity->divide(1000000))};
    let expectedMemSQL = 'select ((1.0 * `root`.quantity) / 1000000) from tradeTable as `root` left outer join (select `root`.trade_id as trade_id, max(`root`.eventDate) as maxTradeEventDate from tradeEventTable as `root` group by `root`.trade_id) as `tradeEventViewMaxTradeEventDate_d#4_d#4_m5` on (`root`.ID = `tradeEventViewMaxTradeEventDate_d#4_d#4_m5`.trade_id) where `root`.ID = 2';
-   
+
    let resultMemSQL = meta::relational::functions::sqlstring::toSQLString($query, simpleRelationalMapping, DatabaseType.MemSQL, meta::relational::extension::relationalExtensions());
    assertSameSQL($expectedMemSQL, $resultMemSQL);
 }
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testSubstring_MemSQL() : Boolean[1]
 {
-  let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,type = DatabaseType.MemSQL));
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(type = DatabaseType.MemSQL)));
 
    let result = toSQLStringPretty({|Firm.all()->project([
         c | $c.legalName,
@@ -185,7 +187,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testSubstringWithNonZeroIndex_MemSQL() : Boolean[1]
 {
-  let runtime = ^meta::pure::runtime::Runtime(connections = ^TestDatabaseConnection(element = meta::relational::tests::db,type = DatabaseType.MemSQL));
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(type = DatabaseType.MemSQL)));
 
    let result = toSQLStringPretty({|Firm.all()->project([
         c | $c.legalName,

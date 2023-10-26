@@ -18,15 +18,19 @@ import meta::relational::tests::model::simple::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::subType::setup(): Boolean[1]
 {
-   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=meta::relational::graphFetch::tests::subType::db, type=DatabaseType.H2)]);
-   let connection  = $runtime.connections->at(0)->cast(@DatabaseConnection);
+   let runtime =  ^Runtime(connectionStores= [^ConnectionStore(element=meta::relational::graphFetch::tests::subType::db,connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+   let connection  = $runtime.connectionStores->at(0).connection->cast(@DatabaseConnection);
    executeInDb('Drop table if exists addressTable;', $connection);
    executeInDb('Drop table if exists landmarkTable;', $connection);
    executeInDb('Drop table if exists landmarkTable1;', $connection);
@@ -88,13 +92,13 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '    Id,\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
                     '      street\n'+
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
@@ -121,14 +125,14 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+           
-                    '    }\n'+          
+                    '      }\n'+
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -156,14 +160,14 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+           
-                    '    }\n'+          
+                    '      }\n'+
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->filter(x | $x.Id->in([1,3]))->graphFetch($tree)->serialize($tree)};
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -187,17 +191,17 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+  
-                    '    },\n'+                
+                    '      }\n'+
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      name\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -225,16 +229,16 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+  
-                    '    },\n'+                
+                    '      }\n'+
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      name\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::InheritanceMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -260,16 +264,16 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+  
-                    '    },\n'+                
+                    '      }\n'+
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      name\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let alloyConfigWithoutIncludingType =  ^meta::pure::graphFetch::execution::AlloySerializationConfig(
                                                                                   typeKeyName = '@type',
@@ -289,7 +293,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                          '{"name":"City2","Id":5,"landmark":{"lmName":"lm5"}},' +
                          '{"name":"City3","Id":6,"landmark":{"lmName":"lm6"}}]',
                          $result1);
-  
+
   let alloyConfigIncludingType =  ^meta::pure::graphFetch::execution::AlloySerializationConfig(
                                                                                   typeKeyName = '@type',
                                                                                   includeType = true,
@@ -308,7 +312,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                          '{"@type":"City","name":"City2","Id":5,"landmark":{"@type":"LandMark","lmName":"lm5"}},' +
                          '{"@type":"City","name":"City3","Id":6,"landmark":{"@type":"LandMark","lmName":"lm6"}}]',
                          $result2);
-  
+
   let alloyConfigIncludingFullyQualifiedTypePath =  ^meta::pure::graphFetch::execution::AlloySerializationConfig(
                                                                                   typeKeyName = '@type',
                                                                                   includeType = true,
@@ -335,17 +339,17 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
                     '    type,\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
-                    '      street\n' + 
-                    '    },\n'+                
+                    '      street\n' +
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      name\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -366,17 +370,17 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '  meta::relational::graphFetch::tests::subType::Address{\n'+
                     '    Id,' +
                     '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
-                    '      type\n' + 
-                    '    },\n'+                
+                    '      type\n' +
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      type\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -398,12 +402,12 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '    Id,\n'+
                     '    landmark{\n' +
                     '      lmName\n' +
-                    '    }\n'+       
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::InheritanceMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -423,12 +427,12 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '    Id,\n'+
                     '    landmark{\n' +
                     '      lmName\n' +
-                    '    }\n'+       
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::unionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let query = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -454,20 +458,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+  
-                    '    },\n'+                
+                    '      }\n'+
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      name\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithRootPropertyUnionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-  
+
   assertJsonStringsEqual('[{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
                          '{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
                          '{"coordinate":null,"street":"str3","Id":3,"landmark":{"lmName":"lm3"}},' +
@@ -490,16 +494,16 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+  
-                    '    },\n'+                
+                    '      }\n'+
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      name\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelPropertyUnionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -526,20 +530,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '      coordinate{\n' +
                     '        latitude,\n' +
                     '        longitude\n' +
-                    '      }\n'+  
-                    '    },\n'+                
+                    '      }\n'+
+                    '    },\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::City){\n'+
                     '      name\n' +
-                    '    }\n'+          
+                    '    }\n'+
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelAndRootLevelPropertyUnionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-  
+
   assertJsonStringsEqual('[{"coordinate":{"latitude":"31.8951","longitude":" -77.0364"},"street":"str1","Id":1,"landmark":{"lmName":"lm1"}},' +
                          '{"coordinate":{"latitude":"33.8951","longitude":" -75.0364"},"street":"str2","Id":2,"landmark":{"lmName":"lm2"}},' +
                          '{"coordinate":{"latitude":"34.8951","longitude":" -72.0364"},"street":"str3","Id":3,"landmark":{"lmName":"lm3"}},' +
@@ -556,16 +560,16 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                     '    Id,\n'+
                     '    ->subType(@meta::relational::graphFetch::tests::subType::Street){\n'+
                     '      landmarkName\n' +
-                    '    }\n' +                      
+                    '    }\n' +
                     '  }\n'+
                     '}#';
   let tree = meta::legend::compileLegendValueSpecification($treeString)->cast(@RootGraphFetchTree<meta::relational::graphFetch::tests::subType::Address>);
   let mapping = meta::relational::graphFetch::tests::subType::RootSubTypeWithSubtypeLevelAndRootLevelPropertyUnionMapping;
-  let runtime = meta::relational::tests::testRuntime();
+  let runtime = meta::external::store::relational::tests::testRuntime();
 
   let query1 = {|meta::relational::graphFetch::tests::subType::Address.all()->graphFetch($tree)->serialize($tree)};
   let result1 = execute($query1, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-  
+
   assertJsonStringsEqual('[{"Id":1,"landmarkName()":"lm1"},' +
                          '{"Id":2,"landmarkName()":"lm2"},' +
                          '{"Id":3,"landmarkName()":"lm3"},' +
@@ -580,12 +584,12 @@ Class meta::relational::graphFetch::tests::subType::Address
    landmark : meta::relational::graphFetch::tests::subType::LandMark[1];
    type : String[1];
 }
- 
+
 Class meta::relational::graphFetch::tests::subType::Street extends meta::relational::graphFetch::tests::subType::Address
 {
    street: String[1];
    coordinate : meta::relational::graphFetch::tests::subType::Coordinate[1];
-   landmarkName(){$this.landmark.lmName} : String[1]; 
+   landmarkName(){$this.landmark.lmName} : String[1];
 }
 
 Class meta::relational::graphFetch::tests::subType::City extends meta::relational::graphFetch::tests::subType::Address
@@ -845,7 +849,7 @@ Database meta::relational::graphFetch::tests::subType::db
   Table cityTable(Id INT PRIMARY KEY, name VARCHAR(200))
   Table landmarkTable(addId INT PRIMARY KEY, lmName VARCHAR(200))
   Table landmarkTable1(addId INT PRIMARY KEY, lmName VARCHAR(200))
-  Table landmarkTable2(addId INT PRIMARY KEY, lmName VARCHAR(200)) 
+  Table landmarkTable2(addId INT PRIMARY KEY, lmName VARCHAR(200))
   Table coordinateTable(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200))
   Table coordinateTable1(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200))
   Table coordinateTable2(streetId INT PRIMARY KEY, latitude VARCHAR(200), longitude VARCHAR(200))
@@ -864,5 +868,5 @@ Database meta::relational::graphFetch::tests::subType::db
   Filter address_filter(addressTable.type = 'address')
   Filter city_filter(addressTable.type = 'city')
 )
- 
- 
+
+

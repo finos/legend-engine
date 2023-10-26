@@ -17,7 +17,9 @@ import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::union::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 
@@ -253,7 +255,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::testIdentificati
 {
    let query={|Person.all()->project([p|$p.lastName,p|$p.manager.lastName], ['Name','manager'])};
    let res = execute($query, unionMappingWithSelfJoin,  testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    assertSameSQL('select "unionBase"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "Name", "unionalias_1"."PersonSet1lastName_s1_PersonSet2lastName_s2" as "manager" from (select "root".ID as "pk_0_0", null as "pk_0_1", "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2", "root".lastName_s1 as lastName from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2", "root".lastName_s2 as lastName from PersonSet2 as "root") as "unionBase" left outer join (select "root".lastName_s1 as lastName, "root".lastName_s1 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet1 as "root" UNION ALL select "root".lastName_s2 as lastName, "root".lastName_s2 as "PersonSet1lastName_s1_PersonSet2lastName_s2" from PersonSet2 as "root") as "unionalias_1" on ("unionBase".lastName = "unionalias_1".lastName)', $res);
 }
 
@@ -362,7 +364,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::testUnionWithSin
 
 function meta::relational::tests::mapping::union::executeInDb2(sql:String[1], databaseConnection:DatabaseConnection[1]):ResultSet[1]
 {
-    meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection, 0, 1000);
+    meta::relational::metamodel::execute::executeInDb($sql, $databaseConnection);
 }
 
 function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolean[1]
@@ -376,15 +378,15 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('Drop table if exists AddressSet2;', $connection);
    executeInDb2('Create Table AddressSet2 (name VARCHAR(200), street VARCHAR(200));', $connection);
    executeInDb2('insert into AddressSet2 (name, street) values (\'Firm A\', \'Somwhere In CA\');', $connection);
-   
+
    executeInDb2('Drop table if exists PlaceOfInterestSet1;', $connection);
    executeInDb2('Create Table PlaceOfInterestSet1 (name VARCHAR(200), popularity INTEGER);', $connection);
    executeInDb2('insert into PlaceOfInterestSet1 (name, popularity) values (\'Firm X\', 7);', $connection);
-   
+
    executeInDb2('Drop table if exists PlaceOfInterestSet2;', $connection);
    executeInDb2('Create Table PlaceOfInterestSet2 (name VARCHAR(200), popularity INTEGER);', $connection);
    executeInDb2('insert into PlaceOfInterestSet2 (name, popularity) values (\'200 west\', 3);', $connection);
-   
+
    executeInDb2('Drop table if exists PersonSet1;', $connection);
    executeInDb2('Create Table PersonSet1 (ID INT, lastName_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, NICKNAME VARCHAR(200));', $connection);
    executeInDb2('insert into PersonSet1 (ID, lastName_s1, FirmID, ADDRESSID) values (1, \'Scott\', 1, 1);', $connection);
@@ -400,7 +402,7 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb('Create Table PersonSet3 (Set3ID INT, lastName_s3 VARCHAR(200), FirmID INT, ADDRESSID INT);', $connection);
    executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (1, \'Taylor\', 1, 1);', $connection);
    executeInDb('insert into PersonSet3 (Set3ID, lastName_s3, FirmID, ADDRESSID) values (2, \'Wright\', 1, 2);', $connection);
-   
+
    executeInDb2('Drop table if exists FirmSet1;', $connection);
    executeInDb2('Create Table FirmSet1(id INT, name VARCHAR(200),NICKNAME VARCHAR(200));', $connection);
    executeInDb2('insert into FirmSet1 (id, name) values (1, \'Firm X\');', $connection);
@@ -412,11 +414,11 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('Drop table if exists AddressSet1;', $connection);
    executeInDb2('Create Table AddressSet1(id INT, name VARCHAR(200));', $connection);
    executeInDb2('insert into AddressSet1 (id, name) values (1, \'New York\');', $connection);
-   
+
    executeInDb2('Drop table if exists AddressSet2;', $connection);
    executeInDb2('Create Table AddressSet2(id INT, name VARCHAR(200));', $connection);
    executeInDb2('insert into AddressSet2 (id, name) values (2, \'Hoboken\');', $connection);
-   
+
    executeInDb2('Drop table if exists Middle;', $connection);
    executeInDb2('Create Table Middle (ID INT, FirmId INT);', $connection);
    executeInDb2('insert into Middle (ID, FirmId) values (1, 1);', $connection);
@@ -468,7 +470,7 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(3,\'FirmC\',\'2013-12-02\')', $connection);
    executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(4,\'FirmD\',\'2013-12-02\')', $connection);
    executeInDb2('insert into firmExtension(firmId, legalName, establishedDate) values(5,\'FirmE\',\'2013-12-02\')', $connection);
-   
+
    executeInDb2('Drop table if exists midTable;', $connection);
    executeInDb2('create Table midTable (personId INT, firmId INT, extra VARCHAR(200))', $connection);
    executeInDb2('insert into midTable(personId, firmId, extra) values(1,1,\'extraA\' )' , $connection);
@@ -478,7 +480,7 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('insert into midTable(personId, firmId, extra) values(5,5,\'extraE\' )' , $connection);
    executeInDb2('insert into midTable(personId, firmId, extra) values(11,1,\'extraF\' )' , $connection);
    executeInDb2('insert into midTable(personId, firmId, extra) values(14,2,\'extraG\' )' , $connection);
-   
+
    executeInDb2('Drop table if exists PersonExtensionT1;', $connection);
    executeInDb2('create Table PersonExtensionT1 (ID INT, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE)', $connection);
    executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(1,\'A\', \'LastName Ext1A\',\'2013-12-01\')', $connection);
@@ -486,7 +488,7 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(3,\'C\', \'LastName Ext1C\',\'2013-12-02\')', $connection);
    executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(11,\'D\', \'LastName Ext1D\',\'2013-12-02\')', $connection);
    executeInDb2('insert into PersonExtensionT1(ID, FIRSTNAME, LASTNAME, birthdate) values(12,\'E\', \'LastName Ext1E\',\'2013-12-02\')', $connection);
-   
+
    executeInDb2('Drop table if exists PersonExtensionT2;', $connection);
    executeInDb2('create Table PersonExtensionT2 (ID INT, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE)', $connection);
    executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(4,\'A2\', \'LastName Ext2A\',\'2013-12-01\')', $connection);
@@ -494,7 +496,7 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(13,\'C2\', \'LastName Ext2C\',\'2013-12-02\')', $connection);
    executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(14,\'D2\', \'LastName Ext2D\',\'2013-12-02\')', $connection);
    executeInDb2('insert into PersonExtensionT2(ID, FIRSTNAME, LASTNAME, birthdate) values(15,\'E2\', \'LastName Ext2E\',\'2013-12-02\')', $connection);
-   
+
    executeInDb2('Drop table if exists TEMPORALENTITYSET1;', $connection);
    executeInDb2('Create Table TEMPORALENTITYSET1 (ID INT, name_s1 VARCHAR(200), FirmID INT, ADDRESSID INT, SNAPSHOT_DATE DATE);', $connection);
    executeInDb2('insert into TEMPORALENTITYSET1 (ID, name_s1, FirmID, ADDRESSID, SNAPSHOT_DATE) values (1, \'Scott\', 1, 1,\'2019-01-01\');', $connection);
@@ -505,13 +507,13 @@ function meta::relational::tests::mapping::union::createTablesAndFillDb():Boolea
    executeInDb2('Create Table TEMPORALENTITYSET2 (ID INT, name_s2 VARCHAR(200), FirmID INT, ADDRESSID INT, SNAPSHOT_DATE DATE);', $connection);
    executeInDb2('insert into TEMPORALENTITYSET2 (ID, name_s2, FirmID, ADDRESSID, SNAPSHOT_DATE) values (1, \'Taylor\', 2, 2,\'2019-01-01\');', $connection);
    executeInDb2('insert into TEMPORALENTITYSET2 (ID, name_s2, FirmID, ADDRESSID, SNAPSHOT_DATE) values (2, \'Wright\', 2, 2,\'2019-01-01\');', $connection);
-   
+
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ApplicationsSet1',$connection);
    executeInDb2('insert into ApplicationsSet1 (date,personID, firstName_s1,lastName_s1,nickName_s1, firmID,firm_legalName_s1,firm_nickName_s1) values (\'2016-01-01\',1, \'firstName_s1\',\'lastName_s1\',\'nickName_s1\', 1,\'firm_legalName_s1\',\'firm_nickName_s1\');', $connection);
-  
+
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ApplicationsSet2',$connection);
    executeInDb2('insert into ApplicationsSet2  (date, firstName,lastName,nickName, firm_legalName,firm_nickName) values (\'2016-01-01\', \'firstName\',\'lastName\',\'nickName\', \'firm_legalName\',\'firm_nickName\');', $connection);
-   
+
    true;
 }
 
@@ -522,28 +524,28 @@ Database meta::relational::tests::mapping::union::unionOfViewsDb
    (
       ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE
    )
-   
+
    Table PersonExtensionT2
    (
       ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), birthdate DATE
    )
-   
+
    Table firmExtension
    (
       firmId INT PRIMARY KEY, legalName VARCHAR(200), establishedDate DATE
    )
-   
+
    Table midTable
    (
       personId INT PRIMARY KEY, firmId Int, extra VARCHAR(20)
    )
-   
+
    View midTableView
    (
       person: midTable.personId PRIMARY KEY ,
       firm: midTable.firmId
    )
-   
+
    View PersonExtensionView1
    (
       id:  PersonExtensionT1.ID  PRIMARY KEY,
@@ -551,7 +553,7 @@ Database meta::relational::tests::mapping::union::unionOfViewsDb
       lastName: PersonExtensionT1.LASTNAME,
       birthdate: PersonExtensionT1.birthdate
    )
-   
+
    View PersonExtensionView2
    (
       id:  PersonExtensionT2.ID  PRIMARY KEY,
@@ -559,7 +561,7 @@ Database meta::relational::tests::mapping::union::unionOfViewsDb
       lastName: PersonExtensionT2.LASTNAME,
       birthdate: PersonExtensionT2.birthdate
    )
-   
+
    Join Firm_midTableView( firmExtension.firmId= midTableView.firm )
    Join midTableView_PeView1( midTableView.person = PersonExtensionView1.id)
    Join midTableView_PeView2( midTableView.person = PersonExtensionView2.id)
@@ -568,7 +570,7 @@ Database meta::relational::tests::mapping::union::unionOfViewsDb
 ###Relational
 Database meta::relational::tests::mapping::union::myDB
 (
-  
+
    Table PersonSet1
     (
         ID INT PRIMARY KEY,
@@ -578,7 +580,7 @@ Database meta::relational::tests::mapping::union::myDB
         ADDRESSID INT,
         nickName VARCHAR(200)
     )
-   
+
     Table PersonExtension
     (
        ID INT PRIMARY KEY,
@@ -601,7 +603,7 @@ Database meta::relational::tests::mapping::union::myDB
         FirmID INT,
         ADDRESSID INT
     )
-   
+
     Table PersonSet4
     (
         ID INT PRIMARY KEY,
@@ -610,11 +612,11 @@ Database meta::relational::tests::mapping::union::myDB
         FirmID_1 INT,
         FirmID_2 INT
     )
-   
+
     Table Firm
     (
         ID INT PRIMARY KEY,
-        name VARCHAR(200)      
+        name VARCHAR(200)
     )
 
     Table FirmSet1
@@ -635,7 +637,7 @@ Database meta::relational::tests::mapping::union::myDB
         ID INT PRIMARY KEY,
         name VARCHAR(200)
     )
-   
+
     Table AddressSet1
     (
         ID INT PRIMARY KEY,
@@ -682,10 +684,10 @@ Database meta::relational::tests::mapping::union::myDB
 
     Table ApplicationsSet1
     (
-        date date PRIMARY KEY,        
+        date date PRIMARY KEY,
         personID int PRIMARY KEY,
         firstName_s1 VARCHAR(200),
-        lastName_s1 VARCHAR(200),   
+        lastName_s1 VARCHAR(200),
         nickName_s1 VARCHAR(200),
         person_address_s1 VARCHAR(200),
         firmID int PRIMARY KEY,
@@ -693,13 +695,13 @@ Database meta::relational::tests::mapping::union::myDB
         firm_nickName_s1 VARCHAR(200),
         firm_address_s1 VARCHAR(200)
     )
-   
-       
+
+
     Table ApplicationsSet2
     (
-        date date PRIMARY KEY,        
+        date date PRIMARY KEY,
         firstName VARCHAR(200) PRIMARY KEY,
-        lastName VARCHAR(200) PRIMARY KEY,   
+        lastName VARCHAR(200) PRIMARY KEY,
         nickName VARCHAR(200),
         person_address_s2 VARCHAR(200),
         firm_legalName VARCHAR(200) PRIMARY KEY,
@@ -721,7 +723,7 @@ Database meta::relational::tests::mapping::union::myDB
         extrainfo VARCHAR(200),
         otherName VARCHAR(200)
     )
-   
+
     Table TemporalEntitySet1
     (
         milestoning(
@@ -733,7 +735,7 @@ Database meta::relational::tests::mapping::union::myDB
         ADDRESSID INT,
         SNAPSHOT_DATE DATE
     )
-   
+
     Table TemporalEntitySet2
     (
         milestoning(
@@ -745,7 +747,7 @@ Database meta::relational::tests::mapping::union::myDB
         FirmID INT,
         SNAPSHOT_DATE DATE
     )
-   
+
    Join firm1_person1_join(FirmSet1.ID=PersonSet1.FirmID)
    Join firm1_person2_join(FirmSet1.ID=PersonSet2.FirmID)
    Join firm1_person3_join(FirmSet1.ID=PersonSet3.FirmID)
@@ -774,16 +776,16 @@ Database meta::relational::tests::mapping::union::myDB
    Join PersonSet3Firm(PersonSet3.FirmID = Firm.ID)
    Join PersonSet4Firm1(PersonSet4.FirmID_1 = Firm.ID)
    Join PersonSet4Firm2(PersonSet4.FirmID_2 = Firm.ID)
-   
+
    Join PersonSet1AddressSet1(PersonSet1.FirmID = AddressSet1.ID)
    Join PersonSet1AddressSet2(PersonSet1.FirmID = AddressSet2.ID)
    Join PersonSet2AddressSet1(PersonSet2.FirmID = AddressSet1.ID)
    Join PersonSet2AddressSet2(PersonSet2.FirmID = AddressSet2.ID)
    Join TemporalEntitySet1AddressSet1_withLastName(TemporalEntitySet1.ADDRESSID = AddressSet1.ID and greaterThan(length(TemporalEntitySet1.name_s1), 0))
    Join TemporalEntitySet2AddressSet2_withLastName(TemporalEntitySet2.ADDRESSID = AddressSet2.ID and greaterThan(length(TemporalEntitySet2.name_s2), 0))
-   
+
    Join PersonSet1PersonAdditional(PersonSet1.ID = PersonAdditional.ID)
-   
+
    Join PersonSet1PersonExtension(PersonSet1.ID = PersonExtension.ID)
 
    Join PersonSet1FirmSet1(PersonSet1.FirmID = FirmSet1.ID)
@@ -825,12 +827,12 @@ import meta::relational::tests::mapping::union::*;
 import meta::relational::tests::model::simple::*;
 Mapping meta::relational::tests::mapping::union::unionOfViews
 (
- 
+
    *PersonExtension[ext] : Operation
    {
       meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(e1, e2)
    }
-   
+
    FirmExtension: Relational
    {
       scope([unionOfViewsDb] firmExtension)
@@ -841,22 +843,22 @@ Mapping meta::relational::tests::mapping::union::unionOfViews
       employeesExt[e2]: @Firm_midTableView> (INNER) @midTableView_PeView2
      )
    }
-   
+
    PersonExtension[e1]: Relational
    {
      scope([unionOfViewsDb] PersonExtensionView1)
-     ( 
+     (
         firstName: firstName,
         lastName: lastName,
         birthdate: birthdate
 
      )
    }
-   
+
    PersonExtension[e2]: Relational
    {
      scope([unionOfViewsDb] PersonExtensionView2)
-     ( 
+     (
         firstName: firstName,
         lastName: lastName,
         birthdate: birthdate
@@ -870,7 +872,7 @@ import meta::relational::tests::model::simple::*;
 
 Mapping meta::relational::tests::mapping::union::chainedJoinsWithUnionsAndIsolation
 (
-   
+
    *Firm : Operation
    {
       meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(FirmSet1, FirmSet2)
@@ -887,7 +889,7 @@ Mapping meta::relational::tests::mapping::union::chainedJoinsWithUnionsAndIsolat
       legalName: [myDB]FirmSet1.name,
       employees[FirmSet1,set1]: [myDB]@firm1_person1_join
    }
-   
+
    Firm[FirmSet2]: Relational
    {
       legalName: [myDB]FirmSet2.name,
@@ -904,9 +906,9 @@ Mapping meta::relational::tests::mapping::union::chainedJoinsWithUnionsAndIsolat
    {
       lastName : [myDB]PersonSet2.lastName_s2,
       firm[set2,FirmSet2] : [myDB]@PersonSet2FirmSet2
-   }   
+   }
 
-   
+
 )
 
 ###Mapping
@@ -915,7 +917,7 @@ import meta::relational::tests::model::simple::*;
 
 Mapping meta::relational::tests::mapping::union::unionMappingOverlappingPKAndFKColumns
 (
-   
+
    *Firm : Operation
    {
       meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(FirmSet1, FirmSet2)
@@ -933,28 +935,28 @@ Mapping meta::relational::tests::mapping::union::unionMappingOverlappingPKAndFKC
       legalName: [myDB]FirmSet1.name,
       employees[FirmSet1,set1]: [myDB]@firm1_person1_join
    }
-   
+
     Firm[FirmSet2]: Relational
    {
       legalName: [myDB]FirmSet2.name,
       employees[FirmSet2,set2]:  [myDB]@firm2_person2_join
    }
 
-   
+
    Person[set1] : Relational
    {
       lastName : [myDB]PersonSet1.lastName_s1,
       firm[set1,FirmSet1] : [myDB]@PersonSet1FirmSet1
-      
+
    }
 
    Person[set2] : Relational
    {
       lastName : [myDB]PersonSet2.lastName_s2,
       firm[set2,FirmSet2] : [myDB]@PersonSet2FirmSet2
-      
+
    }
-   
+
 )
 
 
@@ -1066,25 +1068,25 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithJoinInProperty
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
-               ~mainTable [myDB]PersonSet1 
+               ~mainTable [myDB]PersonSet1
                lastName : [myDB]@PersonSet1PersonExtension | PersonExtension.otherLastName,
                otherNames : [myDB]@PersonSet1PersonExtension | concat('', PersonExtension.otherLastName),
                firm : [myDB]@PersonSet1Firm
             }
-            
+
    Person[set2] : Relational
             {
                lastName : [myDB] PersonSet2.lastName_s2,
                otherNames : [myDB] PersonSet2.lastName_s2,
                firm : [myDB]@PersonSet2Firm
             }
-            
+
    Firm : Relational
           {
              legalName : [myDB]Firm.name,
@@ -1152,23 +1154,23 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithJoinSequenceInP
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
-               ~mainTable [myDB]PersonSet1 
+               ~mainTable [myDB]PersonSet1
                lastName : [myDB]@PersonSet1PersonExtension | PersonExtension.otherLastName,
                firm : [myDB]@PersonSet1Firm
             }
-            
+
    Person[set2] : Relational
             {
                lastName : [myDB]PersonSet2.lastName_s2,
                firm : [myDB]@PersonSet2Firm
             }
-            
+
    Firm : Relational
           {
              legalName : [myDB]Firm.name,
@@ -1186,9 +1188,9 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
@@ -1197,7 +1199,7 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
                   legalName : [myDB]@PersonSet1PersonFirmSet1Firm | PersonFirmSet1Firm.FirmJ1
                )
             }
-            
+
    Person[set2] : Relational
             {
                lastName : [myDB]PersonFirmSet2.lastName_s2,
@@ -1215,9 +1217,9 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
@@ -1226,7 +1228,7 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
                   legalName : [myDB]PersonFirmSet1.Firm1
                )
             }
-            
+
    Person[set2] : Relational
             {
                lastName : [myDB]PersonFirmSet2.lastName_s2,
@@ -1244,12 +1246,12 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
 
    *Firm : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
             }
 
 
@@ -1263,7 +1265,7 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
                   firm[firm_set2] : [myDB]@PersonSet1FirmSet2
                )
             }
-            
+
    Person[set2] : Relational
             {
                firstName : [myDB]PersonSet2.firstName_s2,
@@ -1274,7 +1276,7 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
                   firm[firm_set2] : [myDB]@PersonSet2FirmSet2
                )
             }
-            
+
    Firm[firm_set1] : Relational
           {
               legalName : [myDB]FirmSet1.name,
@@ -1304,18 +1306,18 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMapping
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
 
    *Firm : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
             }
 
    *Address : Operation
             {
                meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a_set1, a_set2)
-            }   
+            }
 
    Person[set1] : Relational
             {
@@ -1325,7 +1327,7 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMapping
                address[a_set1] : [myDB]@PersonSet1AddressSet1,
                address[a_set2] : [myDB]@PersonSet1AddressSet2
             }
-            
+
    Person[set2] : Relational
             {
                lastName : [myDB]PersonSet2.lastName_s2,
@@ -1334,7 +1336,7 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMapping
                address[a_set1] : [myDB]@PersonSet2AddressSet1,
                address[a_set2] : [myDB]@PersonSet2AddressSet2
             }
-            
+
    Firm[firm_set1] : Relational
           {
              legalName : [myDB]FirmSet1.name,
@@ -1348,7 +1350,7 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMapping
              employees[set1]:[myDB]@PersonSet1FirmSet2,
              employees[set2]:[myDB]@PersonSet2FirmSet2
           }
-   
+
    Address[a_set1] : Relational
              {
                 name : [myDB]AddressSet1.name
@@ -1356,25 +1358,25 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMapping
    Address[a_set2] : Relational
              {
                 name : [myDB]AddressSet2.name
-             }   
+             }
 )
 
 Mapping meta::relational::tests::mapping::union::unionToUnionMappingForChainedUnions
 (
    *TemporalEntityWithAddress : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
 
    *Firm : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
             }
 
    *Address : Operation
             {
                meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(a_set1, a_set2)
-            }   
+            }
 
    Person : Relational
             {
@@ -1382,19 +1384,19 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMappingForChainedUn
                firm[firm_set1] : [myDB]@PersonSet1FirmSet1,
                firm[firm_set2] : [myDB]@PersonSet1FirmSet2
             }
-   
+
    TemporalEntityWithAddress[set1] : Relational
             {
                name : [myDB]TemporalEntitySet1.name_s1,
                address[a_set1] : [myDB]@TemporalEntitySet1AddressSet1_withLastName
             }
-            
+
    TemporalEntityWithAddress[set2] : Relational
             {
                name : [myDB]TemporalEntitySet2.name_s2,
                address[a_set2] : [myDB]@TemporalEntitySet2AddressSet2_withLastName
             }
-            
+
    Firm[firm_set1] : Relational
           {
              legalName : [myDB]FirmSet1.name,
@@ -1406,7 +1408,7 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMappingForChainedUn
              legalName : [myDB]FirmSet2.name,
              temporalEntityWithAddress[set2]:[myDB]@TemporalEntitySet2FirmSet2
           }
-   
+
    Address[a_set1] : Relational
              {
                 name : [myDB]AddressSet1.name
@@ -1414,7 +1416,7 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMappingForChainedUn
    Address[a_set2] : Relational
              {
                 name : [myDB]AddressSet2.name
-             }   
+             }
 )
 
 ###Mapping
@@ -1429,14 +1431,14 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMapping2
                firm[firm_set1] : [myDB]@PersonSet1FirmSet1,
                firm[firm_set2] : [myDB]@PersonSet1FirmSet2,
                extraInformation : [myDB]@PersonSet1PersonAdditional | PersonAdditional.extrainfo
-            }   
-   
-   *Firm : Operation
-            {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
             }
 
-            
+   *Firm : Operation
+            {
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
+            }
+
+
    Firm[firm_set1] : Relational
           {
              legalName : [myDB]FirmSet1.name,
@@ -1460,16 +1462,16 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithFunction
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
                lastName : concat('1', [myDB]PersonSet1.lastName_s1),
                firm : [myDB]@PersonSet1Firm
             }
-            
+
    Person[set2] : Relational
             {
                lastName : concat('2', [myDB]PersonSet2.lastName_s2),
@@ -1485,16 +1487,16 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithLongPropertyMap
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
                lastName : concat('thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters',concat('ForTestPurposesOnly', [myDB]PersonSet1.lastName_s1)),
                firm : [myDB]@PersonSet1Firm
             }
-            
+
    Person[set2] : Relational
             {
                lastName : concat('thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters',concat('ForTestPurposesOnly', [myDB]PersonSet2.lastName_s2)),
@@ -1511,21 +1513,21 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithFilter
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
                ~filter [myDB]GsPersonFilter1
-               
+
                lastName : [myDB]PersonSet1.lastName_s1
             }
-            
+
    Person[set2] : Relational
             {
                ~filter [myDB]GsPersonFilter2
-               
+
                lastName : [myDB]PersonSet2.lastName_s2
             }
 )
@@ -1539,21 +1541,21 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithConstant
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
                firstName : 'Bob',
                lastName : [myDB]PersonSet1.lastName_s1
             }
-            
+
    Person[set2] : Relational
             {
                firstName : 'George',
                lastName : [myDB]PersonSet2.lastName_s2
-               
+
             }
 )
 
@@ -1566,9 +1568,9 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
 (
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
 
    Person[set1] : Relational
             {
@@ -1577,7 +1579,7 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
                   legalName : 'Wendys'
                )
             }
-            
+
    Person[set2] : Relational
             {
                lastName : [myDB]PersonFirmSet2.lastName_s2,
@@ -1595,12 +1597,12 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
 (
    *Application : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-            
+
    Application[set1] : Relational
             {
-               
+
                source: 'agency1',
                date : [myDB]ApplicationsSet1.date,
                applicant (
@@ -1621,7 +1623,7 @@ Mapping meta::relational::tests::mapping::union::unionMappingWithEmbeddedPropert
                    )
                )
             }
-            
+
    Application[set2] : Relational
             {
                source: 'agency2',
@@ -1652,23 +1654,23 @@ import meta::relational::tests::model::simple::*;
 
 Mapping meta::relational::tests::mapping::union::mappingWithColumnsWithSameNames
 (
-  
-            
+
+
    Application : Relational
-            {              
+            {
                source:    'agency1',
                date :     [myDB]ApplicationsSet1.date,
                applicant: [myDB]@ApplicationPerson,
                firm:      [myDB]@ApplicationFirm
             }
-     
+
    Person : Relational
             {
                firstName : 'Bob',
                lastName :  [myDB]PersonSet1.lastName_s1,
                nickName:   [myDB]PersonSet1.nickName
             }
-  
+
    Firm : Relational
           {
              legalName : [myDB]FirmSet1.name,
@@ -1724,11 +1726,11 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMapping3
             {
                lastName : [myDB]PersonSet1.lastName_s1,
                firstName : [myDB]PersonSet1.firstName_s1
-            }   
-   
+            }
+
    *Firm : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(firm_set1, firm_set2)
             }
 
    Firm[firm_set1] : Relational
@@ -1755,23 +1757,23 @@ Mapping meta::relational::tests::mapping::union::unionToUnionMappingWithJoinToSa
              employees[set1]:[myDB]@PersonSet4Firm1,
              employees[set2]:[myDB]@PersonSet4Firm2
           }
-   
+
    *Person : Operation
             {
-               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+               meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
             }
-   
+
    Person[set1] : Relational
             {
                +firmId:String[1] : [myDB]PersonSet4.FirmID_1,
                firstName : [myDB]PersonSet4.firstName_s1
-            }   
-   
+            }
+
    Person[set2] : Relational
             {
                +firmId:String[1] : [myDB]PersonSet4.FirmID_2,
                firstName : [myDB]PersonSet4.firstName_s1
-            }   
+            }
 )
 
 ###Mapping
@@ -1784,10 +1786,10 @@ Mapping meta::relational::tests::mapping::union::unionWithSinglePropertyMapping
    {
       legalName : [myDB]Firm.name
    }
-   
+
    *Person : Operation
    {
-      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)   
+      meta::pure::router::operations::union_OperationSetImplementation_1__SetImplementation_MANY_(set1, set2)
    }
 
    Person[base] : Relational
@@ -1795,11 +1797,11 @@ Mapping meta::relational::tests::mapping::union::unionWithSinglePropertyMapping
       lastName   : [myDB]PersonSet1.lastName_s1,
       firm[firm] : [myDB] @PersonSet1Firm
    }
-   
+
    Person[set1] extends [base] : Relational
    {
    }
-   
+
    Person[set2] extends [base] : Relational
    {
    }

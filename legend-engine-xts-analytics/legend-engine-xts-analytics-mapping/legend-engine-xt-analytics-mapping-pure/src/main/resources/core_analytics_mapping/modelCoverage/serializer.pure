@@ -58,9 +58,10 @@ function <<access.private>> meta::analytics::mapping::modelCoverage::serializati
   newJSONObject
   ([
     newJSONKeyValue('isRootEntity', if($info.isRootEntity->isEmpty(), 
-          | ^JSONNull(), 
+          | ^JSONNull(),
           | ^JSONBoolean(value=$info.isRootEntity->toOne())
     )),
+    newJSONKeyValue('classPath', ^JSONString(value=$info.classPath)),
     newJSONKeyValue('subClasses', ^JSONArray(values=$info.subClasses->map(v | ^JSONString(value=$v))))
   ])
 }

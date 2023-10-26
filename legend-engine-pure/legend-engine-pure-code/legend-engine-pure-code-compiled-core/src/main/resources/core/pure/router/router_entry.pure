@@ -16,7 +16,7 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::functions::tracing::*;
 import meta::pure::mapping::*;
-import meta::pure::router::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]):Result<T|y>[1]

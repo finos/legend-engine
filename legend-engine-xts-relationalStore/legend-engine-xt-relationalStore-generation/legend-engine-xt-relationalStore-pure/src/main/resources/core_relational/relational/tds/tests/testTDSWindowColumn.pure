@@ -13,8 +13,10 @@
 // limitations under the License.
 
 import meta::relational::functions::sqlstring::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::functions::math::olap::*;
 import meta::relational::tests::model::simple::*;
 
@@ -30,7 +32,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
       simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result1.values.rows, 7);
-   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(0.9) within group (order by "root".AGE asc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result1);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by "root".AGE asc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result1);
    assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|21.0', 'John|Johnson|22|21.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result1.values.rows->map(r|$r.values->makeString('|')));
 
    let result2 = execute(
@@ -42,7 +44,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
       simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result2.values.rows, 7);
-   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(0.9) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result2);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result2);
    assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|13.0', 'John|Johnson|22|13.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result2.values.rows->map(r|$r.values->makeString('|')));
 
 
@@ -55,6 +57,6 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
       simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result3.values.rows, 7);
-   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_disc(0.9) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result3);
+   meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_disc(CAST(0.9 AS FLOAT)) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result3);
    assertSameElements(['Anthony|Allen|22|22.0', 'David|Harris|35|35.0', 'Fabrice|Roberts|34|34.0', 'John|Hill|12|12.0', 'John|Johnson|22|12.0', 'Oliver|Hill|32|32.0', 'Peter|Smith|23|23.0'], $result3.values.rows->map(r|$r.values->makeString('|')));
 }

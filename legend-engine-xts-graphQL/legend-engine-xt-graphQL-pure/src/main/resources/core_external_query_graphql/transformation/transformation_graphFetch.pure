@@ -28,10 +28,10 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
   let types = $root->meta::external::query::graphQL::binding::fromPure::introspection::scanTypes([]);
   let fragments = $query.definitions->map(d|
     $d->match([
-      
+
       f : FragmentDefinition[1]| pair($f.name, list($f.selectionSet->transformSelectionToPure($types->filter(c|$c.name == $f.typeCondition)->toOne()->cast(@Class<Any>))));,
       o : OperationDefinition[1]| pair('__Query', list($o.selectionSet->transformSelectionToPure($root)));
-    ])    
+    ])
   )->newMap();
 
   ^RootGraphFetchTree<Any>
@@ -106,7 +106,7 @@ import meta::external::query::graphQL::transformation::queryToPure::*;
 function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
                                                                           cl:Class<Any>[1],
                                                                           mapping:meta::pure::mapping::Mapping[1],
-                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
                                                                           query:meta::external::query::graphQL::metamodel::sdl::Document[1],
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
@@ -130,14 +130,14 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
                                                                           cl:Class<Any>[1],
                                                                           query:meta::external::query::graphQL::metamodel::sdl::Document[1],
                                                                           mapping:meta::pure::mapping::Mapping[1],
-                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
 {
   let pureWithParam =  meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
 
   let res = $pureWithParam->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
-  
+
   $res->map(r|
               ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
                name = $r.propertyName,
@@ -154,7 +154,7 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
 function meta::external::query::graphQL::transformation::queryToPure::getPlanForTotalCountDirective(
                                                                           cl:Class<Any>[1],
                                                                           mapping:meta::pure::mapping::Mapping[1],
-                                                                          runtime:meta::pure::runtime::Runtime[1],
+                                                                          runtime:meta::core::runtime::Runtime[1],
                                                                           query:meta::external::query::graphQL::metamodel::sdl::Document[1],
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]

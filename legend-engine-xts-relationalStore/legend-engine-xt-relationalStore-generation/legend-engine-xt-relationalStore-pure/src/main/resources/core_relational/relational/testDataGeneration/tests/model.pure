@@ -21,7 +21,9 @@
  import meta::relational::functions::toDDL::*;
  import meta::relational::metamodel::*;
  import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
  import meta::pure::runtime::*;
+import meta::core::runtime::*;
  import meta::pure::lineage::scanTables::*;
  import meta::relational::tests::model::simple::*;
  import meta::relational::testDataGeneration::*;
@@ -44,7 +46,7 @@ Association meta::relational::testDataGeneration::tests::model::Student_School
 
 function meta::relational::testDataGeneration::tests::model::setUp():Runtime[1]
 {
-  let connection = meta::relational::tests::testRuntime(meta::relational::tests::milestoning::db).connections->toOne()->cast(@TestDatabaseConnection);
+  let connection = meta::external::store::relational::tests::testRuntime(meta::relational::testDataGeneration::tests::model::db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
   executeInDb('Drop table if exists StudentTable;', $connection);
   executeInDb('Create Table StudentTable(id VARCHAR(60), name VARCHAR(60), school_id VARCHAR(60));', $connection);
   executeInDb('insert into StudentTable(id, name, school_id) values (\'1\', \'SURAJ\', \'sc1\');', $connection);
@@ -57,7 +59,7 @@ function meta::relational::testDataGeneration::tests::model::setUp():Runtime[1]
   executeInDb('insert into SchoolTable(id, name) values (\'sc3\', \'school3\');', $connection);
   executeInDb('insert into SchoolTable(id, name) values (\'sc4\', \'school4\');', $connection);
 
-  ^Runtime(connections=$connection);
+  meta::external::store::relational::tests::testRuntime(meta::relational::testDataGeneration::tests::model::db);
 }
 
 ###Relational
@@ -102,7 +104,7 @@ Database meta::relational::testDataGeneration::tests::model::db
 ###Mapping
 import meta::relational::testDataGeneration::tests::model::*;
 Mapping meta::relational::testDataGeneration::tests::model::VeiwOnViewMapping
-( 
+(
   meta::relational::testDataGeneration::tests::model::Student_School: Relational
   {
     AssociationMapping
@@ -128,7 +130,7 @@ Mapping meta::relational::testDataGeneration::tests::model::VeiwOnViewMapping
 )
 
 Mapping meta::relational::testDataGeneration::tests::model::VeiwOnViewonViewMapping
-( 
+(
   meta::relational::testDataGeneration::tests::model::Student_School: Relational
   {
     AssociationMapping

@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::translation::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -24,10 +25,12 @@ import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::postProcessor::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 
 function meta::relational::postProcessor::getCollectionThresholdLimitForDatabaseType(dbType:DatabaseType[1], isTestRun:Boolean[1]):Integer[0..1]
@@ -39,8 +42,8 @@ function meta::relational::postProcessor::getCollectionThresholdLimitForDatabase
 
 function meta::relational::postProcessor::getDbSpecificTempTableCreationLogicSupplierForDatabaseType(dbType:DatabaseType[1], isTestRun:Boolean[1]):Function<{String[1]->String[1]}>[0..1]
 {
-   if($isTestRun, 
-      | {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'}, 
+   if($isTestRun,
+      | {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
       | $dbType->createDbConfig([]).dbExtension.extraTempTableCreationLogicSupplierForIn);
 }
 
@@ -52,7 +55,7 @@ function <<access.private>> meta::relational::postProcessor::prefixForWrapperAll
 function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let connection = $runtime->connectionByElement($store->toOne())->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
-   let isTestRun  = $connection->instanceOf(TestDatabaseConnection) 
+   let isTestRun  = $connection->instanceOf(TestDatabaseConnection)
                     || ($connection->instanceOf(RelationalDatabaseConnection) && $connection->cast(@RelationalDatabaseConnection).datasourceSpecification->instanceOf(LocalH2DatasourceSpecification));
    let dbThreshold = $connection.type->getCollectionThresholdLimitForDatabaseType($isTestRun);
    let dbSpecificTempTableCreationLogicSupplier = $connection.type->getDbSpecificTempTableCreationLogicSupplierForDatabaseType($isTestRun);
@@ -181,7 +184,7 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
                                                                                      );
                                                                         );
 
-                           if($outerAllocationNodeName->in($result.executionNodes->filter(node | $node->instanceOf(AllocationExecutionNode))->cast(@AllocationExecutionNode).varName), 
+                           if($outerAllocationNodeName->in($result.executionNodes->filter(node | $node->instanceOf(AllocationExecutionNode))->cast(@AllocationExecutionNode).varName),
                               |$result,
                               |^$result(executionNodes += $processedResultForTempTable.executionNodes->concatenate($executionNodeToBeAdded), postExecutionNodes +=$processedResultForTempTable.postExecutionNodes, templateFunctions +=$processedResultForTempTable.templateFunctions));
             }, ^PostProcessorResult(query = $query));

@@ -24,6 +24,7 @@ import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 import meta::external::store::mongodb::metamodel::pure::runtime::*;
 import meta::external::store::mongodb::metamodel::pure::*;
 import meta::pure::extension::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;

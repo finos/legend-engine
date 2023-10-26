@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::tests::projection::exists::*;
 import meta::relational::mapping::*;
@@ -41,7 +43,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testSimpleEx
 {
    let result = execute(|Person.all()->project([p|$p.name, p|$p.addresses->exists(a|$a.name == 'Hoboken')], ['a', 'prop']),
                         	meta::relational::tests::simpleRelationalMapping,
-                        meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+                        meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Anthony Allen true', 'David Harris false', 'Fabrice Roberts false','John Johnson true','John Hill true','Oliver Hill false','Peter Smith true'], $result.values.rows->map(r | $r.values->at(0)->toString()+' '+$r.values->at(1)->toString()));
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "a", exists(select 1 from (select "addresstable_0".ID as ID, null as ADDRESSID, "addresstable_0".NAME as "addressTableNAME" from addressTable as "addresstable_0" UNION ALL select "firmtable_0".ID as ID, "firmtable_0".ADDRESSID as ADDRESSID, "addresstable_1".NAME as "addressTableNAME" from firmTable as "firmtable_0" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID)) as "unionalias_0" where ("unionalias_0".ID = "root".FIRMID or "unionalias_0".ID = "root".ADDRESSID) and "unionalias_0"."addressTableNAME" = \'Hoboken\') as "prop" from personTable as "root"', $result->sqlRemoveFormatting());
@@ -60,7 +62,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsAs
 function <<test.Test>> meta::relational::tests::projection::exists::testExistsEmbeddedOnSameTable():Boolean[1]
 {
    let result = execute(|MyClass.all()->project(p|$p.dependencies->exists(d|$d.name == 'name2'), 'prop'),
-                         meta::relational::tests::projection::exists::mappingEmbeddedSameTable,                        
+                         meta::relational::tests::projection::exists::mappingEmbeddedSameTable,
                         testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([true, false, true], $result.values.rows->map(r | $r.values->at(0)));
@@ -91,7 +93,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testExistsAs
 function <<test.BeforePackage>> meta::relational::tests::projection::exists::setUp():Boolean[1]
 {
    meta::relational::tests::projection::setUp();
-   
+
    let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'main', $connection);
@@ -115,7 +117,7 @@ function <<test.BeforePackage>> meta::relational::tests::projection::exists::set
    executeInDb('insert into dep (id, mainId, name, otherFIlter) values (5, 3, \'name1\', 0);', $connection);
    executeInDb('insert into dep (id, mainId, name, otherFIlter) values (6, 3, \'name2\', 2);', $connection);
    executeInDb('insert into dep (id, mainId, name, otherFIlter) values (7, 3, \'name3\', 0);', $connection);
-   
+
    true;
 
 //    executeInDb('insert into Product (id, productDate, name, tradeId) values (1, \'2014-12-01 21:00:00\', \'prod 1 V1\', 1);', $connection);
@@ -123,7 +125,7 @@ function <<test.BeforePackage>> meta::relational::tests::projection::exists::set
 
 function meta::relational::tests::projection::exists::testRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(db);
+   meta::external::store::relational::tests::testRuntime(db);
 }
 
 ###Mapping
@@ -137,7 +139,7 @@ Mapping meta::relational::tests::projection::exists::mappingEmbeddedSameTable
                 dependencies(
                    name: [db]mainDenorm.depName
                 )
-             }  
+             }
 )
 
 Mapping meta::relational::tests::projection::exists::mapping
@@ -145,9 +147,9 @@ Mapping meta::relational::tests::projection::exists::mapping
    MyClass : Relational
              {
                 name : [db]main.name,
-                dependencies : [db]@join   
+                dependencies : [db]@join
              }
-   
+
    Dependency : Relational
                 {
                    name : [db]dep.name
@@ -163,12 +165,12 @@ Mapping meta::relational::tests::projection::exists::mappingWithFilter
              {
                 ~filter [db]f1
                 name : [db]main.name,
-                dependencies : [db]@join   
+                dependencies : [db]@join
              }
-   
+
    Dependency : Relational
                 {
-                   ~filter [db]f2 
+                   ~filter [db]f2
                    name : [db]dep.name
                 }
 )
@@ -182,12 +184,12 @@ Mapping meta::relational::tests::projection::exists::mappingWithFilterAndWrongJo
              {
                 ~filter [db]f1
                 name : [db]main.name,
-                dependencies : [db]@wrongJoin   
+                dependencies : [db]@wrongJoin
              }
-   
+
    Dependency : Relational
                 {
-                   ~filter [db]f2 
+                   ~filter [db]f2
                    name : [db]dep.name
                 }
 )
