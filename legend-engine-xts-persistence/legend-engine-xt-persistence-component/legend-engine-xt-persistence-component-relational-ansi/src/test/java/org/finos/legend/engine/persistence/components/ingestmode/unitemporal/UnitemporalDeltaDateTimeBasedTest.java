@@ -94,6 +94,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableTimeBasedCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTablePlusDigestWithDataSplitAndCount, operations.get(0).preActionsSql().get(2));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedUpsertQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));

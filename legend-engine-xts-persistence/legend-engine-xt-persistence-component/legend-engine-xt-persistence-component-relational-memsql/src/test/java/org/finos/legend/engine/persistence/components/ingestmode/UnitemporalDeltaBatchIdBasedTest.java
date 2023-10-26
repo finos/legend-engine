@@ -346,7 +346,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithMaxVersionNoDedupAndStagingFilter(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithNoDedupMaxVersionWithoutPerformAndStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -383,7 +383,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithFailOnDupsMaxVersioningWithoutStagingFilters(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithFailOnDupsMaxVersioningWithoutPerform(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();

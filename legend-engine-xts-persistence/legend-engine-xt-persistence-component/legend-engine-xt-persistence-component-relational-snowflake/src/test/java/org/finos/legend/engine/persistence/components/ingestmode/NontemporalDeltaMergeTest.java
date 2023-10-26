@@ -95,7 +95,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
                 "USING (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
@@ -119,7 +119,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
                 "USING (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage " +
@@ -266,7 +266,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersionFilterDupsWithStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithFilterDupsMaxVersionWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -290,7 +290,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersioningWithoutPerformAllowDupsWithStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithNoDedupMaxVersioningWithoutPerformWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -314,7 +314,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNontemporalDeltaMaxVersionWithoutPerformAllowDups(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoDedupMaxVersionWithoutPerform(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -337,7 +337,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
-    public void verifyNontemporalDeltaMaxVersionAllowDuplicatesWithUpperCase(GeneratorResult operations)
+    public void verifyNontemporalDeltaAllowDuplicatesMaxVersionWithUpperCase(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();

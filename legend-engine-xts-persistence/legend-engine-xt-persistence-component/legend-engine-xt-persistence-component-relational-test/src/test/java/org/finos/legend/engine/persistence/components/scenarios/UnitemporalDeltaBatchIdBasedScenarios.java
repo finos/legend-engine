@@ -42,7 +42,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
     */
 
 
-    public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DEDUP_NO_VERSION()
+    public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -54,7 +54,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DEDUP_ALL_VERSION_WITHOUT_PERFORM()
+    public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DEDUP__ALL_VERSION_WITHOUT_PERFORM()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -67,7 +67,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__FILTER_DUPS_NO_VERSION()
+    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__FILTER_DUPS__NO_VERSIONING()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -84,7 +84,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithDeleteIndicator, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__NO_DEDUP_ALL_VERSION()
+    public TestScenario BATCH_ID_BASED__WITH_DEL_IND__NO_DEDUP__ALL_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -171,7 +171,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithFilter, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__FILTER_DUPS_MAX_VERSION__WITH_STAGING_FILTER()
+    public TestScenario BATCH_ID_BASED__FILTER_DUPS__MAX_VERSION__WITH_STAGING_FILTER()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -185,7 +185,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithFilterAndVersion, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__NO_DEDUP_MAX_VERSION_WITHOUT_PERFORM__WITH_STAGING_FILTER()
+    public TestScenario BATCH_ID_BASED__NO_DEDUP__MAX_VERSION_WITHOUT_PERFORM__WITH_STAGING_FILTER()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -198,7 +198,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithFilterAndVersion, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__FAIL_ON_DUPS_MAX_VERSIONING_WITHOUT_PERFORM__NO_STAGING_FILTER()
+    public TestScenario BATCH_ID_BASED__FAIL_ON_DUPS__MAX_VERSIONING_WITHOUT_PERFORM__NO_STAGING_FILTER()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -212,7 +212,7 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithVersion, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__NO_DEDUP_MAX_VERSIONING__NO_STAGING_FILTER()
+    public TestScenario BATCH_ID_BASED__NO_DEDUP__MAX_VERSIONING__NO_STAGING_FILTER()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)

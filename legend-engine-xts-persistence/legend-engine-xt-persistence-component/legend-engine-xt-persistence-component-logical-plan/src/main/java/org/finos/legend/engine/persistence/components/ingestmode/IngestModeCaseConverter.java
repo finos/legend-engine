@@ -361,6 +361,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .builder()
                     .mergeDataVersionResolver(allVersionsStrategyAbstract.mergeDataVersionResolver())
                     .versioningField(strategy.apply(allVersionsStrategyAbstract.versioningField()))
+                    .versioningOrder(allVersionsStrategyAbstract.versioningOrder())
                     .dataSplitFieldName(strategy.apply(allVersionsStrategyAbstract.dataSplitFieldName()))
                     .performStageVersioning(allVersionsStrategyAbstract.performStageVersioning())
                     .build();

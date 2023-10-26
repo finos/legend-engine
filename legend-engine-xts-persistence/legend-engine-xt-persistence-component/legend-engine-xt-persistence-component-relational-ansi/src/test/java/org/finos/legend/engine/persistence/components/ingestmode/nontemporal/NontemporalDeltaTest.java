@@ -116,6 +116,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(expectedBaseTempStagingTablePlusDigestWithCount, preActionsSqlList.get(1));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
@@ -129,7 +130,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
                 "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
@@ -147,6 +148,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(expectedBaseTempStagingTablePlusDigestWithDataSplit, operations.get(0).preActionsSql().get(1));
         Assertions.assertEquals(enrichSqlWithDataSplits(updateSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
 
@@ -165,7 +167,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
                 "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))," +
@@ -224,6 +226,10 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplitsWithDuplicates, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplitsWithDuplicates, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+
+        Assertions.assertEquals(expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
+        Assertions.assertEquals(expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
+
         Assertions.assertEquals(maxDupsErrorCheckSql, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DUPLICATES));
         Assertions.assertEquals(dataErrorCheckSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
         // Stats
@@ -360,7 +366,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersionFilterDupsWithStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithFilterDupsMaxVersionWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -391,6 +397,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "as stage WHERE stage.\"legend_persistence_rank\" = 1)";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(expectedBaseTempStagingTableWithVersionAndCount, preActionsSqlList.get(1));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 
@@ -407,7 +414,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersioningWithoutPerformAllowDupsWithStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithNoDedupMaxVersioningWithoutPerformWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -441,7 +448,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaMaxVersionWithoutPerformAllowDups(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoDedupMaxVersionWithoutPerform(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -473,7 +480,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaMaxVersionAllowDuplicatesWithUpperCase(GeneratorResult operations)
+    public void verifyNontemporalDeltaAllowDuplicatesMaxVersionWithUpperCase(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -492,6 +499,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "WHERE NOT (EXISTS (SELECT * FROM \"MYDB\".\"MAIN\" as sink WHERE (sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\"))))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase, preActionsSqlList.get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTablePlusDigestWithVersionUpperCase, preActionsSqlList.get(1));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
 

@@ -226,6 +226,15 @@ public class AnsiTestArtifacts
             "\"biz_date\" DATE," +
             "\"legend_persistence_count\" INTEGER)";
 
+    public static String expectedBaseTempStagingTableWithVersionAndCount = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
+            "(\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"digest\" VARCHAR," +
+            "\"version\" INTEGER," +
+            "\"legend_persistence_count\" INTEGER)";
+
     public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
         "(\"id\" INTEGER NOT NULL," +
         "\"name\" VARCHAR NOT NULL," +
@@ -242,6 +251,22 @@ public class AnsiTestArtifacts
             "\"DIGEST\" VARCHAR," +
             "\"LEGEND_PERSISTENCE_COUNT\" INTEGER)";
 
+    public static String expectedBaseTempStagingTablePlusDigestWithVersionUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\"" +
+            "(\"ID\" INTEGER NOT NULL," +
+            "\"NAME\" VARCHAR NOT NULL," +
+            "\"AMOUNT\" DOUBLE," +
+            "\"BIZ_DATE\" DATE," +
+            "\"DIGEST\" VARCHAR," +
+            "\"VERSION\" INTEGER)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"(" +
+            "\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"digest\" VARCHAR," +
+            "\"data_split\" INTEGER NOT NULL)";
+
     public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
         "(\"id\" INTEGER NOT NULL," +
         "\"name\" VARCHAR NOT NULL," +
@@ -250,6 +275,16 @@ public class AnsiTestArtifacts
         "\"digest\" VARCHAR," +
         "\"legend_persistence_count\" INTEGER," +
         "\"data_split\" INTEGER NOT NULL)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithDataSplitAndCount = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
+            "(\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"digest\" VARCHAR," +
+            "\"data_split\" BIGINT NOT NULL," +
+            "\"legend_persistence_count\" INTEGER)";
+
 
     public static String expectedBitemporalMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +

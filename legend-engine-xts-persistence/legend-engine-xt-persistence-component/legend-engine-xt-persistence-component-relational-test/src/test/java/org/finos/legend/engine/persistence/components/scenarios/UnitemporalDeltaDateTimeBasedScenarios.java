@@ -37,7 +37,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
     4) Versioning: No Versioning, Max Versioning, All Versioning
     */
 
-    public TestScenario DATETIME_BASED__NO_DEL_IND__NO_DEDUP_NO_VERSIONING()
+    public TestScenario DATETIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSIONING()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -49,7 +49,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__NO_DEL_IND__FAIL_ON_DUPS_ALL_VERSION_WITHOUT_PERFORM()
+    public TestScenario DATETIME_BASED__NO_DEL_IND__FAIL_ON_DUPS__ALL_VERSION_WITHOUT_PERFORM()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -64,7 +64,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITH_DEL_IND__NO_DEDUP_NO_VERSION()
+    public TestScenario DATETIME_BASED__WITH_DEL_IND__NO_DEDUP__NO_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -80,7 +80,7 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicator, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITH_DEL_IND__FILTER_DUPS_ALL_VERSION()
+    public TestScenario DATETIME_BASED__WITH_DEL_IND__FILTER_DUPS__ALL_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)

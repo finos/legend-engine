@@ -320,6 +320,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdAndVersionBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+        Assertions.assertEquals(expectedBaseTempStagingTableWithVersionAndCount, preActionsSql.get(2));
 
         String expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\", \"legend_persistence_count\") " +
@@ -343,7 +344,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithMaxVersionNoDedupAndStagingFilter(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithNoDedupMaxVersionWithoutPerformAndStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -381,7 +382,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithFailOnDupsMaxVersioningWithoutStagingFilters(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithFailOnDupsMaxVersioningWithoutPerform(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -405,6 +406,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdAndVersionBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), preActionsSql.get(1));
+        Assertions.assertEquals(expectedBaseTempStagingTableWithVersionAndCount, preActionsSql.get(2));
 
         String expectedInsertIntoBaseTempStagingWithFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"version\", \"legend_persistence_count\") " +
@@ -443,6 +445,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableBatchIdAndVersionBasedCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQueryWithUpperCase(), preActionsSql.get(1));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTablePlusDigestWithVersionUpperCase, preActionsSql.get(2));
 
         String expectedInsertIntoTempStagingMaxVersion = "INSERT INTO \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" " +
                 "(\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"VERSION\") " +

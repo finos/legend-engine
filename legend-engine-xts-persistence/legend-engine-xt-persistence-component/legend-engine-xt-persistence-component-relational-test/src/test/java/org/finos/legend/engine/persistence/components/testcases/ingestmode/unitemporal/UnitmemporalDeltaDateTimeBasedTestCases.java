@@ -38,7 +38,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     @Test
     void testUnitemporalDeltaNoDeleteIndNoDedupNoVersioning()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP_NO_VERSIONING();
+        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -54,7 +54,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     @Test
     void testUnitemporalDeltaNoDeleteIndFailOnDupsAllVersionWithoutPerform()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__FAIL_ON_DUPS_ALL_VERSION_WITHOUT_PERFORM();
+        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__FAIL_ON_DUPS__ALL_VERSION_WITHOUT_PERFORM();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -70,7 +70,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     @Test
     void testUnitemporalDeltaWithDeleteIndNoDedupNoVersioning()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITH_DEL_IND__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITH_DEL_IND__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -86,7 +86,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     @Test
     void testUnitemporalDeltaWithDeleteIndFilterDupsAllVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITH_DEL_IND__FILTER_DUPS_ALL_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITH_DEL_IND__FILTER_DUPS__ALL_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -102,7 +102,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     @Test
     void testUnitemporalDeltaWithUpperCaseOptimizer()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP_NO_VERSIONING();
+        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -119,7 +119,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     @Test
     void testUnitemporalDeltaWithCleanStagingData()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP_NO_VERSIONING();
+        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -155,7 +155,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
     @Test
     void testUnitemporalDeltaValidationBatchTimeInNotPrimaryKey()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP_NO_VERSIONING();
+        TestScenario scenario = scenarios.DATETIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSIONING();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())

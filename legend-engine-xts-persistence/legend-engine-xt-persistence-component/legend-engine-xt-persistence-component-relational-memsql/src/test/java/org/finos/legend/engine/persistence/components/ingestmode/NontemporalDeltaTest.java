@@ -106,7 +106,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN " +
@@ -138,7 +138,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingAllowDupsAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN " +
@@ -327,7 +327,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersionFilterDupsWithStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithFilterDupsMaxVersionWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -354,7 +354,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersioningWithoutPerformAllowDupsWithStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithNoDedupMaxVersioningWithoutPerformWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -383,7 +383,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaMaxVersionWithoutPerformAllowDups(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoDedupMaxVersionWithoutPerform(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -408,7 +408,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     }
 
     @Override
-    public void verifyNontemporalDeltaMaxVersionAllowDuplicatesWithUpperCase(GeneratorResult operations)
+    public void verifyNontemporalDeltaAllowDuplicatesMaxVersionWithUpperCase(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
