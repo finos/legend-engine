@@ -34,7 +34,7 @@ public class AppendOnlyBasedDerivationTest
     @Test
     void testAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS();
+        TestScenario scenario = scenarios.NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField().get());
@@ -46,7 +46,7 @@ public class AppendOnlyBasedDerivationTest
     void testAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords()
     {
         // Auditing column is a PK
-        TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_WITH_AUDITING_ALL_VERSION_NO_FILTER_EXISTING_RECORDS();
+        TestScenario scenario = scenarios.WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField().get());
@@ -61,7 +61,7 @@ public class AppendOnlyBasedDerivationTest
     void testAppendOnlyAllowDuplicatesWithAuditingNoVersioningNoFilterExistingRecords()
     {
         // Auditing column is not a PK
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_WITH_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS();
+        TestScenario scenario = scenarios.WITH_AUDITING__ALLOW_DUPLICATES__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField().get());

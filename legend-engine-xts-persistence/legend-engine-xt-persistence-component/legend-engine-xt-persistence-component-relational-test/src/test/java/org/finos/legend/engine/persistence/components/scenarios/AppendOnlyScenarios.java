@@ -88,7 +88,7 @@ public class AppendOnlyScenarios extends BaseTest
     36) No Auditing, NoVersion, Fail on Duplicates, true
     */
 
-    public TestScenario ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS()
+    public TestScenario NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
                 .digestField(digestField)
@@ -100,14 +100,14 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithNoPrimaryKeys, stagingTableWithNoPrimaryKeys, ingestMode);
     }
 
-    public TestScenario ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS_DERIVE_MAIN_SCHEMA()
+    public TestScenario NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS__DERIVE_MAIN_SCHEMA()
     {
-        TestScenario scenario = ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS();
+        TestScenario scenario = NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS();
         scenario.setMainTable(mainTableWithNoFields);
         return scenario;
     }
 
-    public TestScenario FILTER_DUPLICATES_WITH_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS()
+    public TestScenario WITH_AUDITING__FILTER_DUPS__NO_VERSIONING__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
@@ -119,7 +119,7 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario FAIL_ON_DUPLICATES_WITH_AUDITING_ALL_VERSION_NO_FILTER_EXISTING_RECORDS()
+    public TestScenario WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
                 .digestField(digestField)
@@ -137,7 +137,7 @@ public class AppendOnlyScenarios extends BaseTest
     }
 
     // failure case
-    public TestScenario FILTER_DUPLICATES_NO_AUDITING_ALL_VERSION_NO_FILTER_EXISTING_RECORDS()
+    public TestScenario NO_AUDITING__FILTER_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
                 .digestField(digestField)
@@ -154,7 +154,7 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario FILTER_DUPLICATES_WITH_AUDITING_ALL_VERSION_WITH_FILTER_EXISTING_RECORDS()
+    public TestScenario WITH_AUDITING__FILTER_DUPS__ALL_VERSION__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
                 .digestField(digestField)
@@ -171,7 +171,7 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario FAIL_ON_DUPLICATES_WITH_AUDITING_MAX_VERSION_WITH_FILTER_EXISTING_RECORDS()
+    public TestScenario WITH_AUDITING__FAIL_ON_DUPS__MAX_VERSION__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
@@ -187,7 +187,7 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario FILTER_DUPLICATES_WITH_AUDITING_MAX_VERSION_NO_FILTER_EXISTING_RECORDS()
+    public TestScenario WITH_AUDITING__FILTER_DUPS__MAX_VERSION__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
@@ -204,7 +204,7 @@ public class AppendOnlyScenarios extends BaseTest
     }
 
     // failure case
-    public TestScenario ALLOW_DUPLICATES_NO_AUDITING_NO_VERSIONING_WITH_FILTER_EXISTING_RECORDS()
+    public TestScenario NO_AUDITING__NO_DEDUP__NO_VERSIONING__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)
@@ -216,7 +216,7 @@ public class AppendOnlyScenarios extends BaseTest
         return new TestScenario(mainTableWithNoPrimaryKeys, stagingTableWithNoPrimaryKeys, ingestMode);
     }
 
-    public TestScenario ALLOW_DUPLICATES_WITH_AUDITING_NO_VERSIONING_NO_FILTER_EXISTING_RECORDS()
+    public TestScenario WITH_AUDITING__ALLOW_DUPLICATES__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestField)

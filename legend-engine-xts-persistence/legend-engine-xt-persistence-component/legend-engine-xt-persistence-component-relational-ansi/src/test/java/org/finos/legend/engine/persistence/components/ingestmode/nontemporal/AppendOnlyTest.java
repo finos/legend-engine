@@ -37,7 +37,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     String rowsDeleted = "SELECT 0 as \"rowsDeleted\"";
 
     @Override
-    public void verifyAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords(GeneratorResult operations)
+    public void verifyAppendOnlyNoAuditingNoDedupNoVersioningNoFilterExistingRecordsDeriveMainSchema(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -63,7 +63,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     }
 
     @Override
-    public void verifyAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
+    public void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecords(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
     {
         String insertSql  = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
@@ -95,7 +95,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     }
 
     @Override
-    public void verifyAppendOnlyFilterDuplicatesWithAuditingNoVersioningWithFilterExistingRecords(GeneratorResult queries)
+    public void verifyAppendOnlyWithAuditingFilterDuplicatesNoVersioningWithFilterExistingRecords(GeneratorResult queries)
     {
         List<String> preActionsSqlList = queries.preActionsSql();
         List<String> milestoningSqlList = queries.ingestSql();
@@ -130,7 +130,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     }
 
     @Override
-    public void verifyAppendOnlyFilterDuplicatesWithAuditingAllVersionWithFilterExistingRecords(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyAppendOnlyWithAuditingFilterDuplicatesAllVersionWithFilterExistingRecords(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
@@ -196,7 +196,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     }
 
     @Override
-    public void verifyAppendOnlyFailOnDuplicatesWithAuditingMaxVersionWithFilterExistingRecords(GeneratorResult operations)
+    public void verifyAppendOnlyWithAuditingFailOnDuplicatesMaxVersionWithFilterExistingRecords(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -226,7 +226,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     }
 
     @Override
-    public void verifyAppendOnlyFilterDuplicatesWithAuditingMaxVersionNoFilterExistingRecords(GeneratorResult operations)
+    public void verifyAppendOnlyWithAuditingFilterDupsMaxVersionNoFilterExistingRecords(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
