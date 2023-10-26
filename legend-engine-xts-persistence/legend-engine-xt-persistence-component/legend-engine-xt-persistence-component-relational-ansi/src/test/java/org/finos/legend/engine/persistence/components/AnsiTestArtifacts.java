@@ -212,6 +212,13 @@ public class AnsiTestArtifacts
             "\"batch_update_time\" DATETIME NOT NULL," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
+    public static String expectedBaseTempStagingTablePlusDigest = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
+            "(\"id\" INTEGER NOT NULL," +
+            "\"name\" VARCHAR NOT NULL," +
+            "\"amount\" DOUBLE," +
+            "\"biz_date\" DATE," +
+            "\"digest\" VARCHAR)";
+
     public static String expectedBaseTempStagingTableWithCount = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
@@ -226,6 +233,14 @@ public class AnsiTestArtifacts
         "\"biz_date\" DATE," +
         "\"digest\" VARCHAR," +
         "\"legend_persistence_count\" INTEGER)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithCountUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\"" +
+            "(\"ID\" INTEGER NOT NULL," +
+            "\"NAME\" VARCHAR NOT NULL," +
+            "\"AMOUNT\" DOUBLE," +
+            "\"BIZ_DATE\" DATE," +
+            "\"DIGEST\" VARCHAR," +
+            "\"LEGEND_PERSISTENCE_COUNT\" INTEGER)";
 
     public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
         "(\"id\" INTEGER NOT NULL," +

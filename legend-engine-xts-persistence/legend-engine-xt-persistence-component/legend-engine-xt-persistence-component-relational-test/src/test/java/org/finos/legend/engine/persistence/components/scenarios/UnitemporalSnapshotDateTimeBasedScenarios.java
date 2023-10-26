@@ -31,19 +31,18 @@ public class UnitemporalSnapshotDateTimeBasedScenarios extends BaseTest
     Variables:
     1) transactionMilestoning = Datetime based
     2) partition : Enabled, Disabled
-    3) DataSplit: Enabled, Disabled
-    4) partitionValuesByField: Enabled, Disabled
-    5) Versioning: NoVersioning, MaxVersioning
-    6) Deduplication: AllowDups, FailOnDups, FilterDups
+    3) partitionValuesByField: Enabled, Disabled
+    4) Versioning: NoVersioning, MaxVersioning
+    5) Deduplication: AllowDups, FailOnDups, FilterDups
 
     Valid Combinations:
     1) Without Partition, No Dedup No Versioning
-    2) Without Partition, MaxVersioning, FailOnDups
+    2) Without Partition, FailOnDups MaxVersioning
     3) With Partition, No Dedup No Versioning
     4) With Partition Filter, No Dedup No Versioning
     */
 
-    public TestScenario DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION()
+    public TestScenario DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -55,7 +54,7 @@ public class UnitemporalSnapshotDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITHOUT_PARTITIONS__FAIL_ON_DUPS_MAX_VERSION()
+    public TestScenario DATETIME_BASED__WITHOUT_PARTITIONS__FAIL_ON_DUP__MAX_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -69,7 +68,7 @@ public class UnitemporalSnapshotDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION()
+    public TestScenario DATETIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -82,7 +81,7 @@ public class UnitemporalSnapshotDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION()
+    public TestScenario DATETIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)

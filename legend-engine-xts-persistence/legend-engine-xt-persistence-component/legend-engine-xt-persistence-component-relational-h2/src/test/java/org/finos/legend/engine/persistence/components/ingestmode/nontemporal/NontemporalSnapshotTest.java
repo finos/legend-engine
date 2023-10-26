@@ -20,9 +20,10 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -265,7 +266,7 @@ class NontemporalSnapshotTest extends BaseTest
         // Generate the milestoning object
         NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
                 .auditing(NoAuditing.builder().build())
-                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
+                .versioningStrategy(MaxVersionStrategy.builder().versioningField("version").build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
 
@@ -300,5 +301,57 @@ class NontemporalSnapshotTest extends BaseTest
             Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
         }
     }
+
+    /*
+    Scenario: Test Nontemporal Snapshot when No Version and FailOnDuplicates
+    */
+    @Test
+    void testNontemporalSnapshotWithFailOnDupsNoVersioning() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestDedupAndVersioning.getStagingTableWithoutVersion();
+
+        // Create staging table
+        TestDedupAndVersioning.createStagingTableWithoutVersion();
+
+        // Generate the milestoning object
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder()
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(NoVersioningStrategy.builder().build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, expiryDateName, digestName};
+
+        // ------------ Perform snapshot milestoning Pass1 ------------------------
+        String dataPass1 = "src/test/resources/data/dedup-and-versioning/input/data5_without_dups.csv";
+        String expectedDataPass1 = "src/test/resources/data/dedup-and-versioning/input/data5_without_dups.csv";
+        // 1. Load staging table
+        TestDedupAndVersioning.loadDataIntoStagingTableWithoutVersion(dataPass1);
+        // 2. Execute plans and verify results
+
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform snapshot milestoning Pass2 ------------------------
+        // Throw Data Error
+        String dataPass2 = "src/test/resources/data/dedup-and-versioning/input/data1_with_dups.csv";
+        // 1. Load staging table
+        TestDedupAndVersioning.loadDataIntoStagingTableWithoutVersion(dataPass2);
+        // 2. Execute plans and verify results
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
+    }
+
 
 }

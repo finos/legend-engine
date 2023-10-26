@@ -40,7 +40,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithoutPartitionNoDedupNoVersioning()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -54,9 +54,9 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     public abstract void verifyUnitemporalSnapshotWithoutPartitionNoDedupNoVersioning(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithoutPartitionAllowDupsMaxVersion()
+    void testUnitemporalSnapshotWithoutPartitionNoDedupMaxVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__MAX_VERSION_ALLOW_DUPS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__MAX_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -64,15 +64,15 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithoutPartitionAllowDupsMaxVersion(operations);
+        verifyUnitemporalSnapshotWithoutPartitionNoDedupMaxVersion(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithoutPartitionAllowDupsMaxVersion(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithoutPartitionNoDedupMaxVersion(GeneratorResult operations);
 
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithDeleteTargetDataEmptyBatchHandling()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -86,9 +86,9 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     public abstract void verifyUnitemporalSnapshotWithoutPartitionWithDeleteTargetDataEmptyBatchHandling(GeneratorResult operations);
 
     @Test
-    void testUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizerMaxVersion()
+    void testUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizerFilterDupsMaxVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__MAX_VERSION_FILTER_DUPS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__FILTER_DUPS__MAX_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -97,15 +97,15 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
-        verifyUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizer(operations);
+        verifyUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizerFilterDupsMaxVersion(operations);
     }
 
-    public abstract void verifyUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizer(GeneratorResult operations);
+    public abstract void verifyUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizerFilterDupsMaxVersion(GeneratorResult operations);
 
     @Test
     void testUnitemporalSnapshotWithPartitionNoDedupNoVersioning()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -121,7 +121,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithPartitionWithDefaultEmptyDataHandling()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -137,7 +137,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithPartitionWithNoOpEmptyBatchHandling()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION();
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -163,7 +163,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersioning()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -179,7 +179,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithPartitionFiltersWithDeleteTargetDataEmptyDataHandling()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -195,7 +195,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithPartitionFiltersWithNoOpEmptyDataHandling()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION();
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchIdAndDateTime.builder()
@@ -222,7 +222,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithCleanStagingData()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -239,7 +239,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithLessColumnsInStaging()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         Dataset stagingDataset = scenario.getStagingTable().withSchema(stagingTableSchemaWithLimitedColumns);
         Datasets datasets = Datasets.of(scenario.getMainTable(), stagingDataset);
 
@@ -258,7 +258,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotWithPlaceholders()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -298,7 +298,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotValidationBatchIdInNotPrimaryKey()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -347,7 +347,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
     @Test
     void testUnitemporalSnapshotFailOnEmptyBatch()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
                 .transactionMilestoning(BatchIdAndDateTime.builder()

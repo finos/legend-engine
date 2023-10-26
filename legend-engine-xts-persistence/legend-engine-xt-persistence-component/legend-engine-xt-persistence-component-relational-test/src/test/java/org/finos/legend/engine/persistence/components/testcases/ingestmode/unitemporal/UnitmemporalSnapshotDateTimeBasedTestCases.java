@@ -38,7 +38,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotWithoutPartitionNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -54,7 +54,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotWithoutPartitionFailOnDupsMaxVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__FAIL_ON_DUPS_MAX_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__FAIL_ON_DUP__MAX_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -71,7 +71,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithDefaultEmptyBatchHandling()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -87,7 +87,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizer()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -104,7 +104,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotWithPartitionNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -120,7 +120,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotWithPartitionFiltersNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -136,7 +136,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotWithCleanStagingData()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
@@ -175,7 +175,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
     @Test
     void testUnitemporalSnapshotValidationBatchTimeInNotPrimaryKey()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())

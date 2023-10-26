@@ -33,20 +33,19 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
     Variables:
     1) transactionMilestoning = BatchIdAndDateTimeBased
     2) partition : Enabled, Disabled
-    3) DataSplit: Enabled, Disabled
-    4) partitionValuesByField: Enabled, Disabled
-    5) Versioning: NoVersioning, MaxVersioning
+    3) partitionValuesByField: Enabled, Disabled
+    4) Versioning: NoVersioning, MaxVersioning
     5) Deduplication: AllowDups, FailOnDups, FilterDups
 
     Valid Combinations:
     1) Without Partition, No Dedup No Versioning
-    2) Without Partition, MaxVersioning, Allow Dups
-    2) Without Partition, MaxVersioning, Filter Dups
+    2) Without Partition, No Dedup MaxVersioning
+    2) Without Partition, Filter Dups MaxVersioning
     3) With Partition, No Dedup No Versioning
     5) With Partition Filter, No Dedup No Versioning
     */
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP_NO_VERSION()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -61,7 +60,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__MAX_VERSION_ALLOW_DUPS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__MAX_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -78,7 +77,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__MAX_VERSION_FILTER_DUPS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__FILTER_DUPS__MAX_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -95,7 +94,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP_NO_VERSION()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -110,7 +109,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP_NO_VERSION()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)

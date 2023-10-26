@@ -549,7 +549,7 @@ public class TestDedupAndVersioning extends BaseTest
     }
 
 
-    private DatasetDefinition getStagingTableWithoutVersion()
+    public static DatasetDefinition getStagingTableWithoutVersion()
     {
         return DatasetDefinition.builder()
                 .group(testSchemaName)
@@ -576,7 +576,7 @@ public class TestDedupAndVersioning extends BaseTest
     }
 
 
-    private void createStagingTableWithoutVersion()
+    public static void createStagingTableWithoutVersion()
     {
         String createSql = "CREATE TABLE IF NOT EXISTS \"TEST\".\"staging\"" +
                 "(\"id\" INTEGER NOT NULL," +
@@ -611,7 +611,7 @@ public class TestDedupAndVersioning extends BaseTest
         datasets = ingestor.dedupAndVersion(datasets);
     }
 
-    protected void loadDataIntoStagingTableWithoutVersion(String path) throws Exception
+    public static void loadDataIntoStagingTableWithoutVersion(String path) throws Exception
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
