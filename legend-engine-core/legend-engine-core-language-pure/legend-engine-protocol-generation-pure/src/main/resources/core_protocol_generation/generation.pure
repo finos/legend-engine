@@ -513,15 +513,15 @@ function meta::protocols::generation::java::conventions(purePackage:String[1], j
                                                   | '.' + $packageStr;
                                            );
         pair(
-          buildIdentifierFactory($package),
+          javaIdentifier($package),
           $c->identifier($x.name->toOne())->toUpperFirstCharacter()->toOne()
         );}
   );
 }
 
-function <<access.private>> meta::protocols::generation::java::buildIdentifierFactory(name: String[1]):String[1]
+function <<access.private>> meta::protocols::generation::java::javaIdentifier(name: String[1]):String[1]
 {
-   let keywordMap = javaKeywords()->map(kw | pair($kw, '_' + $kw))->newMap();
+   let keywordMap = javaKeywords()->buildKeywordReplacementMap();
    $name->sanitizeIdentifier($keywordMap);
 }
 
