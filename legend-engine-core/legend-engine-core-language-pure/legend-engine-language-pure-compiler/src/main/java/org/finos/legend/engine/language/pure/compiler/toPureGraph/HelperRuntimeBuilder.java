@@ -126,7 +126,7 @@ public class HelperRuntimeBuilder
                 Root_meta_core_runtime_ConnectionStore connectionStore =
                         new Root_meta_core_runtime_ConnectionStore_Impl("")
                                 ._connection(connection)
-                                ._element(getElement(storePointer.path, storePointer.sourceInformation, context));
+                                ._element(getStore(storePointer.path, storePointer.sourceInformation, context));
                 pureRuntime._connectionStoresAdd(connectionStore);
             });
         });
@@ -155,7 +155,7 @@ public class HelperRuntimeBuilder
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
                 final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", null, context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
                         ._connection(pureConnection)
-                        ._element(getElement(storeConnections.store.path, storeConnections.store.sourceInformation, context));
+                        ._element(getStore(storeConnections.store.path, storeConnections.store.sourceInformation, context));
 
                 pureRuntime._connectionStoresAdd(connectionStore);
             });
@@ -222,7 +222,7 @@ public class HelperRuntimeBuilder
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
                 final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", null, context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
                         ._connection(pureConnection)
-                        ._element(getElement(connection.element, connection.sourceInformation, context));
+                        ._element(getStore(connection.element, connection.sourceInformation, context));
                 pureRuntime._connectionStoresAdd(connectionStore);
             });
             return pureRuntime;
@@ -238,23 +238,11 @@ public class HelperRuntimeBuilder
         throw new UnsupportedOperationException();
     }
 
-    public static Object getElement(String element, SourceInformation sourceInformation, CompileContext context)
+    public static Object getStore(String element, SourceInformation sourceInformation, CompileContext context)
     {
         return element.equals("ModelStore") ?
                 new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"))
-                : resolveElementSafe(element, sourceInformation, context);
-    }
-
-    private static Object resolveElementSafe(String element, SourceInformation sourceInformation, CompileContext context)
-    {
-        try
-        {
-            return context.resolveStore(element, sourceInformation);
-        }
-        catch (EngineException e)
-        {
-            return element;
-        }
+                : context.resolveStore(element, sourceInformation);
     }
 
     /**
