@@ -4,7 +4,7 @@ Database connections are acquired in four layers
 
 1/ The first layer is the RelationalConnectionManager/Selector
 
-- This layers receives a request for a database connection.
+- This layers receives a request for a databaseType connection.
 - Using the specification of the datasource and the authentication strategy, this layer computes a "credential supplier".
 - Note : We compute only a supplier object and not the actual credential. The credential is not computed till later down the line.
 - This credential supplier and the caller's identity are passed to the next layer.
@@ -18,12 +18,12 @@ Database connections are acquired in four layers
 3/ The third layer is the Driver wrapper 
 
 - The Hikari connection pool asynchronously creates connections in its own threads
-- Connection creation requires the caller identity and database credentials 
+- Connection creation requires the caller identity and databaseType credentials 
 - To make these available to the connection pool, we intercept the connection creation process by wrapping the Jdbc driver in a DriverWrapper 
 - The DriverWrapper's getConnection invokes the next layer 
 
 4/ The fourth layer is the Authentication Strategy 
 
-- This layer actually computes the the database credential that is passed to the database
+- This layer actually computes the the databaseType credential that is passed to the databaseType
 - This layer fetches the identity and credential supplier cached in layer two and creates a credential 
-- The credential is then added back to the Jdbc properties such that when control return to Hikari, it can pass the credentials to the database  
+- The credential is then added back to the Jdbc properties such that when control return to Hikari, it can pass the credentials to the databaseType  

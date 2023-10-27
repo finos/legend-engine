@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.connection;
 
-import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 
 public class StaticJDBCConnectionSpecification extends ConnectionSpecification
 {

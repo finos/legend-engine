@@ -30,7 +30,7 @@ import java.util.function.Consumer;
 
 public class ConnectionParserExtension implements PureGrammarParserExtension
 {
-    public static final String NAME = "ConnectionDemo";
+    public static final String NAME = "DatabaseConnection";
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

@@ -18,7 +18,7 @@ An ```Identity``` carries one/more ```Credential```s as proof.
 
 ## Authentication Specification (Pure, Java)
 
-The platform connects to database, APIs and other systems that require authentication.
+The platform connects to databaseType, APIs and other systems that require authentication.
 
 The type of authentication to be performed is described via an ```AuthenticationSpecification```.
 

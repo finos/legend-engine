@@ -17,13 +17,15 @@ package org.finos.legend.connection;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.authentication.vault.CredentialVault;
-import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.CredentialVaultSecret;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.LinkedHashMap;
@@ -39,12 +41,14 @@ import java.util.ServiceLoader;
 public class LegendEnvironment
 {
     protected final ImmutableList<CredentialVault> vaults;
-    protected final ImmutableMap<String, AuthenticationMechanism> authenticationMechanismsIndex;
+    protected final ImmutableList<ConnectionExtension> connectionExtensions;
+    protected final ImmutableMap<String, AuthenticationMechanismType> authenticationMechanismsTypesIndex;
+    protected final ImmutableMap<String, DatabaseType> databaseTypesIndex;
     protected final ImmutableMap<String, Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypesIndex;
     protected final ImmutableMap<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex;
-    protected final ImmutableMap<String, StoreSupport> storeSupportsIndex;
+    protected final ImmutableMap<String, DatabaseSupport> databaseSupportsIndex;
 
-    protected LegendEnvironment(List<CredentialVault> vaults, List<StoreSupport> storeSupports)
+    protected LegendEnvironment(List<CredentialVault> vaults, List<DatabaseSupport> databaseSupports)
     {
         this.vaults = Lists.immutable.withAll(vaults);
         Map<Class<? extends CredentialVaultSecret>, CredentialVault<? extends CredentialVaultSecret>> vaultsIndex = new LinkedHashMap<>();
@@ -54,22 +58,37 @@ public class LegendEnvironment
         }
         this.vaultsIndex = Maps.immutable.withAll(vaultsIndex);
 
-        List<AuthenticationMechanism> authenticationMechanisms = Lists.mutable.empty();
-        for (AuthenticationMechanismLoader extension : ServiceLoader.load(AuthenticationMechanismLoader.class))
-        {
-            authenticationMechanisms.addAll(extension.load());
-        }
-        Map<String, AuthenticationMechanism> authenticationMechanismsIndex = new LinkedHashMap<>();
-        authenticationMechanisms.forEach(authenticationMechanism ->
-        {
-            if (authenticationMechanismsIndex.containsKey(authenticationMechanism.getLabel()))
-            {
-                throw new RuntimeException(String.format("Found multiple authentication mechanisms with label '%s'", authenticationMechanism.getLabel()));
-            }
-            authenticationMechanismsIndex.put(authenticationMechanism.getLabel(), authenticationMechanism);
-        });
-        this.authenticationMechanismsIndex = Maps.immutable.withAll(authenticationMechanismsIndex);
+        MutableList<ConnectionExtension> connectionExtensions = Lists.mutable.withAll(ServiceLoader.load(ConnectionExtension.class));
+        this.connectionExtensions = connectionExtensions.toImmutable();
 
+        // load authentication mechanism types
+        List<AuthenticationMechanismType> authenticationMechanismTypes = Lists.mutable.of(CoreAuthenticationMechanismType.values());
+        authenticationMechanismTypes.addAll(connectionExtensions.flatCollect(ConnectionExtension::getExtraAuthenticationMechanismTypes));
+        Map<String, AuthenticationMechanismType> authenticationMechanismsTypesIndex = new LinkedHashMap<>();
+        authenticationMechanismTypes.forEach(authenticationMechanism ->
+        {
+            if (authenticationMechanismsTypesIndex.containsKey(authenticationMechanism.getIdentifier()))
+            {
+                throw new RuntimeException(String.format("Found multiple authentication mechanisms with label '%s'", authenticationMechanism.getIdentifier()));
+            }
+            authenticationMechanismsTypesIndex.put(authenticationMechanism.getIdentifier(), authenticationMechanism);
+        });
+        this.authenticationMechanismsTypesIndex = Maps.immutable.withAll(authenticationMechanismsTypesIndex);
+
+        // load database types
+        List<DatabaseType> databaseTypes = connectionExtensions.flatCollect(ConnectionExtension::getExtraDatabaseTypes);
+        Map<String, DatabaseType> databaseTypesIndex = new LinkedHashMap<>();
+        databaseTypes.forEach(databaseType ->
+        {
+            if (databaseTypesIndex.containsKey(databaseType.getIdentifier()))
+            {
+                throw new RuntimeException(String.format("Found multiple authentication mechanisms with label '%s'", databaseType.getIdentifier()));
+            }
+            databaseTypesIndex.put(databaseType.getIdentifier(), databaseType);
+        });
+        this.databaseTypesIndex = Maps.immutable.withAll(databaseTypesIndex);
+
+        // load authentication configuration types
         Map<String, Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypesIndex = new LinkedHashMap<>();
         PureProtocolExtensionLoader.extensions().forEach(extension ->
                 LazyIterate.flatCollect(extension.getExtraProtocolSubTypeInfoCollectors(), Function0::value).forEach(info ->
@@ -88,16 +107,17 @@ public class LegendEnvironment
                 }));
         this.authenticationConfigurationTypesIndex = Maps.immutable.withAll(authenticationConfigurationTypesIndex);
 
-        Map<String, StoreSupport> storeSupportsIndex = new LinkedHashMap<>();
-        storeSupports.forEach(storeSupport ->
+        // load database supports
+        Map<String, DatabaseSupport> databaseSupportsIndex = new LinkedHashMap<>();
+        databaseSupports.forEach(databaseSupport ->
         {
-            if (storeSupportsIndex.containsKey(storeSupport.getIdentifier()))
+            if (databaseSupportsIndex.containsKey(databaseSupport.getDatabaseType().getIdentifier()))
             {
-                throw new RuntimeException(String.format("Found multiple store supports with identifier '%s'", storeSupport.getIdentifier()));
+                throw new RuntimeException(String.format("Found multiple database supports for type '%s'", databaseSupport.getDatabaseType().getIdentifier()));
             }
-            storeSupportsIndex.put(storeSupport.getIdentifier(), storeSupport);
+            databaseSupportsIndex.put(databaseSupport.getDatabaseType().getIdentifier(), databaseSupport);
         });
-        this.storeSupportsIndex = Maps.immutable.withAll(storeSupportsIndex);
+        this.databaseSupportsIndex = Maps.immutable.withAll(databaseSupportsIndex);
     }
 
     public String lookupVaultSecret(CredentialVaultSecret credentialVaultSecret, Identity identity) throws Exception
@@ -111,69 +131,79 @@ public class LegendEnvironment
         return vault.lookupSecret(credentialVaultSecret, identity);
     }
 
-    public AuthenticationMechanism getAuthenticationMechanism(String label)
+    public AuthenticationMechanismType getAuthenticationMechanism(String identifier)
     {
-        return Objects.requireNonNull(this.authenticationMechanismsIndex.get(label), String.format("Can't find authentication mechanism with label '%s'", label));
+        return Objects.requireNonNull(this.authenticationMechanismsTypesIndex.get(identifier), String.format("Can't find authentication mechanism with label '%s'", identifier));
     }
 
-    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType(String type)
+    public DatabaseType getDatabaseType(String identifier)
     {
-        return Objects.requireNonNull(this.authenticationConfigurationTypesIndex.get(type), String.format("Can't find authentication configuration type with identifier '%s'", type));
+        return Objects.requireNonNull(this.databaseTypesIndex.get(identifier), String.format("Can't find database type with identifier '%s'", identifier));
     }
 
-    public StoreSupport getStoreSupport(String identifier)
+    public Class<? extends AuthenticationConfiguration> getAuthenticationConfigurationType(String identifier)
     {
-        return Objects.requireNonNull(this.storeSupportsIndex.get(identifier), String.format("Can't find store support with identifier '%s'", identifier));
+        return Objects.requireNonNull(this.authenticationConfigurationTypesIndex.get(identifier), String.format("Can't find authentication configuration type with identifier '%s'", identifier));
+    }
+
+    public DatabaseSupport getDatabaseSupport(DatabaseType databaseType)
+    {
+        return Objects.requireNonNull(this.databaseSupportsIndex.get(databaseType.getIdentifier()), String.format("Can't find database support with database type '%s'", databaseType.getIdentifier()));
+    }
+
+    public static Builder builder()
+    {
+        return new Builder();
     }
 
     public static class Builder
     {
         private final List<CredentialVault> vaults = Lists.mutable.empty();
-        private final List<StoreSupport> storeSupports = Lists.mutable.empty();
+        private final List<DatabaseSupport> databaseSupports = Lists.mutable.empty();
 
-        public Builder()
+        private Builder()
         {
         }
 
-        public Builder withVaults(List<CredentialVault> vaults)
+        public Builder vaults(List<CredentialVault> vaults)
         {
             this.vaults.addAll(vaults);
             return this;
         }
 
-        public Builder withVaults(CredentialVault... vaults)
+        public Builder vaults(CredentialVault... vaults)
         {
             this.vaults.addAll(Lists.mutable.with(vaults));
             return this;
         }
 
-        public Builder withVault(CredentialVault vault)
+        public Builder vault(CredentialVault vault)
         {
             this.vaults.add(vault);
             return this;
         }
 
-        public Builder withStoreSupports(List<StoreSupport> storeSupports)
+        public Builder databaseSupports(List<DatabaseSupport> databaseSupports)
         {
-            this.storeSupports.addAll(storeSupports);
+            this.databaseSupports.addAll(databaseSupports);
             return this;
         }
 
-        public Builder withStoreSupports(StoreSupport... storeSupports)
+        public Builder databaseSupports(DatabaseSupport... databaseSupports)
         {
-            this.storeSupports.addAll(Lists.mutable.with(storeSupports));
+            this.databaseSupports.addAll(Lists.mutable.with(databaseSupports));
             return this;
         }
 
-        public Builder withStoreSupport(StoreSupport storeSupport)
+        public Builder databaseSupport(DatabaseSupport databaseSupport)
         {
-            this.storeSupports.add(storeSupport);
+            this.databaseSupports.add(databaseSupport);
             return this;
         }
 
         public LegendEnvironment build()
         {
-            return new LegendEnvironment(this.vaults, this.storeSupports);
+            return new LegendEnvironment(this.vaults, this.databaseSupports);
         }
     }
 }

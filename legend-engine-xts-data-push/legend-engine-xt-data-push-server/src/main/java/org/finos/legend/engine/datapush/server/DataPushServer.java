@@ -17,20 +17,19 @@ package org.finos.legend.engine.datapush.server;
 import io.dropwizard.setup.Bootstrap;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.connection.AuthenticationConfigurationProvider;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
-import org.finos.legend.connection.AuthenticationMechanismType;
+import org.finos.legend.connection.AuthenticationMechanism;
+import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.ConnectionFactory;
+import org.finos.legend.connection.ConnectionProvider;
+import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.connection.impl.InstrumentedAuthenticationConfigurationProvider;
-import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
+import org.finos.legend.connection.impl.InstrumentedConnectionProvider;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
@@ -38,11 +37,10 @@ import org.finos.legend.engine.datapush.DataPusher;
 import org.finos.legend.engine.datapush.DataPusherProvider;
 import org.finos.legend.engine.datapush.impl.SnowflakeWithS3StageDataPusher;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
-import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.SystemPropertiesSecret;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.server.support.server.config.BaseServerConfiguration;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -72,26 +70,28 @@ public class DataPushServer extends BaseDataPushServer
     @Override
     public LegendEnvironment buildLegendEnvironment(DataPushServerConfiguration configuration)
     {
-        return new LegendEnvironment.Builder()
-                .withVaults(
+        return LegendEnvironment.builder()
+                .vaults(
                         new SystemPropertiesCredentialVault(),
                         new EnvironmentCredentialVault()
                 )
-                .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
-                                .withIdentifier("Postgres")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
-                                                UserPasswordAuthenticationConfiguration.class
-                                        ).build()
+                .databaseSupports(
+                        DatabaseSupport.builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism.builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD).authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build(),
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.SNOWFLAKE)
-                                .withIdentifier("Snowflake")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).withAuthenticationConfigurationTypes(
-                                                EncryptedPrivateKeyPairAuthenticationConfiguration.class
-                                        ).build()
+                        DatabaseSupport.builder()
+                                .type(RelationalDatabaseType.SNOWFLAKE)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism.builder()
+                                                .type(CoreAuthenticationMechanismType.KEY_PAIR).authenticationConfigurationTypes(
+                                                        EncryptedPrivateKeyPairAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build()
                 ).build();
@@ -100,18 +100,20 @@ public class DataPushServer extends BaseDataPushServer
     @Override
     public IdentityFactory buildIdentityFactory(DataPushServerConfiguration configuration, LegendEnvironment environment)
     {
-        return new IdentityFactory.Builder(environment)
+        return IdentityFactory.builder()
+                .environment(environment)
                 .build();
     }
 
     @Override
-    public StoreInstanceProvider buildStoreInstanceProvider(DataPushServerConfiguration configuration, LegendEnvironment environment)
+    public ConnectionProvider buildConnectionBuilder(DataPushServerConfiguration configuration, LegendEnvironment environment)
     {
-        InstrumentedStoreInstanceProvider storeInstanceProvider = new InstrumentedStoreInstanceProvider();
+        InstrumentedConnectionProvider connectionProvider = new InstrumentedConnectionProvider();
 
-        storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Postgres"))
-                .withIdentifier("test-postgres")
-                .withConnectionSpecification(new StaticJDBCConnectionSpecification(
+        connectionProvider.injectConnection(Connection.builder()
+                .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.POSTGRES))
+                .identifier("test-postgres")
+                .connectionSpecification(new StaticJDBCConnectionSpecification(
                         "localhost",
                         5432,
                         "legend"
@@ -125,9 +127,10 @@ public class DataPushServer extends BaseDataPushServer
         summitSnowflake.region = "us-east-2";
         summitSnowflake.cloudType = "aws";
         summitSnowflake.role = "SUMMIT_DEV";
-        storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
-                .withIdentifier("test-snowflake")
-                .withConnectionSpecification(summitSnowflake)
+        connectionProvider.injectConnection(Connection.builder()
+                .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.SNOWFLAKE))
+                .identifier("test-snowflake")
+                .connectionSpecification(summitSnowflake)
                 .build()
         );
 
@@ -138,36 +141,12 @@ public class DataPushServer extends BaseDataPushServer
         finosSnowflake.region = "us-east-2";
         finosSnowflake.cloudType = "aws";
         finosSnowflake.role = "PUSH_ROLE1";
-        storeInstanceProvider.injectStoreInstance(new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
-                .withIdentifier("finosSF")
-                .withConnectionSpecification(finosSnowflake)
+        connectionProvider.injectConnection(Connection.builder()
+                .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.SNOWFLAKE))
+                .identifier("finosSF")
+                .connectionSpecification(finosSnowflake)
                 .build()
         );
-
-        return storeInstanceProvider;
-    }
-
-    @Override
-    public AuthenticationConfigurationProvider buildAuthenticationConfigurationProvider(DataPushServerConfiguration configuration, StoreInstanceProvider storeInstanceProvider, LegendEnvironment environment)
-    {
-        InstrumentedAuthenticationConfigurationProvider authenticationConfigProvider = new InstrumentedAuthenticationConfigurationProvider(this.storeInstanceProvider, this.environment);
-        authenticationConfigProvider.injectAuthenticationConfiguration(
-                "test-postgres",
-                new UserPasswordAuthenticationConfiguration("newuser", new SystemPropertiesSecret("passwordRef")));
-        authenticationConfigProvider.injectAuthenticationConfiguration(
-                "test-snowflake",
-                new EncryptedPrivateKeyPairAuthenticationConfiguration(
-                        "SUMMIT_DEV1",
-                        new SystemPropertiesSecret("sfsummit_snowflakePkRef"),
-                        new SystemPropertiesSecret("sfsummit_snowflakePkPassphraseRef")
-                ));
-        authenticationConfigProvider.injectAuthenticationConfiguration(
-                "finosSF",
-                new EncryptedPrivateKeyPairAuthenticationConfiguration(
-                        "DEVELOPER_USER1",
-                        new SystemPropertiesSecret("finos_snowflakePkRef"),
-                        new SystemPropertiesSecret("finos_snowflakePkPassphraseRef")
-                ));
 
         System.setProperty("passwordRef", "xxxxx"); // NOTE: secret - to be removed when committed
         System.setProperty("sfsummit_snowflakePkRef", "xxxxx"); // NOTE: secret - to be removed when committed
@@ -175,19 +154,21 @@ public class DataPushServer extends BaseDataPushServer
         System.setProperty("finos_snowflakePkRef", "xxxxx"); // NOTE: secret - to be removed when committed
         System.setProperty("finos_snowflakePkPassphraseRef", "xxxxx"); // NOTE: secret - to be removed when committed
 
-        return authenticationConfigProvider;
+        return connectionProvider;
     }
 
     @Override
-    public ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, StoreInstanceProvider storeInstanceProvider, LegendEnvironment environment)
+    public ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, ConnectionProvider connectionProvider, LegendEnvironment environment)
     {
-        return new ConnectionFactory.Builder(environment, storeInstanceProvider)
-                .withCredentialBuilders(
+        return ConnectionFactory.builder()
+                .environment(this.environment)
+                .connectionProvider(this.connectionProvider)
+                .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),
                         new KeyPairCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword(),
                         new SnowflakeConnectionBuilder.WithKeyPair()
                 )
@@ -200,10 +181,10 @@ public class DataPushServer extends BaseDataPushServer
         return new DataPusherProvider()
         {
             @Override
-            public DataPusher getDataPusher(StoreInstance connectionInstance)
+            public DataPusher getDataPusher(Connection connection)
             {
-                String storeSupport = connectionInstance.getStoreSupport().getIdentifier();
-                if (storeSupport.equals("Snowflake"))
+                DatabaseType databaseType = connection.getDatabaseSupport().getDatabaseType();
+                if (RelationalDatabaseType.SNOWFLAKE.equals(databaseType))
                 {
                     String tableName = "DEMO_DB.SCHEMA1.TABLE1";
                     String stageName = "DEMO_DB.SCHEMA1.STAGE1";
@@ -213,7 +194,7 @@ public class DataPushServer extends BaseDataPushServer
                                     "xxxxx" // NOTE: secret - to be removed when committed
                             )), tableName, stageName);
                 }
-                throw new UnsupportedOperationException("Unsupported store support: " + storeSupport);
+                throw new UnsupportedOperationException("Unsupported database type: " + databaseType.getIdentifier());
             }
         };
     }

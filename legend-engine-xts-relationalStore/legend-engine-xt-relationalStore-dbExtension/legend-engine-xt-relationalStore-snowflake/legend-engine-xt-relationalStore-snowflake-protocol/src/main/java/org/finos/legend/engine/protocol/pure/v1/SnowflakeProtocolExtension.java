@@ -16,7 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;

@@ -7,7 +7,7 @@ Normally, a connection is expressed as follows :
 ```
 RelationalDatabaseConnection connection::snowflake
 {
-  store: database::snowflake;
+  store: databaseType::snowflake;
   type: Snowflake;
   specification: Snowflake
   {
@@ -32,12 +32,12 @@ In the "Local Connection" mode, the connection is expressed as follows :
 ```
 RelationalDatabaseConnection connection::snowflake
 {
-  store: database::snowflake;
+  store: databaseType::snowflake;
   type: Snowflake;
   mode: local;
 }
 ```
-In a local connection, the details about the database to connect to are provided by the runtime. 
+In a local connection, the details about the databaseType to connect to are provided by the runtime. 
 
 # Runtime Environment
 

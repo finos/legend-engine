@@ -16,7 +16,7 @@ package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -25,8 +25,8 @@ import java.util.Optional;
 
 public class Authenticator<CRED extends Credential>
 {
-    private final StoreInstance storeInstance;
-    private final AuthenticationMechanism authenticationMechanism;
+    private final Connection connection;
+    private final AuthenticationMechanismType authenticationMechanismType;
     private final AuthenticationConfiguration authenticationConfiguration;
     private final Class<? extends Credential> sourceCredentialType;
     private final Class<? extends Credential> targetCredentialType;
@@ -34,10 +34,10 @@ public class Authenticator<CRED extends Credential>
     private final ConnectionBuilder connectionBuilder;
     private final LegendEnvironment environment;
 
-    public Authenticator(StoreInstance storeInstance, AuthenticationMechanism authenticationMechanism, AuthenticationConfiguration authenticationConfiguration, Class<? extends Credential> sourceCredentialType, Class<? extends Credential> targetCredentialType, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder, LegendEnvironment environment)
+    public Authenticator(Connection connection, AuthenticationMechanismType authenticationMechanismType, AuthenticationConfiguration authenticationConfiguration, Class<? extends Credential> sourceCredentialType, Class<? extends Credential> targetCredentialType, List<CredentialBuilder> credentialBuilders, ConnectionBuilder connectionBuilder, LegendEnvironment environment)
     {
-        this.storeInstance = storeInstance;
-        this.authenticationMechanism = authenticationMechanism;
+        this.connection = connection;
+        this.authenticationMechanismType = authenticationMechanismType;
         this.authenticationConfiguration = authenticationConfiguration;
         this.sourceCredentialType = sourceCredentialType;
         this.targetCredentialType = targetCredentialType;
@@ -73,9 +73,9 @@ public class Authenticator<CRED extends Credential>
         return (CRED) credential;
     }
 
-    public AuthenticationMechanism getAuthenticationMechanism()
+    public AuthenticationMechanismType getAuthenticationMechanism()
     {
-        return authenticationMechanism;
+        return authenticationMechanismType;
     }
 
     public AuthenticationConfiguration getAuthenticationConfiguration()
@@ -83,9 +83,9 @@ public class Authenticator<CRED extends Credential>
         return authenticationConfiguration;
     }
 
-    public StoreInstance getStoreInstance()
+    public Connection getConnection()
     {
-        return storeInstance;
+        return connection;
     }
 
     public Class<? extends Credential> getSourceCredentialType()

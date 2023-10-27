@@ -26,7 +26,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Strings;
 import org.finos.legend.connection.CredentialBuilder;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;

@@ -28,7 +28,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -49,7 +49,7 @@ public class ConnectionModelLoader
         this.metaDataServerConfiguration = metaDataServerConfiguration;
     }
 
-    public ConnectionDemo getConnectionFromSDLCWorkspace(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String connectionPath)
+    public Connection getConnectionFromSDLCWorkspace(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String connectionPath)
     {
         // NOTE: this flow is really meant only for development, here we have to
         CookieStore cookieStore = new BasicCookieStore();
@@ -66,7 +66,7 @@ public class ConnectionModelLoader
             {
                 ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
                 PureModelContextData pureModelContextData = mapper.readValue(res.getEntity().getContent(), PureModelContextData.class);
-                return ListIterate.select(pureModelContextData.getElements(), element -> element.getPath().equals(connectionPath)).selectInstancesOf(ConnectionDemo.class).getAny();
+                return ListIterate.select(pureModelContextData.getElements(), element -> element.getPath().equals(connectionPath)).selectInstancesOf(Connection.class).getAny();
             }
         }
         catch (Exception e)
@@ -75,7 +75,7 @@ public class ConnectionModelLoader
         }
     }
 
-    public ConnectionDemo getConnectionFromProject(List<CommonProfile> profiles, String groupId, String artifactId, String versionId, String connectionPath)
+    public Connection getConnectionFromProject(List<CommonProfile> profiles, String groupId, String artifactId, String versionId, String connectionPath)
     {
         AlloySDLC sdlcInfo = new AlloySDLC();
         sdlcInfo.groupId = groupId;
@@ -86,7 +86,7 @@ public class ConnectionModelLoader
         PureModelContextData pureModelContextData = SDLCLoader.loadMetadataFromHTTPURL(Lists.mutable.withAll(profiles), LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, (isLatestRevision(sdlcInfo)) ?
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + sdlcInfo.groupId + "/" + sdlcInfo.artifactId + "/revisions/latest/pureModelContextData" :
                 metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + sdlcInfo.groupId + "/" + sdlcInfo.artifactId + "/versions/" + sdlcInfo.version + "/pureModelContextData");
-        return ListIterate.select(pureModelContextData.getElements(), element -> element.getPath().equals(connectionPath)).selectInstancesOf(ConnectionDemo.class).getAny();
+        return ListIterate.select(pureModelContextData.getElements(), element -> element.getPath().equals(connectionPath)).selectInstancesOf(Connection.class).getAny();
     }
 
     private boolean isLatestRevision(AlloySDLC alloySDLC)

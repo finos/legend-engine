@@ -25,7 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ConnectionParserExtens
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection;
 
 import java.util.List;
 
@@ -44,9 +44,9 @@ public class ConnectionGrammarComposerExtension implements PureGrammarComposerEx
             }
             return ListIterate.collect(elements, element ->
             {
-                if (element instanceof ConnectionDemo)
+                if (element instanceof Connection)
                 {
-                    return renderElement((ConnectionDemo) element, context);
+                    return renderElement((Connection) element, context);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -58,12 +58,12 @@ public class ConnectionGrammarComposerExtension implements PureGrammarComposerEx
     {
         return Lists.fixedSize.with((elements, context, composedSections) ->
         {
-            List<ConnectionDemo> composableElements = ListIterate.selectInstancesOf(elements, ConnectionDemo.class);
+            List<Connection> composableElements = ListIterate.selectInstancesOf(elements, Connection.class);
             return composableElements.isEmpty() ? null : new PureFreeSectionGrammarComposerResult(LazyIterate.collect(composableElements, el -> renderElement(el, context)).makeString("###" + ConnectionParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
-    private static String renderElement(ConnectionDemo element, PureGrammarComposerContext context)
+    private static String renderElement(Connection element, PureGrammarComposerContext context)
     {
         String value;
         try
@@ -80,10 +80,10 @@ public class ConnectionGrammarComposerExtension implements PureGrammarComposerEx
             throw new RuntimeException(e);
         }
 
-        return "ConnectionDemo " + PureGrammarComposerUtility.convertPath(element.getPath()) + "\n" +
+        return "DatabaseConnection " + PureGrammarComposerUtility.convertPath(element.getPath()) + "\n" +
                 "{\n" +
                 (getTabString() + "rawValue: #{\n" +
-                        value + "\n" +
+                        ListIterate.collect(Lists.mutable.of(value.split("\n")), line -> getTabString() + line).makeString("\n") + "\n" +
                         getTabString() + "}#;\n") +
                 "}";
     }

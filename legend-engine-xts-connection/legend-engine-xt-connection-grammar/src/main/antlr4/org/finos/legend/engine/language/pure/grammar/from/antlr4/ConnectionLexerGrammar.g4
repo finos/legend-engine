@@ -5,6 +5,6 @@ import M3LexerGrammar;
 
 // ------------------------------------ KEYWORD --------------------------------------
 
-CONNECTION_DEMO:                                'ConnectionDemo';
+DATABASE_CONNECTION:                            'DatabaseConnection';
 
 RAW_VALUE:                                      'rawValue';

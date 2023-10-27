@@ -16,7 +16,7 @@ package org.finos.legend.connection.impl;
 
 import org.finos.legend.connection.CredentialBuilder;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-Class meta::pure::metamodel::connection::ConnectionDemo extends PackageableElement
+Class meta::pure::metamodel::connection::Connection extends PackageableElement
 {
     rawValue: Any[1];
 }

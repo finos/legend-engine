@@ -18,14 +18,11 @@ import io.deephaven.csv.CsvSpecs;
 import io.deephaven.csv.reading.CsvReader;
 import io.deephaven.csv.sinks.SinkFactory;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstance;
+import org.finos.legend.connection.Connection;
 import org.finos.legend.engine.datapush.DataPusher;
 import org.finos.legend.engine.datapush.data.CSVData;
 import org.finos.legend.engine.datapush.data.Data;
-import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -37,7 +34,6 @@ import software.amazon.awssdk.services.s3.model.PutObjectResponse;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.sql.Connection;
 import java.sql.Statement;
 import java.util.UUID;
 
@@ -55,20 +51,19 @@ public class SnowflakeWithS3StageDataPusher extends DataPusher
     }
 
     @Override
-    public void writeCSV(Identity identity, StoreInstance connectionInstance, AuthenticationConfiguration authenticationConfiguration, Data data) throws Exception
+    public void writeCSV(Identity identity, Connection connection, Data data) throws Exception
     {
         // TODO: this is probably not performant for streaming/large CSV, we should think of how to optimize this later
         CSVData csvData = (CSVData) data;
         CsvSpecs specs = CsvSpecs.csv();
         CsvReader.Result csvParserResult = CsvReader.read(specs, new ByteArrayInputStream(csvData.value.getBytes()), SinkFactory.arrays());
         String filePath = this.s3DataStage.write(identity, csvData);
-        this.uploadCSVToSnowflake(identity, connectionInstance, authenticationConfiguration, filePath, csvParserResult);
+        this.uploadCSVToSnowflake(identity, connection, filePath, csvParserResult);
     }
 
-    public void uploadCSVToSnowflake(Identity identity, StoreInstance connectionInstance, AuthenticationConfiguration authenticationConfiguration, String filePath, CsvReader.Result csvParserResult) throws Exception
+    public void uploadCSVToSnowflake(Identity identity, Connection connection, String filePath, CsvReader.Result csvParserResult) throws Exception
     {
-        RelationalDatabaseStoreSupport.cast(connectionInstance.getStoreSupport());
-        Connection connection = this.connectionFactory.getConnection(identity, connectionInstance, authenticationConfiguration);
+        java.sql.Connection jdbcConnection = this.connectionFactory.getConnection(identity, connection);
 
         String tableCreationQuery = String.format("CREATE TABLE %s (%s);", this.tableName, ListIterate.collect(
                 Lists.mutable.of(csvParserResult.columns()), column ->
@@ -110,7 +105,7 @@ public class SnowflakeWithS3StageDataPusher extends DataPusher
 
         try
         {
-            Statement statement = connection.createStatement();
+            Statement statement = jdbcConnection.createStatement();
             statement.execute(String.format("DROP TABLE IF EXISTS %s;", this.tableName));
             statement.execute(tableCreationQuery);
             statement.execute(insertQuery);

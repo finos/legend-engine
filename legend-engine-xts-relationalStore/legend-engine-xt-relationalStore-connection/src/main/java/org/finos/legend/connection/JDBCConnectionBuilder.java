@@ -15,7 +15,7 @@
 package org.finos.legend.connection;
 
 import org.finos.legend.connection.impl.JDBCConnectionManager;
-import org.finos.legend.engine.protocol.pure.v1.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 
 import java.sql.Connection;

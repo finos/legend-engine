@@ -16,21 +16,17 @@ package org.finos.legend.engine.datapush.server.resources;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
-import org.finos.legend.connection.AuthenticationConfigurationProvider;
+import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.ConnectionFactory;
+import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.StoreInstanceBuilderHelper;
-import org.finos.legend.connection.StoreInstanceProvider;
 import org.finos.legend.engine.datapush.DataPusher;
 import org.finos.legend.engine.datapush.DataPusherProvider;
 import org.finos.legend.engine.datapush.data.CSVData;
 import org.finos.legend.engine.datapush.server.ConnectionModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
 import org.finos.legend.engine.server.support.server.resources.BaseResource;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -68,17 +64,15 @@ public class DataPushResource extends BaseResource
     private final ConnectionModelLoader connectionModelLoader;
     private final LegendEnvironment environment;
     private final IdentityFactory identityFactory;
-    private final StoreInstanceProvider storeInstanceProvider;
-    private final AuthenticationConfigurationProvider authenticationConfigurationProvider;
+    private final ConnectionProvider connectionProvider;
     private final ConnectionFactory connectionFactory;
     private final DataPusherProvider dataPusherProvider;
 
-    public DataPushResource(MetaDataServerConfiguration metadataserver, LegendEnvironment environment, IdentityFactory identityFactory, StoreInstanceProvider storeInstanceProvider, AuthenticationConfigurationProvider authenticationConfigurationProvider, ConnectionFactory connectionFactory, DataPusherProvider dataPusherProvider)
+    public DataPushResource(MetaDataServerConfiguration metadataserver, LegendEnvironment environment, IdentityFactory identityFactory, ConnectionProvider connectionProvider, ConnectionFactory connectionFactory, DataPusherProvider dataPusherProvider)
     {
         this.environment = environment;
         this.identityFactory = identityFactory;
-        this.storeInstanceProvider = storeInstanceProvider;
-        this.authenticationConfigurationProvider = authenticationConfigurationProvider;
+        this.connectionProvider = connectionProvider;
         this.connectionFactory = connectionFactory;
         this.dataPusherProvider = dataPusherProvider;
         this.connectionModelLoader = new ConnectionModelLoader(metadataserver);
@@ -107,16 +101,16 @@ public class DataPushResource extends BaseResource
     {
         List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = this.identityFactory.createIdentity(
-                new IdentitySpecification.Builder().withProfiles(profiles).build()
+                IdentitySpecification.builder().profiles(profiles).build()
         );
-        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromProject(profiles, groupId, artifactId, versionId, connectionPath);
+        org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection connection = this.connectionModelLoader.getConnectionFromProject(profiles, groupId, artifactId, versionId, connectionPath);
 
         CSVData csvData = new CSVData();
         csvData.value = data;
 
         try
         {
-            this.pushCSVData(identity, connectionDemo, csvData);
+            this.pushCSVData(identity, connection, csvData);
             return Response.noContent().build();
         }
         catch (Exception exception)
@@ -148,16 +142,16 @@ public class DataPushResource extends BaseResource
     {
         List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         Identity identity = this.identityFactory.createIdentity(
-                new IdentitySpecification.Builder().withProfiles(profiles).build()
+                IdentitySpecification.builder().profiles(profiles).build()
         );
-        ConnectionDemo connectionDemo = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, projectId, workspaceId, isGroupWorkspace, connectionPath);
+        org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection connection = this.connectionModelLoader.getConnectionFromSDLCWorkspace(request, projectId, workspaceId, isGroupWorkspace, connectionPath);
 
         CSVData csvData = new CSVData();
         csvData.value = data;
 
         try
         {
-            this.pushCSVData(identity, connectionDemo, csvData);
+            this.pushCSVData(identity, connection, csvData);
             return Response.noContent().build();
         }
         catch (Exception exception)
@@ -172,17 +166,14 @@ public class DataPushResource extends BaseResource
         return ExceptionTool.exceptionManager(exception, LoggingEventType.ERROR_MANAGEMENT_ERROR, status, profiles);
     }
 
-    private void pushCSVData(Identity identity, ConnectionDemo connectionDemo, CSVData csvData)
+    private void pushCSVData(Identity identity, org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection connectionProtocol, CSVData csvData)
     {
-        StoreInstance connectionInstance = StoreInstanceBuilderHelper.buildStoreInstance(connectionDemo.storeInstance, this.environment);
-        AuthenticationConfiguration authenticationConfiguration = connectionDemo.authenticationConfiguration != null
-                ? connectionDemo.authenticationConfiguration
-                : this.authenticationConfigurationProvider.lookup(identity, connectionInstance);
+        Connection connection = Connection.builder().fromProtocol(connectionProtocol, this.environment).build();
         try
         {
-            DataPusher dataPusher = this.dataPusherProvider.getDataPusher(connectionInstance);
+            DataPusher dataPusher = this.dataPusherProvider.getDataPusher(connection);
             dataPusher.configure(this.connectionFactory);
-            dataPusher.writeCSV(identity, connectionInstance, authenticationConfiguration, csvData);
+            dataPusher.writeCSV(identity, connection, csvData);
         }
         catch (Exception e)
         {

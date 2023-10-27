@@ -558,7 +558,7 @@ _(Object stream return not currently suppored)_
 ### Explanation
 * `from` provides the mapping which in turn identifies the store (`my::Db`)
 * `from` also provides the runtime which further associates `my::Db` with a connection
-* the connection determines the database type
+* the connection determines the databaseType type
 * This allows construction of the appropriate SQL and thus creation of the execution plan shown
 
 ## Fetch from relational with filter and projection
@@ -583,8 +583,8 @@ _(Object stream return not currently suppored)_
 ### Explanation
 * `from` provides the mapping which in turn identifies the store (`my::Db`)
 * `from` also provides the runtime which further associates `my::Db` with a connection
-* the connection determines the database type
-* `filter` is pushed down to the store (made part of SQL) since the database supports it
+* the connection determines the databaseType type
+* `filter` is pushed down to the store (made part of SQL) since the databaseType supports it
 * `project` changes the type to TDS.  The expression in it widens the classes required (and hence mappings involved)
   to include Firm.
 * This allows construction of the appropriate SQL and thus creation of the execution plan shown

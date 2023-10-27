@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.datapush;
 
-import org.finos.legend.connection.StoreInstance;
+import org.finos.legend.connection.Connection;
 
 public interface DataPusherProvider
 {
-    DataPusher getDataPusher(StoreInstance connectionInstance);
+    DataPusher getDataPusher(Connection connection);
 }

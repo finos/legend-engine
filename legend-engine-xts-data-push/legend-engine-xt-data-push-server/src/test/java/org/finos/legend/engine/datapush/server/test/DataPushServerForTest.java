@@ -16,35 +16,25 @@ package org.finos.legend.engine.datapush.server.test;
 
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.connection.AuthenticationConfigurationProvider;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
-import org.finos.legend.connection.AuthenticationMechanismType;
+import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.IdentityFactory;
+import org.finos.legend.connection.ConnectionProvider;
+import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.connection.impl.InstrumentedAuthenticationConfigurationProvider;
-import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
+import org.finos.legend.connection.impl.InstrumentedConnectionProvider;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.engine.datapush.server.DataPushServer;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
-import org.finos.legend.engine.server.support.server.BaseServer;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 
 public class DataPushServerForTest extends DataPushServer
 {
     public DataPushServerForTest()
     {
-    }
-
-    @Override
-    protected BaseServer.ServerPlatformInfo newServerPlatformInfo()
-    {
-        return new ServerPlatformInfo(null, null, null);
     }
 
     public static void main(String... args) throws Exception
@@ -55,51 +45,42 @@ public class DataPushServerForTest extends DataPushServer
     @Override
     public LegendEnvironment buildLegendEnvironment(DataPushServerConfiguration configuration)
     {
-        return new LegendEnvironment.Builder()
-                .withVaults(
+        return LegendEnvironment.builder()
+                .vaults(
                         new SystemPropertiesCredentialVault(),
                         new EnvironmentCredentialVault()
                 )
-                .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
-                                .withIdentifier("Postgres")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
-                                                UserPasswordAuthenticationConfiguration.class
-                                        ).build()
+                .databaseSupports(
+                        DatabaseSupport.builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism.builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD)
+                                                .authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build()
                 ).build();
     }
 
     @Override
-    public IdentityFactory buildIdentityFactory(DataPushServerConfiguration configuration, LegendEnvironment environment)
+    public ConnectionProvider buildConnectionBuilder(DataPushServerConfiguration configuration, LegendEnvironment environment)
     {
-        return new IdentityFactory.Builder(environment)
-                .build();
+        return new InstrumentedConnectionProvider();
     }
 
     @Override
-    public StoreInstanceProvider buildStoreInstanceProvider(DataPushServerConfiguration configuration, LegendEnvironment environment)
+    public ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, ConnectionProvider connectionProvider, LegendEnvironment environment)
     {
-        return new InstrumentedStoreInstanceProvider();
-    }
-
-    @Override
-    public AuthenticationConfigurationProvider buildAuthenticationConfigurationProvider(DataPushServerConfiguration configuration, StoreInstanceProvider storeInstanceProvider, LegendEnvironment environment)
-    {
-        return new InstrumentedAuthenticationConfigurationProvider(this.storeInstanceProvider, this.environment);
-    }
-
-    @Override
-    public ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, StoreInstanceProvider storeInstanceProvider, LegendEnvironment environment)
-    {
-        return new ConnectionFactory.Builder(environment, storeInstanceProvider)
-                .withCredentialBuilders(
+        return ConnectionFactory.builder()
+                .environment(this.environment)
+                .connectionProvider(this.connectionProvider)
+                .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
                 )
                 .build();
@@ -110,18 +91,8 @@ public class DataPushServerForTest extends DataPushServer
         return environment;
     }
 
-    public IdentityFactory getIdentityFactory()
+    public InstrumentedConnectionProvider getConnectionProvider()
     {
-        return identityFactory;
-    }
-
-    public InstrumentedStoreInstanceProvider getStoreInstanceProvider()
-    {
-        return (InstrumentedStoreInstanceProvider) storeInstanceProvider;
-    }
-
-    public InstrumentedAuthenticationConfigurationProvider getAuthenticationConfigurationProvider()
-    {
-        return (InstrumentedAuthenticationConfigurationProvider) authenticationConfigurationProvider;
+        return (InstrumentedConnectionProvider) connectionProvider;
     }
 }

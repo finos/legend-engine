@@ -4,7 +4,7 @@ Service store is a collection of service definitions. These service definitions 
 
 ## Where does service store fit in Legend/PURE modeling?
 
-Service store is a *type* of store that fits in the store layer, along with a relational (database) and model store.
+Service store is a *type* of store that fits in the store layer, along with a relational (databaseType) and model store.
 
 ![where-does-service-store-fit-in](resources/service-store.PNG)
 
@@ -13,7 +13,7 @@ Service store is a *type* of store that fits in the store layer, along with a re
 Service store should be used when users want to transform or model data consumed via REST APIs. Service store allows users to:
 
 - Fetch data from REST APIs and perform transformations on top of it.
-- Enrich data from REST APIs by merging it with data fetched from another API/store (e.g. enriching with relational database data) using cross-store/union.
+- Enrich data from REST APIs by merging it with data fetched from another API/store (e.g. enriching with relational databaseType data) using cross-store/union.
 
 ## Restrictions
 

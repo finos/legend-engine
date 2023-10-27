@@ -20,7 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection;
 
 import java.util.function.Consumer;
 
@@ -41,14 +41,14 @@ public class ConnectionParseTreeWalker
 
     public void visit(ConnectionParserGrammar.DefinitionContext ctx)
     {
-        ctx.connectionDemoElement().stream().map(this::visitElement).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        ctx.databaseConnectionElement().stream().map(this::visitElement).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
-    private ConnectionDemo visitElement(ConnectionParserGrammar.ConnectionDemoElementContext ctx)
+    private Connection visitElement(ConnectionParserGrammar.DatabaseConnectionElementContext ctx)
     {
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         ConnectionParserGrammar.RawValueContext rawValueContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.rawValue(), "rawValue", sourceInformation);
-        ConnectionDemo connectionDemo;
+        Connection connection;
         try
         {
             StringBuilder connectionDemoText = new StringBuilder();
@@ -58,17 +58,17 @@ public class ConnectionParseTreeWalker
             }
             String rawValueText = connectionDemoText.length() > 0 ? connectionDemoText.substring(0, connectionDemoText.length() - 2) : connectionDemoText.toString();
             // prepare island grammar walker source information
-            connectionDemo = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(rawValueText, ConnectionDemo.class);
+            connection = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(rawValueText, Connection.class);
         }
         catch (Exception e)
         {
             throw new RuntimeException(e);
         }
 
-        connectionDemo.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
-        connectionDemo._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
-        connectionDemo.sourceInformation = sourceInformation;
+        connection.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        connection._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        connection.sourceInformation = sourceInformation;
 
-        return connectionDemo;
+        return connection;
     }
 }

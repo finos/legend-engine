@@ -21,6 +21,7 @@ import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredenti
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 
 import java.util.List;
+import java.util.Objects;
 
 public class IdentityFactory
 {
@@ -28,7 +29,7 @@ public class IdentityFactory
 
     private IdentityFactory(LegendEnvironment environment)
     {
-        this.environment = environment;
+        this.environment = Objects.requireNonNull(environment, "environment is missing");
     }
 
     // TODO: @akphi - this clones the logic from IdentityFactoryProvider, we should think about unifying them
@@ -54,13 +55,23 @@ public class IdentityFactory
         return new Identity(identitySpecification.getName(), credentials);
     }
 
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
     public static class Builder
     {
-        private final LegendEnvironment environment;
+        private LegendEnvironment environment;
 
-        public Builder(LegendEnvironment environment)
+        private Builder()
+        {
+        }
+
+        public Builder environment(LegendEnvironment environment)
         {
             this.environment = environment;
+            return this;
         }
 
         public IdentityFactory build()

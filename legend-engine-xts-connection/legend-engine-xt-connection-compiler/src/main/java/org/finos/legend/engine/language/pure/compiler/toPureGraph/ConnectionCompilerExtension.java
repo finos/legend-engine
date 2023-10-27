@@ -18,15 +18,15 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_connection_ConnectionDemo;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_connection_ConnectionDemo_Impl;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_connection_Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_connection_Connection_Impl;
 
 import java.util.Collections;
 
 public class ConnectionCompilerExtension implements CompilerExtension
 {
-    static final MutableMap<String, Root_meta_pure_metamodel_connection_ConnectionDemo> connectionsIndex = Maps.mutable.empty();
+    static final MutableMap<String, Root_meta_pure_metamodel_connection_Connection> connectionsIndex = Maps.mutable.empty();
 
     @Override
     public CompilerExtension build()
@@ -38,10 +38,10 @@ public class ConnectionCompilerExtension implements CompilerExtension
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(
-                ConnectionDemo.class,
+                Connection.class,
                 (element, context) ->
                 {
-                    Root_meta_pure_metamodel_connection_ConnectionDemo metamodel = new Root_meta_pure_metamodel_connection_ConnectionDemo_Impl(element.name, null, context.pureModel.getClass("meta::pure::metamodel::connection::ConnectionDemo"))._name(element.name);
+                    Root_meta_pure_metamodel_connection_Connection metamodel = new Root_meta_pure_metamodel_connection_Connection_Impl(element.name, null, context.pureModel.getClass("meta::pure::metamodel::connection::ConnectionDemo"))._name(element.name);
                     connectionsIndex.put(context.pureModel.buildPackageString(element._package, element.name), metamodel);
                     metamodel._rawValue(element);
                     return metamodel;

@@ -14,26 +14,7 @@
 
 package org.finos.legend.connection;
 
-import org.finos.legend.connection.AuthenticationMechanism;
-
-public enum AuthenticationMechanismType implements AuthenticationMechanism
+public interface AuthenticationMechanismType
 {
-    USER_PASSWORD("UsernamePassword"),
-    API_KEY("APIKey"),
-    KEY_PAIR("KeyPair"),
-    KERBEROS("Kerberos"),
-    OAUTH("OAuth");
-
-    private final String label;
-
-    private AuthenticationMechanismType(String label)
-    {
-        this.label = label;
-    }
-
-    @Override
-    public String getLabel()
-    {
-        return this.label;
-    }
+    String getIdentifier();
 }

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.connection;
 
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
+
 public class SnowflakeConnectionSpecification extends ConnectionSpecification
 {
     public String accountName;

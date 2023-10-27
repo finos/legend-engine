@@ -16,17 +16,17 @@ package org.finos.legend.engine.connection.test;
 
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
-import org.finos.legend.connection.AuthenticationMechanismType;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.connection.AuthenticationMechanism;
+import org.finos.legend.connection.Connection;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.EnvironmentCredentialVaultSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Properties;
 
@@ -34,7 +34,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestSnowflakeConnection
 {
-    public static class WithKeyPair extends AbstractConnectionFactoryTest<Connection>
+    public static class WithKeyPair extends AbstractConnectionFactoryTest<java.sql.Connection>
     {
         private static final String CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK = "CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK";
         private static final String CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE = "CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE";
@@ -71,7 +71,7 @@ public class TestSnowflakeConnection
         }
 
         @Override
-        public StoreInstance getStoreInstance()
+        public Connection getConnection()
         {
             SnowflakeConnectionSpecification connectionSpecification = new SnowflakeConnectionSpecification();
             connectionSpecification.databaseName = "SUMMIT_DEV";
@@ -80,12 +80,15 @@ public class TestSnowflakeConnection
             connectionSpecification.region = "us-east-2";
             connectionSpecification.cloudType = "aws";
             connectionSpecification.role = "SUMMIT_DEV";
-            return new StoreInstance.Builder(this.environment.getStoreSupport("Snowflake"))
-                    .withIdentifier(TEST_STORE_INSTANCE_NAME)
-                    .withAuthenticationMechanismConfigurations(
-                            new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).build()
+            return Connection.builder()
+                    .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.SNOWFLAKE))
+                    .identifier(TEST_CONNECTION_IDENTIFIER)
+                    .authenticationMechanisms(
+                            AuthenticationMechanism.builder()
+                                    .type(CoreAuthenticationMechanismType.KEY_PAIR)
+                                    .build()
                     )
-                    .withConnectionSpecification(connectionSpecification)
+                    .connectionSpecification(connectionSpecification)
                     .build();
         }
 
@@ -106,7 +109,7 @@ public class TestSnowflakeConnection
         }
 
         @Override
-        public void runTestWithConnection(Connection connection) throws Exception
+        public void runTestWithConnection(java.sql.Connection connection) throws Exception
         {
             Statement statement = connection.createStatement();
             statement.setMaxRows(10);

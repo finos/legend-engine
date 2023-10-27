@@ -15,11 +15,10 @@
 package org.finos.legend.engine.datapush.server;
 
 import io.dropwizard.setup.Environment;
-import org.finos.legend.connection.AuthenticationConfigurationProvider;
 import org.finos.legend.connection.ConnectionFactory;
+import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.StoreInstanceProvider;
 import org.finos.legend.engine.datapush.DataPusherProvider;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.datapush.server.resources.DataPushResource;
@@ -29,8 +28,7 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
 {
     protected LegendEnvironment environment;
     protected IdentityFactory identityFactory;
-    protected StoreInstanceProvider storeInstanceProvider;
-    protected AuthenticationConfigurationProvider authenticationConfigurationProvider;
+    protected ConnectionProvider connectionProvider;
     protected ConnectionFactory connectionFactory;
     protected DataPusherProvider dataPushProvider;
 
@@ -39,9 +37,8 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
     {
         this.environment = this.buildLegendEnvironment(configuration);
         this.identityFactory = this.buildIdentityFactory(configuration, this.environment);
-        this.storeInstanceProvider = this.buildStoreInstanceProvider(configuration, this.environment);
-        this.authenticationConfigurationProvider = this.buildAuthenticationConfigurationProvider(configuration, this.storeInstanceProvider, this.environment);
-        this.connectionFactory = this.buildConnectionFactory(configuration, this.storeInstanceProvider, this.environment);
+        this.connectionProvider = this.buildConnectionBuilder(configuration, this.environment);
+        this.connectionFactory = this.buildConnectionFactory(configuration, this.connectionProvider, this.environment);
         this.dataPushProvider = this.buildDataPushProvider();
         super.run(configuration, environment);
     }
@@ -49,7 +46,7 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
     @Override
     protected void configureServerCore(DataPushServerConfiguration configuration, Environment environment)
     {
-        environment.jersey().register(new DataPushResource(configuration.getMetadataServerConfiguration(), this.environment, this.identityFactory, this.storeInstanceProvider, this.authenticationConfigurationProvider, this.connectionFactory, this.dataPushProvider));
+        environment.jersey().register(new DataPushResource(configuration.getMetadataServerConfiguration(), this.environment, this.identityFactory, this.connectionProvider, this.connectionFactory, this.dataPushProvider));
     }
 
     @Override
@@ -62,11 +59,9 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
 
     public abstract IdentityFactory buildIdentityFactory(DataPushServerConfiguration configuration, LegendEnvironment environment);
 
-    public abstract StoreInstanceProvider buildStoreInstanceProvider(DataPushServerConfiguration configuration, LegendEnvironment environment);
+    public abstract ConnectionProvider buildConnectionBuilder(DataPushServerConfiguration configuration, LegendEnvironment environment);
 
-    public abstract AuthenticationConfigurationProvider buildAuthenticationConfigurationProvider(DataPushServerConfiguration configuration, StoreInstanceProvider storeInstanceProvider, LegendEnvironment environment);
-
-    public abstract ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, StoreInstanceProvider storeInstanceProvider, LegendEnvironment environment);
+    public abstract ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, ConnectionProvider connectionProvider, LegendEnvironment environment);
 
     public abstract DataPusherProvider buildDataPushProvider();
 }

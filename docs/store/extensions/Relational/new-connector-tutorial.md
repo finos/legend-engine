@@ -42,7 +42,7 @@ You will also need to add the following driver dependency to the pom.xml of sqls
 Check the listing [here](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/RelationalProtocolExtension.java).
 If yes, then choose the appropriate ones. Else go to the section on [Adding a new Datasource or AuthenticationStrategy Specification](#adding-a-new-datasource-or-authenticationstrategy-specification).
 
-    For the sake of this tutorial lets continue with [StaticDatasourceSpecification](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/specification/StaticDatasourceSpecification.java) plus [UserNamePasswordAuthenticationStrategy](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/authentication/UserNamePasswordAuthenticationStrategy.java) to connect to our database.
+    For the sake of this tutorial lets continue with [StaticDatasourceSpecification](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/specification/StaticDatasourceSpecification.java) plus [UserNamePasswordAuthenticationStrategy](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/authentication/UserNamePasswordAuthenticationStrategy.java) to connect to our databaseType.
 
 4. **Authentication Flow**: Now we will add an authentication flow for SqlServer using StaticDatasourceSpecification with UsernamePasswordAuthenticationStrategy.
 Let's create a class SqlServerStaticWithUserPasswordFlow in sqlserver-execution module.
@@ -146,7 +146,7 @@ Let's create a class SqlServerStaticWithUserPasswordFlow in sqlserver-execution 
     It can then be read from server config or a test config directly during initialization.
 
 6. **Test Database Instance**: There are 2 ways to declare a test db. If you have an already hosted instance, then you can use define a static test connection.
-If your database supports it, we can alternatively launch a test instance at runtime using docker (dynamic test connection).
+If your databaseType supports it, we can alternatively launch a test instance at runtime using docker (dynamic test connection).
 
     Let's try to define a dynamic test connection for SqlServer. Define the below class in src/main/java section of sqlserver-execution-tests module.
 
@@ -200,7 +200,7 @@ If your database supports it, we can alternatively launch a test instance at run
      
         private void startMSSQLServerContainer()
         {
-            System.out.println("Starting setup of dynamic connection for database: SqlServer ");
+            System.out.println("Starting setup of dynamic connection for databaseType: SqlServer ");
      
             long start = System.currentTimeMillis();
             this.mssqlserver.start();
@@ -208,7 +208,7 @@ If your database supports it, we can alternatively launch a test instance at run
             int containerPort = this.mssqlserver.getMappedPort(MSSQLServerContainer.MS_SQL_SERVER_PORT);
             long end = System.currentTimeMillis();
      
-            System.out.println("Completed setup of dynamic connection for database: SqlServer on host:" + containerHost + " and port:" + containerPort + " , time taken(ms):" + (end - start));
+            System.out.println("Completed setup of dynamic connection for databaseType: SqlServer on host:" + containerHost + " and port:" + containerPort + " , time taken(ms):" + (end - start));
         }
      
         public void registerVault()
@@ -277,7 +277,7 @@ If your database supports it, we can alternatively launch a test instance at run
     
     Alternatively, If you have a static test connection, you can define it in sqlServerRelationalDatabaseConnections.json. Look at [RelationalDatabaseConnection](https://github.com/finos/legend-engine/blob/master/legend-engine-xt-relationalStore-protocol/src/main/java/org/finos/legend/engine/protocol/pure/v1/model/packageableElement/store/relational/connection/RelationalDatabaseConnection.java) to understand the structure.
 
-7. **Connection Acquisition Test**: Now we will fix the ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlServer test. When it passes, it will verify that we are able to connect to the test database instance.
+7. **Connection Acquisition Test**: Now we will fix the ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_SqlServer test. When it passes, it will verify that we are able to connect to the test databaseType instance.
 
     First, we need to fix the below line
 
@@ -449,7 +449,7 @@ Populate the empty list in getDynaFnToSqlForSqlServer in sqlServerExtension.pure
             + $loadTableSQL.columnsToLoad.name->map(colName | $colName->processColumnName($dbConfig))->joinStrings(',')
             + ') values '
             + $loadTableSQL.parsedData.values->map(row | '('
-                + $row.values->meta::relational::functions::database::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
+                + $row.values->meta::relational::functions::databaseType::testDataSQLgeneration::convertValuesToCsv($loadTableSQL.columnsToLoad.type)
                 + ')')->makeString(',') + ';';
     }
     ~~~
@@ -468,7 +468,7 @@ Populate the empty list in getDynaFnToSqlForSqlServer in sqlServerExtension.pure
     We can now do a clean+install on sqlserver-pure module, and run Test_Pure_Relational_DbSpecific_SqlServer to make sure that our generation code behaves the same way from java side, and pure to java compilation works as expected. You will see that some tests will go green now, instead of everything getting ignored. 
 
 12. **Sql Execution Test**: This is the last step of verifying that our connector works.
-We will now execute the generated sql against a real database instance, and make sure that it gives expected result.
+We will now execute the generated sql against a real databaseType instance, and make sure that it gives expected result.
 
     We can use the same test db instance as the one we used in Connection Acquisition Test.
     In the userTestConfig_withSqlServerTestConnection.json of sqlserver-execution-tests module, we can add the test connection detail under either staticTestConnections field, or add the creator class in dynamicTestConnectionCreators field.
@@ -495,11 +495,11 @@ We will now execute the generated sql against a real database instance, and make
     
     **Congratulations on completing the connector!**
 
-### Executing against database from Pure Ide
+### Executing against databaseType from Pure Ide
 
 In the tutorial, we test sql generation in pure ide, but for execution against db, we have to clean+install the sqlserver-pure module and then run the test from java.
 To speed up the development cycle, you can alternatively launch a test instance of engine server from java and link it with Pure Ide.
-Then, when you run the tests from Pure Ide, they will run both generation and execution against database. Here are the steps to do that:
+Then, when you run the tests from Pure Ide, they will run both generation and execution against databaseType. Here are the steps to do that:
 
 * Run SqlServerRelationalTestServerInvoker from sqlserver-execution-tests module. Say it is running at 6060.
 * Add following vm options to PureIDELight: -Dlegend.test.server.host=127.0.0.1 -Dlegend.test.server.port=6060 -Dlegend.test.clientVersion=vX_X_X -Dlegend.test.serverVersion=v1
@@ -785,7 +785,7 @@ Similarly, we will add a new authentication strategy specification specific to S
         // port
         SqlServerParserGrammar.DbPortContext portCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbPort(), "port", dsSpec.sourceInformation);
         dsSpec.port = Integer.parseInt(portCtx.INTEGER().getText());
-        // database name
+        // databaseType name
         SqlServerParserGrammar.DbNameContext nameCtx = PureGrammarParserUtility.validateAndExtractRequiredField(dbSpecCtx.dbName(), "name", dsSpec.sourceInformation);
         dsSpec.databaseName = PureGrammarParserUtility.fromGrammarString(nameCtx.STRING().getText(), true);
         return dsSpec;
@@ -1257,7 +1257,7 @@ It is a combination of 2 runtime classes, one for data source and other for auth
         }
     
         @Override
-        public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
+        public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager relationalDatabaseManager)
         {
             Properties connectionProperties = new Properties();
             connectionProperties.putAll(properties);

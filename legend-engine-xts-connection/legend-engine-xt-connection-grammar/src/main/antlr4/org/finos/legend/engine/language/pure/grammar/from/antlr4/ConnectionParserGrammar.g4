@@ -11,15 +11,15 @@ options
 
 identifier:                         VALID_STRING | STRING
                                     | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE | TO_BYTES_FUNCTION      // from M3Parser
-                                    | CONNECTION_DEMO | RAW_VALUE
+                                    | DATABASE_CONNECTION | RAW_VALUE
 ;
 
 // -------------------------------------- DEFINITION --------------------------------------
 
-definition:                         (connectionDemoElement)*
+definition:                         (databaseConnectionElement)*
                                     EOF
 ;
-connectionDemoElement:              CONNECTION_DEMO qualifiedName
+databaseConnectionElement:          DATABASE_CONNECTION qualifiedName
                                         BRACE_OPEN
                                             (
                                                 rawValue

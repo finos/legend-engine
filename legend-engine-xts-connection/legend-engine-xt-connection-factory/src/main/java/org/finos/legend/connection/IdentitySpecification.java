@@ -20,7 +20,6 @@ import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import java.util.List;
-import java.util.Objects;
 
 public class IdentitySpecification
 {
@@ -57,6 +56,11 @@ public class IdentitySpecification
         return credentials;
     }
 
+    public static Builder builder()
+    {
+        return new Builder();
+    }
+
     public static class Builder
     {
         private String name;
@@ -64,37 +68,41 @@ public class IdentitySpecification
         private Subject subject;
         private final List<Credential> credentials = Lists.mutable.empty();
 
-        public Builder withName(String name)
+        private Builder()
+        {
+        }
+
+        public Builder name(String name)
         {
             this.name = name;
             return this;
         }
 
-        public Builder withProfiles(List<CommonProfile> profiles)
+        public Builder profiles(List<CommonProfile> profiles)
         {
             this.profiles.addAll(profiles);
             return this;
         }
 
-        public Builder withProfile(CommonProfile profile)
+        public Builder profile(CommonProfile profile)
         {
             this.profiles.add(profile);
             return this;
         }
 
-        public Builder withSubject(Subject subject)
+        public Builder subject(Subject subject)
         {
             this.subject = subject;
             return this;
         }
 
-        public Builder withCredentials(List<Credential> credentials)
+        public Builder credentials(List<Credential> credentials)
         {
             this.credentials.addAll(credentials);
             return this;
         }
 
-        public Builder withCredential(Credential credential)
+        public Builder credentials(Credential credential)
         {
             this.credentials.add(credential);
             return this;

@@ -17,14 +17,14 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.finos.legend.engine.protocol.pure.v1.connection.AuthenticationConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.connection.KerberosAuthenticationConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.ConnectionDemo;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.KerberosAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 
 import java.util.List;
 import java.util.Map;
@@ -39,7 +39,8 @@ public class ConnectionProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(
                 // Packageable Element
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
-                        .withSubtype(ConnectionDemo.class, "connectionDemo")
+                        // TODO: ideally we should be able to set this as `connection`, but this will clash with `PackageableElement`
+                        .withSubtype(Connection.class, "databaseConnection")
                         .build(),
                 // Authentication
                 ProtocolSubTypeInfo.newBuilder(AuthenticationConfiguration.class)
@@ -54,7 +55,7 @@ public class ConnectionProtocolExtension implements PureProtocolExtension
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
         return Maps.mutable.with(
-                ConnectionDemo.class, CONNECTION_CLASSIFIER_PATH
+                Connection.class, CONNECTION_CLASSIFIER_PATH
         );
     }
 }
