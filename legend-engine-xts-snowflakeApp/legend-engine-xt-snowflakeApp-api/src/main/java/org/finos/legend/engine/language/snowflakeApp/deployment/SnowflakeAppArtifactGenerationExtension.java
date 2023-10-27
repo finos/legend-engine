@@ -39,7 +39,7 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     private static  final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SnowflakeAppArtifactGenerationExtension.class);
     private static final String ROOT_PATH = "snowflakeApp";
-    private static final String FILE_NAME = "snowflakeArtifact.json";
+    private static final String FILE_NAME = "snowflakeAppArtifact.json";
 
     @Override
     public String getKey()
@@ -50,8 +50,7 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-        return false;
-        // return element instanceof Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
+         return element instanceof Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
     }
 
 
