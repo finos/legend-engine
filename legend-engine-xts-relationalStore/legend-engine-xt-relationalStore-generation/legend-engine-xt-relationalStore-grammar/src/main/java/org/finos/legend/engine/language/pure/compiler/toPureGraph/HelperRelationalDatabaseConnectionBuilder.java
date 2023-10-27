@@ -51,7 +51,7 @@ public class HelperRelationalDatabaseConnectionBuilder
         }
         catch (RuntimeException e)
         {
-            new Root_meta_relational_metamodel_Database_Impl(element)._name(element);
+            context.pureModel.storesIndex.putIfAbsent(element, new Root_meta_relational_metamodel_Database_Impl(element)._name(element));
         }
     }
 

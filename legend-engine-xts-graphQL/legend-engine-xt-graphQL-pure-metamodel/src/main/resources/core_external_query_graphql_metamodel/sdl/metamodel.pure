@@ -179,6 +179,7 @@ Class meta::external::query::graphQL::metamodel::sdl::typeSystem::InterfaceTypeD
   name: String[1];
   directives: meta::external::query::graphQL::metamodel::sdl::Directive[*];
   fields: meta::external::query::graphQL::metamodel::sdl::typeSystem::FieldDefinition[*];
+  implements: String[*];
 }
 
 Class meta::external::query::graphQL::metamodel::sdl::value::ListValue extends meta::external::query::graphQL::metamodel::sdl::value::Value

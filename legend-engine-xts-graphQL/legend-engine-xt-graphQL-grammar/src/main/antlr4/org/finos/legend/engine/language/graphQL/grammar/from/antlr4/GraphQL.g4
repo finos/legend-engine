@@ -223,7 +223,7 @@ objectTypeExtension:
     ;
 
 //https://spec.graphql.org/June2018/#sec-Interfaces
-interfaceTypeDefinition: description? INTERFACE name directives? fieldsDefinition?;
+interfaceTypeDefinition: description? INTERFACE name implementsInterfaces? directives? fieldsDefinition?;
 
 //https://spec.graphql.org/June2018/#sec-Interface-Extensions
 interfaceTypeExtension:  EXTEND INTERFACE name directives? fieldsDefinition
