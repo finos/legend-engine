@@ -106,6 +106,16 @@ public class BaseTest
         h2Sink.executeStatement("DROP ALL OBJECTS");
     }
 
+    protected void createStagingTableWithoutPks(DatasetDefinition stagingTable) throws Exception
+    {
+        List<Field> fieldsWithoutPk = stagingTable.schema().fields().stream().map(field -> field.withPrimaryKey(false)).collect(Collectors.toList());
+        stagingTable = stagingTable.withSchema(stagingTable.schema().withFields(fieldsWithoutPk));
+        RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
+        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTable, true);
+        SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
+        executor.executePhysicalPlan(tableCreationPhysicalPlan);
+    }
+
     protected void createStagingTable(DatasetDefinition stagingTable) throws Exception
     {
         RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());

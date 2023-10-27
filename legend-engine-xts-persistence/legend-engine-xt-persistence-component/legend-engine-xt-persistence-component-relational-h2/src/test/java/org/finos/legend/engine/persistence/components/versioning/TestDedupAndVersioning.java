@@ -30,6 +30,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
@@ -87,6 +88,17 @@ public class TestDedupAndVersioning extends BaseTest
                     .addFields(income)
                     .addFields(expiryDate)
                     .addFields(digest)
+                    .build();
+
+    public static SchemaDefinition baseSchemaWithVersionAndBatch =
+            SchemaDefinition.builder()
+                    .addFields(id)
+                    .addFields(name)
+                    .addFields(version)
+                    .addFields(income)
+                    .addFields(expiryDate)
+                    .addFields(digest)
+                    .addFields(batch)
                     .build();
 
     private static final String tempStagingTableName = stagingTableName +  "_" + TEMP_STAGING_DATASET_BASE_NAME;
@@ -628,6 +640,16 @@ public class TestDedupAndVersioning extends BaseTest
                 "INSERT INTO \"TEST\".\"staging\"(id, name, version, income ,expiry_date, digest) " +
                 "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"version\",INT ), CONVERT( \"income\", BIGINT), CONVERT( \"expiry_date\", DATE), digest" +
                 " FROM CSVREAD( '" + path + "', 'id, name, version, income, expiry_date, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    public static void loadDataIntoStagingTableWithVersionAndBatch(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+                "INSERT INTO \"TEST\".\"staging\"(id, name, version, income ,expiry_date, digest, batch) " +
+                "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"version\",INT ), CONVERT( \"income\", BIGINT), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"batch\",INT )" +
+                " FROM CSVREAD( '" + path + "', 'id, name, version, income, expiry_date, digest, batch', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
