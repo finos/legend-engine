@@ -35,8 +35,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
 import org.finos.legend.engine.query.sql.api.SQLExecutor;
-import org.finos.legend.engine.query.sql.api.sources.SQLContext;
-import org.finos.legend.engine.query.sql.api.sources.SQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.core.SQLContext;
+import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -101,7 +101,7 @@ public class SqlExecute
                                @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        SQLContext context = new SQLContext(query, Maps.mutable.of());
+        SQLContext context = new SQLContext(query);
 
         Result result = this.executor.execute(query, request.getRemoteUser(), context, profiles);
 
@@ -129,7 +129,7 @@ public class SqlExecute
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
-        SQLContext context = new SQLContext(query, Maps.mutable.of());
+        SQLContext context = new SQLContext(query);
         return executor.lambda(query, context, profiles);
     }
 
@@ -151,7 +151,7 @@ public class SqlExecute
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
 
-        SQLContext context = new SQLContext(query, Maps.mutable.of());
+        SQLContext context = new SQLContext(query);
         return this.executor.plan(query, context, profiles);
     }
 
