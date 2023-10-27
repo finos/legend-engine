@@ -126,7 +126,7 @@ public abstract class AbstractConnectionFactoryTest<T>
         return null;
     }
 
-    public abstract Connection getConnection();
+    public abstract Connection getConnection(AuthenticationConfiguration authenticationConfiguration);
 
     public abstract Identity getIdentity();
 
@@ -137,11 +137,11 @@ public abstract class AbstractConnectionFactoryTest<T>
     @Test
     public void runTest() throws Exception
     {
-        this.connectionProvider.injectConnection(this.getConnection());
         Identity identity = this.getIdentity();
         AuthenticationConfiguration authenticationConfiguration = this.getAuthenticationConfiguration();
+        this.connectionProvider.injectConnection(this.getConnection(authenticationConfiguration));
 
-        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_CONNECTION_IDENTIFIER, authenticationConfiguration);
+        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_CONNECTION_IDENTIFIER);
         T connection = this.connectionFactory.getConnection(identity, authenticator);
 
         this.runTestWithConnection(connection);

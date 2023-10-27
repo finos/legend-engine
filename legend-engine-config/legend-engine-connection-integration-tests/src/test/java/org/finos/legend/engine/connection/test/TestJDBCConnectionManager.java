@@ -94,6 +94,10 @@ public class TestJDBCConnectionManager
                 .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.POSTGRES))
                 .identifier(TEST_CONNECTION_IDENTIFIER)
                 .connectionSpecification(connectionSpecification)
+                .authenticationConfiguration(new UserPasswordAuthenticationConfiguration(
+                        postgresContainer.getUser(),
+                        new PropertiesFileSecret("passwordRef")
+                ))
                 .build();
     }
 
@@ -132,11 +136,9 @@ public class TestJDBCConnectionManager
                         .build()
         );
         ConnectionSpecification connectionSpecification = this.connection.getConnectionSpecification();
-        AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(
-                postgresContainer.getUser(),
-                new PropertiesFileSecret("passwordRef")
-        );
-        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_CONNECTION_IDENTIFIER, authenticationConfiguration);
+        AuthenticationConfiguration authenticationConfiguration = this.connection.getAuthenticationConfiguration();
+
+        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_CONNECTION_IDENTIFIER);
 
         JDBCConnectionManager connectionManager = JDBCConnectionManager.getInstance();
         Assertions.assertEquals(0, connectionManager.getPoolSize());
@@ -205,16 +207,13 @@ public class TestJDBCConnectionManager
                         .build()
         );
         ConnectionSpecification connectionSpecification = this.connection.getConnectionSpecification();
-        AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(
-                postgresContainer.getUser(),
-                new PropertiesFileSecret("passwordRef")
-        );
+        AuthenticationConfiguration authenticationConfiguration = this.connection.getAuthenticationConfiguration();
 
         JDBCConnectionManager connectionManager = JDBCConnectionManager.getInstance();
         Assertions.assertEquals(0, connectionManager.getPoolSize());
 
         // 1. Get a new connection for identity1, which should initialize a pool
-        this.connectionFactory.getConnection(identity1, this.connectionFactory.getAuthenticator(identity1, TEST_CONNECTION_IDENTIFIER, authenticationConfiguration));
+        this.connectionFactory.getConnection(identity1, this.connectionFactory.getAuthenticator(identity1, TEST_CONNECTION_IDENTIFIER));
 
         String poolName1 = JDBCConnectionManager.getPoolName(identity1, connectionSpecification, authenticationConfiguration);
         JDBCConnectionManager.ConnectionPool connectionPool1 = connectionManager.getPool(poolName1);
@@ -225,7 +224,7 @@ public class TestJDBCConnectionManager
         Assertions.assertEquals(0, connectionPool1.getIdleConnections());
 
         // 2. Get a new connection for identity2, which should initialize another pool
-        this.connectionFactory.getConnection(identity2, this.connectionFactory.getAuthenticator(identity2, TEST_CONNECTION_IDENTIFIER, authenticationConfiguration));
+        this.connectionFactory.getConnection(identity2, this.connectionFactory.getAuthenticator(identity2, TEST_CONNECTION_IDENTIFIER));
 
         String poolName2 = JDBCConnectionManager.getPoolName(identity2, connectionSpecification, authenticationConfiguration);
         JDBCConnectionManager.ConnectionPool connectionPool2 = connectionManager.getPool(poolName2);

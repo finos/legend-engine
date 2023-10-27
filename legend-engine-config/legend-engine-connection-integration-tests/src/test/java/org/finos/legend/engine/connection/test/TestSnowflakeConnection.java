@@ -71,7 +71,7 @@ public class TestSnowflakeConnection
         }
 
         @Override
-        public Connection getConnection()
+        public Connection getConnection(AuthenticationConfiguration authenticationConfiguration)
         {
             SnowflakeConnectionSpecification connectionSpecification = new SnowflakeConnectionSpecification();
             connectionSpecification.databaseName = "SUMMIT_DEV";
@@ -89,6 +89,7 @@ public class TestSnowflakeConnection
                                     .build()
                     )
                     .connectionSpecification(connectionSpecification)
+                    .authenticationConfiguration(authenticationConfiguration)
                     .build();
         }
 

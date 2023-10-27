@@ -51,12 +51,12 @@ public class ConnectionParseTreeWalker
         Connection connection;
         try
         {
-            StringBuilder connectionDemoText = new StringBuilder();
+            StringBuilder text = new StringBuilder();
             for (ConnectionParserGrammar.RawValueContentContext fragment : rawValueContext.rawValueContent())
             {
-                connectionDemoText.append(fragment.getText());
+                text.append(fragment.getText());
             }
-            String rawValueText = connectionDemoText.length() > 0 ? connectionDemoText.substring(0, connectionDemoText.length() - 2) : connectionDemoText.toString();
+            String rawValueText = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
             // prepare island grammar walker source information
             connection = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(rawValueText, Connection.class);
         }

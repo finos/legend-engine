@@ -71,7 +71,7 @@ public class TestPostgresConnection
         }
 
         @Override
-        public Connection getConnection()
+        public Connection getConnection(AuthenticationConfiguration authenticationConfiguration)
         {
             ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(
                     this.postgresContainer.getHost(),
@@ -86,6 +86,7 @@ public class TestPostgresConnection
                                     .type(CoreAuthenticationMechanismType.USER_PASSWORD).build()
                     )
                     .connectionSpecification(connectionSpecification)
+                    .authenticationConfiguration(authenticationConfiguration)
                     .build();
         }
 

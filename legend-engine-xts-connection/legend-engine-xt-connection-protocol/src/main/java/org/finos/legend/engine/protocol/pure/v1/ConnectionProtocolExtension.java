@@ -31,7 +31,7 @@ import java.util.Map;
 
 public class ConnectionProtocolExtension implements PureProtocolExtension
 {
-    public static final String CONNECTION_CLASSIFIER_PATH = "meta::pure::metamodel::connection::ConnectionDemo";
+    public static final String CONNECTION_CLASSIFIER_PATH = "meta::pure::metamodel::connection::Connection";
 
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
