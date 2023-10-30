@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -58,7 +59,7 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
-        createStagingTable(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
@@ -66,6 +67,7 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
                 .dateTimeInName(batchTimeInName)
                 .dateTimeOutName(batchTimeOutName)
                 .build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -100,6 +102,21 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_03);
+
+        // ------------ Perform Pass4 Fail on Duplicates -------------------------
+        String dataPass4 = basePathForInput + "without_delete_ind/staging_data_pass4.csv";
+        // 1. Load staging table
+        loadBasicStagingData(dataPass4);
+        // 2. Execute plans and verify results
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_03);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
     }
 
     /*

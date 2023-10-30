@@ -68,6 +68,7 @@ public class IngestModeOptimizationColumnHandler implements IngestModeVisitor<In
                 .transactionMilestoning(unitemporalDelta.transactionMilestoning())
                 .mergeStrategy(unitemporalDelta.mergeStrategy())
                 .versioningStrategy(unitemporalDelta.versioningStrategy())
+                .deduplicationStrategy(unitemporalDelta.deduplicationStrategy())
                 .build();
     }
 

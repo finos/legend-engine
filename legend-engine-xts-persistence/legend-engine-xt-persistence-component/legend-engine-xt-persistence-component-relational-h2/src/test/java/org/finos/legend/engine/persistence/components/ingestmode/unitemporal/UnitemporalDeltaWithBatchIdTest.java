@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -61,7 +62,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdInName, batchIdOutName};
 
         // Create staging table
-        createStagingTable(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
@@ -69,6 +70,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
                 .batchIdInName(batchIdInName)
                 .batchIdOutName(batchIdOutName)
                 .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -92,7 +94,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
+        expectedStats = createExpectedStatsMap(6, 0, 1, 1, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
