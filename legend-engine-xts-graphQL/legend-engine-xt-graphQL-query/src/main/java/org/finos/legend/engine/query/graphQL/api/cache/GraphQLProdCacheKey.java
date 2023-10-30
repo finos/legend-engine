@@ -26,26 +26,37 @@ public class GraphQLProdCacheKey implements GraphQLCacheKey
     private String queryClassPath;
     private String query;
     private String dataspacePath;
+    private String executionContext;
 
-    public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String mappingPath, String runtimePath, String queryClassPath, String query)
+    GraphQLProdCacheKey()
     {
-        this.groupID = groupID;
-        this.artifactId = artifactId;
-        this.versionId = versionId;
-        this.mappingPath = mappingPath;
-        this.runtimePath = runtimePath;
-        this.queryClassPath = queryClassPath;
-        this.query = query;
+
     }
 
-    public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String dataspacePath, String queryClassPath, String query)
+    public static GraphQLProdCacheKey newGraphQLProdCacheKey(String groupID, String artifactId, String versionId, String mappingPath, String runtimePath, String queryClassPath, String query)
     {
-        this.groupID = groupID;
-        this.artifactId = artifactId;
-        this.versionId = versionId;
-        this.dataspacePath = dataspacePath;
-        this.queryClassPath = queryClassPath;
-        this.query = query;
+        GraphQLProdCacheKey graphQLProdCacheKey = new GraphQLProdCacheKey();
+        graphQLProdCacheKey.groupID = groupID;
+        graphQLProdCacheKey.artifactId = artifactId;
+        graphQLProdCacheKey.versionId = versionId;
+        graphQLProdCacheKey.mappingPath = mappingPath;
+        graphQLProdCacheKey.runtimePath = runtimePath;
+        graphQLProdCacheKey.queryClassPath = queryClassPath;
+        graphQLProdCacheKey.query = query;
+        return graphQLProdCacheKey;
+    }
+
+    public static GraphQLProdCacheKey newGraphQLProdCacheKeyWithDataspace(String groupID, String artifactId, String versionId, String dataspacePath, String executionContext, String queryClassPath, String query)
+    {
+        GraphQLProdCacheKey graphQLProdCacheKey = new GraphQLProdCacheKey();
+        graphQLProdCacheKey.groupID = groupID;
+        graphQLProdCacheKey.artifactId = artifactId;
+        graphQLProdCacheKey.versionId = versionId;
+        graphQLProdCacheKey.dataspacePath = dataspacePath;
+        graphQLProdCacheKey.executionContext = executionContext;
+        graphQLProdCacheKey.queryClassPath = queryClassPath;
+        graphQLProdCacheKey.query = query;
+        return graphQLProdCacheKey;
     }
 
     @Override
@@ -60,12 +71,20 @@ public class GraphQLProdCacheKey implements GraphQLCacheKey
             return false;
         }
         GraphQLProdCacheKey that = (GraphQLProdCacheKey) o;
-        return Objects.equal(groupID, that.groupID) && Objects.equal(artifactId, that.artifactId) && Objects.equal(versionId, that.versionId) && Objects.equal(mappingPath, that.mappingPath) && Objects.equal(runtimePath, that.runtimePath) && Objects.equal(queryClassPath, that.queryClassPath) && Objects.equal(query, that.query) && Objects.equal(dataspacePath, that.dataspacePath);
+        return Objects.equal(groupID, that.groupID)
+                && Objects.equal(artifactId, that.artifactId)
+                && Objects.equal(versionId, that.versionId)
+                && Objects.equal(mappingPath, that.mappingPath)
+                && Objects.equal(runtimePath, that.runtimePath)
+                && Objects.equal(queryClassPath, that.queryClassPath)
+                && Objects.equal(query, that.query)
+                && Objects.equal(dataspacePath, that.dataspacePath)
+                && Objects.equal(executionContext, that.executionContext);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query, dataspacePath);
+        return Objects.hashCode(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query, dataspacePath, executionContext);
     }
 }

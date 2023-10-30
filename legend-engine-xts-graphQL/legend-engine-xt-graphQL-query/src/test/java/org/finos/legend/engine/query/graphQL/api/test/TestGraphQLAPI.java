@@ -183,7 +183,7 @@ public class TestGraphQLAPI
                 "      }\n" +
                 "    }\n" +
                 "  }";
-        Response response = graphQLExecute.executeProd(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "simple::model::Query", query, null);
+        Response response = graphQLExecute.executeProdWithDataspace(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "defaultExecutionContext", "simple::model::Query", query, null);
 
         String expected = "{" +
                 "\"data\":{" +
@@ -214,7 +214,7 @@ public class TestGraphQLAPI
                 "      }\n" +
                 "    }\n" +
                 "  }";
-        Response response = graphQLExecute.executeProd(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "simple::model::Query", query, null);
+        Response response = graphQLExecute.executeProdWithDataspace(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "defaultExecutionContext", "simple::model::Query", query, null);
 
         String expected = "{" +
                 "\"data\":{" +
@@ -229,7 +229,7 @@ public class TestGraphQLAPI
         Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
         Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
 
-        response = graphQLExecute.executeProd(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "simple::model::Query", query, null);
+        response = graphQLExecute.executeProdWithDataspace(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "defaultExecutionContext", "simple::model::Query", query, null);
         Assert.assertEquals(expected, responseAsString(response));
         Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
         Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);

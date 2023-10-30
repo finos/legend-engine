@@ -89,10 +89,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -236,7 +238,7 @@ public class GraphQLExecute extends GraphQL
                 "}").type(MediaType.TEXT_HTML_TYPE).build();
     }
 
-    private Response executeGraphQLQuery(String queryClassPath, String dataspacePath, Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
+    private Response executeGraphQLQueryWithDataspace(String queryClassPath, String dataspacePath, String executionContext, Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
     {
         List<SerializedNamedPlans> planWithSerialized;
         OperationDefinition graphQLQuery = GraphQLExecutionHelper.findQuery(document);
@@ -257,7 +259,7 @@ public class GraphQLExecute extends GraphQL
                     {
                         LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
                         pureModel = modelLoader.call();
-                        planWithSerialized = buildPlanWithParameter(queryClassPath, dataspacePath, document, graphQLQuery, pureModel, graphQLCacheKey);
+                        planWithSerialized = buildPlanWithParameterUsingDataspace(queryClassPath, dataspacePath, executionContext, document, graphQLQuery, pureModel, graphQLCacheKey);
                         graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
                     }
                     else
@@ -268,7 +270,7 @@ public class GraphQLExecute extends GraphQL
                 else   //no cache so we generate the plan
                 {
                     pureModel = modelLoader.call();
-                    planWithSerialized = buildPlanWithParameter(queryClassPath, dataspacePath, document, graphQLQuery, pureModel, graphQLCacheKey);
+                    planWithSerialized = buildPlanWithParameterUsingDataspace(queryClassPath, dataspacePath, executionContext, document, graphQLQuery, pureModel, graphQLCacheKey);
                 }
             }
         }
@@ -426,22 +428,36 @@ public class GraphQLExecute extends GraphQL
         return serializedNamedPlans;
     }
 
-    private Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext getDataspaceDefaultExecutionContext(String dataspacePath, PureModel pureModel)
+    private Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext getDataspaceExecutionContext(String dataspacePath, String executionContext, PureModel pureModel)
     {
         PackageableElement packageableElement = pureModel.getPackageableElement(dataspacePath);
         Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace, () -> "Can't find data space '" + dataspacePath + "'");
-        return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._defaultExecutionContext()._name())).toList().get(0);
+        if (executionContext.equals("defaultExecutionContext"))
+        {
+            return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._defaultExecutionContext()._name())).toList().get(0);
+        }
+        else
+        {
+            try
+            {
+                return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(executionContext)).toList().get(0);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Invalid execution context " + executionContext, e);
+            }
+        }
     }
 
-    private List<SerializedNamedPlans> buildPlanWithParameter(String queryClassPath, String dataspacePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
+    private List<SerializedNamedPlans> buildPlanWithParameterUsingDataspace(String queryClassPath, String dataspacePath, String executionContext, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.extensionsFunc.apply(pureModel);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
         org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
 
-        Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = getDataspaceDefaultExecutionContext(dataspacePath, pureModel);
-        Mapping mapping = executionContext._mapping();
-        Root_meta_core_runtime_Runtime runtime = executionContext._defaultRuntime()._runtimeValue();
+        Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContextPureElement = getDataspaceExecutionContext(dataspacePath, executionContext, pureModel);
+        Mapping mapping = executionContextPureElement._mapping();
+        Root_meta_core_runtime_Runtime runtime = executionContextPureElement._defaultRuntime()._runtimeValue();
         return getSerializedNamedPlans(pureModel, extensions, _class, mapping, runtime, document, query, queryDoc, graphQLCacheKey);
     }
 
@@ -536,7 +552,7 @@ public class GraphQLExecute extends GraphQL
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            GraphQLProdCacheKey key = new GraphQLProdCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            GraphQLProdCacheKey key = GraphQLProdCacheKey.newGraphQLProdCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
             return this.executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
         }
@@ -550,15 +566,15 @@ public class GraphQLExecute extends GraphQL
     @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime")
     @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/dataspace/{dataspacePath}")
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
-    public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("dataspacePath") String dataspacePath, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    public Response executeProdWithDataspace(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("dataspacePath") String dataspacePath, @QueryParam("executionContext") @DefaultValue("defaultExecutionContext") String executionContext, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            GraphQLProdCacheKey key = new GraphQLProdCacheKey(groupId, artifactId, versionId, dataspacePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            GraphQLProdCacheKey key = GraphQLProdCacheKey.newGraphQLProdCacheKeyWithDataspace(groupId, artifactId, versionId, dataspacePath, queryClassPath, executionContext, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(queryClassPath, dataspacePath, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            return this.executeGraphQLQueryWithDataspace(queryClassPath, dataspacePath, executionContext, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {
