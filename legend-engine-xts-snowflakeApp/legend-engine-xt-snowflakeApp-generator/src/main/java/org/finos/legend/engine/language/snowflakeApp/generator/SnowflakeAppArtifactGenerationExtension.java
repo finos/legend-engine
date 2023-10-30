@@ -13,7 +13,7 @@
 // limitations under the License.
 
 
-package org.finos.legend.engine.language.snowflakeApp.deployment;
+package org.finos.legend.engine.language.snowflakeApp.generator;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
@@ -22,9 +22,7 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
@@ -39,7 +37,7 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     private static  final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SnowflakeAppArtifactGenerationExtension.class);
     private static final String ROOT_PATH = "snowflakeApp";
-    private static final String FILE_NAME = "snowflakeArtifact.json";
+    private static final String FILE_NAME = "snowflakeAppArtifact.json";
 
     @Override
     public String getKey()
@@ -50,8 +48,7 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     @Override
     public boolean canGenerate(PackageableElement element)
     {
-        return false;
-        // return element instanceof Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
+         return element instanceof Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
     }
 
 

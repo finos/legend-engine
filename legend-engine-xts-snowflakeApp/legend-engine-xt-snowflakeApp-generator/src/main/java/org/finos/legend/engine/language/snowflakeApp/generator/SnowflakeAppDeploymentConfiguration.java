@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.snowflakeApp.deployment;
+package org.finos.legend.engine.language.snowflakeApp.generator;
 
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
 public class SnowflakeAppDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
 {
-    RelationalDatabaseConnection connection;
+    public RelationalDatabaseConnection connection;
 
     public SnowflakeAppDeploymentConfiguration(RelationalDatabaseConnection connection)
     {

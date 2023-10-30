@@ -480,7 +480,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
+            <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>
         </dependency>
         <!-- Snowflake App -->
 

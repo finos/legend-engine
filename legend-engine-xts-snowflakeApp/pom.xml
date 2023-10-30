@@ -34,5 +34,6 @@
         <module>legend-engine-xt-snowflakeApp-grammar</module>
         <module>legend-engine-xt-snowflakeApp-protocol</module>
         <module>legend-engine-xt-snowflakeApp-pure</module>
+        <module>legend-engine-xt-snowflakeApp-generator</module>
     </modules>
 </project>
