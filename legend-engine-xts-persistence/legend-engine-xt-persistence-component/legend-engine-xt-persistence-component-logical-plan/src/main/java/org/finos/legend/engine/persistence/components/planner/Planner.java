@@ -36,6 +36,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
@@ -428,7 +430,8 @@ public abstract class Planner
             if (duplicateCountFieldName.isPresent())
             {
                 FieldValue duplicateCountField = FieldValue.builder().fieldName(duplicateCountFieldName.get()).datasetRef(dataset.datasetReference()).build();
-                countIncomingRecords = FunctionImpl.builder().functionName(FunctionName.SUM).alias(INCOMING_RECORD_COUNT.get()).addValue(duplicateCountField).build();
+                FunctionImpl sumOfDuplicateFieldCount = FunctionImpl.builder().functionName(FunctionName.SUM).addValue(duplicateCountField).build();
+                countIncomingRecords = FunctionImpl.builder().functionName(FunctionName.COALESCE).alias(INCOMING_RECORD_COUNT.get()).addValue(sumOfDuplicateFieldCount, ObjectValue.of(0)).build();
             }
         }
 

@@ -31,7 +31,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     protected String incomingRecordCountWithSplits = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE " +
             "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
 
-    protected String incomingRecordCountWithSplitsAndDuplicates = "SELECT SUM(stage.`legend_persistence_count`) as `incomingRecordCount` " +
+    protected String incomingRecordCountWithSplitsAndDuplicates = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` " +
             "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE "
             + "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
 

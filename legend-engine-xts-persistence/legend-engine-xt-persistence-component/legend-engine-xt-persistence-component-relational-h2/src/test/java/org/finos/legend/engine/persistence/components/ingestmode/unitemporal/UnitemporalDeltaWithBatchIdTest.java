@@ -21,6 +21,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -300,10 +302,9 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         Assertions.assertEquals(stagingTableList.size(), 0);
     }
 
-    //@Test
-    void testMilestoningWithDataSplits() throws Exception
+    @Test
+    void testMilestoningAllVersionWithoutPerform() throws Exception
     {
-        // TODO Fix
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePathForInput + "with_data_splits/staging_data_pass1.csv";
         Dataset stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass1);
@@ -312,7 +313,11 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestName)
-//                .dataSplitField(dataSplitName)
+                .versioningStrategy(AllVersionsStrategy.builder()
+                        .dataSplitFieldName(dataSplitName)
+                        .versioningField(expiryDateName)
+                        .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                        .performStageVersioning(false).build())
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInName)
                         .batchIdOutName(batchIdOutName)
@@ -339,6 +344,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
 
         // ------------ Perform milestoning Pass2 ------------------------
+        ingestMode = ingestMode.withDeduplicationStrategy(FilterDuplicates.builder().build());
         String dataPass2 = basePathForInput + "with_data_splits/staging_data_pass2.csv";
         stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass2);
         String expectedDataPass2 = basePathForExpected + "with_data_splits/expected_pass2.csv";
