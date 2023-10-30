@@ -71,23 +71,28 @@ jobs:
       - name: Build + Test
         if: github.ref != 'refs/heads/master'
         run: |
-          mvn -B -e -DskipTests=true install
+          mvn -B -e -DskipTests=true deploy
           mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+      # - name: Build + Test
+      #   if: github.ref != 'refs/heads/master'
+      #   run: |
+      #     mvn -B -e -DskipTests=true deploy
+      #     mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
-      - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
-        if: github.ref == 'refs/heads/master'
-        env:
-          DOCKER_USERNAME: finos
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        # NOTE: here we publish snapshot to a staging Maven registry
-        # some registry like Maven Central requires javadoc, but for now we
-        # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
-        # as the latter binds to generate-sources which runs before compile phase
-        # and can cause problem with some code generators
-        # See https://github.com/finos/legend-engine/pull/924
-        run: |
-          mvn -B -e -DskipTests=true deploy -P docker-snapshot,sonar
-          mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
+      # - name: Build + Test + Maven Deploy + Sonar + Docker Snapshot
+      #   if: github.ref == 'refs/heads/master'
+      #   env:
+      #     DOCKER_USERNAME: finos
+      #     DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      #   # NOTE: here we publish snapshot to a staging Maven registry
+      #   # some registry like Maven Central requires javadoc, but for now we
+      #   # don't need to, if we do, call javadoc:jar goal instead of javadoc:javadoc
+      #   # as the latter binds to generate-sources which runs before compile phase
+      #   # and can cause problem with some code generators
+      #   # See https://github.com/finos/legend-engine/pull/924
+      #   run: |
+      #     mvn -B -e -DskipTests=true deploy -P docker-snapshot,sonar
+      #     mvn -B -e surefire:test -DargLine="-XX:MaxRAMPercentage=70.0" -Dsurefire.reports.directory=${GITHUB_WORKSPACE}/surefire-reports-aggregate
 
       - name: Upload Test Results
         if: always()
