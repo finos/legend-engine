@@ -1997,6 +1997,32 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-shared</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-relationalStore</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>

@@ -612,6 +612,22 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-providers-relationalStore</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-providers-service</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-providers-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-providers-shared</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-test-data-generation</artifactId>
         </dependency>
         <dependency>
