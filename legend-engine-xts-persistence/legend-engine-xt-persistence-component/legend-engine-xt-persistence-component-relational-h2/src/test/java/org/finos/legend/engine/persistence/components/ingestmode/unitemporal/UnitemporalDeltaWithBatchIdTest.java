@@ -16,36 +16,34 @@ package org.finos.legend.engine.persistence.components.ingestmode.unitemporal;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.FilterType;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
+import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionComparator;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.versioning.TestDedupAndVersioning;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
+import java.util.*;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdInName;
-import static org.finos.legend.engine.persistence.components.TestUtils.batchIdOutName;
-import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorName;
-import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorValues;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
+import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
 
 class UnitemporalDeltaWithBatchIdTest extends BaseTest
 {
@@ -371,4 +369,191 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStatsList.add(createExpectedStatsMap(0, 0, 0, 0, 0));
         executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass3, expectedStatsList, dataSplitRanges);
     }
+
+    @Test
+    void testUniTemporalDeltaWithAllVersionGreaterThanAndStagingFilters() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingDataset = DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatch)
+                .build();
+
+        createStagingTableWithoutPks(stagingDataset);
+        DerivedDataset stagingTable = DerivedDataset.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersion)
+                .addDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 1))
+                .build();
+        String path = basePathForInput + "with_all_version/data1.csv";
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatch(path);
+
+        // Generate the milestoning object
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+                .digestField(digestName)
+                .versioningStrategy(AllVersionsStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                        .performStageVersioning(true)
+                        .build())
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+
+        // ------------ Perform milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePathForExpected + "with_all_version/greater_than/expected_pass1.csv";
+        // 2. Execute plans and verify results
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1  = createExpectedStatsMap(3,0,3,0,0);
+        Map<String, Object> expectedStats2  = createExpectedStatsMap(2,0,0,2,0);
+        Map<String, Object> expectedStats3  = createExpectedStatsMap(1,0,0,1,0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        expectedStatsList.add(expectedStats3);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, fixedClock_2000_01_01);
+
+        // ------------ Perform milestoning Pass2 Fail on Duplicates ------------------------
+        ingestMode = ingestMode.withDeduplicationStrategy(FailOnDuplicates.builder().build());
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 2));
+        datasets = Datasets.of(mainTable, stagingTable);
+        try
+        {
+            executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, fixedClock_2000_01_01);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
+
+        // ------------ Perform milestoning Pass2 Filter Duplicates ------------------------
+        String expectedDataPass2 = basePathForExpected + "with_all_version/greater_than/expected_pass2.csv";
+        expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats4  = createExpectedStatsMap(4,0,1,0,0);
+        Map<String, Object> expectedStats5  = createExpectedStatsMap(2,0,0,2,0);
+        expectedStatsList.add(expectedStats4);
+        expectedStatsList.add(expectedStats5);
+
+        ingestMode = ingestMode.withDeduplicationStrategy(FilterDuplicates.builder().build());
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 2));
+        datasets = Datasets.of(mainTable, stagingTable);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, fixedClock_2000_01_01);
+
+        // ------------ Perform milestoning Pass3 Data Error ------------------------
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 3));
+        datasets = Datasets.of(mainTable, stagingTable);
+
+        try
+        {
+            executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, fixedClock_2000_01_01);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+        }
+    }
+
+    @Test
+    void testUniTemporalDeltaWithAllVersionDigestBasedAndStagingFilters() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingDataset = DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatch)
+                .build();
+
+        createStagingTableWithoutPks(stagingDataset);
+        DerivedDataset stagingTable = DerivedDataset.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersion)
+                .addDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 1))
+                .build();
+        String path = basePathForInput + "with_all_version/data1.csv";
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatch(path);
+
+        // Generate the milestoning object
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+                .digestField(digestName)
+                .versioningStrategy(AllVersionsStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                        .performStageVersioning(true)
+                        .build())
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInName)
+                        .batchIdOutName(batchIdOutName)
+                        .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+
+        // ------------ Perform milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePathForExpected + "with_all_version/digest_based/expected_pass1.csv";
+        // 2. Execute plans and verify results
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1  = createExpectedStatsMap(3,0,3,0,0);
+        Map<String, Object> expectedStats2  = createExpectedStatsMap(2,0,0,2,0);
+        Map<String, Object> expectedStats3  = createExpectedStatsMap(1,0,0,1,0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        expectedStatsList.add(expectedStats3);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, fixedClock_2000_01_01);
+
+        // ------------ Perform milestoning Pass2 Fail on Duplicates ------------------------
+        ingestMode = ingestMode.withDeduplicationStrategy(FailOnDuplicates.builder().build());
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 2));
+        datasets = Datasets.of(mainTable, stagingTable);
+        try
+        {
+            executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, fixedClock_2000_01_01);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
+
+        // ------------ Perform milestoning Pass2 Filter Duplicates ------------------------
+        String expectedDataPass2 = basePathForExpected + "with_all_version/digest_based/expected_pass2.csv";
+        expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats4  = createExpectedStatsMap(4,0,1,1,0);
+        Map<String, Object> expectedStats5  = createExpectedStatsMap(2,0,0,2,0);
+        expectedStatsList.add(expectedStats4);
+        expectedStatsList.add(expectedStats5);
+
+        ingestMode = ingestMode.withDeduplicationStrategy(FilterDuplicates.builder().build());
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 2));
+        datasets = Datasets.of(mainTable, stagingTable);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, fixedClock_2000_01_01);
+
+        // ------------ Perform milestoning Pass3 Data Error ------------------------
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 3));
+        datasets = Datasets.of(mainTable, stagingTable);
+
+        try
+        {
+            executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, fixedClock_2000_01_01);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+        }
+    }
+
 }
