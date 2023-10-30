@@ -24,12 +24,12 @@ import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDep
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppArtifact;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppContent;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppGenerator;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentManager;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifact;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentManager;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentResult;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppContent;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppGenerator;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
@@ -39,32 +39,31 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 
 public class SnowflakeAppService implements FunctionActivatorService<Root_meta_external_function_activator_snowflakeApp_SnowflakeApp, SnowflakeAppDeploymentConfiguration, SnowflakeDeploymentResult>
 {
     private ConnectionManagerSelector connectionManager;
-    private SnowflakeDeploymentManager snowflakeDeploymentManager;
+    private SnowflakeAppDeploymentManager snowflakeDeploymentManager;
 
     public SnowflakeAppService()
     {
         TemporaryTestDbConfiguration conf = new TemporaryTestDbConfiguration();
         conf.port = Integer.parseInt(System.getProperty("h2ServerPort", "1234"));
         this.connectionManager = new ConnectionManagerSelector(conf, FastList.newList());
-        this.snowflakeDeploymentManager = new SnowflakeDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
+        this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
     }
 
     public SnowflakeAppService(ConnectionManagerSelector connectionManager)
     {
         this.connectionManager = connectionManager;
-        this.snowflakeDeploymentManager = new SnowflakeDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
+        this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
     }
 
     public SnowflakeAppService(PlanExecutor executor)
     {
-        this.snowflakeDeploymentManager = new SnowflakeDeploymentManager(executor);
+        this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(executor);
     }
 
     @Override

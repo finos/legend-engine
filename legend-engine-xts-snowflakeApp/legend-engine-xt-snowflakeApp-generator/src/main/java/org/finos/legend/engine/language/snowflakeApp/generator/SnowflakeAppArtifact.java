@@ -12,11 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.snowflakeApp.deployment;
+package org.finos.legend.engine.language.snowflakeApp.generator;
 
-import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 
 public class SnowflakeAppArtifact extends FunctionActivatorArtifact

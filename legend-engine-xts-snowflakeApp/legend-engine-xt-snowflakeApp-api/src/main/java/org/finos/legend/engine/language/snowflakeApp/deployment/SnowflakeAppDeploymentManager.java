@@ -21,13 +21,15 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifact;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppContent;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
@@ -42,9 +44,9 @@ import java.util.List;
 import java.util.Map;
 
 
-public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAppArtifact, SnowflakeDeploymentResult, SnowflakeAppDeploymentConfiguration>
+public class SnowflakeAppDeploymentManager implements DeploymentManager<SnowflakeAppArtifact, SnowflakeDeploymentResult, SnowflakeAppDeploymentConfiguration>
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDeploymentManager.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeAppDeploymentManager.class);
 
     private SnowflakeAppDeploymentTool snowflakeAppDeploymentTool;
     private PlanExecutor planExecutor;
@@ -52,12 +54,12 @@ public class SnowflakeDeploymentManager implements DeploymentManager<SnowflakeAp
     private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
     private static final  String deploymentTable = "APP_METADATA";
 
-    public SnowflakeDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
+    public SnowflakeAppDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
     {
         this.snowflakeAppDeploymentTool = deploymentTool;
     }
 
-    public SnowflakeDeploymentManager(PlanExecutor planExecutor)
+    public SnowflakeAppDeploymentManager(PlanExecutor planExecutor)
     {
         this.planExecutor = planExecutor;
         connectionManager = ((RelationalStoreState)planExecutor.getExtraExecutors().select(c -> c instanceof RelationalStoreExecutor).getFirst().getStoreState()).getRelationalExecutor().getConnectionManager();

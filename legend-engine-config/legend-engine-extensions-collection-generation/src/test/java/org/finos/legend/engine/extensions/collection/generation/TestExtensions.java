@@ -71,7 +71,7 @@ import org.finos.legend.engine.language.pure.grammar.to.RedshiftGrammarComposerE
 import org.finos.legend.engine.language.pure.grammar.to.DatabricksGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.SnowflakeAppCompilerExtension;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppArtifactGenerationExtension;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGrammarComposer;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
