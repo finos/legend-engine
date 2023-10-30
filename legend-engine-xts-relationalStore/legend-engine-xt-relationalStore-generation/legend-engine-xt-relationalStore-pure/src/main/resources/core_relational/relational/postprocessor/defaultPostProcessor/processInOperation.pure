@@ -107,13 +107,14 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
 
    $changedFunctions->fold({func, result |
                           let dbType                                = $connection.type;
+                          let dbConfig                              = $dbType->createDbConfig([]);
                           let origInFunction                        = $func.first->cast(@DynaFunction);
                           let newInFunction                         = $func.second->cast(@DynaFunction);
 
                           let outerAllocationNodeName               = if($newInFunction.parameters->at(1)->instanceOf(VarPlaceHolder),
                                                                          |$newInFunction.parameters->at(1)->cast(@VarPlaceHolder).name,
-                                                                         |$newInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne()->replace('tempTableForIn_', prefixForWrapperAllocationNodeName()));
-                          let tempTableName                         = $dbType->createDbConfig([]).procesTempTableName($outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempTableForIn_'));
+                                                                         |$newInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne()->replace('tempTableForIn_', prefixForWrapperAllocationNodeName())->replace($dbConfig.procesTempTableName(''), ''));
+                          let tempTableName                         = $dbConfig.procesTempTableName($outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempTableForIn_'));
                           let tempTableColumnName                   = 'ColumnForStoringInCollection';
                           let allocationNodeName                    = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempVarForIn_');
 
