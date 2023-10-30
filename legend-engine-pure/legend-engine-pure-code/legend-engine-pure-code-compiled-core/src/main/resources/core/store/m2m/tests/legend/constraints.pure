@@ -63,6 +63,26 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnTypeWith
    assert(jsonEquivalent('{"name":"FirmX"}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> 
+{  serverVersion.start='v1_19_0' }
+meta::pure::mapping::modelToModel::test::alloy::constraints::testGraphFetchWithPackageConflictingPropertyName():Boolean[1]
+{
+    let result = execute( |Firm.all()->graphFetchChecked(#{Firm {organization} }#)->serialize(#{Firm {organization} }#),
+                           m2mconstraintmapping1,
+                           ^Runtime(
+                            connectionStores = ^ConnectionStore(
+                              element=^ModelStore(),
+                              connection= ^JsonModelConnection(
+                                class=_Firm,
+                                url='data:application/json,{"name":"FirmX","org":"orgA"}'
+                             )
+                            )
+      ),
+      meta::pure::extension::defaultExtensions()
+   );
+   assert(jsonEquivalent('{"defects":[{"path":[],"enforcementLevel":"Error","ruleType":"ClassConstraint","externalId":null,"id":"0","ruleDefinerPath":"meta::pure::mapping::modelToModel::test::alloy::constraints::Firm","message":"Constraint :[0] violated in the Class Firm"}],"source":{"defects":[],"source":{"number":1,"record":"{\\"name\\":\\"FirmX\\",\\"org\\":\\"orgA\\"}"},"value":{"org":"orgA","employees":[]}},"value":{"organization":"orgA"}}'->parseJSON(), $result.values->toOne()->parseJSON()));
+}
+
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  serverVersion.start='v1_19_0' }
 meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnSourceTypeWithFailingConstraintSucceedsWithConstraintsDisabled():Boolean[1]
@@ -386,6 +406,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::constraints::Firm
 {
   name: String[1];
   employees: meta::pure::mapping::modelToModel::test::alloy::constraints::Person[*];
+  organization: String[1];
 }
 
 Class meta::pure::mapping::modelToModel::test::alloy::constraints::Firm2
@@ -403,6 +424,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::constraints::_Firm
 {
   name: String[1];
   employees:meta::pure::mapping::modelToModel::test::alloy::constraints::_Person[*];
+  org: String[1];
 }
 
 Class meta::pure::mapping::modelToModel::test::alloy::constraints::_Firm2
@@ -680,7 +702,8 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::constraints::m2mconstrai
   {
     ~src meta::pure::mapping::modelToModel::test::alloy::constraints::_Firm
     name: $src.name,
-    employees: $src.employees
+    employees: $src.employees,
+    organization: $src.org
   }
 
   meta::pure::mapping::modelToModel::test::alloy::constraints::Person: Pure
