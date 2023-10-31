@@ -334,7 +334,8 @@ primaryExpression
     | ident (DOT ident)*                                                             #dereference
     | primaryExpression CAST_OPERATOR dataType                                       #doubleColonCast
     | timestamp=primaryExpression AT TIME ZONE zone=primaryExpression                #atTimezone
-    | ARRAY? EMPTY_SQUARE_BRACKET                                                  #emptyArray
+    | ARRAY? EMPTY_SQUARE_BRACKET                                                    #emptyArray
+    | primaryExpression MINUS GT stringLiteral                                       #semiStructuredPropertyAccess
     ;
 
 explicitFunction
