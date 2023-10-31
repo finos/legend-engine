@@ -48,6 +48,12 @@ Class meta::external::query::sql::metamodel::SubqueryExpression extends meta::ex
   <<equality.Key>> query: meta::external::query::sql::metamodel::Query[1];
 }
 
+Class meta::external::query::sql::metamodel::SemiStructuredPropertyAccess extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> propertyName: String[1];
+  <<equality.Key>> parent : meta::external::query::sql::metamodel::Expression[1];
+}
+
 Class meta::external::query::sql::metamodel::QuerySpecification extends meta::external::query::sql::metamodel::QueryBody
 {
   <<equality.Key>> select: meta::external::query::sql::metamodel::Select[1];
