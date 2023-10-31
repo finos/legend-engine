@@ -44,12 +44,6 @@ class NontemporalSnapshotPlanner extends Planner
     NontemporalSnapshotPlanner(Datasets datasets, NontemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
-
-        // Validation
-        if (ingestMode.versioningStrategy() instanceof MaxVersionStrategy && primaryKeys.isEmpty())
-        {
-            throw new IllegalStateException("Primary keys are mandatory for MaxVersion");
-        }
     }
 
     @Override

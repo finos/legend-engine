@@ -92,15 +92,6 @@ public interface BitemporalDeltaAbstract extends IngestMode, BitemporalMilestone
             @Override
             public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
             {
-                Optional<MergeDataVersionResolver> versionResolver = allVersionsStrategyAbstract.mergeDataVersionResolver();
-                if (!versionResolver.isPresent())
-                {
-                    throw new IllegalStateException("Cannot build BitemporalDelta, VersioningResolver is mandatory");
-                }
-                if (!(versionResolver.orElseThrow(IllegalStateException::new) instanceof DigestBasedResolverAbstract))
-                {
-                    throw new IllegalStateException("Cannot build BitemporalDelta, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
-                }
                 if (allVersionsStrategyAbstract.performStageVersioning())
                 {
                     throw new IllegalStateException("Cannot build BitemporalDelta, perform versioning not allowed");
