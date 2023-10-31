@@ -455,7 +455,14 @@ public class SQLGrammarComposer
             {
                 return val.accept(this);
             }
-
+            
+            @Override
+            public String visit(SemiStructuredPropertyAccess val)
+            {
+                String parent = val.parent.accept(this);
+                return parent + " -> " + val.propertyName;
+            }
+            
             @Override
             public String visit(SetOperation val)
             {
