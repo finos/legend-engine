@@ -320,6 +320,42 @@ public class TestSQLRoundTrip
     {
         check("SELECT * from (select col from myTable)");
     }
+    
+    @Test
+    public void testSemistructuredDataAccess()
+    {
+        check("SELECT Book -> 'authorName' from Book_Data", "select Book -> authorname from Book_Data");
+    }
+
+    @Test
+    public void testSemistructuredNestedDataAccess()
+    {
+        check("SELECT Book -> 'publication' -> 'publicationName' from Book_Data", "select Book -> publication -> publicationname from Book_Data");
+    }
+
+    @Test
+    public void testSemistructuredDataAccessWithAlias()
+    {
+        check("SELECT b.Book -> 'publication' -> 'publicationName' AS Publicationname from Book_Data AS b", "select b.Book -> publication -> publicationname AS Publicationname from Book_Data AS b");
+    }
+
+    @Test
+    public void testSemistructuredDataAccessWithAlloyModel()
+    {
+        check("select\n" +
+                "    c.value -> 'firstName'::varchar as \"First Name\",\n" +
+                "    c.value -> 'lastName' as \"Last Name\"\n" +
+                "  from\n" +
+                "    alloy_model(\n" +
+                "      class            => \"my::Person\",\n" +
+                "      project          =>  \"com.gs:sample-project:0.1.0\",\n" +
+                "      dataSpace        =>   \"my::Dataspace\",\n" +
+                "      executionContext => \"PROD\"\n" +
+                "    ) as \"c\"\n" +
+                "  where\n" +
+                "  \"c\".value -> 'employer(%latest)' -> 'name' = 'GS'",
+                "select CAST(c.value -> firstname AS varchar) AS First Name, c.value -> lastname AS Last Name from alloy_model(class => my::Person, project => com.gs:sample-project:0.1.0, dataSpace => my::Dataspace, executionContext => PROD) AS c where c.value -> employer(%latest) -> name = 'GS'");
+    }
 
     private void fail(String sql, int start, int end, String message)
     {
