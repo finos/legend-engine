@@ -140,7 +140,7 @@ class AppendOnlyTest extends BaseTest
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
-        createStagingTableWithoutPrimaryKeys(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -234,7 +234,7 @@ class AppendOnlyTest extends BaseTest
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithNonPkVersion();
 
         // Create staging table
-        createStagingTableWithoutPrimaryKeys(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -284,7 +284,7 @@ class AppendOnlyTest extends BaseTest
         IncrementalClock incrementalClock = new IncrementalClock(fixedExecutionZonedDateTime1.toInstant(), ZoneOffset.UTC, 1000);
 
         // Create staging table
-        createStagingTableWithoutPrimaryKeys(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
@@ -341,7 +341,7 @@ class AppendOnlyTest extends BaseTest
         IncrementalClock incrementalClock = new IncrementalClock(fixedExecutionZonedDateTime1.toInstant(), ZoneOffset.UTC, 1000);
 
         // Create staging table
-        createStagingTableWithoutPrimaryKeys(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()

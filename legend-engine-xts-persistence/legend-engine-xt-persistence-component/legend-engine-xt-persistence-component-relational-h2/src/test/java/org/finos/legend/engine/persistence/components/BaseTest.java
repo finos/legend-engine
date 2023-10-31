@@ -140,17 +140,6 @@ public class BaseTest
         executor.executePhysicalPlan(tableCreationPhysicalPlan);
     }
 
-    protected void createStagingTableWithoutPrimaryKeys(DatasetDefinition stagingTable) throws Exception
-    {
-        List<Field> fieldsWithoutPk = stagingTable.schema().fields().stream()
-            .map(field -> field.withPrimaryKey(false)).collect(Collectors.toList());
-        DatasetDefinition stagingTableWithoutPrimaryKeys =  stagingTable.withSchema(stagingTable.schema().withFields(fieldsWithoutPk));
-        RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
-        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTableWithoutPrimaryKeys, true);
-        SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
-        executor.executePhysicalPlan(tableCreationPhysicalPlan);
-    }
-
     protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
     {
         return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
@@ -407,6 +396,26 @@ public class BaseTest
             "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest) " +
             "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\"" +
             " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForWithPartitionWithVersion(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest, version) " +
+            "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\", CONVERT( \"version\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest, version', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForWithPartitionWithVersionInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(DATE, ENTITY, PRICE, VOLUME, DIGEST, VERSION) " +
+            "SELECT CONVERT( \"DATE\",DATE ), \"ENTITY\", CONVERT( \"PRICE\", DECIMAL(20,2)), CONVERT( \"VOLUME\", BIGINT), \"DIGEST\", CONVERT( \"VERSION\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'DATE, ENTITY, PRICE, VOLUME, DIGEST, VERSION', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 

@@ -702,6 +702,23 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getEntityPriceWithVersionStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(date)
+                .addFields(entity)
+                .addFields(price)
+                .addFields(volume)
+                .addFields(digest)
+                .addFields(version)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getBitemporalMainTable()
     {
         return DatasetDefinition.builder()
