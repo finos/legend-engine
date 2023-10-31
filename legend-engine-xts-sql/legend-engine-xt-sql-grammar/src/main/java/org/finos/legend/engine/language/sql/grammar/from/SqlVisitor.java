@@ -1452,7 +1452,17 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
 //        return new SubqueryExpression((Query) visit(context.query()));
         return unsupported();
     }
-
+    
+    @Override
+    public Node visitSemiStructuredPropertyAccess(SqlBaseParser.SemiStructuredPropertyAccessContext context)
+    {
+        SemiStructuredPropertyAccess semiStructuredPropertyAccess = new SemiStructuredPropertyAccess();
+        StringLiteral stringLiteral = (StringLiteral) visitStringLiteral(context.stringLiteral());
+        semiStructuredPropertyAccess.propertyName = stringLiteral.value.toLowerCase();
+        semiStructuredPropertyAccess.parent = (Expression) visit(context.primaryExpression());
+        return semiStructuredPropertyAccess;
+    }
+    
     @Override
     public Node visitArraySlice(SqlBaseParser.ArraySliceContext ctx)
     {
