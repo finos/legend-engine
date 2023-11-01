@@ -480,6 +480,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       })
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByWithExtendAlias():Boolean[1]
+{
+  test(
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") GROUP BY 1 ORDER BY 1, Calc2 ASC',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->project(col(row:TDSRow[1] | 1, 'Calc'))
+      ->extend([
+        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc_1'),
+        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc2')
+      ])
+      ->restrict(['Calc_1', 'Calc2'])
+      ->distinct()
+      ->sort([asc('Calc_1'), asc('Calc2')])
+      ->renameColumns(pair('Calc_1', 'Calc'))
+      })
+}
+
 //WHERE
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testWhere():Boolean[1]
 {
