@@ -96,7 +96,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        String dataPass3 = basePathForInput + "without_partition/no_version/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass3.csv";
         // 1. Load Staging table
         loadBasicStagingData(dataPass3);
@@ -164,7 +164,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        String dataPass3 = basePathForInput + "without_partition/no_version/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass3.csv";
         // 1. Load Staging table
         loadBasicStagingDataInUpperCase(dataPass3);
@@ -194,7 +194,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        dataPass3 = basePathForInput + "without_partition/no_version/staging_data_pass3.csv";
+        dataPass3 = "src/test/resources/data/empty_file.csv";
         expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass2.csv";
         // 1. Load Staging table
         loadBasicStagingDataInUpperCase(dataPass3);
@@ -206,7 +206,7 @@ class UnitemporalSnapshotTest extends BaseTest
         // ------------ Perform unitemporal snapshot milestoning Pass6 (Empty Batch) Empty Data Handling = Skip ------------------------
         options = options.withCleanupStagingData(true);
 
-        dataPass3 = basePathForInput + "without_partition/no_version/staging_data_pass3.csv";
+        dataPass3 = "src/test/resources/data/empty_file.csv";
         expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass4.csv";
         // 1. Load Staging table
         loadBasicStagingDataInUpperCase(dataPass3);
@@ -268,7 +268,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        String dataPass3 = basePathForInput + "with_partition/no_version/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_partition/no_version/expected_pass3.csv";
         // 1. Load Staging table
         loadStagingDataForWithPartition(dataPass3);
@@ -454,7 +454,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
         // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
         options = options.withCleanupStagingData(true);
-        String dataPass3 = basePathForInput + "without_partition/max_version/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "without_partition/max_version/expected_pass3.csv";
         // 1. Load Staging table
         loadStagingDataWithVersion(dataPass3);
@@ -517,7 +517,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
         // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
         options = options.withCleanupStagingData(true);
-        String dataPass3 = basePathForInput + "with_partition/max_version/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_partition/max_version/expected_pass3.csv";
         // 1. Load Staging table
         loadStagingDataForWithPartitionWithVersion(dataPass3);
@@ -580,7 +580,7 @@ class UnitemporalSnapshotTest extends BaseTest
 
         // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
         options = options.withCleanupStagingData(true);
-        String dataPass3 = basePathForInput + "with_partition/max_version/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";;
         String expectedDataPass3 = basePathForExpected + "with_partition/max_version/expected_pass3.csv";
         // 1. Load Staging table
         loadStagingDataForWithPartitionWithVersionInUpperCase(dataPass3);

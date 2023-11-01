@@ -98,7 +98,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "without_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "without_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass3);
@@ -199,7 +199,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithDeleteInd(dataPass3);
@@ -248,7 +248,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "less_columns_in_staging/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "less_columns_in_staging/expected_pass3.csv";
         stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMain(dataPass3);
 
@@ -360,7 +360,7 @@ class UnitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, Datasets.of(mainTable, stagingTable), schema, expectedDataPass2, expectedStatsList, dataSplitRanges);
 
         // ------------ Perform milestoning Pass3 - Empty batch ------------------------
-        String dataPass3 = basePathForInput + "with_data_splits/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         stagingTable = TestUtils.getBasicCsvDatasetReferenceTableWithDataSplits(dataPass3);
         String expectedDataPass3 = basePathForExpected + "with_data_splits/expected_pass3.csv";
         // Execute plans and verify results

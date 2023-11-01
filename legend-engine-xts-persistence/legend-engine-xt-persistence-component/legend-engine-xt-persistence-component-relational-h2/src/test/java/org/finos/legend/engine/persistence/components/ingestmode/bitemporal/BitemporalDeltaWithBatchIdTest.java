@@ -118,7 +118,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "source_specifies_from_and_through/without_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from_and_through/without_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataForBitemp(dataPass3);
@@ -184,7 +184,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "source_specifies_from_and_through/with_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from_and_through/with_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataForBitempWithDeleteInd(dataPass3);
@@ -239,7 +239,7 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass2, expectedStats);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "source_specifies_from_and_through/less_columns_in_staging/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "source_specifies_from_and_through/less_columns_in_staging/expected_pass3.csv";
         stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMainForBitemp(dataPass3);
         // Execute plans and verify results

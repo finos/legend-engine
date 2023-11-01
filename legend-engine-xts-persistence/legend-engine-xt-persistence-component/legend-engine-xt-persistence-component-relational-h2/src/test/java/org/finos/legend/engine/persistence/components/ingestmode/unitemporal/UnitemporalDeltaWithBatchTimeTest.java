@@ -95,7 +95,7 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "without_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "without_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass3);
@@ -167,7 +167,7 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithDeleteInd(dataPass3);
@@ -214,7 +214,7 @@ class UnitemporalDeltaWithBatchTimeTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "less_columns_in_staging/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "less_columns_in_staging/expected_pass3.csv";
         stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMain(dataPass3);
 

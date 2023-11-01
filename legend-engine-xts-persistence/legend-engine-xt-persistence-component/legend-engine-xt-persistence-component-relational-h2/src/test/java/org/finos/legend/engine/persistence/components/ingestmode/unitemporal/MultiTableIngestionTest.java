@@ -145,8 +145,8 @@ public class MultiTableIngestionTest extends BaseTest
        verifyResults(2, datsetSchema2, expectedDataset2Path, "main2", result.get(1), expectedStats);
 
         // Pass 3:
-        dataset1Path = basePathForInput + "multi_table_ingestion/staging_dataset_pass3.csv";
-        dataset2Path = basePathForInput + "multi_table_ingestion/staging_dataset_pass3.csv";
+        dataset1Path = "src/test/resources/data/empty_file.csv";
+        dataset2Path = "src/test/resources/data/empty_file.csv";
         expectedDataset1Path = basePathForExpected + "multi_table_ingestion/expected_dataset1_pass3.csv";
         expectedDataset2Path = basePathForExpected + "multi_table_ingestion/expected_dataset2_pass3.csv";
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
