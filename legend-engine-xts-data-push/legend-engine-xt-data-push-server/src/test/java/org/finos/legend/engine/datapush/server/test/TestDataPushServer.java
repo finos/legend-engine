@@ -14,13 +14,7 @@
 
 package org.finos.legend.engine.datapush.server.test;
 
-import org.finos.legend.connection.AuthenticationMechanism;
-import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
-import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
-import org.finos.legend.connection.impl.RelationalDatabaseType;
-import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
@@ -63,25 +57,6 @@ public class TestDataPushServer extends AbstractDataPushServerResourceTest
         {
             Assume.assumeTrue("Can't start PostgreSQLContainer", false);
         }
-
-        System.setProperty("passwordRef", this.postgresContainer.getPassword());
-
-        DataPushServerForTest application = this.getApplicationInstance();
-        ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(
-                this.postgresContainer.getHost(),
-                this.postgresContainer.getPort(),
-                this.postgresContainer.getDatabaseName()
-        );
-        application.getConnectionProvider().injectConnection(Connection.builder()
-                .databaseSupport(application.getEnvironment().getDatabaseSupport(RelationalDatabaseType.POSTGRES))
-                .identifier("test::connection")
-                .authenticationMechanisms(
-                        AuthenticationMechanism.builder()
-                                .type(CoreAuthenticationMechanismType.USER_PASSWORD).build()
-                )
-                .connectionSpecification(connectionSpecification)
-                .build()
-        );
     }
 
     @After

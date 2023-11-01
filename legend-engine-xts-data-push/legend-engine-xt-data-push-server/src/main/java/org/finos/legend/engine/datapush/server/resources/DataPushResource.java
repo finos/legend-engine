@@ -18,7 +18,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
 import org.finos.legend.connection.LegendEnvironment;
@@ -64,15 +63,13 @@ public class DataPushResource extends BaseResource
     private final ConnectionModelLoader connectionModelLoader;
     private final LegendEnvironment environment;
     private final IdentityFactory identityFactory;
-    private final ConnectionProvider connectionProvider;
     private final ConnectionFactory connectionFactory;
     private final DataPusherProvider dataPusherProvider;
 
-    public DataPushResource(MetaDataServerConfiguration metadataserver, LegendEnvironment environment, IdentityFactory identityFactory, ConnectionProvider connectionProvider, ConnectionFactory connectionFactory, DataPusherProvider dataPusherProvider)
+    public DataPushResource(MetaDataServerConfiguration metadataserver, LegendEnvironment environment, IdentityFactory identityFactory, ConnectionFactory connectionFactory, DataPusherProvider dataPusherProvider)
     {
         this.environment = environment;
         this.identityFactory = identityFactory;
-        this.connectionProvider = connectionProvider;
         this.connectionFactory = connectionFactory;
         this.dataPusherProvider = dataPusherProvider;
         this.connectionModelLoader = new ConnectionModelLoader(metadataserver);
@@ -81,7 +78,7 @@ public class DataPushResource extends BaseResource
     @Path("/push/{groupId}/{artifactId}/{versionId}/{connectionPath}")
     @POST
     @Consumes({
-            // TODO: content type will drive how we interpret the data, right nowe
+            // TODO: content type will drive how we interpret the data, right now
             // we only support CSV
             MediaType.TEXT_PLAIN,
             MediaType.TEXT_XML,
@@ -115,6 +112,7 @@ public class DataPushResource extends BaseResource
         }
         catch (Exception exception)
         {
+            LOGGER.error("Can't push data:\n", exception);
             return handleException(profiles, exception);
         }
     }
@@ -122,7 +120,7 @@ public class DataPushResource extends BaseResource
     @Path("/pushDev/{projectId}/{workspaceId}/{connectionPath}")
     @POST
     @Consumes({
-            // TODO: content type will drive how we interpret the data, right nowe
+            // TODO: content type will drive how we interpret the data, right now
             // we only support CSV
             MediaType.TEXT_PLAIN,
             MediaType.TEXT_XML,
@@ -156,6 +154,7 @@ public class DataPushResource extends BaseResource
         }
         catch (Exception exception)
         {
+            LOGGER.error("Can't push data:\n", exception);
             return handleException(profiles, exception);
         }
     }
@@ -179,5 +178,43 @@ public class DataPushResource extends BaseResource
         {
             throw new RuntimeException(e);
         }
+    }
+
+    // ------------------------ DEBUG -----------------------
+    // TO BE REMOVED when we stabilize the API and models
+
+    @Path("/pushDev/debug")
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response TEMPORARY__pushData_Debug(
+            DebugInput input,
+            @Context HttpServletRequest request,
+            @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager
+    )
+    {
+        List<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = this.identityFactory.createIdentity(
+                IdentitySpecification.builder().profiles(profiles).build()
+        );
+        CSVData csvData = new CSVData();
+        csvData.value = input.data;
+
+        try
+        {
+            this.pushCSVData(identity, input.connection, csvData);
+            return Response.noContent().build();
+        }
+        catch (Exception exception)
+        {
+            LOGGER.error("Can't push data:\n", exception);
+            return handleException(profiles, exception);
+        }
+    }
+
+    public static class DebugInput
+    {
+        public org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.Connection connection;
+        public String data;
     }
 }

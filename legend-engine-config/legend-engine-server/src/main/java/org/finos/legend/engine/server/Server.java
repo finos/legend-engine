@@ -45,11 +45,9 @@ import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
-import org.finos.legend.connection.impl.DefaultConnectionProvider;
 import org.finos.legend.connection.impl.HACKY__SnowflakeConnectionAdapter;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
@@ -473,10 +471,8 @@ public class Server<T extends ServerConfiguration> extends Application<T>
                                 .build()
                 ).build();
 
-        ConnectionProvider connectionProvider = DefaultConnectionProvider.builder().build();
         return ConnectionFactory.builder()
                 .environment(environment)
-                .connectionProvider(connectionProvider)
                 .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),

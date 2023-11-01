@@ -18,11 +18,9 @@ import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
 import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
-import org.finos.legend.connection.impl.InstrumentedConnectionProvider;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
@@ -65,17 +63,10 @@ public class DataPushServerForTest extends DataPushServer
     }
 
     @Override
-    public ConnectionProvider buildConnectionBuilder(DataPushServerConfiguration configuration, LegendEnvironment environment)
-    {
-        return new InstrumentedConnectionProvider();
-    }
-
-    @Override
-    public ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, ConnectionProvider connectionProvider, LegendEnvironment environment)
+    public ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, LegendEnvironment environment)
     {
         return ConnectionFactory.builder()
                 .environment(this.environment)
-                .connectionProvider(this.connectionProvider)
                 .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder()
@@ -89,10 +80,5 @@ public class DataPushServerForTest extends DataPushServer
     public LegendEnvironment getEnvironment()
     {
         return environment;
-    }
-
-    public InstrumentedConnectionProvider getConnectionProvider()
-    {
-        return (InstrumentedConnectionProvider) connectionProvider;
     }
 }

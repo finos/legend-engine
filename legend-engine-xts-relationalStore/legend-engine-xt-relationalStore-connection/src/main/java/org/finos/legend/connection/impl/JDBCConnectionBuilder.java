@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.connection.impl;
 
+import org.finos.legend.connection.ConnectionBuilder;
 import org.finos.legend.connection.impl.JDBCConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;

@@ -14,11 +14,18 @@
 
 package org.finos.legend.connection;
 
+import java.util.Collections;
 import java.util.List;
 
 public interface ConnectionExtension
 {
-    List<DatabaseType> getExtraDatabaseTypes();
+    default List<DatabaseType> getExtraDatabaseTypes()
+    {
+        return Collections.emptyList();
+    }
 
-    List<AuthenticationMechanismType> getExtraAuthenticationMechanismTypes();
+    default List<AuthenticationMechanismType> getExtraAuthenticationMechanismTypes()
+    {
+        return Collections.emptyList();
+    }
 }

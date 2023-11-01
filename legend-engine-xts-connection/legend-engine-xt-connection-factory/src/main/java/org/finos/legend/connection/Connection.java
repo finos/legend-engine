@@ -252,7 +252,8 @@ public final class Connection
                                             .build())
                                     : Lists.mutable.empty()
                     )
-                    .connectionSpecification(protocol.connectionSpecification);
+                    .connectionSpecification(protocol.connectionSpecification)
+                    .authenticationConfiguration(protocol.authenticationConfiguration);
         }
 
 

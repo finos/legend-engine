@@ -17,7 +17,6 @@ package org.finos.legend.connection.impl;
 import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.DatabaseSupport;
-import org.finos.legend.connection.JDBCConnectionBuilder;
 import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;

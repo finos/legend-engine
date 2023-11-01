@@ -16,16 +16,14 @@ package org.finos.legend.engine.connection.test;
 
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanism;
-import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
+import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
-import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.sql.Statement;
@@ -71,29 +69,25 @@ public class TestPostgresConnection
         }
 
         @Override
-        public Connection getConnection(AuthenticationConfiguration authenticationConfiguration)
+        public Identity getIdentity()
         {
-            ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(
+            return getAnonymousIdentity(this.identityFactory);
+        }
+
+        @Override
+        public DatabaseType getDatabaseType()
+        {
+            return RelationalDatabaseType.POSTGRES;
+        }
+
+        @Override
+        public ConnectionSpecification getConnectionSpecification()
+        {
+            return new StaticJDBCConnectionSpecification(
                     this.postgresContainer.getHost(),
                     this.postgresContainer.getPort(),
                     this.postgresContainer.getDatabaseName()
             );
-            return Connection.builder()
-                    .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.POSTGRES))
-                    .identifier(TEST_CONNECTION_IDENTIFIER)
-                    .authenticationMechanisms(
-                            AuthenticationMechanism.builder()
-                                    .type(CoreAuthenticationMechanismType.USER_PASSWORD).build()
-                    )
-                    .connectionSpecification(connectionSpecification)
-                    .authenticationConfiguration(authenticationConfiguration)
-                    .build();
-        }
-
-        @Override
-        public Identity getIdentity()
-        {
-            return getAnonymousIdentity(this.identityFactory);
         }
 
         @Override

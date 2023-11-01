@@ -36,14 +36,12 @@ import java.util.Set;
 public class ConnectionFactory
 {
     private final LegendEnvironment environment;
-    private final ConnectionProvider connectionProvider;
     private final Map<CredentialBuilder.Key, CredentialBuilder> credentialBuildersIndex = new LinkedHashMap<>();
     private final Map<ConnectionBuilder.Key, ConnectionBuilder> connectionBuildersIndex = new LinkedHashMap<>();
 
-    private ConnectionFactory(LegendEnvironment environment, ConnectionProvider connectionProvider, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders)
+    private ConnectionFactory(LegendEnvironment environment, List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders)
     {
         this.environment = Objects.requireNonNull(environment, "environment is missing");
-        this.connectionProvider = Objects.requireNonNull(connectionProvider, "connection provider is missing");
         for (ConnectionBuilder<?, ?, ?> builder : connectionBuilders)
         {
             this.connectionBuildersIndex.put(new ConnectionBuilder.Key(builder.getConnectionSpecificationType(), builder.getCredentialType()), builder);
@@ -57,11 +55,6 @@ public class ConnectionFactory
     public LegendEnvironment getEnvironment()
     {
         return environment;
-    }
-
-    public Authenticator getAuthenticator(Identity identity, String connectionIdentifier, AuthenticationConfiguration authenticationConfiguration)
-    {
-        return this.getAuthenticator(identity, this.connectionProvider.lookup(connectionIdentifier), authenticationConfiguration);
     }
 
     public Authenticator getAuthenticator(Identity identity, Connection connection, AuthenticationConfiguration authenticationConfiguration)
@@ -86,11 +79,6 @@ public class ConnectionFactory
             ));
         }
         return new Authenticator(connection, authenticationMechanismType, authenticationConfiguration, result.sourceCredentialType, result.targetCredentialType, result.flow, connectionBuildersIndex.get(new ConnectionBuilder.Key(connection.getConnectionSpecification().getClass(), result.targetCredentialType)), this.environment);
-    }
-
-    public Authenticator getAuthenticator(Identity identity, String connectionIdentifier)
-    {
-        return this.getAuthenticator(identity, this.connectionProvider.lookup(connectionIdentifier));
     }
 
     public Authenticator getAuthenticator(Identity identity, Connection connection)
@@ -351,19 +339,9 @@ public class ConnectionFactory
         return this.getConnection(identity, this.getAuthenticator(identity, connection, authenticationConfiguration));
     }
 
-    public <T> T getConnection(Identity identity, String connectionIdentifier, AuthenticationConfiguration authenticationConfiguration) throws Exception
-    {
-        return this.getConnection(identity, this.getAuthenticator(identity, connectionIdentifier, authenticationConfiguration));
-    }
-
     public <T> T getConnection(Identity identity, Connection connection) throws Exception
     {
         return this.getConnection(identity, this.getAuthenticator(identity, connection));
-    }
-
-    public <T> T getConnection(Identity identity, String connectionIdentifier) throws Exception
-    {
-        return this.getConnection(identity, this.getAuthenticator(identity, connectionIdentifier));
     }
 
     public <T> T getConnection(Identity identity, Authenticator authenticator) throws Exception
@@ -380,7 +358,6 @@ public class ConnectionFactory
     public static class Builder
     {
         private LegendEnvironment environment;
-        private ConnectionProvider connectionProvider;
         private final List<CredentialBuilder> credentialBuilders = Lists.mutable.empty();
         private final List<ConnectionBuilder> connectionBuilders = Lists.mutable.empty();
 
@@ -391,12 +368,6 @@ public class ConnectionFactory
         public Builder environment(LegendEnvironment environment)
         {
             this.environment = environment;
-            return this;
-        }
-
-        public Builder connectionProvider(ConnectionProvider connectionProvider)
-        {
-            this.connectionProvider = connectionProvider;
             return this;
         }
 
@@ -449,7 +420,6 @@ public class ConnectionFactory
 
             return new ConnectionFactory(
                     this.environment,
-                    this.connectionProvider,
                     this.credentialBuilders,
                     this.connectionBuilders
             );

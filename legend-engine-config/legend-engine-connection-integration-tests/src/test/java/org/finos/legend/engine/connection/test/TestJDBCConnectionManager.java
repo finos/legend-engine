@@ -23,11 +23,10 @@ import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
-import org.finos.legend.connection.JDBCConnectionBuilder;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
 import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
-import org.finos.legend.connection.impl.InstrumentedConnectionProvider;
+import org.finos.legend.connection.impl.JDBCConnectionBuilder;
 import org.finos.legend.connection.impl.JDBCConnectionManager;
 import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
@@ -49,11 +48,9 @@ import java.util.Properties;
 public class TestJDBCConnectionManager
 {
     PostgresTestContainerWrapper postgresContainer;
-    private static final String TEST_CONNECTION_IDENTIFIER = "test::connection";
 
     private LegendEnvironment environment;
     private IdentityFactory identityFactory;
-    private InstrumentedConnectionProvider connectionProvider;
     private ConnectionFactory connectionFactory;
     private Connection connection;
 
@@ -84,7 +81,6 @@ public class TestJDBCConnectionManager
         this.identityFactory = IdentityFactory.builder()
                 .environment(this.environment)
                 .build();
-        this.connectionProvider = new InstrumentedConnectionProvider();
         ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(
                 this.postgresContainer.getHost(),
                 this.postgresContainer.getPort(),
@@ -92,7 +88,7 @@ public class TestJDBCConnectionManager
         );
         this.connection = Connection.builder()
                 .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.POSTGRES))
-                .identifier(TEST_CONNECTION_IDENTIFIER)
+                .identifier("test::connection")
                 .connectionSpecification(connectionSpecification)
                 .authenticationConfiguration(new UserPasswordAuthenticationConfiguration(
                         postgresContainer.getUser(),
@@ -121,7 +117,6 @@ public class TestJDBCConnectionManager
         );
         this.connectionFactory = ConnectionFactory.builder()
                 .environment(this.environment)
-                .connectionProvider(this.connectionProvider)
                 .credentialBuilders(
                         new UserPasswordCredentialBuilder()
                 )
@@ -129,7 +124,6 @@ public class TestJDBCConnectionManager
                         customizedJDBCConnectionBuilder
                 )
                 .build();
-        this.connectionProvider.injectConnection(this.connection);
         Identity identity = identityFactory.createIdentity(
                 IdentitySpecification.builder()
                         .name("test-user")
@@ -138,7 +132,7 @@ public class TestJDBCConnectionManager
         ConnectionSpecification connectionSpecification = this.connection.getConnectionSpecification();
         AuthenticationConfiguration authenticationConfiguration = this.connection.getAuthenticationConfiguration();
 
-        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_CONNECTION_IDENTIFIER);
+        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, this.connection);
 
         JDBCConnectionManager connectionManager = JDBCConnectionManager.getInstance();
         Assertions.assertEquals(0, connectionManager.getPoolSize());
@@ -187,7 +181,6 @@ public class TestJDBCConnectionManager
     {
         this.connectionFactory = ConnectionFactory.builder()
                 .environment(this.environment)
-                .connectionProvider(this.connectionProvider)
                 .credentialBuilders(
                         new UserPasswordCredentialBuilder()
                 )
@@ -195,7 +188,6 @@ public class TestJDBCConnectionManager
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
                 )
                 .build();
-        this.connectionProvider.injectConnection(this.connection);
         Identity identity1 = identityFactory.createIdentity(
                 IdentitySpecification.builder()
                         .name("testUser1")
@@ -213,7 +205,7 @@ public class TestJDBCConnectionManager
         Assertions.assertEquals(0, connectionManager.getPoolSize());
 
         // 1. Get a new connection for identity1, which should initialize a pool
-        this.connectionFactory.getConnection(identity1, this.connectionFactory.getAuthenticator(identity1, TEST_CONNECTION_IDENTIFIER));
+        this.connectionFactory.getConnection(identity1, this.connectionFactory.getAuthenticator(identity1, this.connection));
 
         String poolName1 = JDBCConnectionManager.getPoolName(identity1, connectionSpecification, authenticationConfiguration);
         JDBCConnectionManager.ConnectionPool connectionPool1 = connectionManager.getPool(poolName1);
@@ -224,7 +216,7 @@ public class TestJDBCConnectionManager
         Assertions.assertEquals(0, connectionPool1.getIdleConnections());
 
         // 2. Get a new connection for identity2, which should initialize another pool
-        this.connectionFactory.getConnection(identity2, this.connectionFactory.getAuthenticator(identity2, TEST_CONNECTION_IDENTIFIER));
+        this.connectionFactory.getConnection(identity2, this.connectionFactory.getAuthenticator(identity2, this.connection));
 
         String poolName2 = JDBCConnectionManager.getPoolName(identity2, connectionSpecification, authenticationConfiguration);
         JDBCConnectionManager.ConnectionPool connectionPool2 = connectionManager.getPool(poolName2);

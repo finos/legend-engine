@@ -22,11 +22,11 @@ import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseSupport;
+import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
-import org.finos.legend.connection.impl.InstrumentedConnectionProvider;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
 import org.finos.legend.connection.impl.RelationalDatabaseType;
@@ -34,6 +34,7 @@ import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -43,11 +44,8 @@ import org.junit.jupiter.api.Test;
 
 public abstract class AbstractConnectionFactoryTest<T>
 {
-    protected static final String TEST_CONNECTION_IDENTIFIER = "test::connection";
-
     protected LegendEnvironment environment;
     protected IdentityFactory identityFactory;
-    protected InstrumentedConnectionProvider connectionProvider;
     protected ConnectionFactory connectionFactory;
 
     @BeforeEach
@@ -95,10 +93,8 @@ public abstract class AbstractConnectionFactoryTest<T>
                 .environment(this.environment)
                 .build();
 
-        this.connectionProvider = new InstrumentedConnectionProvider();
         this.connectionFactory = ConnectionFactory.builder()
                 .environment(this.environment)
-                .connectionProvider(this.connectionProvider)
                 .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),
@@ -126,9 +122,11 @@ public abstract class AbstractConnectionFactoryTest<T>
         return null;
     }
 
-    public abstract Connection getConnection(AuthenticationConfiguration authenticationConfiguration);
-
     public abstract Identity getIdentity();
+
+    public abstract DatabaseType getDatabaseType();
+
+    public abstract ConnectionSpecification getConnectionSpecification();
 
     public abstract AuthenticationConfiguration getAuthenticationConfiguration();
 
@@ -138,10 +136,18 @@ public abstract class AbstractConnectionFactoryTest<T>
     public void runTest() throws Exception
     {
         Identity identity = this.getIdentity();
+        DatabaseType databaseType = this.getDatabaseType();
+        ConnectionSpecification connectionSpecification = this.getConnectionSpecification();
         AuthenticationConfiguration authenticationConfiguration = this.getAuthenticationConfiguration();
-        this.connectionProvider.injectConnection(this.getConnection(authenticationConfiguration));
 
-        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_CONNECTION_IDENTIFIER);
+        Connection databaseConnection = Connection.builder()
+                .databaseSupport(this.environment.getDatabaseSupport(databaseType))
+                .identifier("test::connection")
+                .connectionSpecification(connectionSpecification)
+                .authenticationConfiguration(authenticationConfiguration)
+                .build();
+
+        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, databaseConnection);
         T connection = this.connectionFactory.getConnection(identity, authenticator);
 
         this.runTestWithConnection(connection);

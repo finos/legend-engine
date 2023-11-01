@@ -12,13 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.connection;
+package org.finos.legend.connection.impl;
+
+import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.connection.AuthenticationMechanismType;
+import org.finos.legend.connection.ConnectionExtension;
+import org.finos.legend.connection.DatabaseType;
 
 import java.util.List;
 
-public interface ConnectionProvider
+public class RelationalConnectionExtension implements ConnectionExtension
 {
-    Connection lookup(String identifier);
-
-    List<Connection> getAll();
+    @Override
+    public List<DatabaseType> getExtraDatabaseTypes()
+    {
+        return Lists.mutable.of(RelationalDatabaseType.values());
+    }
 }

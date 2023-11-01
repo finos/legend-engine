@@ -15,7 +15,6 @@
 package org.finos.legend.connection;
 
 import org.eclipse.collections.api.factory.Lists;
-import org.finos.legend.connection.impl.InstrumentedConnectionProvider;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
@@ -32,44 +31,35 @@ public class ConnectionFactoryTest
     public void testGetConnection_WithFailures() throws Exception
     {
         TestEnv env = TestEnv.create(
-                        Lists.mutable.with(
-                                new CredentialBuilder_Any_to_A__withX()
-                        ),
-                        Lists.mutable.with(
-                                new ConnectionBuilder_A()
-                        ),
-                        Lists.mutable.with(
-                                AuthenticationMechanism.builder()
-                                        .type(TestAuthenticationMechanismType.X)
-                                        .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
-                                        .build(),
-                                AuthenticationMechanism.builder()
-                                        .type(TestAuthenticationMechanismType.Y)
-                                        .authenticationConfigurationTypes(AuthenticationConfiguration_Y.class)
-                                        .build()
-                        )
+                Lists.mutable.with(
+                        new CredentialBuilder_Any_to_A__withX()
+                ),
+                Lists.mutable.with(
+                        new ConnectionBuilder_A()
+                ),
+                Lists.mutable.with(
+                        AuthenticationMechanism.builder()
+                                .type(TestAuthenticationMechanismType.X)
+                                .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build(),
+                        AuthenticationMechanism.builder()
+                                .type(TestAuthenticationMechanismType.Y)
+                                .authenticationConfigurationTypes(AuthenticationConfiguration_Y.class)
+                                .build()
                 )
-                .newStore("test::connectionX", new AuthenticationConfiguration_X())
-                .newStore("test::connectionY", new AuthenticationConfiguration_Y());
+        );
 
         Identity identity = new Identity("test");
 
         // success
-        env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test::connectionX"));
+        env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X())));
 
         Exception exception;
-
-        // error: store not found
-        exception = Assertions.assertThrows(RuntimeException.class, () ->
-        {
-            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "unknown"));
-        });
-        Assertions.assertEquals("Can't find connection with identifier 'unknown'", exception.getMessage());
 
         // error: unsupported authentication configuration
         exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test::connectionX", new AuthenticationConfiguration_Z()));
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()), new AuthenticationConfiguration_Z()));
         });
         Assertions.assertEquals("Connection 'test::connectionX' is not compatible with authentication configuration type 'AuthenticationConfiguration_Z'. Supported configuration type(s):\n" +
                 "- AuthenticationConfiguration_X\n" +
@@ -78,7 +68,7 @@ public class ConnectionFactoryTest
         // error: unresolvable authentication flow
         exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test::connectionX", new AuthenticationConfiguration_Y()));
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()), new AuthenticationConfiguration_Y()));
         });
         Assertions.assertEquals("No authentication flow for connection 'test::connectionX' can be resolved for the specified identity (authentication configuration: AuthenticationConfiguration_Y, connection specification: TestConnectionSpecification)", exception.getMessage());
     }
@@ -108,10 +98,10 @@ public class ConnectionFactoryTest
                                 .authenticationConfigurationTypes(AuthenticationConfiguration_Y.class)
                                 .build()
                 )
-        ).newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
         Identity identity = new Identity("test");
-        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test::connectionX");
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()));
         assertAuthenticator(identity, env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
                 "Credential->Credential_A [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_A.class);
@@ -124,26 +114,25 @@ public class ConnectionFactoryTest
     public void testGetConnection_WithSpecificBuilderOrder() throws Exception
     {
         TestEnv env = TestEnv.create(
-                        Lists.mutable.with(
-                                // if Any -> B credential builder is specified first, it will take precedence over Any -> A
-                                new CredentialBuilder_Any_to_B__withX(),
-                                new CredentialBuilder_Any_to_A__withX()
-                        ),
-                        Lists.mutable.with(
-                                new ConnectionBuilder_A(),
-                                new ConnectionBuilder_B()
-                        ),
-                        Lists.mutable.with(
-                                AuthenticationMechanism.builder()
-                                        .type(TestAuthenticationMechanismType.X)
-                                        .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
-                                        .build()
-                        )
+                Lists.mutable.with(
+                        // if Any -> B credential builder is specified first, it will take precedence over Any -> A
+                        new CredentialBuilder_Any_to_B__withX(),
+                        new CredentialBuilder_Any_to_A__withX()
+                ),
+                Lists.mutable.with(
+                        new ConnectionBuilder_A(),
+                        new ConnectionBuilder_B()
+                ),
+                Lists.mutable.with(
+                        AuthenticationMechanism.builder()
+                                .type(TestAuthenticationMechanismType.X)
+                                .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
+                                .build()
                 )
-                .newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
         Identity identity = new Identity("test");
-        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test::connectionX");
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()));
         assertAuthenticator(identity, env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
                 "Credential->Credential_B [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_B.class);
@@ -170,10 +159,10 @@ public class ConnectionFactoryTest
                                 .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
                                 .build()
                 )
-        ).newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
         Identity identity = new Identity("test");
-        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test::connectionX");
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()));
         assertAuthenticator(identity, env.connectionFactory, authenticator, Credential.class, Lists.mutable.with(
                 "Credential->Credential_A [AuthenticationConfiguration_X]",
                 "Credential_A->Credential_B [AuthenticationConfiguration_X]",
@@ -202,10 +191,10 @@ public class ConnectionFactoryTest
                                 .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
                                 .build()
                 )
-        ).newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
         Identity identity = new Identity("test", new Credential_B());
-        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test::connectionX");
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()));
         assertAuthenticator(identity, env.connectionFactory, authenticator, Credential_B.class, Lists.mutable.with(
                 "Credential_B->Credential_C [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_C.class);
@@ -239,12 +228,12 @@ public class ConnectionFactoryTest
                                 .authenticationConfigurationTypes(AuthenticationConfiguration_Z.class)
                                 .build()
                 )
-        ).newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
         Identity identity = new Identity("test", new Credential_A());
 
         // success
-        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test::connectionX", new AuthenticationConfiguration_Y());
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()), new AuthenticationConfiguration_Y());
         assertAuthenticator(identity, env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
                 "Credential_A->Credential_B [AuthenticationConfiguration_Y]"
         ), ConnectionBuilder_B.class);
@@ -252,7 +241,7 @@ public class ConnectionFactoryTest
         // error: unresolvable authentication flow
         Exception exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getAuthenticator(new Identity("test"), "test::connectionX");
+            env.connectionFactory.getAuthenticator(new Identity("test"), env.newStore("test::connectionX", new AuthenticationConfiguration_X()));
         });
         Assertions.assertEquals("No authentication flow for connection 'test::connectionX' can be resolved for the specified identity. Try specifying another authentication configuration. Supported configuration type(s):\n" +
                 "- AuthenticationConfiguration_X (X)\n" +
@@ -279,10 +268,10 @@ public class ConnectionFactoryTest
                                 .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
                                 .build()
                 )
-        ).newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
         Identity identity = new Identity("test", new Credential_A());
-        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, "test::connectionX");
+        Authenticator authenticator = env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()));
         assertAuthenticator(identity, env.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
                 "Credential_A->Credential_A [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_A.class);
@@ -301,9 +290,9 @@ public class ConnectionFactoryTest
                                 .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
                                 .build()
                 )
-        ).newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
-        authenticator = env2.connectionFactory.getAuthenticator(identity, "test::connectionX");
+        authenticator = env2.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X()));
         assertAuthenticator(identity, env2.connectionFactory, authenticator, Credential_A.class, Lists.mutable.with(
                 "Credential_A->Credential_A [AuthenticationConfiguration_X]"
         ), ConnectionBuilder_A.class);
@@ -329,12 +318,12 @@ public class ConnectionFactoryTest
                                 .authenticationConfigurationTypes(AuthenticationConfiguration_X.class)
                                 .build()
                 )
-        ).newStore("test::connectionX", new AuthenticationConfiguration_X());
+        );
 
         Identity identity = new Identity("test", new Credential_A());
         Exception exception = Assertions.assertThrows(RuntimeException.class, () ->
         {
-            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, "test::connectionX"));
+            env.connectionFactory.getConnection(identity, env.connectionFactory.getAuthenticator(identity, env.newStore("test::connectionX", new AuthenticationConfiguration_X())));
         });
         Assertions.assertEquals("No authentication flow for connection 'test::connectionX' can be resolved for the specified identity. Try specifying another authentication configuration. Supported configuration type(s):\n" +
                 "- AuthenticationConfiguration_X (X)", exception.getMessage());
@@ -351,7 +340,6 @@ public class ConnectionFactoryTest
     private static class TestEnv
     {
         final LegendEnvironment environment;
-        final InstrumentedConnectionProvider connectionProvider;
         final ConnectionFactory connectionFactory;
 
         private TestEnv(List<CredentialBuilder> credentialBuilders, List<ConnectionBuilder> connectionBuilders, List<AuthenticationMechanism> authenticationMechanisms)
@@ -362,29 +350,26 @@ public class ConnectionFactoryTest
                             .authenticationMechanisms(authenticationMechanisms)
                             .build())
                     .build();
-            this.connectionProvider = new InstrumentedConnectionProvider();
             this.connectionFactory = ConnectionFactory.builder()
                     .environment(this.environment)
-                    .connectionProvider(this.connectionProvider)
                     .credentialBuilders(credentialBuilders)
                     .connectionBuilders(connectionBuilders)
                     .build();
         }
 
-        TestEnv newStore(String identifier, AuthenticationConfiguration authenticationConfiguration, List<AuthenticationMechanism> authenticationMechanisms)
+        Connection newStore(String identifier, AuthenticationConfiguration authenticationConfiguration, List<AuthenticationMechanism> authenticationMechanisms)
         {
             DatabaseSupport databaseSupport = this.environment.getDatabaseSupport(TestDatabaseType.TEST);
-            this.connectionProvider.injectConnection(Connection.builder()
+            return Connection.builder()
                     .databaseSupport(databaseSupport)
                     .identifier(identifier)
                     .authenticationMechanisms(authenticationMechanisms)
                     .connectionSpecification(new TestConnectionSpecification())
                     .authenticationConfiguration(authenticationConfiguration)
-                    .build());
-            return this;
+                    .build();
         }
 
-        TestEnv newStore(String identifier, AuthenticationConfiguration authenticationConfiguration)
+        Connection newStore(String identifier, AuthenticationConfiguration authenticationConfiguration)
         {
             return newStore(identifier, authenticationConfiguration, Lists.mutable.empty());
         }

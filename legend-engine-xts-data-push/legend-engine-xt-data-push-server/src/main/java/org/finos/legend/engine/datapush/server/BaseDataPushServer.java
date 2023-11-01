@@ -16,29 +16,37 @@ package org.finos.legend.engine.datapush.server;
 
 import io.dropwizard.setup.Environment;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.ConnectionProvider;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.engine.datapush.DataPusherProvider;
 import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.datapush.server.resources.DataPushResource;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.server.support.server.BaseServer;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfiguration>
 {
     protected LegendEnvironment environment;
     protected IdentityFactory identityFactory;
-    protected ConnectionProvider connectionProvider;
     protected ConnectionFactory connectionFactory;
     protected DataPusherProvider dataPushProvider;
+
+    @Override
+    public void initialize(io.dropwizard.setup.Bootstrap<DataPushServerConfiguration> bootstrap)
+    {
+        super.initialize(bootstrap);
+
+        PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
+        ObjectMapperFactory.withStandardConfigurations(bootstrap.getObjectMapper());
+    }
 
     @Override
     public void run(DataPushServerConfiguration configuration, Environment environment)
     {
         this.environment = this.buildLegendEnvironment(configuration);
         this.identityFactory = this.buildIdentityFactory(configuration, this.environment);
-        this.connectionProvider = this.buildConnectionBuilder(configuration, this.environment);
-        this.connectionFactory = this.buildConnectionFactory(configuration, this.connectionProvider, this.environment);
+        this.connectionFactory = this.buildConnectionFactory(configuration, this.environment);
         this.dataPushProvider = this.buildDataPushProvider();
         super.run(configuration, environment);
     }
@@ -46,7 +54,7 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
     @Override
     protected void configureServerCore(DataPushServerConfiguration configuration, Environment environment)
     {
-        environment.jersey().register(new DataPushResource(configuration.getMetadataServerConfiguration(), this.environment, this.identityFactory, this.connectionProvider, this.connectionFactory, this.dataPushProvider));
+        environment.jersey().register(new DataPushResource(configuration.getMetadataServerConfiguration(), this.environment, this.identityFactory, this.connectionFactory, this.dataPushProvider));
     }
 
     @Override
@@ -59,9 +67,7 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
 
     public abstract IdentityFactory buildIdentityFactory(DataPushServerConfiguration configuration, LegendEnvironment environment);
 
-    public abstract ConnectionProvider buildConnectionBuilder(DataPushServerConfiguration configuration, LegendEnvironment environment);
-
-    public abstract ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, ConnectionProvider connectionProvider, LegendEnvironment environment);
+    public abstract ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, LegendEnvironment environment);
 
     public abstract DataPusherProvider buildDataPushProvider();
 }
