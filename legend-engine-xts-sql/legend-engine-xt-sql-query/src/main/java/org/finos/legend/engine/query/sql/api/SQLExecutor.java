@@ -88,7 +88,7 @@ public class SQLExecutor
     private final PlanExecutor planExecutor;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
     private final Iterable<? extends PlanTransformer> transformers;
-    private final MutableMap<Object, SQLSourceProvider> providers;
+    private final MutableMap<String, SQLSourceProvider> providers;
 
     public SQLExecutor(ModelManager modelManager,
                        PlanExecutor planExecutor,
@@ -216,7 +216,7 @@ public class SQLExecutor
 
         if (!schemasValid)
         {
-            throw new IllegalArgumentException("Unsupported schema types " + String.join(", ", grouped.keySet().select(k -> !providers.containsKey(k))));
+            throw new IllegalArgumentException("Unsupported schema types [" + String.join(", ", grouped.keySet().select(k -> !providers.containsKey(k))) + "], supported types: [" + String.join(", ", providers.keySet()) + "]");
         }
 
         RichIterable<SQLSourceResolvedContext> resolved = grouped.keySet().collect(k -> resolve(grouped.get(k), context, providers.get(k), profiles));
