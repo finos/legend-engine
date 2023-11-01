@@ -63,7 +63,7 @@ Class meta::external::store::model::JsonModelConnection extends PureModelConnect
    url  : String[1];
 }
 
-Class meta::external::store::model::JsonDataRecord
+Class meta::pure::mapping::modelToModel::JsonDataRecord
 {
    number : Integer[1];
    record : String[1];
@@ -75,7 +75,7 @@ Class meta::external::store::model::XmlModelConnection extends PureModelConnecti
    url  : String[1];
 }
 
-Class meta::external::store::model::XmlDataRecord
+Class meta::pure::mapping::modelToModel::XmlDataRecord
 {
    number : Integer[1];
    record : String[1];

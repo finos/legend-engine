@@ -15,11 +15,9 @@
 
 package org.finos.legend.engine.query.sql.providers;
 
-import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
@@ -67,19 +65,15 @@ public class RelationalStoreSQLSourceProvider extends AbstractLegendStoreSQLSour
         String tableName = source.getArgumentValueAs(ARG_TABLE, -1, String.class, true);
 
         Lambda lambda = tableToTDS(store, schemaName, tableName);
-
-        ConnectionPointer connectionPtr = new ConnectionPointer();
-        connectionPtr.connection = connection.getPath();
-
-        LegacyRuntime runtime = new LegacyRuntime();
-        runtime.connections = FastList.newListWith(connectionPtr);
+        EngineRuntime runtime = SQLProviderUtils.createRuntime(connection.getPath(), store.getPath());
 
         Collections.addAll(keys, new SQLSourceArgument(ARG_SCHEMA, null, schemaName), new SQLSourceArgument(ARG_TABLE, null, tableName));
 
         return new SQLSource(TYPE, lambda, null, runtime, null, null, keys);
     }
 
-    public static Lambda tableToTDS(Database database, String schemaName, String tableName)
+
+    protected static Lambda tableToTDS(Database database, String schemaName, String tableName)
     {
         Schema schema = SQLProviderUtils.extractElement("schema", database.schemas, s -> SQLProviderUtils.equalsEscaped(s.name, schemaName));
         Table table = SQLProviderUtils.extractElement("table", schema.tables, t -> SQLProviderUtils.equalsEscaped(t.name, tableName));
