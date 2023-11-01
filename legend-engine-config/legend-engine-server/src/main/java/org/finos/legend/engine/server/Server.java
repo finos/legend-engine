@@ -82,6 +82,8 @@ import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImpo
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
+import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
+import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -95,6 +97,8 @@ import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElem
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
+import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
@@ -120,17 +124,20 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
-import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.query.sql.api.SQLExecutor;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecute;
 import org.finos.legend.engine.query.sql.api.grammar.SqlGrammar;
+import org.finos.legend.engine.query.sql.providers.LegendServiceSQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.RelationalStoreSQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.shared.FunctionSQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateLoader;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
@@ -212,7 +219,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(HostedServiceDeploymentConfiguration.class, "hostedServiceConfig"));
-        bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeDeploymentConfiguration.class, "snowflakeAppConfig"));
+        bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeAppDeploymentConfiguration.class, "snowflakeAppConfig"));
     }
 
     public CredentialProviderProvider configureCredentialProviders(List<VaultConfiguration> vaultConfigurations)
@@ -378,7 +385,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         // Function Activator
-        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), routerExtensions));
+        environment.jersey().register(new FunctionActivatorAPI(modelManager,Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor), new HostedServiceService()), routerExtensions));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());
@@ -386,7 +393,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver, routerExtensions));
 
         // SQL
-        environment.jersey().register(new SqlExecute(modelManager, planExecutor, routerExtensions, FastList.newListWith(), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
+        ProjectCoordinateLoader projectCoordinateLoader = new ProjectCoordinateLoader(modelManager, serverConfiguration.metadataserver.getSdlc());
+        environment.jersey().register(new SqlExecute(new SQLExecutor(modelManager, planExecutor, routerExtensions, FastList.newListWith(
+                new RelationalStoreSQLSourceProvider(projectCoordinateLoader),
+                new FunctionSQLSourceProvider(projectCoordinateLoader),
+                new LegendServiceSQLSourceProvider(projectCoordinateLoader)),
+        generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers))));
         environment.jersey().register(new SqlGrammar());
 
         // Service

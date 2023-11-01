@@ -60,7 +60,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Consumer;
 
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder.getElement;
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder.getStore;
 
 @Deprecated
 public class MappingTestRunner
@@ -102,7 +102,7 @@ public class MappingTestRunner
             CompileContext context = this.pureModel.getContext();
             Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("")
                     ._connection(conn.accept(connectionVisitor))
-                    ._element(getElement(conn.element, conn.elementSourceInformation, context));
+                    ._element(getStore(conn.element, conn.elementSourceInformation, context));
             this.runtime._connectionStoresAdd(connectionStore);
         });
     }

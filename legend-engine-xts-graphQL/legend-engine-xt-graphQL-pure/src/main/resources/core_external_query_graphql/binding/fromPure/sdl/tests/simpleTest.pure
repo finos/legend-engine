@@ -21,6 +21,23 @@ Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Pers
   age : Integer[1];
 }
 
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Employee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Person
+{
+  title: String[1];
+  startDate: StrictDate[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::GSEmployee extends meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Employee
+{
+  division: String[1];
+}
+
+Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Team
+{
+  name: String[1];
+  members: Employee[1..*];
+}
+
 Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::ClassWithPrimitiveTypes
 {
   string: String[1];
@@ -52,6 +69,19 @@ Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sd
 {
   // Dummy implementation
   upsertFirm(firm:Firm[1]){Firm.all()->first()}:Firm[0..1];
+}
+
+Class <<GraphQL.Query>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::QueryHierarchy
+{
+  teamByName(n:String[1]){Team.all()->filter(z|$z.name == $n)->first()}:Team[0..1];
+  employeeByFirstName(n:String[1]){Employee.all()->filter(z|$z.firstName == $n)->first()}:Employee[0..1];
+}
+
+Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::MutationHierarchy
+{
+  // Dummy implementation
+  upsertTeam(team:Team[1]){Team.all()->first()}:Team[0..1];
+  upsertEmployee(employee:Employee[1]){Employee.all()->first()}:Employee[0..1];
 }
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQuery():Boolean[1]
@@ -205,6 +235,191 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '}\n' +
     '\n' +
     'directive @bitemporal on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testClassWithInheritance():Boolean[1]
+{
+  let res = typesToGraphQLString([Employee, Person]);
+
+  assertEquals(
+    'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'directive @extends on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testClassWithDeepInheritance():Boolean[1]
+{
+  let res = typesToGraphQLString([GSEmployee, Employee, Person]);
+
+  assertEquals(
+    'type Employee implements EmployeeInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface EmployeeInterface implements PersonInterface {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type GSEmployee implements EmployeeInterface @extends(class: "Employee") {\n' +
+    '  division: String!\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'directive @extends on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testPropertyWithInheritance():Boolean[1]
+{
+  let res = typesToGraphQLString([Team, Employee, Person]);
+
+  assertEquals(
+    'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'type Team {\n' +
+    '  name: String!\n' +
+    '  members: [Employee!]!\n' +
+    '}\n' +
+    '\n' +
+    'directive @extends on OBJECT | INPUT_OBJECT',
+    $res);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQueryAndMutationWithHierarchy():Boolean[1]
+{
+  let res = typesToGraphQLString([QueryHierarchy, MutationHierarchy, Team, Employee, Person]);
+
+  assertEquals(
+    'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input EmployeeInput @extends(class: "PersonInput") {\n' +
+    '  title: String!\n' +
+    '  startDate: StrictDate!\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type MutationHierarchy {\n' +
+    '  upsertTeam(team: TeamInput!): Team\n' +
+    '  upsertEmployee(employee: EmployeeInput!): Employee\n' +
+    '}\n' +
+    '\n' +
+    'type Person implements PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input PersonInput {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'interface PersonInterface {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type QueryHierarchy {\n' +
+    '  teamByName(n: String!): Team\n' +
+    '  employeeByFirstName(n: String!): Employee\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'type Team {\n' +
+    '  name: String!\n' +
+    '  members: [Employee!]!\n' +
+    '}\n' +
+    '\n' +
+    'input TeamInput {\n' +
+    '  name: String!\n' +
+    '  members: [EmployeeInput!]!\n' +
+    '}\n' +
+    '\n' +
+    'directive @extends on OBJECT | INPUT_OBJECT\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : QueryHierarchy\n' +
+    '  mutation : MutationHierarchy\n' +
+    '}',
     $res);
 }
 

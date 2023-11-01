@@ -97,7 +97,7 @@ public class HelperServiceBuilder
             {
                 lambda = HelperValueSpecificationBuilder.buildLambda(pureSingleExecution.func, context);
             }
-            return new Root_meta_legend_service_metamodel_PureSingleExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureMultiExecution"))
+            return new Root_meta_legend_service_metamodel_PureSingleExecution_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::PureSingleExecution"))
                     ._func(lambda)
                     ._mapping(mapping)
                     ._runtime(runtime);

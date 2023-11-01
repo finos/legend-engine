@@ -26,14 +26,19 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
   assert(isTypeCompatible(Employee, Employee_2));
   assert(isTypeCompatible(Address, Address_2));
   assert(isTypeCompatible(Country, Country_2));
+  assert(isTypeCompatible(Child, Child_2));
+  assert(isTypeCompatible(Parent, Parent_2));
 
   assertFalse(isTypeCompatible(Firm, Employee_2));
   assertFalse(isTypeCompatible(Address, Country_2));
+  assertFalse(isTypeCompatible(Child, Parent));
 
   assertFalse(isTypeCompatible(Firm, Firm_False));
   assertFalse(isTypeCompatible(Employee, Employee_False));
   assertFalse(isTypeCompatible(Address, Address_False));
   assertFalse(isTypeCompatible(Country, Country_False));
+  assertFalse(isTypeCompatible(Child, Child_False));
+  assertFalse(isTypeCompatible(Child, Child_Parent_False));
 }
 
 
@@ -137,4 +142,38 @@ Class meta::external::query::graphQL::binding::toPure::sdl::tests::Country_False
   countryName : String[1];
 
   iso2Code    : CountryCode[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child extends meta::external::query::graphQL::binding::toPure::sdl::tests::Parent
+{
+  child: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Parent
+{
+  parent: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child_2 extends meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_2
+{
+  child: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_2
+{
+  parent: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child_False
+{
+  child: String[1];
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_False
+{
+}
+
+Class meta::external::query::graphQL::binding::toPure::sdl::tests::Child_Parent_False extends meta::external::query::graphQL::binding::toPure::sdl::tests::Parent_False
+{
+  child: String[1];
 }

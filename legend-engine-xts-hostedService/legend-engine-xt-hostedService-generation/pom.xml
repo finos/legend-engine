@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-hostedService</artifactId>
-        <version>4.32.1-SNAPSHOT</version>
+        <version>4.33.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -103,12 +103,6 @@
         </dependency>
         <!-- LOG -->
 
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>
