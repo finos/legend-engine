@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::contract::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::systemMapping::tests::*;
 import meta::relational::mapping::*;
@@ -42,6 +43,20 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
      planExecution = meta::relational::contract::planExecution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_$0_1$__Runtime_$0_1$__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionNode_1_,
      planGraphFetchExecution = meta::relational::contract::planGraphFetchExecution_StoreMappingLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
      planCrossGraphFetchExecution = meta::relational::contract::planCrossGraphFetchExecution_StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput_1__LocalGraphFetchExecutionNode_1_,
+
+     connectionEquality = { b : Connection [1] |
+                               [
+                                 d: RelationalDatabaseConnection[1]|
+                                 let bAsRDB = $b->cast(@RelationalDatabaseConnection);
+                                 // connection element is the store name and we dont compare those
+                                 let comparison = $d.type == $bAsRDB.type &&
+                                   $d.timeZone == $bAsRDB.timeZone &&
+                                   $d.quoteIdentifiers == $bAsRDB.quoteIdentifiers &&
+                                   $d.datasourceSpecification == $bAsRDB.datasourceSpecification &&
+                                   compareObjectsWithPossiblyNoProperties($d.authenticationStrategy,$bAsRDB.authenticationStrategy) &&
+                                   postProcessorsMatch($d.postProcessors, $bAsRDB.postProcessors);
+                                 ]
+                         },
 
      supports = meta::relational::contract::supports_FunctionExpression_1__Boolean_1_,
      supportsStreamFunction = meta::relational::contract::supportsStream_FunctionExpression_1__Boolean_1_,
@@ -224,6 +239,29 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
                           ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $debug, $extensions);
       );
    );
+}
+
+function meta::relational::contract::postProcessorsMatch(postProcessors1: meta::pure::alloy::connections::PostProcessor[*], postProcessors2: meta::pure::alloy::connections::PostProcessor[*]): Boolean[1]
+{
+    (($postProcessors1->isEmpty() && $postProcessors2->isEmpty())
+     || ($postProcessors1->size() == $postProcessors2->size()
+            // for now we do a simple type and sequence comparison of the post processors and they should match for equality
+            && $postProcessors1->zip($postProcessors2)->map( postProcessorPair|
+                    $postProcessorPair.first->type() == $postProcessorPair.second->type()
+                    // && - TODO implement some kind of equality interface in a post processor which is called here and implemented
+                    // by post processors which would like to process equality with other attributes besides type
+             )->distinct()->remove(true)->isEmpty()))
+}
+
+function meta::relational::contract::compareObjectsWithPossiblyNoProperties(obj1: Any[1], obj2: Any[1]): Boolean[1]
+{
+ let propertyCountForObj1 = $obj1->type()->cast(@Class<Any>)->hierarchicalProperties()->size();
+ let propertyCountForObj2 = $obj2->type()->cast(@Class<Any>)->hierarchicalProperties()->size();
+
+ if($propertyCountForObj1 == 0 && $propertyCountForObj2 == 0
+ ,| true
+ ,| $obj1 == $obj2
+ );
 }
 
 function meta::relational::contract::planGraphFetchExecution(input: StoreMappingLocalGraphFetchExecutionNodeGenerationInput[1]): LocalGraphFetchExecutionNode[1]

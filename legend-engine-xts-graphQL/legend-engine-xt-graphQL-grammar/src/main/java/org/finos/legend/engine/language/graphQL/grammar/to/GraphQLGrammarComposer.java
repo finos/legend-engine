@@ -103,7 +103,7 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(InterfaceTypeDefinition interfaceTypeDefinition)
             {
-                return "interface " + interfaceTypeDefinition.name + " {\n" +
+                return "interface " + interfaceTypeDefinition.name + (interfaceTypeDefinition._implements.isEmpty() ? "" : " implements " + ListAdapter.adapt(interfaceTypeDefinition._implements).makeString(" & ")) + " {\n" +
                         ListIterate.collect(interfaceTypeDefinition.fields, f -> "  " + renderField(f)).makeString("\n") +
                         "\n}";
             }

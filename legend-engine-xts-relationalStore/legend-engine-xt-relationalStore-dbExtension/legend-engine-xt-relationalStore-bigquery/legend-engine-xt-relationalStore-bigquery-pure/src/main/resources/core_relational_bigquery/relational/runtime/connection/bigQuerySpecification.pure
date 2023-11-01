@@ -14,8 +14,8 @@
 
 Class meta::pure::alloy::connections::alloy::specification::BigQueryDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-    projectId:String[1];
-    defaultDataset:String[1];
-    proxyHost: String[0..1];
-    proxyPort: String[0..1];
+    <<equality.Key>> projectId:String[1];
+    <<equality.Key>> defaultDataset:String[1];
+    <<equality.Key>> proxyHost: String[0..1];
+    <<equality.Key>> proxyPort: String[0..1];
 }

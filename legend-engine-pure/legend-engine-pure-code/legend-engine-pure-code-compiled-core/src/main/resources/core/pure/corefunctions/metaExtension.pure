@@ -121,15 +121,37 @@ function {doc.doc = 'Get all properties on the provided type / class'}
      ->concatenate($class.qualifiedPropertiesFromAssociations)
 }
 
-function {doc.doc = 'Get all nested types present in this property tree of this class'}
+function {doc.doc = 'Get all nested types present in the property tree of this class or its hierarchy.'}
    meta::pure::functions::meta::allNestedPropertyTypes(class : Class<Any>[1]) : Type[*]
 {
-  let propertyTypes = $class.properties->map(p | $p.genericType.rawType->toOne());
+  let propertyTypes = $class->meta::pure::functions::meta::hierarchicalProperties()->map(p | $p.genericType.rawType->toOne());
   let propertiesThatAreClasses = $propertyTypes->filter(type | $type->instanceOf(Class))->cast(@Class<Any>);
-  $class->concatenate($propertyTypes->concatenate($propertiesThatAreClasses->map(class |$class->allNestedPropertyTypes())));
+  $class->concatenate($class->validGeneralizations())->concatenate($propertyTypes->concatenate($propertiesThatAreClasses->map(class |$class->allNestedPropertyTypes())))->removeDuplicates();
 }
 
-function {doc.doc = 'Get defined and inheritied properties on the provided class'}
+function {doc.doc = 'Get the explicitly defined generalizations.'}
+    meta::pure::functions::meta::validGeneralizations(type : Type[1]) : Class<Any>[*]
+{
+  $type.generalizations.general.rawType->filter(c | $c != Any && $c != Enum)->cast(@Class<Any>);
+}
+
+function {doc.doc = 'Recursively get all explicitly defined generalizations.'}
+    meta::pure::functions::meta::hierarchicalAllGeneralizations(type : Type[1]) : Class<Any>[*]
+{
+  let oneLevel = $type->validGeneralizations();
+  $oneLevel->concatenate($oneLevel->map(c | $c->validGeneralizations()))->removeDuplicates();
+}
+
+function {doc.doc = 'Get all inherited properties on the provided class'}
+   meta::pure::functions::meta::hierarchicalAllProperties(class:Class<Any>[1]):AbstractProperty<Any>[*]
+{
+   if($class==Any,
+      | [],
+      | $class->allProperties()->concatenate($class.generalizations->map(g| hierarchicalProperties($g.general.rawType->cast(@Class<Any>)->toOne())))->removeDuplicates()
+   );
+}
+
+function {doc.doc = 'Get defined and inherited properties on the provided class'}
    meta::pure::functions::meta::hierarchicalProperties(class:Class<Any>[1]):Property<Nil,Any|*>[*]
 {
    if($class==Any,
@@ -138,7 +160,7 @@ function {doc.doc = 'Get defined and inheritied properties on the provided class
    );
 }
 
-function {doc.doc = 'Get defined and inheritied properties via associations on the provided class'}
+function {doc.doc = 'Get defined and inherited properties via associations on the provided class'}
    meta::pure::functions::meta::hierarchicalPropertiesFromAssociations(class:Class<Any>[1]):Property<Nil,Any|*>[*]
 {
    if($class==Any,
@@ -147,7 +169,7 @@ function {doc.doc = 'Get defined and inheritied properties via associations on t
    );
 }
 
-function {doc.doc = 'Get defined and inheritied qualified properties on the provided class'}
+function {doc.doc = 'Get defined and inherited qualified properties on the provided class'}
    meta::pure::functions::meta::hierarchicalQualifiedProperties(class:Class<Any>[1]):AbstractProperty<Any>[*]
 {
    if($class==Any,

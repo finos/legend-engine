@@ -83,7 +83,7 @@ public class TestGraphQLRoundtrip
     @Test
     public void testInterfaceRoundtrip()
     {
-        check("interface Car {\n" +
+        check("interface Car implements Automobile {\n" +
                 "  id: ID!\n" +
                 "  name: String!\n" +
                 "  values: [String]\n" +
