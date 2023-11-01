@@ -841,7 +841,7 @@ function meta::relational::functions::pureToSqlQuery::processQualifiedPropertyFu
 
 function meta::relational::functions::pureToSqlQuery::tdsQualifier(fe:FunctionExpression[1], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
-   let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getFloat', 'getDate', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate', 'isNull', 'isNotNull'];
+   let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getFloat', 'getDate', 'getDecimal', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate', 'isNull', 'isNotNull'];
 
    let funcName = $fe.func.functionName->toOne();
    let valid = $tdsProperties->contains($funcName);
