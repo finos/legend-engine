@@ -242,11 +242,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   //need to subnest the context
   let fromContext = if ($from.root || $from.name == $context.name, | $from, | ^$context(contexts = ^$from(contexts = []), expression = $from.expression));
 
+  let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $querySpec.where->processWhere($fromContext));
 
   let query = $querySpec.limit->processLimitOffset($querySpec.offset,
-    $querySpec.orderBy->processOrderBy($querySpec.select.selectItems,
-      $querySpec.having->processHaving($querySpec.select,
-        $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $querySpec.where->processWhere($fromContext))
+    $querySpec.orderBy->processOrderBy($projection.second.selectItems,
+      $querySpec.having->processHaving($projection.second,
+        $projection.first
       )
     )
   );
@@ -312,7 +313,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 }
 
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processProjection(originalSelect: Select[1], groupBy: meta::external::query::sql::metamodel::Expression[*], having:meta::external::query::sql::metamodel::Expression[0..1], orderBy:meta::external::query::sql::metamodel::Expression[*], context: SqlTransformContext[1]): SqlTransformContext[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processProjection(originalSelect: Select[1], groupBy: meta::external::query::sql::metamodel::Expression[*], having:meta::external::query::sql::metamodel::Expression[0..1], orderBy:meta::external::query::sql::metamodel::Expression[*], context: SqlTransformContext[1]): Pair<SqlTransformContext, Select>[1]
 {
   debug('processProjection', $context.debug);
 
@@ -377,7 +378,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     | appendTdsFunc($olapGroupBy, distinct_TabularDataSet_1__TabularDataSet_1_, []),
     | $olapGroupBy);
 
-  ^$context(expression = $distinctExp, aliases = $aliases);
+  pair(^$context(expression = $distinctExp, aliases = $aliases), $select);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractColumnNameFromExpression(expression:meta::external::query::sql::metamodel::Expression[1], selectItems: SelectItem[*], context: SqlTransformContext[1]):String[1]
@@ -890,6 +891,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processOrderBy(sortItems: meta::external::query::sql::metamodel::SortItem[*], selectItems:SelectItem[*], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug('processOrderBy', $context.debug);
+
   let sortInformation = $sortItems->map(si| createSortItemFunction($si, $selectItems, $context));
 
   let newExp = if ($sortInformation->isEmpty(),
@@ -909,6 +911,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     assert($si.nullOrdering == SortItemNullOrdering.UNDEFINED, 'null ordering type not yet supported');
 
     let column = extractColumnNameFromExpression($si.sortKey, $selectItems, $context);
+
     let sortFunc = [
       pair(SortItemOrdering.ASCENDING, asc_String_1__SortInformation_1_),
       pair(SortItemOrdering.DESCENDING, desc_String_1__SortInformation_1_)
