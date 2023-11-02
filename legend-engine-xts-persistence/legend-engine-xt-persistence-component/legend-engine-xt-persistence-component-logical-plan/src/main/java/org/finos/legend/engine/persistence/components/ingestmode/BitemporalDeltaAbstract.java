@@ -25,12 +25,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MergeDataVersionResolver;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolverAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
 import org.immutables.value.Value;
-
-import java.util.Optional;
 
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;

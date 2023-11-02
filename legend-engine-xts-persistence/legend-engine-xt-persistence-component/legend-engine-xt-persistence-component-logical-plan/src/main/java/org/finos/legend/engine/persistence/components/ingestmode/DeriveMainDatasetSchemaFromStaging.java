@@ -68,15 +68,8 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitAppendOnly(AppendOnlyAbstract appendOnly)
     {
-        if (mainSchemaFields.stream().anyMatch(Field::primaryKey))
-        {
-            // if primary keys are present, auditing column should also be a primary key
-            appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, true));
-        }
-        else
-        {
-            appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, false));
-        }
+        boolean isAuditingFieldPK = doesDatasetContainsAnyPK(mainSchemaFields);
+        appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
         if (appendOnly.digestField().isPresent())
         {
             addDigestField(mainSchemaFields, appendOnly.digestField().get());
@@ -183,7 +176,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
 
     private boolean doesDatasetContainsAnyPK(List<Field> mainSchemaFields)
     {
-        return mainSchemaFields.stream().anyMatch(field -> field.primaryKey());
+        return mainSchemaFields.stream().anyMatch(Field::primaryKey);
     }
 
 

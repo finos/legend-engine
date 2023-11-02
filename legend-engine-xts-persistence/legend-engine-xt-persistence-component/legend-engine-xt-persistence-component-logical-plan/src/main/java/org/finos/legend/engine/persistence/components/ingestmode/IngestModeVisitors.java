@@ -154,7 +154,12 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return Collections.singleton(nontemporalDelta.digestField());
+            Set<String> metaFields = new HashSet<>();
+
+            metaFields.add(nontemporalDelta.digestField());
+            nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
+
+            return metaFields;
         }
 
         @Override

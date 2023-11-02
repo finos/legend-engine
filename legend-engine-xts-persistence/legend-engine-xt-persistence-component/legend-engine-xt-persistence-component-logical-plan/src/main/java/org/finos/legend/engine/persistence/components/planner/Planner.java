@@ -125,7 +125,7 @@ public abstract class Planner
         this.datasets = datasets;
         this.ingestMode = ingestMode;
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
-        isTempTableNeededForStaging = LogicalPlanUtils.isTempTableNeededForStaging(ingestMode);
+        this.isTempTableNeededForStaging = LogicalPlanUtils.isTempTableNeededForStaging(ingestMode);
         this.tempStagingDataset = getTempStagingDataset();
         this.tempStagingDatasetWithoutPks = getTempStagingDatasetWithoutPks();
         this.effectiveStagingDataset = isTempTableNeededForStaging ? tempStagingDataset() : originalStagingDataset();
@@ -420,13 +420,13 @@ public abstract class Planner
         Value countIncomingRecords = FunctionImpl.builder().functionName(FunctionName.COUNT).alias(INCOMING_RECORD_COUNT.get()).addValue(All.INSTANCE).build();
         Dataset dataset = originalStagingDataset();
 
-        // If the data splits
+        // If data splits are present
         if (ingestMode.dataSplitField().isPresent())
         {
             dataset = stagingDataset();
             filterCondition = getDataSplitInRangeConditionForStatistics();
             Optional<String> duplicateCountFieldName = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
-            // if the deduplication has been performed
+            // If deduplication has been performed
             if (duplicateCountFieldName.isPresent())
             {
                 FieldValue duplicateCountField = FieldValue.builder().fieldName(duplicateCountFieldName.get()).datasetRef(dataset.datasetReference()).build();
