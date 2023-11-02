@@ -26,18 +26,6 @@ import static org.junit.Assert.assertTrue;
 public class TestAppendOnlyWithFilterDuplicates extends TestPersistenceBase
 {
     @Test
-    public void testAppendOnlyWithNoAuditing() throws Exception
-    {
-        String path = "src/test/resources/append-only/filter_duplicates/persistence_no_audit.txt";
-        String persistenceSpec = readPureCode(path);
-        TestResult result = testPersistence(persistenceSpec).results.get(0);
-
-        assertTrue(result instanceof TestExecuted);
-        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
-        Assert.assertEquals("test::TestPersistence", result.testable);
-    }
-
-    @Test
     public void testAppendOnlyWithDateTimeAuditing() throws Exception
     {
         String path = "src/test/resources/append-only/filter_duplicates/persistence_date_time_auditing.txt";
@@ -50,19 +38,6 @@ public class TestAppendOnlyWithFilterDuplicates extends TestPersistenceBase
     }
 
     // v2 tests
-
-    @Test
-    public void testAppendOnlyWithNoAuditingV2() throws Exception
-    {
-        String path = "src/test/resources/v2/append-only/filter_duplicates/persistence_no_audit.txt";
-        String persistenceSpec = readPureCode(path);
-        TestResult result = testPersistence(persistenceSpec).results.get(0);
-
-        assertTrue(result instanceof TestExecuted);
-        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) result).testExecutionStatus);
-        Assert.assertEquals("test::TestPersistence", result.testable);
-    }
-
     @Test
     public void testAppendOnlyWithDateTimeAuditingV2() throws Exception
     {

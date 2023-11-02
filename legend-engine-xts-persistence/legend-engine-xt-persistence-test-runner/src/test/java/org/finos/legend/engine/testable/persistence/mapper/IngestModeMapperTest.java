@@ -84,7 +84,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         AppendOnly appendOnly = (AppendOnly) componentIngestMode;
         Assert.assertEquals("DIGEST", appendOnly.digestField().get());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof AllowDuplicates);
+        Assert.assertFalse(appendOnly.filterExistingRecords());
 
         ingestMode = getAppendOnlyNoAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -95,7 +95,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         appendOnly = (AppendOnly) componentIngestMode;
         Assert.assertEquals("DIGEST", appendOnly.digestField().get());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof FilterDuplicates);
+        Assert.assertTrue(appendOnly.filterExistingRecords());
 
         ingestMode = getAppendOnlyDatetimeAuditingNoFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -108,7 +108,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(appendOnly.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof AllowDuplicates);
+        Assert.assertFalse(appendOnly.filterExistingRecords());
 
         ingestMode = getAppendOnlyDatetimeAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -121,7 +121,7 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(appendOnly.auditing() instanceof DateTimeAuditing);
         dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof FilterDuplicates);
+        Assert.assertTrue(appendOnly.filterExistingRecords());
     }
 
     @Test
