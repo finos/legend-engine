@@ -119,7 +119,7 @@ class AppendOnlyPlanner extends Planner
         }
         else if (!primaryKeys.isEmpty())
         {
-            remainingCols = getNonPKDataFields();
+            remainingCols = getNonPKNonVersionDataFields();
         }
         return remainingCols;
     }

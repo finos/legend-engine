@@ -17,7 +17,6 @@ package org.finos.legend.engine.persistence.components.util;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.IngestModeTest;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicator;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionComparator;
@@ -42,67 +41,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class LogicalPlanUtilsTest extends IngestModeTest
 {
-
-    @Test
-    public void testDeduplicateByMaxVersion()
-    {
-        DatasetDefinition dataset = DatasetDefinition.builder()
-                .database("my_db")
-                .group("my_schema")
-                .name("my_table")
-                .alias("stage")
-                .schema(baseTableSchemaWithVersion)
-                .build();
-
-        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
-
-        List<String> primaryKeys = Arrays.asList("id", "name");
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build();
-        Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
-        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
-        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
-        List<String> list = physicalPlan.getSqlList();
-
-        String expectedSelectQuery = "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\" FROM " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\"," +
-                "ROW_NUMBER() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" " +
-                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage) as stage " +
-                "WHERE stage.\"legend_persistence_row_num\" = 1) as stage";
-        Assertions.assertEquals(expectedSelectQuery, list.get(0));
-    }
-
-    @Test
-    public void testDeduplicateByMaxVersionAndFilterDataset()
-    {
-        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get());
-        List<String> primaryKeys = Arrays.asList("id", "name");
-
-        Dataset dataset = DerivedDataset.builder()
-                .database("my_db")
-                .group("my_schema")
-                .name("my_table")
-                .alias("stage")
-                .schema(baseTableSchemaWithVersion)
-                .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.GREATER_THAN, "2020-01-01"))
-                .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.LESS_THAN, "2020-01-03"))
-                .build();
-
-        VersioningStrategy versioningStrategy = MaxVersionStrategy.builder().versioningField("version").performStageVersioning(true).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build();
-        Selection selection = (Selection) versioningStrategy.accept(new DatasetDeduplicator(dataset, primaryKeys));
-
-        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(selection).build();
-        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
-        List<String> list = physicalPlan.getSqlList();
-
-        String expectedSelectQuery = "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\" FROM " +
-                "(SELECT stage.\"id\",stage.\"name\",stage.\"version\",stage.\"biz_date\",ROW_NUMBER() OVER " +
-                "(PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"version\" DESC) as \"legend_persistence_row_num\" " +
-                "FROM \"my_db\".\"my_schema\".\"my_table\" as stage " +
-                "WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')) as stage " +
-                "WHERE stage.\"legend_persistence_row_num\" = 1) as stage";
-        Assertions.assertEquals(expectedSelectQuery, list.get(0));
-    }
-
     @Test
     public void testJsonifyDatasetFilters() throws JsonProcessingException
     {

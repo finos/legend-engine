@@ -85,15 +85,16 @@ public class DeriveTempStagingSchemaDefinition implements VersioningStrategyVisi
         @Override
         public Optional<Field> visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
         {
-            Field count = Field.builder().name(COUNT)
-                    .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
-                    .primaryKey(false)
-                    .build();
-            return Optional.of(count);
+            return getDedupField();
         }
 
         @Override
         public Optional<Field> visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+        {
+            return getDedupField();
+        }
+
+        private Optional<Field> getDedupField()
         {
             Field count = Field.builder().name(COUNT)
                     .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
@@ -101,5 +102,6 @@ public class DeriveTempStagingSchemaDefinition implements VersioningStrategyVisi
                     .build();
             return Optional.of(count);
         }
+
     };
 }

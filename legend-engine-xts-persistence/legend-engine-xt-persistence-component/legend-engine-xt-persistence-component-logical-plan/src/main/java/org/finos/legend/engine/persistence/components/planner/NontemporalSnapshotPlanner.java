@@ -19,7 +19,6 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
@@ -101,7 +100,7 @@ class NontemporalSnapshotPlanner extends Planner
         List<String> remainingCols = new ArrayList<>();
         if (!primaryKeys.isEmpty())
         {
-            remainingCols = getNonPKDataFields();
+            remainingCols = getNonPKNonVersionDataFields();
         }
         return remainingCols;
     }

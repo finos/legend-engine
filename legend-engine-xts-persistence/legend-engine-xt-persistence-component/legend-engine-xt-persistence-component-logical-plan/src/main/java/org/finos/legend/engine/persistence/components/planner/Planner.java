@@ -469,7 +469,7 @@ public abstract class Planner
         postRunStatisticsResult.put(ROWS_DELETED, rowsDeletedCountPlan);
     }
 
-    protected List<String> getNonPKDataFields()
+    protected List<String> getNonPKNonVersionDataFields()
     {
         List<String> nonPkDataFields = stagingDataset().schemaReference().fieldValues().stream()
                 .map(fieldValue -> fieldValue.fieldName())

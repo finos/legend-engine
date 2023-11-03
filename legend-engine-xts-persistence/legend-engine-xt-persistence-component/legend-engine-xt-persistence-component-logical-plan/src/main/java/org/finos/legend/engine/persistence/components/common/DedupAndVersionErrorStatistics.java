@@ -16,18 +16,6 @@ package org.finos.legend.engine.persistence.components.common;
 
 public enum DedupAndVersionErrorStatistics
 {
-    MAX_DUPLICATES("maxDuplicates"),
-    MAX_DATA_ERRORS("maxDataErrors");
-
-    String value;
-
-    DedupAndVersionErrorStatistics(String value)
-    {
-        this.value = value;
-    }
-
-    public String get()
-    {
-        return value;
-    }
+    MAX_DUPLICATES,
+    MAX_DATA_ERRORS;
 }
