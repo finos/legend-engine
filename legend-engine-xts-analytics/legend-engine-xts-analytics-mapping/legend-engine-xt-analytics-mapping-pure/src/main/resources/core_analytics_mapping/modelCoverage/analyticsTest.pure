@@ -20,6 +20,11 @@ function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAna
   meta::analytics::mapping::modelCoverage::analyze($mapping, false, false, false);
 }
 
+function meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalyticsWithMappedEntityInfo(mapping: Mapping[1]): MappingModelCoverageAnalysisResult[1]
+{
+  meta::analytics::mapping::modelCoverage::analyze($mapping, true, false, false);
+}
+
 // Relational
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testSimpleRelationalMappingCoverage():Boolean[1]
 {
@@ -109,6 +114,41 @@ function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCove
   let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalytics($autoMappedMapping);
   assert($result.mappedEntities->size() == 2); 
   assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
+}
+
+
+function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testAutoMappedComplexPropertiesMappingCoverageWithMappedEntityInfo():Boolean[1]
+{
+  let grammar = 'Class meta::analytics::mapping::modelCoverage::test::Target\n'+
+  '{\n'+
+  '  tgtId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Shared\n'+
+  '{\n'+
+  '  sharedId: String[1];\n'+
+  '}\n'+
+  'Class meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '{\n'+
+  '  srcId: String[1];\n'+
+  '  shared: meta::analytics::mapping::modelCoverage::test::Shared[1];\n'+
+  '}\n'+
+  '###Mapping\n'+
+  'Mapping meta::analytics::mapping::modelCoverage::test::simpleAutoMappedMapping\n'+
+  '(\n'+
+  '  *meta::analytics::mapping::modelCoverage::test::Target:Pure\n'+
+  '  {\n'+
+  '    ~src meta::analytics::mapping::modelCoverage::test::Source\n'+
+  '    tgtId: $src.srcId,\n'+
+  '    shared: $src.shared\n'+
+  '  }\n'+
+  ')\n';
+  let elements = meta::legend::compileLegendGrammar($grammar);
+  let autoMappedMapping = $elements->filter(e|$e->instanceOf(Mapping))->at(0)->cast(@Mapping);
+  let result = meta::analytics::mapping::modelCoverage::test::generateModelCoverageAnalyticsWithMappedEntityInfo($autoMappedMapping);
+  assert($result.mappedEntities->size() == 2); 
+  assertContains($result.mappedEntities.path, 'meta::analytics::mapping::modelCoverage::test::Target_meta::analytics::mapping::modelCoverage::test::Source_autoMapped_shared');
+  assert($result.mappedEntities->filter(m |$m.info->isNotEmpty())->size() == 2);
 }
 
 function <<meta::pure::profiles::test.Test>> meta::analytics::mapping::modelCoverage::test::testCyclicalAutoMappedComplexPropertiesMappingCoverage():Boolean[1]
