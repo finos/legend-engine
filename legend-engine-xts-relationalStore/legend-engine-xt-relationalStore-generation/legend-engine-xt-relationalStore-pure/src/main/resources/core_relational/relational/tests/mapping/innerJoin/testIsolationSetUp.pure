@@ -40,12 +40,17 @@ Class meta::relational::tests::mapping::innerjoin::isolation::AutomobileUnion
    isPrivate: String[0..1];
    ancestors: AutomobileUnion[0..*];
    children: AutomobileUnion[0..*];
-   publicAncestor()
+   privateAncestor()
    {
       $this.ancestors->filter(a|$a.isPrivate =='Y')->toOne()
    }:AutomobileUnion[1];
 
-   publicAncestor2()
+   publicAncestor()
+   {
+      $this.ancestors->filter(a|$a.isPrivate =='N')->toOne()
+   }:AutomobileUnion[1];
+
+   privateAncestor2()
    {
    $this.ancestors->filter(a|$a.isPrivate =='Y').name=='haha' || ($this.ancestors->filter(a|$a.isPrivate=='Y').name=='ahah')
    }: Boolean[1];
@@ -63,8 +68,8 @@ function meta::relational::tests::mapping::innerjoin::isolation::initAutomobileD
    executeInDb('Create Table AutomobileTable (vehicleId INT, type VARCHAR(20),orgId INT, orgName VARCHAR(40),orgtype VARCHAR(40));', $connection);
    executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (1, \'Mercedes1\',17,\'GSorgtoReturn\' ,\'private\');', $connection);
    executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (2, \'Mercedes2\',18,\'GSorgtoReturn2\' ,\'private\');', $connection);
-   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (3, \'Mercedes3\',19,\'GSorg3\' ,\'public3\');', $connection);
-   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (4, \'Mercedes4\',20,\'GSorg4\' ,\'public4\');', $connection);
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (3, \'Mercedes3\',19,\'GSorg3\' ,\'public\');', $connection);
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (4, \'Mercedes4\',20,\'GSorg4\' ,\'public\');', $connection);
 
    executeInDb('Drop table if exists AutoAncestor;', $connection);
    executeInDb('Create Table AutoAncestor (childId INT ,parentId INT);',$connection);
@@ -114,6 +119,36 @@ Mapping meta::relational::tests::mapping::innerjoin::isolation::AutoMapping
       (
          name: AutomobileTable.orgName,
          isPrivate: case(equal(AutomobileTable.orgtype, 'public'), 'N','Y'),
+         ancestors:  @Auto_Ancestor > (INNER)@AncestorAuto
+      )
+   }
+
+)
+
+###Mapping
+import meta::relational::tests::mapping::innerjoin::isolation::*;
+Mapping meta::relational::tests::mapping::innerjoin::isolation::MappingWithConstant
+(
+   Car :Relational
+   {
+       scope([AutomobileDb])
+       (
+          type: AutomobileTable.type,
+          id: AutomobileTable.vehicleId,
+          org(
+             name: AutomobileTable.orgName,
+             isPrivate: 'Y',
+             ancestors: @ Auto_Auto > @Auto_Ancestor > (INNER)@AncestorAuto
+          )
+       )
+   }
+
+   AutomobileUnion:Relational
+   {
+      scope([AutomobileDb])
+      (
+         name: AutomobileTable.orgName,
+         isPrivate: 'Y',
          ancestors:  @Auto_Ancestor > (INNER)@AncestorAuto
       )
    }

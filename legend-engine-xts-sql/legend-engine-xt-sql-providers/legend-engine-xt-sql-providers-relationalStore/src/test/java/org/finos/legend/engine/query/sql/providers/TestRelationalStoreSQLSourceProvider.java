@@ -20,14 +20,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
-import org.finos.legend.engine.query.sql.providers.core.SQLSource;
-import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;
-import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
-import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
-import org.finos.legend.engine.query.sql.providers.core.TableSource;
-import org.finos.legend.engine.query.sql.providers.core.TableSourceArgument;
+import org.finos.legend.engine.query.sql.providers.core.*;
 import org.finos.legend.engine.query.sql.providers.shared.AbstractTestLegendStoreSQLSourceProvider;
 import org.finos.legend.engine.query.sql.providers.shared.SQLSourceProviderTestUtils;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateLoader;
@@ -213,8 +208,7 @@ public class TestRelationalStoreSQLSourceProvider extends AbstractTestLegendStor
         ConnectionPointer connectionPtr = new ConnectionPointer();
         connectionPtr.connection = CONNECTION_NAME;
 
-        LegacyRuntime runtime = new LegacyRuntime();
-        runtime.connections = FastList.newListWith(connectionPtr);
+        EngineRuntime runtime = SQLProviderUtils.createRuntime(CONNECTION_NAME, databaseName);
 
         SQLSource expected = new SQLSource("relationalStore", lambda, null, runtime, null, null, keys);
 

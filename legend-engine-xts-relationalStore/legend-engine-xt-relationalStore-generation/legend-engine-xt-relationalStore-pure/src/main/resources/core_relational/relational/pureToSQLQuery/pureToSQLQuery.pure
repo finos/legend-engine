@@ -841,7 +841,7 @@ function meta::relational::functions::pureToSqlQuery::processQualifiedPropertyFu
 
 function meta::relational::functions::pureToSqlQuery::tdsQualifier(fe:FunctionExpression[1], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
-   let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getFloat', 'getDate', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate', 'isNull', 'isNotNull'];
+   let tdsProperties = ['getNumber', 'getInteger', 'getString', 'getFloat', 'getDate', 'getDecimal', 'getBoolean', 'getEnum', 'getDateTime', 'getStrictDate', 'isNull', 'isNotNull'];
 
    let funcName = $fe.func.functionName->toOne();
    let valid = $tdsProperties->contains($funcName);
@@ -5872,7 +5872,10 @@ function meta::relational::functions::pureToSqlQuery::findBestNodeToIsolate(sele
 {
    let joinThreads = ^List<RelationalTreeNode>(values=$select.data)->buildThreads();
 
-   let aliasesWithConstraints = $select.savedFilteringOperation.second->extractTableAliasColumns().alias->removeDuplicates();
+   //For filters having aliases like a.x = 'y' fetch aliases from relationalOperationalElement and for filters without aliases like 'x' = 'x' fetch aliases from the treeNode. 
+   let aliasesWithConstraints = $select.savedFilteringOperation->map(x | let aliasFromFilters = $x.second->extractTableAliasColumns().alias; 
+                                                                         if($aliasFromFilters->isNotEmpty(), |$aliasFromFilters, | $x.first.alias);
+                                                                    )->removeDuplicates();
 
    let filterThreadsWithAllConditions = $joinThreads->filter(thread| $thread->matchAllAliases($aliasesWithConstraints));
 

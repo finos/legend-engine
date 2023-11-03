@@ -18,8 +18,14 @@ package org.finos.legend.engine.query.sql.providers.shared.utils;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CString;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -79,5 +85,28 @@ public class SQLProviderUtils
     public static boolean equalsEscaped(String value, String toMatch)
     {
         return value.equals(toMatch) || value.equals("\"" + toMatch + "\"");
+    }
+
+    public static EngineRuntime createRuntime(String connection, String store)
+    {
+        ConnectionPointer connectionPtr = new ConnectionPointer();
+        connectionPtr.connection = connection;
+
+        PackageableElementPointer storePointer = new PackageableElementPointer();
+        storePointer.path = store;
+        storePointer.type = PackageableElementType.STORE;
+
+        IdentifiedConnection identifiedConnection = new IdentifiedConnection();
+        identifiedConnection.id = "connection1";
+        identifiedConnection.connection = connectionPtr;
+
+        StoreConnections storeConnection = new StoreConnections();
+        storeConnection.store = storePointer;
+        storeConnection.storeConnections = FastList.newListWith(identifiedConnection);
+
+        EngineRuntime runtime = new EngineRuntime();
+        runtime.connections = FastList.newListWith(storeConnection);
+
+        return runtime;
     }
 }
