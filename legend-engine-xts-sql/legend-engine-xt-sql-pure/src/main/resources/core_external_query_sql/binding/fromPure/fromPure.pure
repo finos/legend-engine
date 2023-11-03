@@ -869,7 +869,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair(JoinType.LEFT, meta::relational::metamodel::join::JoinType.LEFT_OUTER),
     pair(JoinType.RIGHT, meta::relational::metamodel::join::JoinType.RIGHT_OUTER),
     pair(JoinType.INNER, meta::relational::metamodel::join::JoinType.INNER),
-    pair(JoinType.CROSS, meta::relational::metamodel::join::JoinType.INNER)
+    pair(JoinType.CROSS, meta::relational::metamodel::join::JoinType.INNER),
+    pair(JoinType.FULL, meta::relational::metamodel::join::JoinType.FULL_OUTER)    
   ]->getValue($joinType);
 }
 
