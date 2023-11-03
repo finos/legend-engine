@@ -19,16 +19,19 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpRequest;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetadataServerPrivateAccessTokenConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
@@ -40,10 +43,12 @@ import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.finos.legend.server.pac4j.gitlab.GitlabPersonalAccessTokenProfile;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Optional;
@@ -133,7 +138,21 @@ public class ProjectCoordinateLoader
         return doAs(ProfileManagerHelper.extractSubject(profiles), () ->
         {
             String url = String.format("%s/api/projects/%s/%s/%s/pureModelContextData", sdlcServerConfig.getBaseUrl(), project, isGroup ? "groupWorkspaces" : "workspaces", workspace);
-            PureModelContextData projectPMCD = SDLCLoader.loadMetadataFromHTTPURL(profiles, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url, httpClientProvider);
+            PureModelContextData projectPMCD = SDLCLoader.loadMetadataFromHTTPURL(profiles, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url, httpClientProvider, (String _url) ->
+            {
+                HttpGet httpRequest = new HttpGet(_url);
+                if (this.sdlcServerConfig.pac4j != null && this.sdlcServerConfig.pac4j instanceof MetadataServerPrivateAccessTokenConfiguration)
+                {
+                    String patHeaderName = ((MetadataServerPrivateAccessTokenConfiguration) this.sdlcServerConfig.pac4j).accessTokenHeaderName;
+                    MutableList<GitlabPersonalAccessTokenProfile> patProfiles = profiles.selectInstancesOf(GitlabPersonalAccessTokenProfile.class);
+                    if (patProfiles.getFirst() != null)
+                    {
+                        httpRequest = new HttpGet(String.format("%s?client_name=%s", _url, patProfiles.getFirst().getClientName()));
+                        httpRequest.addHeader(new BasicHeader(patHeaderName, patProfiles.getFirst().getPersonalAccessToken()));
+                    }
+                }
+                return httpRequest;
+            });
             PureModelContextData dependencyPMCD = getSDLCDependenciesPMCD(project, workspace, isGroup, profiles);
 
             return projectPMCD.combine(dependencyPMCD);
@@ -161,7 +180,16 @@ public class ProjectCoordinateLoader
                         isGroup ? "groupWorkspaces" : "workspaces",
                         workspace);
 
-                try (CloseableHttpResponse response = client.execute(new HttpGet(url)))
+                HttpGet httpRequest = new HttpGet(url);
+                String patHeaderName = ((MetadataServerPrivateAccessTokenConfiguration) this.sdlcServerConfig.pac4j).accessTokenHeaderName;
+                MutableList<GitlabPersonalAccessTokenProfile> patProfiles = profiles.selectInstancesOf(GitlabPersonalAccessTokenProfile.class);
+                if (patProfiles.getFirst() != null)
+                {
+                    httpRequest = new HttpGet(String.format("%s?client_name=%s", url, patProfiles.getFirst().getClientName()));
+                    httpRequest.addHeader(new BasicHeader(patHeaderName, patProfiles.getFirst().getPersonalAccessToken()));
+                }
+
+                try (CloseableHttpResponse response = client.execute(httpRequest))
                 {
                     StatusLine status = response.getStatusLine();
                     if (!Response.Status.Family.familyOf(status.getStatusCode()).equals(Response.Status.Family.SUCCESSFUL))
