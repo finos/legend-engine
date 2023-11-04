@@ -16,7 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1.model.context;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -24,7 +23,8 @@ import java.util.Objects;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = PureSDLC.class, name = "pure"),
-        @JsonSubTypes.Type(value = AlloySDLC.class, name = "alloy")
+        @JsonSubTypes.Type(value = AlloySDLC.class, name = "alloy"),
+        @JsonSubTypes.Type(value = WorkspaceSDLC.class, name = "workspace")
 })
 public abstract class SDLC
 {
@@ -51,5 +51,10 @@ public abstract class SDLC
     public int hashCode()
     {
         return Objects.hash(version, packageableElementPointers);
+    }
+
+    public <T> T accept(SDLCVisitor<T> visitor)
+    {
+        throw new UnsupportedOperationException("Not implemented");
     }
 }

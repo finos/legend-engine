@@ -14,21 +14,23 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.Objects;
 
-public class AlloySDLC extends SDLC
+public class WorkspaceSDLC extends SDLC
 {
     @JsonProperty(value = "project")
-    @Deprecated
     public String project;
 
-    @JsonProperty(value = "groupId")
-    public String groupId;
+    @JsonProperty(value = "isGroupWorkspace")
+    public boolean isGroupWorkspace;
 
-    @JsonProperty(value = "artifactId")
-    public String artifactId;
+    @JsonIgnore
+    public String getWorkspace()
+    {
+        return this.version;
+    }
 
     @Override
     public boolean equals(Object o)
@@ -41,14 +43,14 @@ public class AlloySDLC extends SDLC
         {
             return false;
         }
-        AlloySDLC that = (AlloySDLC) o;
-        return Objects.equals(this.project, that.project) && Objects.equals(this.version, that.version) && Objects.equals(this.groupId, that.groupId) && Objects.equals(this.artifactId, that.artifactId);
+        WorkspaceSDLC that = (WorkspaceSDLC) o;
+        return Objects.equals(this.project, that.project) && Objects.equals(this.version, that.version) && Objects.equals(this.isGroupWorkspace, that.isGroupWorkspace);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version) + 17 * Objects.hashCode(this.groupId) + 17 * Objects.hashCode(artifactId);
+        return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version) + 17 * Objects.hashCode(this.isGroupWorkspace);
     }
 
     @Override
