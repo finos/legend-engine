@@ -16,6 +16,7 @@ import meta::external::store::elasticsearch::v7::specification::utils::*;
 import meta::pure::functions::io::http::*;
 import meta::pure::test::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 import meta::pure::runtime::connection::authentication::*;
@@ -48,7 +49,7 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
           ),
       pair('Director', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
       pair('MPAA', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(keyword = ^KeywordProperty())),
-      pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty(format = 'yyyy-MM-dd hh:mm:ssa'->literal()))),
+      pair('ReleaseDate', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(date = ^DateProperty(format = 'yyyy-MM-dd hh:mm:ss.SSSa'->literal()))),
       pair('Budget', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(integer = ^IntegerNumberProperty())),
       pair('Revenue', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(_float = ^FloatNumberProperty())),
       pair('MainActor', ^meta::external::store::elasticsearch::v7::metamodel::specification::types::mapping::Property(object =
@@ -77,7 +78,7 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
 
 function <<access.private>> meta::external::store::elasticsearch::executionTest::test::v7::index(name: String[1], records: Any[*]): Any[*]
 {
-  let deletIndex = ^DeleteRequest(
+  let deleteIndex = ^DeleteRequest(
       index = $name->literal(),
       ignore_unavailable = true->literal()
   );
@@ -103,7 +104,7 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
   );
 
   [
-    $deletIndex,
+    $deleteIndex,
     $createIndex,
     $indexData,
     $countData
@@ -121,21 +122,13 @@ function <<access.private>> meta::external::store::elasticsearch::executionTest:
   );
 }
 
-function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_7_8_0(): PureTestCollection[1]
+// this test if 7 is fwd compatible for now until we settle on 7 functionality, and create 8 officially...
+function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_8_6_2(): PureTestCollection[1]
 {
-  let testToIgnore = [
-    // start multi_term ignore - not supported until 7.12
-    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleAggFields_multipleGroupByFields_TestConfig_1__Boolean_1_,
-    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnSingleAggFields_multipleGroupByFields_withRename_TestConfig_1__Boolean_1_,
-    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleAggFields_TestConfig_1__Boolean_1_,
-    meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::sort::testSortOnMultipleAggFields_withRename_TestConfig_1__Boolean_1_
-    // end multi_term ignore - not supported until 7.12
-  ];
-
-  '7.8.0'->collectTest(x | $x->in($testToIgnore)->not());  
+ '8.6.2'->collectTest([]);
 }
 
 function <<test.TestCollection>> meta::external::store::elasticsearch::executionTest::test::v7::test_7_17_0(): PureTestCollection[1]
 {
-  '7.17.0'->collectTest([]);
+  '7.17.7'->collectTest([]);
 }

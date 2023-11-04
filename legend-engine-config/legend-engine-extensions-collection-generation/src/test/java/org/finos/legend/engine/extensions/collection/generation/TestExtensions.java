@@ -71,8 +71,11 @@ import org.finos.legend.engine.language.pure.grammar.to.RedshiftGrammarComposerE
 import org.finos.legend.engine.language.pure.grammar.to.DatabricksGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph.SnowflakeAppCompilerExtension;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifactGenerationExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGrammarComposer;
+import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
+import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension;
 import org.finos.legend.pure.code.core.ElasticsearchPureCoreExtension;
@@ -282,6 +285,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.AuthenticationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.TextProtocolExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureProtocolExtension.class)
+                .with(org.finos.legend.engine.language.sql.grammar.integration.SQLPureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.store.elasticsearch.v7.ElasticsearchV7ProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension.class)
                 ;
@@ -318,6 +322,7 @@ public class TestExtensions
                 .with(ServiceParserExtension.class)
                 .with(AuthenticationGrammarParserExtension.class)
                 .with(GraphQLGrammarParserExtension.class)
+                .with(SQLGrammarParserExtension.class)
                 .with(ServiceStoreGrammarParserExtension.class)
                 .with(TextParserExtension.class)
                 .with(ElasticsearchGrammarParserExtension.class)
@@ -349,6 +354,7 @@ public class TestExtensions
                 .with(ServiceGrammarComposerExtension.class)
                 .with(ServiceStoreGrammarComposerExtension.class)
                 .with(GraphQLPureGrammarComposerExtension.class)
+                .with(SQLPureGrammarComposerExtension.class)
                 .with(AuthenticationGrammarComposerExtension.class)
                 .with(TextGrammarComposerExtension.class)
                 .with(ElasticsearchGrammarComposerExtension.class)
@@ -380,6 +386,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.RedshiftCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DatabricksCompilerExtension.class)
                 .with(org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLCompilerExtension.class)
+                .with(org.finos.legend.engine.language.sql.grammar.integration.SQLCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.ServiceStoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph.AuthenticationCompilerExtension.class)
                 .with(org.finos.legend.engine.language.stores.elasticsearch.v7.compiler.ElasticsearchCompilerExtension.class)
@@ -408,6 +415,7 @@ public class TestExtensions
                 .with(XMLJavaBindingPureCoreExtension.class)
                 .with(ServicePureCoreExtension.class)
                 .with(RelationalJavaBindingPureCoreExtension.class)
+                .with(ArrowPureCoreExtension.class)
                 ;
     }
 
@@ -421,7 +429,8 @@ public class TestExtensions
                 .with(org.finos.legend.engine.external.format.protobuf.ProtobufFormatExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLFormatExtension.class)
                 .with(org.finos.legend.engine.query.graphQL.api.format.GraphQLSDLFormatExtension.class)
-                .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class);
+                .with(org.finos.legend.engine.external.format.daml.DamlFormatExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends FlatDataDriverDescription>> getExpectedFlatDataDriverDescriptionExtensions()
@@ -444,7 +453,8 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends ArtifactGenerationExtension>>empty()
                 .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
                 .with(SearchDocumentArtifactGenerationExtension.class)
-                .with(OpenApiArtifactGenerationExtension.class);
+                .with(OpenApiArtifactGenerationExtension.class)
+                .with(SnowflakeAppArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()
@@ -462,6 +472,9 @@ public class TestExtensions
                 .with("core_generation")
                 .with("core_service")
                 .with("core_functions")
+                .with("core_analytics_binding")
+                .with("core_analytics_class")
+                .with("core_analytics_function")
                 .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
                 .with("core_analytics_search")
@@ -477,8 +490,10 @@ public class TestExtensions
                 .with("core_external_format_openapi")
                 .with("core_external_format_protobuf")
                 .with("core_external_format_xml")
+                .with("core_external_format_arrow")
                 .with("core_external_query_graphql")
                 .with("core_external_query_graphql_metamodel")
+                .with("core_external_query_sql_metamodel")
                 .with("core_function_activator")
                 .with("core_external_compiler")
                 .with("core_persistence")
@@ -499,6 +514,7 @@ public class TestExtensions
                 .with("core_relational_presto")
                 .with("core_relational_sybase")
                 .with("core_relational_sybaseiq")
+                .with("core_relational_sparksql")
                 .with("core_relational_store_entitlement")
                 .with("core_servicestore")
                 .with("core_authentication")

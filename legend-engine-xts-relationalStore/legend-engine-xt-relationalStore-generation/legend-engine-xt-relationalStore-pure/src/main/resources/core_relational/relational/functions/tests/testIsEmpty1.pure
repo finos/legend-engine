@@ -17,6 +17,7 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::executionPlan::tests::*;
 
 function <<test.Test>> meta::relational::tests::query::filter::isempty::testIsolationOfInputToIsEmpty():Boolean[1]

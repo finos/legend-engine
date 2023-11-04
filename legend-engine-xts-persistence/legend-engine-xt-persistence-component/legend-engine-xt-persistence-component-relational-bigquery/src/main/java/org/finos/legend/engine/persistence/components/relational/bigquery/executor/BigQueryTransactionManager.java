@@ -22,8 +22,9 @@ import com.google.cloud.bigquery.FieldValueList;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.JobId;
 import com.google.cloud.bigquery.JobInfo;
-import com.google.cloud.bigquery.LegacySQLTypeName;
+import com.google.cloud.bigquery.JobStatistics;
 import com.google.cloud.bigquery.QueryJobConfiguration;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,6 +97,22 @@ public class BigQueryTransactionManager
     {
         Job job = this.executeSql(sql);
         return job.getStatus().getError() == null;
+    }
+
+    public Map<StatisticName, Object> executeLoadStatement(String sql) throws InterruptedException
+    {
+        Map<StatisticName, Object> stats = new HashMap<>();
+
+        Job job = this.executeSql(sql);
+        JobStatistics.QueryStatistics queryStatistics = job.getStatistics();
+
+        long recordsWritten = queryStatistics.getQueryPlan().get(0).getRecordsWritten();
+        long recordsRead = queryStatistics.getQueryPlan().get(0).getRecordsRead();
+
+        stats.put(StatisticName.ROWS_INSERTED, recordsWritten);
+        stats.put(StatisticName.ROWS_WITH_ERRORS, recordsRead - recordsWritten);
+
+        return stats;
     }
 
     public List<Map<String, Object>> convertResultSetToList(String sql)

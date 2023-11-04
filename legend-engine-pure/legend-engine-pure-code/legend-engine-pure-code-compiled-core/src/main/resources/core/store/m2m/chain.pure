@@ -20,10 +20,12 @@ import meta::pure::router::store::metamodel::*;
 import meta::pure::mapping::modelToModel::chain::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::chain::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::utils::*;
@@ -43,7 +45,7 @@ function meta::pure::mapping::modelToModel::chain::executeChain(f:StoreQuery[1],
                                                             let rightSide = ^InstanceValue(values = $rightValue,  genericType= $genericType, multiplicity = $multiplicity);
                                                             let leftSide = ^InstanceValue(values = $keyVS, multiplicity = PureOne, genericType = $keyVS->genericType());
                                                             let placeholderLet = {| let placeHolder = $rightSide } ->evaluateAndDeactivate().expressionSequence ->cast(@SimpleFunctionExpression)->toOne();
-                                                            ^$placeholderLet( parametersValues = [ $leftSide, $rightSide ] ); 
+                                                            ^$placeholderLet( parametersValues = [ $leftSide, $rightSide ] );
                                                         ,| [] ) ;
 
                                                      );
@@ -104,14 +106,14 @@ function meta::pure::mapping::modelToModel::chain::planExecutionChain(sq:StoreQu
 {
    let returnType = $sq.fe.genericType.rawType->toOne();
    assert($returnType->_subTypeOf(TabularDataSet), 'Non TDS return type not supported for Model Connections');
-   
+
    print(if(!$debug.debug, |'',|$debug.space+'Mappings: ['+$mapping->concatenate($mcc.mappings->init())->makeString(', ')+']\n'));
-   
+
    let processed = $sq.fe->allReprocess($e, $mapping->concatenate($mcc.mappings->init()), $extensions, $debug);
    let f = ^LambdaFunction<{->Any[*]}>(expressionSequence = $processed.res->cast(@FunctionExpression))->toOne()->cast(@FunctionDefinition<Any>);
-   
+
    let m = $mcc.mappings->last()->toOne();
-   
+
    let routed = $f->routeFunction($m, $runtime->toOne(), $exeCtx, $extensions, $debug);
    let routedFunction = $routed->evaluateAndDeactivate()->toOne();
    let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@StoreMappingClusteredValueSpecification);
@@ -181,7 +183,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                  |$setImpl->_propertyMappingsByPropertyName($fe.func.name->toOne())->cast(@PurePropertyMapping)->toOne();,
                                                                  |$setImpl->propertyMappingByPropertyNameAndTargetId($fe.func.name->toOne(), $e.sets.id->toOne())->cast(@PurePropertyMapping)->toOne()
                                                              );
-                                                    
+
                                                     let srcValueSpecification = $results.newExpression->at(0)->cast(@ValueSpecification);
                                                     let modelTransformLambda = $pm.transform->manageEnumeration([]);
                                                     let modelTransformLambdaEvalExpression = createEvalFunctionExpression($modelTransformLambda, $srcValueSpecification, $fe);
@@ -192,14 +194,14 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                     );,
                                                   |
                                                     let newTypeParams =  $fe.genericType.typeArguments->map(t| let typeParam = $t.rawType->toOne();
-                                                                                                               if($typeParam->instanceOf(DataType), 
+                                                                                                               if($typeParam->instanceOf(DataType),
                                                                                                                   | if($typeParam->instanceOf(Enumeration),| ^GenericType(rawType=String),| $t),
                                                                                                                   | let sc = sourceClassFromFunction($fe);
                                                                                                                     if($sc->isNotEmpty(),|^GenericType(rawType=$sc.srcClass),|$t);
                                                                                                                 );
                                                                                                           );
                                                     let type = $fe.genericType.rawType->toOne();
-                                                    ^$fe(genericType=if($e.sets->isEmpty() || $type->instanceOf(DataType), 
+                                                    ^$fe(genericType=if($e.sets->isEmpty() || $type->instanceOf(DataType),
                                                                         | if($type->instanceOf(Enumeration),
                                                                             | ^GenericType(rawType=String),
                                                                             | if($fe.genericType.typeArguments->isNotEmpty(),| ^GenericType(rawType=$fe.genericType.rawType,typeArguments = $newTypeParams),|$fe.genericType);
@@ -248,7 +250,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                            let results = $f.expressionSequence->map(vs|$vs->reprocess($e, $mapping, $mappings, [], $extensions));
                                                                                                            let varMap = if($results.vars->isEmpty(),|[],|newMap($results.vars->map(r|$r->keyValues())));
                                                                                                            let fType = $f->functionType();
-                                                                                                           
+
                                                                                                            let fInputType = ^GenericType(rawType=$agg.mapFn.expressionSequence->cast(@StoreMappingRoutedValueSpecification).sets->at(0)->cast(@PureInstanceSetImplementation).srcClass);
                                                                                                            let dummyLambda = {x:Any[1]| $x};
                                                                                                            let gen = ^GenericType
@@ -258,7 +260,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                                                         (
                                                                                                                                            rawType = ^$fType
                                                                                                                                                      (
-                                                                                                                                                        parameters = $fType.parameters->map(p|^$p(genericType=$fInputType)), 
+                                                                                                                                                        parameters = $fType.parameters->map(p|^$p(genericType=$fInputType)),
                                                                                                                                                         returnType = $f->functionReturnType(),
                                                                                                                                                         returnMultiplicity= $f->functionReturnMultiplicity()
                                                                                                                                                      )
@@ -273,7 +275,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                                                                      typeArguments=[$fInputType,
                                                                                                                                                                     $agg.mapFn->functionReturnType(),
                                                                                                                                                                     $agg.aggregateFn->functionReturnType()]),
-                                                                                                                       multiplicity = PureOne, 
+                                                                                                                       multiplicity = PureOne,
                                                                                                                        parametersValues = [
                                                                                                                                              ^InstanceValue(values=^$dummyLambda(classifierGenericType=$gen,
                                                                                                                                                                     expressionSequence=$results.newExpression->cast(@ValueSpecification)),
@@ -287,7 +289,7 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                                                                                                                   $agg.mapFn->functionReturnType(),
                                                                                                                                                   $agg.aggregateFn->functionReturnType()]
                                                                                                                     )->evaluateAndDeactivate();,
-                                                                      s:SortInformation[1] |$s,    
+                                                                      s:SortInformation[1] |$s,
                                                                       i:Integer[1]|$i,
                                                                       s:String[1]|$s,
                                                                       d:Date[1]|$d,
@@ -308,11 +310,11 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
                                                 );};
 
                             let newGTs = $values
-                                             ->map(v|$genericTypeGenerator->eval($v)) 
-                                             ->removeDuplicates(meta::pure::mapping::modelToModel::chain::isSameGenericType_GenericType_1__GenericType_1__Boolean_1_); 
+                                             ->map(v|$genericTypeGenerator->eval($v))
+                                             ->removeDuplicates(meta::pure::mapping::modelToModel::chain::isSameGenericType_GenericType_1__GenericType_1__Boolean_1_);
 
                             let genericType = if($newGTs->size() == 1,
-                                               | $newGTs->at(0);,                                                                                                                                                                                            
+                                               | $newGTs->at(0);,
                                                |^GenericType(rawType=Any));
                               let newInstanceValue = ^$i(genericType = $genericType, values=$values)->evaluateAndDeactivate();
                             let vars = $results->map(r|$r->match([v:Res[1]|$v.vars,a:Any[1]|[]]));
@@ -323,9 +325,9 @@ function meta::pure::mapping::modelToModel::chain::reprocess(vs:ValueSpecificati
 
 function <<access.private>> meta::pure::mapping::modelToModel::chain::isSameGenericType(a:GenericType[1], b:GenericType[1]):Boolean[1]
 {
-   ($a.rawType == $b.rawType) && 
+   ($a.rawType == $b.rawType) &&
    ($a.typeArguments->size() == $b.typeArguments->size()) &&
-   ($a.typeArguments->zip($b.typeArguments)->map(p| isSameGenericType($p.first,$p.second))->and());  
+   ($a.typeArguments->zip($b.typeArguments)->map(p| isSameGenericType($p.first,$p.second))->and());
 }
 
 function meta::pure::mapping::modelToModel::chain::reprocessVar(v:Any[1], oldVar:Pair<String, GenericType>[0..1]):Any[1]
@@ -391,8 +393,8 @@ function meta::pure::mapping::modelToModel::chain::createEvalFunctionExpression(
 {
    let returnType = $lambdaFunction->genericType().typeArguments->at(0).rawType->cast(@FunctionType).returnType->toOne();
    let lambdaFunctionInstanceValue = ^InstanceValue(genericType = $lambdaFunction->genericType(), multiplicity = PureOne, values = $lambdaFunction);
-   ^$functionExpression(func = meta::pure::functions::lang::eval_Function_1__T_n__V_m_, 
-                        genericType = $returnType, 
+   ^$functionExpression(func = meta::pure::functions::lang::eval_Function_1__T_n__V_m_,
+                        genericType = $returnType,
                         parametersValues = [$lambdaFunctionInstanceValue->evaluateAndDeactivate(), $secondParameter->evaluateAndDeactivate()]
    );
 }
@@ -474,7 +476,7 @@ function meta::pure::mapping::modelToModel::chain::manageEnumerationVS(vs:ValueS
 function meta::pure::mapping::modelToModel::chain::manageEnumerationMapping(transformer:ValueTransformer<Any>[1], variableName:String[1]):LambdaFunction<Any>[1]
 {
    let enumValueMappings = $transformer->cast(@EnumerationMapping<Any>).enumValueMappings;
-   let sourceValuesType = $enumValueMappings.sourceValues->genericType().rawType->toOne();                                                       
+   let sourceValuesType = $enumValueMappings.sourceValues->genericType().rawType->toOne();
    let inputVariable = createVariableExpression($sourceValuesType, $variableName);
    createNestedIfElseLambdaFunction($enumValueMappings, $inputVariable, true);
 }
@@ -535,12 +537,12 @@ function meta::pure::mapping::modelToModel::chain::manageMilestoning(func:Functi
 
 function meta::pure::mapping::modelToModel::chain::createNestedIfElseLambdaFunction(enumValueMappings:EnumValueMapping[*], inputVariable:VariableExpression[1], root:Boolean[1]):LambdaFunction<Any>[1]
 {
-   let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String), parameters = if ($root,| $inputVariable,| []))));   
+   let classifierGenericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String), parameters = if ($root,| $inputVariable,| []))));
    let expressionSequence = createNestedIfElseFunctionExpression($enumValueMappings, $inputVariable);
    let lambdaFunction = ^LambdaFunction<Any>(expressionSequence = $expressionSequence, openVariables = if ($root,| [],| $inputVariable.name));
    ^$lambdaFunction(classifierGenericType = $classifierGenericType);
 }
-    
+
 function meta::pure::mapping::modelToModel::chain::createNestedIfElseFunctionExpression(enumValueMappings:EnumValueMapping[*], inputVariable:VariableExpression[1]):SimpleFunctionExpression[1]
 {
    ^SimpleFunctionExpression(func = if_Boolean_1__Function_1__Function_1__T_m_,
@@ -575,7 +577,7 @@ function meta::pure::mapping::modelToModel::chain::createInFunctionExpression(in
                              parametersValues = [$inputVariable, createInstanceValue($sourceValues)]
    )->evaluateAndDeactivate()
 }
-    
+
 function meta::pure::mapping::modelToModel::chain::createNestedIfElseInstanceValue(enumValueMappings:EnumValueMapping[*], inputVariable:VariableExpression[1]):InstanceValue[1]
 {
    ^InstanceValue(genericType = ^GenericType(rawType = LambdaFunction, typeArguments = ^GenericType(rawType = ^FunctionType(returnMultiplicity = PureOne, returnType = ^GenericType(rawType = String)))),
@@ -583,15 +585,15 @@ function meta::pure::mapping::modelToModel::chain::createNestedIfElseInstanceVal
                   values = createNestedIfElseLambdaFunction($enumValueMappings, $inputVariable, false)
    )
 }
-    
+
 function meta::pure::mapping::modelToModel::chain::createInstanceValue(values:Any[*]):InstanceValue[1]
 {
    ^InstanceValue(genericType = ^GenericType(rawType = $values->match([e:Enum[*] | String, a:Any[*] | $a->genericType().rawType->toOne()])),
-                  multiplicity = PureOne, 
+                  multiplicity = PureOne,
                   values = $values->match([e:Enum[*] | $e.name, a:Any[*] | $a])
    )
 }
-    
+
 function meta::pure::mapping::modelToModel::chain::createVariableExpression(type:Type[1], name:String[1]):VariableExpression[1]
 {
    ^VariableExpression(genericType = ^GenericType(rawType = $type->match([e:Enumeration<Any>[1] | String, t:Type[1] | $t])),

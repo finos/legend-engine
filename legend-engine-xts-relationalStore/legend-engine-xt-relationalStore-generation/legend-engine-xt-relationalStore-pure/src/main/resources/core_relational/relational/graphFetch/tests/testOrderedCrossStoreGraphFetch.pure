@@ -175,7 +175,7 @@ Mapping meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping3
       productId: [DB1]bridgeTable.productId,
       +tradeId: String[1] : [DB1]bridgeTable.tradeId
    }
-   
+
    Product[prod_set] : Relational {
       productId : [DB1]productTable.productId,
       productName : [DB1]productTable.productName
@@ -214,7 +214,7 @@ Mapping meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping4
       ~src S_Trade
       trade[trade_set] : $src
    }
-   
+
    Trade[trade_set] : Pure {
       ~src S_Trade
       tradeId             : $src.s_tradeId,
@@ -225,7 +225,7 @@ Mapping meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping4
       productId: [DB1]bridgeTable.productId,
       +tradeId: String[1] : [DB1]bridgeTable.tradeId
    }
-   
+
    Product[prod_set] : Relational {
       productId : [DB1]productTable.productId,
       productName : [DB1]productTable.productName
@@ -256,6 +256,7 @@ Mapping meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping4
 )
 
 ###Pure
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
@@ -264,12 +265,13 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::tests::XStore::ordered::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::ordered::createTablesInDb():Boolean[1]
 {
-   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=DB1, type=DatabaseType.H2)]);
-   let dbConn1 = $runtime.connections->at(0)->cast(@DatabaseConnection);   
+   let runtime =  ^Runtime(connectionStores= [^ConnectionStore(element=DB1,connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+   let dbConn1 = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
 
    dropAndCreateTableInDb(DB1, 'productTable', $dbConn1);
    dropAndCreateTableInDb(DB1, 'synonymTable', $dbConn1);
@@ -303,21 +305,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
       }
    }#;
 
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping1;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionStores = $dbRuntime.connectionStores->concatenate(^ConnectionStore(connection=$jsonConnection,element = ^meta::external::store::model::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -345,21 +346,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
       }
    }#;
 
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping1;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionStores = $dbRuntime.connectionStores->concatenate(^ConnectionStore(connection=$jsonConnection,element = ^meta::external::store::model::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -387,21 +387,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
       }
    }#;
 
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping1;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionStores = $dbRuntime.connectionStores->concatenate(^ConnectionStore(connection=$jsonConnection,element = ^meta::external::store::model::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -426,21 +425,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
       }
    }#;
 
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping2;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionStores = $dbRuntime.connectionStores->concatenate(^ConnectionStore(connection=$jsonConnection,element = ^meta::external::store::model::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -465,21 +463,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
       }
    }#;
 
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping3;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionStores = $dbRuntime.connectionStores->concatenate(^ConnectionStore(connection=$jsonConnection,element = ^meta::external::store::model::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -506,21 +503,20 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::pur
       }
    }#;
 
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
 
    let query = {|TradeWrapper.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping4;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntime(connectionStores = $dbRuntime.connectionStores->concatenate(^ConnectionStore(connection=$jsonConnection,element = ^meta::external::store::model::ModelStore())));
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 

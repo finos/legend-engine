@@ -441,7 +441,8 @@ function <<access.private>> meta::pure::tds::multipleColumnComp(row:TDSRow[1], o
    if ($sortInfo->isEmpty(),
          | 0,
          | let s = $sortInfo->head();
-           let res = $row.get($s.column->toOne())->compare($other.get($s.column->toOne()));
+           let res = if($row.isNull($s.column->toOne()), |^TDSNull(), |$row.get($s.column->toOne()))
+                      ->compare(if($other.isNull($s.column->toOne()), |^TDSNull(), |$other.get($s.column->toOne())));
            if ($res == 0, |$row->multipleColumnComp($other, $sortInfo->tail()), |if ($s.direction == SortDirection.ASC, |$res,|-$res));
    );
 }
@@ -541,7 +542,15 @@ function
 
    //todo: remove this by making parent an association
    $newTds->mutateAdd('rows', $tds.rows->map(r | ^TDSRow(parent=$newTds,
-                                                         values=$r.values->concatenate($newColumnFunctions.func->map(f | $f->evaluate(^List<TDSRow>(values=[$r])))))));
+                                                         values=$r.values->concatenate(
+                                                              $newColumnFunctions.func->map(f | 
+                                                                let value = $f->evaluate(^List<TDSRow>(values=[$r]));
+                                                                if($value->isEmpty(), |^TDSNull(), |$value);
+                                                              )  
+                                                          )
+                                                        )
+                                            )
+                      );
 
    $newTds;
 }
@@ -559,7 +568,13 @@ function
 
    //todo: remove this by making parent an association
    $newTds->mutateAdd('rows', $tds.rows->map(r | ^TDSRow(parent=$newTds,
-                                                         values=$newColumnFunctions.func->map(f | $f->evaluate(^List<TDSRow>(values=[$r]))))));
+                                                         values=$newColumnFunctions.func->map(f | 
+                                                            let value = $f->evaluate(^List<TDSRow>(values=[$r]));
+                                                            if($value->isEmpty(), |^TDSNull(), |$value);
+                                                          )
+                                                        )
+                                            )
+                      );
 
    $newTds;
 }

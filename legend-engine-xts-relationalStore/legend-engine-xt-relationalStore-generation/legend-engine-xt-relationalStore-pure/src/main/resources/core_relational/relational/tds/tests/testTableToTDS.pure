@@ -20,8 +20,10 @@ import meta::relational::metamodel::join::*;
 import meta::relational::tests::csv::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
 
 
@@ -30,16 +32,16 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testProjectString
    let result = execute(
       | tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
            ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'first_name'), col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'name_again')]),
-      meta::relational::tests::tds::tabletds::EmptyMapping, 
+      meta::relational::tests::tds::tabletds::EmptyMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 2);  
-   
+
+   assertSize($result.values.columns, 2);
+
    assertEquals('Peter|Peter,John|John,John|John,Anthony|Anthony,Fabrice|Fabrice,Oliver|Oliver,David|David',
-      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
+
    assertEquals('select "root".FIRSTNAME as "first_name", "root".FIRSTNAME as "name_again" from personTable as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testView():Boolean[1]
@@ -47,16 +49,16 @@ function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds:
    let result = execute(
       | viewToTDS(viewReference(meta::relational::tests::db,'default','FirstNameAddress'))
            ->project([col(r:TDSRow[1]|$r.getString('firstName'), 'first_name'), col(r:TDSRow[1]|$r.getString('firstName'), 'name_again')]),
-      meta::relational::tests::tds::tabletds::EmptyMapping, 
+      meta::relational::tests::tds::tabletds::EmptyMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 2);  
-   
+
+   assertSize($result.values.columns, 2);
+
    assertEquals('Anthony|Anthony,David|David,Fabrice|Fabrice,John|John,Oliver|Oliver,Peter|Peter',
-      $result.values.rows->map(r|$r.values->makeString('|'))->sort()->makeString(',')); 
-   
+      $result.values.rows->map(r|$r.values->makeString('|'))->sort()->makeString(','));
+
    assertEquals('select "root".firstName as "first_name", "root".firstName as "name_again" from (select distinct "root".FIRSTNAME as firstName, "addresstable_0".NAME as address from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID)) as "root"',
-      $result->sqlRemoveFormatting());  
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds::testProjectAllColumns_Single():Boolean[1]
@@ -65,16 +67,16 @@ function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds:
    let result = execute(
       | tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
          ->restrict(['FIRSTNAME']),
-      EmptyMapping, 
+      EmptyMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 1);   
-   
+
+   assertSize($result.values.columns, 1);
+
    assertEquals('Peter,John,John,Anthony,Fabrice,Oliver,David',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "root".FIRSTNAME as "FIRSTNAME" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "root".FIRSTNAME as "FIRSTNAME" from personTable as "root"',
+      $result->sqlRemoveFormatting());
 }
 
 
@@ -86,16 +88,16 @@ function <<test.Test,test.ExcludeAlloy>> meta::relational::tests::tds::tabletds:
          ->restrict(['FIRST NAME'])
          ->limit(2)
          ->sort(asc('FIRST NAME')),
-      EmptyMapping, 
+      EmptyMapping,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 1);   
-   
+
+   assertSize($result.values.columns, 1);
+
    assertEquals('John,Peter',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "FIRST NAME" as "FIRST NAME" from (select top 2 "root"."FIRST NAME" as "FIRST NAME" from tableWithQuotedColumns as "root") as "subselect" order by "FIRST NAME"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "FIRST NAME" as "FIRST NAME" from (select top 2 "root"."FIRST NAME" as "FIRST NAME" from tableWithQuotedColumns as "root") as "subselect" order by "FIRST NAME"',
+      $result->sqlRemoveFormatting());
 }
 
 
@@ -115,7 +117,7 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testInnerJoinTabl
 {
    let result = execute(|tableToTDS(tableReference(meta::relational::tests::dbInc,'default','personTable'))->project([col(r:TDSRow[1]|$r.getInteger('ID'), 'eID')])
                         ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]) , JoinType.INNER, {a,b|$a.getInteger('eID') == $b.getInteger('fID');}), testJoinTDSMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSize($result.values.rows, 4 );   
+   assertSize($result.values.rows, 4 );
    assertSameElements( ['1,Firm X,1', '2,Firm A,2', '3,Firm B,3', '4,Firm C,4'], $result.values.rows->map(r|$r.values->makeString(',')));
 }
 
@@ -126,7 +128,7 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleFilter(
    assertEquals('select "root".FIRSTNAME as "name" from personTable as "root" where "root".FIRSTNAME = \'John\'', $result->sqlRemoveFormatting());
    assertSize($result.values.rows, 2 );
    assertEquals(['John','John'], $result.values.rows->map(r|$r.values));
-   
+
 }
 
 
@@ -136,14 +138,14 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testExtendStringL
       |tableToTDS(tableReference(meta::relational::tests::db,'default','personTable'))
                         ->project([col(r:TDSRow[1]|$r.getString('FIRSTNAME'), 'firstName')])
                         ->extend([col({r:TDSRow[1]|'Hello'}, 'hello')]), EmptyMapping,testRuntime(), meta::relational::extension::relationalExtensions());
-   
-   assertSize($result.values.columns, 2);   
-   
+
+   assertSize($result.values.columns, 2);
+
    assertEquals('Peter|Hello,John|Hello,John|Hello,Anthony|Hello,Fabrice|Hello,Oliver|Hello,David|Hello',
       $result.values.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "root".FIRSTNAME as "firstName", \'Hello\' as "hello" from personTable as "root"',
+      $result->sqlRemoveFormatting());
 }
 
 
@@ -157,16 +159,16 @@ function <<test.ToFix>> meta::relational::tests::tds::tabletds::testSimpleConcat
       ,
       simpleRelationalMapping,
       testRuntime(), meta::relational::extension::relationalExtensions(),debug());
-   
+
    let tds = $result.values->toOne()->sort([asc('lastName')]);
-   
-   assertSize($tds.columns, 1);   
-   
+
+   assertSize($tds.columns, 1);
+
    assertEquals('Allen,Allen,Hill,Hill,Smith,Smith,Johnson,Johnson,Harris,Harris,Roberts,Roberts,Hill,Hill',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleConcatenate():Boolean[1]
@@ -178,16 +180,16 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleConcate
       ,
       simpleRelationalMappingInc,
       testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    let tds = $result.values->toOne()->sort([asc('lastName')]);
-   
-   assertSize($tds.columns, 1);   
-   
+
+   assertSize($tds.columns, 1);
+
    assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
-   
-   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"', 
-      $result->sqlRemoveFormatting());   
+
+   assertEquals('select "unionalias_0"."lastName" as "lastName" from (select "root".LASTNAME as "lastName" from personTable as "root" UNION ALL select "root".LASTNAME as "lastName" from personTable as "root") as "unionalias_0"',
+      $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleSortAsc():Boolean[1]
@@ -216,7 +218,7 @@ function <<test.Test>> meta::relational::tests::tds::tabletds::testSimpleDistinc
    assertSize($result.values.rows, 2);
 }
 
-function <<test.Test,test.ExcludeAlloy>> 
+function <<test.Test,test.ExcludeAlloy>>
 {
   doc.doc='Make sure that buildPureModelContextTextFromMapping includes dummyDb in model code for current protocol version'
 }
@@ -234,7 +236,7 @@ meta::relational::tests::tds::tabletds::testExtractingDbFromTableReference():Boo
   let actual = $result.code->replace('\r\n', '\n');
   assertEquals($expected, $actual);
 }
- 
+
 ###Mapping
 Mapping meta::relational::tests::tds::tabletds::EmptyMapping()
 

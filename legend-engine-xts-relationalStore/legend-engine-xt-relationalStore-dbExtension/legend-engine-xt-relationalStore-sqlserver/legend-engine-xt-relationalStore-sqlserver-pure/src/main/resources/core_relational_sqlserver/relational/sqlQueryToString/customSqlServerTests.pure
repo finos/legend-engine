@@ -14,6 +14,8 @@
 
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::functions::sqlstring::*;
@@ -88,6 +90,24 @@ function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithSt
    assertEquals('select stdev("root".int1) as "stdDevSample" from dataTable as "root"', $s2);
 }
 
+function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVariancePopulationSqlServer():Boolean[1]
+{
+   let s2 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1VariancePopulation, 'variancePopulation'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select varp("root".int1) as "variancePopulation" from dataTable as "root"', $s2);
+}
+
+function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringWithVarianceSampleSqlServer():Boolean[1]
+{
+   let s2 = toSQLString(
+           |meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionDemo.all()->project(p|$p.float1VarianceSample, 'varianceSample'),
+            meta::relational::tests::mapping::sqlFunction::model::mapping::testMapping, DatabaseType.SqlServer, meta::relational::extension::relationalExtensions());
+
+   assertEquals('select var("root".int1) as "varianceSample" from dataTable as "root"', $s2);
+}
+
 function <<test.Test>> meta::relational::sqlServer::tests::testToSQLStringParseIntegerinSqlServer():Boolean[1]
 {
    let s = toSQLString(|SqlFunctionDemo.all()->project([s | $s.string2Integer], ['parseInteger']),
@@ -111,7 +131,7 @@ function <<test.Test>> meta::relational::sqlServer::tests::testSortQuotesSqlServ
    assertEquals('select "root".FIRSTNAME as "name", "addressTable_d#3_1_d#3_m2".NAME as "address" from personTable as "root" left outer join addressTable as "addressTable_d#3_1_d#3_m2" on ("addressTable_d#3_1_d#3_m2".ID = "root".ADDRESSID) order by "name","address" desc', $query);
 }
 
-function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]      
+function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithOptionalParameter_SqlServer():Boolean[1]
 {
    let expectedPlan ='Sequence\n'+
                      '(\n'+
@@ -130,6 +150,6 @@ function <<test.Test>> meta::relational::sqlServer::tests::testFilterEqualsWithO
                      '    )\n'+
                      '  )\n'+
                      ')\n';
-   
+
    assertPlanGenerationForOptionalParameter(DatabaseType.SqlServer, $expectedPlan);
 }

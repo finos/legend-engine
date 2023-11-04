@@ -15,11 +15,12 @@
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::functions::sqlstring::*;
 
 function <<test.Test>> meta::relational::tests::query::snowflake::testSliceByVendor():Boolean[1]
-{               
+{
    let f1 = {|Person.all()->slice(3, 5);};
 
    let f2 = {|Person.all()->project(p|$p.firstName, 'firstName')->sort(asc('firstName'))->slice(3, 5);};
@@ -28,17 +29,17 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testSliceByVen
 
    let f4 = {|Person.all()->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])->sort(asc('firstName'))->slice(0,50)->restrict('firstName');};
 
-   // Snowflake 
-   
+   // Snowflake
+
    let snowflake1 = toSQLString($f1, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 2 offset 3', $snowflake1);
-   
+
    let snowflake2 = toSQLString($f2, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" order by "firstName" limit 2 offset 3', $snowflake2);
-   
+
    let snowflake3 = toSQLString($f3, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" limit 50) as "subselect" order by "firstName" limit 2 offset 3', $snowflake3);
-   
+
    let snowflake4 = toSQLString($f4, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "firstName" as "firstName" from (select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" order by "firstName" limit 50) as "subselect"', $snowflake4);
 }
@@ -50,13 +51,13 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testLimitByVen
 }
 
 function <<test.Test>> meta::relational::tests::query::snowflake::testTakeByVendor():Boolean[1]
-{               
+{
    let s6 = toSQLString(|Person.all()->take(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit 10', $s6);
 }
 
 function <<test.Test>> meta::relational::tests::query::snowflake::testDropByVendor():Boolean[1]
-{               
+{
    let s2 = toSQLString(|Person.all()->drop(10);, meta::relational::tests::simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" limit \'\' offset 10', $s2);
 }

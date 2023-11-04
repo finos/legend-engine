@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.26.7-SNAPSHOT</version>
+        <version>4.34.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -214,7 +214,12 @@
         </dependency>
         <!-- Flat Data -->
 
+        <!-- ARROW -->
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-arrow-pure</artifactId>
+        </dependency>
         <!-- JSON -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -288,6 +293,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-sybaseiq-pure</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-sparksql-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -468,6 +478,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>
+        </dependency>
         <!-- Snowflake App -->
 
         <!-- Text -->
@@ -516,6 +530,13 @@
             <artifactId>legend-engine-xt-graphQL-grammar-integration</artifactId>
         </dependency>
         <!-- GraphQL -->
+
+        <!-- SQL -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
+        </dependency>
+        <!-- SQL -->
 
         <!-- DAML -->
         <dependency>

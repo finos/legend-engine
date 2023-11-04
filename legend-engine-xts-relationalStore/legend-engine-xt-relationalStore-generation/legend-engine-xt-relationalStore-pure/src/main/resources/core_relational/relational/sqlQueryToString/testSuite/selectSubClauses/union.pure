@@ -16,8 +16,10 @@ import meta::relational::tests::projection::view::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::union::testSimpleConcatenate(config:DbTestConfig[1]):Boolean[1]
@@ -27,12 +29,12 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
          ->project([col(p|$p.lastName, 'lastName')])
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-   
+
   runDataAssertion($result, $config,
   | let tds = $result.values->toOne()->sort([asc('lastName')]);
-    assertSize($tds.columns, 1);   
+    assertSize($tds.columns, 1);
     assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
   );
@@ -46,15 +48,15 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
          ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-   
+
   runDataAssertion($result, $config,
   | let tds = $result.values->toOne()->sort([asc('lastName')]);
-    assertSize($tds.columns, 1);   
+    assertSize($tds.columns, 1);
     assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
-      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));  
-  );   
+      $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
+  );
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::union::testConcatenateWithPostOperation(config:DbTestConfig[1]):Boolean[1]
@@ -65,12 +67,12 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
          ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
       ,
-      simpleRelationalMapping, 
+      simpleRelationalMapping,
       meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());
-   
+
   runDataAssertion($result, $config,
-  | let tds = $result.values->toOne()->sort([asc('lastName')]); 
-    assertSize($tds.columns, 1);   
+  | let tds = $result.values->toOne()->sort([asc('lastName')]);
+    assertSize($tds.columns, 1);
     assertEquals('Allen,Allen,Harris,Harris,Hill,Hill,Hill,Hill,Johnson,Johnson,Roberts,Roberts,Smith,Smith',
       $tds.rows->map(r|$r.values->makeString('|'))->makeString(','));
   );

@@ -18,6 +18,7 @@ import meta::pure::persistence::metamodel::*;
 import meta::pure::persistence::metamodel::context::*;
 import meta::pure::persistence::metamodel::trigger::*;
 
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 /**********

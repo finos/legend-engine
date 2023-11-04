@@ -97,20 +97,6 @@ import meta::pure::executionPlan::platformBinding::*;
 import meta::pure::executionPlan::platformBinding::localBinding::*;
 import meta::pure::extension::*;
 
-// Deprecated
-Profile meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinding
-{
-   stereotypes : [
-      TestPlanBinder
-   ]; 
-}
-
-Class <<doc.deprecated>> meta::pure::executionPlan::platformBinding::localBinding::LocalPlatformBinder
-{
-   overrides       : ConcreteFunctionDefinition<{->LocalPlatformBinder[1]}>[*];
-   bindingFunction : Function<{ExecutionPlan[1], Extension[*] -> ExecutionPlan[1]}>[1];
-}
-
 // Marking deprecated as platformId parameter needs to be passed in
 // mayExecuteLegendTest function should provide the parameter
 function <<doc.deprecated>> meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions(plan: ExecutionPlan[1]): ExecutionPlan[1]

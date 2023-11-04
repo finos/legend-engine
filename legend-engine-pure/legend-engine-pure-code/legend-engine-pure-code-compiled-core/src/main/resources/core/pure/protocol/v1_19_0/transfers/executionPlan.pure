@@ -37,8 +37,8 @@ function meta::protocols::pure::v1_19_0::transformation::fromPureGraph::executio
 {
    let n = $node->match($extensions.serializerExtension('v1_19_0')->cast(@meta::protocols::pure::v1_19_0::extension::SerializerExtension_v1_19_0).transfers_executionPlan_transformNode->map(f|$f->eval($mapping, $extensions))->concatenate(
       [
-         
-         rel:meta::pure::mapping::modelToModel::ModelToModelExecutionNode[1]|
+
+         rel:meta::external::store::model::ModelToModelExecutionNode[1]|
             ^meta::protocols::pure::v1_19_0::metamodel::executionPlan::ModelToModelExecutionNode(
                _type = 'm2m',
                resultType = $rel.resultType->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::executionPlan::transformResultType($mapping, $extensions),
@@ -47,7 +47,7 @@ function meta::protocols::pure::v1_19_0::transformation::fromPureGraph::executio
                jsonPropertyPaths = $rel.jsonPropertyPaths->map(j|$j->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::transformLambda($extensions)),
                pathToMapping = $rel.mapping->elementToPath()->toOne(),
                pathToClasses = $rel.classes->map(c|$c->elementToPath()),
-               connection = $rel.connection->cast(@meta::pure::mapping::modelToModel::ModelConnection)->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::connection::transformModelConnection(),
+               connection = $rel.connection->cast(@meta::external::store::model::ModelConnection)->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::connection::transformModelConnection(),
                pureModelContextData = $rel.mapping->meta::protocols::pure::v1_19_0::transformation::fromPureGraph::buildBasePureModelFromMapping( {m:meta::pure::mapping::Mapping[1], p:	meta::protocols::Protocol[1] |[]}, $extensions).second
          ),
          platform:meta::pure::executionPlan::PureExpressionPlatformExecutionNode[1]|
@@ -226,7 +226,7 @@ function meta::protocols::pure::v1_19_0::transformation::fromPureGraph::executio
                                                     enumMapping = $extensions.serializerExtension('v1_19_0')->cast(@meta::protocols::pure::v1_19_0::extension::SerializerExtension_v1_19_0).transfers_executionPlan_transformSetImplementation
                                                                         ->filter(v|$v.first->eval($p))->map(x|$x.second->eval($p))->first()
                                                  )
-                                                 
+
                                             )
    );
 

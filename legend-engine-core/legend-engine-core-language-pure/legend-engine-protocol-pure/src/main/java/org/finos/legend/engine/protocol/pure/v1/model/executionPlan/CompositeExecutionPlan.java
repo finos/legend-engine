@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.junit.Assert;
+
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
 
@@ -56,7 +56,10 @@ public class CompositeExecutionPlan extends ExecutionPlan
         catch (IllegalArgumentException e)
         {
             Object pk = params.get(this.executionKeyName);
-            Assert.assertNotNull("No key was passed to service pattern for execution. Please ensure you are providing " + this.executionKeyName + " and its value as part of a query parameter or path parameter to service pattern", pk);
+            if (pk == null)
+            {
+                throw new RuntimeException("No key was passed to service pattern for execution. Please ensure you are providing " + this.executionKeyName + " and its value as part of a query parameter or path parameter to service pattern");
+            }
             planKey = ((FastList) pk).get(0).toString();
         }
 

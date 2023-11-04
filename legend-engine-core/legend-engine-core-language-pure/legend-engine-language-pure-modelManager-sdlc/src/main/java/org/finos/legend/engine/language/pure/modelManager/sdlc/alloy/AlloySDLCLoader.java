@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.language.pure.modelManager.sdlc.alloy;
 
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
@@ -24,10 +27,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
-
-import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class AlloySDLCLoader
 {
@@ -45,21 +44,11 @@ public class AlloySDLCLoader
 
     public String getMetaDataApiUrl(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)
     {
-        String url;
-        if (alloySDLC.project != null)
-        {
-            url = (isLatestRevision(alloySDLC)) ?
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/revisions/latest/pureModelContextData/" + clientVersion :
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.project + "/versions/" + alloySDLC.version + "/pureModelContextData/" + clientVersion;
-        }
-        else
-        {
-            Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs if project ID is not specified");
-            url = (isLatestRevision(alloySDLC)) ?
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
-                    metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
-        }
-      return url;
+        Assert.assertTrue(alloySDLC.project == null, () -> "Accessing metadata services using project id was demised.  Please update AlloySDLC to provide group and artifact IDs");
+        Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs to access metadata services");
+        return (isLatestRevision(alloySDLC)) ?
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/revisions/latest/pureModelContextData?clientVersion=" + clientVersion :
+                metaDataServerConfiguration.getAlloy().getBaseUrl() + "/projects/" + alloySDLC.groupId + "/" + alloySDLC.artifactId + "/versions/" + alloySDLC.version + "/pureModelContextData?clientVersion=" + clientVersion;
     }
 
     public List<String> checkAllPathsExist(PureModelContextData data, AlloySDLC alloySDLC)

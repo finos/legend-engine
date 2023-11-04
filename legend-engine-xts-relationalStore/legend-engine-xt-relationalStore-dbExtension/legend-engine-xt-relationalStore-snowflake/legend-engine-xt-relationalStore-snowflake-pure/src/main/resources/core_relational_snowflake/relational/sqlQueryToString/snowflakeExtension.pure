@@ -1,11 +1,13 @@
 import meta::relational::metamodel::join::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::functions::sqlQueryToString::snowflake::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -49,7 +51,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    newMap([
       pair(StrictDate, ^LiteralProcessor(format = '\'%s\'::date', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,   ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,       ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(Date,       ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Boolean,    ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
    ])
 }
 
@@ -118,11 +121,16 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', %s)')),
     dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='DATE_TRUNC(\'YEAR\', %s)')),
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='DATE_TRUNC(\'DAY\', %s)')),
+    dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='DATE_TRUNC(\'SECOND\', %s)')),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='DATE_TRUNC(\'HOUR\', %s)')),
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='DATE_TRUNC(\'MINUTE\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
+    dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(10, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
@@ -142,10 +150,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='to_decimal(%s)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='to_double(%s)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s' , transform={p:String[2] | $p->transformToTimestampSnowflake()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
@@ -160,14 +171,14 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   let returnType = $params->at(2);
 
   // https://docs.snowflake.com/en/sql-reference/functions/get_path
-  let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);    
+  let elementAccess = format('get_path(%s, \'%s\')', [$baseRelationalOp, $pathNavigation]);
 
   if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'to_varchar(' + $elementAccess + ')', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'to_timestamp(' + $elementAccess + ')', |
-  if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |   
+  if ($returnType == 'DATE', | 'to_date(' + $elementAccess + ')', |
   if ($returnType == 'BOOLEAN', | 'to_boolean(' + $elementAccess + ')', |
   if ($returnType == 'FLOAT', | 'to_double(' + $elementAccess + ')', |
-  if ($returnType == 'INTEGER', | 'to_number(' + $elementAccess + ')', |  
+  if ($returnType == 'INTEGER', | 'to_number(' + $elementAccess + ')', |
   $elementAccess))))));
 }
 
@@ -192,9 +203,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformToTimestampSnowflake(params:String[2]):String[1]
 {
-  //Standardizing the format as per Postgres specification, will include mappings for the formats in future. 
+  //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
    assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
-   let timestampFormat = $params->at(1);   
+   let timestampFormat = $params->at(1);
    'to_timestamp('+$params->at(0)+','+$timestampFormat+')';
 }
 
@@ -216,7 +227,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processDateDiffDurationUnitForSnowflake(durationUnit:String[1]):String[1]
 {
    let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
-   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second',''];
+   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second','millisecond'];
    $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
 }
 
@@ -233,7 +244,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForSnowflake($sgc),
       a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForSnowflake($sgc),
       a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForSnowflake($sgc)
-   ])  
+   ])
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processSemiStructuredObjectNavigationForSnowflake(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
@@ -296,7 +307,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   processSelectColumns($s.columns, $dbConfig, $format->indent(), true, $extensions) +
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
-  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), false, $extensions)->makeString(','))+
+  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
   if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
   + processLimit($s, $dbConfig, $format, $extensions, processTakeDefault_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__String_1_, processSliceOrDropForSnowflake_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);

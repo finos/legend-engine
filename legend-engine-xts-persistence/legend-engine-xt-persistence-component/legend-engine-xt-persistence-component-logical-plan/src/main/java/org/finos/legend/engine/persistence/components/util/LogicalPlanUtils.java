@@ -74,6 +74,8 @@ public class LogicalPlanUtils
 {
     public static final String INFINITE_BATCH_TIME = "9999-12-31 23:59:59";
     public static final String DEFAULT_META_TABLE = "batch_metadata";
+    public static final String DEFAULT_BULK_LOAD_META_TABLE = "bulk_load_batch_metadata";
+
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";
@@ -394,7 +396,7 @@ public class LogicalPlanUtils
                     .datasetRefAlias(dataset.datasetReference().alias())
                     .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
                     .elementPath(field.elementPath())
-                    .dataType(field.type().dataType())
+                    .fieldType(field.type())
                     .fieldName(field.name())
                     .build();
             stagedFilesFields.add(fieldValue);

@@ -16,6 +16,8 @@ import meta::pure::executionPlan::engine::java::roadmap::*;
 import meta::pure::mapping::modelToModel::test::alloy::units::*;
 import meta::json::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::test::units::src::*;
@@ -32,11 +34,12 @@ meta::pure::mapping::modelToModel::test::alloy::units::testUnitToUnitIdentityMap
    let result = execute(
       |HealthProfile.all()->graphFetch($tree)->serialize($tree),
       instanceIdentityMapping,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionStores= ^ConnectionStore(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_HealthProfile,
                                 url='data:application/json,{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
-                             )
+                             ))
       ),meta::pure::extension::defaultExtensions()
    );
 
@@ -52,11 +55,12 @@ meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOf
    let result = execute(
       |DecomposedHealthProfile.all()->graphFetch($tree)->serialize($tree),
       unitDecomposeMapping,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionStores= ^ConnectionStore(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_HealthProfile,
                                 url='data:application/json,{"fullName":"Teddy Dean","weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
-                             )
+                             ))
       ),meta::pure::extension::defaultExtensions()
    );
 
@@ -72,11 +76,12 @@ meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOf
    let result = execute(
       |HealthProfile.all()->graphFetch($tree)->serialize($tree),
       unitComposeMapping,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionStores= ^ConnectionStore(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_DecomposedHealthProfile,
                                 url='data:application/json,{"fullName":"Teddy Dean","weightUnit":"meta::pure::unit::Mass~Kilogram","weightValue":5.5}'
-                             )
+                             ))
       ),meta::pure::extension::defaultExtensions()
    );
 
@@ -92,11 +97,12 @@ meta::pure::mapping::modelToModel::test::alloy::units::testModelToModelMappingOf
    let result = execute(
       |ClassWithPound.all()->graphFetch($tree)->serialize($tree),
       unitConvertMapping,
-      ^Runtime(connections = ^JsonModelConnection(
+      ^Runtime(connectionStores= ^ConnectionStore(
                                 element=^ModelStore(),
+                                connection=^JsonModelConnection(
                                 class=_ClassWithKilogram,
                                 url='data:application/json,{"weight":{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5.5}}'
-                             )
+                             ))
       ),meta::pure::extension::defaultExtensions()
    );
 
@@ -110,11 +116,12 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
    let res = meta::pure::executionPlan::executionPlan(
       |meta::pure::mapping::modelToModel::test::units::dest::HealthProfile.all()->graphFetch($tree)->serialize($tree),
       meta::pure::mapping::modelToModel::test::alloy::units::instanceIdentityMapping,
-      ^Runtime(connections = ^meta::pure::mapping::modelToModel::JsonModelConnection(
-                                element=^meta::pure::mapping::modelToModel::ModelStore(),
-                                class=meta::pure::mapping::modelToModel::test::units::src::_HealthProfile,
-                                url='data:application/json,{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5}}'
-                             )
+      ^Runtime(connectionStores = ^ConnectionStore(
+        element=^meta::external::store::model::ModelStore(),
+        connection=^meta::external::store::model::JsonModelConnection(
+          class=meta::pure::mapping::modelToModel::test::units::src::_HealthProfile,
+          url='data:application/json,{"unit":[{"unitId":"meta::pure::unit::Mass~Kilogram","exponentValue":1}],"value":5}}'
+        ))
       ),
       meta::pure::extension::defaultExtensions()
    );

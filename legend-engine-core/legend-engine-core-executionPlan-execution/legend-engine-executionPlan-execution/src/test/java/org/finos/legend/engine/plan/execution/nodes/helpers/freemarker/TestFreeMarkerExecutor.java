@@ -14,13 +14,22 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 
+import java.util.Arrays;
+import java.util.Collections;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.factory.Maps;
+import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.mockito.Mockito;
+
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 public class TestFreeMarkerExecutor
 {
@@ -40,6 +49,48 @@ public class TestFreeMarkerExecutor
         String result1 = FreeMarkerExecutor.processRecursively(query, rootMap, collectionSizeTemplate());
         Assert.assertEquals("final collectionSize :1000", result1.trim());
     }
+
+    @Test
+    public void testFreemarkerSkippedOnEmptyTemplate()
+    {
+        ExecutionState state = new ExecutionState(Maps.mutable.empty(), Collections.emptyList(), Collections.emptyList(), false, 0);
+
+        String query = "no templates query";
+        FreeMarkerExecutor freeMarkerExecutor = Mockito.spy(FreeMarkerExecutor.class);
+        Map rootMap = new HashMap();
+        String result = FreeMarkerExecutor.process(query, state);
+        verify(freeMarkerExecutor, never()).processRecursively(Mockito.anyString(), Mockito.anyMap(), Mockito.anyString());
+        Assert.assertEquals(query, result.trim());
+
+    }
+
+    @Test
+    public void testParametersProcessedWithNoTemplates()
+    {
+        Map rootMap = new HashMap();
+        rootMap.put("testParam", new ConstantResult("foo"));
+        ExecutionState state = new ExecutionState(rootMap, Collections.emptyList(), Collections.emptyList(), false, 0);
+        String query = "${testParam}";
+        String result = FreeMarkerExecutor.process(query, state);
+        Assert.assertEquals("foo", result.trim());
+    }
+
+    @Test
+    public void testTemplateWithEmbeddedFreeMarker()
+    {
+        String template =       "<#function withEmbedded>" +
+                                "<#return  \"${embeddedParam}\"> " +
+                               "</#function>";
+        Map rootMap = new HashMap();
+        rootMap.put("embeddedParam", new ConstantResult("embeddedFoo"));
+        rootMap.put("outsideParam", new ConstantResult("outsideFoo"));
+        List<String> templates = Arrays.asList(template);
+        ExecutionState state = new ExecutionState(rootMap, templates, Collections.emptyList(), false, 0);
+        String query = "${outsideParam} ${withEmbedded()}";
+        String result = FreeMarkerExecutor.process(query, state,template);
+        Assert.assertEquals("outsideFoo embeddedFoo", result.trim());
+    }
+
 
     public static String collectionSizeTemplate()
     {

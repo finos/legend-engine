@@ -39,7 +39,7 @@ public class TestMappingAnalyticsApi
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("mappingModelCoverageAnalysisTestData.json")), PureModelContextData.class);
         Assert.assertEquals(
                 "{\"mappedEntities\":[{\"path\":\"model::Bank\",\"properties\":[{\"_type\":\"entity\",\"entityPath\":\"model::Trader\",\"name\":\"employees\"},{\"_type\":\"enum\",\"enumPath\":\"model::OrgType\",\"name\":\"type\"}]},{\"path\":\"model::Trader\",\"properties\":[{\"_type\":\"MappedProperty\",\"name\":\"fullName\"}]}]}",
-                api.analyzeModelCoverage(new MappingModelCoverageAnalysisInput("vX_X_X", "model::mapping", modelContextData), false, false, null).getEntity().toString());
+                api.analyzeModelCoverage(new MappingModelCoverageAnalysisInput("vX_X_X", "model::mapping", modelContextData), false, false, false, null).getEntity().toString());
     }
 
     @Test
@@ -47,8 +47,17 @@ public class TestMappingAnalyticsApi
     {
         PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("mappingModelCoverageAnalysisTestData.json")), PureModelContextData.class);
         Assert.assertEquals(
-                "{\"mappedEntities\":[{\"info\":{\"isRootEntity\":true,\"subClasses\":[]},\"path\":\"model::Bank\",\"properties\":[{\"_type\":\"entity\",\"entityPath\":\"model::Trader\",\"mappedPropertyInfo\":{\"multiplicity\":{\"lowerBound\":0},\"propertyType\":\"Entity\"},\"name\":\"employees\"},{\"_type\":\"enum\",\"enumPath\":\"model::OrgType\",\"mappedPropertyInfo\":{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"propertyType\":\"Enumeration\"},\"name\":\"type\"}]},{\"info\":{\"isRootEntity\":true,\"subClasses\":[]},\"path\":\"model::Trader\",\"properties\":[{\"_type\":\"MappedProperty\",\"mappedPropertyInfo\":{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"propertyType\":\"String\"},\"name\":\"fullName\"}]}]}",
-                api.analyzeModelCoverage(new MappingModelCoverageAnalysisInput("vX_X_X", "model::mapping", modelContextData), true, true, null).getEntity().toString());
+                "{\"mappedEntities\":[{\"info\":{\"classPath\":\"model::Bank\",\"isRootEntity\":true,\"subClasses\":[]},\"path\":\"model::Bank\",\"properties\":[{\"_type\":\"entity\",\"entityPath\":\"model::Trader\",\"mappedPropertyInfo\":{\"multiplicity\":{\"lowerBound\":0},\"propertyType\":\"Entity\"},\"name\":\"employees\"},{\"_type\":\"enum\",\"enumPath\":\"model::OrgType\",\"mappedPropertyInfo\":{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"propertyType\":\"Enumeration\"},\"name\":\"type\"}]},{\"info\":{\"classPath\":\"model::Trader\",\"isRootEntity\":true,\"subClasses\":[]},\"path\":\"model::Trader\",\"properties\":[{\"_type\":\"MappedProperty\",\"mappedPropertyInfo\":{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"propertyType\":\"String\"},\"name\":\"fullName\"}]}]}",
+                api.analyzeModelCoverage(new MappingModelCoverageAnalysisInput("vX_X_X", "model::mapping", modelContextData), true, true, false, null).getEntity().toString());
+    }
+
+    @Test
+    public void testMappingModelCoverageAnalysisWithModelReturned() throws IOException
+    {
+        PureModelContextData modelContextData = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResource("mappingModelCoverageAnalysisTestData.json")), PureModelContextData.class);
+        Assert.assertEquals(
+                "{\"mappedEntities\":[{\"info\":{\"classPath\":\"model::Bank\",\"isRootEntity\":true,\"subClasses\":[]},\"path\":\"model::Bank\",\"properties\":[{\"_type\":\"entity\",\"entityPath\":\"model::Trader\",\"name\":\"employees\"},{\"_type\":\"enum\",\"enumPath\":\"model::OrgType\",\"name\":\"type\"}]},{\"info\":{\"classPath\":\"model::Trader\",\"isRootEntity\":true,\"subClasses\":[]},\"path\":\"model::Trader\",\"properties\":[{\"_type\":\"MappedProperty\",\"name\":\"fullName\"}]}],\"model\":{\"_type\":\"data\",\"elements\":[{\"_type\":\"Class\",\"constraints\":[],\"name\":\"Bank\",\"originalMilestonedProperties\":[],\"package\":\"model\",\"properties\":[{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"entityName\",\"stereotypes\":[],\"taggedValues\":[],\"type\":\"String\"},{\"multiplicity\":{\"lowerBound\":0},\"name\":\"employees\",\"stereotypes\":[],\"taggedValues\":[],\"type\":\"model::Trader\"},{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"type\",\"stereotypes\":[],\"taggedValues\":[],\"type\":\"model::OrgType\"}],\"qualifiedProperties\":[],\"stereotypes\":[],\"superTypes\":[\"meta::pure::metamodel::type::Any\"],\"taggedValues\":[]},{\"_type\":\"Enumeration\",\"name\":\"OrgType\",\"package\":\"model\",\"stereotypes\":[],\"taggedValues\":[],\"values\":[{\"stereotypes\":[],\"taggedValues\":[],\"value\":\"CORP\"},{\"stereotypes\":[],\"taggedValues\":[],\"value\":\"LLC\"}]},{\"_type\":\"Class\",\"constraints\":[],\"name\":\"Trader\",\"originalMilestonedProperties\":[],\"package\":\"model\",\"properties\":[{\"multiplicity\":{\"lowerBound\":1,\"upperBound\":1},\"name\":\"fullName\",\"stereotypes\":[],\"taggedValues\":[],\"type\":\"String\"}],\"qualifiedProperties\":[],\"stereotypes\":[],\"superTypes\":[\"meta::pure::metamodel::type::Any\"],\"taggedValues\":[]}]}}",
+                api.analyzeModelCoverage(new MappingModelCoverageAnalysisInput("vX_X_X", "model::mapping", modelContextData), true, false, true, null).getEntity().toString());
     }
 
     @Test

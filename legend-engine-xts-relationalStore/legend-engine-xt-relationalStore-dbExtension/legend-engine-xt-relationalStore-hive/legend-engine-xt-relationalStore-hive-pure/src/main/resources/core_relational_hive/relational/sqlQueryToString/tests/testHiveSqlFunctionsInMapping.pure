@@ -29,9 +29,12 @@ import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::authentication::*;
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::hive::testTriminNotSybaseASE():Boolean[1]{

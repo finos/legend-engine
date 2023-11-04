@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::metamodel::relation::*;
 import meta::pure::lineage::scanColumns::*;
@@ -91,6 +92,6 @@ function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanColumns::t
    let tree = $p.result->buildPropertyTree();
 
    let f = $tree->scanColumns(TestMappingWithViewJoins)->removeDuplicates();
-   
+
    assertEquals(['firmTable.ID <JoinTreeNode>', 'personTable.AGE <JoinTreeNode>', 'personTable.FIRMID <JoinTreeNode>', 'personTable.FIRSTNAME <RelationalOperationElementWithJoin>', 'personTable.ID <JoinTreeNode>'], $f->map(t|$t.column.owner->cast(@NamedRelation).name->toOne()+'.'+$t.column.name->toOne()+' <'+$t.context+'>')->sort());
 }

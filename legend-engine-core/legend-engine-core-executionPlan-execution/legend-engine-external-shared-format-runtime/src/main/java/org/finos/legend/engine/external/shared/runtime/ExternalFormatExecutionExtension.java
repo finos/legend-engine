@@ -33,6 +33,7 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
@@ -71,6 +72,11 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             {
                 return executeExternalizeExecutionNode((ExternalFormatExternalizeExecutionNode) executionNode, pm, executionState);
             }
+
+            else if (executionNode instanceof ExternalFormatExternalizeTDSExecutionNode)
+            {
+                return executeExternalizeTDSExecutionNode((ExternalFormatExternalizeTDSExecutionNode) executionNode, pm, executionState);
+            }
             else
             {
                 return null;
@@ -103,6 +109,19 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         Result result = node.executionNodes().getAny().accept(new ExecutionNodeExecutor(profiles, executionState));
         return extension.executeExternalizeExecutionNode(node, result, profiles, executionState);
     }
+
+    private Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    {
+        ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
+        if (extension == null)
+        {
+            throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
+        }
+
+        Result result = node.executionNodes().getAny().accept(new ExecutionNodeExecutor(profiles, executionState));
+        return extension.executeExternalizeTDSExecutionNode(node, result, profiles, executionState);
+    }
+
 
     private Result executeUrlStream(UrlStreamExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {

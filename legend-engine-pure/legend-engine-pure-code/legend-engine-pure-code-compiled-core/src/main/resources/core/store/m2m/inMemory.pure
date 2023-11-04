@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::pure::router::routing::*;
@@ -19,6 +20,7 @@ import meta::pure::router::store::metamodel::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 
 Class meta::pure::mapping::modelToModel::inMemory::ModelPayload extends MappingInstanceData
 {
@@ -45,19 +47,19 @@ function <<access.private>> meta::pure::mapping::modelToModel::inMemory::setOper
 {
   let operationFunctions = newMap(pair(meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_, meta::pure::mapping::modelToModel::inMemory::mergeResult_Any_MANY__Any_$0_1$_));
    if($e->isEmpty(),
-      |$sets, 
+      |$sets,
       |let operation  =  $e->toOne().sets->filter(s| $s->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation);
        if($operation->size()!=1,
               |$sets,
-              | let fn =   $operationFunctions->get($operation->toOne().operation->toOne());  
+              | let fn =   $operationFunctions->get($operation->toOne().operation->toOne());
                 if($fn->isEmpty(),
                     |$sets,
                     |$fn->toOne()->eval($sets)
-                  ); 
+                  );
           );
-     );       
-   
-   
+     );
+
+
 }
 
 
@@ -115,7 +117,7 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
    let modelPayload = $o->getHiddenPayload()->cast(@ModelPayload);
    let mapping = $modelPayload.static.mapping->toOne();
    let targetGenericType = $property->functionReturnType();
-   
+
    let pms = if ($propertyMappings->isEmpty(),
                  |if ($modelPayload.static.setImplementation->isEmpty(),
                      |[],
@@ -149,7 +151,7 @@ function meta::pure::mapping::modelToModel::inMemory::internal_getter(o:Any[1], 
                            debug = $modelPayload.static.debug,
                            extensions = $modelPayload.static.extensions
                         );
-        $srcRes->map(v| transformNoMappingPassThru($v, $targetGenericType, $static));,   
+        $srcRes->map(v| transformNoMappingPassThru($v, $targetGenericType, $static));,
 
              |let static = ^StaticMappingInstanceData
                            (
@@ -244,10 +246,10 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
                                                              value = $pm.transform->evaluate($sval)->map(x | $pm->valueTransform($x))
                                                           );
                                                       );
-   
+
    let sourceType = $src->genericType();
-   
- //dont fill in if part of a merged set 
+
+ //dont fill in if part of a merged set
  let nonMappedPropertiesValues = if ($sourceType.rawType->toOne()->instanceOf(DataType)  ||  $impl.id->toOne()-> setIsPartOfMerge($e) ,
                                      |[],
                                      |let srcPropertiesByName = $sourceType->properties()->groupBy(p|$p.name->toOne());
@@ -260,7 +262,7 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
                                                                          value = $srcProperty.values->toOne()->evaluate($sval)
                                                                        );,
                                                                        |[]
-                                                                     ); 
+                                                                     );
                                                             );
                                    );
 
@@ -288,7 +290,7 @@ function meta::pure::mapping::modelToModel::inMemory::transformWithMapping(src:A
 
 function meta::pure::mapping::modelToModel::inMemory::setIsPartOfMerge(id:String[1], ev:StoreMappingRoutedValueSpecification[0..1]):Boolean[1]
 {
- 
+
 
    if($ev->isMerge(),
    |  let mergeSets = $ev->toOne().sets->filter(s| $s->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation)->filter(o |$o.operation == meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_ );
@@ -296,7 +298,7 @@ function meta::pure::mapping::modelToModel::inMemory::setIsPartOfMerge(id:String
             |true,
             |false
          );,
-    
+
    |false
    );
 }
@@ -308,7 +310,7 @@ function meta::pure::mapping::modelToModel::inMemory::transformNoMappingPassThru
    let srcPropertiesByName = $src->genericType()->properties()->groupBy(p|$p.name->toOne());
    let targetProperties = $targetGenericType->properties()->filter(p|$p->functionReturnType().rawType->toOne()->instanceOf(DataType));
 
-  
+
    let keyVals = $targetProperties->map(p|let srcProperty = $srcPropertiesByName->get($p.name->toOne());
                                               if ($srcProperty->isNotEmpty()&& $srcProperty.values->toOne().genericType.rawType->toOne()->subTypeOf($p.genericType.rawType->toOne()) && $p.multiplicity->toOne()->multiplicitySubsumes($srcProperty.values->toOne().multiplicity),
                                                                       |
@@ -317,9 +319,9 @@ function meta::pure::mapping::modelToModel::inMemory::transformNoMappingPassThru
                                                                          value = $srcProperty.values->toOne()->evaluate($sval)
                                                                        );,
                                                                        |[]
-                                                                     ); 
-                                        
-                 
+                                                                     );
+
+
                     );
    $targetGenericType->dynamicNew($keyVals,
                              meta::pure::mapping::xStore::crossGetterOverrideToOne_Any_1__Property_1__Any_$0_1$_,
@@ -349,28 +351,28 @@ function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:m
                             ^JsonFeWithPropertyPaths(fe=$inputFeToJson, jsonPropertyPaths=$jsonPropertyPaths);,
                           | ^JsonFeWithPropertyPaths(fe=$sq.fe)
                        );
-   
+
    let fe = $jsonFeWithPpt.fe;
-   
+
    let fd = ^LambdaFunction<{->Any[*]}>(expressionSequence = $fe);
-   
+
    let possibleClass = $fe.genericType.rawType->toOne();
    let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($fe); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
 
    assert(!$class->genericType().typeArguments->at(0)->instanceOf(TabularDataSet),'ExecutionPlan not supported for Alloy ModelToModel queries returning \'TabularDataSet\'');
-   
+
    let setImplementation = if ($e->isEmpty(),
                                |$mapping->toOne()->rootClassMappingByClass($possibleClass->cast(@Class<Any>))->toOne()->cast(@SetImplementation);,
                                |$e.sets->toOne()->cast(@SetImplementation));
-   
-   let connection = $runtime->toOne().connections->at(0);
-   
+
+   let connection = $runtime->toOne().connectionStores.connection->at(0);
+
    let resultType = ^ClassResultType
                      (
                         type = $class,
                         setImplementations = $setImplementation
                      );
-   
+
 
    ^ModelToModelExecutionNode(fd=$fd, classes=$mapping->toOne()->classMappings().class, resultType=$resultType, resultSizeRange=ZeroMany, connection=$connection, jsonPropertyPaths=$jsonFeWithPpt.jsonPropertyPaths, mapping=$mapping->toOne());
 }
@@ -400,11 +402,11 @@ function <<access.private>> meta::pure::mapping::modelToModel::inMemory::mergeRe
       ,|[]
       ,|$set->at(0)->class()->allProperties()->cast(@Property<Nil, Any|*>)
                ->map(p: Property<Nil, Any|*>[1] |
-                  let propertyToMutate = $set->at(0)->getPropertyValues($p.name->toOne());  
+                  let propertyToMutate = $set->at(0)->getPropertyValues($p.name->toOne());
                   let propertyValuesFromOtherInstances = $set->filter(r|$r->getPropertyValues($p.name->toOne())->isNotEmpty());
                   if($propertyValuesFromOtherInstances->size()==1 && $propertyToMutate->isEmpty()
                              ,|$set->at(0)->mutateAdd($p.name->toOne(), $propertyValuesFromOtherInstances->toOne()->getPropertyValues($p.name->toOne()))
-                             ,| assert($propertyValuesFromOtherInstances->size()<=1,'Property '+ $p.name->toOne()+' is mapped more than once.'); 
+                             ,| assert($propertyValuesFromOtherInstances->size()<=1,'Property '+ $p.name->toOne()+' is mapped more than once.');
                                [];);
             );
          $set->at(0);

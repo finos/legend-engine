@@ -126,14 +126,14 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::datePart::testDatePartWithDateTime(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='datePart', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
-  let expected = ^Literal(value=%2014-12-04->convertToDateTime());
+  let expected = ^Literal(value=%2014-12-04);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::datePart::testDatePartWithStrictDate(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='datePart', parameters=[^Literal(value=%2014-12-04)]);
-  let expected = ^Literal(value=%2014-12-04->convertToDateTime());
+  let expected = ^Literal(value=%2014-12-04);
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
@@ -259,6 +259,33 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstHourOfDay::testFirstHourOfDay(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstHourOfDay', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04T00:00:00.000000000+0000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstMinuteOfHour::testFirstMinuteOfHour(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstMinuteOfHour', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04T15:00:00.000000000+0000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstSecondOfMinute::testFirstSecondOfMinute(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstSecondOfMinute', parameters=[^Literal(value=%2014-12-04T15:22:23)]);
+  let expected = ^Literal(value=%2014-12-04T15:22:00.000000000+0000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::firstMillisecondOfSecond::testFirstMillisecondOfSecond(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='firstMillisecondOfSecond', parameters=[^Literal(value=%2014-12-04T15:22:23.123)]);
+  let expected = ^Literal(value=%2014-12-04T15:22:23.000000000+0000);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
 
 //variable result functions - get value from pure/legend engine and compare with value returned with db engine
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::now::testNow(config:DbTestConfig[1]):Boolean[1]

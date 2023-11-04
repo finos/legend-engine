@@ -15,94 +15,72 @@
 package org.finos.legend.engine.language.hostedService.deployment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.HttpResponse;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.Credentials;
-import org.apache.http.client.CookieStore;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentResult;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration;
-import org.pac4j.core.profile.CommonProfile;
-
-import javax.security.auth.Subject;
-import java.security.Principal;
-import java.security.PrivilegedExceptionAction;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import java.util.List;
 
-public class HostedServiceDeploymentManager implements  DeploymentManager<Root_meta_external_function_activator_hostedService_HostedService, HostedServiceArtifact, HostedServiceDeploymentResult, HostedServiceDeploymentConfiguration>
+public class HostedServiceDeploymentManager implements  DeploymentManager<HostedServiceArtifact, HostedServiceDeploymentResult, HostedServiceDeploymentConfiguration>
 {
 
     public static ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    public boolean canDeploy(Root_meta_external_function_activator_hostedService_HostedService element)
+    public boolean canDeploy(FunctionActivatorArtifact element)
     {
-        return element._activationConfiguration() != null;
+        return element instanceof HostedServiceArtifact;
     }
 
-    public HostedServiceDeploymentResult deploy(MutableList<CommonProfile> profiles, HostedServiceArtifact artifact, Root_meta_external_function_activator_hostedService_HostedService activator)
+    public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact)
     {
         return new HostedServiceDeploymentResult();
     }
 
 
-    public HostedServiceDeploymentResult deploy(MutableList<CommonProfile> profiles, HostedServiceArtifact artifact, Root_meta_external_function_activator_hostedService_HostedService activator, List<HostedServiceDeploymentConfiguration> availableRuntimeConfigurations)
+    public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact, List<HostedServiceDeploymentConfiguration> availableRuntimeConfigurations)
     {
         String host;
         String path;
         int port;
 
-        if (activator._activationConfiguration() == null || activator._activationConfiguration()._stage()._name().equals(DeploymentStage.SANDBOX.name()))
-        {
-            if (availableRuntimeConfigurations.size() > 0)
-            {
-                host = availableRuntimeConfigurations.get(0).host;
-                path = availableRuntimeConfigurations.get(0).path;
-                port = availableRuntimeConfigurations.get(0).port;
-            }
-            else
-            {
-                throw new EngineException("No available configuration for sandbox deployment");
-            }
-            try
-            {
-                HttpPost request = new HttpPost(new URIBuilder()
-                        .setScheme("http")
-                        .setHost(host)
-                        .setPort(port)
-                        .setPath(path)
-                        .build());
-                StringEntity stringEntity = new StringEntity(mapper.writeValueAsString(artifact));
-                stringEntity.setContentType("application/json");
-                request.setEntity(stringEntity);
-                CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-                Subject s = ProfileManagerHelper.extractSubject(profiles);
-                Subject.doAs(s, (PrivilegedExceptionAction<HostedServiceDeploymentResult>) () ->
-                            {
-                                HttpResponse response = httpclient.execute(request);
-                                return new HostedServiceDeploymentResult();
-                            });
-            }
-            catch (Exception e)
-            {
-                throw new EngineException("No available configuration for sandbox deployment");
-
-            }
-        }
+//        if (artifact.deploymentConfiguration == null || activator._activationConfiguration()._stage()._name().equals(DeploymentStage.SANDBOX.name()))
+//        {
+//            if (availableRuntimeConfigurations.size() > 0)
+//            {
+//                host = availableRuntimeConfigurations.get(0).host;
+//                path = availableRuntimeConfigurations.get(0).path;
+//                port = availableRuntimeConfigurations.get(0).port;
+//            }
+//            else
+//            {
+//                throw new EngineException("No available configuration for sandbox deployment");
+//            }
+//            try
+//            {
+//                HttpPost request = new HttpPost(new URIBuilder()
+//                        .setScheme("http")
+//                        .setHost(host)
+//                        .setPort(port)
+//                        .setPath(path)
+//                        .build());
+//                StringEntity stringEntity = new StringEntity(mapper.writeValueAsString(artifact));
+//                stringEntity.setContentType("application/json");
+//                request.setEntity(stringEntity);
+//                CloseableHttpClient httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+//                Subject s = ProfileManagerHelper.extractSubject(profiles);
+//                Subject.doAs(s, (PrivilegedExceptionAction<HostedServiceDeploymentResult>) () ->
+//                            {
+//                                HttpResponse response = httpclient.execute(request);
+//                                return new HostedServiceDeploymentResult();
+//                            });
+//            }
+//            catch (Exception e)
+//            {
+//                throw new EngineException("No available configuration for sandbox deployment");
+//
+//            }
+//        }
 //        else if (activator._activationConfiguration() != null)
 //        {
 //            host = ((Root_meta_external_function_activator_hostedService_HostedServiceDeploymentConfiguration)activator._activationConfiguration())._;

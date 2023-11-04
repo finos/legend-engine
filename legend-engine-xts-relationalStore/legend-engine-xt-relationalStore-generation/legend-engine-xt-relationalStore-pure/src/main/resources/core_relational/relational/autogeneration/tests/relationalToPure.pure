@@ -22,7 +22,7 @@ function <<test.Test>> meta::relational::transform::autogen::tests::testClassesA
                    ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::PassportCountry, $extensions))
                    ->concatenate(meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::transformAssociation(meta::relational::transform::autogen::tests::CompanyEmployeeFromDifferentSchemas, $extensions))
    )->meta::alloy::metadataServer::alloyToJSON();
-   let actual = meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(testDB, meta::relational::transform::autogen::tests->elementToPath()+'::');
+   let actual = meta::relational::transform::autogen::classesAssociationsAndMappingFromDatabase(testDB, meta::relational::transform::autogen::tests->elementToPath());
    assertJsonStringsEqual($expected, $actual);
 }
 

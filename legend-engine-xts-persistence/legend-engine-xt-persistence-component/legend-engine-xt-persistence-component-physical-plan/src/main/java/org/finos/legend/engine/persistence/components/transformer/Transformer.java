@@ -57,6 +57,8 @@ public interface Transformer<C extends PhysicalPlanNode, P extends PhysicalPlan<
 
         public abstract Optional<Long> infiniteBatchIdValue();
 
+        public abstract Optional<String> bulkLoadBatchStatusPattern();
+
         public abstract List<Optimizer> optimizers();
 
         @Default

@@ -51,6 +51,8 @@ public interface LogicalPlanVisitor<L extends LogicalPlanNode>
 
         Optional<Long> infiniteBatchIdValue();
 
+        Optional<String> bulkLoadBatchStatusPattern();
+
         List<Optimizer> optimizers();
 
         String quoteIdentifier();

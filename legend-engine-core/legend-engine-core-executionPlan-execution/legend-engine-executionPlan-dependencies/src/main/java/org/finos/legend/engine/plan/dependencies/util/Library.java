@@ -61,45 +61,45 @@ public class Library
 
     public static PureDate adjustDate(PureDate date, long number, DurationUnit unit)
     {
-        switch (unit.name())
+        switch (unit)
         {
-            case "YEARS":
+            case YEARS:
             {
-                return date.addYears((int) number);
+                return date.addYears(number);
             }
-            case "MONTHS":
+            case MONTHS:
             {
-                return date.addMonths((int) number);
+                return date.addMonths(number);
             }
-            case "WEEKS":
+            case WEEKS:
             {
-                return date.addWeeks((int) number);
+                return date.addWeeks(number);
             }
-            case "DAYS":
+            case DAYS:
             {
-                return date.addDays((int) number);
+                return date.addDays(number);
             }
-            case "HOURS":
+            case HOURS:
             {
-                return date.addHours((int) number);
+                return date.addHours(number);
             }
-            case "MINUTES":
+            case MINUTES:
             {
-                return date.addMinutes((int) number);
+                return date.addMinutes(number);
             }
-            case "SECONDS":
+            case SECONDS:
             {
-                return date.addSeconds((int) number);
+                return date.addSeconds(number);
             }
-            case "MILLISECONDS":
+            case MILLISECONDS:
             {
-                return date.addMilliseconds((int) number);
+                return date.addMilliseconds(number);
             }
-            case "MICROSECONDS":
+            case MICROSECONDS:
             {
                 return date.addMicroseconds(number);
             }
-            case "NANOSECONDS":
+            case NANOSECONDS:
             {
                 return date.addNanoseconds(number);
             }
@@ -232,6 +232,46 @@ public class Library
         return firstDayOfYear(today());
     }
 
+    public static PureDate firstHourOfDay(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay())
+        {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), 0);
+        }
+        throw new IllegalArgumentException("Date must have year, month and day");
+    }
+
+
+    public static PureDate firstMinuteOfHour(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay() && date.hasHour()) 
+        {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), 0);
+        }
+
+        throw new IllegalArgumentException("Date must have year, month, day and hour");
+    }
+
+    public static PureDate firstSecondOfMinute(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute()) 
+        {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), 0);
+        }
+
+        throw new IllegalArgumentException("Date must have year, month, day, hour and minute");
+    }
+
+    public static PureDate firstMillisecondOfSecond(PureDate date)
+    {
+        if (date.hasMonth() && date.hasDay() && date.hasHour() && date.hasMinute() && date.hasSecond()) 
+        {
+            return PureDate.newPureDate(date.getYear(), date.getMonth(), date.getDay(), date.getHour(), date.getMinute(), date.getSecond(), "000");
+        }
+
+        throw new IllegalArgumentException("Date must have year, month, day, hour, minute and second");
+    }
+
     public static long weekOfYear(PureDate date)
     {
         if (!date.hasDay())
@@ -271,6 +311,74 @@ public class Library
     public static PureDate previousDayOfWeek(DayOfWeek dayOfWeek)
     {
         return previousDayOfWeek(today(), dayOfWeek);
+    }
+
+    public static boolean equals(Object left, Object right)
+    {
+        if (left == right)
+        {
+            return true;
+        }
+        if (left == null)
+        {
+            return (right instanceof List) && ((List<?>) right).isEmpty();
+        }
+        if (right == null)
+        {
+            return (left instanceof List) && ((List<?>) left).isEmpty();
+        }
+        if (left instanceof List)
+        {
+            List<?> leftList = (List<?>) left;
+            int size = leftList.size();
+            if (right instanceof List)
+            {
+                List<?> rightList = (List<?>) right;
+                return (size == rightList.size()) && iteratorsEqual(leftList.iterator(), rightList.iterator());
+            }
+            return (size == 1) && equals(leftList.get(0), right);
+        }
+        if (right instanceof List)
+        {
+            List<?> rightList = (List<?>) right;
+            return (rightList.size() == 1) && equals(left, rightList.get(0));
+        }
+        if (left instanceof Number)
+        {
+            return (right instanceof Number) && eq((Number) left, (Number) right);
+        }
+
+        return left.equals(right);
+    }
+
+    private static boolean eq(Number left, Number right)
+    {
+        if (left instanceof BigDecimal && right instanceof Double ||
+                left instanceof Double && right instanceof BigDecimal)
+        {
+            return false;
+        }
+
+        if ((left instanceof Byte) || (right instanceof Byte))
+        {
+            return (left.getClass() == right.getClass()) && (left.byteValue() == right.byteValue());
+        }
+
+        left = left.equals(-0.0d) ? 0.0d : left;
+        right = right.equals(-0.0d) ? 0.0d : right;
+        return left.equals(right) || left.toString().equals(right.toString());
+    }
+
+    private static boolean iteratorsEqual(Iterator<?> leftIterator, Iterator<?> rightIterator)
+    {
+        while (leftIterator.hasNext() && rightIterator.hasNext())
+        {
+            if (!equals(leftIterator.next(), rightIterator.next()))
+            {
+                return false;
+            }
+        }
+        return !leftIterator.hasNext() && !rightIterator.hasNext();
     }
 
     public static boolean lessThan(PureDate date1, PureDate date2)
@@ -1516,6 +1624,11 @@ public class Library
         return result;
     }
 
+    public static String repeatString(String s, int times)
+    {
+        return String.join("", Collections.nCopies(times, s));
+    }
+
     public static String toUpperFirstCharacter(String s)
     {
         if (s == null)
@@ -1593,6 +1706,21 @@ public class Library
         return Math.sqrt(variance(values, isBiasCorrected));
     }
 
+    public static Number variance(List<Number> list, boolean isBiasCorrected)
+    {
+        if (list == null || list.isEmpty())
+        {
+            throw new RuntimeException("Unable to process empty list");
+        }
+        MutableList<Number> javaNumbers = Lists.mutable.withAll(list);
+        double[] values = new double[javaNumbers.size()];
+        for (int i = 0; i < javaNumbers.size(); i++)
+        {
+            values[i] = javaNumbers.get(i).doubleValue();
+        }
+        return variance(values, isBiasCorrected);
+    }
+
     public static double variance(double[] values, boolean isBiasCorrected)
     {
         int length = values.length;
@@ -1642,5 +1770,10 @@ public class Library
             sum += values[i];
         }
         return sum / length;
+    }
+
+    public static double coTangent(double input)
+    {
+        return 1.0 / Math.tan(input);
     }
 }

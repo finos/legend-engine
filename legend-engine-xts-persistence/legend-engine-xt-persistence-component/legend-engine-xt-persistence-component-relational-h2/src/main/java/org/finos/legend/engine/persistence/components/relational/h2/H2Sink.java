@@ -16,14 +16,22 @@ package org.finos.legend.engine.persistence.components.relational.h2;
 
 import java.util.Optional;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -31,14 +39,24 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
+import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2JdbcPropertiesToLogicalDataTypeMapping;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CsvExternalDatasetReferenceVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesDatasetReferenceVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesDatasetVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesSelectionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
@@ -59,6 +77,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+
 public class H2Sink extends AnsiSqlSink
 {
     private static final RelationalSink INSTANCE;
@@ -77,6 +98,7 @@ public class H2Sink extends AnsiSqlSink
         capabilities.add(Capability.EXPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
+        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -86,6 +108,13 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(LoadCsv.class, new LoadCsvVisitor());
         logicalPlanVisitorByClass.put(CsvExternalDatasetReference.class, new CsvExternalDatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
+        logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
+        logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
+        logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
@@ -171,5 +200,39 @@ public class H2Sink extends AnsiSqlSink
             default:
                 throw new IllegalArgumentException("Unrecognized case conversion: " + caseConversion);
         }
+    }
+
+    @Override
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    {
+        executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
+
+        Map<StatisticName, Object> stats = new HashMap<>();
+        stats.put(StatisticName.FILES_LOADED, 1);
+        stats.put(StatisticName.ROWS_WITH_ERRORS, 0);
+
+        SqlPlan rowsInsertedSqlPlan = statisticsSqlPlan.get(StatisticName.ROWS_INSERTED);
+        if (rowsInsertedSqlPlan != null)
+        {
+            stats.put(StatisticName.ROWS_INSERTED, executor.executePhysicalPlanAndGetResults(rowsInsertedSqlPlan, placeHolderKeyValues)
+                .stream()
+                .findFirst()
+                .map(TabularData::getData)
+                .flatMap(t -> t.stream().findFirst())
+                .map(Map::values)
+                .flatMap(t -> t.stream().findFirst())
+                .orElseThrow(IllegalStateException::new));
+        }
+
+        IngestorResult result;
+        result = IngestorResult.builder()
+            .status(IngestStatus.SUCCEEDED)
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
+            .updatedDatasets(datasets)
+            .putAllStatisticByName(stats)
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+            .build();
+
+        return result;
     }
 }

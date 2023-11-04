@@ -32,6 +32,13 @@ public class SystemPropertiesSecret extends CredentialVaultSecret
     }
 
     @Override
+    public String shortId()
+    {
+        return "SystemPropertiesSecret" +
+                "--systemPropertyName=" + systemPropertyName;
+    }
+
+    @Override
     public <T> T accept(PackageableElementVisitor<T> visitor)
     {
         return visitor.visit(this);

@@ -178,11 +178,14 @@ function <<access.private>> meta::relational::graphFetch::domain::tests::checkPl
       ')\n', $plans->at(1)->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function meta::relational::graphFetch::domain::tests::testRuntime():meta::pure::runtime::Runtime[1]
+function meta::relational::graphFetch::domain::tests::testRuntime():meta::core::runtime::Runtime[1]
 {
-   ^meta::pure::runtime::Runtime(
-     connections = ^meta::relational::runtime::TestDatabaseConnection(
+   ^meta::core::runtime::Runtime(
+     connectionStores =
+     ^meta::core::runtime::ConnectionStore(
                       element = TestStore,
+                      connection=
+     ^meta::external::store::relational::runtime::TestDatabaseConnection(
                       type = meta::relational::runtime::DatabaseType.H2,
                       timeZone = 'GMT',
                       testDataSetupSqls =
@@ -195,7 +198,7 @@ function meta::relational::graphFetch::domain::tests::testRuntime():meta::pure::
                           'insert into Person (id, firm_id, first_name, last_name) values (1, 1, \'John\', \'Doe\');\n'+
                           'insert into Person (id, firm_id, first_name, last_name) values (2, 1, \'Jane\', \'Smith\');\n'+
                           'insert into Person (id, firm_id, first_name, last_name) values (3, 2, \'Mark\', \'Moe\');\n'
-                   )
+                  ))
     );
 }
 
@@ -205,7 +208,7 @@ Database meta::relational::graphFetch::domain::tests::TestStore
   Table FirmTable
   (
     id INT PRIMARY KEY,
-    legal_name VARCHAR(200)    
+    legal_name VARCHAR(200)
   )
 
   Table PersonTable

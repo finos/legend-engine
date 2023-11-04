@@ -14,23 +14,24 @@
 
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::loadCsv::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::metamodel::*;
 
 function <<test.Test>> meta::relational::tests::loadCsv::testLoadCsv():Boolean[1]
 {
-   let connection = meta::relational::tests::testRuntime(db).connections->toOne()->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime(db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'personCsvTable', $connection);
    loadCsvToDbTable('/core_relational/relational/functions/tests/loadCsvToDbTable/employees.csv', db->schema('default')->toOne()->table('personCsvTable')->toOne(),
                      $connection);
-                     
-   let res = execute(|Person.all(), csvMapping, meta::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
-                     
+
+   let res = execute(|Person.all(), csvMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+
    assertEquals('Joe', $res.values->at(0).firstName);
    assertEquals('Bloggs', $res.values->at(0).lastName);
    assertEquals(21, $res.values->at(0).age);
-   
+
    assertEquals('Jill', $res.values->at(1).firstName);
    assertEquals('Smith', $res.values->at(1).lastName);
    assertEquals(31, $res.values->at(1).age);
@@ -48,7 +49,7 @@ Mapping meta::relational::tests::loadCsv::csvMapping
                 (
                     firstName : personCsvTable.FIRSTNAME,
                     lastName : personCsvTable.LASTNAME,
-                    age : personCsvTable.AGE   
+                    age : personCsvTable.AGE
                 )
             }
 )
@@ -58,5 +59,5 @@ Mapping meta::relational::tests::loadCsv::csvMapping
 Database meta::relational::tests::loadCsv::db
 (
    Table personCsvTable(FIRSTNAME VARCHAR(30) PRIMARY KEY, LASTNAME VARCHAR(40), AGE INTEGER)
-   
+
 )

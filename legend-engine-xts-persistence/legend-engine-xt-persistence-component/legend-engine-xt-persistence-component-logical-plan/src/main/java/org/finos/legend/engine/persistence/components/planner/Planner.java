@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Dro
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestampAbstract;
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
@@ -96,18 +97,22 @@ public abstract class Planner
         {
             return false;
         }
+
+        Optional<String> bulkLoadTaskIdValue();
     }
 
     private final Datasets datasets;
     private final IngestMode ingestMode;
     private final PlannerOptions plannerOptions;
+    protected final Set<Capability> capabilities;
     protected final List<String> primaryKeys;
 
-    Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions)
+    Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         this.datasets = datasets;
         this.ingestMode = ingestMode;
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
+        this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
     }
 
@@ -132,6 +137,11 @@ public abstract class Planner
         return datasets.metadataDataset();
     }
 
+    protected Optional<BulkLoadMetadataDataset> bulkLoadMetadataDataset()
+    {
+        return datasets.bulkLoadMetadataDataset();
+    }
+
     protected Optional<LockInfoDataset> lockInfoDataset()
     {
         return datasets.lockInfoDataset();
@@ -147,7 +157,7 @@ public abstract class Planner
         return plannerOptions;
     }
 
-    public abstract LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities);
+    public abstract LogicalPlan buildLogicalPlanForIngest(Resources resources);
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {

@@ -19,16 +19,16 @@ import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProv
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
-import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp_Impl;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
-
-import java.util.Collections;
 
 public class SnowflakeAppCompilerExtension implements CompilerExtension
 {
@@ -47,12 +47,8 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
         return Lists.fixedSize.of(
                 Processor.newProcessor(
                         SnowflakeApp.class,
-                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(SnowflakeDeploymentConfiguration.class),
+                        org.eclipse.collections.impl.factory.Lists.fixedSize.with(PackageableConnection.class),
                         this::buildSnowflakeApp
-                ),
-                Processor.newProcessor(
-                        SnowflakeDeploymentConfiguration.class,
-                        this::buildDeploymentConfig
                 )
         );
     }
@@ -71,7 +67,7 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
                         ._function(func)
                         ._description(app.description)
                         ._owner(app.owner)
-                        ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeDeploymentConfiguration) app.activationConfiguration, context) : null);
+                        ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeAppDeploymentConfiguration) app.activationConfiguration, context) : null);
         }
         catch (Exception e)
         {
@@ -79,9 +75,10 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
         }
     }
 
-    public Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration buildDeploymentConfig(SnowflakeDeploymentConfiguration configuration, CompileContext context)
+    public Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration buildDeploymentConfig(SnowflakeAppDeploymentConfiguration configuration, CompileContext context)
     {
         return new Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration_Impl("")
-                ._stage(context.pureModel.getEnumValue("meta::external::function::activator::DeploymentStage", configuration.stage.name()));
+                ._target((Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) context.resolveConnection(configuration.activationConnection.connection, configuration.sourceInformation));
+        // ._stage(context.pureModel.getEnumValue("meta::external::function::activator::DeploymentStage", configuration.stage.name()));
     }
 }

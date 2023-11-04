@@ -66,7 +66,6 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.plan.execution.result.serialization.CsvSerializer;
 import org.finos.legend.engine.plan.execution.result.serialization.RequestIdGenerator;
 import org.finos.legend.engine.plan.execution.result.serialization.TemporaryFile;
-import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalDatabaseCommandsVisitorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.RelationalExecutor;
@@ -130,7 +129,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.InMemoryRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.GraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
@@ -878,25 +876,26 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
     private static void createTempTableFromRealizedRelationalResultUsingTempTableStrategyInBlockConnection(RelationalTempTableGraphFetchExecutionNode node, RealizedRelationalResult realizedRelationalResult, String tempTableName, DatabaseConnection databaseConnection, String databaseType, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
     {
+        RelationalStoreExecutionState relationalStoreExecutionState = null;
+        boolean tempTableCreated = false;
         try (Scope ignored = GlobalTracer.get().buildSpan("create temp table").withTag("tempTableName", tempTableName).withTag("databaseType", databaseType).startActive(true))
         {
-            RelationalStoreExecutionState relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
+            relationalStoreExecutionState = (RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational);
             relationalStoreExecutionState.setRetainConnection(true);
+
+            node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
+            tempTableCreated = true;
 
             if (node.tempTableStrategy instanceof LoadFromSubQueryTempTableStrategy)
             {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
                 node.tempTableStrategy.loadTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
             }
             else if (node.tempTableStrategy instanceof LoadFromResultSetAsValueTuplesTempTableStrategy)
             {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
-                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, databaseTimeZone, threadExecutionState, profiles);
+                loadValuesIntoTempTablesFromRelationalResult(node.tempTableStrategy.loadTempTableNode, realizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, threadExecutionState, profiles);
             }
             else if (node.tempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
             {
-                node.tempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(profiles, threadExecutionState));
-
                 String requestId = new RequestIdGenerator().generateId();
                 String fileName = tempTableName + requestId;
                 try (TemporaryFile tempFile = new TemporaryFile(((RelationalStoreExecutionState) threadExecutionState.getStoreExecutionState(StoreType.Relational)).getRelationalExecutor().getRelationalExecutionConfiguration().tempPath, fileName))
@@ -915,18 +914,23 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 throw new RuntimeException("Unsupported temp table strategy");
             }
-
-            String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
-            BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, profiles);
-            blockConnection.addCommitQuery(dropTempTableSqlQuery);
-            blockConnection.addRollbackQuery(dropTempTableSqlQuery);
-            blockConnection.close();
+        }
+        finally
+        {
+            if (relationalStoreExecutionState != null && tempTableCreated)
+            {
+                String dropTempTableSqlQuery = ((SQLExecutionNode) node.tempTableStrategy.dropTempTableNode.executionNodes.get(0)).sqlQuery;
+                BlockConnection blockConnection = relationalStoreExecutionState.getBlockConnectionContext().getBlockConnection(relationalStoreExecutionState, databaseConnection, profiles);
+                blockConnection.addCommitQuery(dropTempTableSqlQuery);
+                blockConnection.addRollbackQuery(dropTempTableSqlQuery);
+                blockConnection.close();
+            }
         }
     }
 
-    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    static Function<Object, String> getNormalizer(String quoteCharacterReplacement, String databaseTimeZone)
     {
-        final Function<Object, String> normalizer = v ->
+        return v ->
         {
             if (v == null)
             {
@@ -936,8 +940,21 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
             }
+            if (v instanceof String)
+            {
+                if (quoteCharacterReplacement != null)
+                {
+                    return "'" + ((String)ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
+                }
+                return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+            }
             return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
         };
+    }
+
+    private static void loadValuesIntoTempTablesFromRelationalResult(ExecutionNode node, RealizedRelationalResult realizedRelationalResult, int batchSize, String quoteCharacterReplacement, String databaseTimeZone, ExecutionState threadExecutionState, MutableList<CommonProfile> profiles)
+    {
+        final Function<Object, String> normalizer = getNormalizer(quoteCharacterReplacement, databaseTimeZone);
 
         Iterator<List<List<Object>>> rowBatchIterator = Iterators.partition(realizedRelationalResult.resultSetRows.iterator(), batchSize);
         while (rowBatchIterator.hasNext())
@@ -964,7 +981,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
 
         for (Method keyGetter : keyGetters)
         {
-            Object key = keyGetter.invoke(obj);
+            Object key = keyGetter.invoke(RelationalGraphFetchUtils.resolveValueIfIChecked(obj));
             pkRowTransformed.add(key);
             pkRowNormalized.add(key);
         }
@@ -1892,7 +1909,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                                 {
                                 }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
-                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, databaseTimeZone, this.executionState, this.profiles);
+                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.profiles);
                             }
                             else if (node.parentTempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
                             {
@@ -1979,8 +1996,9 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                             }
                         }
 
-                        for (Object parent : parents)
+                        for (Object parentObj : parents)
                         {
+                            Object parent = RelationalGraphFetchUtils.resolveValueIfIChecked(parentObj);
                             if (!parentToChildMap.containsKey(parent))
                             {
                                 parentToChildMap.put(parent, new ArrayList<>());

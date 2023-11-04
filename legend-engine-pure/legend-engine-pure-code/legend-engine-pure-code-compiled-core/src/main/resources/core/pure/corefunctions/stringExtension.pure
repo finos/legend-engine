@@ -51,6 +51,11 @@ function {doc.doc = 'Lower cases the first charater of the provided string'} met
          })
 }
 
+function meta::pure::functions::string::repeatString(str:String[0..1], times:Integer[1]):String[0..1]
+{
+  if ($str->isNotEmpty(), | $str->toOne()->repeat($times)->joinStrings(), | []);
+}
+
 function meta::pure::functions::string::lastIndexOf(str:String[1], value : String[1]):Integer[1] {
    let i = $str->indexOf($value);
    if ($i < 0, 
@@ -160,6 +165,14 @@ function {doc.doc = 'Un-camel case / humanize the provided string using provided
       ->filter(s | $s->length() != 0)
       ->toUpperFirstCharacter()
       ->joinStrings(' ');
+}
+
+function {doc.doc = 'Split the string and select the part'} 
+   meta::pure::functions::string::splitPart(str:String[0..1], token:String[1], part:Integer[1]):String[0..1] 
+{
+  if ($str->isEmpty(), 
+    | [],
+    | $str->toOne()->split($token)->at($part));
 }
 
 function {doc.doc = 'Split the proivded string on camel case'} 

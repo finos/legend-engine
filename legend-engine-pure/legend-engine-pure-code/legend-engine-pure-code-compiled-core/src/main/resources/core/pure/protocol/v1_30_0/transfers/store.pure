@@ -14,6 +14,7 @@
 
 import meta::pure::extension::*;
 import meta::json::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::runtime::transformRuntime(pureRuntime:Runtime[1], extensions:Extension[*]):meta::protocols::pure::v1_30_0::metamodel::Runtime[1]
@@ -21,7 +22,7 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::runtime:
    $pureRuntime->match([
       legacy:Runtime[1] | ^meta::protocols::pure::v1_30_0::metamodel::LegacyRuntime(
                              _type = 'legacyRuntime',
-                             connections = $pureRuntime.connections->map(con|$con->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::runtime::transformConnection($extensions))
+                             connections = $pureRuntime.connectionStores->map(conn|$conn.connection->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::runtime::transformConnection($extensions)->map(c|^$c(element=$conn.element->match([d:meta::pure::store::Store[1]|if($d->instanceOf(meta::external::store::model::ModelStore),|'ModelStore',|$d->elementToPath()),s:String[1]|$s]))))
                           );
    ])
 }
@@ -39,21 +40,21 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::runtime:
    $connection->match($extensions.serializerExtension('v1_30_0')->cast(@meta::protocols::pure::v1_30_0::extension::SerializerExtension_v1_30_0).transfers_store_transformConnection->concatenate(
                       $extensions.serializerExtension('v1_30_0')->cast(@meta::protocols::pure::v1_30_0::extension::SerializerExtension_v1_30_0).transfers_store_transformConnection2->map(f | $f->eval($extensions)))->concatenate(
       [
-         
-         model:meta::pure::mapping::modelToModel::ModelConnection[1]     | $model->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformModelConnection(),
-         j:meta::pure::mapping::modelToModel::JsonModelConnection[1]     | $j->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformJsonModelConnection(),
-         x:meta::pure::mapping::modelToModel::XmlModelConnection[1]      | $x->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformXmlModelConnection(),
-         c:meta::pure::mapping::modelToModel::ModelChainConnection[1]    | $c->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformChainConnection(),
 
-         
-         other: meta::pure::runtime::Connection[1]                       | let failureClass = $other->class()->toString();
+         model:meta::external::store::model::ModelConnection[1]     | $model->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformModelConnection(),
+         j:meta::external::store::model::JsonModelConnection[1]     | $j->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformJsonModelConnection(),
+         x:meta::external::store::model::XmlModelConnection[1]      | $x->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformXmlModelConnection(),
+         c:meta::external::store::model::ModelChainConnection[1]    | $c->meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformChainConnection(),
+
+
+         other: meta::core::runtime::Connection[1]                       | let failureClass = $other->class()->toString();
                                                                            fail('' + $failureClass + ' Connection type not supported Yet!');
                                                                            @meta::protocols::pure::v1_30_0::metamodel::runtime::Connection;
       ])->toOneMany()
    );
 }
 
-function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformModelConnection(modelConnection: meta::pure::mapping::modelToModel::ModelConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::ModelConnection[1]
+function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformModelConnection(modelConnection: meta::external::store::model::ModelConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::ModelConnection[1]
 {
    let instances =  $modelConnection.instances->keyValues();
    ^meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::ModelConnection( element = 'ModelStore',
@@ -61,7 +62,7 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connecti
                                                                                       input = ^meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::ModelStringInput(_type='ModelStringInput', class=$instances->at(0).first->elementToPath(), instances=$instances.second.values->map(i| $i->toJsonBeta())));
 }
 
-function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformJsonModelConnection(jsonModelConnection: meta::pure::mapping::modelToModel::JsonModelConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::JsonModelConnection[1]
+function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformJsonModelConnection(jsonModelConnection: meta::external::store::model::JsonModelConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::JsonModelConnection[1]
 {
    ^meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::JsonModelConnection(
       element = 'ModelStore',
@@ -71,7 +72,7 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connecti
    );
 }
 
-function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformXmlModelConnection(xmlModelConnection: meta::pure::mapping::modelToModel::XmlModelConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::XmlModelConnection[1]
+function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformXmlModelConnection(xmlModelConnection: meta::external::store::model::XmlModelConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::XmlModelConnection[1]
 {
    ^meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::XmlModelConnection(
       element = 'ModelStore',
@@ -81,7 +82,7 @@ function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connecti
    );
 }
 
-function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformChainConnection(modelChainConnection: meta::pure::mapping::modelToModel::ModelChainConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::ModelChainConnection[1]
+function meta::protocols::pure::v1_30_0::transformation::fromPureGraph::connection::transformChainConnection(modelChainConnection: meta::external::store::model::ModelChainConnection[1]):meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::ModelChainConnection[1]
 {
    ^meta::protocols::pure::v1_30_0::metamodel::mapping::modelToModel::ModelChainConnection(
       element  = 'ModelStore',

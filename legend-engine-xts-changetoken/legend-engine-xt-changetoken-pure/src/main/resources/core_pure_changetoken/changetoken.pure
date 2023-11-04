@@ -85,6 +85,18 @@ meta::pure::changetoken::RemovedClass extends ClassChangeToken
     + ')' }: String[1];
 }
 
+Class
+{doc.doc='a class was renamed in this version'}
+meta::pure::changetoken::RenamedClass extends ClassChangeToken
+{
+  newName: String[1];
+
+  toString() { 'RenamedClass('
+    + 'class=' + $this.class->toString()
+    + 'newName=' + $this.newName->toString()
+    + ')' }: String[1];
+}
+
 Class <<typemodifiers.abstract>> 
 {doc.doc='root of a hierarchy of getters for a default value of a newly-added field'}
 meta::pure::changetoken::FieldGetter 

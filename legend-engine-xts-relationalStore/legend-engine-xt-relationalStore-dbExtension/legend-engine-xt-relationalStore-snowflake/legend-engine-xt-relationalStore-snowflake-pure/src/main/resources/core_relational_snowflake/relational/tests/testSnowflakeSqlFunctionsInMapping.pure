@@ -28,9 +28,12 @@ import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 import meta::pure::runtime::*;
+import meta::core::runtime::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::authentication::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::function::snowflake::setUp():Boolean[1]
@@ -50,7 +53,7 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
     let result = execute(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Joe Bloggs ', 'MrsSmith'], $result.values->at(0).rows.values);
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root"',$result->sqlRemoveFormatting());
-   
+
     let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
@@ -78,7 +81,7 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.concatResult == 'Joe Bloggs ')->project([s | $s.concatResult], ['concat']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals(['Joe Bloggs '], $result.values->at(0).rows.values);
     assertEquals('select concat("root".string1, "root".string2) as "concat" from dataTable as "root" where concat("root".string1, "root".string2) = \'Joe Bloggs \'',$result->sqlRemoveFormatting());
-    
+
     let snowflakeSql = toSQLString(|SqlFunctionDemo.all()->filter(s | $s.concatResult == 'Joe Bloggs ')->project([s | $s.concatResult], ['concat']),
                                                 testMapping,
                                                 meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
@@ -112,10 +115,10 @@ function <<test.Test>> meta::relational::tests::mapping::function::snowflake::te
 {
    let da = %2013-03-01T19:09:20;
    let db = %2017-03-01T20:08:08;
-  
-   let test = toSQLString(|SqlFunctionDemo.all()->project([s|dateDiff($da, $db, DurationUnit.YEARS), 
-                                                           s|dateDiff($da, $db, DurationUnit.MONTHS), 
-                                                           s|dateDiff($da, $db, DurationUnit.WEEKS), 
+
+   let test = toSQLString(|SqlFunctionDemo.all()->project([s|dateDiff($da, $db, DurationUnit.YEARS),
+                                                           s|dateDiff($da, $db, DurationUnit.MONTHS),
+                                                           s|dateDiff($da, $db, DurationUnit.WEEKS),
                                                            s|dateDiff($da, $db, DurationUnit.DAYS),
                                                            s|dateDiff($da, $db, DurationUnit.HOURS),
                                                            s|dateDiff($da, $db, DurationUnit.MINUTES),

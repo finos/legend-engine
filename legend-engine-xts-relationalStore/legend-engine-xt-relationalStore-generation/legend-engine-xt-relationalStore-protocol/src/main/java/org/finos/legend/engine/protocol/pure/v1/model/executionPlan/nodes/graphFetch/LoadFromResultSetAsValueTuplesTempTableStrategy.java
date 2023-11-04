@@ -17,4 +17,5 @@ package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graph
 public class LoadFromResultSetAsValueTuplesTempTableStrategy extends TempTableStrategy
 {
     public Integer tupleBatchSize;
+    public String quoteCharacterReplacement;
 }

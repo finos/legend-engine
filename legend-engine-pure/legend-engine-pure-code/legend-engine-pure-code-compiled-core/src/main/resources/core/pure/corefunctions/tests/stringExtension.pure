@@ -103,6 +103,21 @@ function <<test.Test>> meta::pure::functions::string::tests::testIsAlphaNumeric(
    assertFalse('%'->isAlphaNumeric());
 }
 
+function <<test.Test>> {test.excludePlatform = 'Java compiled'} meta::pure::functions::string::tests::testRepeatString():Boolean[1]
+{
+  assertEquals([], repeatString([], 2));
+  assertEquals('', repeatString('', 2));
+  assertEquals('abab', repeatString('ab', 2));
+}
+
+function <<test.Test>> meta::pure::functions::string::tests::testSplitPart():Boolean[1]
+{
+  assertEquals([], splitPart([], 'a', 1));
+  assertEquals('abc', splitPart('abc', 'd', 0));
+  assertEquals('a', splitPart('abc', 'b', 0));
+  assertEquals('c', splitPart('abc', 'b', 1));
+}
+
 function <<test.Test>> meta::pure::functions::string::tests::testSplitOnCamelCase():Boolean[1]
 {
    let pairs = [

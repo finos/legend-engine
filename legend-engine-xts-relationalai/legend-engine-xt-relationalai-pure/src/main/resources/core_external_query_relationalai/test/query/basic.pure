@@ -1,0 +1,87 @@
+import meta::rel::test::testutils::*;
+import meta::rel::test::query::models::basicmodel::*;
+import meta::rel::mapping::*;
+import meta::rel::utils::assert::*;
+
+function <<test.Test>> meta::rel::test::query::basic::testQueryAllPersons(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEqualRel(
+    [
+      'def output[:query](x) = Person(x)',
+      'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
+    ],
+    $rai
+      ->doQuery(| Person.all())
+      ->rel()
+  );
+}
+
+function <<test.Test>> meta::rel::test::query::basic::testFilterByFirstName(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEqualRel(
+    [
+      'def output[:query](x) = (x1 in Person: Person:firstName[x1] = "John")(x)',
+      'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
+    ],
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->filter(p | $p.firstName == 'John')
+      )
+      ->rel()
+  );
+}
+
+function <<test.Test>> meta::rel::test::query::basic::testCombinedFilter(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEqualRel(
+    [
+      'def output[:query](x) = (x1 in Person: Person:firstName[x1] = "John" and Person:lastName[x1] = "Doe")(x)',
+      'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
+    ],
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->filter(p | $p.firstName == 'John' && $p.lastName == 'Doe')
+      )
+      ->rel()
+  );
+}
+
+function <<test.Test>> meta::rel::test::query::basic::testExists(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEqualRel(
+    [
+      'def output = exists(x1 in Person: boolean_true)'
+    ],
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->exists(p | true)
+      )
+      ->rel()
+  );
+}
+
+function <<test.Test>> meta::rel::test::query::basic::testMap(): Any[*] {
+  let rai = testConnection(schema());
+
+  assertEqualRel(
+    [
+      'def output = ("foo" from x1 in Person)'
+    ],
+    $rai
+      ->doQuery(| 
+        Person.all()
+          ->map(p | 'foo')
+      )
+      ->rel()
+  );
+}

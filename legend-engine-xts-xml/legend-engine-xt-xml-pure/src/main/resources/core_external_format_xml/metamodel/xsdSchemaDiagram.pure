@@ -1,0 +1,596 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Diagram
+Diagram meta::external::format::xml::metamodel::diagram::XsdSchemaDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_1(
+        type=meta::external::format::xml::metamodel::xsd::XsdAnnotated,
+        position=(445.36698, 59.33624),
+        width=188.66309,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_2(
+        type=meta::external::format::xml::metamodel::xsd::XsdObject,
+        position=(490.28229, -38.70528),
+        width=97.38477,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_3(
+        type=meta::external::format::xml::metamodel::xsd::XsdAttribute,
+        position=(852.61698, 523.67226),
+        width=150.80762,
+        height=100.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_4(
+        type=meta::external::format::xml::metamodel::xsd::XsdParticle,
+        position=(61.21533, 481.84088),
+        width=150.83447,
+        height=72.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::external::format::xml::metamodel::xsd::XsdAny,
+        position=(44.36698, 612.30215),
+        width=274.27832,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::external::format::xml::metamodel::xsd::XsdElement,
+        position=(330.00000, 612.70166),
+        width=188.67920,
+        height=184.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_7(
+        type=meta::external::format::xml::metamodel::xsd::XsdAnyAttribute,
+        position=(549.61698, 646.78591),
+        width=274.27832,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_8(
+        type=meta::external::format::xml::metamodel::xsd::XsdAttributeGroup,
+        position=(681.61698, 523.66088),
+        width=159.97070,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_9(
+        type=meta::external::format::xml::metamodel::xsd::XsdAttributeItem,
+        position=(778.61698, 436.64956),
+        width=129.34180,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_10(
+        type=meta::external::format::xml::metamodel::xsd::XsdGroupParticle,
+        position=(-166.84705, 745.76317),
+        width=121.36133,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_11(
+        type=meta::external::format::xml::metamodel::xsd::XsdGroup,
+        position=(-208.63302, 614.16579),
+        width=207.04297,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_12(
+        type=meta::external::format::xml::metamodel::xsd::XsdAll,
+        position=(-225.63302, 840.34762),
+        width=57.34180,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_13(
+        type=meta::external::format::xml::metamodel::xsd::XsdChoice,
+        position=(-151.63302, 841.25668),
+        width=82.01563,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_14(
+        type=meta::external::format::xml::metamodel::xsd::XsdSequence,
+        position=(-54.63302, 839.10897),
+        width=98.69727,
+        height=30.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_15(
+        type=meta::external::format::xml::metamodel::xsd::XsdSchema,
+        position=(173.04596, 192.46164),
+        width=219.06885,
+        height=156.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_16(
+        type=meta::external::format::xml::metamodel::xsd::XsdImport,
+        position=(-93.13302, 401.35810),
+        width=144.09570,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_17(
+        type=meta::external::format::xml::metamodel::xsd::XsdInclude,
+        position=(58.86698, 402.34668),
+        width=144.09570,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_18(
+        type=meta::external::format::xml::metamodel::xsd::XsdRedefine,
+        position=(-246.13302, 402.30127),
+        width=144.09570,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_19(
+        type=meta::external::format::xml::metamodel::xsd::XsdExternalSchema,
+        position=(-107.13302, 255.39215),
+        width=172.81299,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_20(
+        type=meta::external::format::xml::metamodel::xsd::XsdComplexType,
+        position=(1073.00000, 320.72443),
+        width=219.22461,
+        height=142.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_21(
+        type=meta::external::format::xml::metamodel::xsd::XsdSimpleType,
+        position=(830.00000, 320.65625),
+        width=241.69189,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_22(
+        type=meta::external::format::xml::metamodel::xsd::XsdAnyType,
+        position=(1011.36698, 159.29079),
+        width=97.38477,
+        height=44.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    GeneralizationView gview_0(
+        source=cview_1,
+        target=cview_2,
+        points=[(539.69852,95.33624),(538.97468,-9.70528)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_1(
+        source=cview_4,
+        target=cview_1,
+        points=[(136.63257,517.84088),(134.25903,465.87966),(534.50903,465.70185),(535.00903,126.49819)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_2(
+        source=cview_5,
+        target=cview_4,
+        points=[(136.25903,617.87966),(136.63257,517.84088)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_3(
+        source=cview_6,
+        target=cview_4,
+        points=[(424.33960,704.70166),(423.25903,587.87966),(190.25903,588.87966),(191.00903,524.49819)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_4(
+        source=cview_7,
+        target=cview_1,
+        points=[(568.25903,653.87966),(561.25903,126.87966)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_5(
+        source=cview_9,
+        target=cview_1,
+        points=[(843.28788,458.64956),(842.25903,399.87966),(596.25903,399.87966),(591.25903,124.87966)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_6(
+        source=cview_3,
+        target=cview_9,
+        points=[(887.25903,527.87966),(883.25903,522.87966),(883.25903,474.87966)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_7(
+        source=cview_8,
+        target=cview_9,
+        points=[(818.25903,528.87966),(816.25903,476.87966)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_8(
+        source=cview_10,
+        target=cview_4,
+        points=[(-59.41807,748.87966),(-58.41807,719.87966),(17.58193,718.87966),(19.58193,600.87966),(100.58193,598.87966),(99.58193,527.87966)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_9(
+        source=cview_11,
+        target=cview_4,
+        points=[(-105.11153,643.16579),(-105.41807,589.87966),(74.15295,588.87966),(75.15296,546.87966)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_10(
+        source=cview_12,
+        target=cview_10,
+        points=[(-196.96212,855.34762),(-106.16638,767.76317)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_11(
+        source=cview_13,
+        target=cview_10,
+        points=[(-110.62521,856.25668),(-106.16638,767.76317)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_12(
+        source=cview_14,
+        target=cview_10,
+        points=[(-5.28439,854.10897),(-106.16638,767.76317)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_13(
+        source=cview_15,
+        target=cview_1,
+        points=[(361.90327,241.45351),(463.90327,241.45351),(462.00903,118.49819)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_14(
+        source=cview_19,
+        target=cview_1,
+        points=[(59.90327,306.45351),(121.90327,306.45351),(123.90327,372.45351),(484.90327,372.45351),(485.50903,114.70185)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_15(
+        source=cview_16,
+        target=cview_19,
+        points=[(-32.09673,410.45351),(-32.49097,307.70185)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_16(
+        source=cview_17,
+        target=cview_19,
+        points=[(80.50903,406.70185),(79.90327,380.45351),(15.90327,380.45351),(15.90327,305.45351)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_17(
+        source=cview_18,
+        target=cview_19,
+        points=[(-137.49097,407.70185),(-138.09673,381.45351),(-83.09673,381.45351),(-82.49097,307.70185)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_18(
+        source=cview_22,
+        target=cview_1,
+        points=[(1060.05936,181.29079),(624.25903,179.87966),(624.00903,120.49819)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_19(
+        source=cview_20,
+        target=cview_22,
+        points=[(1098.86682,363.87966),(1093.90425,182.45351)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    GeneralizationView gview_20(
+        source=cview_21,
+        target=cview_22,
+        points=[(1044.01826,339.45351),(1036.90425,192.45351)],
+        label='',
+        color=#000000,
+        lineWidth=-1.0,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_0(
+        property=meta::external::format::xml::metamodel::xsd::XsdAttributeGroup.anyAttribute,
+        source=cview_8,
+        target=cview_7,
+        points=[(686.25903,557.87966),(654.25903,557.87966),(654.25903,652.87966)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::external::format::xml::metamodel::xsd::XsdAttributeGroup.items,
+        source=cview_8,
+        target=cview_9,
+        points=[(686.25903,533.87966),(653.25903,533.87966),(650.25903,457.87966),(843.28788,458.64956)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_2(
+        property=meta::external::format::xml::metamodel::xsd::XsdGroupParticle.items,
+        source=cview_10,
+        target=cview_4,
+        points=[(-106.16638,767.76317),(-229.41807,766.87966),(-229.41807,517.87966),(136.63257,517.84088)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_3(
+        property=meta::external::format::xml::metamodel::xsd::XsdGroup.particle,
+        source=cview_11,
+        target=cview_10,
+        points=[(-105.11153,643.16579),(-106.16638,767.76317)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_4(
+        property=meta::external::format::xml::metamodel::xsd::XsdSchema.items,
+        source=cview_15,
+        target=cview_2,
+        points=[(191.50903,218.20185),(132.90327,217.45351),(131.50903,11.70185),(514.50903,13.70185)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_5(
+        property=meta::external::format::xml::metamodel::xsd::XsdRedefine.items,
+        source=cview_18,
+        target=cview_2,
+        points=[(-174.08517,424.30127),(-174.09673,-34.54649),(501.50903,-32.29815)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_6(
+        property=meta::external::format::xml::metamodel::xsd::XsdSchema.externals,
+        source=cview_15,
+        target=cview_19,
+        points=[(278.39093,270.46164),(55.90327,271.45351)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_7(
+        property=meta::external::format::xml::metamodel::xsd::XsdAttribute.type,
+        source=cview_3,
+        target=cview_21,
+        points=[(975.25903,586.87966),(1022.25903,587.87966),(1025.92090,368.87966)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_8(
+        property=meta::external::format::xml::metamodel::xsd::XsdElement.type,
+        source=cview_6,
+        target=cview_22,
+        points=[(507.00903,763.49819),(1194.00903,765.49819),(1190.25903,179.87966),(1060.05936,181.29079)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

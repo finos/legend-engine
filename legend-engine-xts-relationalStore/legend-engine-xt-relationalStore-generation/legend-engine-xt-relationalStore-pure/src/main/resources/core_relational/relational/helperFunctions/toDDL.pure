@@ -18,9 +18,12 @@ import meta::pure::metamodel::function::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 import apps::pure::api::relational::toDDL::*;
+import meta::core::runtime::*;
+import meta::pure::runtime::*;
 
 function meta::relational::functions::toDDL::dropAndCreateTableSql(database:Database[1], schemaName:String[1], tableName:String[1], applyContraints:Boolean[1]):String[1]
 {
@@ -34,25 +37,59 @@ function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Dat
     dropAndCreateTableInDb($database, 'default', $tableName, $c);
 }
 
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], tableName: String[1], connectionStore:ConnectionStore[1]) : Boolean[1]
+{
+  let c = $connectionStore.connection->cast(@DatabaseConnection);
+    dropAndCreateTableInDb($database, 'default', $tableName, $c);
+}
+
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], c:DatabaseConnection[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, true, false);
 }
+
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], connectionStore:ConnectionStore[1]) : Boolean[1]
+{
+  let c = $connectionStore.connection->cast(@DatabaseConnection);
+  dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, true, false);
+}
+
 
 function <<doc.deprecated>> meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], c:DatabaseConnection[1], applyConstraints:Boolean[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, $applyConstraints, false);
 }
 
+function <<doc.deprecated>> meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], connectionStore:ConnectionStore[1], applyConstraints:Boolean[1]) : Boolean[1]
+{
+  let c = $connectionStore.connection->cast(@DatabaseConnection);
+   dropAndCreateTableInDb($database, $schema, $tableName, getTableToTableIdentityFunction(), $c, $applyConstraints, false);
+}
+
+
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:DatabaseConnection[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, true, false);
 }
 
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], connectionStore:ConnectionStore[1]) : Boolean[1]
+{
+    let c = $connectionStore.connection->cast(@DatabaseConnection);
+   dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, true, false);
+}
+
+
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:DatabaseConnection[1], applyConstraints:Boolean[1]) : Boolean[1]
 {
    dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, $applyConstraints, false);
 }
+
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], connectionStore:ConnectionStore[1], applyConstraints:Boolean[1]) : Boolean[1]
+{
+   let c = $connectionStore.connection->cast(@DatabaseConnection);
+   dropAndCreateTableInDb($database, $schema, $tableName, $tablePostProcess, $c, $applyConstraints, false);
+}
+
 
 function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], c:DatabaseConnection[1], applyConstraints:Boolean[1], debug:Boolean[1]) : Boolean[1]
 {
@@ -61,13 +98,37 @@ function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Dat
    true;
 }
 
+function meta::relational::functions::toDDL::dropAndCreateTableInDb(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], connectionStore:ConnectionStore[1], applyConstraints:Boolean[1], debug:Boolean[1]) : Boolean[1]
+{
+   let c = $connectionStore.connection->cast(@DatabaseConnection);
+   executeInDb(dropTableStatement($database, $schema, $tableName, $tablePostProcess), $c, $debug);
+   executeInDb(createTableStatement($database, $c.type, $schema, $tableName, $tablePostProcess, $applyConstraints), $c, $debug);
+   true;
+}
+
+
 function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], c:DatabaseConnection[1]) : Boolean[1]
 {
    dropAndCreateSchemaInDb($schema, $c, false);
 }
 
+function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], connectionStore:ConnectionStore[1]) : Boolean[1]
+{
+   let c = $connectionStore.connection->cast(@DatabaseConnection);
+   dropAndCreateSchemaInDb($schema, $c, false);
+}
+
+
 function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], c:DatabaseConnection[1], debug:Boolean[1]) : Boolean[1]
 {
+   executeInDb(dropSchemaStatement($schema), $c, $debug);
+   executeInDb(createSchemaStatement($schema), $c, $debug);
+   true;
+}
+
+function meta::relational::functions::toDDL::dropAndCreateSchemaInDb(schema: String[1], connectionStore:ConnectionStore[1], debug:Boolean[1]) : Boolean[1]
+{
+   let c = $connectionStore.connection->cast(@DatabaseConnection);
    executeInDb(dropSchemaStatement($schema), $c, $debug);
    executeInDb(createSchemaStatement($schema), $c, $debug);
    true;
@@ -110,19 +171,19 @@ function <<doc.deprecated>>  meta::relational::functions::toDDL::createTableStat
 }
 
 //deprecated
-function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
+function meta::relational::functions::toDDL::createTableStatement(database:Database[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
 {
    createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig(DatabaseType.H2))->toOne();
 }
 
 //deprecated
-function <<access.private>> meta::relational::functions::toDDL::createTableStatement(database:Database[1], dbType:DatabaseType[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
+function meta::relational::functions::toDDL::createTableStatement(database:Database[1], dbType:DatabaseType[1], schema: String[1], tableName: String[1], tablePostProcess: Function<{Table[1]->Table[1]}>[1], applyConstraints:Boolean[1]) : String[1]
 {
    createTableStatement($database, $schema, $tableName, $tablePostProcess, $applyConstraints, createDbConfig($dbType))->toOne();
 }
 
 //deprecated
-function <<access.private>> meta::relational::functions::toDDL::getColumnTypeSqlText(columnType:meta::relational::metamodel::datatype::DataType[1], dbType:DatabaseType[1]):String[1] 
+function meta::relational::functions::toDDL::getColumnTypeSqlText(columnType:meta::relational::metamodel::datatype::DataType[1], dbType:DatabaseType[1]):String[1]
 {
    $columnType->match([
       s : meta::relational::metamodel::datatype::SemiStructured[1] | $s->getSemiStructuredColumnTypeSqlText($dbType),
@@ -131,7 +192,7 @@ function <<access.private>> meta::relational::functions::toDDL::getColumnTypeSql
 }
 
 //deprecated
-function <<access.private>> meta::relational::functions::toDDL::getSemiStructuredColumnTypeSqlText(columnType:meta::relational::metamodel::datatype::SemiStructured[1], dbType:DatabaseType[1]):String[1] 
+function meta::relational::functions::toDDL::getSemiStructuredColumnTypeSqlText(columnType:meta::relational::metamodel::datatype::SemiStructured[1], dbType:DatabaseType[1]):String[1]
 {
    if ($dbType == DatabaseType.H2,
        | 'VARCHAR(4000)',
@@ -159,7 +220,7 @@ function meta::relational::functions::toDDL::getTableToTableIdentityFunction():F
    {t:Table[1] |$t}
 }
 
-function <<access.private>> meta::relational::functions::toDDL::getTable(database:Database[1], schemaName: String[1], tableName: String[1]):Table[1]
+function meta::relational::functions::toDDL::getTable(database:Database[1], schemaName: String[1], tableName: String[1]):Table[1]
 {
    let schema = $database->schema($schemaName);
 

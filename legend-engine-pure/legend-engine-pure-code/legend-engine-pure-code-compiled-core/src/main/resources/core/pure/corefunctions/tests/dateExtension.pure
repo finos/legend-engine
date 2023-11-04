@@ -13,10 +13,32 @@
 // limitations under the License.
 
 
-function <<test.Test>> meta::pure::functions::tests::date::firstDayOfThisWeekTest() :Boolean[1]
+function <<test.Test>> meta::pure::functions::tests::date::firstDayOfThisWeekTest():Boolean[1]
 {
    assertEquals(%2017-09-18, %2017-09-18->firstDayOfWeek());
    assertEquals(%2017-09-11, %2017-09-17->firstDayOfWeek());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::firstHourOfDayTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T00, %2023-02-03T12:11:10->firstHourOfDay());
+  assertEquals(%2023-02-03T00, %2023-02-03->firstHourOfDay());
+}
+
+
+function <<test.Test>> meta::pure::functions::tests::date::firstMinuteOfHourTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T12:00, %2023-02-03T12:11:10->firstMinuteOfHour());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::firstSecondOfMinuteTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T12:11:00, %2023-02-03T12:11:10->firstSecondOfMinute());
+}
+
+function <<test.Test>> meta::pure::functions::tests::date::firstMillisecondOfSecondTest():Boolean[1]
+{
+  assertEquals(%2023-02-03T12:11:10.000+0000, %2023-02-03T12:11:10.123->firstMillisecondOfSecond());
 }
 
 function <<test.Test>> meta::pure::functions::tests::date::testLeapYear():Boolean[1]

@@ -40,7 +40,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSi
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PureSingleExecution_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
@@ -70,7 +70,7 @@ abstract class ServicePostValidationRunner
     protected final SerializationFormat format;
     protected LambdaFunction<?> queryFunc;
     protected Mapping mapping;
-    protected Root_meta_pure_runtime_Runtime runtime;
+    protected Root_meta_core_runtime_Runtime runtime;
 
     public ServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format,PlanExecutor planExecutor)
     {

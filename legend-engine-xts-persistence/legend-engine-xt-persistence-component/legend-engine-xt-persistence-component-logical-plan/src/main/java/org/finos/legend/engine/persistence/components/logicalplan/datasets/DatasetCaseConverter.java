@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -148,6 +149,21 @@ public class DatasetCaseConverter
                 .batchStatusField(strategy.apply(metadataDataset.batchStatusField()))
                 .tableBatchIdField(strategy.apply(metadataDataset.tableBatchIdField()))
                 .stagingFiltersField(strategy.apply(metadataDataset.stagingFiltersField()))
+                .build();
+    }
+
+    public BulkLoadMetadataDataset applyCaseOnBulkLoadMetadataDataset(BulkLoadMetadataDataset bulkLoadMetadataDataset, Function<String, String> strategy)
+    {
+        return BulkLoadMetadataDataset.builder()
+                .database(bulkLoadMetadataDataset.database().map(strategy))
+                .group(bulkLoadMetadataDataset.group().map(strategy))
+                .name(strategy.apply(bulkLoadMetadataDataset.name()))
+                .batchIdField(strategy.apply(bulkLoadMetadataDataset.batchIdField()))
+                .tableNameField(strategy.apply(bulkLoadMetadataDataset.tableNameField()))
+                .batchStartTimeField(strategy.apply(bulkLoadMetadataDataset.batchStartTimeField()))
+                .batchEndTimeField(strategy.apply(bulkLoadMetadataDataset.batchEndTimeField()))
+                .batchStatusField(strategy.apply(bulkLoadMetadataDataset.batchStatusField()))
+                .batchSourceInfoField(strategy.apply(bulkLoadMetadataDataset.batchSourceInfoField()))
                 .build();
     }
 

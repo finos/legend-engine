@@ -45,9 +45,9 @@ import java.util.stream.Collectors;
 
 class BitemporalSnapshotPlanner extends BitemporalPlanner
 {
-    BitemporalSnapshotPlanner(Datasets datasets, BitemporalSnapshot ingestMode, PlannerOptions plannerOptions)
+    BitemporalSnapshotPlanner(Datasets datasets, BitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // validate
 
@@ -67,7 +67,7 @@ class BitemporalSnapshotPlanner extends BitemporalPlanner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = keyValuesForMilestoningUpdate();
 

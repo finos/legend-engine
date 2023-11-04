@@ -26,25 +26,45 @@ public class SQLResultDBColumnsMetaData
 {
     private final List<SQLResultColumn> sqlResultColumns;
     private final List<Integer> dbMetaDataType;
+    private final boolean[] timeStampColumns;
+    private final boolean[] dateColumns;
 
     SQLResultDBColumnsMetaData(List<SQLResultColumn> resultColumns, ResultSetMetaData rsMetaData) throws SQLException
     {
+        int size = resultColumns.size();
         this.sqlResultColumns = resultColumns;
-        this.dbMetaDataType = Lists.multiReader.ofInitialCapacity(resultColumns.size());
-        for (int i = 1; i <= resultColumns.size(); i++)
+        this.dbMetaDataType = Lists.multiReader.ofInitialCapacity(size);
+        this.timeStampColumns = new boolean[size];
+        this.dateColumns = new boolean[size];
+
+
+        for (int i = 1; i <= size; i++)
         {
+
             this.dbMetaDataType.add(rsMetaData.getColumnType(i));
+            if (columnIsOfType(i, Types.TIMESTAMP, "TIMESTAMP"))
+            {
+                timeStampColumns[i - 1] = true;
+
+            }
+            else if (columnIsOfType(i, Types.DATE, "DATE"))
+            {
+                dateColumns[i - 1] = true;
+
+            }
+
         }
     }
 
     boolean isTimestampColumn(int index)
     {
-        return columnIsOfType(index, Types.TIMESTAMP, "TIMESTAMP");
+        return timeStampColumns[index - 1];
     }
+
 
     boolean isDateColumn(int index)
     {
-        return columnIsOfType(index, Types.DATE, "DATE");
+        return dateColumns[index - 1];
     }
 
     private boolean columnIsOfType(int index, int dbColumnType, String alloyColumnType)

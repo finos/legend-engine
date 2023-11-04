@@ -17,12 +17,14 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::dest::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::objects::src::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: an M2M mapping that uses toOne() from multiplicities of [0..1], [1], [*] to a target multiplicity of [1]',
    doc.doc='When:  the mapping is executed using graphFetch and serialize.',
@@ -35,24 +37,23 @@ meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multipli
    let result = execute(
       |TargetOnes.all()->graphFetch($tree)->serialize($tree),
       mapToOneTargetOnes,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^JsonModelConnection(
                                 class=SourceData,
                                 url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"s1": "A", "s2": "B", "s3": "C"}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: an M2M mapping that uses toOne() from multiplicities of [0..1], [1], [*] to a target multiplicity of [0..1]',
    doc.doc='When:  the mapping is executed using graphFetch and serialize.',
    doc.doc='Then:  the mapping is applied and the result of the mapping is serialized.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multiplicityZeroOneIsSupportedForOneValue() : Boolean[1]
 {
    let tree = #{TargetZeroOnes {s1, s2, s3} }#;
@@ -60,24 +61,23 @@ meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multipli
    let result = execute(
       |TargetZeroOnes.all()->graphFetch($tree)->serialize($tree),
       mapToOneTargetZeroOnes,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^JsonModelConnection(
                                 class=SourceData,
                                 url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
    assert(jsonEquivalent('{"s1": "A", "s2": "B", "s3": "C"}'->parseJSON(), $result.values->toOne()->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: an M2M mapping that uses toOne() from multiplicities of [0..1], [1], [*] to a target multiplicity of [*]',
    doc.doc='When:  the mapping is executed using graphFetch and serialize.',
    doc.doc='Then:  the mapping is applied and the result of the mapping is serialized.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multiplicityManyIsSupportedForOneValue() : Boolean[1]
 {
    let tree = #{TargetOneManys {s1, s2, s3} }#;
@@ -85,12 +85,11 @@ meta::pure::mapping::modelToModel::test::alloy::simple::multiplicities::multipli
    let result = execute(
       |TargetOneManys.all()->graphFetch($tree)->serialize($tree),
       mapToOneTargetOneManys,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
+      ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^JsonModelConnection(
                                 class=SourceData,
                                 url='data:application/json,{"sOne": "A", "sZeroOne": "B", "sMany": "C"}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 

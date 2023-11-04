@@ -12,8 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::pure::profiles::*;
 import meta::pure::metamodel::tds::*;
@@ -84,7 +86,11 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
    let result = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(e|if($e.lastName == 'Hill',|$e.age->toOne()/2,|1.0))->average()], ['a', 'b']), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 4);
    assertSameElements(['Firm A 1.0', 'Firm B 16.0', 'Firm C 1.0', 'Firm X 2.25'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getFloat('b')->toString()));
-   assertEquals('select "root".LEGALNAME as "a", "firmtable_1".aggCol as "b" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else 1.0 end) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', $result->sqlRemoveFormatting());
+   assertEqualsH2Compatible(
+    'select "root".LEGALNAME as "a", "firmtable_1".aggCol as "b" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else 1.0 end) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
+    'select "root".LEGALNAME as "a", "firmtable_1".aggCol as "b" from firmTable as "root" left outer join (select "firmtable_2".ID as ID, avg(1.0 * case when "persontable_0".LASTNAME = \'Hill\' then ((1.0 * "persontable_0".AGE) / 2) else CAST(1.0 AS FLOAT) end) as aggCol from firmTable as "firmtable_2" left outer join personTable as "persontable_0" on ("firmtable_2".ID = "persontable_0".FIRMID) group by "firmtable_2".ID) as "firmtable_1" on ("root".ID = "firmtable_1".ID)', 
+    $result->sqlRemoveFormatting()
+   );
 }
 
 function <<test.Test>> meta::relational::tests::projection::aggregation::testSubAggregationWithJoinStrings():Boolean[1]
@@ -126,12 +132,12 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
                                               col(f:Firm[1]|$f.employees->map(e|$e.lastName),'b'),
                                               col(f:Firm[1]|$f.employees->map(e|2 + $e.locations.place->count()),'c')
                                              ])};
-      
-      
+
+
       println($l->evaluateAndDeactivate());
-                        
-                                             
-   
+
+
+
    let result = execute($l, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Firm A Roberts 4', 'Firm X Allen 4', 'Firm X Smith 4', 'Firm X Johnson 4', 'Firm X Hill 4', 'Firm C Harris 3', 'Firm B Hill 4'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getString('b')+' '+$r.getInteger('c')->toString()));
@@ -146,7 +152,7 @@ function <<test.Test>> meta::relational::tests::projection::aggregation::testSub
                                               col(f:Firm[1]|$f.employees->map(e|$e.lastName),'b'),
                                               col(f:Firm[1]|$f.employees->map(e|2 + $e.locations.place->count()),'c')
                                              ]->cast(@BasicColumnSpecification<Firm>);
-   
+
    let result = execute({|Firm.all()->project($cols)}, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Firm A Roberts 4', 'Firm X Allen 4', 'Firm X Smith 4', 'Firm X Johnson 4', 'Firm X Hill 4', 'Firm C Harris 3', 'Firm B Hill 4'], $result.values.rows->map(r|$r.getString('a')+' '+$r.getString('b')+' '+$r.getInteger('c')->toString()));

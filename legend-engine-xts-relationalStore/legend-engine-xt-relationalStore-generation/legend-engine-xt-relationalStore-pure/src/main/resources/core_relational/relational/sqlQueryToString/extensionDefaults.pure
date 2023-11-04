@@ -5,6 +5,7 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -160,6 +161,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
 
   [
     dynaFnToSql('abs',                    $allStates,            ^ToSql(format='abs(%s)')),
+    dynaFnToSql('ascii',                  $allStates,            ^ToSql(format='ascii(%s)')),
     dynaFnToSql('acos',                   $allStates,            ^ToSql(format='acos(%s)')),
     dynaFnToSql('add',                    $allStates,            ^ToSql(format='%s',  transform=getTransformForAddPlus())),
     dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
@@ -169,9 +171,11 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('averageRank',            $allStates,            ^ToSql(format='average_rank()')),
     dynaFnToSql('cbrt',                   $allStates,            ^ToSql(format='cbrt(%s)')),
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
+    dynaFnToSql('char',                   $allStates,            ^ToSql(format='chr(%s)')),
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('cos',                    $allStates,            ^ToSql(format='cos(%s)')),
+    dynaFnToSql('cot',                    $allStates,            ^ToSql(format='cot(%s)')),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('denseRank',              $allStates,            ^ToSql(format='dense_rank()')),
     dynaFnToSql('distinct',               $allStates,            ^ToSql(format='distinct(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
@@ -195,8 +199,10 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
     dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s)')),
+    dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log10(%s)')),
     dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
     dynaFnToSql('max',                    $allStates,            ^ToSql(format='max(%s)')),
+    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='md5(%s)')),
     dynaFnToSql('min',                    $allStates,            ^ToSql(format='min(%s)')),
     dynaFnToSql('minus',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|if($p->size() == 1, | '-' + $p->toOne(), | $p->joinStrings('(', ' - ', ')'))})),
     dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
@@ -206,10 +212,16 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('pow',                    $allStates,            ^ToSql(format='power(%s, %s)')),
     dynaFnToSql('percentile',             $allStates,            ^ToSql(format='%s', transform = {p:String[*] | $p->transformPercentile($literalProcessor)})),
     dynaFnToSql('rank',                   $allStates,            ^ToSql(format='rank()')),
+    dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='repeat(%s, %s)')),
     dynaFnToSql('replace',                $allStates,            ^ToSql(format='replace(%s, %s, %s)')),
+    dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='reverse(%s)')),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('rowNumber',              $allStates,            ^ToSql(format='row_number()')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha256(%s)')),
+    dynaFnToSql('sign',                   $allStates,            ^ToSql(format='sign(%s)')),
     dynaFnToSql('sin',                    $allStates,            ^ToSql(format='sin(%s)')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='split_part(%s, %s, %s)')),
     dynaFnToSql('size',                   $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('sqlFalse',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|processLiteralValue(false, [], $literalProcessor)})),
     dynaFnToSql('sqlNull',                $allStates,            ^ToSql(format='null')),
@@ -223,7 +235,9 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('toLower',                $allStates,            ^ToSql(format='lower(%s)')),
     dynaFnToSql('toOne',                  $allStates,            ^ToSql(format='%s')),
     dynaFnToSql('toUpper',                $allStates,            ^ToSql(format='upper(%s)')),
-    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)'))
+    dynaFnToSql('trim',                   $allStates,            ^ToSql(format='trim(%s)')),
+    dynaFnToSql('varianceSample',         $allStates,            ^ToSql(format='var_samp(%s)')),
+    dynaFnToSql('variancePopulation',     $allStates,            ^ToSql(format='var_pop(%s)'))
   ];
 }
 
@@ -283,9 +297,56 @@ function meta::relational::functions::sqlQueryToString::default::processSelectCo
        );
 }
 
+function meta::relational::functions::sqlQueryToString::default::convertFullOuterJoinToLeftRightOuter(s:SelectSQLQuery[1]) : RelationalOperationElement[1] 
+{
+    // Emulate full outer join using a union of both a LEFT_OUTER and a RIGHT_OUTER join
+    // https://en.wikipedia.org/wiki/Join_(SQL)#Full_outer_join
+    //
+    // for the RIGHT_OUTER part of the query, we need to filter out rows successfully joined from the LHS (to avoid duplicates
+    // from the LEFT_OUTER query).  Given we don't easily know the join keys / PK, we do this by adding a synthetic constant column to
+    // the LHS query and then filtering on where this synthetic key is null
+
+    ^UnionAll(
+      queries = [
+        ^$s(data = $s.data->map(d|^$d(childrenData = $d.childrenData->cast(@JoinTreeNode)->map(cd|^$cd(joinType = JoinType.LEFT_OUTER))))),
+        ^$s(
+            data = $s.data->map(d|
+                ^$d(
+                    alias = $d.alias->map(a|^$a(relationalElement = $a.relationalElement->cast(@TdsSelectSqlQuery)->map(x|^$x(columns = $x.columns->concatenate(^Alias(name='"_lhsJoinValid_' + + $a.name, relationalElement=^Literal(value=1))))))),
+                    childrenData = $d.childrenData->cast(@JoinTreeNode)->map(cd|^$cd(joinType = JoinType.RIGHT_OUTER))
+                    )
+                )
+            )
+            ->map(newS|
+                ^$newS(
+                        filteringOperation = ^DynaFunction(name = 'not', parameters = ^DynaFunction(name='equal', parameters=[^TableAliasColumn(alias=$newS.data.alias->toOne(),column=^Column(type=^meta::relational::metamodel::datatype::Integer(),name='"_lhsJoinValid_' + + $newS.data.alias.name)),^Literal(value=1)]))
+                    )
+
+            )
+        ]
+      )
+}
+
+function meta::relational::functions::sqlQueryToString::default::processJoinType(joinType:JoinType[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+  if($joinType == JoinType.INNER,
+    | ' ' + $format.separator() + 'inner join ',
+    | if($joinType == JoinType.LEFT_OUTER,
+        | ' ' + $format.separator() + 'left outer join ',
+        | if($joinType == JoinType.RIGHT_OUTER, 
+          | ' ' + $format.separator() + 'right outer join ', 
+          | if($joinType == JoinType.FULL_OUTER, 
+            | ' ' + $format.separator() + 'full outer join ', 
+            | fail('Unsupported join type: ' + $joinType->toString()); ''; 
+            )
+          )
+        )
+    )
+}    
+
 function meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
-   if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join ')) + 'lateral '
+   $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('') + 'lateral '
    + $j.alias
        ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
        ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
@@ -309,7 +370,7 @@ function meta::relational::functions::sqlQueryToString::default::processJoinTree
                                        j:JoinTreeNode[1] |
                                              if($j.lateral == true,
                                              | $dbConfig.lateralJoinProcessor($j, $dbConfig, $format, $extensions),
-                                             | if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join '))
+                                             | $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
                                                + $j.alias
                                                    ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
                                                    ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()

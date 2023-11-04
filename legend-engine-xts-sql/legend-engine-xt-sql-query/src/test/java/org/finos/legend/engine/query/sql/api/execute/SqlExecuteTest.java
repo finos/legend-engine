@@ -30,21 +30,18 @@ import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
-import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.Enum;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.EnumSchemaColumn;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveSchemaColumn;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveType;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
+import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.sql.api.CatchAllExceptionMapper;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
-import org.finos.legend.engine.query.sql.api.sources.TestSQLSourceProvider;
+import org.finos.legend.engine.query.sql.api.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_Enum;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_EnumValueSchemaColumn_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_Enum_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_SchemaColumn;
-import org.finos.legend.pure.generated.Root_meta_external_query_sql_Schema_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Enum_Impl;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -152,7 +149,35 @@ public class SqlExecuteTest
     {
         String all = resources.target("sql/v1/execution/executeQueryString")
                 .request()
-                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date=>'2023-08-24')")).readEntity(String.class);
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')")).readEntity(String.class);
+
+        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build();
+
+        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+    }
+
+    @Test
+    public void testExecuteWithEnumParams() throws JsonProcessingException
+    {
+        String all = resources.target("sql/v1/execution/executeQueryString")
+                .request()
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24', type => 'Type1')")).readEntity(String.class);
+
+        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build();
+
+        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+    }
+
+    @Test
+    public void testExecuteWithExpressionParams() throws JsonProcessingException
+    {
+        String all = resources.target("sql/v1/execution/executeQueryString")
+                .request()
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date => cast('2023-08-24' as DATE))")).readEntity(String.class);
 
         TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
                 .addRow(FastList.newListWith("Alice"))
@@ -173,52 +198,88 @@ public class SqlExecuteTest
     }
 
     @Test
-    public void getSchemaForQueryWithDuplicateSources()
+    public void getSchemaForQueryWithDuplicateSources() throws JsonProcessingException
     {
         String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString")
                 .request()
                 .post(Entity.text("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"")).readEntity(String.class);
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");
-        Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
-        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn);
-        String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel, false);
-        Assert.assertEquals(expectedSchema, actualSchema);
+        Schema schema = new Schema();
+        schema.columns = FastList.newListWith(
+                primitiveColumn("Id", PrimitiveType.Integer)
+        );
+
+        Assert.assertEquals(new ObjectMapper().writeValueAsString(schema), actualSchema);
     }
 
 
     @Test
-    public void getSchemaFromQueryString()
+    public void getSchemaFromQueryString() throws JsonProcessingException
     {
         String actualSchema = resources.target("sql/v1/execution/getSchemaFromQueryString")
                 .request()
                 .post(Entity.text("SELECT * FROM service.\"/testService\"")).readEntity(String.class);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum stringType = new Root_meta_pure_metamodel_type_Enum_Impl("String");
-        Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
-        Root_meta_external_query_sql_SchemaColumn nameColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Name")._type(stringType);
-        Root_meta_external_query_sql_SchemaColumn typeColumn = new Root_meta_external_query_sql_EnumValueSchemaColumn_Impl((String) null)._name("Employee Type")._type("demo::employeeType");
-        Root_meta_external_query_sql_Enum employeeType = new Root_meta_external_query_sql_Enum_Impl((String) null)._type("demo::employeeType")._valuesAdd("Type1")._valuesAdd("Type2");
-        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn)._columnsAdd(typeColumn)._enumsAdd(employeeType);
-        String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel, false);
-        Assert.assertEquals(expectedSchema, actualSchema);
+
+        Schema schema = new Schema();
+        schema.columns = FastList.newListWith(
+                primitiveColumn("Id", PrimitiveType.Integer),
+                primitiveColumn("Name", PrimitiveType.String),
+                enumColumn("Employee Type", "demo::employeeType")
+        );
+
+        schema.enums = FastList.newListWith(
+                enumValue("demo::employeeType", "Type1", "Type2")
+        );
+
+        Assert.assertEquals(new ObjectMapper().writeValueAsString(schema), actualSchema);
     }
 
     @Test
-    public void getSchemaFromQuery()
+    public void getSchemaFromQuery() throws JsonProcessingException
     {
         String actualSchema = resources.target("sql/v1/execution/getSchemaFromQuery")
                 .request()
                 .post(Entity.json("{ \"_type\": \"query\", \"orderBy\": [], \"queryBody\": { \"_type\": \"querySpecification\", \"from\": [ { \"_type\": \"table\", \"name\": { \"parts\": [ \"service\", \"/testService\" ] } } ], \"groupBy\": [], \"orderBy\": [], \"select\": { \"_type\": \"select\", \"distinct\": false, \"selectItems\": [ { \"_type\": \"allColumns\" } ] } } }")).readEntity(String.class);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum integerType = new Root_meta_pure_metamodel_type_Enum_Impl("Integer");
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum stringType = new Root_meta_pure_metamodel_type_Enum_Impl("String");
-        Root_meta_external_query_sql_SchemaColumn idColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Id")._type(integerType);
-        Root_meta_external_query_sql_SchemaColumn nameColumn = new Root_meta_external_query_sql_PrimitiveValueSchemaColumn_Impl((String) null)._name("Name")._type(stringType);
-        Root_meta_external_query_sql_SchemaColumn typeColumn = new Root_meta_external_query_sql_EnumValueSchemaColumn_Impl((String) null)._name("Employee Type")._type("demo::employeeType");
-        Root_meta_external_query_sql_Enum employeeType = new Root_meta_external_query_sql_Enum_Impl((String) null)._type("demo::employeeType")._valuesAdd("Type1")._valuesAdd("Type2");
-        Root_meta_external_query_sql_Schema schema = new Root_meta_external_query_sql_Schema_Impl((String) null)._columnsAdd(idColumn)._columnsAdd(nameColumn)._columnsAdd(typeColumn)._enumsAdd(employeeType);
-        String expectedSchema = SqlExecute.serializeToJSON(schema, pureModel, false);
-        Assert.assertEquals(expectedSchema, actualSchema);
+
+        Schema schema = new Schema();
+        schema.columns = FastList.newListWith(
+                primitiveColumn("Id", PrimitiveType.Integer),
+                primitiveColumn("Name", PrimitiveType.String),
+                enumColumn("Employee Type", "demo::employeeType")
+        );
+
+        schema.enums = FastList.newListWith(
+                enumValue("demo::employeeType", "Type1", "Type2")
+        );
+
+        Assert.assertEquals(new ObjectMapper().writeValueAsString(schema), actualSchema);
+    }
+
+    private static PrimitiveSchemaColumn primitiveColumn(String name, PrimitiveType type)
+    {
+        PrimitiveSchemaColumn c = new PrimitiveSchemaColumn();
+        c.name = name;
+        c.type = type;
+
+        return c;
+    }
+
+    private static EnumSchemaColumn enumColumn(String name, String type)
+    {
+        EnumSchemaColumn c = new EnumSchemaColumn();
+        c.name = name;
+        c.type = type;;
+
+        return c;
+    }
+
+    private static Enum enumValue(String type, String... values)
+    {
+        Enum e = new Enum();
+        e.type = type;
+        e.values = FastList.newListWith(values);
+
+        return e;
     }
 
 }

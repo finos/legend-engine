@@ -28,6 +28,7 @@ import org.antlr.v4.runtime.dfa.DFA;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.sql.metamodel.Expression;
 import org.finos.legend.engine.protocol.sql.metamodel.Statement;
 
 import java.util.BitSet;
@@ -49,6 +50,12 @@ public class SQLGrammarParser
     public Statement parseStatement(String query)
     {
         return this.parse(query, "statement");
+    }
+
+    public Expression parseExpression(String expression)
+    {
+        SqlBaseParser parser = getSqlBaseParser(expression, "expression");
+        return (Expression) sqlVisitor.visitSingleExpression(parser.singleExpression());
     }
 
     private Statement parse(String query, String name)

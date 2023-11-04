@@ -24,19 +24,21 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.input.FunctionActivatorInput;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorLoader;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentResult;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
+//import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
+import org.finos.legend.engine.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -63,19 +65,23 @@ public class FunctionActivatorAPI
     private final ModelManager modelManager;
     private final PureModel emptyModel;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
-    private  List<DeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
+    private  List<FunctionActivatorDeploymentConfiguration> runtimeDeploymentConfig = Lists.mutable.empty();
+    private MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>>  availableActivatorServices = Lists.mutable.empty();
+    private IdentityFactory identityFactory;
 
     public FunctionActivatorAPI(ModelManager modelManager, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         this.modelManager = modelManager;
         this.routerExtensions = routerExtensions;
         this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, null);
+        this.identityFactory = new DefaultIdentityFactory();
     }
 
-    public FunctionActivatorAPI(ModelManager modelManager,  List<DeploymentConfiguration> activatorConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public FunctionActivatorAPI(ModelManager modelManager,  List<FunctionActivatorDeploymentConfiguration> activatorConfigurations, MutableList<FunctionActivatorService<? extends Root_meta_external_function_activator_FunctionActivator, ? extends FunctionActivatorDeploymentConfiguration, ? extends DeploymentResult>> availableActivatorServices, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         this(modelManager, routerExtensions);
         this.runtimeDeploymentConfig = activatorConfigurations;
+        this.availableActivatorServices = availableActivatorServices;
     }
 
     @GET
@@ -86,7 +92,7 @@ public class FunctionActivatorAPI
     public Response list(@ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        MutableList<FunctionActivatorInfo> values = FunctionActivatorLoader.extensions().collect(x -> x.info(emptyModel, "vX_X_X"));
+        MutableList<FunctionActivatorInfo> values = this.availableActivatorServices.isEmpty() ? FunctionActivatorLoader.extensions().collect(x -> x.info(emptyModel, "vX_X_X")) : availableActivatorServices.collect(c -> c.info(emptyModel,"vX_X_X"));
         return ManageConstantResult.manageResult(profiles, values, objectMapper);
     }
 
@@ -103,8 +109,8 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.validate(profiles, pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
+            return Response.ok(objectMapper.writeValueAsString(service.validate(identityFactory.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
@@ -126,8 +132,8 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
-            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(profiles, pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig, DeploymentStage.SANDBOX),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
+            return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(this.identityFactory.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
         {
@@ -149,7 +155,7 @@ public class FunctionActivatorAPI
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
             PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
-            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
+            FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.renderArtifact(pureModel, activator, input.model, clientVersion,routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
         }
         catch (Exception ex)
@@ -159,9 +165,13 @@ public class FunctionActivatorAPI
         }
     }
 
-    public FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> getActivatorService(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
+    public FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> getActivatorService(Root_meta_external_function_activator_FunctionActivator activator, PureModel pureModel)
     {
-        FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, DeploymentConfiguration, DeploymentResult> service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
+        FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = (FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult>)this.availableActivatorServices.select(c -> c.supports(activator)).getFirst();
+        if (service == null)
+        {
+            service = FunctionActivatorLoader.extensions().select(c -> c.supports(activator)).getFirst();
+        }
         if (service == null)
         {
             throw new RuntimeException(activator.getClass().getSimpleName() + "is not supported!");

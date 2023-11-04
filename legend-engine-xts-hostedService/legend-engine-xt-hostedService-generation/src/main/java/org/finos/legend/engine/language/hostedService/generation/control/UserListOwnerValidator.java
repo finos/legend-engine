@@ -14,19 +14,30 @@
 
 package org.finos.legend.engine.language.hostedService.generation.control;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Ownership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_UserList;
-import org.pac4j.core.profile.CommonProfile;
+
+import javax.security.auth.Subject;
+import java.util.NoSuchElementException;
 
 public class UserListOwnerValidator implements HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_UserList>
 {
     @Override
-    public boolean isOwner(MutableList<CommonProfile> profiles,  Root_meta_external_function_activator_hostedService_UserList users)
+    public boolean isOwner(Identity identity, Root_meta_external_function_activator_hostedService_UserList users)
     {
-        return users._users().contains(SubjectTools.getKerberos(ProfileManagerHelper.extractSubject(profiles))); //use profile
+        Subject subject = null;
+        try
+        {
+            subject = identity.getCredential(LegendKerberosCredential.class).get().getSubject();
+        }
+        catch (NoSuchElementException e)
+        {
+            return false;
+        }
+        return users._users().contains(SubjectTools.getKerberos(subject)); //use profile
     }
 
     @Override

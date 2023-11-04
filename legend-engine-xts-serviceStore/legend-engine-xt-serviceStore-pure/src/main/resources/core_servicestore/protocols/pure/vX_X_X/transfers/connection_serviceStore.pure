@@ -22,7 +22,7 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
 {
    ^meta::protocols::pure::vX_X_X::metamodel::connection::store::service::ServiceStoreConnection(
       _type                        = 'serviceStore',
-      element                      = $connection.element->cast(@ServiceStore)->elementToPath(),
+      element                      = '',
       baseUrl                      = $connection.baseUrl,
       authenticationSpecifications = $connection.authenticationSpecifications->keyValues()->map(e | pair($e.first, $e.second->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::authentication::transformAuthenticationSpecification($extensions)))->newMap()
    );

@@ -64,9 +64,9 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
     private final Optional<Condition> deleteIndicatorIsSetCondition;
     private final Optional<Condition> dataSplitInRangeCondition;
 
-    UnitemporalDeltaPlanner(Datasets datasets, UnitemporalDelta ingestMode, PlannerOptions plannerOptions)
+    UnitemporalDeltaPlanner(Datasets datasets, UnitemporalDelta ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // Validate if the optimizationFilters are comparable
         if (!ingestMode.optimizationFilters().isEmpty())
@@ -98,7 +98,7 @@ class UnitemporalDeltaPlanner extends UnitemporalPlanner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
 

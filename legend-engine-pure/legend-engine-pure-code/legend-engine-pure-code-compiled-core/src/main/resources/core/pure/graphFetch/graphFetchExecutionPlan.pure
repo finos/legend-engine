@@ -24,8 +24,10 @@ import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::xStore::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::utils::*;
@@ -108,7 +110,7 @@ Class meta::pure::graphFetch::executionPlan::StoreMappingCrossLocalGraphFetchExe
 
 function meta::pure::graphFetch::executionPlan::nodeIsMerged(node:LocalGraphFetchExecutionNode[1]): Boolean[1]
 {
-   let set = $node.graphFetchTree.sets;   
+   let set = $node.graphFetchTree.sets;
    let mergeOp = $set->filter(m|$m->instanceOf(OperationSetImplementation))->cast(@OperationSetImplementation)->filter(o|$o.operation==meta::pure::router::operations::merge_OperationSetImplementation_1__SetImplementation_MANY_);
    $mergeOp->map(m | assert($m->instanceOf(MergeOperationSetImplementation),'Please specify a merge function for merge operation on class '+ $m.class->elementToPath()));
    $mergeOp->isNotEmpty();
@@ -121,12 +123,12 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
                                                                                  vs: ValueSpecification[1] | $fe.multiplicity->toOne()]);
    assert($fe.func->in(graphFetchFunctions()) || $fe->isUnionOnGraphFetch(true));
    let clusteredTreePreFilter  = $fe.parametersValues->evaluateAndDeactivate()->at(1)->cast(@InstanceValue).values->at(0)->cast(@ClusteredGraphFetchTree);
-   
+
    let chainConnection = if ($sq.store->instanceOf(ModelStore),
-                             | $runtime.connections->filter(c|$c.element->instanceOf(ModelStore) && $c->instanceOf(ModelChainConnection));,
+                             | $runtime.connectionStores->filter(c|$c.element->instanceOf(ModelStore) && $c.connection->instanceOf(ModelChainConnection)).connection;,
                              | []
                          );
-   
+
    let possibleFilter =  $fe->graphFetchFilter()->evaluateAndDeactivate();
    let clusteredTree = if($possibleFilter->isNotEmpty()  && $sq.store-> instanceOf(ModelStore) && $chainConnection->isEmpty(),
                               |meta::pure::graphFetch::executionPlan::enrichTargetTreeForFilterProperties($clusteredTreePreFilter,$possibleFilter->toOne(),$mapping, $exeCtx,$runtime,$extensions,$debug);,
@@ -134,21 +136,21 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
                           );
 
     print(if($debug.debug,|$debug.space+'   Clustered Tree: '+$clusteredTree->asString(false)+'\n',|''));
-   
+
    let orderedPaths             = $clusteredTree->getPathsOrdered();
    let clusterTreesWithParents  = $clusteredTree->findAllClusterTreesWithParents([]);
    print(if($debug.debug,|$debug.space+'   Found '+$clusterTreesWithParents->size()->toString()+' store-mapping/platform cluster tree(s) in main clustered tree\n',|''));
-   
+
    let rootTree                 = $clusterTreesWithParents->filter(x | $x.second.values->isEmpty()).first->toOne()->cast(@StoreMappingClusteredGraphFetchTree);
    let rootTreeOneCluster       = $rootTree->recursivelyRemoveClusterTrees();
-   
+
    print(if($debug.debug,|$debug.space+'      >Generating store local node for root tree\n',|''));
    print(if($debug.debug,|$debug.space+'         Store local tree: '+$rootTreeOneCluster->asString(false)+'\n',|''));
 
    let enableConstraints        = $exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne();
    let checked                  = $fe.genericType.rawType == Checked;
 
-   
+
    let localNodeGenerationInput = ^StoreMappingLocalGraphFetchExecutionNodeGenerationInput
                                   (
                                     clusteredTree     = $rootTreeOneCluster->cast(@StoreMappingClusteredGraphFetchTree),
@@ -163,7 +165,7 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
                                     extensions        = $extensions,
                                     debug             = $debug->indent(3)
                                   );
-   
+
    let localRoot = $rootTree.s.planGraphFetchExecution->toOne()->eval($localNodeGenerationInput);
 
    let rootGlobalNode = ^StoreMappingGlobalGraphFetchExecutionNode
@@ -177,7 +179,7 @@ function meta::pure::graphFetch::executionPlan::planGraphFetchExecution(sq: Stor
                            checked                      = $checked,
                            localTreeIndices             = $rootTreeOneCluster->getPathsOrdered()->map(p | let idx = $orderedPaths->indexOf($p); assert($idx >= 0, | 'Path ' + $p + ' not found in orderedPaths: ' + $orderedPaths->makeString('[', ', ', ']')); $idx;)
                         );
-   
+
    print(if($debug.debug,|$debug.space+'      >Generated store local node for root tree\n',|''));
    $rootGlobalNode->addCrossStoreChildren([], $rootTree, $orderedPaths, $clusterTreesWithParents, $sq.inScopeVars, $mapping, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug->indent(2));
 }
@@ -200,7 +202,7 @@ function meta::pure::graphFetch::executionPlan::planStoreUnionGraphFetchExecutio
    let p2     = $params->at(1)->cast(@InstanceValue);
    let tree   = $p2.values->at(0)->cast(@ClusteredGraphFetchTree);
    let rf     = {set: InstanceSetImplementation[1] | ^$fe(parametersValues = [$p1, ^$p2(values = ^$tree(tree = $tree->byPassClusteringInfoDeep()->cast(@RootGraphFetchTree<Any>)->routeRootGraphFetchTree($set, $mapping, $exeCtx, $extensions)))]->evaluateAndDeactivate())->evaluateAndDeactivate()};
-   
+
    let newFe  = $sets->tail()->fold({set, agg |
       ^SimpleFunctionExpression
       (
@@ -225,7 +227,7 @@ function meta::pure::graphFetch::executionPlan::planRouterUnionGraphFetchExecuti
    let subClusters  = $fe.parametersValues->evaluateAndDeactivate()->map({p | $p->meta::pure::router::clustering::cluster($mapping, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug).cluster->evaluateAndDeactivate()})->cast(@meta::pure::router::metamodel::clustering::ClusteredValueSpecification);
    let firstCluster = $subClusters->at(0);
    let childNodes   = $subClusters->map(cls | $cls->plan($sq.inScopeVars, $exeCtx, $extensions, $debug));
-   
+
    ^PlatformUnionExecutionNode
    (
       fromCluster    = ^$firstCluster(val = $fe),
@@ -245,7 +247,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
         let children = $childrenClusterNodes->map({ch |
            let childTreeOneCluster = $ch.first->recursivelyRemoveClusterTrees();
            let routedTree          = $childTreeOneCluster.tree->cast(@RoutedPropertyGraphFetchTree);
-           let newParentPath       = if($parentPath->isEmpty(), 
+           let newParentPath       = if($parentPath->isEmpty(),
                                         |$currentTree->toOne()->getPathTo($ch.first)->toOne(),
                                         |$parentPath->toOne()+'.'+$currentTree->getPathTo($ch.first)->toOne()
                                      );
@@ -255,7 +257,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
 
                   print(if($debug.debug,|$debug.space+'   >Generating store local node for cross-store property tree: '+$routedTree.property.name->toOne()+'\n',|''));
                   print(if($debug.debug,|$debug.space+'      Store local tree: '+$childTreeOneCluster->asString(false)+'\n',|''));
-                  
+
                   let crossLocalNodeGenerationInput = ^StoreMappingCrossLocalGraphFetchExecutionNodeGenerationInput
                                                       (
                                                           clusteredTree      = $childTreeOneCluster->cast(@StoreMappingClusteredGraphFetchTree),
@@ -293,12 +295,12 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
                                             );
                   print(if($debug.debug,|$debug.space+'   >Generated store local node for cross property tree\n',|''));
                   $newCrossNode->addCrossStoreChildren($newParentPath, $ch.first, $orderedPaths, $clusterNodesWithParents, $inScopeVars, $m, $runtime, $exeCtx, $enableConstraints, $checked, $extensions, $debug->indent(2));
-              
+
               },
 
 
               {p: PlatformClusteredGraphFetchTree[1] |
-                  
+
                   print(if($debug.debug,|$debug.space+'   >Generating local node for platform property tree: '+$routedTree.property.name->toOne()+'\n',|''));
                   assert($routedTree.property->instanceOf(QualifiedProperty) && $routedTree.property->isPrimitiveValueProperty(), | 'Expected primitive qualifier in a platform clustered graph fetch tree');
 
@@ -329,7 +331,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::addCrossStore
 
            ]);
         });
-      
+
         ^$currentNode(children = $children);
    );
 }
@@ -343,7 +345,7 @@ function <<access.private>> meta::pure::graphFetch::executionPlan::getRoutedDepe
                                                             | getRoutedDependencyTree($routedChildTree, $unRoutedChildTree->toOne()));
                                                        )
               );
-  
+
 }
 
 function <<access.private>> meta::pure::graphFetch::executionPlan::buildXStorePropertyFetchDetails(xStorePropertyMapping: XStorePropertyMapping[1], subTree: ClusteredGraphFetchTree[1], parentPath: String[1], mapping: Mapping[1]): XStorePropertyFetchDetails[1]
@@ -428,11 +430,11 @@ function meta::pure::graphFetch::executionPlan::globalGraphFetchExecutionNodeToS
 
 function meta::pure::graphFetch::executionPlan::storeMappingGlobalGraphFetchExecutionNodeToString(g: StoreMappingGlobalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-   'StoreMappingGlobalGraphFetch\n' + 
+   'StoreMappingGlobalGraphFetch\n' +
       $space + '(' + header($g, $space, $extensions) + '\n'+
       $space + '  store = ' + $g.store->elementToPath() + '\n'+
       $space + '  localGraphFetchExecutionNode = \n' + $g.localGraphFetchExecutionNode->meta::pure::executionPlan::toString::planNodeToString($space+ '     ', $extensions) +
-      $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') + 
+      $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') +
       if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
       if($g.xStorePropertyMapping->isEmpty(), | '', | $space + '  xStorePropertyMapping = ' + $g.xStorePropertyMapping.property.name->toOne() + '[' + $g.xStorePropertyMapping.sourceSetImplementationId->toOne() + ' -> ' + $g.xStorePropertyMapping.targetSetImplementationId->toOne() + ']' + '\n') +
       $space + '  localTreeIndices = ' + $g.localTreeIndices->makeString('[', ', ', ']') + '\n'+
@@ -443,10 +445,10 @@ function meta::pure::graphFetch::executionPlan::storeMappingGlobalGraphFetchExec
 
 function meta::pure::graphFetch::executionPlan::platformGlobalGraphFetchExecutionNodeToString(g: PlatformGlobalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-   'PlatformGlobalGraphFetch\n' + 
+   'PlatformGlobalGraphFetch\n' +
       $space + '(' + header($g, $space, $extensions) + '\n'+
       $space + '  localGraphFetchExecutionNode = \n' + $g.localGraphFetchExecutionNode->meta::pure::executionPlan::toString::planNodeToString($space+ '     ', $extensions) +
-      $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') + 
+      $space + '  children = ' + $g.children->map(x | globalGraphFetchExecutionNodeToString($x, $space + '     ', $extensions))->joinStrings('[\n'+ $space + '     ', '\n' + $space + '     ', '\n' + $space + '  ]\n') +
       if($g.parentIndex->isEmpty(), | '', | $space + '  parentIndex = ' + $g.parentIndex->toOne()->toString() + '\n') +
       $space + '  localTreeIndices = ' + $g.localTreeIndices->makeString('[', ', ', ']') + '\n'+
       $space + '  dependencyIndices = ' + $g.dependencyIndices->makeString('[', ', ', ']') + '\n'+
@@ -456,7 +458,7 @@ function meta::pure::graphFetch::executionPlan::platformGlobalGraphFetchExecutio
 
 function meta::pure::graphFetch::executionPlan::platformPrimitiveQualifierLocalGraphFetchExecutionNodeToString(g: PlatformPrimitiveQualifierLocalGraphFetchExecutionNode[1], space: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
-   'PlatformPrimitiveQualifierLocalGraphFetch\n' + 
+   'PlatformPrimitiveQualifierLocalGraphFetch\n' +
       $space + '(' + header($g, $space, $extensions) + '\n'+
       $space + '  nodeIndex = ' + $g.nodeIndex->toString() + '\n'+
       $space + '  qualfifier = ' + $g.graphFetchTree->cast(@PropertyGraphFetchTree).property.name->toOne() + '\n' +

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.ansi;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -60,6 +61,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Case;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
@@ -92,6 +94,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchIdValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BatchStartTimestampVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.BulkLoadBatchStatusValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.CaseVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DatasetDefinitionVisitor;
@@ -230,6 +233,8 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(Show.class, new ShowVisitor());
         logicalPlanVisitorByClass.put(BatchIdValue.class, new BatchIdValueVisitor());
         logicalPlanVisitorByClass.put(InfiniteBatchIdValue.class, new InfiniteBatchIdValueVisitor());
+        logicalPlanVisitorByClass.put(BulkLoadBatchStatusValue.class, new BulkLoadBatchStatusValueVisitor());
+
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         INSTANCE = new AnsiSqlSink();
@@ -315,7 +320,7 @@ public class AnsiSqlSink extends RelationalSink
         return union;
     }
 
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
     {
         throw new UnsupportedOperationException("Bulk Load not supported!");
     }

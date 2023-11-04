@@ -14,14 +14,16 @@
 
 import meta::relational::tests::mapping::innerjoin::isolation::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 Class meta::relational::tests::mapping::innerjoin::isolation::Car
 {
    type: String[1];
    id: Integer[1];
    org: AutomobileUnion[0..1];
-   
+
 }
 
 Class meta::relational::tests::mapping::innerjoin::isolation::Motorcycle
@@ -29,7 +31,7 @@ Class meta::relational::tests::mapping::innerjoin::isolation::Motorcycle
    type: String[1];
    id: Integer[1];
    org: AutomobileUnion[0..1];
-   
+
 }
 
 Class meta::relational::tests::mapping::innerjoin::isolation::AutomobileUnion
@@ -38,12 +40,17 @@ Class meta::relational::tests::mapping::innerjoin::isolation::AutomobileUnion
    isPrivate: String[0..1];
    ancestors: AutomobileUnion[0..*];
    children: AutomobileUnion[0..*];
-   publicAncestor()
+   privateAncestor()
    {
-      $this.ancestors->filter(a|$a.isPrivate =='Y')->toOne() 
+      $this.ancestors->filter(a|$a.isPrivate =='Y')->toOne()
    }:AutomobileUnion[1];
 
-   publicAncestor2()
+   publicAncestor()
+   {
+      $this.ancestors->filter(a|$a.isPrivate =='N')->toOne()
+   }:AutomobileUnion[1];
+
+   privateAncestor2()
    {
    $this.ancestors->filter(a|$a.isPrivate =='Y').name=='haha' || ($this.ancestors->filter(a|$a.isPrivate=='Y').name=='ahah')
    }: Boolean[1];
@@ -51,7 +58,7 @@ Class meta::relational::tests::mapping::innerjoin::isolation::AutomobileUnion
 
 function meta::relational::tests::mapping::innerjoin::isolation::autoMobileRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(AutomobileDb);
+   meta::external::store::relational::tests::testRuntime(AutomobileDb);
 }
 
 function meta::relational::tests::mapping::innerjoin::isolation::initAutomobileDb(): Boolean[1]
@@ -61,9 +68,9 @@ function meta::relational::tests::mapping::innerjoin::isolation::initAutomobileD
    executeInDb('Create Table AutomobileTable (vehicleId INT, type VARCHAR(20),orgId INT, orgName VARCHAR(40),orgtype VARCHAR(40));', $connection);
    executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (1, \'Mercedes1\',17,\'GSorgtoReturn\' ,\'private\');', $connection);
    executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (2, \'Mercedes2\',18,\'GSorgtoReturn2\' ,\'private\');', $connection);
-   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (3, \'Mercedes3\',19,\'GSorg3\' ,\'public3\');', $connection);
-   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (4, \'Mercedes4\',20,\'GSorg4\' ,\'public4\');', $connection);
-   
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (3, \'Mercedes3\',19,\'GSorg3\' ,\'public\');', $connection);
+   executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (4, \'Mercedes4\',20,\'GSorg4\' ,\'public\');', $connection);
+
    executeInDb('Drop table if exists AutoAncestor;', $connection);
    executeInDb('Create Table AutoAncestor (childId INT ,parentId INT);',$connection);
    executeInDb('insert into AutoAncestor (childId,parentId) values (17,20);',$connection);
@@ -91,7 +98,7 @@ Mapping meta::relational::tests::mapping::innerjoin::isolation::AutoMapping
           )
        )
    }
-   
+
    Motorcycle :Relational
    {
      scope([AutomobileDb])
@@ -105,7 +112,7 @@ Mapping meta::relational::tests::mapping::innerjoin::isolation::AutoMapping
           )
        )
    }
-   
+
    AutomobileUnion:Relational
    {
       scope([AutomobileDb])
@@ -115,7 +122,37 @@ Mapping meta::relational::tests::mapping::innerjoin::isolation::AutoMapping
          ancestors:  @Auto_Ancestor > (INNER)@AncestorAuto
       )
    }
-  
+
+)
+
+###Mapping
+import meta::relational::tests::mapping::innerjoin::isolation::*;
+Mapping meta::relational::tests::mapping::innerjoin::isolation::MappingWithConstant
+(
+   Car :Relational
+   {
+       scope([AutomobileDb])
+       (
+          type: AutomobileTable.type,
+          id: AutomobileTable.vehicleId,
+          org(
+             name: AutomobileTable.orgName,
+             isPrivate: 'Y',
+             ancestors: @ Auto_Auto > @Auto_Ancestor > (INNER)@AncestorAuto
+          )
+       )
+   }
+
+   AutomobileUnion:Relational
+   {
+      scope([AutomobileDb])
+      (
+         name: AutomobileTable.orgName,
+         isPrivate: 'Y',
+         ancestors:  @Auto_Ancestor > (INNER)@AncestorAuto
+      )
+   }
+
 )
 ###Relational
 Database meta::relational::tests::mapping::innerjoin::isolation::AutomobileDb
@@ -128,13 +165,13 @@ Database meta::relational::tests::mapping::innerjoin::isolation::AutomobileDb
       orgName VARCHAR(40),
       orgtype VARCHAR(40)
    )
-   
+
    Table AutoAncestor
    (
       childId INT ,
       parentId INT PRIMARY KEY
    )
-   
+
    Join Auto_Auto(AutomobileTable.vehicleId = {target}.vehicleId and AutomobileTable.orgId<100)
    Join Auto_Ancestor(AutomobileTable.orgId = AutoAncestor.childId)
    Join AncestorAuto( AutoAncestor.parentId = AutomobileTable.orgId)

@@ -37,10 +37,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.DeploymentOwnership;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedExecutionParameter;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.KeyedSingleExecutionTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Ownership;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidation;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PostValidationAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureMultiExecution;
@@ -55,6 +57,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UserListOwnership;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
@@ -118,6 +121,13 @@ public class ServiceParseTreeWalker
         // owners (optional)
         ServiceParserGrammar.ServiceOwnersContext ownersContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOwners(), "owners", service.sourceInformation);
         service.owners = ownersContext != null && ownersContext.STRING() != null ? ListIterate.collect(ownersContext.STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : new ArrayList<>();
+
+        //Ownership (optional)
+        ServiceParserGrammar.ServiceOwnershipContext ownershipContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOwnership(), "ownership", service.sourceInformation);
+        if (ownershipContext != null)
+        {
+            service.ownership = processOwnership(ownershipContext);
+        }
         // execution
         ServiceParserGrammar.ServiceExecContext execContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceExec(), "execution", service.sourceInformation);
         service.execution = this.visitExecution(execContext);
@@ -267,6 +277,26 @@ public class ServiceParseTreeWalker
             stereotypePtr.sourceInformation = this.walkerSourceInformation.getSourceInformation(stereotypeContext);
             return stereotypePtr;
         });
+    }
+
+    private Ownership processOwnership(ServiceParserGrammar.ServiceOwnershipContext ownershipContext)
+    {
+        if (ownershipContext.deployment() != null)
+        {
+            DeploymentOwnership d = new DeploymentOwnership();
+            d.identifier = PureGrammarParserUtility.fromGrammarString(ownershipContext.deployment().STRING().getText(), true);
+            return d;
+        }
+        else if (ownershipContext.userList() != null)
+        {
+            UserListOwnership u = new UserListOwnership();
+            u.users = ownershipContext.userList().STRING() != null ? ListIterate.collect(ownershipContext.userList().STRING(), ownerCtx -> PureGrammarParserUtility.fromGrammarString(ownerCtx.getText(), true)) : new ArrayList<>();
+            return u;
+        }
+        else
+        {
+            throw new EngineException("Ownership type not valid ", this.walkerSourceInformation.getSourceInformation(ownershipContext), EngineErrorType.PARSER);
+        }
     }
 
     private Execution visitExecution(ServiceParserGrammar.ServiceExecContext ctx)

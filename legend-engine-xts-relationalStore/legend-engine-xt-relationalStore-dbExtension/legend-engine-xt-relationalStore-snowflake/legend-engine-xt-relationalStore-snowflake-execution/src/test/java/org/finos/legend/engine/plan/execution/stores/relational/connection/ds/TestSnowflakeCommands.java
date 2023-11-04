@@ -34,12 +34,13 @@ public class TestSnowflakeCommands
 
         ImmutableList<Column> columns = Lists.immutable.of(
                 new Column("a", "VARCHAR(100)"),
-                new Column("b", "VARCHAR(100)")
+                new Column("b", "VARCHAR(100)"),
+                new Column("c", "BIT")
         );
 
         List<String> sqlStatements = snowflakeCommands.createAndLoadTempTable("temp_1", columns.castToList(), "/tmp/temp.csv");
         ImmutableList<String> expectedSQLStatements = Lists.immutable.of(
-                "CREATE TEMPORARY TABLE temp_1 (a VARCHAR(100),b VARCHAR(100))",
+                "CREATE TEMPORARY TABLE temp_1 (a VARCHAR(100),b VARCHAR(100),c BOOLEAN)",
                 "CREATE OR REPLACE TEMPORARY STAGE LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE",
                 "PUT file:///tmp/temp.csv @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE/tmp/temp.csv PARALLEL = 16 AUTO_COMPRESS = TRUE",
                 "COPY INTO temp_1 FROM @LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.LEGEND_TEMP_STAGE/tmp/temp.csv file_format = (type = CSV field_optionally_enclosed_by= '\"')",

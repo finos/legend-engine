@@ -14,6 +14,7 @@
 
 import meta::relational::mapping::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::mapping::filter::*;
 import meta::relational::tests::model::simple::*;
 
@@ -29,6 +30,7 @@ function <<test.Test>> meta::relational::tests::mapping::filter::filterMappingWi
 
 ###Mapping
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::tests::mapping::filter::*;
 import meta::relational::tests::model::simple::*;
 

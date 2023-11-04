@@ -94,8 +94,8 @@ public class CompilerExtensions
     private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingFirstPassProcessors;
     private final ImmutableList<Procedure3<AggregationAwareClassMapping, Mapping, CompileContext>> extraAggregationAwareClassMappingSecondPassProcessors;
     private final ImmutableList<Function3<AssociationMapping, Mapping, CompileContext, AssociationImplementation>> extraAssociationMappingProcessors;
-    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_pure_runtime_Connection>> extraConnectionValueProcessors;
-    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_pure_runtime_Connection, CompileContext>> extraConnectionSecondPassProcessors;
+    private final ImmutableList<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_core_runtime_Connection>> extraConnectionValueProcessors;
+    private final ImmutableList<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> extraConnectionSecondPassProcessors;
     private final ImmutableList<Procedure2<InputData, CompileContext>> extraMappingTestInputDataProcessors;
     private final ImmutableList<Function<Handlers, List<FunctionHandlerDispatchBuilderInfo>>> extraFunctionHandlerDispatchBuilderInfoCollectors;
     private final ImmutableList<Function<Handlers, List<FunctionExpressionBuilderRegistrationInfo>>> extraFunctionExpressionBuilderRegistrationInfoCollectors;
@@ -233,12 +233,12 @@ public class CompilerExtensions
         return this.extraAssociationMappingProcessors.castToList();
     }
 
-    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
+    public List<Function2<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return this.extraConnectionValueProcessors.castToList();
     }
 
-    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_pure_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
+    public List<Procedure3<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection, Root_meta_core_runtime_Connection, CompileContext>> getExtraConnectionSecondPassProcessors()
     {
         return this.extraConnectionSecondPassProcessors.castToList();
     }

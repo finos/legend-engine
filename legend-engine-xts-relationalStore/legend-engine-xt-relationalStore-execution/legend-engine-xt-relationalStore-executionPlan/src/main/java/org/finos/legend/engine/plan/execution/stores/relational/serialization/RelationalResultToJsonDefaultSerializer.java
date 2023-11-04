@@ -23,7 +23,6 @@ import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.execution.result.serialization.ExecutionResultObjectMapperFactory;
 import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
@@ -38,7 +37,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.ServiceLoader;
 
 public class RelationalResultToJsonDefaultSerializer extends Serializer
 {
@@ -55,6 +53,7 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
     private final byte[] b_values = "{\"values\": [".getBytes();
     private final byte[] b_end = "]}".getBytes();
     private final byte[] b_endResult = "}".getBytes();
+    private final ValueTransformer transformer = new ValueTransformer();
 
     public RelationalResultToJsonDefaultSerializer(RelationalResult relationalResult)
     {
@@ -127,14 +126,15 @@ public class RelationalResultToJsonDefaultSerializer extends Serializer
     {
         outputStream.write(b_values);
 
-        MutableList<Function<Object, Object>> transformers = relationalResult.getTransformers();
 
         for (int i = 1; i <= relationalResult.columnCount - 1; i++)
         {
-            outputStream.write(purePrimitiveToJsonConverter.apply(transformers.get(i - 1).valueOf(relationalResult.getValue(i))).getBytes());
+            Object value = relationalResult.getValue(i);
+
+            outputStream.write((transformer.transformWrappedRelationalValueForJSON(value, relationalResult.getTransformers().get(i - 1).andThen(purePrimitiveToJsonConverter))).getBytes());
             outputStream.write(b_comma);
         }
-        outputStream.write(purePrimitiveToJsonConverter.apply(transformers.get(relationalResult.columnCount - 1).valueOf(relationalResult.getValue(relationalResult.columnCount))).getBytes());
+        outputStream.write((transformer.transformWrappedRelationalValueForJSON(relationalResult.getValue(relationalResult.columnCount), relationalResult.getTransformers().get(relationalResult.columnCount - 1).andThen(purePrimitiveToJsonConverter))).getBytes());
         outputStream.write(b_end);
     }
 

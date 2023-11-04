@@ -78,6 +78,11 @@ Association simple::model::Firm_Employees
 }
 
 ###Relational
+Database meta::relational::graphFetch::tests::domain::TestStore
+(
+)
+
+###Relational
 Database simple::store::DB
 (
   Table FIRM_TABLE

@@ -25,10 +25,13 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.DeploymentOwnership;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Ownership;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.PureExecution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.UserListOwnership;
 
 import java.util.List;
 
@@ -97,6 +100,11 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
         {
             serviceBuilder.append(getTabString()).append("owners:\n").append(getTabString()).append("[\n").append(LazyIterate.collect(service.owners, o -> getTabString(2) + convertString(o, true)).makeString(",\n")).append("\n").append(getTabString()).append("];\n");
         }
+        if (service.ownership != null)
+        {
+            serviceBuilder.append(getTabString()).append("ownership: ").append(renderOwnership(service.ownership)).append(";\n");
+
+        }
         serviceBuilder.append(getTabString()).append("documentation: ").append(convertString(service.documentation, true)).append(";\n");
         serviceBuilder.append(getTabString()).append("autoActivateUpdates: ").append(service.autoActivateUpdates ? "true" : "false").append(";\n");
         Execution execution = service.execution;
@@ -129,6 +137,22 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
             serviceBuilder.append(getTabString()).append("]\n");
         }
         return serviceBuilder.append("}").toString();
+    }
+
+    private static String renderOwnership(Ownership o)
+    {
+        if (o instanceof DeploymentOwnership)
+        {
+            return "DID { identifier: \'" + ((DeploymentOwnership)o).identifier + "\' }";
+        }
+        if (o instanceof UserListOwnership)
+        {
+            return "UserList { users: " + Lists.mutable.withAll(((UserListOwnership)o).users).makeString("[\'", "\', \'", "\']") + " }";
+        }
+        else
+        {
+            return "/* Can't transform ownership '" + o.getClass().getSimpleName() + "' in this service */";
+        }
     }
 
     private String renderExecutionEnvironment(ExecutionEnvironmentInstance execEnv, PureGrammarComposerContext context)

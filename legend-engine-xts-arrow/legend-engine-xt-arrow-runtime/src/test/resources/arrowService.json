@@ -1,0 +1,456 @@
+{
+  "clientVersion": "vX_X_X",
+  "function": {
+    "_type": "lambda",
+    "body": [
+      {
+        "_type": "func",
+        "function": "externalize",
+        "parameters": [
+          {
+            "_type": "func",
+            "function": "project",
+            "parameters": [
+              {
+                "_type": "func",
+                "function": "getAll",
+                "parameters": [
+                  {
+                    "_type": "packageableElementPtr",
+                    "fullPath": "relationalMapping::Trade"
+                  }
+                ]
+              },
+              {
+                "_type": "collection",
+                "multiplicity": {
+                  "lowerBound": 4,
+                  "upperBound": 4
+                },
+                "values": [
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "property": "active"
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "property": "id"
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "property": "quantity"
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ]
+                  },
+                  {
+                    "_type": "lambda",
+                    "body": [
+                      {
+                        "_type": "property",
+                        "parameters": [
+                          {
+                            "_type": "var",
+                            "name": "x"
+                          }
+                        ],
+                        "property": "tradeDate"
+                      }
+                    ],
+                    "parameters": [
+                      {
+                        "_type": "var",
+                        "name": "x"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "_type": "collection",
+                "multiplicity": {
+                  "lowerBound": 4,
+                  "upperBound": 4
+                },
+                "values": [
+                  {
+                    "_type": "string",
+                    "value": "Active"
+                  },
+                  {
+                    "_type": "string",
+                    "value": "Id"
+                  },
+                  {
+                    "_type": "string",
+                    "value": "Quantity"
+                  },
+                  {
+                    "_type": "string",
+                    "value": "Trade Date"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "_type": "string",
+            "value": "application/x.arrow"
+          }
+        ]
+      }
+    ],
+    "parameters": []
+  },
+  "mapping": "relationalMapping::TradeAccountRelationalMapping",
+  "model": {
+    "_type": "data",
+    "elements": [
+      {
+        "_type": "class",
+        "name": "Trade",
+        "package": "relationalMapping",
+        "properties": [
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "id",
+            "type": "Integer"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "tradeDate",
+            "type": "StrictDate"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "quantity",
+            "type": "Float"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 1,
+              "upperBound": 1
+            },
+            "name": "active",
+            "type": "Boolean"
+          },
+          {
+            "multiplicity": {
+              "lowerBound": 0,
+              "upperBound": 1
+            },
+            "name": "settlementDateTime",
+            "type": "DateTime"
+          }
+        ]
+      },
+      {
+        "_type": "relational",
+        "filters": [],
+        "includedStores": [],
+        "joins": [],
+        "name": "TradeAccountDb",
+        "package": "relationalMapping",
+        "schemas": [
+          {
+            "name": "default",
+            "tables": [
+              {
+                "columns": [
+                  {
+                    "name": "ID",
+                    "nullable": false,
+                    "type": {
+                      "_type": "Integer"
+                    }
+                  },
+                  {
+                    "name": "PROD_ID",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Integer"
+                    }
+                  },
+                  {
+                    "name": "ACCOUNT_ID",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Integer"
+                    }
+                  },
+                  {
+                    "name": "QUANTITY",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Float"
+                    }
+                  },
+                  {
+                    "name": "TRADE_DATE",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Date"
+                    }
+                  },
+                  {
+                    "name": "SETTLEMENT_DATETIME",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Timestamp"
+                    }
+                  },
+                  {
+                    "name": "ACTIVE",
+                    "nullable": true,
+                    "type": {
+                      "_type": "Bit"
+                    }
+                  }
+                ],
+                "name": "tradeTable",
+                "primaryKey": [
+                  "ID"
+                ]
+              }
+            ],
+            "views": []
+          }
+        ]
+      },
+      {
+        "_type": "mapping",
+        "classMappings": [
+          {
+            "_type": "relational",
+            "class": "relationalMapping::Trade",
+            "distinct": false,
+            "mainTable": {
+              "_type": "Table",
+              "database": "relationalMapping::TradeAccountDb",
+              "mainTableDb": "relationalMapping::TradeAccountDb",
+              "schema": "default",
+              "table": "tradeTable"
+            },
+            "primaryKey": [
+              {
+                "_type": "column",
+                "column": "ID",
+                "table": {
+                  "_type": "Table",
+                  "database": "relationalMapping::TradeAccountDb",
+                  "mainTableDb": "relationalMapping::TradeAccountDb",
+                  "schema": "default",
+                  "table": "tradeTable"
+                },
+                "tableAlias": "tradeTable"
+              }
+            ],
+            "propertyMappings": [
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "relationalMapping::Trade",
+                  "property": "id"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "ID",
+                  "table": {
+                    "_type": "Table",
+                    "database": "relationalMapping::TradeAccountDb",
+                    "mainTableDb": "relationalMapping::TradeAccountDb",
+                    "schema": "default",
+                    "table": "tradeTable"
+                  },
+                  "tableAlias": "tradeTable"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "relationalMapping::Trade",
+                  "property": "tradeDate"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "TRADE_DATE",
+                  "table": {
+                    "_type": "Table",
+                    "database": "relationalMapping::TradeAccountDb",
+                    "mainTableDb": "relationalMapping::TradeAccountDb",
+                    "schema": "default",
+                    "table": "tradeTable"
+                  },
+                  "tableAlias": "tradeTable"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "relationalMapping::Trade",
+                  "property": "active"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "ACTIVE",
+                  "table": {
+                    "_type": "Table",
+                    "database": "relationalMapping::TradeAccountDb",
+                    "mainTableDb": "relationalMapping::TradeAccountDb",
+                    "schema": "default",
+                    "table": "tradeTable"
+                  },
+                  "tableAlias": "tradeTable"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "relationalMapping::Trade",
+                  "property": "quantity"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "QUANTITY",
+                  "table": {
+                    "_type": "Table",
+                    "database": "relationalMapping::TradeAccountDb",
+                    "mainTableDb": "relationalMapping::TradeAccountDb",
+                    "schema": "default",
+                    "table": "tradeTable"
+                  },
+                  "tableAlias": "tradeTable"
+                }
+              },
+              {
+                "_type": "relationalPropertyMapping",
+                "property": {
+                  "class": "relationalMapping::Trade",
+                  "property": "settlementDateTime"
+                },
+                "relationalOperation": {
+                  "_type": "column",
+                  "column": "SETTLEMENT_DATETIME",
+                  "table": {
+                    "_type": "Table",
+                    "database": "relationalMapping::TradeAccountDb",
+                    "mainTableDb": "relationalMapping::TradeAccountDb",
+                    "schema": "default",
+                    "table": "tradeTable"
+                  },
+                  "tableAlias": "tradeTable"
+                }
+              }
+            ],
+            "root": true
+          }
+        ],
+        "enumerationMappings": [],
+        "includedMappings": [],
+        "name": "TradeAccountRelationalMapping",
+        "package": "relationalMapping",
+        "tests": []
+      }
+    ]
+  },
+  "runtime": {
+    "_type": "engineRuntime",
+    "connections": [
+      {
+        "store": {
+          "path": "relationalMapping::TradeAccountDb",
+          "type": "STORE"
+        },
+        "storeConnections": [
+          {
+            "connection": {
+              "_type": "RelationalDatabaseConnection",
+              "timeZone" : "America/New_York",
+              "authenticationStrategy": {
+                "_type": "h2Default"
+              },
+              "databaseType": "H2",
+              "datasourceSpecification": {
+                "_type": "h2Local",
+                "testDataSetupSqls": [
+                  "\n          Drop table if exists tradeTable;\n          Create Table tradeTable(id INT, prod_id INT, account_id INT, quantity FLOAT, trade_date DATE, settlement_datetime TIMESTAMP, active BIT);\n          insert into tradeTable(id, prod_id, account_id, quantity, trade_date, settlement_datetime) values (1, 1, 1, 100, '2021-01-01', '2021-01-01 12:00:00-05:00');\n          insert into tradeTable(id, prod_id, account_id, quantity, trade_date, settlement_datetime) values (1, 1, 1, 100, '2021-01-01', '2021-01-01 12:00:00+02:00')\n\n"
+                ]
+              },
+              "element": "relationalMapping::TradeAccountDb",
+              "type": "H2"
+            },
+            "id": "connection_1"
+          }
+        ]
+      }
+    ],
+    "mappings": [
+      {
+        "path": "relationalMapping::TradeAccountRelationalMapping",
+        "type": "MAPPING"
+      }
+    ]
+  },
+  "context": {
+    "_type": "BaseExecutionContext",
+    "queryTimeOutInSeconds": null,
+    "enableConstraints": true
+  }
+}

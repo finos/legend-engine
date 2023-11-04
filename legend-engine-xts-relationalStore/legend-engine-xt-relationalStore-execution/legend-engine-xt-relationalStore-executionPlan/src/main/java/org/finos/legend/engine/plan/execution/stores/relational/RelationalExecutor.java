@@ -107,7 +107,7 @@ public class RelationalExecutor
     public RelationalExecutor(TemporaryTestDbConfiguration temporarytestdb, RelationalExecutionConfiguration relationalExecutionConfiguration, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
     {
         this.flowProviderHolder = flowProviderHolder;
-        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, flowProviderHolder);
+        this.connectionManager = new ConnectionManagerSelector(temporarytestdb, relationalExecutionConfiguration.oauthProfiles, flowProviderHolder, relationalExecutionConfiguration.getConnectionFactory(), relationalExecutionConfiguration.getRelationalDatabaseConnectionAdapters(), false);
         this.relationalExecutionConfiguration = relationalExecutionConfiguration;
         this.resultInterpreterExtensions = Iterate.addAllTo(ResultInterpreterExtensionLoader.extensions(), Lists.mutable.empty()).collect(ResultInterpreterExtension::additionalResultBuilder);
     }
@@ -146,7 +146,7 @@ public class RelationalExecutor
             }
             else if (node.isResultVoid())
             {
-                return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+                return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
             }
             else
             {
@@ -202,7 +202,7 @@ public class RelationalExecutor
         }
         else if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
         }
         else
         {
@@ -241,7 +241,7 @@ public class RelationalExecutor
         
         if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, connectionManagerConnection, profiles);
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
         }
 
         return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());

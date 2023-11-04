@@ -14,10 +14,10 @@
 
 Class {doc.doc ='Specification for the AWS redshift database'} meta::pure::legend::connections::legend::specification::RedshiftDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-  {doc.doc ='clusterID'} clusterID:String[1];
-  {doc.doc ='The aws region'} region:String[1];
-  {doc.doc ='the full host url'}  host:String[1];
-  {doc.doc ='database name'} databaseName:String[1];
-  {doc.doc ='port'} port:Integer[1];
-  {doc.doc ='Optional URL used for redshift service execution'}  endpointURL:String[0..1];
+  <<equality.Key>> {doc.doc ='clusterID'} clusterID:String[1];
+  <<equality.Key>> {doc.doc ='The aws region'} region:String[1];
+  <<equality.Key>> {doc.doc ='the full host url'}  host:String[1];
+  <<equality.Key>> {doc.doc ='database name'} databaseName:String[1];
+  <<equality.Key>> {doc.doc ='port'} port:Integer[1];
+  <<equality.Key>> {doc.doc ='Optional URL used for redshift service execution'}  endpointURL:String[0..1];
 }

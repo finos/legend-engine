@@ -17,15 +17,20 @@ package org.finos.legend.engine.language.pure.modelManager.sdlc;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.set.primitive.IntSet;
+import org.eclipse.collections.impl.factory.primitive.IntSets;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -50,7 +55,9 @@ import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -65,21 +72,21 @@ public class SDLCLoader implements ModelLoader
     private final Supplier<Subject> subjectProvider;
     private final PureServerLoader pureLoader;
     private final AlloySDLCLoader alloyLoader;
-    private  Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider;
+    private final Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider;
 
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider)
     {
-        this(metaDataServerConfiguration, subjectProvider, new PureServerLoader(metaDataServerConfiguration),null);
+        this(metaDataServerConfiguration, subjectProvider, new PureServerLoader(metaDataServerConfiguration), null);
     }
 
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, AlloySDLCLoader alloyLoader)
     {
-        this(metaDataServerConfiguration, subjectProvider, new PureServerLoader(metaDataServerConfiguration),null, alloyLoader);
+        this(metaDataServerConfiguration, subjectProvider, new PureServerLoader(metaDataServerConfiguration), null, alloyLoader);
     }
 
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader)
     {
-         this(metaDataServerConfiguration,subjectProvider,pureLoader,null);
+        this(metaDataServerConfiguration, subjectProvider, pureLoader, null);
     }
 
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
@@ -230,6 +237,11 @@ public class SDLCLoader implements ModelLoader
 
     public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
     {
+        return loadMetadataFromHTTPURL(pm, startEvent, stopEvent, url, httpClientProvider, null);
+    }
+
+    public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider, Function<String, HttpRequestBase> httpRequestProvider)
+    {
         Scope scope = GlobalTracer.get().scopeManager().active();
         CloseableHttpClient httpclient;
 
@@ -255,19 +267,24 @@ public class SDLCLoader implements ModelLoader
         }
         LOGGER.info(new LogInfo(pm, LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
 
-        HttpGet httpGet = new HttpGet(url);
+        HttpRequestBase httpRequest;
+        if (httpRequestProvider != null)
+        {
+            httpRequest = httpRequestProvider.apply(url);
+        }
+        else
+        {
+            httpRequest = new HttpGet(url);
+        }
+
         if (span != null)
         {
-            GlobalTracer.get().inject(scope.span().context(), HTTP_HEADERS, new HttpRequestHeaderMap(httpGet));
+            GlobalTracer.get().inject(scope.span().context(), HTTP_HEADERS, new HttpRequestHeaderMap(httpRequest));
         }
-        try (CloseableHttpResponse response = httpclient.execute(httpGet))
+
+        try
         {
-            int statusCode = response.getStatusLine().getStatusCode();
-            if (statusCode < 200 || statusCode >= 300)
-            {
-                throw new EngineException("Error response from " + url + ", HTTP" + statusCode + "\n" + EntityUtils.toString(response.getEntity()));
-            }
-            HttpEntity entity1 = response.getEntity();
+            HttpEntity entity1 = execHttpRequest(span, httpclient, httpRequest);
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
             Assert.assertTrue(modelContextData.getSerializer() != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
             LOGGER.info(new LogInfo(pm, stopEvent, (double) System.currentTimeMillis() - start).toString());
@@ -279,7 +296,62 @@ public class SDLCLoader implements ModelLoader
         }
         catch (Exception e)
         {
+            if (span != null)
+            {
+                Tags.ERROR.set(span, true);
+                Map<String, Object> errorLogs = new HashMap<>(2);
+                errorLogs.put("event", Tags.ERROR.getKey());
+                errorLogs.put("error.object", e.getMessage());
+                span.log(errorLogs);
+            }
             throw new EngineException("Engine was unable to load information from the Pure SDLC using: <a href='" + url + "' target='_blank'>link</a>", e);
         }
+    }
+
+    private static final IntSet HTTP_RESPONSE_CODE_TO_RETRY = IntSets.immutable.with(
+            HttpStatus.SC_BAD_GATEWAY,
+            HttpStatus.SC_SERVICE_UNAVAILABLE,
+            HttpStatus.SC_GATEWAY_TIMEOUT
+    );
+
+    private static HttpEntity execHttpRequest(Span span, CloseableHttpClient client, HttpRequestBase httpRequest) throws Exception
+    {
+        int statusCode = -1;
+        CloseableHttpResponse response = null;
+        int i = 0;
+        while (i++ < 5)
+        {
+            response = client.execute(httpRequest);
+            statusCode = response.getStatusLine().getStatusCode();
+            if (!HTTP_RESPONSE_CODE_TO_RETRY.contains(statusCode))
+            {
+                break;
+            }
+            else
+            {
+                if (span != null)
+                {
+                    span.log(String.format("Try %d failed with status code %d.  Retrying...", i, statusCode));
+                }
+                response.close();
+                Thread.sleep(200L);
+            }
+        }
+
+        if (span != null)
+        {
+            span.setTag("httpRequestTries", i);
+        }
+
+        HttpEntity entity = response.getEntity();
+
+        if (statusCode < 200 || statusCode >= 300)
+        {
+            String msg = EntityUtils.toString(entity);
+            response.close();
+            throw new EngineException("Error response from " + httpRequest.getURI() + ", HTTP" + statusCode + "\n" + msg);
+        }
+
+        return entity;
     }
 }

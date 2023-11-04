@@ -15,6 +15,7 @@
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 
 function <<test.BeforePackage>> meta::relational::tests::getter::setUp():Boolean[1]
@@ -33,13 +34,13 @@ function <<test.Test>>   meta::relational::tests::getter::testGetterTwice():Bool
 {
    let result = execute(|Firm.all()->filter(f | $f.legalName == 'Firm A'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 1);
-   
+
    let firm = $result.values->at(0);
    assertEquals('Firm A', $firm.legalName);
 
    let employees = $firm.employees;
    assertSize($result.values, 1);
-   
+
    let employee = $employees->at(0);
 
    assertEquals($employee.firm.legalName, $firm.legalName);

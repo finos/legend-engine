@@ -45,7 +45,6 @@ public class RelationalResultToPureFormatSerializer extends Serializer
     protected final ObjectMapper objectMapper = ExecutionResultObjectMapperFactory.getNewObjectMapper();
     private final byte[] start_token;
     private final byte[] end_token;
-
     protected RelationalResult relationalResult;
 
     public RelationalResultToPureFormatSerializer(RelationalResult relationalResult, byte[] start_token, byte[] end_token)

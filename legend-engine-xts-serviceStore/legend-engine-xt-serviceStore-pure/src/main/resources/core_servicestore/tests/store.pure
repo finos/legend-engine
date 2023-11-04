@@ -49,13 +49,13 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
       name            = 'TradeProductServiceStore',
       securitySchemes = ^Map<String,SecurityScheme>()
    );
-   
+
    let tradeServiceGroup = ^ServiceGroup(
       owner = $store,
       id    = 'TradeServices',
       path  = '/trades'
    );
-   
+
    let tradeService = ^Service(
       owner  = $store,
       parent = $tradeServiceGroup,
@@ -66,15 +66,15 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
       requestBody = ^ComplexTypeReference(binding = tradeServiceStoreSchemaBinding(), list = false, type = S_RequestBody),
       response = ^ComplexTypeReference(binding = tradeServiceStoreSchemaBinding(), list = true, type = S_Trade)
    );
-   
+
    $tradeServiceGroup->mutateAdd('elements', $tradeService);
-   
+
    let prodServiceGroup = ^ServiceGroup(
       owner = $store,
       id    = 'ProductServices',
       path  = '/products'
    );
-   
+
    let prodByIdService = ^Service(
       owner  = $store,
       parent = $prodServiceGroup,
@@ -85,7 +85,7 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
                     ^ServiceParameter(name = 'serializationFormat', type = ^StringTypeReference(list = false), location = meta::external::store::service::metamodel::Location.QUERY)],
       response = ^ComplexTypeReference(binding = prodServiceStoreSchemaBinding(), list = true, type = S_Product)
    );
-   
+
    let prodByNameService = ^Service(
       owner  = $store,
       parent = $prodServiceGroup,
@@ -95,15 +95,17 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
       parameters = ^ServiceParameter(name = 'name', type = ^StringTypeReference(list = false), location = meta::external::store::service::metamodel::Location.QUERY),
       response = ^ComplexTypeReference(binding = prodServiceStoreSchemaBinding(), list = true, type = S_Product)
    );
-   
+
    $prodServiceGroup->mutateAdd('elements', [$prodByIdService, $prodByNameService]);
-   
+
    $store->mutateAdd('elements', [$tradeServiceGroup, $prodServiceGroup]);
 }
 
 ###Pure
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 
 import meta::external::store::service::metamodel::runtime::*;
 import meta::external::store::service::tests::runtime::*;
@@ -111,13 +113,13 @@ import meta::external::store::service::tests::runtime::*;
 function meta::external::store::service::tests::runtime::serviceStoreRuntime():Runtime[1]
 {
    let serviceStore = meta::external::store::service::tests::store::TradeProductServiceStore();
-   
-   ^Runtime(connections = ^ServiceStoreConnection(element = $serviceStore,
+
+   ^Runtime(connectionStores= ^ConnectionStore(element = $serviceStore,connection=^ServiceStoreConnection(
                                                   baseUrl = 'http://127.0.0.1:9090/api/user/serviceStore/test',
-                                                  authenticationSpecifications = ^Map<String,meta::pure::runtime::connection::authentication::AuthenticationSpecification>()));
+                                                  authenticationSpecifications = ^Map<String,meta::pure::runtime::connection::authentication::AuthenticationSpecification>())));
 }
 
 function meta::external::store::service::tests::runtime::modelChainConnectionRuntime():Runtime[1]
 {
-   ^Runtime(connections = serviceStoreRuntime().connections->concatenate(^ModelChainConnection(element = ^ModelStore(), mappings = meta::external::store::service::tests::mapping::serviceStoreMapping())));
+   ^Runtime(connectionStores= serviceStoreRuntime().connectionStores->concatenate(^ConnectionStore(element=^ModelStore(),connection=^ModelChainConnection(mappings = meta::external::store::service::tests::mapping::serviceStoreMapping()))));
 }

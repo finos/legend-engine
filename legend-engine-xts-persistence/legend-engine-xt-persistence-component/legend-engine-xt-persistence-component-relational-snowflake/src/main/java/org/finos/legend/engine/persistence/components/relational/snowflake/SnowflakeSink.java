@@ -25,8 +25,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
-import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
@@ -58,10 +58,11 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ShowVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DatasetAdditionalPropertiesVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.CopyVisitor;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetPropertiesVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
@@ -84,6 +85,7 @@ import java.util.Set;
 import java.util.Objects;
 import java.util.ArrayList;
 
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
 
 public class SnowflakeSink extends AnsiSqlSink
@@ -108,6 +110,7 @@ public class SnowflakeSink extends AnsiSqlSink
         capabilities.add(Capability.ADD_COLUMN);
         capabilities.add(Capability.IMPLICIT_DATA_TYPE_CONVERSION);
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
+        capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -120,10 +123,10 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(Field.class, new FieldVisitor());
         logicalPlanVisitorByClass.put(DatasetAdditionalProperties.class, new DatasetAdditionalPropertiesVisitor());
         logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
-        logicalPlanVisitorByClass.put(StagedFilesDatasetProperties.class, new StagedFilesDatasetPropertiesVisitor());
-        logicalPlanVisitorByClass.put(SnowflakeStagedFilesDatasetProperties.class, new StagedFilesDatasetPropertiesVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
@@ -222,9 +225,9 @@ public class SnowflakeSink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan sqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
     {
-        List<TabularData> results = executor.executePhysicalPlanAndGetResults(sqlPlan, placeHolderKeyValues);
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(ingestSqlPlan, placeHolderKeyValues);
         List<Map<String, Object>> resultSets = results.get(0).getData();
         List<String> dataFilePathsWithFailedBulkLoad = new ArrayList<>();
 
@@ -253,29 +256,32 @@ public class SnowflakeSink extends AnsiSqlSink
                 totalRowsWithError += (Long) row.get(ERRORS_SEEN);
             }
         }
+
+        Map<StatisticName, Object> stats = new HashMap<>();
+        stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
+        stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
+        stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
+
+        IngestorResult.Builder resultBuilder = IngestorResult.builder()
+            .updatedDatasets(datasets)
+            .putAllStatisticByName(stats)
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null));
         IngestorResult result;
+
         if (dataFilePathsWithFailedBulkLoad.isEmpty())
         {
-            Map<StatisticName, Object> stats = new HashMap<>();
-            stats.put(StatisticName.ROWS_INSERTED, totalRowsLoaded);
-            stats.put(StatisticName.ROWS_WITH_ERRORS, totalRowsWithError);
-            stats.put(StatisticName.FILES_LOADED, totalFilesLoaded);
-            result = IngestorResult.builder()
-                    .status(IngestStatus.SUCCEEDED)
-                    .updatedDatasets(datasets)
-                    .putAllStatisticByName(stats)
-                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-                    .build();
+            result = resultBuilder
+                .status(IngestStatus.SUCCEEDED)
+                .build();
         }
         else
         {
             String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
-            result = IngestorResult.builder()
-                    .status(IngestStatus.FAILED)
-                    .message(errorMessage)
-                    .updatedDatasets(datasets)
-                    .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-                    .build();
+            result = resultBuilder
+                .status(IngestStatus.FAILED)
+                .message(errorMessage)
+                .build();
         }
         return result;
     }

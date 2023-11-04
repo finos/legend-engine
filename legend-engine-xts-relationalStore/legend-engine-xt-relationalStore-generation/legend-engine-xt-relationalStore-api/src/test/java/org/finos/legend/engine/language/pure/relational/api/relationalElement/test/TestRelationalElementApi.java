@@ -14,13 +14,16 @@
 
 package org.finos.legend.engine.language.pure.relational.api.relationalElement.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.input.DatabaseToModelGenerationInput;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,7 +36,10 @@ import java.util.Objects;
 
 public class TestRelationalElementApi
 {
-    private static PureModelContextData compilePmcd(String model)
+    private final ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+    private final ModelManager testManager = new ModelManager(DeploymentMode.TEST);
+
+    private static PureModelContextData buildPMCDFromString(String model)
     {
         return PureModelContextData.newBuilder()
                 .withPureModelContextData(PureGrammarParser.newInstance().parseModel(model))
@@ -51,20 +57,36 @@ public class TestRelationalElementApi
         );
     }
 
-    @Test
-    public void shouldGenerateModelsFromDatabaseSpecification() throws IOException
+
+    private void test(String inputGrammarPath, String expectedJsonPath, String dbPath) throws IOException
     {
-        String expectedJson = loadFromFile("expectedJson.json");
-        String inputGrammar = loadFromFile("inputGrammar.pure");
+        String expectedJson = loadFromFile(expectedJsonPath);
+        String inputGrammar = loadFromFile(inputGrammarPath);
         Assert.assertNotNull(expectedJson);
         Assert.assertNotNull(inputGrammar);
-        PureModelContextData inputPmcd = compilePmcd(inputGrammar);
-        String databasePath = "meta::relational::transform::autogen::tests::testDB";
-        DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(databasePath, inputPmcd, null);
+        PureModelContextData inputPmcd = buildPMCDFromString(inputGrammar);
+        DatabaseToModelGenerationInput inputJson = new DatabaseToModelGenerationInput(dbPath, inputPmcd, null);
         RelationalElementAPI relationalElementAPI = new RelationalElementAPI(DeploymentMode.PROD, null);
         Response response = relationalElementAPI.generateModelsFromDatabaseSpecification(inputJson, null);
         Assert.assertNotNull(response);
         String actualJson = response.getEntity().toString();
         JsonAssert.assertJsonEquals(expectedJson, actualJson);
+        PureModelContextData generatedModel = objectMapper.readValue(actualJson, PureModelContextData.class);
+        PureModelContextData fullModel = generatedModel.combine(inputPmcd);
+        // compile generated model and input database
+        testManager.loadModelAndData(fullModel, fullModel.serializer.version, null, null);
+    }
+
+    @Test
+    public void shouldGenerateModelsFromDatabaseSpecification() throws IOException
+    {
+        test("inputGrammar.pure", "expectedJson.json", "meta::relational::transform::autogen::tests::testDB");
+    }
+
+    @Test
+    public void generateModelsWithDbWithIncludes() throws IOException
+    {
+        test("inputGrammarWithInclude.pure", "expectedJsonWithInclude.json", "model::MyDB");
+
     }
 }

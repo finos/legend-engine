@@ -60,6 +60,10 @@ public interface StagedFilesDatasetAbstract extends Dataset
     @Value.Derived
     default DatasetReference datasetReference()
     {
-        return this.stagedFilesDatasetProperties().withAlias(alias());
+        return StagedFilesDatasetReference.builder()
+            .properties(this.stagedFilesDatasetProperties())
+            .addAllColumns(this.schema().fields().stream().map(field -> field.name()).collect(Collectors.toList()))
+            .alias(alias())
+            .build();
     }
 }
