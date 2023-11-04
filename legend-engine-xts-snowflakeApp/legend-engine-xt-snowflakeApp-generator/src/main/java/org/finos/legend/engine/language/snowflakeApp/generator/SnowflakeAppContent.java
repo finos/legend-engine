@@ -35,6 +35,11 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
     public String version;
     public String creationTime;
 
+    public SnowflakeAppContent()
+    {
+        //Empty constructor for Jackson
+    }
+
     public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, AlloySDLC sdlc)
     {
         this.applicationName = applicationName;
