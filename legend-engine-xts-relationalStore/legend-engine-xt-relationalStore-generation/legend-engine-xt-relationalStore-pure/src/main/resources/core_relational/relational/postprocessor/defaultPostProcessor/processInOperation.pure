@@ -52,6 +52,11 @@ function <<access.private>> meta::relational::postProcessor::prefixForWrapperAll
    'inFilterClause_';
 }
 
+function <<access.private>> meta::relational::postProcessor::processedTempTableNameForIn(dbType: DatabaseType[1]):String[1]
+{
+   $dbType->createDbConfig([]).procesTempTableName('tempTableForIn_');
+}
+
 function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let connection = $runtime->connectionByElement($store->toOne())->meta::relational::mapping::updateConnection($extensions)->cast(@DatabaseConnection);
@@ -68,12 +73,12 @@ function meta::relational::postProcessor::processInOperation(query:SQLQuery[1], 
                                                          d  : DynaFunction[1] | if($d.name == 'in' &&  $d.parameters->at(1)->instanceOf(LiteralList) && ($d.parameters->at(1)->cast(@LiteralList).values->size() > $dbThreshold->toOne()),
                                                                                    |
                                                                                    let dbType               = $connection.type;
-                                                                                   let tempTableName        = 'tempTableForIn_' + $uniqueId->toString();
+                                                                                   let tempTableName        = $dbType->processedTempTableNameForIn() + $uniqueId->toString();
                                                                                    let tempTableColumnName  = 'ColumnForStoringInCollection';
 
                                                                                    let firstLiteralValue    = $d.parameters->at(1)->cast(@LiteralList).values->map(l | $l.value)->at(0);
                                                                                    let collectionValueType  = if($firstLiteralValue->instanceOf(VarPlaceHolder), | $firstLiteralValue->cast(@VarPlaceHolder).type, | $firstLiteralValue->type());
-                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $dbType->createDbConfig([]).procesTempTableName($tempTableName), $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType(^TranslationContext(dbType=$dbType))->toOne());
+                                                                                   let selectSQLQuery       = generateTempTableSelectSQLQuery('default', $tempTableName, $tempTableColumnName, meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($collectionValueType)->translateCoreTypeToDbSpecificType(^TranslationContext(dbType=$dbType))->toOne());
 
                                                                                    ^$d(parameters           = [$d.parameters->at(0), $selectSQLQuery]);,
                                                                                    |$d);,
@@ -112,8 +117,8 @@ function meta::relational::postProcessor::generatePostProcessorResult(changedFun
 
                           let outerAllocationNodeName               = if($newInFunction.parameters->at(1)->instanceOf(VarPlaceHolder),
                                                                          |$newInFunction.parameters->at(1)->cast(@VarPlaceHolder).name,
-                                                                         |$newInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne()->replace('tempTableForIn_', prefixForWrapperAllocationNodeName()));
-                          let tempTableName                         = $dbType->createDbConfig([]).procesTempTableName($outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempTableForIn_'));
+                                                                         |$newInFunction.parameters->at(1)->cast(@SelectSQLQuery).data.alias.name->toOne()->replace($dbType->processedTempTableNameForIn(), prefixForWrapperAllocationNodeName()));
+                          let tempTableName                         = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), $dbType->processedTempTableNameForIn());
                           let tempTableColumnName                   = 'ColumnForStoringInCollection';
                           let allocationNodeName                    = $outerAllocationNodeName->replace(prefixForWrapperAllocationNodeName(), 'tempVarForIn_');
 
