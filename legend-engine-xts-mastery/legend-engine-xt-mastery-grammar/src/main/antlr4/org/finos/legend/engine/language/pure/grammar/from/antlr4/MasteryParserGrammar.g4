@@ -363,7 +363,7 @@ pathExtension:                           subPath filter?
 ;
 subPath:                                '.' validString
 ;
-filter:                                 BRACE_OPEN '$' '.' combinedExpression BRACE_CLOSE
+filter:                                 BRACE_OPEN combinedExpression BRACE_CLOSE
 ;
 predicate:                              PREDICATE COLON
                                             lambdaFunction

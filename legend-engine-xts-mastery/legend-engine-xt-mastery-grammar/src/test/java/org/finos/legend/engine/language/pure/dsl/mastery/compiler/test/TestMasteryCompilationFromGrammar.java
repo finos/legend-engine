@@ -168,7 +168,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "      path: org::dataeng::Widget.runProfile.authorization;\n" +
             "    },\n" +
             "    SourcePrecedenceRule: {\n" +
-            "      path: org::dataeng::Widget.identifiers{$.identifier == 'XLON'};\n" +
+            "      path: org::dataeng::Widget.identifiers{$.identifier == 'XLON' || $.identifier == 'LSE'};\n" +
             "      action: Overwrite;\n" +
             "      ruleScope: [\n" +
             "        RecordSourceScope {widget-file-source-sftp, precedence: 1},\n" +
@@ -670,10 +670,25 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl complexLambda = getComplexLambda(firstPropertyPath._filter());
                 List<? extends ValueSpecification> lambdaParameters = complexLambda._parametersValues().toList();
 
-                assertEquals("MilestonedIdentifier", getFunctionProperty(lambdaParameters.get(0))._owner()._name());
-                assertEquals("identifier", getFunctionProperty(lambdaParameters.get(0))._name());
-                assertEquals("equal", complexLambda._functionName());
-                assertEquals("XLON", getInstanceValue(lambdaParameters.get(1)));
+                assertEquals("or", complexLambda._functionName());
+
+                // first Part of filter
+                Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl firstFilter = (Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) lambdaParameters.get(0);
+                List<? extends ValueSpecification> firstFilterLambdaParameters = firstFilter._parametersValues().toList();
+
+                assertEquals("MilestonedIdentifier", getFunctionProperty(firstFilterLambdaParameters.get(0))._owner()._name());
+                assertEquals("identifier", getFunctionProperty(firstFilterLambdaParameters.get(0))._name());
+                assertEquals("equal", firstFilter._functionName());
+                assertEquals("XLON", getInstanceValue(firstFilterLambdaParameters.get(1)));
+
+                // second Part of filter
+                Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl secondFilter = (Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) lambdaParameters.get(1);
+                List<? extends ValueSpecification> secondFilterLambdaParameters = secondFilter._parametersValues().toList();
+
+                assertEquals("MilestonedIdentifier", getFunctionProperty(secondFilterLambdaParameters.get(0))._owner()._name());
+                assertEquals("identifier", getFunctionProperty(secondFilterLambdaParameters.get(0))._name());
+                assertEquals("equal", secondFilter._functionName());
+                assertEquals("LSE", getInstanceValue(secondFilterLambdaParameters.get(1)));
 
                 //masterRecordFilter
                 assertEquals("true", getSimpleLambdaValue(source._masterRecordFilter()));
@@ -702,10 +717,25 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl complexLambda = getComplexLambda(firstPropertyPath._filter());
                 List<? extends ValueSpecification> lambdaParameters = complexLambda._parametersValues().toList();
 
-                assertEquals("MilestonedIdentifier", getFunctionProperty(lambdaParameters.get(0))._owner()._name());
-                assertEquals("identifier", getFunctionProperty(lambdaParameters.get(0))._name());
-                assertEquals("equal", complexLambda._functionName());
-                assertEquals("XLON", getInstanceValue(lambdaParameters.get(1)));
+                assertEquals("or", complexLambda._functionName());
+
+                // first Part of filter
+                Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl firstFilter = (Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) lambdaParameters.get(0);
+                List<? extends ValueSpecification> firstFilterLambdaParameters = firstFilter._parametersValues().toList();
+
+                assertEquals("MilestonedIdentifier", getFunctionProperty(firstFilterLambdaParameters.get(0))._owner()._name());
+                assertEquals("identifier", getFunctionProperty(firstFilterLambdaParameters.get(0))._name());
+                assertEquals("equal", firstFilter._functionName());
+                assertEquals("XLON", getInstanceValue(firstFilterLambdaParameters.get(1)));
+
+                // second Part of filter
+                Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl secondFilter = (Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl) lambdaParameters.get(1);
+                List<? extends ValueSpecification> secondFilterLambdaParameters = secondFilter._parametersValues().toList();
+
+                assertEquals("MilestonedIdentifier", getFunctionProperty(secondFilterLambdaParameters.get(0))._owner()._name());
+                assertEquals("identifier", getFunctionProperty(secondFilterLambdaParameters.get(0))._name());
+                assertEquals("equal", secondFilter._functionName());
+                assertEquals("LSE", getInstanceValue(secondFilterLambdaParameters.get(1)));
 
                 //masterRecordFilter
                 assertEquals("true", getSimpleLambdaValue(source._masterRecordFilter()));
