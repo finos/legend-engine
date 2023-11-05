@@ -79,8 +79,14 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "{\n" +
             "  widgetId: String[0..1];\n" +
             "  trigger: String[0..1];\n" +
+            "  modelType: org::dataeng::ModelType[0..1];\n" +
             "  runProfile: org::dataeng::Medium[0..1];\n" +
             "  identifiers: org::dataeng::MilestonedIdentifier[*];\n" +
+            "}\n\n" +
+            "Enum org::dataeng::ModelType\n" +
+            "{\n" +
+            "  modelA,\n" +
+            "  modelB\n" +
             "}\n\n" +
             "Class org::dataeng::Medium\n" +
             "{\n" +
@@ -134,7 +140,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "  }\n" +
             "  precedenceRules: [\n" +
             "    DeleteRule: {\n" +
-            "      path: org::dataeng::Widget.identifiers;\n" +
+            "      path: org::dataeng::Widget.modelType;\n" +
             "      ruleScope: [\n" +
             "        RecordSourceScope {widget-rest-source}\n" +
             "      ];\n" +
@@ -575,7 +581,7 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
 
                 Root_meta_pure_mastery_metamodel_precedence_PropertyPath propertyPath = paths.get(0);
                 //path property
-                assertEquals("identifiers", propertyPath._property()._name());
+                assertEquals("modelType", propertyPath._property()._name());
                 assertEquals("Widget", propertyPath._property()._owner()._name());
                 //path filter
                 assertEquals("true", getSimpleLambdaValue(propertyPath._filter()));
