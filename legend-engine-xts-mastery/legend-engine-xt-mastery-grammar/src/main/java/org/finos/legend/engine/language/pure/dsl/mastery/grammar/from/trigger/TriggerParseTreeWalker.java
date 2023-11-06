@@ -93,7 +93,7 @@ public class TriggerParseTreeWalker
 
 
         // frequency
-        TriggerParserGrammar.FrequencyContext frequencyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.frequency(), "frequency", sourceInformation);
+        TriggerParserGrammar.FrequencyContext frequencyContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.frequency(), "frequency", sourceInformation);
         if (frequencyContext != null)
         {
             String frequencyString = frequencyContext.frequencyValue().getText();
@@ -101,7 +101,7 @@ public class TriggerParseTreeWalker
         }
 
         // days
-        TriggerParserGrammar.DaysContext daysContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.days(), "days", sourceInformation);
+        TriggerParserGrammar.DaysContext daysContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.days(), "days", sourceInformation);
         if (daysContext != null)
         {
            cronTrigger.days = ListIterate.collect(daysContext.dayValue(), this::visitRunDay);

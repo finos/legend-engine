@@ -131,3 +131,21 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testRelation
   let expectedPlan = 'Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake"))';
   assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testInExecutionWithLiteralListSnowflake():Boolean[1]
+{
+  let intList = range(1,17000);
+  let generatedPlan = executionPlan({|Person.all()->filter(p|$p.age->in($intList))->project([x |$x.name], ['fullName'])}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = meta::relational::tests::db,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions());
+  let execNodesInRelBlockNode = $generatedPlan.rootExecutionNode.executionNodes;
+
+  let createAndPopulateTempTableNode = $execNodesInRelBlockNode->filter(e|$e->instanceOf(CreateAndPopulateTempTableExecutionNode));
+  
+  let tempTableName = $createAndPopulateTempTableNode->at(0)->cast(@CreateAndPopulateTempTableExecutionNode).tempTableName;
+  assertEquals('LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_8', $tempTableName);
+  let inputVarNames = $createAndPopulateTempTableNode->at(0)->cast(@CreateAndPopulateTempTableExecutionNode).inputVarNames;
+  assertEquals('tempVarForIn_8', $inputVarNames->at(0));
+
+  let allocationNode = $execNodesInRelBlockNode->filter(e|$e->instanceOf(AllocationExecutionNode));
+  let varName = $allocationNode->at(0)->cast(@AllocationExecutionNode).varName;
+  assertEquals('tempVarForIn_8', $varName);
+}
