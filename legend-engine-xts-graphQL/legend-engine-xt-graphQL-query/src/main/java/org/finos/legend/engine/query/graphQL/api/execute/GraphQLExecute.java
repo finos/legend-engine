@@ -51,6 +51,8 @@ import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdCacheKey;
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdDataspaceCacheKey;
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdMappingRuntimeCacheKey;
 import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.finos.legend.engine.query.graphQL.api.execute.model.PlansResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
@@ -238,7 +240,7 @@ public class GraphQLExecute extends GraphQL
                 "}").type(MediaType.TEXT_HTML_TYPE).build();
     }
 
-    private Response executeGraphQLQueryWithDataspace(String queryClassPath, String dataspacePath, String executionContext, Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
+    private Response executeGraphQLQuery(Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
     {
         List<SerializedNamedPlans> planWithSerialized;
         OperationDefinition graphQLQuery = GraphQLExecutionHelper.findQuery(document);
@@ -248,7 +250,7 @@ public class GraphQLExecute extends GraphQL
             if (isQueryIntrospection(graphQLQuery))
             {
                 pureModel = modelLoader.call();
-                return executeIntrospection(queryClassPath, document, pureModel);
+                return executeIntrospection(graphQLCacheKey.getQueryClassPath(), document, pureModel);
             }
             else
             {
@@ -259,7 +261,7 @@ public class GraphQLExecute extends GraphQL
                     {
                         LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
                         pureModel = modelLoader.call();
-                        planWithSerialized = buildPlanWithParameterUsingDataspace(queryClassPath, dataspacePath, executionContext, document, graphQLQuery, pureModel, graphQLCacheKey);
+                        planWithSerialized = getSerializedNamedPlans(document, graphQLCacheKey, graphQLQuery, pureModel);
                         graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
                     }
                     else
@@ -270,7 +272,7 @@ public class GraphQLExecute extends GraphQL
                 else   //no cache so we generate the plan
                 {
                     pureModel = modelLoader.call();
-                    planWithSerialized = buildPlanWithParameterUsingDataspace(queryClassPath, dataspacePath, executionContext, document, graphQLQuery, pureModel, graphQLCacheKey);
+                    planWithSerialized = getSerializedNamedPlans(document, graphQLCacheKey, graphQLQuery, pureModel);
                 }
             }
         }
@@ -281,47 +283,29 @@ public class GraphQLExecute extends GraphQL
         return execute(profiles, planWithSerialized, graphQLQuery);
     }
 
-    private Response executeGraphQLQuery(String queryClassPath, String mappingPath, String runtimePath, Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
+    private List<SerializedNamedPlans> getSerializedNamedPlans(Document document, GraphQLCacheKey graphQLCacheKey,OperationDefinition graphQLQuery, PureModel pureModel)
     {
         List<SerializedNamedPlans> planWithSerialized;
-        OperationDefinition graphQLQuery = GraphQLExecutionHelper.findQuery(document);
-        PureModel pureModel = null;
-        try
+        if (graphQLCacheKey instanceof GraphQLDevCacheKey)
         {
-            if (isQueryIntrospection(graphQLQuery))
-            {
-                pureModel = modelLoader.call();
-                return executeIntrospection(queryClassPath, document, pureModel);
-            }
-            else
-            {
-                if (graphQLPlanCache != null)
-                {
-                    planWithSerialized = graphQLPlanCache.getIfPresent(graphQLCacheKey);
-                    if (planWithSerialized == null) //cache miss, generate the plan and add to the cache
-                    {
-                        LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
-                        pureModel = modelLoader.call();
-                        planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
-                        graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
-                    }
-                    else
-                    {
-                        LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache hit. Using previously cached plan").toString());
-                    }
-                }
-                else   //no cache so we generate the plan
-                {
-                    pureModel = modelLoader.call();
-                    planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
-                }
-            }
+            GraphQLDevCacheKey key = (GraphQLDevCacheKey) graphQLCacheKey;
+            planWithSerialized = buildPlanWithParameter(key.getQueryClassPath(), key.getMappingPath(), key.getRuntimePath(), document, graphQLQuery, pureModel, graphQLCacheKey);
         }
-        catch (Exception e)
+        else if (graphQLCacheKey instanceof GraphQLProdMappingRuntimeCacheKey)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            GraphQLProdMappingRuntimeCacheKey key = (GraphQLProdMappingRuntimeCacheKey) graphQLCacheKey;
+            planWithSerialized = buildPlanWithParameter(key.getQueryClassPath(), key.getMappingPath(), key.getRuntimePath(), document, graphQLQuery, pureModel, graphQLCacheKey);
         }
-        return execute(profiles, planWithSerialized, graphQLQuery);
+        else if (graphQLCacheKey instanceof GraphQLProdDataspaceCacheKey)
+        {
+            GraphQLProdDataspaceCacheKey key = (GraphQLProdDataspaceCacheKey) graphQLCacheKey;
+            planWithSerialized = buildPlanWithParameterUsingDataspace(key.getQueryClassPath(), key.getDataspacePath(), key.getExecutionContext(), document, graphQLQuery, pureModel, graphQLCacheKey);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Invalid graphql cache key");
+        }
+        return planWithSerialized;
     }
 
     private Response execute(MutableList<CommonProfile> profiles, List<SerializedNamedPlans> planWithSerialized, OperationDefinition graphQLQuery)
@@ -534,7 +518,7 @@ public class GraphQLExecute extends GraphQL
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             Document cachableGraphQLQuery = createCachableGraphQLQuery(document);
             GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, objectMapper.writeValueAsString(cachableGraphQLQuery));
-            return this.executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
+            return this.executeGraphQLQuery(document, key, profiles, () -> loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
         }
         catch (Exception ex)
         {
@@ -552,9 +536,9 @@ public class GraphQLExecute extends GraphQL
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            GraphQLProdCacheKey key = GraphQLProdCacheKey.newGraphQLProdCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            GraphQLProdMappingRuntimeCacheKey key = new GraphQLProdMappingRuntimeCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            return this.executeGraphQLQuery(document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {
@@ -572,9 +556,9 @@ public class GraphQLExecute extends GraphQL
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            GraphQLProdCacheKey key = GraphQLProdCacheKey.newGraphQLProdCacheKeyWithDataspace(groupId, artifactId, versionId, dataspacePath, queryClassPath, executionContext, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            GraphQLProdDataspaceCacheKey key = new GraphQLProdDataspaceCacheKey(groupId, artifactId, versionId, dataspacePath, executionContext, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQueryWithDataspace(queryClassPath, dataspacePath, executionContext, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            return this.executeGraphQLQuery(document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {

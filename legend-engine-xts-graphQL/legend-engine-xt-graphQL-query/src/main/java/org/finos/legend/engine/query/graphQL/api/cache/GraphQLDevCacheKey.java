@@ -55,4 +55,24 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
     {
         return Objects.hashCode(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query);
     }
+
+    public String getQueryClassPath()
+    {
+        return queryClassPath;
+    }
+
+    public String getMappingPath()
+    {
+        return mappingPath;
+    }
+
+    public String getRuntimePath()
+    {
+        return runtimePath;
+    }
+
+    public String getQuery()
+    {
+        return query;
+    }
 }

@@ -16,47 +16,21 @@ package org.finos.legend.engine.query.graphQL.api.cache;
 
 import com.google.common.base.Objects;
 
-public class GraphQLProdCacheKey implements GraphQLCacheKey
+public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
 {
-    private String groupID;
-    private String artifactId;
-    private String versionId;
-    private String mappingPath;
-    private String runtimePath;
-    private String queryClassPath;
-    private String query;
-    private String dataspacePath;
-    private String executionContext;
+    protected String groupID;
+    protected String artifactId;
+    protected String versionId;
+    protected String queryClassPath;
+    protected String query;
 
-    GraphQLProdCacheKey()
+    public GraphQLProdCacheKey (String groupID, String artifactId, String versionId, String queryClassPath, String query)
     {
-
-    }
-
-    public static GraphQLProdCacheKey newGraphQLProdCacheKey(String groupID, String artifactId, String versionId, String mappingPath, String runtimePath, String queryClassPath, String query)
-    {
-        GraphQLProdCacheKey graphQLProdCacheKey = new GraphQLProdCacheKey();
-        graphQLProdCacheKey.groupID = groupID;
-        graphQLProdCacheKey.artifactId = artifactId;
-        graphQLProdCacheKey.versionId = versionId;
-        graphQLProdCacheKey.mappingPath = mappingPath;
-        graphQLProdCacheKey.runtimePath = runtimePath;
-        graphQLProdCacheKey.queryClassPath = queryClassPath;
-        graphQLProdCacheKey.query = query;
-        return graphQLProdCacheKey;
-    }
-
-    public static GraphQLProdCacheKey newGraphQLProdCacheKeyWithDataspace(String groupID, String artifactId, String versionId, String dataspacePath, String executionContext, String queryClassPath, String query)
-    {
-        GraphQLProdCacheKey graphQLProdCacheKey = new GraphQLProdCacheKey();
-        graphQLProdCacheKey.groupID = groupID;
-        graphQLProdCacheKey.artifactId = artifactId;
-        graphQLProdCacheKey.versionId = versionId;
-        graphQLProdCacheKey.dataspacePath = dataspacePath;
-        graphQLProdCacheKey.executionContext = executionContext;
-        graphQLProdCacheKey.queryClassPath = queryClassPath;
-        graphQLProdCacheKey.query = query;
-        return graphQLProdCacheKey;
+        this.groupID = groupID;
+        this.artifactId = artifactId;
+        this.versionId = versionId;
+        this.queryClassPath = queryClassPath;
+        this.query = query;
     }
 
     @Override
@@ -74,17 +48,32 @@ public class GraphQLProdCacheKey implements GraphQLCacheKey
         return Objects.equal(groupID, that.groupID)
                 && Objects.equal(artifactId, that.artifactId)
                 && Objects.equal(versionId, that.versionId)
-                && Objects.equal(mappingPath, that.mappingPath)
-                && Objects.equal(runtimePath, that.runtimePath)
                 && Objects.equal(queryClassPath, that.queryClassPath)
-                && Objects.equal(query, that.query)
-                && Objects.equal(dataspacePath, that.dataspacePath)
-                && Objects.equal(executionContext, that.executionContext);
+                && Objects.equal(query, that.query);
     }
 
-    @Override
-    public int hashCode()
+    public String getGroupID()
     {
-        return Objects.hashCode(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query, dataspacePath, executionContext);
+        return groupID;
+    }
+
+    public String getArtifactId()
+    {
+        return artifactId;
+    }
+
+    public String getVersionId()
+    {
+        return versionId;
+    }
+
+    public String getQueryClassPath()
+    {
+        return queryClassPath;
+    }
+
+    public String getQuery()
+    {
+        return query;
     }
 }
