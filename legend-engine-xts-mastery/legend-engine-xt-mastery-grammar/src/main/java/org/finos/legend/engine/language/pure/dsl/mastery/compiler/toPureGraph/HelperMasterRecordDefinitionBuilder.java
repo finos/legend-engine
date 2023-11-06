@@ -26,10 +26,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.MasterRecordDefinition;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordService;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourceVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.KafkaAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.CollectionEquality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
@@ -50,8 +52,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 public class HelperMasterRecordDefinitionBuilder
 {
@@ -167,6 +173,7 @@ public class HelperMasterRecordDefinitionBuilder
             }
             else if (precedenceRule instanceof DeleteRule)
             {
+                validateNoDataProviderScope((DeleteRule) precedenceRule);
                 purePrecedenceRule = new Root_meta_pure_mastery_metamodel_precedence_DeleteRule_Impl("");
             }
             else if (precedenceRule instanceof CreateRule)
@@ -175,7 +182,7 @@ public class HelperMasterRecordDefinitionBuilder
             }
             else if (precedenceRule instanceof ConditionalRule)
             {
-                purePrecedenceRule = visitConditionalRule(precedenceRule);
+                purePrecedenceRule = visitConditionalRule((ConditionalRule) precedenceRule);
             }
             else
             {
@@ -218,10 +225,10 @@ public class HelperMasterRecordDefinitionBuilder
             return pureSourcePrecedenceRule;
         }
 
-        private Root_meta_pure_mastery_metamodel_precedence_ConditionalRule visitConditionalRule(PrecedenceRule precedenceRule)
+        private Root_meta_pure_mastery_metamodel_precedence_ConditionalRule visitConditionalRule(ConditionalRule conditionalRule)
         {
+            validateNoScopeSet(conditionalRule);
             Root_meta_pure_mastery_metamodel_precedence_ConditionalRule pureConditionalRule = new Root_meta_pure_mastery_metamodel_precedence_ConditionalRule_Impl("");
-            ConditionalRule conditionalRule = (ConditionalRule) precedenceRule;
             validatePredicateInput(conditionalRule.predicate);
             pureConditionalRule._predicate(HelperValueSpecificationBuilder.buildLambda(conditionalRule.predicate, context));
             return pureConditionalRule;
@@ -232,6 +239,26 @@ public class HelperMasterRecordDefinitionBuilder
             validateInputVariableNames(predicate);
             validateInputVariableType(predicate);
             validateInputMultiplicity(predicate);
+        }
+
+        private void validateNoScopeSet(ConditionalRule conditionalRule)
+        {
+            if (!isEmpty(conditionalRule.scopes))
+            {
+                throw new EngineException(
+                       "ConditionalRule with ruleScope is currently unsupported", conditionalRule.sourceInformation,
+                        EngineErrorType.COMPILATION);
+            }
+        }
+
+        private void validateNoDataProviderScope(DeleteRule deleteRule)
+        {
+            if (!isEmpty(deleteRule.scopes) && deleteRule.scopes.stream().anyMatch(scope -> scope instanceof DataProviderTypeScope))
+            {
+                throw new EngineException(
+                        "DataProviderTypeScope is not allowed on DeleteRule", deleteRule.sourceInformation,
+                        EngineErrorType.COMPILATION);
+            }
         }
 
         private void validateInputVariableNames(Lambda predicate)
@@ -359,6 +386,7 @@ public class HelperMasterRecordDefinitionBuilder
         @Override
         public Root_meta_pure_mastery_metamodel_RecordSource visit(RecordSource protocolSource)
         {
+            validateRecordSource(protocolSource);
             List<IMasteryCompilerExtension> extensions = IMasteryCompilerExtension.getExtensions();
             List<Function2<Authorization, CompileContext, Root_meta_pure_mastery_metamodel_authorization_Authorization>> processors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraAuthorizationProcessors);
             List<Function2<Trigger, CompileContext, Root_meta_pure_mastery_metamodel_trigger_Trigger>> triggerProcessors = ListIterate.flatCollect(extensions, IMasteryCompilerExtension::getExtraTriggerProcessors);
@@ -414,6 +442,25 @@ public class HelperMasterRecordDefinitionBuilder
             return ListIterate.collect(recordSource.dependencies, dependency ->
                    new Root_meta_pure_mastery_metamodel_RecordSourceDependency_Impl("")._dependentRecordSourceId(dependency.dependentRecordSourceId)
             );
+        }
+
+        private static void validateRecordSource(RecordSource recordSource)
+        {
+            if (recordSource.id.length() > 31)
+            {
+                throw new EngineException(format("Invalid record source id '%s'; id must not be longer than 31 characters.", recordSource.id), recordSource.sourceInformation, EngineErrorType.COMPILATION);
+            }
+
+            boolean kafkaSource = nonNull(recordSource.recordService) && nonNull(recordSource.recordService.acquisitionProtocol) && recordSource.recordService.acquisitionProtocol.isKafkaAcquisitionProtocol();
+
+            if (isTrue(recordSource.sequentialData) && kafkaSource && nonNull(recordSource.runProfile) && recordSource.runProfile != Profile.ExtraSmall)
+            {
+                throw new EngineException("'runProfile' can only be set to ExtraSmall for Delta kafka sources", recordSource.sourceInformation, EngineErrorType.COMPILATION);
+            }
+            if (kafkaSource && nonNull(recordSource.runProfile) && recordSource.runProfile != Profile.Small)
+            {
+                throw new EngineException("'runProfile' can only be set to Small for Full Universe kafka sources", recordSource.sourceInformation, EngineErrorType.COMPILATION);
+            }
         }
     }
 

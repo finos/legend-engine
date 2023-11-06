@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
@@ -25,5 +26,11 @@ public abstract class AcquisitionProtocol
     public <T> T accept(AcquisitionProtocolVisitor<T> visitor)
     {
         return visitor.visit(this);
+    }
+
+    @JsonIgnore
+    public boolean isKafkaAcquisitionProtocol()
+    {
+        return false;
     }
 }
