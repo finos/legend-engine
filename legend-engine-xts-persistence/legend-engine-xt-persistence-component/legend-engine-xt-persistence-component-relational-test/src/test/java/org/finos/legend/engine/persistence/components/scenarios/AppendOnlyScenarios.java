@@ -30,7 +30,7 @@ public class AppendOnlyScenarios extends BaseTest
 {
 
     /*
-    Test Scenarios for Non-temporal Delta
+    Test Scenarios for Append Only
     Variables:
     1) Auditing: No Auditing, With Auditing
     2) Versioning: NoVersion, MaxVersion, AllVersion

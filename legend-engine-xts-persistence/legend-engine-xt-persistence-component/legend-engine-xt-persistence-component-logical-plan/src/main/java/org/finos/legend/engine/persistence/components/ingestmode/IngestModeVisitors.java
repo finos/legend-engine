@@ -37,7 +37,7 @@ public class IngestModeVisitors
         @Override
         public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return appendOnly.filterExistingRecords();
+            return appendOnly.filterExistingRecords() || appendOnly.digestGenStrategy().accept(DIGEST_GEN_STRATEGY_DIGEST_REQUIRED);
         }
 
         @Override
@@ -88,7 +88,15 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return appendOnly.digestField();
+            Optional<String> generatedDigestField = appendOnly.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+            if (generatedDigestField.isPresent())
+            {
+                return generatedDigestField;
+            }
+            else
+            {
+                return appendOnly.digestField();
+            }
         }
 
         @Override
@@ -141,6 +149,7 @@ public class IngestModeVisitors
         {
             Set<String> metaFields = new HashSet<>();
             appendOnly.digestField().ifPresent(metaFields::add);
+            appendOnly.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(metaFields::add);
             appendOnly.dataSplitField().ifPresent(metaFields::add);
             return metaFields;
         }

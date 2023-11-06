@@ -70,10 +70,17 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     {
         boolean isAuditingFieldPK = doesDatasetContainsAnyPK(mainSchemaFields);
         appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
-        if (appendOnly.digestField().isPresent())
+
+        Optional<String> digestField = appendOnly.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+        if (digestField.isPresent())
+        {
+            addDigestField(mainSchemaFields, digestField.get());
+        }
+        else if (appendOnly.digestField().isPresent())
         {
             addDigestField(mainSchemaFields, appendOnly.digestField().get());
         }
+
         removeDataSplitField(appendOnly.dataSplitField());
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }

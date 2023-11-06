@@ -76,6 +76,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         return AppendOnly
                 .builder()
                 .digestField(applyCase(appendOnly.digestField()))
+                .digestGenStrategy(appendOnly.digestGenStrategy().accept(new DigestGenStrategyCaseConverter()))
                 .auditing(appendOnly.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(appendOnly.deduplicationStrategy())
                 .versioningStrategy(appendOnly.versioningStrategy().accept(new VersionStrategyCaseConverter()))

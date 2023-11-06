@@ -85,6 +85,7 @@ public class TestUtils
 
     // Special columns
     public static String digestName = "digest";
+    public static String digestUDF = "LAKEHOUSE_MD5";
     public static String versionName = "version";
     public static String batchUpdateTimeName = "batch_update_time";
     public static String batchIdInName = "batch_id_in";
@@ -266,6 +267,18 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithNonPkVersionWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(version)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithFilterForDB()
     {
         return SchemaDefinition.builder()
@@ -379,6 +392,15 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchemaWithNonPkVersion())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithNonPkVersionWithoutDigest()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithNonPkVersionWithoutDigest())
             .build();
     }
 
