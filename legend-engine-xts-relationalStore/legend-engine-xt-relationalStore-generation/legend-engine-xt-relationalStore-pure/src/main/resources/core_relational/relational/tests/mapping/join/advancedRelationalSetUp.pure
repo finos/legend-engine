@@ -385,6 +385,68 @@ Mapping meta::relational::tests::mapping::join::model::mapping::JoinSchemaBWithS
             }
 )
 
+###Mapping
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+Mapping meta::relational::tests::mapping::join::model::mapping::MappingWithLiteral
+(
+  Person : Relational
+  {
+      scope([dbInc])
+      (
+          firstName : personTable.FIRSTNAME,
+          age : personTable.AGE
+      ),
+      scope([dbInc]default.personTable)
+      (
+          lastName : 'Smith'
+      ),
+      firm : [dbInc]@Firm_Person,
+      address : [dbInc]@Address_Person,
+      locations : [dbInc]@Person_Location,
+      manager : [dbInc]@Person_Manager
+  }
+
+  Firm : Relational
+  {
+    ~mainTable [dbInc] firmTable
+      legalName : [dbInc]firmTable.LEGALNAME,
+      employees : [dbInc]@Firm_Person,
+      address : [dbInc]@Address_Firm
+  }
+
+  Address : Relational
+  {
+    name : [dbInc]addressTable.NAME,
+    street : [dbInc]addressTable.STREET,
+    comments : [dbInc]addressTable.COMMENTS
+  }
+
+  Product : Relational
+  {
+    name : [db]productSchema.productTable.NAME,
+    synonyms : [db]@Product_Synonym
+  }
+
+  ProductSynonymType: EnumerationMapping SynonymEnum
+  {
+      CUSIP: 'CUSIP',
+      ISIN: 'ISIN'
+  }
+
+  Synonym : Relational
+  {
+    name : [db]productSchema.synonymTable.NAME,
+    type : EnumerationMapping SynonymEnum: 'CUSIP'
+  }
+
+  Trade : Relational
+  {
+    id : [db]tradeTable.ID,
+    product : [db]@Trade_Product
+  }
+)
+
 ###Pure
 import meta::relational::tests::mapping::join::model::store::*;
 import meta::pure::profiles::*;

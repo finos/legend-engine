@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.32.1-SNAPSHOT</version>
+        <version>4.34.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -478,7 +478,26 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-snowflakeApp-protocol</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>
+        </dependency>
         <!-- Snowflake App -->
+
+        <!-- BigQuery Function -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-bigqueryFunction-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-bigqueryFunction-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-bigqueryFunction-protocol</artifactId>
+        </dependency>
+        <!-- BigQuery Function -->
 
         <!-- Text -->
         <dependency>

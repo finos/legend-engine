@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.32.1-SNAPSHOT</version>
+    <version>4.34.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -75,6 +75,7 @@
         <!-- Function Activators -->
         <module>legend-engine-xts-functionActivator</module>
         <module>legend-engine-xts-snowflakeApp</module>
+        <module>legend-engine-xts-bigqueryFunction</module>
         <module>legend-engine-xts-service</module>
         <module>legend-engine-xts-persistence</module>
         <module>legend-engine-xts-hostedService</module>
@@ -637,7 +638,41 @@
                 <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.finos.legend.engine</groupId>-->
+<!--                <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>-->
+<!--                <version>${project.version}</version>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-pure</artifactId>
@@ -1994,6 +2029,32 @@
                 <artifactId>legend-engine-xt-sql-query</artifactId>
                 <version>${project.version}</version>
                 <type>test-jar</type>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-shared</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-relationalStore</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-service</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>

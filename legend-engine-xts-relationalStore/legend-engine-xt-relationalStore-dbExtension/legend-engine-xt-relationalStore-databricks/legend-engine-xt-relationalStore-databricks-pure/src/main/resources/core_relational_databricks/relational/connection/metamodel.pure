@@ -14,8 +14,8 @@
 
 Class meta::pure::alloy::connections::alloy::specification::DatabricksDatasourceSpecification extends meta::pure::alloy::connections::alloy::specification::DatasourceSpecification
 {
-    hostname:String[1];
-    port:String[1];
-    protocol:String[1];
-    httpPath:String[1];
+    <<equality.Key>> hostname:String[1];
+    <<equality.Key>> port:String[1];
+    <<equality.Key>> protocol:String[1];
+    <<equality.Key>> httpPath:String[1];
 }

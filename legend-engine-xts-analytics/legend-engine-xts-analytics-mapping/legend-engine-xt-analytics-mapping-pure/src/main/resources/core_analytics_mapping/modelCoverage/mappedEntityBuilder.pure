@@ -301,9 +301,9 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
                   let srcClassPath = if($pureInstanceSetImplementation.srcClass->isNotEmpty(),|$pureInstanceSetImplementation.srcClass->toOne()->cast(@Class<Any>)->elementToPath(),|'');
                   $targetClassPath + '_' + $srcClassPath;,
                 |$pm.targetSetImplementationId);
-    processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), $id + '_autoMapped_', $config, []););
+    processAutoMappedPropertyMapping($pm.property->cast(@AbstractProperty<Any>), $id + '_autoMapped_', $isRootEntity, $config, []););
    let autoMappedPrimitiveProperties = if($setImplementation->instanceOf(PureInstanceSetImplementation),
-                                 |buildAutoMappedProperty($class, if($setImplementation->cast(@PureInstanceSetImplementation).srcClass->isEmpty(),|[],|$setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne()), $properties, $config),
+                                 |buildAutoMappedProperty($class, if($setImplementation->cast(@PureInstanceSetImplementation).srcClass->isEmpty(),|[],|$setImplementation->cast(@PureInstanceSetImplementation).srcClass->cast(@Class<Any>)->toOne()), $properties, $isRootEntity, $config),
                                  |[]);
      buildEntity(
       $class,
@@ -318,6 +318,7 @@ function meta::analytics::mapping::modelCoverage::buildEntity(
 function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMapping(
   property: AbstractProperty<Any>[1],
   prefix: String[1],
+  isRootEntity: Boolean[1],
   config: AnalysisConfiguration[1],
   visited: Pair<Class<Any>, String>[*]
 ): AutoMappedHelperClass[1]
@@ -344,8 +345,9 @@ function meta::analytics::mapping::modelCoverage::processAutoMappedPropertyMappi
                                                              | ^MappedPropertyInfo(type = $property.genericType.rawType->toOne()->mapType(), multiplicity = $property.multiplicity->toOne()),
                                                              | []));
           let newVisited = $visited->concatenate([^Pair<Class<Any>, String>(first = $property.genericType.rawType->toOne()->cast(@Class<Any>), second = $entityPath)]);
-          let children = $property.genericType.rawType->toOne()->cast(@Class<Any>).properties->map(p | $p->processAutoMappedPropertyMapping($entityPath + '_' , $config, $newVisited));
-          let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties));
+            let propertyType = $property.genericType.rawType->toOne()->cast(@Class<Any>);
+            let children = $propertyType.properties->map(p | $p->processAutoMappedPropertyMapping($entityPath + '_' , $isRootEntity, $config, $newVisited));
+            let currentMappedEntity = ^MappedEntity(path=$entityPath, properties = $children->map(c|$c.mappedProperties), info = if($config.returnMappedEntityInfo == true, | ^MappedEntityInfo(isRootEntity = $isRootEntity, classPath = $propertyType->elementToPath()), | []));
          ^AutoMappedHelperClass(mappedProperties = [$entityMappedProp], mappedEntities=[$currentMappedEntity]->concatenate($children->map(c|$c.mappedEntities)));
          );
      )
@@ -355,6 +357,7 @@ function meta::analytics::mapping::modelCoverage::buildAutoMappedProperty(
    class:Class<Any>[1],
    srcClass: Class<Any>[0..1],
    mappedProperties: MappedProperty[*],
+   isRootEntity: Boolean[1],
    config: AnalysisConfiguration[1]
 ): MappedProperty[*]
 {

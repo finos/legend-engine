@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.32.1-SNAPSHOT</version>
+        <version>4.34.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,5 +34,6 @@
         <module>legend-engine-xt-snowflakeApp-grammar</module>
         <module>legend-engine-xt-snowflakeApp-protocol</module>
         <module>legend-engine-xt-snowflakeApp-pure</module>
+        <module>legend-engine-xt-snowflakeApp-generator</module>
     </modules>
 </project>

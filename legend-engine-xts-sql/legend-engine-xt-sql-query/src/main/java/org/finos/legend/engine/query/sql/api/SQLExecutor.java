@@ -47,13 +47,12 @@ import org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTransla
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.MetamodelToProtocolTranslator;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
-import org.finos.legend.engine.query.sql.api.sources.SQLContext;
-import org.finos.legend.engine.query.sql.api.sources.SQLSource;
-import org.finos.legend.engine.query.sql.api.sources.SQLSourceProvider;
-import org.finos.legend.engine.query.sql.api.sources.SQLSourceResolvedContext;
-import org.finos.legend.engine.query.sql.api.sources.SQLSourceTranslator;
-import org.finos.legend.engine.query.sql.api.sources.TableSource;
-import org.finos.legend.engine.query.sql.api.sources.TableSourceExtractor;
+import org.finos.legend.engine.query.sql.providers.core.SQLContext;
+import org.finos.legend.engine.query.sql.providers.core.SQLSource;
+import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
+import org.finos.legend.engine.query.sql.providers.core.TableSource;
+import org.finos.legend.engine.query.sql.api.sources.TableSourceArgument;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -89,9 +88,10 @@ public class SQLExecutor
     private final PlanExecutor planExecutor;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
     private final Iterable<? extends PlanTransformer> transformers;
-    private final MutableMap<Object, SQLSourceProvider> providers;
+    private final MutableMap<String, SQLSourceProvider> providers;
 
-    public SQLExecutor(ModelManager modelManager, PlanExecutor planExecutor,
+    public SQLExecutor(ModelManager modelManager,
+                       PlanExecutor planExecutor,
                        Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions,
                        List<SQLSourceProvider> providers,
                        Iterable<? extends PlanTransformer> transformers)
@@ -165,7 +165,7 @@ public class SQLExecutor
 
     public Schema schema(Query query, MutableList<CommonProfile> profiles)
     {
-        SQLContext context = new SQLContext(query, Maps.mutable.of());
+        SQLContext context = new SQLContext(query);
         return process(query, (t, pm, sources) ->
         {
             Root_meta_external_query_sql_schema_metamodel_Schema schema = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSchema_SqlTransformContext_1__Schema_1_(t, pm.getExecutionSupport());
@@ -216,7 +216,7 @@ public class SQLExecutor
 
         if (!schemasValid)
         {
-            throw new IllegalArgumentException("Unsupported schema types " + String.join(", ", grouped.keySet().select(k -> !providers.containsKey(k))));
+            throw new IllegalArgumentException("Unsupported schema types [" + String.join(", ", grouped.keySet().select(k -> !providers.containsKey(k))) + "], supported types: [" + String.join(", ", providers.keySet()) + "]");
         }
 
         RichIterable<SQLSourceResolvedContext> resolved = grouped.keySet().collect(k -> resolve(grouped.get(k), context, providers.get(k), profiles));
@@ -243,6 +243,15 @@ public class SQLExecutor
 
     private SQLSourceResolvedContext resolve(MutableCollection<TableSource> tables, SQLContext context, SQLSourceProvider extension, MutableList<CommonProfile> profiles)
     {
+        //TODO remove deprecated flow
+        org.finos.legend.engine.query.sql.api.sources.SQLSourceResolvedContext resolved = extension.resolve(tables.collect(t -> new org.finos.legend.engine.query.sql.api.sources.TableSource(t.getType(),
+                ListIterate.collect(t.getArguments(), a -> new TableSourceArgument(a.getName(), a.getIndex(), a.getValue())))).toList(), new org.finos.legend.engine.query.sql.api.sources.SQLContext(context.getQuery()), profiles);
+
+        if (resolved != null)
+        {
+            return new SQLSourceResolvedContext(resolved.getPureModelContexts(), ListIterate.collect(resolved.getSources(), s -> new SQLSource(s.getType(), s.getFunc(), s.getMapping(), s.getRuntime(), s.getExecutionOptions(), s.getExecutionContext(), s.getKey())));
+        }
+
         return extension.resolve(tables.toList(), context, profiles);
     }
 

@@ -75,6 +75,7 @@ public class MasteryGrammarComposerExtension implements IMasteryComposerExtensio
             composableElements.addAll(ListIterate.selectInstancesOf(elements, MasterRecordDefinition.class));
             composableElements.addAll(ListIterate.selectInstancesOf(elements, Connection.class));
             composableElements.addAll(ListIterate.selectInstancesOf(elements, DataProvider.class));
+            composableElements.addAll(ListIterate.selectInstancesOf(elements, MasteryRuntime.class));
 
             return composableElements.isEmpty()
                     ? null
@@ -92,6 +93,10 @@ public class MasteryGrammarComposerExtension implements IMasteryComposerExtensio
                             else if (element instanceof Connection)
                             {
                                 return MasteryGrammarComposerExtension.renderConnection((Connection) element, context);
+                            }
+                            else if (element instanceof MasteryRuntime)
+                            {
+                                return MasteryGrammarComposerExtension.renderMasteryRuntime((MasteryRuntime) element, context);
                             }
                             throw new UnsupportedOperationException("Unsupported type " + element.getClass().getName());
                         })

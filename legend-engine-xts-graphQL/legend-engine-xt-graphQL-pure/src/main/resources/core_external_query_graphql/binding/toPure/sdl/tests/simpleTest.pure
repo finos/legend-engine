@@ -219,6 +219,289 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
     $pureTypes);
 }
 
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testClassWithInheritance():Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+      '  title: String!\n' +
+      '  startDate: StrictDate!\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type Person implements PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'interface PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'scalar StrictDate\n' +
+      '\n' +
+      'directive @extends on OBJECT | INPUT_OBJECT\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  title : String[1];\n' +
+    '  startDate : StrictDate[1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  firstName : String[0..1];\n' +
+    '  lastName : String[1];\n' +
+    '  age : Integer[1];\n' +
+    '}',
+    $pureTypes);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testPropertyWithInheritance():Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+      '  title: String!\n' +
+      '  startDate: StrictDate!\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type Person implements PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'interface PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'scalar StrictDate\n' +
+      '\n' +
+      'type Team {\n' +
+      '  name: String!\n' +
+      '  members: [Employee!]!\n' +
+      '}\n' +
+      '\n' +
+      'directive @extends on OBJECT | INPUT_OBJECT\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  title : String[1];\n' +
+    '  startDate : StrictDate[1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  firstName : String[0..1];\n' +
+    '  lastName : String[1];\n' +
+    '  age : Integer[1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Team\n' +
+    '{\n' +
+    '  name : String[1];\n' +
+    '  members : meta::external::query::graphQL::metamodel::sql::Employee[*];\n' +
+    '}',
+    $pureTypes);
+}
+
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testClassWithDeepInheritance():Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type Employee implements EmployeeInterface @extends(class: "Person") {\n' +
+      '  title: String!\n' +
+      '  startDate: StrictDate!\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'interface EmployeeInterface implements PersonInterface {\n' +
+      '  title: String!\n' +
+      '  startDate: StrictDate!\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type GSEmployee implements EmployeeInterface @extends(class: "Employee") {\n' +
+      '  division: String!\n' +
+      '  title: String!\n' +
+      '  startDate: StrictDate!\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type Person implements PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'interface PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'scalar StrictDate\n' +
+      '\n' +
+      'directive @extends on OBJECT | INPUT_OBJECT\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  title : String[1];\n' +
+    '  startDate : StrictDate[1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::GSEmployee extends meta::external::query::graphQL::metamodel::sql::Employee\n' +
+    '{\n' +
+    '  division : String[1];\n' +
+    '}\n' +
+    '\n' +
+    'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
+    '{\n' +
+    '  firstName : String[0..1];\n' +
+    '  lastName : String[1];\n' +
+    '  age : Integer[1];\n' +
+    '}',
+    $pureTypes);
+}
+
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testQueryAndMutationWithHierarchy():Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type Employee implements PersonInterface @extends(class: "Person") {\n' +
+      '  title: String!\n' +
+      '  startDate: StrictDate!\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'input EmployeeInput @extends(class: "PersonInput") {\n' +
+      '  title: String!\n' +
+      '  startDate: StrictDate!\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type MutationHierarchy {\n' +
+      '  upsertTeam(team: TeamInput!): Team\n' +
+      '  upsertEmployee(employee: EmployeeInput!): Employee\n' +
+      '}\n' +
+      '\n' +
+      'type Person implements PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'input PersonInput {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'interface PersonInterface {\n' +
+      '  firstName: String\n' +
+      '  lastName: String!\n' +
+      '  age: Int!\n' +
+      '}\n' +
+      '\n' +
+      'type QueryHierarchy {\n' +
+      '  teamByName(n: String!): Team\n' +
+      '  employeeByFirstName(n: String!): Employee\n' +
+      '}\n' +
+      '\n' +
+      'scalar StrictDate\n' +
+      '\n' +
+      'type Team {\n' +
+      '  name: String!\n' +
+      '  members: [Employee!]!\n' +
+      '}\n' +
+      '\n' +
+      'input TeamInput {\n' +
+      '  name: String!\n' +
+      '  members: [EmployeeInput!]!\n' +
+      '}\n' +
+      '\n' +
+      'directive @extends on OBJECT | INPUT_OBJECT\n' +
+      '\n' +
+      'schema {\n' +
+      '  query : QueryHierarchy\n' +
+      '  mutation : MutationHierarchy\n' +
+      '}\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::Employee extends meta::external::query::graphQL::metamodel::sql::Person\n' +
+     '{\n' +
+     '  title : String[1];\n' +
+     '  startDate : StrictDate[1];\n' +
+     '}\n' +
+     '\n' +
+     'Class meta::external::query::graphQL::metamodel::sql::MutationHierarchy\n' +
+     '{\n' +
+     '  upsertTeam(team: meta::external::query::graphQL::metamodel::sql::Team[1]): meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
+     '  upsertEmployee(employee: meta::external::query::graphQL::metamodel::sql::Employee[1]): meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
+     '}\n' +
+     '\n' +
+     'Class meta::external::query::graphQL::metamodel::sql::Person\n' +
+     '{\n' +
+     '  firstName : String[0..1];\n' +
+     '  lastName : String[1];\n' +
+     '  age : Integer[1];\n' +
+     '}\n' +
+     '\n' +
+     'Class meta::external::query::graphQL::metamodel::sql::QueryHierarchy\n' +
+     '{\n' +
+     '  teamByName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Team[0..1];\n' +
+     '  employeeByFirstName(n: String[1]): meta::external::query::graphQL::metamodel::sql::Employee[0..1];\n' +
+     '}\n' +
+     '\n' +
+     'Class meta::external::query::graphQL::metamodel::sql::Team\n' +
+     '{\n' +
+     '  name : String[1];\n' +
+     '  members : meta::external::query::graphQL::metamodel::sql::Employee[*];\n' +
+     '}',
+    $pureTypes);
+}
 
 function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl::tests::graphQLToPure(graphQLDocument: String[1], purePackage: String[1]): String[1]
 {

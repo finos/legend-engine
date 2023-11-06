@@ -254,6 +254,23 @@ function <<test.Test>> meta::relational::tests::tds::tdsJoin::testRightOuterJoin
                        '5,Roberts,2,Firm C,4', 'TDSNull,TDSNull,TDSNull,Firm A,2', 'TDSNull,TDSNull,TDSNull,Firm X,1'], $result.values.rows->map(r|$r.values->makeString(',')));
 }
 
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::testFullOuterJoinSimple():Boolean[1]
+{
+  let query = {|
+      testJoinTDS_Person.all()->project([#/testJoinTDS_Person/personID!personID#, #/testJoinTDS_Person/lastName!personName#, #/testJoinTDS_Person/employerID!eID#])
+        ->join(testJoinTDS_Firm.all()->project([#/testJoinTDS_Firm/legalName!firmName#, #/testJoinTDS_Firm/firmID!fID#]), JoinType.FULL_OUTER, {a,b|($a.getInteger('eID') + 2) == $b.getInteger('fID');})
+        ->sort(asc('personID'))
+    };
+
+  let result = execute($query, testJoinTDSMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals([Integer , String, Integer, String, Integer], $result.values.columns.type);
+  assertSize($result.values.rows, 9);
+  assertSameElements(['1,Smith,1,Firm B,3', '2,Johnson,1,Firm B,3', '3,Hill,1,Firm B,3', '4,Allen,1,Firm B,3', 
+          '5,Roberts,2,Firm C,4', '6,Hill,3,TDSNull,TDSNull', '7,Harris,4,TDSNull,TDSNull', 
+          'TDSNull,TDSNull,TDSNull,Firm A,2', 'TDSNull,TDSNull,TDSNull,Firm X,1'], $result.values.rows->map(r|$r.values->makeString(',')));
+}
+
 function <<test.Test>> meta::relational::tests::tds::tdsJoin::testInnerJoinConditionTrueUsingCol():Boolean[1]
 {
    let result = execute(|testJoinTDS_Person.all()->project([col(t|$t.personID,'personID'), col(t|$t.lastName,'personName'), col(t|$t.employerID,'eID')])

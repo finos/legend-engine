@@ -69,11 +69,11 @@ function
                let rows = if($type == JoinType.INNER || ($leftTdsRows->isNotEmpty() && $rightTdsRows->isNotEmpty()),
                  | $leftTdsRows->map(r1|$rightTdsRows->map(r2|^TDSRow(values=concatenate($r1.values, $r2.values), parent=$res)));,
                  | 
-                   if($type == JoinType.LEFT_OUTER,
+                   if(($type == JoinType.LEFT_OUTER) || ($type == JoinType.FULL_OUTER && $rightTdsRows->isEmpty()),
                       | $leftTdsRows->map(r1|^TDSRow(values=concatenate($r1.values, $requiredRightCols->map(c|^TDSNull())), parent=$res));,
-                      | if($type == JoinType.RIGHT_OUTER, 
+                      | if(($type == JoinType.RIGHT_OUTER) || ($type == JoinType.FULL_OUTER && $leftTdsRows->isEmpty()), 
                            | $rightTdsRows->map(r2|^TDSRow(values=concatenate($requiredLeftCols->map(c|^TDSNull()), $r2.values), parent=$res)), 
-                           | fail('Unsupported join type ' + $type->makeString()); [];
+                            | fail('Unsupported join type ' + $type->makeString()); [];
                            )
                       )
                  );         

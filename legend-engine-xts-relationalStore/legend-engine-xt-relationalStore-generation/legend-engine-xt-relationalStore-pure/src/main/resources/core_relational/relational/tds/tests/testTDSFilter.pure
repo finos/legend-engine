@@ -47,6 +47,13 @@ function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnEnum
    assertEquals('select "root".NAME as "name", "root".TYPE as "type" from addressTable as "root" where "root".TYPE = 1', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterOnDecimal():Boolean[1]
+{
+   let result = execute(|Person.all()->project(col(p | 1.0d, 'decimal'))->filter({l|$l.getDecimal('decimal') == 2.0d}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values.rows, 0);
+   assertEquals('select 1.0 as "decimal" from personTable as "root" where 1.0 = 2.0', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::tds::tdsFilter::testFilterTwoExpressions():Boolean[1]
 {
    let result = execute(|Person.all()->project([p | $p.firstName, p | $p.lastName], ['first', 'last'])->filter({r | $r.getString('first') == 'John' && $r.getString('last') == 'Johnson'}), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());

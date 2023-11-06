@@ -19,16 +19,11 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import javax.security.auth.Subject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -58,6 +53,13 @@ import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHeaderMap;
 import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
+
+import javax.security.auth.Subject;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
 import static org.finos.legend.engine.shared.core.kerberos.ExecSubject.exec;
@@ -235,6 +237,11 @@ public class SDLCLoader implements ModelLoader
 
     public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
     {
+        return loadMetadataFromHTTPURL(pm, startEvent, stopEvent, url, httpClientProvider, null);
+    }
+
+    public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider, Function<String, HttpRequestBase> httpRequestProvider)
+    {
         Scope scope = GlobalTracer.get().scopeManager().active();
         CloseableHttpClient httpclient;
 
@@ -260,15 +267,24 @@ public class SDLCLoader implements ModelLoader
         }
         LOGGER.info(new LogInfo(pm, LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
 
-        HttpGet httpGet = new HttpGet(url);
+        HttpRequestBase httpRequest;
+        if (httpRequestProvider != null)
+        {
+            httpRequest = httpRequestProvider.apply(url);
+        }
+        else
+        {
+            httpRequest = new HttpGet(url);
+        }
+
         if (span != null)
         {
-            GlobalTracer.get().inject(scope.span().context(), HTTP_HEADERS, new HttpRequestHeaderMap(httpGet));
+            GlobalTracer.get().inject(scope.span().context(), HTTP_HEADERS, new HttpRequestHeaderMap(httpRequest));
         }
 
         try
         {
-            HttpEntity entity1 = execHttpRequest(span, httpclient, httpGet);
+            HttpEntity entity1 = execHttpRequest(span, httpclient, httpRequest);
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
             Assert.assertTrue(modelContextData.getSerializer() != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
             LOGGER.info(new LogInfo(pm, stopEvent, (double) System.currentTimeMillis() - start).toString());
@@ -298,14 +314,14 @@ public class SDLCLoader implements ModelLoader
             HttpStatus.SC_GATEWAY_TIMEOUT
     );
 
-    private static HttpEntity execHttpRequest(Span span, CloseableHttpClient client, HttpGet httpGet) throws Exception
+    private static HttpEntity execHttpRequest(Span span, CloseableHttpClient client, HttpRequestBase httpRequest) throws Exception
     {
         int statusCode = -1;
         CloseableHttpResponse response = null;
         int i = 0;
         while (i++ < 5)
         {
-            response = client.execute(httpGet);
+            response = client.execute(httpRequest);
             statusCode = response.getStatusLine().getStatusCode();
             if (!HTTP_RESPONSE_CODE_TO_RETRY.contains(statusCode))
             {
@@ -333,7 +349,7 @@ public class SDLCLoader implements ModelLoader
         {
             String msg = EntityUtils.toString(entity);
             response.close();
-            throw new EngineException("Error response from " + httpGet.getURI() + ", HTTP" + statusCode + "\n" + msg);
+            throw new EngineException("Error response from " + httpRequest.getURI() + ", HTTP" + statusCode + "\n" + msg);
         }
 
         return entity;
