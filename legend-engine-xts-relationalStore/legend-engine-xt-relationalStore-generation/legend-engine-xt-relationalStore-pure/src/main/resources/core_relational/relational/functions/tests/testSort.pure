@@ -26,6 +26,14 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Bo
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".LASTNAME as "o_lastName" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::query::sort::testSortDeepWithPath():Boolean[1]
+{
+   let result = execute(|OrderPnl.all()->sortBy(#/OrderPnl/order/id#), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 3);
+   assertEquals([1,2,4], $result.values.order.id);
+   assertEquals('select "root".ORDER_ID as "pk_0", "root".pnl as "pnl", "root".supportContact as "supportContactName", "ordertable_1".ID as "o_id" from (select distinct "root".ORDER_ID as ORDER_ID, "root".pnl as pnl, "accounttable_0".ID as accountId, "salespersontable_0".NAME as supportContact, "salespersontable_0".PERSON_ID as supportContactId from orderPnlTable as "root" left outer join orderTable as "ordertable_0" on ("root".ORDER_ID = "ordertable_0".ID) left outer join accountTable as "accounttable_0" on ("ordertable_0".accountID = "accounttable_0".ID) left outer join salesPersonTable as "salespersontable_0" on ("ordertable_0".accountID = "salespersontable_0".ACCOUNT_ID) where "root".pnl > 0) as "root" left outer join orderTable as "ordertable_1" on ("root".ORDER_ID = "ordertable_1".ID) order by "ordertable_1".ID', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test, test.ToFix>> meta::relational::tests::query::sort::testSortDeep():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());

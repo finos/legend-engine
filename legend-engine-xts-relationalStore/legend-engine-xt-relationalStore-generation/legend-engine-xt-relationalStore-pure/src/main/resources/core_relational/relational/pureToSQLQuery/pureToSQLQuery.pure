@@ -2499,7 +2499,7 @@ function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionEx
                   leftSideOfFilter = $merge.leftSideOfFilter,
                   filteringOperation = $merge.filteringOperation,
                   extraFilteringOperation = $merge.extraFilteringOperation,
-                  orderBy = ^OrderBy(column=$joinResult.columns->at(0)->cast(@Alias).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
+                  orderBy = ^OrderBy(column=$joinResult.columns->at(0)->cast(@Alias).name->findAliasOrFail($merge).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
                )
    );
 }
