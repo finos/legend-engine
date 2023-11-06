@@ -54,16 +54,14 @@ public class ApplicationQuery
 {
     private final QueryStoreManager queryStoreManager;
 
-    public ApplicationQuery(Object client)
+    public ApplicationQuery(UnifiedJedis client)
     {
-        if (client instanceof UnifiedJedis)
-        {
-            this.queryStoreManager = new RedisQueryStoreManager((UnifiedJedis) client);
-        }
-        else
-        {
-            this.queryStoreManager = new MongoQueryStoreManager((MongoClient) client);
-        }
+        this.queryStoreManager = new RedisQueryStoreManager(client);
+    }
+
+    public ApplicationQuery(MongoClient client)
+    {
+        this.queryStoreManager = new MongoQueryStoreManager(client);
     }
 
     private static String getCurrentUser(ProfileManager<CommonProfile> profileManager)

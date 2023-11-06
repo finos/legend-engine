@@ -23,18 +23,6 @@ import redis.clients.jedis.JedisPooled;
 
 public class ApplicationQueryConfiguration
 {
-    public static Object getQueryStoreClient()
-    {
-        if (Vault.INSTANCE.hasValue("query.redis.host") && Vault.INSTANCE.hasValue("query.redis.port"))
-        {
-            return createRedisClient();
-        }
-        else
-        {
-            return createMongoClient();
-        }
-    }
-
     public static MongoClient createMongoClient()
     {
         String mongoConnectionString = Vault.INSTANCE.hasValue("query.mongo.connectionString") ? Vault.INSTANCE.getValue("query.mongo.connectionString") : null;

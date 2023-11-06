@@ -404,7 +404,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ServiceModelingApi(modelManager, serverConfiguration.deployment.mode, planExecutor));
 
         // Query
-        environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.getMongoClient()));
+        if (Vault.INSTANCE.hasValue("query.redis.host") && Vault.INSTANCE.hasValue("query.redis.port"))
+        {
+            environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.createRedisClient()));
+        }
+        else
+        {
+            environment.jersey().register(new ApplicationQuery(ApplicationQueryConfiguration.createMongoClient()));
+        }
 
         // Global
         environment.jersey().register(new JsonInformationExceptionMapper());
