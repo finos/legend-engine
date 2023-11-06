@@ -13,7 +13,7 @@
 //  limitations under the License.
 
 
-package org.finos.legend.engine.language.hostedService.deployment;
+package org.finos.legend.engine.language.hostedService.generation.deployment;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;

@@ -12,29 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.hostedService.deployment;
+package org.finos.legend.engine.language.hostedService.generation.deployment;
 
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentContent;
 import org.finos.legend.engine.language.hostedService.generation.model.GenerationInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 
-public class HostedServiceArtifact extends FunctionActivatorArtifact
+public class HostedServiceContent extends FunctionActivatorDeploymentContent
 {
 
-    public HostedServiceArtifact()
-    {
+    public GenerationInfo info;
+    public PureModelContextData serviceData;
 
+    public HostedServiceContent(GenerationInfo info)
+    {
+        this.info = info;
     }
 
-    public HostedServiceArtifact(GenerationInfo info)
+    public HostedServiceContent(GenerationInfo info, PureModelContextData serviceData)
     {
-        this.content = new HostedServiceContent(info);
+        this.info = info;
+        this.serviceData = serviceData;
     }
-
-    public HostedServiceArtifact(GenerationInfo info, PureModelContextData serviceData)
-    {
-        this.content = new HostedServiceContent(info, serviceData);
-    }
-
-
 }
