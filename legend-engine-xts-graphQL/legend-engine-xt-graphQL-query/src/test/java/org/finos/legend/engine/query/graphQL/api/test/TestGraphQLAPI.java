@@ -128,7 +128,7 @@ public class TestGraphQLAPI
 
     private GraphQLExecute getGraphQLExecuteWithCache(GraphQLPlanCache cache)
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        ModelManager modelManager = createModelManager();
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
@@ -222,7 +222,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_Relational_WithDependencies() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
+        ModelManager modelManager = createModelManager();
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
@@ -250,6 +250,11 @@ public class TestGraphQLAPI
                 "}" +
                 "}";
         Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    private static ModelManager createModelManager()
+    {
+        return new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
     }
 
 
@@ -483,7 +488,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLDebugGenerateGraphFetchDevAPI()
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        ModelManager modelManager = createModelManager();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLDebug graphQLDebug = new GraphQLDebug(modelManager, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())));
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
@@ -674,7 +679,7 @@ public class TestGraphQLAPI
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
     {
-        return buildPMCDMetadataHandler(path, resourcePath, null, null);
+        return buildPMCDMetadataHandler(path, resourcePath, new Protocol("pure", PureClientVersions.production), new PureModelContextPointer());
     }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath, Protocol serializer, PureModelContextPointer pointer) throws Exception
