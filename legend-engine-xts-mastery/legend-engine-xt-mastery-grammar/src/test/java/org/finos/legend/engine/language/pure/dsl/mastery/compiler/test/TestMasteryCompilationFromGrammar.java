@@ -903,6 +903,398 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         assertEquals("Widget", masterRecordDefinition._modelClass()._name());
     }
 
+    @Test
+    public void testCompilationErrorWhenInvalidTriggerDefinition()
+    {
+        String model = "###Pure\n" +
+            "Class org::dataeng::Widget\n" +
+            "{\n" +
+            "  widgetId: String[0..1];\n" +
+            "}\n\n" +
+            "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+            "\n" +
+            "{\n" +
+            "  modelClass: org::dataeng::Widget;\n" +
+            "  identityResolution: \n" +
+            "  {\n" +
+            "    resolutionQueries:\n" +
+            "      [\n" +
+            "        {\n" +
+            "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+            "                   ];\n" +
+            "          precedence: 1;\n" +
+            "        }\n" +
+            "      ]\n" +
+            "  }\n" +
+            "  recordSources:\n" +
+            "  [\n" +
+            "    widget-producer: {\n" +
+            "      description: 'REST Acquisition source.';\n" +
+            "      status: Development;\n" +
+            "      recordService: {\n" +
+            "        acquisitionProtocol: REST;\n" +
+            "      };\n" +
+            "      trigger: Cron #{\n" +
+            "        minute: 70;\n" +
+            "        hour: 25;\n" +
+            "        timezone: 'UTC';\n" +
+            "        frequency: Daily;\n" +
+            "        days: [ Monday, Tuesday, Wednesday, Thursday, Friday ];\n" +
+            "      }#;\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [8:1-39:1]: Error in 'alloy::mastery::WidgetMasterRecord': 'hour' must be a number between 0 and 23 (both inclusive), and 'minute' must be a number between 0 and 59 (both inclusive)");
+    }
+
+    @Test
+    public void testCompilationErrorWhenWeeklyFrequencyButMoreThanOneRunDaySpecified()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-producer: {\n" +
+                "      description: 'REST Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: REST;\n" +
+                "      };\n" +
+                "      trigger: Cron #{\n" +
+                "        minute: 45;\n" +
+                "        hour: 2;\n" +
+                "        timezone: 'UTC';\n" +
+                "        frequency: Weekly;\n" +
+                "        days: [ Monday, Tuesday ];\n" +
+                "      }#;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [8:1-39:1]: Error in 'alloy::mastery::WidgetMasterRecord': 'days' specified must be exactly one when trigger frequency is Weekly");
+    }
+
+    @Test
+    public void testCompilationErrorWhenRecordSourceIdExceedThirtyOne()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-producer-alloy-mastery-exceed-allowed-length: {\n" +
+                "      description: 'REST Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: REST;\n" +
+                "      };\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [24:5-31:5]: Invalid record source id 'widget-producer-alloy-mastery-exceed-allowed-length'; id must not be longer than 31 characters.");
+    }
+
+    @Test
+    public void testCompilationErrorWhenDeltaKafkaSourceHasRunProfileOtherThanExtraSmall()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-kafka: {\n" +
+                "      description: 'Kafka Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: Kafka #{\n" +
+                "          dataType: JSON;\n" +
+                "          connection: alloy::mastery::connection::KafkaConnection;\n" +
+                "        }#;\n" +
+                "      };\n" +
+                "      sequentialData: true;\n" +
+                "      runProfile: Medium;\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n" +
+
+                "MasteryConnection alloy::mastery::connection::KafkaConnection\n" +
+                "{\n" +
+                "    specification: Kafka #{\n" +
+                "      topicName: 'my-topic-name';\n" +
+                "      topicUrls: [\n" +
+                "        'some.url.com:2100',\n" +
+                "        'another.url.com:2100'\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "}";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [24:5-36:5]: 'runProfile' can only be set to ExtraSmall for Delta kafka sources");
+    }
+
+    @Test
+    public void testCompilationErrorWhenFullUniverseKafkaSourceHasRunProfileOtherThanSmall()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-kafka: {\n" +
+                "      description: 'Kafka Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: Kafka #{\n" +
+                "          dataType: JSON;\n" +
+                "          connection: alloy::mastery::connection::KafkaConnection;\n" +
+                "        }#;\n" +
+                "      };\n" +
+                "      runProfile: Medium;\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n" +
+
+                "MasteryConnection alloy::mastery::connection::KafkaConnection\n" +
+                "{\n" +
+                "    specification: Kafka #{\n" +
+                "      topicName: 'my-topic-name';\n" +
+                "      topicUrls: [\n" +
+                "        'some.url.com:2100',\n" +
+                "        'another.url.com:2100'\n" +
+                "      ];\n" +
+                "    }#;\n" +
+                "}";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [24:5-35:5]: 'runProfile' can only be set to Small for Full Universe kafka sources");
+    }
+
+    @Test
+    public void testCompilationErrorWhenJsonFileAcquisitionHasRecordsKey()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-kafka: {\n" +
+                "      description: 'Kafka Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: File #{\n" +
+                "          fileType: JSON;\n" +
+                "          filePath: '/download/day-file.json';\n" +
+                "          headerLines: 0;\n" +
+                "          connection: alloy::mastery::connection::HTTPConnection;\n" +
+                "        }#;\n" +
+                "      };\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n" +
+
+                "MasteryConnection alloy::mastery::connection::HTTPConnection\n" +
+                "{\n" +
+                "    specification: HTTP #{\n" +
+                "      url: 'https://some.url.com';\n" +
+                "      proxy: {\n" +
+                "        host: 'proxy.url.com';\n" +
+                "        port: 85;\n" +
+                "      };\n" +
+                "    }#;\n" +
+                "}\n\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [8:1-38:1]: Error in 'alloy::mastery::WidgetMasterRecord': 'recordsKey' must be specified when file type is JSON");
+    }
+
+    @Test
+    public void testCompilationErrorWhenDeleteRuleHasDataProviderScope()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  precedenceRules: [\n" +
+                "    DeleteRule: {\n" +
+                "      path: org::dataeng::Widget.widgetId;\n" +
+                "      ruleScope: [\n" +
+                "        DataProviderTypeScope {Exchange}\n" +
+                "      ];\n" +
+                "    }\n" +
+                "]\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-producer: {\n" +
+                "      description: 'REST Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: REST;\n" +
+                "      };\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n" +
+
+                "ExchangeDataProvider alloy::mastery::dataprovider::LSE;\n\n\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [23:5-28:5]: DataProviderTypeScope is not allowed on DeleteRule");
+    }
+
+    @Test
+    public void testCompilationErrorWhenConditionalRuleHasScopeDefined()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  precedenceRules: [\n" +
+                "    ConditionalRule: {\n" +
+                "      predicate: {incoming: org::dataeng::Widget[1],current: org::dataeng::Widget[1]|$incoming.widgetId == $current.widgetId};\n" +
+                "      path: org::dataeng::Widget.widgetId;\n" +
+                "      ruleScope: [\n" +
+                "        DataProviderTypeScope {Exchange}\n" +
+                "      ];\n" +
+                "    }\n" +
+                "]\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-producer: {\n" +
+                "      description: 'REST Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: REST;\n" +
+                "      };\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n" +
+
+                "ExchangeDataProvider alloy::mastery::dataprovider::LSE;\n\n\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [23:5-29:5]: ConditionalRule with ruleScope is currently unsupported");
+    }
+
     private void assertDataProviders(PureModel model)
     {
         PackageableElement lseDataProvider = model.getPackageableElement("alloy::mastery::dataprovider::LSE");
