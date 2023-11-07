@@ -24,7 +24,7 @@ public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
     protected String queryClassPath;
     protected String query;
 
-    public GraphQLProdCacheKey (String groupID, String artifactId, String versionId, String queryClassPath, String query)
+    public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String queryClassPath, String query)
     {
         this.groupID = groupID;
         this.artifactId = artifactId;
