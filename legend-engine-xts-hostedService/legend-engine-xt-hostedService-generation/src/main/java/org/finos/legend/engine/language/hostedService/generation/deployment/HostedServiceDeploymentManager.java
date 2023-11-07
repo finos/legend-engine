@@ -12,14 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.language.hostedService.deployment;
+package org.finos.legend.engine.language.hostedService.generation.deployment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
+
 import java.util.List;
 
 public class HostedServiceDeploymentManager implements  DeploymentManager<HostedServiceArtifact, HostedServiceDeploymentResult, HostedServiceDeploymentConfiguration>

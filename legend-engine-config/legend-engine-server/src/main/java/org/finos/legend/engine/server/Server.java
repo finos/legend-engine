@@ -84,7 +84,7 @@ import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
-import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
+import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
