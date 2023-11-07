@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.query.graphQL.api.cache;
 
-import com.google.common.base.Objects;
+import java.util.Objects;
 
 public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
 {
@@ -45,11 +45,11 @@ public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
             return false;
         }
         GraphQLProdCacheKey that = (GraphQLProdCacheKey) o;
-        return Objects.equal(groupID, that.groupID)
-                && Objects.equal(artifactId, that.artifactId)
-                && Objects.equal(versionId, that.versionId)
-                && Objects.equal(queryClassPath, that.queryClassPath)
-                && Objects.equal(query, that.query);
+        return Objects.equals(groupID, that.groupID)
+                && Objects.equals(artifactId, that.artifactId)
+                && Objects.equals(versionId, that.versionId)
+                && Objects.equals(queryClassPath, that.queryClassPath)
+                && Objects.equals(query, that.query);
     }
 
     public String getGroupID()

@@ -1,6 +1,6 @@
 package org.finos.legend.engine.query.graphQL.api.cache;
 
-import com.google.common.base.Objects;
+import java.util.Objects;
 
 public class GraphQLProdDataspaceCacheKey extends GraphQLProdCacheKey
 {
@@ -27,14 +27,14 @@ public class GraphQLProdDataspaceCacheKey extends GraphQLProdCacheKey
         }
         GraphQLProdDataspaceCacheKey that = (GraphQLProdDataspaceCacheKey) o;
         return super.equals(that)
-                && Objects.equal(dataspacePath, that.dataspacePath)
-                && Objects.equal(executionContext, that.executionContext);
+                && Objects.equals(dataspacePath, that.dataspacePath)
+                && Objects.equals(executionContext, that.executionContext);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(groupID, artifactId, versionId, dataspacePath, executionContext, queryClassPath, query);
+        return Objects.hash(groupID, artifactId, versionId, dataspacePath, executionContext, queryClassPath, query);
     }
 
     public String getDataspacePath()

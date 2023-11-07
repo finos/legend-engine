@@ -1,6 +1,6 @@
 package org.finos.legend.engine.query.graphQL.api.cache;
 
-import com.google.common.base.Objects;
+import java.util.Objects;
 
 public class GraphQLProdMappingRuntimeCacheKey extends GraphQLProdCacheKey
 {
@@ -27,14 +27,14 @@ public class GraphQLProdMappingRuntimeCacheKey extends GraphQLProdCacheKey
         }
         GraphQLProdMappingRuntimeCacheKey that = (GraphQLProdMappingRuntimeCacheKey) o;
         return super.equals(that)
-                && Objects.equal(mappingPath, that.mappingPath)
-                && Objects.equal(runtimePath, that.runtimePath);
+                && Objects.equals(mappingPath, that.mappingPath)
+                && Objects.equals(runtimePath, that.runtimePath);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query);
+        return Objects.hash(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query);
     }
 
     public String getMappingPath()
