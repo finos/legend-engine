@@ -20,7 +20,7 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::s
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::createDbExtensionForSnowflake():DbExtension[1]
 {
-   let reservedWords = defaultReservedWords();
+   let reservedWords = snowflakeReservedWords();
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSnowflake());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
@@ -353,3 +353,102 @@ function meta::relational::functions::sqlQueryToString::snowflake::preAndFinally
     | []
   );
 }
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::snowflakeReservedWords():String[*]
+{
+  // Based on https://docs.snowflake.com/en/sql-reference/reserved-keywords
+  [
+    'account',
+    'alter',
+    'and',
+    'any',
+    'as',
+    'between',
+    'by',
+    'case',
+    'cast',
+    'check',
+    'column',
+    'connect',
+    'connection',
+    'constraint',
+    'create',
+    'cross',
+    'current',
+    'current_date',
+    'current_time',
+    'current_timestamp',
+    'current_user',
+    'database',
+    'delete',
+    'distinct',
+    'drop',
+    'else',
+    'exists',
+    'false',
+    'following',
+    'for',
+    'from',
+    'full',
+    'grant',
+    'group',
+    'gscluster',
+    'having',
+    'ilike',
+    'in',
+    'increment',
+    'inner',
+    'insert',
+    'intersect',
+    'into',
+    'is',
+    'issue',
+    'join',
+    'lateral',
+    'left',
+    'like',
+    'localtime',
+    'localtimestamp',
+    'minus',
+    'natural',
+    'not',
+    'null',
+    'of',
+    'on',
+    'or',
+    'order',
+    'organization',
+    'qualify',
+    'regexp',
+    'revoke',
+    'right',
+    'rlike',
+    'row',
+    'rows',
+    'sample',
+    'schema',
+    'select',
+    'set',
+    'some',
+    'start',
+    'table',
+    'tablesample',
+    'then',
+    'to',
+    'trigger',
+    'true',
+    'try_cast',
+    'union',
+    'unique',
+    'update',
+    'using',
+    'values',
+    'view',
+    'when',
+    'whenever',
+    'where',
+    'with'
+  ]
+}
+
+
