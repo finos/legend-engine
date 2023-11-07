@@ -25,4 +25,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 })
 public abstract class PureModelContext
 {
+    public <T> T accept(PureModelContextVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

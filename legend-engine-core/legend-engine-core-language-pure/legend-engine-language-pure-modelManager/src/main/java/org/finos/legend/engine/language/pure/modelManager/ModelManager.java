@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.ExecutionException;
@@ -31,8 +32,11 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCollection;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
@@ -110,22 +114,52 @@ public class ModelManager
     // Remove clientVersion
     public PureModelContextData loadData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm)
     {
-        try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
+        Span span = GlobalTracer.get().buildSpan("Load Model").start();
+        try (Scope ignored = GlobalTracer.get().activateSpan(span))
         {
-            scope.span().setTag("context", context.getClass().getSimpleName());
-            if (context instanceof PureModelContextData)
+            span.setTag("context", context.getClass().getSimpleName());
+
+            PureModelContextVisitor<PureModelContextData> visitor = new PureModelContextVisitor<PureModelContextData>()
             {
-                return (PureModelContextData) context;
-            }
-            else if (context instanceof PureModelContextText)
-            {
-                return PureGrammarParser.newInstance().parseModel(((PureModelContextText) context).code);
-            }
-            else
-            {
-                ModelLoader loader = this.modelLoaderForContext(context);
-                return loader.load(pm, context, clientVersion, scope.span());
-            }
+                @Override
+                public PureModelContextData visit(PureModelContextData data)
+                {
+                    return data;
+                }
+
+                @Override
+                public PureModelContextData visit(PureModelContextText text)
+                {
+                    return PureGrammarParser.newInstance().parseModel(text.code);
+                }
+
+                @Override
+                public PureModelContextData visit(PureModelContextPointer pointer)
+                {
+                    return this.visit((PureModelContext) pointer);
+                }
+
+                @Override
+                public PureModelContextData visit(PureModelContextCollection collection)
+                {
+                    PureModelContextData.Builder builder = PureModelContextData.newBuilder();
+                    collection.contexts.stream().map(x -> x.accept(this)).forEach(builder::addPureModelContextData);
+                    return builder.distinct().sorted().build();
+                }
+
+                @Override
+                public PureModelContextData visit(PureModelContext catchAll)
+                {
+                    ModelLoader loader = modelLoaderForContext(catchAll);
+                    return loader.load(pm, catchAll, clientVersion, span);
+                }
+            };
+
+            return context.accept(visitor);
+        }
+        finally
+        {
+            span.finish();
         }
     }
 

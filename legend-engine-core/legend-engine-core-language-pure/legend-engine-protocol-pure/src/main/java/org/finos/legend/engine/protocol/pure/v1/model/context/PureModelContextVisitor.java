@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -11,18 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+//
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
-import org.finos.legend.engine.protocol.Protocol;
-
-public class PureModelContextText extends PureModelContext
+public interface PureModelContextVisitor<T>
 {
-    public Protocol serializer;
-    public String code;
+    T visit(PureModelContextData data);
 
-    public <T> T accept(PureModelContextVisitor<T> visitor)
-    {
-        return visitor.visit(this);
-    }
+    T visit(PureModelContextText text);
+
+    T visit(PureModelContextPointer pointer);
+
+    T visit(PureModelContextCollection collection);
+
+    T visit(PureModelContext catchAll);
 }
