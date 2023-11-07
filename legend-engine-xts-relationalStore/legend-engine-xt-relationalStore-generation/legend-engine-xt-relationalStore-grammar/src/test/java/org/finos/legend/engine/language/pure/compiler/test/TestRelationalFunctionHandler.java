@@ -94,4 +94,79 @@ public class TestRelationalFunctionHandler
                 "   }:meta::pure::tds::TabularDataSet[1];" +
                 "}");
     }
+
+    @Test
+    public void testCompile_zScore()
+    {
+        // Faulty stereotype
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test("###Pure\n" +
+                "function xx::myFunc() : Boolean[1] {\n" +
+                "   ^Pair<String,Integer>(first = 'student1', second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])->meta::pure::tds::extensions::zScore([], ['score'], ['score zScore']);\n" +
+                "   true;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompile_iqrClassify()
+    {
+        // Faulty stereotype
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test("###Pure\n" +
+                "function xx::myFunc() : Boolean[1] {\n" +
+                "   ^Pair<String,Integer>(first = 'student1', second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])->meta::pure::tds::extensions::iqrClassify([], 'score', 'irq_classification');\n" +
+                "   true;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompile_columnValueDifference1()
+    {
+        // Faulty stereotype
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test("###Pure\n" +
+                "function xx::myFunc() : Boolean[1] {\n" +
+                "   ^Pair<Integer,Integer>(first = 1, second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])\n" +
+                "               ->meta::pure::tds::extensions::columnValueDifference(\n" +
+                "                       ^Pair<Integer,Integer>(first = 1, second = 6)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')]),\n" +
+                "                       ['student'], ['score']);\n" +
+                "   true;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompile_columnValueDifference2()
+    {
+        // Faulty stereotype
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test("###Pure\n" +
+                "function xx::myFunc() : Boolean[1] {\n" +
+                "   ^Pair<Integer,Integer>(first = 1, second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])\n" +
+                "               ->meta::pure::tds::extensions::columnValueDifference(\n" +
+                "                       ^Pair<Integer,Integer>(first = 1, second = 6)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')]),\n" +
+                "                       ['student'], ['score'], ['score diff']);\n" +
+                "   true;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompile_extendWithDigestOnColumns1()
+    {
+        // Faulty stereotype
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test("###Pure\n" +
+                "function xx::myFunc() : Boolean[1] {\n" +
+                "   ^Pair<Integer,Integer>(first = 1, second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])\n" +
+                "               ->meta::pure::tds::extensions::extendWithDigestOnColumns('digest');\n" +
+                "   true;\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testCompile_extendWithDigestOnColumns2()
+    {
+        // Faulty stereotype
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test("###Pure\n" +
+                "function xx::myFunc() : Boolean[1] {\n" +
+                "   ^Pair<Integer,Integer>(first = 1, second = 5)->project([col(x|$x.first, 'student'), col(x|$x.second, 'score')])\n" +
+                "               ->meta::pure::tds::extensions::extendWithDigestOnColumns(['student'], meta::pure::functions::hash::HashType.MD5, 'digest');\n" +
+                "   true;\n" +
+                "}\n");
+    }
+
 }
