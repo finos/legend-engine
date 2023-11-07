@@ -27,6 +27,7 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -112,7 +113,7 @@ public class TestTotalCountDirective
 
     private GraphQLExecute getGraphQLExecuteWithCache(GraphQLPlanCache cache)
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
@@ -242,7 +243,7 @@ public class TestTotalCountDirective
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
     {
-        return buildPMCDMetadataHandler(path, resourcePath, null, null);
+        return buildPMCDMetadataHandler(path, resourcePath, new Protocol(), new PureModelContextPointer());
     }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath, Protocol serializer, PureModelContextPointer pointer) throws Exception

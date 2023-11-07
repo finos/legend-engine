@@ -16,21 +16,29 @@
 package org.finos.legend.engine.language.pure.modelManager.sdlc;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import com.github.tomakehurst.wiremock.stubbing.Scenario;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.util.GlobalTracer;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.eclipse.collections.api.factory.Lists;
+import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.After;
 import org.junit.Assert;
@@ -110,6 +118,51 @@ public class TestSDLCLoader
         }
     }
 
+    @Test
+    public void testSdlcLoaderForWorkspacesWithoutDependency() throws Exception
+    {
+        WorkspaceSDLC sdlcInfo = new WorkspaceSDLC();
+        sdlcInfo.project = "proj-1234";
+        sdlcInfo.isGroupWorkspace = true;
+        sdlcInfo.version = "workspaceAbc";
+
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        pointer.sdlcInfo = sdlcInfo;
+
+        configureWireMockForRetries();
+        SDLCLoader sdlcLoader = createSDLCLoader();
+        PureModelContextData pmcdLoaded = sdlcLoader.load(Lists.fixedSize.empty(), pointer, "v1_32_0", tracer.activeSpan());
+        Assert.assertNotNull(pmcdLoaded);
+        Assert.assertEquals(1, pmcdLoaded.getElements().size());
+        Assert.assertEquals("pkg::pkg::myClass", pmcdLoaded.getElements().get(0).getPath());
+    }
+
+    @Test
+    public void testSdlcLoaderForWorkspacesWithDependency() throws Exception
+    {
+        WorkspaceSDLC sdlcInfo = new WorkspaceSDLC();
+        sdlcInfo.project = "proj-1235";
+        sdlcInfo.isGroupWorkspace = false;
+        sdlcInfo.version = "workspaceAbc";
+
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        pointer.sdlcInfo = sdlcInfo;
+
+        configureWireMockForRetries();
+        SDLCLoader sdlcLoader = createSDLCLoader();
+
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, tracer, sdlcLoader);
+
+        PureModelContextData pmcdLoaded = modelManager.loadData(pointer, "v1_32_0", Lists.fixedSize.empty());
+
+        Assert.assertNotNull(pmcdLoaded);
+        Assert.assertEquals(2, pmcdLoaded.getElements().size());
+
+        List<String> paths = pmcdLoaded.getElements().stream().map(PackageableElement::getPath).sorted().collect(Collectors.toList());
+        Assert.assertEquals("pkg::pkg::myAnotherClass", paths.get(0));
+        Assert.assertEquals("pkg::pkg::myClass", paths.get(1));
+    }
+
     private static PureModelContextPointer getPureModelContextPointer()
     {
         AlloySDLC sdlcInfo = new AlloySDLC();
@@ -127,6 +180,7 @@ public class TestSDLCLoader
         MetaDataServerConfiguration serverConfiguration = new MetaDataServerConfiguration();
         serverConfiguration.alloy = new ServerConnectionConfiguration();
         serverConfiguration.pure = new ServerConnectionConfiguration();
+        serverConfiguration.sdlc = new ServerConnectionConfiguration();
 
         serverConfiguration.alloy.host = "localhost";
         serverConfiguration.alloy.port = rule.port();
@@ -136,13 +190,19 @@ public class TestSDLCLoader
         serverConfiguration.pure.port = rule.port();
         serverConfiguration.pure.prefix = "/pure";
 
+        serverConfiguration.sdlc.host = "localhost";
+        serverConfiguration.sdlc.port = rule.port();
+        serverConfiguration.sdlc.prefix = "/sdlc";
+
         return new SDLCLoader(serverConfiguration, Subject::new);
     }
 
     private static void configureWireMockForRetries() throws JsonProcessingException
     {
+        ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
         PureModelContextData data = PureModelContextData.newPureModelContextData(new Protocol(), new PureModelContextPointer(), Lists.fixedSize.empty());
-        String pmcdJson = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().writeValueAsString(data);
+        String pmcdJson = objectMapper.writeValueAsString(data);
 
         WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_32_0")
                 .inScenario("RETRY_FAILURES")
@@ -161,6 +221,34 @@ public class TestSDLCLoader
                 .whenScenarioStateIs("FAILED_2")
                 .willReturn(WireMock.okJson(pmcdJson))
                 .willSetStateTo("FAILED_3"));
+
+
+        Class t = new Class();
+        t.name = "myClass";
+        t._package = "pkg::pkg";
+        PureModelContextData data2 = PureModelContextData.newPureModelContextData(new Protocol(), new PureModelContextPointer(), Lists.fixedSize.with(t));
+        String pmcdJson2 = objectMapper.writeValueAsString(data2);
+
+        Class t2 = new Class();
+        t2.name = "myAnotherClass";
+        t2._package = "pkg::pkg";
+        PureModelContextData dataDep = PureModelContextData.newPureModelContextData(new Protocol(), new PureModelContextPointer(), Lists.fixedSize.with(t2));
+        String pmcdJsonDep = objectMapper.writeValueAsString(dataDep);
+
+        WireMock.stubFor(WireMock.get("/sdlc/api/projects/proj-1234/groupWorkspaces/workspaceAbc/pureModelContextData")
+                .willReturn(WireMock.okJson(pmcdJson2)));
+
+        WireMock.stubFor(WireMock.get("/sdlc/api/projects/proj-1234/groupWorkspaces/workspaceAbc/revisions/HEAD/upstreamProjects")
+                .willReturn(WireMock.okJson("[]")));
+
+        WireMock.stubFor(WireMock.get("/sdlc/api/projects/proj-1235/workspaces/workspaceAbc/pureModelContextData")
+                .willReturn(WireMock.okJson(pmcdJson2)));
+
+        WireMock.stubFor(WireMock.get("/sdlc/api/projects/proj-1235/workspaces/workspaceAbc/revisions/HEAD/upstreamProjects")
+                .willReturn(WireMock.okJson("[{\"projectId\": \"org.finos.legend.dependency:models\",\"versionId\": \"2.0.1\"}]")));
+
+        WireMock.stubFor(WireMock.get("/alloy/projects/org.finos.legend.dependency/models/versions/2.0.1/pureModelContextData?clientVersion=v1_32_0")
+                .willReturn(WireMock.okJson(pmcdJsonDep)));
     }
 
     private static void configureWireMockForNoRetries() throws JsonProcessingException
