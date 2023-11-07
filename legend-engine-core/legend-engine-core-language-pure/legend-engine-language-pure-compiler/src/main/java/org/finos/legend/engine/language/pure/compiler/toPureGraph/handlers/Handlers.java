@@ -619,6 +619,8 @@ public class Handlers
         register(m(h("meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)));
 
         register("meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
+        
+        register("meta::pure::functions::hash::hash_String_1__HashType_1__String_1_", true, ps -> res("String","one"));
 
         // Extensions
         CompileContext context = this.pureModel.getContext();
@@ -1884,6 +1886,7 @@ public class Handlers
         map.put("meta::pure::functions::date::weekOfYear_Date_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::year_Date_$0_1$__Integer_$0_1$_", (List<ValueSpecification> ps) -> ps.size() == 1 && matchZeroOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
         map.put("meta::pure::functions::date::year_Date_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Date", "StrictDate", "DateTime", "LatestDate").contains(ps.get(0)._genericType()._rawType()._name()));
+        map.put("meta::pure::functions::hash::hash_String_1__HashType_1__String_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || "String".equals(ps.get(0)._genericType()._rawType()._name())) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "HashType".equals(ps.get(1)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::lang::cast_Any_m__T_1__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(1)._multiplicity()));
         map.put("meta::pure::functions::lang::compare_T_1__T_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && isOne(ps.get(1)._multiplicity()));
         map.put("meta::pure::functions::lang::eval_Function_1__T_n__V_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && ("Nil".equals(ps.get(0)._genericType()._rawType()._name()) || check(funcType(ps.get(0)._genericType()), (FunctionType ft) -> check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1))));
