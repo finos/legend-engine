@@ -30,7 +30,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       isBooleanLiteralSupported = true,
       collectionThresholdLimit = 16348,
       aliasLimit = 255,
-      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
