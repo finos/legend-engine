@@ -156,7 +156,7 @@ public class DataSpaceAnalyticsHelper
         return null;
     }
 
-    private static MappingModelCoverageAnalysisResult buildMappingModelCoverageAnalysisResult(Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult, DataSpaceExecutionContextAnalysisResult excResult, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions, Boolean returnDataSets)
+    private static MappingModelCoverageAnalysisResult buildMappingModelCoverageAnalysisResult(Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult, DataSpaceExecutionContextAnalysisResult excResult, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions, Boolean returnDataSets, Boolean returnLightPMCD)
     {
         try
         {
@@ -165,73 +165,76 @@ public class DataSpaceAnalyticsHelper
             {
                 excResult.datasets = LazyIterate.flatCollect(entitlementServiceExtensions, extension -> extension.generateDatasetSpecifications(null, excResult.defaultRuntime, pureModel.getRuntime(excResult.defaultRuntime), excResult.mapping, pureModel.getMapping(excResult.mapping), pureModelContextData, pureModel)).toList();
             }
-            PureModelContextData.Builder builder = PureModelContextData.newBuilder();
+            if (returnLightPMCD)
+            {
+                PureModelContextData.Builder builder = PureModelContextData.newBuilder();
 
-            // Here we prune the bindings to have just packageableIncludes part of ModelUnit
-            // because we only need that as a part of analytics.
-            List<String> bindingPaths = pureModelContextData.getElements().stream().filter(el -> el instanceof  Binding).map(b ->
-            {
-                Binding _binding = new Binding();
-                _binding.name = b.name;
-                _binding.contentType = ((Binding) b).contentType;
-                _binding._package = b._package;
-                _binding.modelUnit = ((Binding) b).modelUnit;
-                _binding.modelUnit.packageableElementExcludes = org.eclipse.collections.api.factory.Lists.mutable.empty();
-                builder.addElement(_binding);
-                return b.getPath();
-            }).collect(Collectors.toList());
-            RichIterable<? extends Root_meta_external_format_shared_binding_Binding> bindings = org.eclipse.collections.api.factory.Lists.mutable.ofAll(bindingPaths.stream().map(path ->
-            {
-                Root_meta_external_format_shared_binding_Binding binding;
-                try
+                // Here we prune the bindings to have just packageableIncludes part of ModelUnit
+                // because we only need that as a part of analytics.
+                List<String> bindingPaths = pureModelContextData.getElements().stream().filter(el -> el instanceof  Binding).map(b ->
                 {
-                    binding = (Root_meta_external_format_shared_binding_Binding) pureModel.getPackageableElement(path);
-                    return binding;
-                }
-                catch (Exception ignored)
+                    Binding _binding = new Binding();
+                    _binding.name = b.name;
+                    _binding.contentType = ((Binding) b).contentType;
+                    _binding._package = b._package;
+                    _binding.modelUnit = ((Binding) b).modelUnit;
+                    _binding.modelUnit.packageableElementExcludes = org.eclipse.collections.api.factory.Lists.mutable.empty();
+                    builder.addElement(_binding);
+                    return b.getPath();
+                }).collect(Collectors.toList());
+                RichIterable<? extends Root_meta_external_format_shared_binding_Binding> bindings = org.eclipse.collections.api.factory.Lists.mutable.ofAll(bindingPaths.stream().map(path ->
                 {
-
-                }
-                return null;
-            }).filter(c -> c != null).collect(Collectors.toList()));
-            Root_meta_analytics_binding_modelCoverage_BindingModelCoverageAnalysisResult bindingAnalysisResult = core_analytics_binding_modelCoverage_analytics.Root_meta_analytics_binding_modelCoverage_getBindingModelCoverage_Binding_MANY__BindingModelCoverageAnalysisResult_1_(bindings, pureModel.getExecutionSupport());
-            List<String> functionPaths = pureModelContextData.getElements().stream().filter(el -> el instanceof Function).map(e -> e.getPath()).collect(Collectors.toList());
-            List<String> allExtraElements = functionPaths;
-            allExtraElements.add(dataSpaceProtocol.getPath());
-            pureModelContextData.getElements().stream().filter(el -> allExtraElements.contains(el.getPath())).forEach(builder::addElement);
-            List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = builder.build().getElements();
-            RichIterable<? extends ConcreteFunctionDefinition<? extends  Object>> functions = org.eclipse.collections.api.factory.Lists.mutable.ofAll(functionPaths.stream().map(path ->
-            {
-                ConcreteFunctionDefinition<? extends Object> function = null;
-                try
-                {
-                    function = pureModel.getConcreteFunctionDefinition_safe(path);
-                    if (function == null)
+                    Root_meta_external_format_shared_binding_Binding binding;
+                    try
                     {
-                        Function _function = (Function) elements.stream().filter(e -> e.getPath().equals(path)).findFirst().get();
-                        function = pureModel.getConcreteFunctionDefinition_safe(path + HelperValueSpecificationGrammarComposer.getFunctionSignature(_function));
+                        binding = (Root_meta_external_format_shared_binding_Binding) pureModel.getPackageableElement(path);
+                        return binding;
+                    }
+                    catch (Exception ignored)
+                    {
 
                     }
-                    return function;
-                }
-                catch (Exception ignored)
+                    return null;
+                }).filter(c -> c != null).collect(Collectors.toList()));
+                Root_meta_analytics_binding_modelCoverage_BindingModelCoverageAnalysisResult bindingAnalysisResult = core_analytics_binding_modelCoverage_analytics.Root_meta_analytics_binding_modelCoverage_getBindingModelCoverage_Binding_MANY__BindingModelCoverageAnalysisResult_1_(bindings, pureModel.getExecutionSupport());
+                List<String> functionPaths = pureModelContextData.getElements().stream().filter(el -> el instanceof Function).map(e -> e.getPath()).collect(Collectors.toList());
+                List<String> allExtraElements = functionPaths;
+                allExtraElements.add(dataSpaceProtocol.getPath());
+                pureModelContextData.getElements().stream().filter(el -> allExtraElements.contains(el.getPath())).forEach(builder::addElement);
+                List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement> elements = builder.build().getElements();
+                RichIterable<? extends ConcreteFunctionDefinition<? extends  Object>> functions = org.eclipse.collections.api.factory.Lists.mutable.ofAll(functionPaths.stream().map(path ->
                 {
+                    ConcreteFunctionDefinition<? extends Object> function = null;
+                    try
+                    {
+                        function = pureModel.getConcreteFunctionDefinition_safe(path);
+                        if (function == null)
+                        {
+                            Function _function = (Function) elements.stream().filter(e -> e.getPath().equals(path)).findFirst().get();
+                            function = pureModel.getConcreteFunctionDefinition_safe(path + HelperValueSpecificationGrammarComposer.getFunctionSignature(_function));
 
-                }
-                return null;
-            }).filter(c -> c != null).collect(Collectors.toList()));
-            Root_meta_analytics_function_modelCoverage_FunctionModelCoverageAnalysisResult functionCoverageAnalysisResult = core_analytics_function_modelCoverage_analytics.Root_meta_analytics_function_modelCoverage_getFunctionModelCoverage_ConcreteFunctionDefinition_MANY__FunctionModelCoverageAnalysisResult_1_(org.eclipse.collections.impl.factory.Lists.mutable.ofAll(functions), pureModel.getExecutionSupport());
-            MutableList<? extends Class<? extends Object>> coveredClasses = mappingModelCoverageAnalysisResult._classes().toList();
-            List<String> coveredClassesPaths = coveredClasses.stream().map(c -> HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport())).collect(Collectors.toList());
-            coveredClasses = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(Stream.concat(Stream.concat(functionCoverageAnalysisResult._classes().toList().stream().filter(c -> !coveredClassesPaths.contains(HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport()))),
-                    bindingAnalysisResult._classes().toList().stream().filter(c -> !coveredClassesPaths.contains(HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport())))).distinct(),
-                    mappingModelCoverageAnalysisResult._classes().toList().stream()).collect(Collectors.toList()));
-            MutableList<Enumeration<? extends Enum>> coveredEnumerations = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(Stream.concat(mappingModelCoverageAnalysisResult._enumerations().toList().stream(), functionCoverageAnalysisResult._enumerations().toList().stream()).distinct().collect(Collectors.toList()));
-            PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(coveredClasses, clientVersion, pureModel.getExecutionSupport());
-            PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(coveredEnumerations, clientVersion, pureModel.getExecutionSupport());
-            PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) mappingModelCoverageAnalysisResult._profiles(), clientVersion, pureModel.getExecutionSupport());
-            PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(mappingModelCoverageAnalysisResult._associations(), clientVersion, pureModel.getExecutionSupport());
-            mappingModelCoverageAnalysisResultProtocol.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
+                        }
+                        return function;
+                    }
+                    catch (Exception ignored)
+                    {
+
+                    }
+                    return null;
+                }).filter(c -> c != null).collect(Collectors.toList()));
+                Root_meta_analytics_function_modelCoverage_FunctionModelCoverageAnalysisResult functionCoverageAnalysisResult = core_analytics_function_modelCoverage_analytics.Root_meta_analytics_function_modelCoverage_getFunctionModelCoverage_ConcreteFunctionDefinition_MANY__FunctionModelCoverageAnalysisResult_1_(org.eclipse.collections.impl.factory.Lists.mutable.ofAll(functions), pureModel.getExecutionSupport());
+                MutableList<? extends Class<? extends Object>> coveredClasses = mappingModelCoverageAnalysisResult._classes().toList();
+                List<String> coveredClassesPaths = coveredClasses.stream().map(c -> HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport())).collect(Collectors.toList());
+                coveredClasses = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(Stream.concat(Stream.concat(functionCoverageAnalysisResult._classes().toList().stream().filter(c -> !coveredClassesPaths.contains(HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport()))),
+                        bindingAnalysisResult._classes().toList().stream().filter(c -> !coveredClassesPaths.contains(HelperModelBuilder.getElementFullPath(c, pureModel.getExecutionSupport())))).distinct(),
+                        mappingModelCoverageAnalysisResult._classes().toList().stream()).collect(Collectors.toList()));
+                MutableList<Enumeration<? extends Enum>> coveredEnumerations = org.eclipse.collections.impl.factory.Lists.mutable.ofAll(Stream.concat(mappingModelCoverageAnalysisResult._enumerations().toList().stream(), functionCoverageAnalysisResult._enumerations().toList().stream()).distinct().collect(Collectors.toList()));
+                PureModelContextData classes = PureModelContextDataGenerator.generatePureModelContextDataFromClasses(coveredClasses, clientVersion, pureModel.getExecutionSupport());
+                PureModelContextData enums = PureModelContextDataGenerator.generatePureModelContextDataFromEnumerations(coveredEnumerations, clientVersion, pureModel.getExecutionSupport());
+                PureModelContextData _profiles = PureModelContextDataGenerator.generatePureModelContextDataFromProfile((RichIterable<Profile>) mappingModelCoverageAnalysisResult._profiles(), clientVersion, pureModel.getExecutionSupport());
+                PureModelContextData associations = PureModelContextDataGenerator.generatePureModelContextDataFromAssociations(mappingModelCoverageAnalysisResult._associations(), clientVersion, pureModel.getExecutionSupport());
+                mappingModelCoverageAnalysisResultProtocol.model = builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations);
+            }
             return mappingModelCoverageAnalysisResultProtocol;
         }
         catch (Exception ignored)
@@ -242,14 +245,15 @@ public class DataSpaceAnalyticsHelper
 
     public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion)
     {
-        return analyzeDataSpace(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)), EntitlementServiceExtensionLoader.extensions());
+        return analyzeDataSpace(dataSpace, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class)), EntitlementServiceExtensionLoader.extensions(), false);
     }
 
-    public static DataSpaceAnalysisResult analyzeDataSpaceCoverage(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions)
+    public static DataSpaceAnalysisResult analyzeDataSpaceCoverage(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions, Boolean returnLightGraph)
     {
-        Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceCoverageAnalysisResult analysisResult = core_data_space_analytics_analytics.Root_meta_pure_metamodel_dataSpace_analytics_analyzeDataSpaceCoverage_DataSpace_1__PackageableRuntime_MANY__DataSpaceCoverageAnalysisResult_1_(
+        Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceCoverageAnalysisResult analysisResult = core_data_space_analytics_analytics.Root_meta_pure_metamodel_dataSpace_analytics_analyzeDataSpaceCoverage_DataSpace_1__PackageableRuntime_MANY__Boolean_1__DataSpaceCoverageAnalysisResult_1_(
                 dataSpace,
                 ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class).collect(runtime -> pureModel.getPackageableRuntime(runtime.getPath(), runtime.sourceInformation)),
+                returnLightGraph,
                 pureModel.getExecutionSupport()
         );
 
@@ -288,7 +292,7 @@ public class DataSpaceAnalyticsHelper
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
             excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
             Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult = executionContextAnalysisResult._mappingCoverage();
-            excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, false);
+            excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, false, returnLightGraph);
             return excResult;
         });
         result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
@@ -304,11 +308,12 @@ public class DataSpaceAnalyticsHelper
         return result;
     }
 
-    public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions)
+    public static DataSpaceAnalysisResult analyzeDataSpace(Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace, PureModel pureModel, DataSpace dataSpaceProtocol, PureModelContextData pureModelContextData, String clientVersion, MutableList<PlanGeneratorExtension> generatorExtensions, List<EntitlementServiceExtension> entitlementServiceExtensions, Boolean returnLightGraph)
     {
-        Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAnalysisResult analysisResult = core_data_space_analytics_analytics.Root_meta_pure_metamodel_dataSpace_analytics_analyzeDataSpace_DataSpace_1__PackageableRuntime_MANY__DataSpaceAnalysisResult_1_(
+        Root_meta_pure_metamodel_dataSpace_analytics_DataSpaceAnalysisResult analysisResult = core_data_space_analytics_analytics.Root_meta_pure_metamodel_dataSpace_analytics_analyzeDataSpace_DataSpace_1__PackageableRuntime_MANY__Boolean_1__DataSpaceAnalysisResult_1_(
                 dataSpace,
                 ListIterate.selectInstancesOf(pureModelContextData.getElements(), PackageableRuntime.class).collect(runtime -> pureModel.getPackageableRuntime(runtime.getPath(), runtime.sourceInformation)),
+                returnLightGraph,
                 pureModel.getExecutionSupport()
         );
 
@@ -347,7 +352,7 @@ public class DataSpaceAnalyticsHelper
             excResult.defaultRuntime = HelperModelBuilder.getElementFullPath(executionContext._defaultRuntime(), pureModel.getExecutionSupport());
             excResult.compatibleRuntimes = ListIterate.collect(executionContextAnalysisResult._compatibleRuntimes().toList(), runtime -> HelperModelBuilder.getElementFullPath(runtime, pureModel.getExecutionSupport()));
             Root_meta_analytics_mapping_modelCoverage_MappingModelCoverageAnalysisResult mappingModelCoverageAnalysisResult = executionContextAnalysisResult._mappingCoverage();
-           excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, true);
+           excResult.mappingModelCoverageAnalysisResult = buildMappingModelCoverageAnalysisResult(mappingModelCoverageAnalysisResult, excResult, pureModel, dataSpaceProtocol, pureModelContextData, clientVersion, generatorExtensions, entitlementServiceExtensions, true, returnLightGraph);
             return excResult;
         });
         result.defaultExecutionContext = dataSpace._defaultExecutionContext()._name();
