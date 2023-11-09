@@ -16,23 +16,16 @@ package org.finos.legend.engine.query.graphQL.api.cache;
 
 import java.util.Objects;
 
-public class GraphQLDevCacheKey implements GraphQLCacheKey
+public class GraphQLProdMappingRuntimeCacheKey extends GraphQLProdCacheKey
 {
-    private String projectId;
-    private String workspaceId;
-    private String queryClassPath;
     private String mappingPath;
     private String runtimePath;
-    private String query;
 
-    public GraphQLDevCacheKey(String projectId, String workspaceId, String queryClassPath, String mappingPath, String runtimePath, String query)
+    public GraphQLProdMappingRuntimeCacheKey(String groupID, String artifactId, String versionId, String mappingPath, String runtimePath, String queryClassPath, String query)
     {
-        this.projectId = projectId;
-        this.workspaceId = workspaceId;
-        this.queryClassPath = queryClassPath;
+        super(groupID, artifactId, versionId, queryClassPath, query);
         this.mappingPath = mappingPath;
         this.runtimePath = runtimePath;
-        this.query = query;
     }
 
     @Override
@@ -46,24 +39,16 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
         {
             return false;
         }
-        GraphQLDevCacheKey that = (GraphQLDevCacheKey) o;
-        return Objects.equals(projectId, that.projectId)
-                && Objects.equals(workspaceId, that.workspaceId)
-                && Objects.equals(queryClassPath, that.queryClassPath)
+        GraphQLProdMappingRuntimeCacheKey that = (GraphQLProdMappingRuntimeCacheKey) o;
+        return super.equals(that)
                 && Objects.equals(mappingPath, that.mappingPath)
-                && Objects.equals(runtimePath, that.runtimePath)
-                && Objects.equals(query, that.query);
+                && Objects.equals(runtimePath, that.runtimePath);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query);
-    }
-
-    public String getQueryClassPath()
-    {
-        return queryClassPath;
+        return Objects.hash(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query);
     }
 
     public String getMappingPath()
@@ -74,10 +59,5 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
     public String getRuntimePath()
     {
         return runtimePath;
-    }
-
-    public String getQuery()
-    {
-        return query;
     }
 }
