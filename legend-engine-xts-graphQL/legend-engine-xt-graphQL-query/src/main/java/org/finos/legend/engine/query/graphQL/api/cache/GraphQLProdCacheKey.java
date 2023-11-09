@@ -14,25 +14,21 @@
 
 package org.finos.legend.engine.query.graphQL.api.cache;
 
-import com.google.common.base.Objects;
+import java.util.Objects;
 
-public class GraphQLProdCacheKey implements GraphQLCacheKey
+public abstract class GraphQLProdCacheKey implements GraphQLCacheKey
 {
-    private String groupID;
-    private String artifactId;
-    private String versionId;
-    private String mappingPath;
-    private String runtimePath;
-    private String queryClassPath;
-    private String query;
+    protected String groupID;
+    protected String artifactId;
+    protected String versionId;
+    protected String queryClassPath;
+    protected String query;
 
-    public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String mappingPath, String runtimePath, String queryClassPath, String query)
+    public GraphQLProdCacheKey(String groupID, String artifactId, String versionId, String queryClassPath, String query)
     {
         this.groupID = groupID;
         this.artifactId = artifactId;
         this.versionId = versionId;
-        this.mappingPath = mappingPath;
-        this.runtimePath = runtimePath;
         this.queryClassPath = queryClassPath;
         this.query = query;
     }
@@ -49,12 +45,35 @@ public class GraphQLProdCacheKey implements GraphQLCacheKey
             return false;
         }
         GraphQLProdCacheKey that = (GraphQLProdCacheKey) o;
-        return Objects.equal(groupID, that.groupID) && Objects.equal(artifactId, that.artifactId) && Objects.equal(versionId, that.versionId) && Objects.equal(mappingPath, that.mappingPath) && Objects.equal(runtimePath, that.runtimePath) && Objects.equal(queryClassPath, that.queryClassPath) && Objects.equal(query, that.query);
+        return Objects.equals(groupID, that.groupID)
+                && Objects.equals(artifactId, that.artifactId)
+                && Objects.equals(versionId, that.versionId)
+                && Objects.equals(queryClassPath, that.queryClassPath)
+                && Objects.equals(query, that.query);
     }
 
-    @Override
-    public int hashCode()
+    public String getGroupID()
     {
-        return Objects.hashCode(groupID, artifactId, versionId, mappingPath, runtimePath, queryClassPath, query);
+        return groupID;
+    }
+
+    public String getArtifactId()
+    {
+        return artifactId;
+    }
+
+    public String getVersionId()
+    {
+        return versionId;
+    }
+
+    public String getQueryClassPath()
+    {
+        return queryClassPath;
+    }
+
+    public String getQuery()
+    {
+        return query;
     }
 }

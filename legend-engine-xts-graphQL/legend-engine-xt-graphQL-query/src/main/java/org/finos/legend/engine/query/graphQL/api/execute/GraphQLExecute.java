@@ -51,12 +51,15 @@ import org.finos.legend.engine.query.graphQL.api.cache.GraphQLCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLDevCacheKey;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
 import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdCacheKey;
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdDataspaceCacheKey;
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLProdMappingRuntimeCacheKey;
 import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.finos.legend.engine.query.graphQL.api.execute.model.PlansResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.query.graphQL.api.execute.model.error.GraphQLErrorMain;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -64,11 +67,14 @@ import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transfor
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_graphFetch;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_introspection_query;
 import org.finos.legend.pure.generated.core_pure_executionPlan_executionPlan_print;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.functions.collection.Pair;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
@@ -85,10 +91,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -222,7 +230,17 @@ public class GraphQLExecute extends GraphQL
         }
     }
 
-    private Response executeGraphQLQuery(String queryClassPath, String mappingPath, String runtimePath, Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
+    private Response executeIntrospection(String queryClassPath, Document document, PureModel pureModel)
+    {
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
+        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+
+        return Response.ok("{" +
+                "  \"data\":" + core_external_query_graphql_transformation_transformation_introspection_query.Root_meta_external_query_graphQL_transformation_introspection_graphQLIntrospectionQuery_Class_1__Document_1__String_1_(_class, queryDoc, pureModel.getExecutionSupport()) +
+                "}").type(MediaType.TEXT_HTML_TYPE).build();
+    }
+
+    private Response executeGraphQLQuery(Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
     {
         List<SerializedNamedPlans> planWithSerialized;
         OperationDefinition graphQLQuery = GraphQLExecutionHelper.findQuery(document);
@@ -232,12 +250,7 @@ public class GraphQLExecute extends GraphQL
             if (isQueryIntrospection(graphQLQuery))
             {
                 pureModel = modelLoader.call();
-                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
-                org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
-
-                return Response.ok("{" +
-                        "  \"data\":" + core_external_query_graphql_transformation_transformation_introspection_query.Root_meta_external_query_graphQL_transformation_introspection_graphQLIntrospectionQuery_Class_1__Document_1__String_1_(_class, queryDoc, pureModel.getExecutionSupport()) +
-                        "}").type(MediaType.TEXT_HTML_TYPE).build();
+                return executeIntrospection(graphQLCacheKey.getQueryClassPath(), document, pureModel);
             }
             else
             {
@@ -248,7 +261,7 @@ public class GraphQLExecute extends GraphQL
                     {
                         LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
                         pureModel = modelLoader.call();
-                        planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
+                        planWithSerialized = getSerializedNamedPlans(document, graphQLCacheKey, graphQLQuery, pureModel);
                         graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
                     }
                     else
@@ -259,7 +272,7 @@ public class GraphQLExecute extends GraphQL
                 else   //no cache so we generate the plan
                 {
                     pureModel = modelLoader.call();
-                    planWithSerialized = buildPlanWithParameter(queryClassPath, mappingPath, runtimePath, document, graphQLQuery, pureModel, graphQLCacheKey);
+                    planWithSerialized = getSerializedNamedPlans(document, graphQLCacheKey, graphQLQuery, pureModel);
                 }
             }
         }
@@ -267,8 +280,36 @@ public class GraphQLExecute extends GraphQL
         {
             return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
         }
-        final PureModel pureModel1 = pureModel;
-        List<SerializedNamedPlans> finalPlanWithSerialized = planWithSerialized;
+        return execute(profiles, planWithSerialized, graphQLQuery);
+    }
+
+    private List<SerializedNamedPlans> getSerializedNamedPlans(Document document, GraphQLCacheKey graphQLCacheKey,OperationDefinition graphQLQuery, PureModel pureModel)
+    {
+        List<SerializedNamedPlans> planWithSerialized;
+        if (graphQLCacheKey instanceof GraphQLDevCacheKey)
+        {
+            GraphQLDevCacheKey key = (GraphQLDevCacheKey) graphQLCacheKey;
+            planWithSerialized = buildPlanWithParameter(key.getQueryClassPath(), key.getMappingPath(), key.getRuntimePath(), document, graphQLQuery, pureModel, graphQLCacheKey);
+        }
+        else if (graphQLCacheKey instanceof GraphQLProdMappingRuntimeCacheKey)
+        {
+            GraphQLProdMappingRuntimeCacheKey key = (GraphQLProdMappingRuntimeCacheKey) graphQLCacheKey;
+            planWithSerialized = buildPlanWithParameter(key.getQueryClassPath(), key.getMappingPath(), key.getRuntimePath(), document, graphQLQuery, pureModel, graphQLCacheKey);
+        }
+        else if (graphQLCacheKey instanceof GraphQLProdDataspaceCacheKey)
+        {
+            GraphQLProdDataspaceCacheKey key = (GraphQLProdDataspaceCacheKey) graphQLCacheKey;
+            planWithSerialized = buildPlanWithParameterUsingDataspace(key.getQueryClassPath(), key.getDataspacePath(), key.getExecutionContext(), document, graphQLQuery, pureModel, graphQLCacheKey);
+        }
+        else
+        {
+            throw new UnsupportedOperationException("Invalid graphql cache key");
+        }
+        return planWithSerialized;
+    }
+
+    private Response execute(MutableList<CommonProfile> profiles, List<SerializedNamedPlans> planWithSerialized, OperationDefinition graphQLQuery)
+    {
         return Response.ok(
                 (StreamingOutput) outputStream ->
                 {
@@ -281,7 +322,7 @@ public class GraphQLExecute extends GraphQL
                         generator.writeFieldName("data");
                         generator.writeStartObject();
 
-                        finalPlanWithSerialized.stream().filter(serializedNamedPlans -> GraphQLExecutionHelper.isARootField(serializedNamedPlans.propertyName, graphQLQuery)).forEach(p ->
+                        planWithSerialized.stream().filter(serializedNamedPlans -> GraphQLExecutionHelper.isARootField(serializedNamedPlans.propertyName, graphQLQuery)).forEach(p ->
                         {
                             JsonStreamingResult result = null;
                             try
@@ -305,7 +346,7 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
-                        Map<String, ?> extensions = this.computeExtensionsField(graphQLQuery, finalPlanWithSerialized, profiles);
+                        Map<String, ?> extensions = this.computeExtensionsField(graphQLQuery, planWithSerialized, profiles);
                         if (!extensions.isEmpty())
                         {
                             generator.writeFieldName("extensions");
@@ -351,7 +392,7 @@ public class GraphQLExecute extends GraphQL
         return modifiedListOfExtensions.get(0);
     }
 
-    private List<SerializedNamedPlans> buildExtensionsPlanWithParameter(String rootFieldName, String queryClassPath, String mappingPath, String runtimePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
+    private List<SerializedNamedPlans> buildExtensionsPlanWithParameter(String rootFieldName, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Mapping mapping, Root_meta_core_runtime_Runtime runtime, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
     {
         List<Directive> directives = GraphQLExecutionHelper.findDirectives(query);
         List<SerializedNamedPlans> serializedNamedPlans = Lists.mutable.empty();
@@ -360,9 +401,9 @@ public class GraphQLExecute extends GraphQL
             SingleExecutionPlan plan = (SingleExecutionPlan) getExtensionForDirective(directive).planDirective(
                         document,
                         pureModel,
-                        queryClassPath,
-                        mappingPath,
-                        runtimePath,
+                        _class,
+                        mapping,
+                        runtime,
                         this.extensionsFunc.apply(pureModel),
                         this.transformers
                 );
@@ -371,13 +412,61 @@ public class GraphQLExecute extends GraphQL
         return serializedNamedPlans;
     }
 
+    private Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext getDataspaceExecutionContext(String dataspacePath, String executionContext, PureModel pureModel)
+    {
+        PackageableElement packageableElement = pureModel.getPackageableElement(dataspacePath);
+        Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace, () -> "Can't find data space '" + dataspacePath + "'");
+        if (executionContext.equals("defaultExecutionContext"))
+        {
+            return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._defaultExecutionContext()._name())).toList().get(0);
+        }
+        else
+        {
+            try
+            {
+                return ((Root_meta_pure_metamodel_dataSpace_DataSpace) packageableElement)._executionContexts().select(dataSpaceExecutionContext -> dataSpaceExecutionContext._name().equals(executionContext)).toList().get(0);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Invalid execution context " + executionContext, e);
+            }
+        }
+    }
+
+    private List<SerializedNamedPlans> buildPlanWithParameterUsingDataspace(String queryClassPath, String dataspacePath, String executionContext, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
+    {
+        RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.extensionsFunc.apply(pureModel);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
+        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+
+        Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContextPureElement = getDataspaceExecutionContext(dataspacePath, executionContext, pureModel);
+        Mapping mapping = executionContextPureElement._mapping();
+        Root_meta_core_runtime_Runtime runtime = executionContextPureElement._defaultRuntime()._runtimeValue();
+        return getSerializedNamedPlans(pureModel, extensions, _class, mapping, runtime, document, query, queryDoc, graphQLCacheKey);
+    }
+
     private List<SerializedNamedPlans> buildPlanWithParameter(String queryClassPath, String mappingPath, String runtimePath, Document document, OperationDefinition query, PureModel pureModel, GraphQLCacheKey graphQLCacheKey)
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = this.extensionsFunc.apply(pureModel);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(queryClassPath);
+        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+
         Mapping mapping = pureModel.getMapping(mappingPath);
         Root_meta_core_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
-        org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = toPureModel(document, pureModel);
+        return getSerializedNamedPlans(pureModel, extensions, _class, mapping, runtime, document, query, queryDoc, graphQLCacheKey);
+    }
+
+    private List<SerializedNamedPlans> getSerializedNamedPlans(
+            PureModel pureModel,RichIterable<? extends Root_meta_pure_extension_Extension> extensions,
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class,
+            Mapping mapping,
+            Root_meta_core_runtime_Runtime runtime,
+            Document document,
+            OperationDefinition query,
+            org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc,
+            GraphQLCacheKey graphQLCacheKey
+    )
+    {
         RichIterable<? extends Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan> purePlans = core_external_query_graphql_transformation_transformation_graphFetch.Root_meta_external_query_graphQL_transformation_queryToPure_graphQLExecutableToPlansWithParameters_Class_1__Document_1__Mapping_1__Runtime_1__Extension_MANY__NamedExecutionPlan_MANY_(_class, queryDoc, mapping, runtime, extensions, pureModel.getExecutionSupport());
         List<SerializedNamedPlans> plans = purePlans.toList().stream().map(p ->
         {
@@ -388,7 +477,7 @@ public class GraphQLExecute extends GraphQL
             return serializedPlans;
         }).collect(Collectors.toList());
         List<List<SerializedNamedPlans>> extensionPlans = plans.stream().map(plan ->
-            buildExtensionsPlanWithParameter(plan.propertyName, queryClassPath, mappingPath, runtimePath, document, query, pureModel, graphQLCacheKey)
+                buildExtensionsPlanWithParameter(plan.propertyName, _class, mapping, runtime, document, query, pureModel, graphQLCacheKey)
         ).collect(Collectors.toList());
         extensionPlans.forEach(plans::addAll);
         return plans;
@@ -429,7 +518,7 @@ public class GraphQLExecute extends GraphQL
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             Document cachableGraphQLQuery = createCachableGraphQLQuery(document);
             GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, objectMapper.writeValueAsString(cachableGraphQLQuery));
-            return this.executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
+            return this.executeGraphQLQuery(document, key, profiles, () -> loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
         }
         catch (Exception ex)
         {
@@ -447,9 +536,29 @@ public class GraphQLExecute extends GraphQL
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
-            GraphQLProdCacheKey key = new GraphQLProdCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+            GraphQLProdMappingRuntimeCacheKey key = new GraphQLProdMappingRuntimeCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(queryClassPath, mappingPath, runtimePath, document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            return this.executeGraphQLQuery(document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+        }
+        catch (Exception ex)
+        {
+            return Response.ok(new GraphQLErrorMain(ex.getMessage())).build();
+        }
+    }
+
+    @POST
+    @ApiOperation(value = "Execute a GraphQL query in the context of a mapping and a runtime")
+    @Path("execute/prod/{groupId}/{artifactId}/{versionId}/query/{queryClassPath}/dataspace/{dataspacePath}")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    public Response executeProdWithDataspace(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("dataspacePath") String dataspacePath, @QueryParam("executionContext") @DefaultValue("defaultExecutionContext") String executionContext, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
+        {
+            Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
+            GraphQLProdDataspaceCacheKey key = new GraphQLProdDataspaceCacheKey(groupId, artifactId, versionId, dataspacePath, executionContext, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
+
+            return this.executeGraphQLQuery(document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {
