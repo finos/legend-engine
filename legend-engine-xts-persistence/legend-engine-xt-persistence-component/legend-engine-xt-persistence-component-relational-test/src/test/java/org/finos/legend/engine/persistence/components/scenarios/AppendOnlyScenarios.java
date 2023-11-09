@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
@@ -226,5 +227,34 @@ public class AppendOnlyScenarios extends BaseTest
             .filterExistingRecords(false)
             .build();
         return new TestScenario(mainTableWithNoPrimaryKeysHavingAuditField, stagingTableWithNoPrimaryKeys, ingestMode);
+    }
+
+    public TestScenario NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION()
+    {
+        AppendOnly ingestMode = AppendOnly.builder()
+            .deduplicationStrategy(AllowDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .filterExistingRecords(false)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).build())
+            .build();
+        return new TestScenario(mainTableWithNoPrimaryKeys, stagingTableWithNoPrimaryKeysAndNoDigest, ingestMode);
+    }
+
+    public TestScenario WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION()
+    {
+        AppendOnly ingestMode = AppendOnly.builder()
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
+            .versioningStrategy(AllVersionsStrategy.builder()
+                .versioningField(bizDateField)
+                .dataSplitFieldName(dataSplitField)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                .performStageVersioning(true)
+                .build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+            .filterExistingRecords(false)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).build())
+            .build();
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchema, ingestMode);
     }
 }

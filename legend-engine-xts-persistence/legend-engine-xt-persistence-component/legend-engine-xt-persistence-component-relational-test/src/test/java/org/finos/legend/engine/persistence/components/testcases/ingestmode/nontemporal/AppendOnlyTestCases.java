@@ -247,5 +247,39 @@ public abstract class AppendOnlyTestCases extends BaseTest
         }
     }
 
+    @Test
+    public void testAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration()
+    {
+        TestScenario scenario = scenarios.NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration(operations);
+    }
+
+    public abstract void verifyAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration(GeneratorResult operations);
+
+    @Test
+    public void testAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration()
+    {
+        TestScenario scenario = scenarios.WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration(operations, dataSplitRangesOneToTwo);
+    }
+
+    public abstract void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges);
+
     public abstract RelationalSink getRelationalSink();
 }

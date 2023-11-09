@@ -74,6 +74,7 @@ public class BaseTest
     protected String stagingTableWithoutDuplicatesAlias = "stage";
 
     protected String digestField = "digest";
+    protected String digestUdf = "LAKEHOUSE_MD5";
     protected String versionField = "version";
     protected String bizDateField = "biz_date";
     protected String snapshotIdField = "snapshot_id";
@@ -258,6 +259,13 @@ public class BaseTest
         .addFields(amount)
         .addFields(bizDate)
         .addFields(digest)
+        .build();
+
+    protected SchemaDefinition baseTableSchemaWithNoPrimaryKeysAndNoDigest = SchemaDefinition.builder()
+        .addFields(idNonPrimary)
+        .addFields(nameNonPrimary)
+        .addFields(amount)
+        .addFields(bizDate)
         .build();
 
     protected SchemaDefinition baseTableSchemaWithAuditAndNoPrimaryKeys = SchemaDefinition.builder()
@@ -561,6 +569,11 @@ public class BaseTest
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
             .schema(baseTableSchemaWithNoPrimaryKeys)
             .build();
+
+    protected Dataset stagingTableWithNoPrimaryKeysAndNoDigest = DatasetDefinition.builder()
+        .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
+        .schema(baseTableSchemaWithNoPrimaryKeysAndNoDigest)
+        .build();
 
     protected Dataset mainTableWithNoPrimaryKeysHavingAuditField = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)

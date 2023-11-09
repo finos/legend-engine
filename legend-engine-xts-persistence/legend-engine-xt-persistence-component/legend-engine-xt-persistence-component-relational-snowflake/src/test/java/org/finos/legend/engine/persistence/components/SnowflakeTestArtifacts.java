@@ -37,4 +37,18 @@ public class SnowflakeTestArtifacts
             "\"BATCH_STATUS\" VARCHAR(32)," +
             "\"TABLE_BATCH_ID\" INTEGER," +
             "\"STAGING_FILTERS\" VARIANT)";
+
+    public static String expectedBaseTempStagingTableWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
+        "(\"id\" INTEGER NOT NULL," +
+        "\"name\" VARCHAR NOT NULL," +
+        "\"amount\" DOUBLE," +
+        "\"biz_date\" DATE," +
+        "\"legend_persistence_count\" INTEGER," +
+        "\"data_split\" INTEGER NOT NULL)";
+
+    public static String expectedInsertIntoBaseTempStagingWithAllVersionAndFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
+        "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\", \"data_split\") " +
+        "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"legend_persistence_count\" as \"legend_persistence_count\",DENSE_RANK() OVER (PARTITION BY stage.\"id\",stage.\"name\" ORDER BY stage.\"biz_date\" ASC) as \"data_split\" " +
+        "FROM (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",COUNT(*) as \"legend_persistence_count\" FROM \"mydb\".\"staging\" as stage " +
+        "GROUP BY stage.\"id\", stage.\"name\", stage.\"amount\", stage.\"biz_date\") as stage)";
 }

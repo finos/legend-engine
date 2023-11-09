@@ -30,6 +30,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Alt
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
@@ -62,6 +63,7 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.PartitionKeyVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLCreateVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLDropVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesDatasetReferenceVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesDatasetVisitor;
@@ -107,6 +109,7 @@ public class BigQuerySink extends AnsiSqlSink
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
         logicalPlanVisitorByClass.put(SchemaDefinition.class, new SchemaDefinitionVisitor());
         logicalPlanVisitorByClass.put(Create.class, new SQLCreateVisitor());
+        logicalPlanVisitorByClass.put(Drop.class, new SQLDropVisitor());
         logicalPlanVisitorByClass.put(ClusterKey.class, new ClusterKeyVisitor());
         logicalPlanVisitorByClass.put(PartitionKey.class, new PartitionKeyVisitor());
         logicalPlanVisitorByClass.put(Alter.class, new AlterVisitor());
