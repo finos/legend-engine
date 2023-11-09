@@ -12,12 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.bigqueryFunction.deployment;
+package org.finos.legend.engine.protocol.hostedService.deployment.model;
 
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-public class BigQueryFunctionDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = GenerationInfoData.class, name = "data")
+})
+
+public class GenerationInfo
 {
-    RelationalDatabaseConnection connection;
 }

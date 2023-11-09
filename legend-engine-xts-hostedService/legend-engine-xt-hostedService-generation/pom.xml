@@ -29,10 +29,7 @@
 
     <dependencies>
         <!-- Jackson -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
+
         <!-- Jackson -->
 
         <dependency>
@@ -52,10 +49,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-code-compiled-core</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-protocol</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
@@ -70,27 +67,31 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-functionActivator-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-hostedService-pure</artifactId>
+        </dependency>
+
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-hostedService-compiler</artifactId>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-hostedService-grammar</artifactId>-->
+<!--        </dependency>-->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-hostedService-protocol</artifactId>
         </dependency>
 
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-hostedService-compiler</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-hostedService-grammar</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-generation</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-analytics-lineage-api</artifactId>
-        </dependency>
+
         <!-- ENGINE -->
 
         <!-- ECLIPSE COLLECTIONS -->

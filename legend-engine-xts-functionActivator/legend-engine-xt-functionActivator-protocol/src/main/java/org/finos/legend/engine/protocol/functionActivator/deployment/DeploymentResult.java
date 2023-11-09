@@ -12,24 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.hostedService.generation.model;
+package org.finos.legend.engine.protocol.functionActivator.deployment;
 
-import org.finos.legend.engine.language.hostedService.generation.model.lineage.Lineage;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
-
-public class GenerationInfoData extends GenerationInfo
+public class DeploymentResult
 {
-    public ExecutionPlan plan;
-//    public Lineage lineage;
-
-    public GenerationInfoData()
-    {
-
-    }
-
-    public GenerationInfoData(ExecutionPlan plan, Lineage lineage)
-    {
-        this.plan = plan;
-//        this.lineage = lineage;
-    }
+    public String activatorIdentifier;
+    public boolean successful;
 }

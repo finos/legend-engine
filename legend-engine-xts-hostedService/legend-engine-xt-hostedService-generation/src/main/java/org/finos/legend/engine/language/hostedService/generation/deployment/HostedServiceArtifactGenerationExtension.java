@@ -20,7 +20,7 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.hostedService.generation.HostedServiceArtifactGenerator;
-import org.finos.legend.engine.language.hostedService.generation.model.GenerationInfoData;
+import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;

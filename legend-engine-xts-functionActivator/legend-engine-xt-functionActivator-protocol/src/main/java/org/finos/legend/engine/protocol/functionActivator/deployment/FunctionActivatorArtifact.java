@@ -12,11 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.hostedService.generation.deployment;
+package org.finos.legend.engine.protocol.functionActivator.deployment;
 
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
-
-public class HostedServiceDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
+public class FunctionActivatorArtifact
 {
-
+    public FunctionActivatorDeploymentContent content;
+    public FunctionActivatorDeploymentConfiguration deploymentConfiguration;
 }
