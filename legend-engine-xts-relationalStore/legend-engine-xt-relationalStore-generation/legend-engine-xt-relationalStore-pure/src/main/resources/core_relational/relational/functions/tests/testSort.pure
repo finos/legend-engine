@@ -17,6 +17,7 @@ import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
+import meta::pure::executionPlan::toString::*;
 
 function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Boolean[1]
 {
@@ -26,13 +27,67 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortSimple():Bo
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".LASTNAME as "o_lastName" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
 }
 
-function <<test.Test, test.ToFix>> meta::relational::tests::query::sort::testSortDeep():Boolean[1]
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaSimple():Boolean[1]
+{
+   let result = execute(|Person.all()->sortBy(p | $p.lastName), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 12);
+   assertEquals(['Allen', 'Firm B', 'Harris', 'Hill', 'Hill', 'Johnson', 'New York', 'Roberts', 'Smith', 'Smith', 'York', 'no Firm'], $result.values.lastName);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "root".LASTNAME as "order_key" from personTable as "root" order by "order_key"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda__ColumnA_Plus_ColumnB():Boolean[1]
+{
+   let result = execute(|Person.all()->sortBy(p | $p.lastName + '|' + $p.firstName), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 12);
+   assertEquals(['Allen|Anthony', 'Firm B|Elena', 'Harris|David', 'Hill|John', 'Hill|Oliver', 'Johnson|John', 'New York|Don', 'Roberts|Fabrice', 'Smith|No address', 'Smith|Peter', 'York|New', 'no Firm|No firm'], zip($result.values.lastName, $result.values.firstName)->map(pair | $pair.first + '|' + $pair.second));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", concat("root".LASTNAME, \'|\', "root".FIRSTNAME) as "order_key" from personTable as "root" order by "order_key"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda__If_ColumnAEqualsValue_Rank1_Else_Rank2():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.lastName == 'Hill' || $p.firstName == 'John')->sortBy(p | if($p.lastName == 'Hill' && $p.firstName == 'John', | 0, |if ($p.lastName == 'Hill' || $p.firstName == 'John', | 10, | 20))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 3);
+   assertEquals(['John Hill', 'John Johnson', 'Oliver Hill'], zip($result.values.firstName, $result.values.lastName)->map(pair | $pair.first + ' ' + $pair.second));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", case when ("root".LASTNAME = \'Hill\' and "root".FIRSTNAME = \'John\') then 0 else case when ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') then 10 else 20 end end as "order_key" from personTable as "root" where ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') order by "order_key"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda__If_ColumnAEqualsValue_ColumnA_Else_ColumnB():Boolean[1]
+{
+   let result = execute(|Person.all()->filter(p|$p.lastName == 'Hill' || $p.firstName == 'John')->sortBy(p | if($p.lastName == 'Hill', |$p.lastName, |$p.firstName)), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 3);
+   assertEquals(['John Hill', 'Oliver Hill', 'John Johnson'], zip($result.values.firstName, $result.values.lastName)->map(pair | $pair.first + ' ' + $pair.second));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", case when "root".LASTNAME = \'Hill\' then "root".LASTNAME else "root".FIRSTNAME end as "order_key" from personTable as "root" where ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') order by "order_key"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda_Deep():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSize($result.values, 9);
-   assertEquals('Smith', $result.values->at(0).lastName);
-   assertEquals('Hill', $result.values->at(1).lastName);
-   assertSameElements(['Harris', 'Allen', 'Johnson', 'Hill'], $result.values->drop(2)->take(4).lastName);
-   assertEquals('Roberts', $result.values->at(6).lastName);
-   assertEquals('select root.FIRSTNAME as "firstName", root.AGE as "age", root.LASTNAME as "lastName", addressTable_d1_d_m1.NAME as "o_name" from personTable as root left outer join addressTable as addressTable_d1_d_m1 on (addressTable_d1_d_m1.ID = root.ADDRESSID) order by "o_name"', $result->sqlRemoveFormatting());
+   assertSize($result.values, 12);
+   assertEquals(['Hoboken', 'Hong Kong', 'New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'San Fransisco'], $result.values.address.name);
+   assertEquals(['No address', 'Peter', 'Oliver', 'John', 'John', 'Anthony', 'David', 'No firm', 'New', 'Elena', 'Don', 'Fabrice'], $result.values.firstName);
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", "addresstable_0".NAME as "order_key" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "order_key"', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambda_QueryWithParameters_Plan():Boolean[1]
+{
+   let rawPlan = meta::pure::executionPlan::executionPlan({firstName: String[1], lastName: String[1]|Person.all()->filter(p|$p.lastName == $lastName || $p.firstName == $firstName)->sortBy(p | if($p.firstName == $firstName && $p.lastName == $lastName, | 0, |if ($p.lastName == $lastName || $p.firstName == $firstName, | 10, | 20)))}, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertEquals('Sequence\n' +
+                '(\n' +
+                '  type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n' +
+                '  resultSizeRange = *\n' +
+                '  (\n' +
+                '    FunctionParametersValidationNode\n' +
+                '    (\n' +
+                '      functionParameters = [firstName:String[1], lastName:String[1]]\n' +
+                '    )\n' +
+                '    Relational\n' +
+                '    (\n' +
+                '      type = Class[impls=(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)]\n' +
+                '      resultSizeRange = *\n' +
+                '      resultColumns = [("pk_0", INT), ("firstName", VARCHAR(200)), ("age", INT), ("lastName", VARCHAR(200)), ("order_key", "")]\n' +
+                '      sql = select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName", case when ("root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\' and "root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\') then 0 else case when ("root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\') then 10 else 20 end end as "order_key" from personTable as "root" where ("root".LASTNAME = \'${lastName?replace("\'", "\'\'")}\' or "root".FIRSTNAME = \'${firstName?replace("\'", "\'\'")}\') order by "order_key"\n' +
+                '      connection = TestDatabaseConnection(type = "H2")\n' +
+                '    )\n' +
+                '  )\n' +
+                ')\n',$rawPlan->planToString(meta::relational::extension::relationalExtensions()));
 }
