@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.hostedService.generation.deployment;
+package org.finos.legend.engine.protocol.hostedService.deployment;
 
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentContent;
-import org.finos.legend.engine.language.hostedService.generation.model.GenerationInfo;
+import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfo;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 
 public class HostedServiceContent extends FunctionActivatorDeploymentContent

@@ -1,4 +1,4 @@
-// Copyright 2020 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.hostedService.generation.model.lineage;
+package org.finos.legend.engine.protocol.functionActivator.deployment;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = SingleLineage.class)
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = SingleLineage.class, name = "simple"),
-        @JsonSubTypes.Type(value = CompositeLineage.class, name = "composite")
-})
-public class Lineage
+public class FunctionActivatorDeploymentContent
 {
 }

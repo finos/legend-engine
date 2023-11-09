@@ -12,27 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.snowflakeApp.generator;
+package org.finos.legend.engine.protocol.bigqueryFunction.deployment;
 
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 
-public class SnowflakeAppArtifact extends FunctionActivatorArtifact
+public class BigQueryFunctionDeploymentResult extends DeploymentResult
 {
+    public MutableList<String> errors;
 
-    public SnowflakeAppArtifact()
+    public BigQueryFunctionDeploymentResult(String activatorIdentifier, boolean result)
     {
-        //empty artifact
+        this.successful = result;
+        this.activatorIdentifier = activatorIdentifier;
     }
 
-    public SnowflakeAppArtifact(SnowflakeAppContent content)
+    public BigQueryFunctionDeploymentResult(MutableList<String> errors)
     {
-        this.content = content;
+        this.errors = errors;
     }
-
-    public SnowflakeAppArtifact(SnowflakeAppContent content, SnowflakeAppDeploymentConfiguration config)
-    {
-        this(content);
-        this.deploymentConfiguration = config;
-    }
-
 }

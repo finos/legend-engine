@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.snowflakeApp.generator;
+package org.finos.legend.engine.protocol.snowflakeApp.deployment;
 
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentContent;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 
 import java.text.SimpleDateFormat;

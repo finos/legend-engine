@@ -12,17 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.hostedService.generation.model;
+package org.finos.legend.engine.protocol.snowflakeApp.deployment;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = GenerationInfoData.class, name = "data")
-})
-
-public class GenerationInfo
+public class SnowflakeAppArtifact extends FunctionActivatorArtifact
 {
+
+    public SnowflakeAppArtifact()
+    {
+        //empty artifact
+    }
+
+    public SnowflakeAppArtifact(SnowflakeAppContent content)
+    {
+        this.content = content;
+    }
+
+    public SnowflakeAppArtifact(SnowflakeAppContent content, SnowflakeAppDeploymentConfiguration config)
+    {
+        this(content);
+        this.deploymentConfiguration = config;
+    }
+
 }

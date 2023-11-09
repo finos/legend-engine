@@ -17,6 +17,11 @@ package org.finos.legend.engine.protocol.bigqueryFunction.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionArtifact;
+import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionContent;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -37,6 +42,15 @@ public class BigQueryFunctionProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(BigQueryFunctionDeploymentConfiguration.class, packageJSONType + "Config")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
+                        .withSubtype(org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentConfiguration.class, "bigQueryFunctionDeploymentConfig")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorArtifact.class)
+                        .withSubtype(BigQueryFunctionArtifact.class, "bigQueryFunctionArtifact")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentContent.class)
+                        .withSubtype(BigQueryFunctionContent.class, "bigQueryFunctionDeploymentContent")
                         .build()
         ));
     }
