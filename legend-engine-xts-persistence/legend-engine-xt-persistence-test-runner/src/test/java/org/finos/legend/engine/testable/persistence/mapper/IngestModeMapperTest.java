@@ -83,8 +83,8 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         AppendOnly appendOnly = (AppendOnly) componentIngestMode;
-        Assertions.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
-        Assertions.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
         Assert.assertFalse(appendOnly.filterExistingRecords());
 
@@ -95,8 +95,8 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
-        Assertions.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
-        Assertions.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
         Assert.assertTrue(appendOnly.filterExistingRecords());
 
@@ -107,8 +107,8 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
-        Assertions.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
-        Assertions.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
@@ -121,8 +121,8 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
-        Assertions.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
-        Assertions.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof DateTimeAuditing);
         dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
