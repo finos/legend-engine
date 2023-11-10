@@ -50,7 +50,7 @@ import org.junit.Test;
 
 public class TestSDLCLoader
 {
-   
+
     @ClassRule
     public static WireMockClassRule wireMockServer = new WireMockClassRule();
 
@@ -207,19 +207,19 @@ public class TestSDLCLoader
         PureModelContextData data = PureModelContextData.newPureModelContextData(new Protocol(), new PureModelContextPointer(), Lists.fixedSize.empty());
         String pmcdJson = objectMapper.writeValueAsString(data);
 
-        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_32_0")
+        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_33_0")
                 .inScenario("RETRY_FAILURES")
                 .whenScenarioStateIs(Scenario.STARTED)
                 .willReturn(WireMock.aResponse().withStatus(503).withBody("a failure"))
                 .willSetStateTo("FAILED_1"));
 
-        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_32_0")
+        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_33_0")
                 .inScenario("RETRY_FAILURES")
                 .whenScenarioStateIs("FAILED_1")
                 .willReturn(WireMock.aResponse().withStatus(503).withBody("a failure"))
                 .willSetStateTo("FAILED_2"));
 
-        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_32_0")
+        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_33_0")
                 .inScenario("RETRY_FAILURES")
                 .whenScenarioStateIs("FAILED_2")
                 .willReturn(WireMock.okJson(pmcdJson))
@@ -250,13 +250,13 @@ public class TestSDLCLoader
         WireMock.stubFor(WireMock.get("/sdlc/api/projects/proj-1235/workspaces/workspaceAbc/revisions/HEAD/upstreamProjects")
                 .willReturn(WireMock.okJson("[{\"projectId\": \"org.finos.legend.dependency:models\",\"versionId\": \"2.0.1\"}]")));
 
-        WireMock.stubFor(WireMock.get("/alloy/projects/org.finos.legend.dependency/models/versions/2.0.1/pureModelContextData?clientVersion=v1_32_0")
+        WireMock.stubFor(WireMock.get("/alloy/projects/org.finos.legend.dependency/models/versions/2.0.1/pureModelContextData?clientVersion=v1_33_0")
                 .willReturn(WireMock.okJson(pmcdJsonDep)));
     }
 
     private static void configureWireMockForNoRetries() throws JsonProcessingException
     {
-        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_32_0")
+        WireMock.stubFor(WireMock.get("/alloy/projects/groupId/artifactId/versions/1.0.0/pureModelContextData?clientVersion=v1_33_0")
                 .willReturn(WireMock.aResponse().withStatus(400).withBody("a failure")));
     }
 }
