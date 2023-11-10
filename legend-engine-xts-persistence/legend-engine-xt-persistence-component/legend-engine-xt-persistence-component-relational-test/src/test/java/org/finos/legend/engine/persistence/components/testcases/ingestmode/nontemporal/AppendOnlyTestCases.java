@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -216,7 +217,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
         try
         {
             AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().build())
                 .build();

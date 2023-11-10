@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.junit.jupiter.api.Assertions;
@@ -42,7 +43,7 @@ public class AppendOnlyExecutorTest extends BigQueryEndToEndTest
     public void testMilestoning() throws IOException, InterruptedException
     {
         AppendOnly ingestMode = AppendOnly.builder()
-                .digestField("digest")
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .filterExistingRecords(true)
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().dateTimeField("audit_ts").build())

@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
@@ -91,7 +92,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(NoAuditing.builder().build())
@@ -150,7 +151,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
@@ -195,7 +196,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
@@ -244,7 +245,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
@@ -294,7 +295,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
@@ -351,7 +352,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(AllVersionsStrategy.builder()
                 .versioningField(versionName)
@@ -583,7 +584,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
@@ -622,7 +623,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
@@ -663,7 +664,7 @@ class AppendOnlyTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(NoAuditing.builder().build())

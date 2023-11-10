@@ -14,11 +14,23 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
-public interface DigestGenStrategyVisitor<T>
+import org.immutables.value.Value;
+
+@Value.Immutable
+@Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface UserProvidedDigestGenStrategyAbstract extends DigestGenStrategy
 {
-    T visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy);
+    String digestField();
 
-    T visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy);
-
-    T visitUserProvidedDigestGenStrategy(UserProvidedDigestGenStrategyAbstract userProvidedDigestGenStrategy);
+    @Override
+    default <T> T accept(DigestGenStrategyVisitor<T> visitor)
+    {
+        return visitor.visitUserProvidedDigestGenStrategy(this);
+    }
 }

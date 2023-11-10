@@ -60,4 +60,10 @@ public class DigestGenerator implements DigestGenStrategyVisitor<Void>
         fieldsToSelect.add(digestValue);
         return null;
     }
+
+    @Override
+    public Void visitUserProvidedDigestGenStrategy(UserProvidedDigestGenStrategyAbstract userProvidedDigestGenStrategy)
+    {
+        return null;
+    }
 }
