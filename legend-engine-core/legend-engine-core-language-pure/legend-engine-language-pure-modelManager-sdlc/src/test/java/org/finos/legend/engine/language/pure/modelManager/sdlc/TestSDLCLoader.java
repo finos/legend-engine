@@ -50,6 +50,7 @@ import org.junit.Test;
 
 public class TestSDLCLoader
 {
+   
     @ClassRule
     public static WireMockClassRule wireMockServer = new WireMockClassRule();
 
@@ -57,6 +58,8 @@ public class TestSDLCLoader
     public WireMockClassRule rule = wireMockServer;
 
     private static final MockTracer tracer = new MockTracer();
+
+    private static final String CLIENT_VERSION = "v1_33_0";
 
     @BeforeClass
     public static void setUpClass()
@@ -153,7 +156,7 @@ public class TestSDLCLoader
 
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST, tracer, sdlcLoader);
 
-        PureModelContextData pmcdLoaded = modelManager.loadData(pointer, "v1_32_0", Lists.fixedSize.empty());
+        PureModelContextData pmcdLoaded = modelManager.loadData(pointer, CLIENT_VERSION, Lists.fixedSize.empty());
 
         Assert.assertNotNull(pmcdLoaded);
         Assert.assertEquals(2, pmcdLoaded.getElements().size());
