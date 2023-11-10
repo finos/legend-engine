@@ -127,7 +127,7 @@ public class SQLExecutor
                 {
                     Root_meta_pure_executionPlan_ExecutionPlan l = PlanPlatform.JAVA.bindPlan(p._plan(), null, pureModel, routerExtensions.apply(pureModel));
                     SingleExecutionPlan m = transformExecutionPlan(l, pureModel, PureClientVersions.production, profiles, routerExtensions.apply(pureModel), transformers);
-                    result = planExecutor.execute(m, Maps.mutable.empty(), "pentej", profiles);
+                    result = planExecutor.execute(m, Maps.mutable.empty(), user, profiles);
                 }
 
                 return Tuples.pair(p._name(), result);
