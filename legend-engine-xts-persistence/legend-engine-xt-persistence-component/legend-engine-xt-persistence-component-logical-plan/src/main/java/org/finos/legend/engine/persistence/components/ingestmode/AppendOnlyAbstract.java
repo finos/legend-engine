@@ -19,8 +19,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGe
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
 import org.immutables.value.Value;
 
-import java.util.Optional;
-
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
