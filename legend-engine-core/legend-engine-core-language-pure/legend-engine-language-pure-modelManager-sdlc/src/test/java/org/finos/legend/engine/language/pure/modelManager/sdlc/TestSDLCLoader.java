@@ -88,7 +88,7 @@ public class TestSDLCLoader
         configureWireMockForRetries();
         SDLCLoader sdlcLoader = createSDLCLoader();
 
-        PureModelContextData pmcdLoaded = sdlcLoader.load(Lists.fixedSize.empty(), pointer, "v1_32_0", tracer.activeSpan());
+        PureModelContextData pmcdLoaded = sdlcLoader.load(Lists.fixedSize.empty(), pointer, CLIENT_VERSION, tracer.activeSpan());
         Assert.assertNotNull(pmcdLoaded);
 
         Object tries = tracer.finishedSpans()
@@ -112,7 +112,7 @@ public class TestSDLCLoader
 
         try
         {
-            sdlcLoader.load(Lists.fixedSize.empty(), pointer, "v1_32_0", tracer.activeSpan());
+            sdlcLoader.load(Lists.fixedSize.empty(), pointer, CLIENT_VERSION, tracer.activeSpan());
             Assert.fail("Should throw");
         }
         catch (EngineException e)
@@ -134,7 +134,7 @@ public class TestSDLCLoader
 
         configureWireMockForRetries();
         SDLCLoader sdlcLoader = createSDLCLoader();
-        PureModelContextData pmcdLoaded = sdlcLoader.load(Lists.fixedSize.empty(), pointer, "v1_32_0", tracer.activeSpan());
+        PureModelContextData pmcdLoaded = sdlcLoader.load(Lists.fixedSize.empty(), pointer, CLIENT_VERSION, tracer.activeSpan());
         Assert.assertNotNull(pmcdLoaded);
         Assert.assertEquals(1, pmcdLoaded.getElements().size());
         Assert.assertEquals("pkg::pkg::myClass", pmcdLoaded.getElements().get(0).getPath());
