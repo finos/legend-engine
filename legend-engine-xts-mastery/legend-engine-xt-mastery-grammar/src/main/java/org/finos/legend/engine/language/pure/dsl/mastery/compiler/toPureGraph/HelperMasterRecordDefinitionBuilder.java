@@ -47,7 +47,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -303,7 +305,7 @@ public class HelperMasterRecordDefinitionBuilder
             Property<?,?> property = (Property<?,?>) context.resolveProperty(determineFullPath(parentClass), propertyPath.property);
             Type propertyClass = property._genericType()._rawType();
             String propertyClassName;
-            if (propertyClass instanceof Class)
+            if ((propertyClass instanceof Class) || (propertyClass instanceof Enumeration))
             {
                 propertyClassName = determineFullPath(propertyClass);
             }
