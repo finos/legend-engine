@@ -166,6 +166,34 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
 
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::lpad::testLpad(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='lpad', parameters=[^Literal(value='Smith'), ^Literal(value=7)]);
+  let expected = ^Literal(value='  Smith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::lpad::testLpadWithChar(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='lpad', parameters=[^Literal(value='Smith'), ^Literal(value=7), ^Literal(value='0')]);
+  let expected = ^Literal(value='00Smith');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rpad::testRpad(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='rpad', parameters=[^Literal(value='Smith'), ^Literal(value=7)]);
+  let expected = ^Literal(value='Smith  ');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::rpad::testRpadWithChar(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='rpad', parameters=[^Literal(value='Smith'), ^Literal(value=7), ^Literal(value='0')]);
+  let expected = ^Literal(value='Smith00');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::toUpper::test1(config:DbTestConfig[1]):Boolean[1]
 {
   let dynaFunc = ^DynaFunction(name='toUpper', parameters=[^Literal(value='Smith')]);

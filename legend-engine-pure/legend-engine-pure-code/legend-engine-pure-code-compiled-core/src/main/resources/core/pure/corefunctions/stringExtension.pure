@@ -167,6 +167,36 @@ function {doc.doc = 'Un-camel case / humanize the provided string using provided
       ->joinStrings(' ');
 }
 
+function meta::pure::functions::string::lpad(str:String[1], length:Integer[1]):String[1]
+{
+  lpad($str, $length, ' ')
+}
+
+function meta::pure::functions::string::lpad(str:String[1], length:Integer[1], char:String[1]):String[1]
+{
+  pad($str, $length, $char, true)
+}
+
+function meta::pure::functions::string::rpad(str:String[1], length:Integer[1]):String[1]
+{
+  rpad($str, $length, ' ')
+}
+
+function meta::pure::functions::string::rpad(str:String[1], length:Integer[1], char:String[1]):String[1]
+{
+  pad($str, $length, $char, false)
+}
+
+function <<access.private>> meta::pure::functions::string::pad(str:String[1], length:Integer[1], char:String[1], left:Boolean[1]):String[1]
+{
+  let result = if ($str->length() > $length, 
+    | $str->substring(0, $length),
+    | range($length - $str->length())->fold({acc, s | if ($left, | $char + $s, | $s + $char)}, $str->toOne())
+  );
+
+  if ($result->length() > $length, | $result->substring(0, $length), | $result);
+}
+
 function {doc.doc = 'Split the string and select the part'} 
    meta::pure::functions::string::splitPart(str:String[0..1], token:String[1], part:Integer[1]):String[0..1] 
 {

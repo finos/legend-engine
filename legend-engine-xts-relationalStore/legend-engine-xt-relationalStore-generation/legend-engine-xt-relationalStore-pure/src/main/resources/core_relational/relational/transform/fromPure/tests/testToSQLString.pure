@@ -402,6 +402,35 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testTrim()
    )->distinct() == [true];
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testPad():Boolean[1]
+{
+  let common = 'select lpad("root".FIRSTNAME, 1) as "lpad", lpad("root".FIRSTNAME, 1, \'0\') as "lpad2", rpad("root".FIRSTNAME, 1) as "rpad", rpad("root".FIRSTNAME, 1, \'0\') as "rpad2" from personTable as "root"';
+
+   let expected = [
+    pair(DatabaseType.DB2, $common),
+    pair(DatabaseType.H2, $common),
+    pair(DatabaseType.Composite, $common)
+  ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+        |Person.all()->project([
+          a | $a.firstName->lpad(1),
+          a | $a.firstName->lpad(1, '0'),
+          a | $a.firstName->rpad(1),
+          a | $a.firstName->rpad(1, '0')
+         ],
+         ['lpad', 'lpad2', 'rpad', 'rpad2']),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt():Boolean[1]
 {
   let common = 'select cbrt("root".quantity) as "cbrt" from tradeTable as "root"';
@@ -565,6 +594,26 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlG
       let result = toSQLString(
          |Trade.all()
             ->project(col(t|$t.date->firstDayOfWeek(), 'date')),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSqlGenerationMonth():Boolean[1]
+{
+   let expected = [
+      pair(DatabaseType.H2, 'select monthname("root".tradeDate) as "month" from tradeTable as "root"')
+   ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+         |Trade.all()
+            ->project(col(t|$t.date->month(), 'month')),
          simpleRelationalMapping,
          $driver, meta::relational::extension::relationalExtensions());
 

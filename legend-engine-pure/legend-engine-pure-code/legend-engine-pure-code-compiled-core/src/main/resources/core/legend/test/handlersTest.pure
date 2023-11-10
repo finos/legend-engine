@@ -372,6 +372,10 @@ Class meta::legend::test::handlers::model::TestString
    
    length(){$this.string->length()}:Integer[1];
    ltrim(){$this.string->ltrim()}:String[1];
+   lpad(){$this.string->lpad(1)}:String[1];
+   lpad2(){$this.string->lpad(1, '0')}:String[1];   
+   rpad(){$this.string->rpad(1)}:String[1];
+   rpad2(){$this.string->rpad(1, '0')}:String[1];   
    
    parseBoolean(){$this.string->parseBoolean()}:Boolean[1];
    parseDate(){$this.string->parseDate()}:Date[1];

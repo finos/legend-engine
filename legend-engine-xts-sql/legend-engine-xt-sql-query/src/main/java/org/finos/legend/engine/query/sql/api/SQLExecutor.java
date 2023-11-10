@@ -52,7 +52,6 @@ import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
 import org.finos.legend.engine.query.sql.providers.core.TableSource;
-import org.finos.legend.engine.query.sql.api.sources.TableSourceArgument;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -243,15 +242,6 @@ public class SQLExecutor
 
     private SQLSourceResolvedContext resolve(MutableCollection<TableSource> tables, SQLContext context, SQLSourceProvider extension, MutableList<CommonProfile> profiles)
     {
-        //TODO remove deprecated flow
-        org.finos.legend.engine.query.sql.api.sources.SQLSourceResolvedContext resolved = extension.resolve(tables.collect(t -> new org.finos.legend.engine.query.sql.api.sources.TableSource(t.getType(),
-                ListIterate.collect(t.getArguments(), a -> new TableSourceArgument(a.getName(), a.getIndex(), a.getValue())))).toList(), new org.finos.legend.engine.query.sql.api.sources.SQLContext(context.getQuery()), profiles);
-
-        if (resolved != null)
-        {
-            return new SQLSourceResolvedContext(resolved.getPureModelContexts(), ListIterate.collect(resolved.getSources(), s -> new SQLSource(s.getType(), s.getFunc(), s.getMapping(), s.getRuntime(), s.getExecutionOptions(), s.getExecutionContext(), s.getKey())));
-        }
-
         return extension.resolve(tables.toList(), context, profiles);
     }
 

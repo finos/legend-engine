@@ -566,9 +566,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExtend(select: Select[1], context: SqlTransformContext[1]):FunctionExpression[1]
 {
   debug('processExtend', $context.debug);
-  let typeArguments = ^GenericType(rawType = TDSRow);
-  let genericType = ^GenericType(rawType = BasicColumnSpecification, typeArguments = $typeArguments);
-
   let selectItems = $select.selectItems->processSelectItems($context, false);
 
   let columns = $context.columns.name;
@@ -576,11 +573,18 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let args = $selectItems->map(item |
     let rename = $columns->contains($item.second);
     let name =  if ($rename, | $item.second + '_1', | $item.second);
-
-    sfe(col_Function_1__String_1__BasicColumnSpecification_1_, $genericType, $typeArguments, [$item.first->iv(), $name->iv()]);
+    createCol($item.first, $name);
   );
 
   appendTdsFunc($context.expression->toOne(), extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_, list(iv($args)));
+}
+
+function meta::external::query::sql::transformation::queryToPure::createCol(lambda:LambdaFunction<Any>[1], name:String[1]):SimpleFunctionExpression[1]
+{
+  let typeArguments = ^GenericType(rawType = TDSRow);
+  let genericType = ^GenericType(rawType = BasicColumnSpecification, typeArguments = $typeArguments);  
+
+  sfe(col_Function_1__String_1__BasicColumnSpecification_1_, $genericType, $typeArguments, [iv($lambda), iv($name)]);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelect(select: Select[1], restrict:Boolean[1], context: SqlTransformContext[1]):FunctionExpression[1]
@@ -649,7 +653,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let genericType = ^GenericType(rawType = BasicColumnSpecification, typeArguments = $typeArguments);
 
   let args = $select.selectItems->processSelectItems($context, false)->map(item |
-    sfe(col_Function_1__String_1__BasicColumnSpecification_1_, $genericType, $typeArguments, [$item.first->iv(), $item.second->iv()]);
+    createCol($item.first, $item.second);
   );
 
   let iv = iv($args);
@@ -1984,12 +1988,14 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
       processor('length', length_String_1__Integer_1_),
       processor('lower', toLower_String_1__String_1_),
+      processor('lpad', String, {args, fc, ctx | processPad($args, true)}),
       processor('ltrim', String, {args, fc, ctx | processTrim(ltrim_String_1__String_1_, $args)}),
       processor('md5', String, {args, fc, ctx | processHash($args, meta::pure::functions::hash::HashType.MD5)}),
       processor('regexp_like', matches_String_1__String_1__Boolean_1_),
       processor('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       processor('replace', replace_String_1__String_1__String_1__String_1_),
       processor('reverse', reverseString_String_1__String_1_),
+      processor('rpad', String, {args, fc, ctx | processPad($args, false)}),
       processor('rtrim', String, {args, fc, ctx | processTrim(rtrim_String_1__String_1_, $args)}),
       processor('sha256', String, {args, fc, ctx | processHash($args, meta::pure::functions::hash::HashType.SHA256)}),
       processor('split_part', String, {args, fc, ctx |
@@ -2026,7 +2032,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         possiblyProcessParseDate($args->at(0))
       }),
       processor('date_part', Integer, {args, fc, ctx |
-        assertEquals(2, $args->size(), 'incorrect number of args');
+        assertEquals(2, $args->size(), 'incorrect number of args for date_part');
         let part = $args->at(0);
         let value = $part->reactivate()->toOne()->cast(@String);
 
@@ -2047,7 +2053,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         nullOrSfe($func, $args->at(1));
       }),
       processor('date_trunc', Date, {args, fc, ctx |
-        assertEquals(2, $args->size(), 'incorrect number of args');
+        assertEquals(2, $args->size(), 'incorrect number of args for date_trunc');
         let part = $args->at(0);
         let value = $part->reactivate()->toOne()->cast(@String);
 
@@ -2077,6 +2083,19 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
       }),
 
+      //FORMAT
+      processor('to_char', String, {args, fc, ctx |
+        assertEquals(2, $args->size(), 'incorrect number of args for t-_char');
+
+        let arg = $args->at(0);
+        let type = $arg.genericType.rawType;
+        let format = $args->at(1)->reactivate()->toOne()->cast(@String);
+
+        assert($type->isNotEmpty() && $type->toOne()->normalizeType() == Date, 'to_char currently only supported for know date inputs');
+
+        toChar($format, [], $arg->evaluateAndDeactivate());
+      }),
+
       //WINDOW
       processor('row_number',  false, true, [], {args, fc, ctx |
         let values = $ctx.defaultVar->toOne()->concatenate($args);
@@ -2091,6 +2110,187 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe(meta::pure::functions::math::olap::rank_Any_MANY__Map_1_, ^GenericType(rawType = Map, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Integer)]), [^GenericType(rawType = Any), ^GenericType(rawType = Integer)], $values);
       })
   ]
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::toCharFormats():Pair<String, Function<{String[0..1], String[0..1], ValueSpecification[1] -> ValueSpecification[1]}>>[*]
+{
+  [
+    pair('HH',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('HH')}),
+    pair('HH12',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('HH12')}),
+    pair('HH24',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(hour_Date_1__Integer_1_, $a, false, false, 2, '0', [], [], $p, $s)}),
+    pair('MI',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(minute_Date_1__Integer_1_, $a, false, false, 2, '0', [], [], $p, $s)}),
+    pair('SS',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(second_Date_1__Integer_1_, $a, false, false, 2, '0', [], [], $p, $s)}),
+    pair('MS',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('MS')}),
+    pair('US',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('US')}),
+    pair('FF1',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('FF1')}),
+    pair('FF2',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('FF2')}),
+    pair('FF3',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('FF3')}),
+    pair('FF4',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('FF4')}),
+    pair('FF5',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('FF5')}),
+    pair('FF6',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('FF6')}),
+    pair('SSSS',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('SSSS')}),
+    pair('SSSSS', {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('SSSSS')}),
+    pair('AM',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('AM')}),
+    pair('am',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('am')}),
+    pair('PM',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('PM')}),
+    pair('pm',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('pm')}),
+    pair('A.M',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('A.M')}),
+    pair('a.m',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('a.m')}),
+    pair('P.M',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('P.M')}),
+    pair('p.m',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('p.m')}),
+    pair('Y,YYY', {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('Y,YYYY')}),
+    pair('YYYY',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(year_Date_1__Integer_1_, $a, $p, $s)}),
+    pair('YYY',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | processSubstring([toChar(year_Date_1__Integer_1_, $a, $p, $s), iv(2), iv(3)])}),
+    pair('YY',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | processSubstring([toChar(year_Date_1__Integer_1_, $a, $p, $s), iv(3), iv(2)])}),
+    pair('Y',     {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | processSubstring([toChar(year_Date_1__Integer_1_, $a, $p, $s), iv(4), iv(1)])}),
+    pair('IYYY',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('IYYY')}),
+    pair('IYY',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('IYY')}),
+    pair('IY',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('IY')}),
+    pair('I',     {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('I')}),
+    pair('BC',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('BC')}),
+    pair('bc',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('bc')}),
+    pair('AD',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('AD')}),
+    pair('ad',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('ad')}),
+    pair('B.C.',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('B.C.')}),
+    pair('b.c.',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('b.c.')}),
+    pair('A.D.',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('A.D.')}),
+    pair('a.d',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('a.d.')}),
+    pair('MONTH', {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(month_Date_1__Month_1_, $a, true, false, [], [], 9, ' ', $p, $s)}),
+    pair('Month', {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(month_Date_1__Month_1_, $a, false, false, [], [], 9, ' ', $p, $s)}),
+    pair('month', {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(month_Date_1__Month_1_, $a, false, true, [], [], 9, ' ', $p, $s)}),
+    pair('MON',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(month_Date_1__Month_1_, $a, true, false, [], [], 3, ' ', $p, $s)}),
+    pair('Mon',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(month_Date_1__Month_1_, $a, false, false, [], [], 3, ' ', $p, $s)}),
+    pair('mon',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(month_Date_1__Month_1_, $a, false, true, [], [], 3, ' ', $p, $s)}),
+    pair('MM',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(monthNumber_Date_1__Integer_1_, $a, false, false, 2, '0', [], [], $p, $s)}),
+    pair('DAY',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfWeek_Date_1__DayOfWeek_1_, $a, true, false, [], [], 9, ' ', $p, $s)}),
+    pair('Day',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfWeek_Date_1__DayOfWeek_1_, $a, false, false, [], [], 9, ' ', $p, $s)}),
+    pair('day',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfWeek_Date_1__DayOfWeek_1_, $a, false, true, [], [], 9, ' ', $p, $s)}),
+    pair('DY',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfWeek_Date_1__DayOfWeek_1_, $a, true, false, [], [], 3, ' ', $p, $s)}),
+    pair('Dy',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfWeek_Date_1__DayOfWeek_1_, $a, false, false, [], [], 3, ' ', $p, $s)}),
+    pair('dy',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfWeek_Date_1__DayOfWeek_1_, $a, false, true, [], [], 3, ' ', $p, $s)}),
+    pair('DDD',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfYear_Date_1__Integer_1_, $a, false, false, 3, '0', [], [], $p, $s)}),
+    pair('IDDD',  {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('IDDD')}),
+    pair('DD',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfMonth_Date_1__Integer_1_, $a, false, false, 2, '0', [], [], $p, $s)}),
+    pair('D',     {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(dayOfWeekNumber_Date_1__Integer_1_, $a, $p, $s)}),
+    pair('ID',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('ID')}),
+    pair('W',     {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('W')}),
+    pair('WW',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(weekOfYear_Date_1__Integer_1_, $a, false, false, 2, '0', [], [], $p, $s)}),
+    pair('IW',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('IW')}),
+    pair('CC',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('CC')}),
+    pair('J',     {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('J')}),
+    pair('Q',     {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toChar(quarterNumber_Date_1__Integer_1_, $a, $p, $s)}),
+    pair('RM',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('RM')}),
+    pair('rm',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('rm')}),
+    pair('TZ',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('TZ')}),
+    pair('tz',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('tz')}),
+    pair('TZH',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('TZH')}),
+    pair('TZM',   {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('TZM')}),
+    pair('OF',    {p:String[0..1], s:String[0..1], a:ValueSpecification[1] | toCharUnsupported('OF')})
+  ]->sortBy(p  | $p.first->length())->reverse();
+}
+
+Class meta::external::query::sql::transformation::queryToPure::ToCharContext
+{
+  format: String[1];
+  result: ValueSpecification[0..1];
+  matched: Boolean[1];
+  prefix: String[0..1];
+  suffix: String[0..1];
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::toCharPrefixes():Pair<String, Function<{->Boolean[1]}>>[*]
+{
+  [
+     pair('FM', | true),
+     pair('FX', | toCharUnsupported('FX'); false;),
+     pair('TM', | toCharUnsupported('TM'); false;)
+  ]->sortBy(p  | $p.first->length())->reverse();
+}
+
+//token -> supported
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::toCharSuffixes():Pair<String, Function<{->Boolean[1]}>>[*]
+{
+  [
+     pair('TH', {| toCharUnsupported('th'); false;}),
+     pair('th', {| toCharUnsupported('th'); false;}),
+     pair('SP', {| toCharUnsupported('SP'); false;})
+  ]->sortBy(p  | $p.first->length())->reverse();
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::toChar(format:String[1], result:ValueSpecification[0..1], arg:ValueSpecification[1]):ValueSpecification[1]
+{
+  let formats = toCharFormats();
+  let prefixes = toCharPrefixes();
+  let suffixes = toCharSuffixes();
+
+  if ($format->length() == 0, 
+    | if ($result->isEmpty(), | $arg, | $result->toOne()),
+    | 
+      let prefix = $prefixes->fold({p, acc | 
+        if ($format->startsWith($p.first) && $p.second->eval(), | pair($format->substring($p.first->length(), $format->length()), $p.first), | $acc);
+      }, pair($format, ''));
+
+      let scan = $formats->fold({token, acc | 
+        if (!$acc.matched && $acc.format->startsWith($token.first), 
+          | 
+            let newFormat = $acc.format->substring($token.first->length(), $acc.format->length());
+
+
+            let suffix = $suffixes->fold({s, acc | 
+              if ($newFormat->startsWith($s.first)  && $s.second->eval(), | pair($newFormat->substring($s.first->length(), $newFormat->length()), $s.first), | $acc);
+            }, pair($newFormat, ''));
+
+            let newResult = toCharCombine($result->evaluateAndDeactivate(), $token.second->eval($acc.prefix, if ($suffix.second != '', | $suffix.second, | []), $arg));
+
+            ^$acc(format = $suffix.first, result = $newResult->evaluateAndDeactivate() , matched = true);,
+          | $acc);
+      }, ^ToCharContext(format = $prefix.first, result = $result->evaluateAndDeactivate(), matched = false, prefix = if ($prefix.second != '', | $prefix.second, | [])));
+
+      if ($scan.matched, 
+        | toChar($scan.format, $scan.result->evaluateAndDeactivate(), $arg),
+        | toChar($scan.format->substring(1, $scan.format->length()), toCharCombine($scan.result->evaluateAndDeactivate(), iv($scan.format->chunk(1)->at(0))), $arg));
+  );
+}
+
+function <<access.private>>  meta::external::query::sql::transformation::queryToPure::toCharCombine(v:ValueSpecification[0..1], v2:ValueSpecification[1]):ValueSpecification[1]
+{
+  if ($v->isEmpty(), | $v2, | sfe(plus_String_MANY__String_1_, iv([$v->toOne(), $v2])))->evaluateAndDeactivate()
+}
+
+
+function <<access.private>>  meta::external::query::sql::transformation::queryToPure::toCharUnsupported(func:String[1]):ValueSpecification[1]
+{
+  fail($func + ' is not supported to_char token');
+  iv(1);
+}
+
+function <<access.private>>  meta::external::query::sql::transformation::queryToPure::toChar(func:Function<Any>[1], arg:ValueSpecification[1], prefix:String[0..1], suffix:String[0..1]):ValueSpecification[1]
+{
+  toChar($func, $arg, false, false, $prefix, $suffix)
+}
+
+function <<access.private>>  meta::external::query::sql::transformation::queryToPure::toChar(func:Function<Any>[1], arg:ValueSpecification[1], upper:Boolean[1], lower:Boolean[1], prefix:String[0..1], suffix:String[0..1]):ValueSpecification[1]
+{
+  toChar($func, $arg, $upper, $lower, [], [], [], [], $prefix, $suffix)
+}
+
+function <<access.private>>  meta::external::query::sql::transformation::queryToPure::toChar(func:Function<Any>[1], arg:ValueSpecification[1], upper:Boolean[1], lower:Boolean[1], lpadLength:Integer[0..1], lpadChar:String[0..1], rpadLength:Integer[0..1], rpadChar:String[0..1], prefix:String[0..1], suffix:String[0..1]):ValueSpecification[1]
+{
+  let f = nullOrSfe($func, $arg->evaluateAndDeactivate())->evaluateAndDeactivate();
+
+  let type = $func->functionReturnType().rawType->toOne();
+  let str = if ($type != String, | nullOrSfe(toString_Any_1__String_1_, $f), | $f);  
+
+  let cased = if ($upper, 
+    | nullOrSfe(toUpper_String_1__String_1_, $str),
+    | if ($lower, 
+        | nullOrSfe(toLower_String_1__String_1_, $str),
+        | $str));
+
+  if ($prefix == 'FM',
+    | $cased,
+    | let lpad = if ($lpadLength->isNotEmpty() && $lpadChar->isNotEmpty(), | processPad([$cased, iv($lpadLength), iv($lpadChar)], true), | $cased);
+      if ($rpadLength->isNotEmpty() && $rpadChar->isNotEmpty(), | processPad([$cased, iv($rpadLength), iv($rpadChar)], false), | $lpad););
 }
 
 function meta::external::query::sql::transformation::queryToPure::processPercentile(name:String[1], args:ValueSpecification[*], continuous:Boolean[1], fc:FunctionCall[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
@@ -2112,6 +2312,20 @@ function meta::external::query::sql::transformation::queryToPure::processTrim(fu
     assert($args->size() == 1 || ($args->at(1)->reactivate() == ' '), 'only empty string trim is currently supported');
 
     nullOrSfe($func, $args->at(0));
+}
+
+function meta::external::query::sql::transformation::queryToPure::processPad(args:ValueSpecification[*], left:Boolean[1]):ValueSpecification[1]
+{
+  assert($args->size() == 2 || $args->size() == 3, | 'incorrect number of args for pad function');
+
+  let func = [
+    pair($left && $args->size() == 2, lpad_String_1__Integer_1__String_1_),
+    pair($left && $args->size() == 3, lpad_String_1__Integer_1__String_1__String_1_),
+    pair(!$left && $args->size() == 2, rpad_String_1__Integer_1__String_1_),
+    pair(!$left && $args->size() == 3, rpad_String_1__Integer_1__String_1__String_1_)
+  ]->getValue(true);
+
+  nullOrSfe($func, $args);
 }
 
 function meta::external::query::sql::transformation::queryToPure::processHash(args:ValueSpecification[*], type:meta::pure::functions::hash::HashType[1]):ValueSpecification[1]
@@ -2633,6 +2847,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 }
 
 
+function meta::external::query::sql::transformation::queryToPure::appendTdsFunc(lambda:LambdaFunction<Any>[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): LambdaFunction<Any>[1]
+{
+  ^$lambda(
+    expressionSequence = appendTdsFunc($lambda.expressionSequence->last()->toOne()->cast(@FunctionExpression), $execFunc, $args)
+  )
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::appendTdsFunc(func: FunctionExpression[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): FunctionExpression[1]
 {
   let pvs = $args->fold(
@@ -2759,6 +2980,8 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       let mv = ^MultiplicityValue(value = $a->size());
       ^Multiplicity(lowerBound = $mv, upperBound = $mv);
   ]);
+
+  
 
   ^InstanceValue(multiplicity = $multiplicity, genericType = $genericType, values = $value);
 }
