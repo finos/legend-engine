@@ -12,20 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.bigqueryFunction.deployment;
+package org.finos.legend.engine.protocol.functionActivator.deployment;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentContent;
-
-public class BigQueryFunctionContent extends FunctionActivatorDeploymentContent
+public class FunctionActivatorDeploymentConfiguration
 {
-    public final MutableList<String> sqlExpressions;
-
-    public final String functionName;
-
-    public BigQueryFunctionContent(String name, MutableList<String> sqlExpressions)
-    {
-        this.functionName = name;
-        this.sqlExpressions = sqlExpressions;
-    }
 }

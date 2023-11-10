@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2020 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,8 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.functionActivator.deployment;
+package org.finos.legend.engine.protocol.hostedService.deployment.model.lineage;
 
-public class FunctionActivatorDeploymentContent
+import org.eclipse.collections.api.factory.Maps;
+
+import java.util.Map;
+
+public class CompositeLineage extends Lineage
 {
+
+    public Map<String, SingleLineage> lineages = Maps.mutable.empty();
+
+    public CompositeLineage()
+    {
+        // DO NOT DELETE: this resets the default constructor for Jackson
+    }
+
+    public CompositeLineage(Map<String, SingleLineage> lineages)
+    {
+        this.lineages = lineages;
+    }
 }

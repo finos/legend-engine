@@ -12,21 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.functionActivator.deployment;
+package org.finos.legend.engine.protocol.bigqueryFunction.deployment;
 
-import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
-import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
-import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 
-import java.util.List;
-
-public interface DeploymentManager<U extends FunctionActivatorArtifact, V extends DeploymentResult, W extends FunctionActivatorDeploymentConfiguration>
+public class BigQueryFunctionDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
 {
+    RelationalDatabaseConnection connection;
 
-    public V deploy(Identity identity, U artifact);
+    public BigQueryFunctionDeploymentConfiguration()
+    {
+        //jackson
+    }
 
-    public V deploy(Identity identity, U artifact, List<W> availableRuntimeConfigurations);
-
-    public boolean canDeploy(FunctionActivatorArtifact activatorArtifact);
+    public BigQueryFunctionDeploymentConfiguration(RelationalDatabaseConnection connection)
+    {
+        this.connection = connection;
+    }
 }

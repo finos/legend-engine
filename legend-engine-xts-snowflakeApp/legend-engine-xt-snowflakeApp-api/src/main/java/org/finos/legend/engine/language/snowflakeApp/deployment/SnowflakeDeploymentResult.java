@@ -15,7 +15,7 @@
 package org.finos.legend.engine.language.snowflakeApp.deployment;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.functionActivator.deployment.DeploymentResult;
+import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 
 public class SnowflakeDeploymentResult extends DeploymentResult
 {

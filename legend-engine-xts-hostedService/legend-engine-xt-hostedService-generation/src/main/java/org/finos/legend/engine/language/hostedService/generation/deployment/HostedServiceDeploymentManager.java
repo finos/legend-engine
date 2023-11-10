@@ -16,7 +16,10 @@ package org.finos.legend.engine.language.hostedService.generation.deployment;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentResult;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 

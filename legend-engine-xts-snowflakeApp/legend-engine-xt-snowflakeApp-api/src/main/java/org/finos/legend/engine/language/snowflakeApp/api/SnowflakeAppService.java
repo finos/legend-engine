@@ -14,21 +14,22 @@
 
 package org.finos.legend.engine.language.snowflakeApp.api;
 
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifact;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentManager;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentResult;
-import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppContent;
-import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppGenerator;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
