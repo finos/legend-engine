@@ -43,7 +43,15 @@ public class SnowflakeAppGenerator
 
     public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        RichIterable<String> sqlExpressions = extractSQLExpressions(pureModel, activator, routerExtensions);
+        PackageableFunction<?> function = activator._function();
+        Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
+        RichIterable<String> sqlExpressions = extractSQLExpressions(executionPlan);
+        String functionColumns = executionPlan._rootExecutionNode()._resultType() instanceof Root_meta_pure_executionPlan_TDSResultType ? generateFunctionReturnColumns((Root_meta_pure_executionPlan_TDSResultType)executionPlan._rootExecutionNode()._resultType()) : "";
+
+//        if( activator._type().getName().equals("FULL"))
+//        {
+//            sqlExpressions = wrapSQL(sqlExpressions, functionColumns);
+//        }
 
         RelationalDatabaseConnection connection;
         AlloySDLC sdlc = null;
@@ -55,7 +63,7 @@ public class SnowflakeAppGenerator
                 sdlc = (AlloySDLC) sdlcInfo;
             }
         }
-        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), Lists.mutable.with(activator._owner()), sdlc);
+        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), functionColumns, activator._type()._name(), Lists.mutable.with(activator._owner()), sdlc);
         if (activator._activationConfiguration() != null)
         {
             //identify connection
@@ -70,15 +78,20 @@ public class SnowflakeAppGenerator
         return new SnowflakeAppArtifact(content);
     }
 
-    private static RichIterable<String> extractSQLExpressions(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    private static RichIterable<String> extractSQLExpressions(Root_meta_pure_executionPlan_ExecutionPlan executionPlan)
     {
-        PackageableFunction<?> function = activator._function();
-        Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
+
         Root_meta_pure_executionPlan_ExecutionNode node = executionPlan._rootExecutionNode();
         return collectAllNodes(node)
                 .selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class)
                 .collect(Root_meta_relational_mapping_SQLExecutionNode::_sqlQuery)
                 .select(x -> !x.toLowerCase().startsWith("alter"));
+    }
+
+    private static String generateFunctionReturnColumns(Root_meta_pure_executionPlan_TDSResultType planResult)
+    {
+        return Lists.mutable.withAll(planResult._tdsColumns()).collect(c ->
+                c._name().replace(" ","_").replace("/","_")  + " " +  "VARCHAR(16777216)").makeString(" , ");
     }
 
     private static Object[] extractSQLExpressionsAndConnectionMetadata(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
