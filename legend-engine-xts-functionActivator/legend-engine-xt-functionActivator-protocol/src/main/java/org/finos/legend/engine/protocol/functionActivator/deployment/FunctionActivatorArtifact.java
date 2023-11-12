@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.protocol.functionActivator.deployment;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 public class FunctionActivatorArtifact
 {
     public FunctionActivatorDeploymentContent content;
