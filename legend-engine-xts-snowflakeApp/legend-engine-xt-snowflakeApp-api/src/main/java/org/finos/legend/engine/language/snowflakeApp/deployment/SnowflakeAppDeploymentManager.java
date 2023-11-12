@@ -125,31 +125,33 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         return this.connectionManager.getDatabaseConnection(identity, (DatabaseConnection) connection);
     }
 
-    public void deployImpl(Connection jdbcConnection, SnowflakeAppContent context) throws Exception
+    public void deployImpl(Connection jdbcConnection, SnowflakeAppContent context) throws SQLException
     {
-        Statement statement = jdbcConnection.createStatement();
         String catalogName = jdbcConnection.getCatalog();
-        statement.execute(generateStatement(catalogName, context));
+        MutableList<String> statements = generateStatements(catalogName, context);
+        for (String s: statements)
+        {
+            Statement statement = jdbcConnection.createStatement();
+            statement.execute(s);
+        }
     }
 
-    public String generateStatement(String catalogName, SnowflakeAppContent content)
+    public MutableList<String> generateStatements(String catalogName, SnowflakeAppContent content)
     {
-        String statement;
+        MutableList<String> statements = Lists.mutable.empty();
         if (content.type.equals("STAGE"))
         {
             String deploymentTableName = String.format("%s.%s." + deploymentTable, catalogName, deploymentSchema);
-            statement = String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER, DESCRIPTION) values('%s', '%s', '%s', '%s', '%s', '%s')",
-                    deploymentTableName, content.creationTime, content.applicationName, content.sqlExpressions.getFirst(), content.getVersionInfo(), Lists.mutable.withAll(content.owners).makeString(","), content.description);
+            statements.add(String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER, DESCRIPTION) values('%s', '%s', '%s', '%s', '%s', '%s');",
+                    deploymentTableName, content.creationTime, content.applicationName, content.sqlExpressions.getFirst(), content.getVersionInfo(), Lists.mutable.withAll(content.owners).makeString(","), content.description));
 
         }
         else
         {
-            String udtfSql = String.format("CREATE OR REPLACE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$ COMMENT = '%s'", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description);
-            String secureSql = String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$ COMMENT = '%s'", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description);
-            statement = udtfSql + "\n" + secureSql;
-
+            statements.add(String.format("CREATE OR REPLACE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
+            statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
         }
-        return statement;
+        return statements;
     }
 
     public String getDeploymentTableName(Connection jdbcConnection) throws SQLException
