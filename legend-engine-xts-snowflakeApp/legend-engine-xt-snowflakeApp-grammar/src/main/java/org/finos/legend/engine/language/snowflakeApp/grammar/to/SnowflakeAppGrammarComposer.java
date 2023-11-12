@@ -54,6 +54,7 @@ public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
                 "   function : " + app.function + ";\n" +
                 (app.owner == null ? "" : "   owner : '" + app.owner + "';\n") +
                 (app.description == null ? "" : "   description : '" + app.description + "';\n") +
+                (app.type == null ? "" : "   type : " + app.type.name() + ";\n") +
                 (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((SnowflakeAppDeploymentConfiguration)app.activationConfiguration).activationConnection.connection + ";\n") +
                 "}";
     }
@@ -79,7 +80,7 @@ public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
     }
 
     @Override
-    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureGrammarComposerExtension.PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, List<String>, PureFreeSectionGrammarComposerResult>> getExtraFreeSectionComposers()
     {
         return Collections.singletonList((elements, context, composedSections) ->
         {
