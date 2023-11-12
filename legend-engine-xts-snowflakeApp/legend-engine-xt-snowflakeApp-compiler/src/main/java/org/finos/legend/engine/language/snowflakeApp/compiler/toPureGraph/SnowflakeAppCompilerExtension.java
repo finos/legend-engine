@@ -22,11 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration_Impl;
-import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 
@@ -67,6 +63,7 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
                         ._function(func)
                         ._description(app.description)
                         ._owner(app.owner)
+                        ._type(app.type != null ? context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakeDeploymentType", app.type.toString()) : context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakeDeploymentType", "FULL"))
                         ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeAppDeploymentConfiguration) app.activationConfiguration, context) : null);
         }
         catch (Exception e)
