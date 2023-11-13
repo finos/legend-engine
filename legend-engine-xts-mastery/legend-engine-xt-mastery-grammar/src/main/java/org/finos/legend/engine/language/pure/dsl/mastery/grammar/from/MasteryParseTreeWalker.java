@@ -73,7 +73,9 @@ public class MasteryParseTreeWalker
 
 
     private static final String SIMPLE_PRECEDENCE_LAMBDA = "{input: %s[1]| true}";
-    private static final String PRECEDENCE_LAMBDA_WITH_FILTER = "{input: %s[1]| $input.%s}";
+    private static final String INPUT = "\\$input";
+    private static final String DOLLAR_SIGN = "\\$";
+    private static final String PRECEDENCE_LAMBDA_WITH_FILTER = "{input: %s[1]| %s}";
     private static final String DATA_PROVIDER_STRING = "DataProvider";
 
     public MasteryParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation,
@@ -373,8 +375,9 @@ public class MasteryParseTreeWalker
 
     private Lambda visitLambdaWithFilter(String propertyName, MasteryParserGrammar.CombinedExpressionContext ctx)
     {
+        String inputFilter = ctx.getText().replaceAll(DOLLAR_SIGN, INPUT);
         return domainParser.parseLambda(
-                format(PRECEDENCE_LAMBDA_WITH_FILTER, propertyName, ctx.getText()),
+                format(PRECEDENCE_LAMBDA_WITH_FILTER, propertyName, inputFilter),
                 "", 0, 0, true);
     }
 

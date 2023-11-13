@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.functionActivator.deployment;
+package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
 
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
-public class FunctionActivatorDeploymentContent
+public enum SnowflakeAppType
 {
+    STAGE, FULL
 }
