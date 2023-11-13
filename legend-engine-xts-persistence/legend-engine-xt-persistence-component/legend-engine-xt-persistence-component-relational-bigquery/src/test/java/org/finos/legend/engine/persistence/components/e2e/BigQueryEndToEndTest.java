@@ -156,7 +156,7 @@ public class BigQueryEndToEndTest
         // Load csv data
         loadData(path, datasets.stagingDataset(), 1);
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
-        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets);
+        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets).get(0);
 
         verifyStagingFilters(ingestor, connection, datasets);
         return ingestorResult;
@@ -383,7 +383,7 @@ public class BigQueryEndToEndTest
                 .caseConversion(CaseConversion.TO_UPPER)
                 .build();
 
-        IngestorResult result = ingestor.performFullIngestion(BigQueryConnection.of(getBigQueryConnection()), datasets);
+        IngestorResult result = ingestor.performFullIngestion(BigQueryConnection.of(getBigQueryConnection()), datasets).get(0);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
@@ -430,7 +430,7 @@ public class BigQueryEndToEndTest
                 .enableSchemaEvolution(options.enableSchemaEvolution())
                 .schemaEvolutionCapabilitySet(userCapabilitySet)
                 .build();
-        IngestorResult result = ingestor.performFullIngestion(BigQueryConnection.of(getBigQueryConnection()), datasets);
+        IngestorResult result = ingestor.performFullIngestion(BigQueryConnection.of(getBigQueryConnection()), datasets).get(0);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 

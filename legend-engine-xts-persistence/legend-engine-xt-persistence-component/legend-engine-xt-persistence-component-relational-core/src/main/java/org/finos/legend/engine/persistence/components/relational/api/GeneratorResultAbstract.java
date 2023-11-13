@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -56,9 +57,13 @@ public abstract class GeneratorResultAbstract
 
     public abstract Optional<SqlPlan> metadataIngestSqlPlan();
 
+    public abstract Optional<SqlPlan> deduplicationAndVersioningSqlPlan();
+
     public abstract SqlPlan postActionsSqlPlan();
 
     public abstract Optional<SqlPlan> postCleanupSqlPlan();
+
+    public abstract Map<DedupAndVersionErrorStatistics, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan();
 
     public abstract Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan();
 
@@ -99,6 +104,11 @@ public abstract class GeneratorResultAbstract
         return metadataIngestSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
     }
 
+    public List<String> deduplicationAndVersioningSql()
+    {
+        return deduplicationAndVersioningSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
+    }
+
     public List<String> postActionsSql()
     {
         return postActionsSqlPlan().getSqlList();
@@ -115,6 +125,14 @@ public abstract class GeneratorResultAbstract
             .collect(Collectors.toMap(
                 k -> k,
                 k -> preIngestStatisticsSqlPlan().get(k).getSql()));
+    }
+
+    public Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql()
+    {
+        return deduplicationAndVersioningErrorChecksSqlPlan().keySet().stream()
+                .collect(Collectors.toMap(
+                        k -> k,
+                        k -> deduplicationAndVersioningErrorChecksSqlPlan().get(k).getSql()));
     }
 
     public Map<StatisticName, String> postIngestStatisticsSql()

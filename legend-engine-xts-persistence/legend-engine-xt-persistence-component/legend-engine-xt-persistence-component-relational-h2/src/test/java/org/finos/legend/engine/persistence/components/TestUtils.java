@@ -253,6 +253,19 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithNonPkVersion()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(digest)
+            .addFields(version)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithFilterForDB()
     {
         return SchemaDefinition.builder()
@@ -333,6 +346,15 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getStagingTableWithNoPks()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getSchemaWithNoPKs())
+            .build();
+    }
+
     public static DatasetDefinition getBasicStagingTableWithExpiryDatePk()
     {
         return DatasetDefinition.builder()
@@ -348,6 +370,15 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchemaWithVersion())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithNonPkVersion()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithNonPkVersion())
             .build();
     }
 
@@ -671,6 +702,23 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getEntityPriceWithVersionStagingTable()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(date)
+                .addFields(entity)
+                .addFields(price)
+                .addFields(volume)
+                .addFields(digest)
+                .addFields(version)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getBitemporalMainTable()
     {
         return DatasetDefinition.builder()
@@ -790,6 +838,25 @@ public class TestUtils
             .build();
     }
 
+    public static DatasetDefinition getBitemporalFromOnlyMainTableWithVersionIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(mainTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(version)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .build()
+            )
+            .build();
+    }
+
     public static DatasetDefinition getBitemporalFromOnlyTempTableIdBased()
     {
         return DatasetDefinition.builder()
@@ -799,6 +866,25 @@ public class TestUtils
                 .addFields(index)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(startDateTime)
+                .addFields(endDateTime)
+                .addFields(batchIdIn)
+                .addFields(batchIdOut)
+                .build()
+            )
+            .build();
+    }
+
+    public static DatasetDefinition getBitemporalFromOnlyTempTableWithVersionIdBased()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(tempTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(balance)
+                .addFields(digest)
+                .addFields(version)
                 .addFields(startDateTime)
                 .addFields(endDateTime)
                 .addFields(batchIdIn)
@@ -857,7 +943,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithVersionWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -867,6 +953,7 @@ public class TestUtils
                 .addFields(dateTime)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(version)
                 .addFields(dataSplit)
                 .build()
             )
@@ -889,7 +976,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithDeleteIndicatorWithVersionWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -899,6 +986,7 @@ public class TestUtils
                 .addFields(dateTime)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(version)
                 .addFields(deleteIndicator)
                 .addFields(dataSplit)
                 .build()
@@ -906,7 +994,7 @@ public class TestUtils
             .build();
     }
 
-    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithDataSplitIdBased()
+    public static DatasetDefinition getBitemporalFromOnlyStagingTableWithoutDuplicatesWithDeleteIndicatorWithVersionWithDataSplitIdBased()
     {
         return DatasetDefinition.builder()
             .group(testSchemaName)
@@ -916,6 +1004,7 @@ public class TestUtils
                 .addFields(dateTime)
                 .addFields(balance)
                 .addFields(digest)
+                .addFields(version)
                 .addFields(deleteIndicator)
                 .addFields(dataSplit)
                 .build()
@@ -934,6 +1023,7 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }
@@ -998,6 +1088,7 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }
@@ -1046,6 +1137,7 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }
@@ -1092,6 +1184,7 @@ public class TestUtils
                 .addFields(income)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchUpdateTimestamp)
                 .build())
             .build();
     }

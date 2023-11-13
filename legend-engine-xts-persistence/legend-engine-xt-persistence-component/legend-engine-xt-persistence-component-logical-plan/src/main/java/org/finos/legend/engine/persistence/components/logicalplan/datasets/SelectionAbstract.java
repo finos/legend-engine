@@ -17,11 +17,13 @@ package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.quantifiers.Quantifier;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,5 +57,23 @@ public interface SelectionAbstract extends Dataset, Operation
         return DatasetReferenceImpl.builder()
             .alias(alias())
             .build();
+    }
+
+    @Derived
+    default SchemaReference schemaReference()
+    {
+        List<FieldValue> list = new ArrayList<>();
+        for (Value value: fields())
+        {
+            if (value instanceof FieldValue)
+            {
+                list.add((FieldValue) value);
+            }
+            else if (value.alias().isPresent())
+            {
+                list.add(FieldValue.builder().fieldName(value.alias().get()).alias(value.alias()).datasetRef(datasetReference()).build());
+            }
+        }
+        return SchemaReference.builder().addAllFieldValues(list).build();
     }
 }

@@ -18,7 +18,6 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
@@ -109,7 +108,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
 
-        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime && ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+        if (ingestMode().validityMilestoning().validityDerivation() instanceof SourceSpecifiesFromDateTime && ingestMode().filterExistingRecords())
         {
             this.stagingDataset = getStagingDatasetWithoutDuplicates(datasets);
             this.stagingDatasetWithoutDuplicates = Optional.of(this.stagingDataset);
@@ -214,7 +213,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
         }
         else
         {
-            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+            if (ingestMode().filterExistingRecords())
             {
                 // Op 0: Insert records from stage table to stage without duplicates table
                 operations.add(getStageToStageWithoutDuplicates());
@@ -242,7 +241,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             {
                 operations.add(Delete.builder().dataset(tempDatasetWithDeleteIndicator).build());
             }
-            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+            if (ingestMode().filterExistingRecords())
             {
                 operations.add(Delete.builder().dataset(stagingDataset).build());
             }
@@ -269,7 +268,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             {
                 operations.add(Create.of(true, tempDatasetWithDeleteIndicator));
             }
-            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+            if (ingestMode().filterExistingRecords())
             {
                 operations.add(Create.of(true, stagingDataset));
             }
@@ -348,7 +347,7 @@ class BitemporalDeltaPlanner extends BitemporalPlanner
             {
                 operations.add(Drop.of(true, tempDatasetWithDeleteIndicator, true));
             }
-            if (ingestMode().deduplicationStrategy() instanceof FilterDuplicates)
+            if (ingestMode().filterExistingRecords())
             {
                 operations.add(Drop.of(true, stagingDatasetWithoutDuplicates.orElseThrow(IllegalStateException::new), true));
             }

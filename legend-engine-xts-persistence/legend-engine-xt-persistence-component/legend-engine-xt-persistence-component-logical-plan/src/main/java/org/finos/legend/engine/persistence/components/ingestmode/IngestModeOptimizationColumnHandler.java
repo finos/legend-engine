@@ -64,11 +64,11 @@ public class IngestModeOptimizationColumnHandler implements IngestModeVisitor<In
         return UnitemporalDelta
                 .builder()
                 .digestField(unitemporalDelta.digestField())
-                .dataSplitField(unitemporalDelta.dataSplitField())
                 .addAllOptimizationFilters(deriveOptimizationFilters(unitemporalDelta))
                 .transactionMilestoning(unitemporalDelta.transactionMilestoning())
                 .mergeStrategy(unitemporalDelta.mergeStrategy())
                 .versioningStrategy(unitemporalDelta.versioningStrategy())
+                .deduplicationStrategy(unitemporalDelta.deduplicationStrategy())
                 .build();
     }
 

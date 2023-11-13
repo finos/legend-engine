@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 
@@ -29,18 +30,18 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
     Variables:
     1) transactionMilestoning = BatchId
     2) partition : Enabled, Disabled
-    3) DataSplit: Enabled, Disabled
-    4) partitionValuesByField: Enabled, Disabled
+    3) partitionValuesByField: Enabled, Disabled
+    4) Versioning: NoVersioning, MaxVersioning
+    5) Deduplication: AllowDups, FailOnDups, FilterDups
 
     Valid Combinations:
-    1) Without Partition, No Data Splits
-    2) Without Partition, With Data Splits -> TBD
-    3) With Partition, No Data Splits
-    4) With Partition, With Data Splits -> TBD
-    5) Without Partition, No Data Splits, Partition Filter
+    1) Without Partition, No Dedup No Versioning
+    2) Without Partition, FailOnDups No Versioning
+    3) With Partition, No Dedup No Versioning
+    4) With Partition Filter, No Dedup No Versioning
     */
 
-    public TestScenario BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -53,12 +54,21 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITHOUT_PARTITIONS__WITH_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITHOUT_PARTITIONS__FAIL_ON_DUPS__NO_VERSION()
     {
-        return null;
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+                .digestField(digestField)
+                .transactionMilestoning(BatchId.builder()
+                        .batchIdInName(batchIdInField)
+                        .batchIdOutName(batchIdOutField)
+                        .build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .emptyDatasetHandling(NoOp.builder().build())
+                .build();
+        return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)
@@ -71,13 +81,7 @@ public class UnitemporalSnapshotBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_BASED__WITH_PARTITIONS__WITH_DATA_SPLITS()
-    {
-        return null;
-    }
-
-
-    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION()
     {
         UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
                 .digestField(digestField)

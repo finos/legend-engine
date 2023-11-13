@@ -25,6 +25,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTimeAbstract;
@@ -35,6 +36,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromAndThruDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -307,53 +309,68 @@ public class SchemaEvolution
         @Override
         public Set<String> visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return Collections.emptySet();
+            Set stagingFieldsToIgnore = getDedupAndVersioningFields(appendOnly);
+            return stagingFieldsToIgnore;
         }
 
         @Override
         public Set<String> visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
         {
-            return Collections.emptySet();
+            Set stagingFieldsToIgnore = getDedupAndVersioningFields(nontemporalSnapshot);
+            return stagingFieldsToIgnore;
         }
 
         @Override
         public Set<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return Collections.emptySet();
+            Set stagingFieldsToIgnore = getDedupAndVersioningFields(nontemporalDelta);
+            return stagingFieldsToIgnore;
         }
 
         @Override
         public Set<String> visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            return Collections.emptySet();
+            Set stagingFieldsToIgnore = getDedupAndVersioningFields(unitemporalSnapshot);
+            return stagingFieldsToIgnore;
         }
 
         @Override
         public Set<String> visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
         {
-            return unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD)
-                    .map(Collections::singleton)
-                    .orElse(Collections.emptySet());
+            Set stagingFieldsToIgnore = getDedupAndVersioningFields(unitemporalDelta);
+            unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(stagingFieldsToIgnore::add);
+            return stagingFieldsToIgnore;
         }
 
         @Override
         public Set<String> visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
         {
-            return bitemporalSnapshot.validityMilestoning().accept(VALIDITY_FIELDS_TO_IGNORE_IN_STAGING);
+            Set stagingFieldsToIgnore = getDedupAndVersioningFields(bitemporalSnapshot);
+            stagingFieldsToIgnore.addAll(bitemporalSnapshot.validityMilestoning().accept(VALIDITY_FIELDS_TO_IGNORE_IN_STAGING));
+            return stagingFieldsToIgnore;
         }
 
         @Override
         public Set<String> visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
-            Set<String> fieldsToIgnore = bitemporalDelta.validityMilestoning().accept(VALIDITY_FIELDS_TO_IGNORE_IN_STAGING);
-            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(fieldsToIgnore::add);
-            return fieldsToIgnore;
+            Set stagingFieldsToIgnore = getDedupAndVersioningFields(bitemporalDelta);
+            stagingFieldsToIgnore.addAll(bitemporalDelta.validityMilestoning().accept(VALIDITY_FIELDS_TO_IGNORE_IN_STAGING));
+            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(stagingFieldsToIgnore::add);
+            return stagingFieldsToIgnore;
         }
 
         @Override
         public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             return Collections.emptySet();
+        }
+
+        private Set<String> getDedupAndVersioningFields(IngestMode ingestMode)
+        {
+            Set<String> dedupAndVersioningFields = new HashSet<>();
+            ingestMode.dataSplitField().ifPresent(dedupAndVersioningFields::add);
+            ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD).ifPresent(dedupAndVersioningFields::add);
+            return dedupAndVersioningFields;
         }
     };
 

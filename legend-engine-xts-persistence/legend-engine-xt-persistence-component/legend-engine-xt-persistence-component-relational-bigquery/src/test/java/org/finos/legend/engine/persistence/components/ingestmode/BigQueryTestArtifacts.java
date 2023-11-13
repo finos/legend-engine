@@ -53,6 +53,30 @@ public class BigQueryTestArtifacts
             "`digest` STRING," +
             "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
 
+    public static String expectedBaseTempStagingTableWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+            "(`id` INT64 NOT NULL," +
+            "`name` STRING NOT NULL," +
+            "`amount` FLOAT64," +
+            "`biz_date` DATE," +
+            "`legend_persistence_count` INT64)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`biz_date` DATE," +
+        "`digest` STRING," +
+        "`legend_persistence_count` INT64)";
+
+    public static String expectedBaseTempStagingTablePlusDigestWithCountAndDataSplit = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`biz_date` DATE," +
+        "`digest` STRING," +
+        "`legend_persistence_count` INT64," +
+        "`data_split` INT64 NOT NULL)";
+
     public static String expectedBaseTablePlusDigestPlusVersionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
         "`id` INT64 NOT NULL," +
         "`name` STRING NOT NULL," +
@@ -113,6 +137,15 @@ public class BigQueryTestArtifacts
             "`batch_update_time` DATETIME NOT NULL," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`) NOT ENFORCED)";
 
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
+        "`ID` INT64 NOT NULL," +
+        "`NAME` STRING NOT NULL," +
+        "`AMOUNT` FLOAT64," +
+        "`BIZ_DATE` DATE," +
+        "`DIGEST` STRING," +
+        "`BATCH_UPDATE_TIME` DATETIME NOT NULL," +
+        "PRIMARY KEY (`ID`, `NAME`, `BATCH_UPDATE_TIME`) NOT ENFORCED)";
+
     public static String expectedBaseTableWithAuditNotPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
@@ -131,6 +164,8 @@ public class BigQueryTestArtifacts
             "PRIMARY KEY (`id`, `name`, `batch_update_time`) NOT ENFORCED)";
 
     public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage WHERE 1 = 1";
+
+    public static String expectedTempStagingCleanupQuery = "DELETE FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE 1 = 1";
 
     public static String expectedDropTableQuery = "DROP TABLE IF EXISTS `mydb`.`staging` CASCADE";
 
@@ -162,16 +197,16 @@ public class BigQueryTestArtifacts
             "`BATCH_ID_IN` INT64 NOT NULL,`BATCH_ID_OUT` INT64,PRIMARY KEY (`ID`, `NAME`, `BATCH_ID_IN`) NOT ENFORCED)";
 
     public static String expectedMetadataTableIngestQuery = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`)" +
-            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'DONE')";
+            " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE')";
 
     public static String expectedMetadataTableIngestWithStagingFiltersQuery = "INSERT INTO batch_metadata " +
             "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `staging_filters`) " +
             "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
-            "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')," +
+            "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')," +
             "CURRENT_DATETIME(),'DONE',PARSE_JSON('{\"batch_id_in\":{\"GT\":5}}'))";
 
     public static String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`)" +
-            " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),CURRENT_DATETIME(),'DONE')";
+            " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE')";
     
     public static String expectedMetadataTableIngestQueryWithPlaceHolders = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`) " +
             "(SELECT 'main',{BATCH_ID_PATTERN},PARSE_DATETIME('%Y-%m-%d %H:%M:%S','{BATCH_START_TS_PATTERN}'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','{BATCH_END_TS_PATTERN}'),'DONE')";
@@ -228,11 +263,12 @@ public class BigQueryTestArtifacts
             "`digest` STRING," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`) NOT ENFORCED)";
 
-    public static String expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedBitemporalMainTableWithVersionWithBatchIdDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`digest` STRING," +
+            "`version` INT64," +
             "`batch_id_in` INT64 NOT NULL," +
             "`batch_id_out` INT64," +
             "`batch_time_in` DATETIME," +
@@ -241,11 +277,12 @@ public class BigQueryTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
-    public static String expectedBitemporalMainTableWithDatetimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+    public static String expectedBitemporalMainTableWithVersionBatchDateTimeCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
             "(`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`digest` STRING," +
+            "`version` INT64," +
             "`batch_time_in` DATETIME NOT NULL," +
             "`batch_time_out` DATETIME," +
             "`validity_from_target` DATETIME NOT NULL," +
@@ -262,6 +299,18 @@ public class BigQueryTestArtifacts
             "`validity_from_target` DATETIME NOT NULL," +
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
+
+    public static String expectedBitemporalFromOnlyMainTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`digest` STRING," +
+        "`version` INT64," +
+        "`batch_id_in` INT64 NOT NULL," +
+        "`batch_id_out` INT64," +
+        "`validity_from_target` DATETIME NOT NULL," +
+        "`validity_through_target` DATETIME," +
+        "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
     public static String expectedBitemporalFromOnlyStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INT64 NOT NULL," +
@@ -317,6 +366,18 @@ public class BigQueryTestArtifacts
             "`validity_through_target` DATETIME," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
+    public static String expectedBitemporalFromOnlyTempTableWithVersionCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`temp`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`digest` STRING," +
+        "`version` INT64," +
+        "`batch_id_in` INT64 NOT NULL," +
+        "`batch_id_out` INT64," +
+        "`validity_from_target` DATETIME NOT NULL," +
+        "`validity_through_target` DATETIME," +
+        "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
+
     public static String expectedBitemporalFromOnlyTempTableBatchIdAndTimeBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`temp`(" +
             "`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
@@ -361,12 +422,13 @@ public class BigQueryTestArtifacts
             "`delete_indicator` STRING," +
             "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
-    public static String expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
+    public static String expectedBitemporalFromOnlyStageWithVersionWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`stagingWithoutDuplicates`" +
             "(`id` INT64 NOT NULL," +
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`validity_from_reference` DATETIME NOT NULL," +
             "`digest` STRING," +
+            "`version` INT64," +
             "`data_split` INT64 NOT NULL," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `data_split`) NOT ENFORCED)";
 
@@ -379,4 +441,60 @@ public class BigQueryTestArtifacts
             "`delete_indicator` STRING," +
             "PRIMARY KEY (`id`, `name`, `validity_from_reference`) NOT ENFORCED)";
 
+    public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+            "(`id`, `name`, `amount`, `biz_date`, `legend_persistence_count`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`legend_persistence_count` as `legend_persistence_count`," +
+            "DENSE_RANK() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` DESC) as `legend_persistence_rank` " +
+            "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,COUNT(*) as `legend_persistence_count` " +
+            "FROM `mydb`.`staging` as stage GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`) as stage) " +
+            "as stage WHERE stage.`legend_persistence_rank` = 1)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+        "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`) " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
+        "COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
+        "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+        "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`) " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER " +
+        "(PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` DESC) as `legend_persistence_rank` FROM " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,COUNT(*) as `legend_persistence_count` FROM " +
+        "`mydb`.`staging` as stage GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`) as stage) as stage " +
+        "WHERE stage.`legend_persistence_rank` = 1)";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+        "(`id`, `name`, `amount`, `biz_date`, `digest`, `legend_persistence_count`, `data_split`) " +
+        "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` ASC) as `data_split` " +
+        "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
+        "GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, stage.`digest`) as stage)";
+
+    public static String maxDupsErrorCheckSql = "SELECT MAX(stage.`legend_persistence_count`) as `MAX_DUPLICATES` FROM " +
+            "`mydb`.`staging_legend_persistence_temp_staging` as stage";
+
+    public static String dataErrorCheckSql = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
+            "(SELECT COUNT(DISTINCT(`digest`)) as `legend_persistence_distinct_rows` FROM " +
+            "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `biz_date`) as stage";
+
+    public static String expectedTempStagingCleanupQueryInUpperCase = "DELETE FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage WHERE 1 = 1";
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase = "INSERT INTO `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` " +
+            "(`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `LEGEND_PERSISTENCE_COUNT`) " +
+            "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,stage.`LEGEND_PERSISTENCE_COUNT` as `LEGEND_PERSISTENCE_COUNT` " +
+            "FROM (SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`," +
+            "stage.`LEGEND_PERSISTENCE_COUNT` as `LEGEND_PERSISTENCE_COUNT`," +
+            "DENSE_RANK() OVER (PARTITION BY stage.`ID`,stage.`NAME` ORDER BY stage.`BIZ_DATE` DESC) as `LEGEND_PERSISTENCE_RANK` " +
+            "FROM (SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,COUNT(*) as `LEGEND_PERSISTENCE_COUNT` " +
+            "FROM `MYDB`.`STAGING` as stage GROUP BY stage.`ID`, stage.`NAME`, stage.`AMOUNT`, stage.`BIZ_DATE`, stage.`DIGEST`) as stage) as stage WHERE stage.`LEGEND_PERSISTENCE_RANK` = 1)";
+    public static String dataErrorCheckSqlUpperCase = "SELECT MAX(`LEGEND_PERSISTENCE_DISTINCT_ROWS`) as `MAX_DATA_ERRORS` " +
+            "FROM (SELECT COUNT(DISTINCT(`DIGEST`)) as `LEGEND_PERSISTENCE_DISTINCT_ROWS` " +
+            "FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage GROUP BY `ID`, `NAME`, `BIZ_DATE`) as stage";
+
+    public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+            "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,DENSE_RANK() " +
+            "OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` DESC) as `legend_persistence_rank` " +
+            "FROM `mydb`.`staging` as stage) as stage WHERE stage.`legend_persistence_rank` = 1)";
 }

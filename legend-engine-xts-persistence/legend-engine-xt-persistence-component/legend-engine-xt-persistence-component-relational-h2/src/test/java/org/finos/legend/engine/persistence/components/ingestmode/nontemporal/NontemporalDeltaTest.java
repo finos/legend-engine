@@ -17,19 +17,27 @@ package org.finos.legend.engine.persistence.components.ingestmode.nontemporal;
 import java.util.Arrays;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelta;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
+import org.finos.legend.engine.persistence.components.versioning.TestDedupAndVersioning;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -37,18 +45,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Filter;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.batchUpdateTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorName;
-import static org.finos.legend.engine.persistence.components.TestUtils.deleteIndicatorValues;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.dataSplitName;
-import static org.finos.legend.engine.persistence.components.TestUtils.versionName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 class NontemporalDeltaTest extends BaseTest
 {
@@ -77,9 +76,9 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -127,9 +126,9 @@ class NontemporalDeltaTest extends BaseTest
                 .digestField(digestName)
                 .auditing(NoAuditing.builder().build())
                 .mergeStrategy(DeleteIndicatorMergeStrategy.builder()
-                    .deleteField(deleteIndicatorName)
-                    .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
-                    .build())
+                        .deleteField(deleteIndicatorName)
+                        .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
+                        .build())
                 .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -180,9 +179,9 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -211,19 +210,20 @@ class NontemporalDeltaTest extends BaseTest
     Scenario: Test NonTemporal Delta when staging table is cleaned up in the end
     */
     @Test
-    void testNonTemporalDeltaWithCleanStagingData() throws Exception
+    void testNonTemporalDeltaWithCleanStagingDataWithFailOnDups() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
-        createStagingTable(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -245,25 +245,39 @@ class NontemporalDeltaTest extends BaseTest
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 0);
+
+        // ------------ Perform incremental (delta) milestoning Fail on Dups ------------------------
+        String dataPass2 = basePath + "input/with_duplicates/data_pass1.csv";
+        loadBasicStagingData(dataPass2);
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+            Assertions.fail("Should not Succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
     }
 
     /*
     Scenario: Test NonTemporal Delta when Auditing is enabled
     */
     @Test
-    void testNonTemporalDeltaWithAuditing() throws Exception
+    void testNonTemporalDeltaWithAuditingFilterDuplicates() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         DatasetDefinition stagingTable = TestUtils.getBasicStagingTable();
 
         // Create staging table
-        createStagingTable(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
-            .build();
+                .digestField(digestName)
+                .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -277,7 +291,7 @@ class NontemporalDeltaTest extends BaseTest
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 5);
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
@@ -287,7 +301,7 @@ class NontemporalDeltaTest extends BaseTest
     Scenario: Test NonTemporal Delta when Data splits are enabled
     */
     @Test
-    void testNonTemporalDeltaNoAuditingWithDataSplits() throws Exception
+    void testNonTemporalDeltaNoAuditingWithAllVersionDoNotPerform() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         String dataPass1 = basePath + "input/with_data_splits/data_pass1.csv";
@@ -296,7 +310,11 @@ class NontemporalDeltaTest extends BaseTest
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestName)
-                .dataSplitField(dataSplitName)
+                .versioningStrategy(AllVersionsStrategy.builder()
+                        .versioningField(expiryDateName)
+                        .dataSplitFieldName(dataSplitName)
+                        .performStageVersioning(false)
+                        .mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .auditing(NoAuditing.builder().build())
                 .build();
 
@@ -323,7 +341,7 @@ class NontemporalDeltaTest extends BaseTest
         expectedStats2.put(StatisticName.ROWS_TERMINATED.name(), 0);
         expectedStatsList.add(expectedStats1);
         expectedStatsList.add(expectedStats2);
-        executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
+        executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, dataSplitRanges);
     }
 
     @Test
@@ -337,14 +355,14 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                        .performStageVersioning(false)
+                        .build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -390,14 +408,14 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(false)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                        .performStageVersioning(false)
+                        .build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -443,14 +461,14 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(true)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                        .performStageVersioning(true)
+                        .build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -496,14 +514,14 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(true)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                        .performStageVersioning(true)
+                        .build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -550,9 +568,9 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -601,14 +619,14 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                        .performStageVersioning(false)
+                        .build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -657,14 +675,14 @@ class NontemporalDeltaTest extends BaseTest
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(false)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                        .performStageVersioning(false)
+                        .build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -709,18 +727,19 @@ class NontemporalDeltaTest extends BaseTest
 
         // Create staging table
         DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-        createStagingTable(stagingTableForDB);
+        createStagingTableWithoutPks(stagingTableForDB);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(true)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                        .performStageVersioning(true)
+                        .build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -755,28 +774,46 @@ class NontemporalDeltaTest extends BaseTest
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+
+
+        // ------------ Perform incremental (delta) milestoning Pass3 Fail on Dups ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
+        String dataPass3 = basePath + "input/with_staging_filter/with_max_versioning/greater_than/with_dedup/data_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass3);
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+            Assertions.fail("Should not Succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
     }
 
     @Test
-    void testNonTemporalDeltaWithFilterStagingTableWithMaxVersioningGreaterThanEqualToWithDedup() throws Exception
+    void testNonTemporalDeltaWithFilterStagingTableWithFilterDupsMaxVersioningGreaterThanEqualTo() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBasicMainTableWithVersion();
         DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
 
         // Create staging table
         DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-        createStagingTable(stagingTableForDB);
+        createStagingTableWithoutPks(stagingTableForDB);
 
         // Generate the milestoning object
         NontemporalDelta ingestMode = NontemporalDelta.builder()
-            .digestField(digestName)
-            .auditing(NoAuditing.builder().build())
-            .versioningStrategy(MaxVersionStrategy.builder()
-                .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(true)
-                .build())
-            .build();
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(MaxVersionStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                        .performStageVersioning(true)
+                        .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
@@ -790,13 +827,13 @@ class NontemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass1);
         // 2. Execute plans and verify results
         Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 4);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
-        Assertions.assertEquals(stagingTableList.size(), 6);
+        Assertions.assertEquals(stagingTableList.size(), 7);
 
         // ------------ Perform incremental (delta) milestoning Pass2 ------------------------
         // 0. Create new filter
@@ -807,9 +844,167 @@ class NontemporalDeltaTest extends BaseTest
         loadStagingDataWithFilterWithVersion(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 10);
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 12);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
+
+    @Test
+    void testNonTemporalDeltaWithAllVersionGreaterThanAndStagingFilters() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingDataset = DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatch)
+                .build();
+
+        createStagingTableWithoutPks(stagingDataset);
+        DerivedDataset stagingTable = DerivedDataset.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersion)
+                .addDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 1))
+                .build();
+        String path = "src/test/resources/data/incremental-delta-milestoning/input/with_staging_filter/with_all_version/greater_than/data1.csv";
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatch(path);
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                        .performStageVersioning(true)
+                        .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+
+        // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePath + "expected/with_staging_filter/with_all_version/greater_than/expected_pass1.csv";
+        // 2. Execute plans and verify results
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1  = new HashMap<>();
+        expectedStats1.put(StatisticName.INCOMING_RECORD_COUNT.name(), 4);
+        expectedStats1.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats1.put(StatisticName.ROWS_DELETED.name(), 0);
+        Map<String, Object> expectedStats2  = new HashMap<>();
+        expectedStats2.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats2.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats2.put(StatisticName.ROWS_DELETED.name(), 0);
+        Map<String, Object> expectedStats3  = new HashMap<>();
+        expectedStats3.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats3.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats3.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        expectedStatsList.add(expectedStats3);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, fixedClock_2000_01_01);
+
+        // ------------ Perform incremental (delta) milestoning Pass2 Fail on Duplicates ------------------------
+        ingestMode = ingestMode.withDeduplicationStrategy(FailOnDuplicates.builder().build());
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 2));
+        datasets = Datasets.of(mainTable, stagingTable);
+        try
+        {
+            executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, fixedClock_2000_01_01);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
+
+        // ------------ Perform incremental (delta) milestoning Pass2 Filter Duplicates ------------------------
+        String expectedDataPass2 = basePath + "expected/with_staging_filter/with_all_version/greater_than/expected_pass2.csv";
+        expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats4  = new HashMap<>();
+        expectedStats4.put(StatisticName.INCOMING_RECORD_COUNT.name(), 4);
+        expectedStats4.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats4.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStatsList.add(expectedStats4);
+
+        ingestMode = ingestMode.withDeduplicationStrategy(FilterDuplicates.builder().build());
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 2));
+        datasets = Datasets.of(mainTable, stagingTable);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, fixedClock_2000_01_01);
+    }
+
+    @Test
+    void testNonTemporalDeltaWithAllVersionDigestBasedAndStagingFilters() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingDataset = DatasetDefinition.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersionAndBatch)
+                .build();
+
+        createStagingTableWithoutPks(stagingDataset);
+        DerivedDataset stagingTable = DerivedDataset.builder()
+                .group(testSchemaName)
+                .name(stagingTableName)
+                .schema(TestDedupAndVersioning.baseSchemaWithVersion)
+                .addDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 1))
+                .build();
+        String path = "src/test/resources/data/incremental-delta-milestoning/input/with_staging_filter/with_all_version/digest_based/data1.csv";
+        TestDedupAndVersioning.loadDataIntoStagingTableWithVersionAndBatch(path);
+
+        // Generate the milestoning object
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestName)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder()
+                        .versioningField(versionName)
+                        .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                        .performStageVersioning(true)
+                        .build())
+                .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+
+        // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
+        String expectedDataPass1 = basePath + "expected/with_staging_filter/with_all_version/digest_based/expected_pass1.csv";
+        // 2. Execute plans and verify results
+        List<Map<String, Object>> expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats1  = new HashMap<>();
+        expectedStats1.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats1.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats1.put(StatisticName.ROWS_DELETED.name(), 0);
+        Map<String, Object> expectedStats2  = new HashMap<>();
+        expectedStats2.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats2.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats2.put(StatisticName.ROWS_DELETED.name(), 0);
+        Map<String, Object> expectedStats3  = new HashMap<>();
+        expectedStats3.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats3.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats3.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStatsList.add(expectedStats1);
+        expectedStatsList.add(expectedStats2);
+        expectedStatsList.add(expectedStats3);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, fixedClock_2000_01_01);
+
+        // ------------ Perform incremental (delta) milestoning Pass2 Filter Duplicates ------------------------
+        String expectedDataPass2 = basePath + "expected/with_staging_filter/with_all_version/digest_based/expected_pass2.csv";
+        expectedStatsList = new ArrayList<>();
+        Map<String, Object> expectedStats4  = new HashMap<>();
+        expectedStats4.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats4.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats4.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStatsList.add(expectedStats4);
+        stagingTable = stagingTable.withDatasetFilters(DatasetFilter.of("batch", FilterType.EQUAL_TO, 2));
+        datasets = Datasets.of(mainTable, stagingTable);
+        executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass2, expectedStatsList, fixedClock_2000_01_01);
+    }
+
 }

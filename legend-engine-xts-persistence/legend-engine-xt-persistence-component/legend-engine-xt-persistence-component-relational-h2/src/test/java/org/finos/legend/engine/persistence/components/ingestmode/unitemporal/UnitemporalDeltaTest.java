@@ -19,10 +19,14 @@ import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionComparator;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
@@ -105,7 +109,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "without_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "without_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass3);
@@ -165,7 +169,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_delete_ind/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_delete_ind/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithDeleteInd(dataPass3);
@@ -222,7 +226,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_optimization_filter/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_optimization_filter/expected_pass3.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass3);
@@ -232,7 +236,7 @@ class UnitemporalDeltaTest extends BaseTest
     }
 
     @Test
-    void testMilestoningWithMaxVersioningGreaterThan() throws Exception
+    void testMilestoningWithMaxVersionGreaterThanDoNotPerform() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
@@ -252,8 +256,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(false)
                 .build())
             .build();
 
@@ -282,7 +286,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_max_versioning/greater_than/without_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_max_versioning/greater_than/without_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass3);
@@ -292,7 +296,7 @@ class UnitemporalDeltaTest extends BaseTest
     }
 
     @Test
-    void testMilestoningWithMaxVersioningGreaterThanEqualTo() throws Exception
+    void testMilestoningWithMaxVersionGreaterThanEqualToDoNotPerform() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
@@ -312,8 +316,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(false)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                .performStageVersioning(false)
                 .build())
             .build();
 
@@ -342,7 +346,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_max_versioning/greater_than_equal_to/without_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass3);
@@ -352,7 +356,7 @@ class UnitemporalDeltaTest extends BaseTest
     }
 
     @Test
-    void testMilestoningWithMaxVersioningGreaterThanWithDedup() throws Exception
+    void testMilestoningWithFilterDuplicatesMaxVersioningGreaterThan() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
@@ -360,7 +364,7 @@ class UnitemporalDeltaTest extends BaseTest
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
-        createStagingTable(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
@@ -372,9 +376,10 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(true)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(true)
                 .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -386,11 +391,11 @@ class UnitemporalDeltaTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
-        Assertions.assertEquals(stagingTableList.size(), 3);
+        Assertions.assertEquals(stagingTableList.size(), 6);
 
         // ------------ Perform Pass2 ------------------------
         String dataPass2 = basePathForInput + "with_max_versioning/greater_than/with_dedup/staging_data_pass2.csv";
@@ -402,7 +407,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_max_versioning/greater_than/with_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_max_versioning/greater_than/with_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass3);
@@ -412,7 +417,7 @@ class UnitemporalDeltaTest extends BaseTest
     }
 
     @Test
-    void testMilestoningWithMaxVersioningGreaterThanEqualToWithDedup() throws Exception
+    void testMilestoningWithFailOnDuplicatesMaxVersioningGreaterThanEqualTo() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DatasetDefinition stagingTable = TestUtils.getStagingTableWithVersion();
@@ -420,7 +425,7 @@ class UnitemporalDeltaTest extends BaseTest
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
 
         // Create staging table
-        createStagingTable(stagingTable);
+        createStagingTableWithoutPks(stagingTable);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
@@ -432,9 +437,10 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(true)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                .performStageVersioning(true)
                 .build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -462,13 +468,28 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_max_versioning/greater_than_equal_to/with_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_max_versioning/greater_than_equal_to/with_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithVersion(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+
+        // ------------ Perform Pass4 (Fail on Dups) -------------------------
+        String dataPass4 = basePathForInput + "with_max_versioning/greater_than_equal_to/with_dedup/staging_data_pass4.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass4);
+        // 2. Execute plans and verify results
+        try
+        {
+            executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
     }
 
     @Test
@@ -505,7 +526,7 @@ class UnitemporalDeltaTest extends BaseTest
         Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
         IngestorResult result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         Assertions.assertEquals(Optional.of(1), result.batchId());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
 
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
@@ -522,10 +543,10 @@ class UnitemporalDeltaTest extends BaseTest
         expectedStats = createExpectedStatsMap(3, 0, 1, 1, 0);
         result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
         Assertions.assertEquals(Optional.of(2), result.batchId());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_staging_filter/with_no_versioning/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_no_versioning/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithFilter(dataPass3);
@@ -533,11 +554,11 @@ class UnitemporalDeltaTest extends BaseTest
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         result = executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
         Assertions.assertEquals(Optional.of(3), result.batchId());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
     }
 
     @Test
-    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThan() throws Exception
+    void testMilestoningWithFilterDupsMaxVersionGreaterThanWithStagingFilters() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
@@ -546,7 +567,7 @@ class UnitemporalDeltaTest extends BaseTest
 
         // Create staging table
         DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-        createStagingTable(stagingTableForDB);
+        createStagingTableWithoutPks(stagingTableForDB);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
@@ -558,9 +579,10 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(false)
                 .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -572,11 +594,11 @@ class UnitemporalDeltaTest extends BaseTest
         // 1. Load staging table
         loadStagingDataWithFilterWithVersion(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
         executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
         // 3. Assert that the staging table is NOT truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
-        Assertions.assertEquals(stagingTableList.size(), 6);
+        Assertions.assertEquals(stagingTableList.size(), 9);
 
         // ------------ Perform Pass2 ------------------------
         // 0. Create new filter
@@ -590,7 +612,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/without_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/without_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithFilterWithVersion(dataPass3);
@@ -600,7 +622,7 @@ class UnitemporalDeltaTest extends BaseTest
     }
 
     @Test
-    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThanEqualTo() throws Exception
+    void testMilestoningWithFailOnDupsMaxVersionGreaterThanEqualToWithStagingFilters() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
@@ -609,7 +631,7 @@ class UnitemporalDeltaTest extends BaseTest
 
         // Create staging table
         DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterWithVersionForDB();
-        createStagingTable(stagingTableForDB);
+        createStagingTableWithoutPks(stagingTableForDB);
 
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
             .digestField(digestName)
@@ -621,9 +643,10 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(false)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                .performStageVersioning(false)
                 .build())
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
@@ -653,17 +676,32 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithFilterWithVersion(dataPass3);
         // 2. Execute plans and verify results
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
         executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform Pass4 Fail on Dups -------------------------
+        String dataPass4 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/staging_data_pass4.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilterWithVersion(dataPass4);
+        // 2. Execute plans and verify results
+        try
+        {
+            executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+            Assertions.fail("Should not succeed");
+        }
+        catch (Exception e)
+        {
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+        }
     }
 
     @Test
-    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThanWithDedup() throws Exception
+    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThan() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
@@ -684,8 +722,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(true)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(true)
                 .build())
             .build();
 
@@ -716,7 +754,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithFilterWithVersion(dataPass3);
@@ -726,7 +764,7 @@ class UnitemporalDeltaTest extends BaseTest
     }
 
     @Test
-    void testMilestoningWithFilterStagingTableWithMaxVersioningGreaterThanEqualToWithDedup() throws Exception
+    void testMilestoningWithFilterDupsMaxVersioningDigestBasedWithStagingFilters() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getUnitemporalMainTableWithVersion();
         DerivedDataset stagingTable = TestUtils.getDerivedStagingTableWithFilterWithVersion();
@@ -747,17 +785,18 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(true)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                .performStageVersioning(true)
                 .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform Pass1 ------------------------
-        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "with_staging_filter/with_max_versioning/digest_based/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataWithFilterWithVersion(dataPass1);
         // 2. Execute plans and verify results
@@ -770,17 +809,17 @@ class UnitemporalDeltaTest extends BaseTest
         // ------------ Perform Pass2 ------------------------
         // 0. Create new filter
         datasets = Datasets.of(mainTable, TestUtils.getStagingTableWithFilterWithVersionSecondPass());
-        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/expected_pass2.csv";
+        String dataPass2 = basePathForInput + "with_staging_filter/with_max_versioning/digest_based/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass2.csv";
         // 1. Load staging table
         loadStagingDataWithFilterWithVersion(dataPass2);
         // 2. Execute plans and verify results
-        expectedStats = createExpectedStatsMap(9, 0, 1, 3, 0);
+        expectedStats = createExpectedStatsMap(9, 0, 1, 2, 0);
         executePlansAndVerifyResultsWithStagingFilters(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/staging_data_pass3.csv";
-        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/expected_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/digest_based/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithFilterWithVersion(dataPass3);
         // 2. Execute plans and verify results
@@ -809,8 +848,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(versionName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(true)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(true)
                 .build())
             .build();
 
@@ -838,7 +877,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "with_staging_filter/with_max_versioning/greater_than/with_dedup/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_staging_filter/with_max_versioning/greater_than/with_dedup/expected_pass3.csv";
         // 1. Load staging table
         loadStagingDataWithFilterWithVersionInUpperCase(dataPass3);
@@ -868,8 +907,8 @@ class UnitemporalDeltaTest extends BaseTest
                 .build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(nameName)
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(false)
                 .build())
             .build();
 
@@ -934,7 +973,7 @@ class UnitemporalDeltaTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets.withStagingDataset(stagingTable), schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform Pass3 empty batch (No Impact) -------------------------
-        String dataPass3 = basePathForInput + "less_columns_in_staging/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "less_columns_in_staging/expected_pass3.csv";
         stagingTable = TestUtils.getCsvDatasetRefWithLessColumnsThanMain(dataPass3);
 

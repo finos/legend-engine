@@ -116,12 +116,12 @@ public class BulkLoadTest
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_int\", \"col_integer\", \"batch_id\", \"append_time\") " +
                 "FROM " +
-                "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",{NEXT_BATCH_ID},'2000-01-01 00:00:00' " +
+                "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000' " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage)" +
                 " on_error = 'ABORT_STATEMENT'";
 
         String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (\"batch_id\", \"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
-                "(SELECT {NEXT_BATCH_ID},'my_name','2000-01-01 00:00:00',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"task_id\":\"task123\"}'))";
+                "(SELECT {NEXT_BATCH_ID},'my_name','2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"task_id\":\"task123\"}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -130,7 +130,7 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as \"rowsDeleted\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"rowsTerminated\"", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as \"rowsUpdated\"", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -231,14 +231,14 @@ public class BulkLoadTest
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
                 "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
-                "(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME'),'2000-01-01 00:00:00' " +
+                "(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', " +
                 "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
                 "on_error = 'ABORT_STATEMENT'";
 
         String expectedMetadataIngestSql = "INSERT INTO BULK_LOAD_BATCH_METADATA (\"BATCH_ID\", \"TABLE_NAME\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
             "(SELECT (SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
-            "'MY_NAME','2000-01-01 00:00:00',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+            "'MY_NAME','2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -247,7 +247,7 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as \"ROWSDELETED\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"ROWSTERMINATED\"", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as \"ROWSUPDATED\"", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"MY_DB\".\"MY_NAME\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -368,7 +368,7 @@ public class BulkLoadTest
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
                 "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
-                "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00' " +
+                "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
                 "FROM my_location (FILE_FORMAT => 'my_file_format', " +
                 "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
                 "on_error = 'ABORT_STATEMENT'";
@@ -379,6 +379,6 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as \"rowsDeleted\"", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as \"rowsTerminated\"", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as \"rowsUpdated\"", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"my_db\".\"my_name\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
     }
 }

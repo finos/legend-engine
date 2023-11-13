@@ -220,6 +220,12 @@ class BulkLoadPlanner extends Planner
     }
 
     @Override
+    List<String> getDigestOrRemainingColumns()
+    {
+        return Collections.emptyList();
+    }
+
+    @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
         BulkLoadMetadataUtils bulkLoadMetadataUtils = new BulkLoadMetadataUtils(bulkLoadMetadataDataset);

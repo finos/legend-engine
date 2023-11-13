@@ -145,8 +145,8 @@ public class MultiTableIngestionTest extends BaseTest
        verifyResults(2, datsetSchema2, expectedDataset2Path, "main2", result.get(1), expectedStats);
 
         // Pass 3:
-        dataset1Path = basePathForInput + "multi_table_ingestion/staging_dataset_pass3.csv";
-        dataset2Path = basePathForInput + "multi_table_ingestion/staging_dataset_pass3.csv";
+        dataset1Path = "src/test/resources/data/empty_file.csv";
+        dataset2Path = "src/test/resources/data/empty_file.csv";
         expectedDataset1Path = basePathForExpected + "multi_table_ingestion/expected_dataset1_pass3.csv";
         expectedDataset2Path = basePathForExpected + "multi_table_ingestion/expected_dataset2_pass3.csv";
         expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
@@ -171,7 +171,7 @@ public class MultiTableIngestionTest extends BaseTest
             executor.begin();
             for (Datasets datasets: allDatasets)
             {
-                IngestorResult result = ingestor.ingest(datasets);
+                IngestorResult result = ingestor.ingest(datasets).get(0);
                 multiTableIngestionResult.add(result);
             }
 
@@ -256,7 +256,7 @@ public class MultiTableIngestionTest extends BaseTest
             executor.begin();
             for (Datasets datasets: allDatasets)
             {
-                IngestorResult result = ingestor.ingest(datasets);
+                IngestorResult result = ingestor.ingest(datasets).get(0);
                 multiTableIngestionResult.add(result);
             }
 
@@ -301,7 +301,7 @@ public class MultiTableIngestionTest extends BaseTest
     public static void verifyResults(int batchId, String[] schema, String expectedDataPath, String tableName, IngestorResult result, Map<String, Object> expectedStats) throws IOException
     {
         Assertions.assertEquals(batchId, result.batchId().get());
-        Assertions.assertEquals("2000-01-01 00:00:00", result.ingestionTimestampUTC());
+        Assertions.assertEquals("2000-01-01 00:00:00.000000", result.ingestionTimestampUTC());
         List<Map<String, Object>> tableData = h2Sink.executeQuery(String.format("select * from \"TEST\".\"%s\"", tableName));
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
         Map<StatisticName, Object> actualStats = result.statisticByName();
