@@ -297,6 +297,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $expression->match([
     a:ArithmeticExpression[1] | $a.left->extractAggregatesFromExpression()->concatenate($a.right->extractAggregatesFromExpression()),
     b:BetweenPredicate[1] | $b.min->extractAggregatesFromExpression()->concatenate($b.value->extractAggregatesFromExpression())->concatenate($b.max->extractAggregatesFromExpression()),
+    c:Cast[1] | $c.expression->extractAggregatesFromExpression(),
     c:ComparisonExpression[1] | $c.left->extractAggregatesFromExpression()->concatenate($c.right->extractAggregatesFromExpression()),
     e:Extract[1] | $e.expression->extractAggregatesFromExpression(),
     f:FunctionCall[1] | if (isExpressionAggregate($f, false, false), | $f, | $f.arguments->map(a | $a->extractAggregatesFromExpression())),
@@ -356,6 +357,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   let select = ^$originalSelect(selectItems = $selectItems);
 
   let isAggregate = $groupBy->isNotEmpty() || anyColumnAggregate($select);
+
   let isWindow = $windows->isNotEmpty();
 
   let project = if ($standard->isNotEmpty() && !($isAggregate || $isWindow || $havingExtensions->isNotEmpty()),
@@ -613,6 +615,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $e->match([
     a:ArithmeticExpression[1] | $a.left->isExpressionAggregate($includeParameters, $includeWindow) || $a.right->isExpressionAggregate($includeParameters, $includeWindow),
     b:BetweenPredicate[1] | $b.min->isExpressionAggregate($includeParameters, $includeWindow) || $b.value->isExpressionAggregate($includeParameters, $includeWindow) || $b.max->isExpressionAggregate($includeParameters, $includeWindow),
+    c:Cast[1] | $c.expression->isExpressionAggregate($includeParameters, $includeWindow),
     c:ComparisonExpression[1] | $c.left->isExpressionAggregate($includeParameters, $includeWindow) || $c.right->isExpressionAggregate($includeParameters, $includeWindow),
     e:Extract[1] | $e.expression->isExpressionAggregate($includeParameters, $includeWindow),
     f:FunctionCall[1] |
@@ -2033,8 +2036,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
       processor('date_part', Integer, {args, fc, ctx |
         assertEquals(2, $args->size(), 'incorrect number of args for date_part');
-        let part = $args->at(0);
-        let value = $part->reactivate()->toOne()->cast(@String);
+        let part = $args->at(0)->reactivate()->toOne()->cast(@String);
 
         let func = [
           pair('year', year_Date_1__Integer_1_),
@@ -2048,7 +2050,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair('minute', minute_Date_1__Integer_1_),
           pair('second', second_Date_1__Integer_1_),
           pair('epoch', toEpochValue_Date_1__Integer_1_)
-        ]->getValue($value->toLower());
+        ]->getValue($part->toLower());
 
         nullOrSfe($func, $args->at(1));
       }),
