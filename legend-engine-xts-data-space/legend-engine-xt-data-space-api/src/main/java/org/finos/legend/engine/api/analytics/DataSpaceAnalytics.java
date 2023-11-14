@@ -95,7 +95,7 @@ public class DataSpaceAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions), objectMapper);
+                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions, false), objectMapper);
             }
             catch (Exception e)
             {
@@ -122,7 +122,7 @@ public class DataSpaceAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpaceCoverage(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions), objectMapper);
+                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpaceCoverage(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions, true), objectMapper);
             }
             catch (Exception e)
             {

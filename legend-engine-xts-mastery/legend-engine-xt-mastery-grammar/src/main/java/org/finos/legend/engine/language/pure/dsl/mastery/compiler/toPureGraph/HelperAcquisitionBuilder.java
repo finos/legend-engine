@@ -21,6 +21,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.DESDecryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.Decryption;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.FileAcquisitionProtocol;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.FileType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.KafkaAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.LegendServiceAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.PGPDecryption;
@@ -42,6 +43,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_connecti
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public class HelperAcquisitionBuilder
 {
@@ -75,6 +77,7 @@ public class HelperAcquisitionBuilder
 
     public static Root_meta_pure_mastery_metamodel_acquisition_FileAcquisitionProtocol buildFileAcquisitionProtocol(FileAcquisitionProtocol acquisitionProtocol, CompileContext context)
     {
+        validateFileAcquisitionProtocol(acquisitionProtocol);
         Root_meta_pure_mastery_metamodel_connection_FileConnection fileConnection;
         PackageableElement packageableElement = context.resolvePackageableElement(acquisitionProtocol.connection, acquisitionProtocol.sourceInformation);
         if (packageableElement instanceof Root_meta_pure_mastery_metamodel_connection_FileConnection)
@@ -97,6 +100,15 @@ public class HelperAcquisitionBuilder
                 ._encoding(acquisitionProtocol.encoding)
                 ._decryption(acquisitionProtocol.decryption == null ? null : buildDecryption(acquisitionProtocol.decryption, context));
     }
+
+    private static void validateFileAcquisitionProtocol(FileAcquisitionProtocol fileAcquisitionProtocol)
+    {
+        if (fileAcquisitionProtocol.fileType == FileType.JSON && isEmpty(fileAcquisitionProtocol.recordsKey))
+        {
+            throw new EngineException("'recordsKey' must be specified when file type is JSON", fileAcquisitionProtocol.sourceInformation, EngineErrorType.COMPILATION);
+        }
+    }
+
 
     public static Root_meta_pure_mastery_metamodel_acquisition_file_Decryption buildDecryption(Decryption decryption, CompileContext context)
     {

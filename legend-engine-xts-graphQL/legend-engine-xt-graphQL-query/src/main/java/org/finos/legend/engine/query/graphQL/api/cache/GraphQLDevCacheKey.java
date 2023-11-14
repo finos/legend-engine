@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.query.graphQL.api.cache;
 
-import com.google.common.base.Objects;
+import java.util.Objects;
 
 public class GraphQLDevCacheKey implements GraphQLCacheKey
 {
@@ -47,12 +47,37 @@ public class GraphQLDevCacheKey implements GraphQLCacheKey
             return false;
         }
         GraphQLDevCacheKey that = (GraphQLDevCacheKey) o;
-        return Objects.equal(projectId, that.projectId) && Objects.equal(workspaceId, that.workspaceId) && Objects.equal(queryClassPath, that.queryClassPath) && Objects.equal(mappingPath, that.mappingPath) && Objects.equal(runtimePath, that.runtimePath) && Objects.equal(query, that.query);
+        return Objects.equals(projectId, that.projectId)
+                && Objects.equals(workspaceId, that.workspaceId)
+                && Objects.equals(queryClassPath, that.queryClassPath)
+                && Objects.equals(mappingPath, that.mappingPath)
+                && Objects.equals(runtimePath, that.runtimePath)
+                && Objects.equals(query, that.query);
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hashCode(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query);
+        return Objects.hash(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, query);
+    }
+
+    public String getQueryClassPath()
+    {
+        return queryClassPath;
+    }
+
+    public String getMappingPath()
+    {
+        return mappingPath;
+    }
+
+    public String getRuntimePath()
+    {
+        return runtimePath;
+    }
+
+    public String getQuery()
+    {
+        return query;
     }
 }

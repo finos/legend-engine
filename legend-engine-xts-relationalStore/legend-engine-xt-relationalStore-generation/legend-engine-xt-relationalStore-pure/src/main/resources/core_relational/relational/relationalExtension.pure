@@ -472,6 +472,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'dayOfMWeek',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 9)}
+            )
+         ])
+      ),      
+
+      pair(
          'dayOfWeekNumber',
          list([
             pair(
@@ -890,6 +900,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'lpad',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->match([l:Literal[1] | $l.value->match([i:Integer[1] | $i])]))}
+            )
+         ])
+      ),
+
+      pair(
+         'rpad',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->match([l:Literal[1] | $l.value->match([i:Integer[1] | $i])]))}
+            )
+         ])
+      ),      
+
+      pair(
          'max',
          list([
             pair(
@@ -966,6 +996,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'monthName',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 9)}
+            )
+         ])
+      ),      
 
       pair(
          'monthNumber',

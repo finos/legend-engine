@@ -8,6 +8,7 @@
 /legend-engine-xts-analytics/**          @finos/legend-engine-maintainers
 /legend-engine-xts-authentication/**     @finos/legend-engine-maintainers
 /legend-engine-xts-avro/**               @finos/legend-engine-maintainers
+/legend-engine-xts-bigqueryFunction/**   @finos/legend-engine-maintainers
 /legend-engine-xts-changetoken/**        @finos/legend-engine-maintainers
 /legend-engine-xts-daml/**               @finos/legend-engine-maintainers
 /legend-engine-xts-data-push/**          @finos/legend-engine-maintainers

@@ -121,8 +121,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   let falsesList = ['n', '0', 'false'];
   let bitStr = $s->trim()->toLower();
 
-  println('hello');
-
   let bitVal = if($bitStr->in($truesList),
     | 'true',
     | if($bitStr->in($falsesList),
@@ -191,6 +189,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForH2(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(truncate(%s) as date)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAY_OF_MONTH(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dayname(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'DAY_OF_WEEK('+$p->at(0)+')',|$p->dayOfWeekNumberH2());})),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAY_OF_YEAR(%s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
@@ -220,6 +219,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='monthname(%s)')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAY_OF_WEEK(%s) > 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp()')),
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='cast(parsedatetime(%s,%s) as timestamp)')),
@@ -248,8 +248,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dayname(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
 }
 
@@ -459,25 +458,32 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   extensions:Extension[*]
 ): String[1]
 {
-  let opStr =
-    if($s.filteringOperation->isEmpty(),
-      | '',
-      | $s.filteringOperation->map(s | $s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
-  );
-  let havingStr =
-    if($s.havingOperation->isEmpty(),
-      | '',
-      | $s.havingOperation->map(s|$s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
-  );
+  if($s.data.childrenData->match([jtn:JoinTreeNode[1]|$jtn.joinType == JoinType.FULL_OUTER, a:Any[*]|false]) ,
+    |
+        // H2 doesn't support FULL_OUTER join, so we need to convert/emulate it so people can write unit tests...
+        $s->meta::relational::functions::sqlQueryToString::default::convertFullOuterJoinToLeftRightOuter()->processOperation($dbConfig, $format->indent(), $extensions);
+    ,
+    |
+      let opStr =
+        if($s.filteringOperation->isEmpty(),
+          | '',
+          | $s.filteringOperation->map(s | $s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^$config(callingFromFilter = true), $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
+      );
+      let havingStr =
+        if($s.havingOperation->isEmpty(),
+          | '',
+          | $s.havingOperation->map(s|$s->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), $config, $extensions))->filter(s|$s != '')->joinStrings(' <||> ')
+      );
 
-  $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
-  processSelectColumnsH2($s.columns, $dbConfig, $format->indent(), true, $extensions) +
-  if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNodeH2([], $dbConfig, $format->indent(), [], $extensions)) +
-  if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
-  if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
-  if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
-  if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
-  + processLimit($s, $dbConfig, $format,  $extensions, [], processSliceOrDropForH2_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+      $format.separator + 'select ' + processTop($s, $format, $dbConfig, $extensions) + if($s.distinct == true,|'distinct ',|'') +
+      processSelectColumnsH2($s.columns, $dbConfig, $format->indent(), true, $extensions) +
+      if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNodeH2([], $dbConfig, $format->indent(), [], $extensions)) +
+      if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
+      if ($s.groupBy->isEmpty(),|'',| ' ' + $format.separator + 'group by '+$s.groupBy->processGroupByColumns($dbConfig, $format->indent(), true, $extensions)->makeString(','))+
+      if (eq($havingStr, ''), |'', | ' ' + $format.separator + 'having ' + $havingStr) +
+      if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','))+
+      + processLimit($s, $dbConfig, $format,  $extensions, [], processSliceOrDropForH2_SelectSQLQuery_1__Format_1__DbConfig_1__Extension_MANY__Any_1__String_1_);
+    );
 }
 
 /*
@@ -599,6 +605,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
                                        j:JoinTreeNode[1] | $j.join->otherTableFromAlias($parent->toOne());
                                     ]
                                     );
+
    let val = $joinTreeNode->match(
                                     [
                                        r:RootJoinTreeNode[1] |
@@ -606,12 +613,19 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
                                                 ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
                                                 ->processOperation($dbConfig, $format->indent(), $extensions),
                                        j:JoinTreeNode[1] |
-                                             if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join '))
+                                          if($j.joinType == JoinType.FULL_OUTER,
+                                            | 
+                                                // This should have been converted earlier to avoid a FULL_OUTER reaching this point 
+                                                fail($j.joinType->toOne()->toString() + ' join not supported in H2'); '';
+                                            ,
+                                            |
+                                              $j.joinType->map(jt|$jt->meta::relational::functions::sqlQueryToString::default::processJoinType($dbConfig, $format, $extensions))->orElse('')
                                                 + if ($j.lateral == true, | 'lateral ', | '')
                                                 + $j.alias
-                                                      ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
-                                                      ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
-                                                + ' ' + 'on (' + $j.join.operation->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^Config(), $extensions) + ')';,
+                                                    ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
+                                                    ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+                                                + ' ' + 'on (' + $j.join.operation->wrapH2Boolean($extensions)->processOperation($dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+                                            ),
                                        a:Any[1] | ''
                                     ]
                                     );

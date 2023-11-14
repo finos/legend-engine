@@ -15,46 +15,25 @@
 
 package org.finos.legend.engine.query.sql.providers.shared.project;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.StatusLine;
-import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import java.util.Optional;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
-import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
-import org.finos.legend.engine.query.sql.providers.shared.utils.TraceUtils;
-import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.pac4j.core.profile.CommonProfile;
-
-import javax.security.auth.Subject;
-import javax.ws.rs.core.Response;
-import java.security.PrivilegedAction;
-import java.util.List;
-import java.util.Optional;
 
 public class ProjectCoordinateLoader
 {
-    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
-
     private final ModelManager modelManager;
-    private final ServerConnectionConfiguration sdlcServerConfig;
-    private final Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider;
 
     public ProjectCoordinateLoader(ModelManager modelManager, ServerConnectionConfiguration sdlcServerConfig)
     {
@@ -64,8 +43,6 @@ public class ProjectCoordinateLoader
     public ProjectCoordinateLoader(ModelManager modelManager, ServerConnectionConfiguration sdlcServerConfig, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
     {
         this.modelManager = modelManager;
-        this.sdlcServerConfig = sdlcServerConfig;
-        this.httpClientProvider = httpClientProvider;
     }
 
     public ProjectResolvedContext resolve(ProjectCoordinateWrapper projectCoordinateWrapper, MutableList<CommonProfile> profiles)
@@ -130,123 +107,14 @@ public class ProjectCoordinateLoader
 
     private PureModelContextData loadProjectPureModelContextData(String project, String workspace, boolean isGroup, MutableList<CommonProfile> profiles)
     {
-        return doAs(ProfileManagerHelper.extractSubject(profiles), () ->
-        {
-            String url = String.format("%s/api/projects/%s/%s/%s/pureModelContextData", sdlcServerConfig.getBaseUrl(), project, isGroup ? "groupWorkspaces" : "workspaces", workspace);
-            PureModelContextData projectPMCD = SDLCLoader.loadMetadataFromHTTPURL(profiles, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url, httpClientProvider);
-            PureModelContextData dependencyPMCD = getSDLCDependenciesPMCD(project, workspace, isGroup, profiles);
+        WorkspaceSDLC sdlcInfo = new WorkspaceSDLC();
+        sdlcInfo.project = project;
+        sdlcInfo.version = workspace;
+        sdlcInfo.isGroupWorkspace = isGroup;
 
-            return projectPMCD.combine(dependencyPMCD);
-        });
-    }
+        PureModelContextPointer pointer = new PureModelContextPointer();
+        pointer.sdlcInfo = sdlcInfo;
 
-    private PureModelContextData getSDLCDependenciesPMCD(String project, String workspace, boolean isGroup, MutableList<CommonProfile> profiles)
-    {
-        return TraceUtils.trace("Get SDLC Dependencies", span ->
-        {
-
-            span.setTag("project", project);
-            span.setTag("workspace", workspace);
-            span.setTag("group", isGroup);
-
-            if (sdlcServerConfig == null)
-            {
-                throw new EngineException("SDLC Server configuration must be supplied");
-            }
-            try (CloseableHttpClient client = this.httpClientProvider.apply(profiles))
-            {
-                String url = String.format("%s/api/projects/%s/%s/%s/revisions/HEAD/upstreamProjects",
-                        sdlcServerConfig.getBaseUrl(),
-                        project,
-                        isGroup ? "groupWorkspaces" : "workspaces",
-                        workspace);
-
-                try (CloseableHttpResponse response = client.execute(new HttpGet(url)))
-                {
-                    StatusLine status = response.getStatusLine();
-                    if (!Response.Status.Family.familyOf(status.getStatusCode()).equals(Response.Status.Family.SUCCESSFUL))
-                    {
-                        throw new RuntimeException(String.format("Status Code: %s\nReason: %s\nMessage: %s",
-                                status.getStatusCode(), status.getReasonPhrase(), "Error fetching from " + url));
-                    }
-
-                    List<SDLCProjectDependency> dependencies = OBJECT_MAPPER.readValue(EntityUtils.toString(response.getEntity()), new TypeReference<List<SDLCProjectDependency>>()
-                    {
-                    });
-                    PureModelContextData.Builder builder = PureModelContextData.newBuilder();
-                    dependencies.forEach(dependency ->
-                    {
-                        try
-                        {
-                            builder.addPureModelContextData(loadProjectData(profiles, dependency.getGroupId(), dependency.getArtifactId(), dependency.versionId));
-                        }
-                        catch (Exception e)
-                        {
-                            throw new RuntimeException(e);
-                        }
-                    });
-                    builder.removeDuplicates();
-                    return builder.build();
-                }
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException(e);
-            }
-        });
-    }
-
-    private PureModelContextData loadProjectData(MutableList<CommonProfile> profiles, String groupId, String artifactId, String versionId)
-    {
-        return TraceUtils.trace("Loading Project Data", span ->
-        {
-
-            span.setTag("groupId", groupId);
-            span.setTag("artifactId", artifactId);
-            span.setTag("versionId", versionId);
-
-            Subject subject = ProfileManagerHelper.extractSubject(profiles);
-            PureModelContextPointer pointer = new PureModelContextPointer();
-            AlloySDLC sdlcInfo = new AlloySDLC();
-            sdlcInfo.groupId = groupId;
-            sdlcInfo.artifactId = artifactId;
-            sdlcInfo.version = versionId;
-            pointer.sdlcInfo = sdlcInfo;
-
-            return doAs(subject, () -> this.modelManager.loadData(pointer, PureClientVersions.production, profiles));
-        });
-    }
-
-    private <T> T doAs(Subject subject, PrivilegedAction<T> action)
-    {
-        return subject != null ? Subject.doAs(subject, action) : action.run();
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    private static class SDLCProjectDependency
-    {
-        private final String projectId;
-        private final String versionId;
-
-        public SDLCProjectDependency(@JsonProperty("projectId") String projectId, @JsonProperty("versionId") String versionId)
-        {
-            this.projectId = projectId;
-            this.versionId = versionId;
-        }
-
-        public String getGroupId()
-        {
-            return projectId.split(":")[0];
-        }
-
-        public String getArtifactId()
-        {
-            return projectId.split(":")[1];
-        }
-
-        public String getVersionId()
-        {
-            return versionId;
-        }
+        return this.modelManager.loadData(pointer, PureClientVersions.production, profiles);
     }
 }
