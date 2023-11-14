@@ -76,7 +76,7 @@ public class ShowCommand implements SqlGen
     SHOW
    {
    SCHEMAS |
-   TABLES [LIKE 'tableName'] [ IN schemaName ] |
+   TABLES [LIKE 'pattern'] [ IN schemaName ] |
     }
      */
 
@@ -90,7 +90,7 @@ public class ShowCommand implements SqlGen
         {
             builder.append(WHITE_SPACE + Clause.LIKE.get());
             builder.append(WHITE_SPACE);
-            builder.append(SqlGenUtils.getQuotedField(tableName, quoteIdentifier));
+            builder.append(SqlGenUtils.singleQuote(tableName));
             if (databaseName.isPresent() && schemaName.isPresent())
             {
                 builder.append(WHITE_SPACE);

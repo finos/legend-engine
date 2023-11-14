@@ -79,7 +79,7 @@ public class ShowCommand implements SqlGen
 
     SHOW [FULL] [TEMPORARY] TABLES
     [{FROM | IN} db_name]
-    [[EXTENDED] LIKE pattern | WHERE TABLE_TYPE {= | !=} {'VIEW' | 'BASE TABLE'}]
+    [[EXTENDED] LIKE 'pattern' | WHERE TABLE_TYPE {= | !=} {'VIEW' | 'BASE TABLE'}]
 
     SHOW SCHEMAS
     [LIKE 'pattern']
@@ -125,7 +125,7 @@ public class ShowCommand implements SqlGen
             }
             builder.append(WHITE_SPACE + Clause.LIKE.get());
             builder.append(WHITE_SPACE);
-            builder.append(SqlGenUtils.getQuotedField(tableName, quoteIdentifier));
+            builder.append(SqlGenUtils.singleQuote(tableName));
         }
     }
 
