@@ -139,7 +139,7 @@ class BulkLoadPlanner extends Planner
         }
 
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
-        return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert)));
+        return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert, stagedFilesDataset.stagedFilesDatasetProperties().loadOptions())));
     }
 
     private LogicalPlan buildLogicalPlanForCopyAndTransform(Resources resources)
@@ -150,7 +150,7 @@ class BulkLoadPlanner extends Planner
         // Operation 1: Copy into a temp table
         List<Value> fieldsToSelectFromStage = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelectFromStage).build();
-        operations.add(Copy.of(tempDataset, selectStage, fieldsToSelectFromStage));
+        operations.add(Copy.of(tempDataset, selectStage, fieldsToSelectFromStage, stagedFilesDataset.stagedFilesDatasetProperties().loadOptions()));
 
 
         // Operation 2: Transfer from temp table into target table, adding extra columns at the same time

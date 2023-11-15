@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.utils.Sq
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.ASSIGNMENT_OPERATOR;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
@@ -68,7 +69,7 @@ public class StagedFilesTable extends TableLike
             builder.append(COMMA);
             builder.append(WHITE_SPACE);
             int ctr = 0;
-            for (String option : loadOptions.keySet())
+            for (String option : loadOptions.keySet().stream().sorted().collect(Collectors.toList()))
             {
                 ctr++;
                 builder.append(option);

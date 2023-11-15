@@ -14,9 +14,14 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.finos.legend.engine.persistence.components.common.LoadOptions;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface StagedFilesDatasetProperties
 {
     List<String> files();
+
+    Optional<LoadOptions> loadOptions();
 }

@@ -18,7 +18,6 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.logi
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
 
-import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable

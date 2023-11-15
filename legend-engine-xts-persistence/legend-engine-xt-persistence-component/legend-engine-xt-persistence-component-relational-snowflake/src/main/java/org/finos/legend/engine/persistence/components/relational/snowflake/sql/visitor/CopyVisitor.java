@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
@@ -22,7 +23,9 @@ import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVis
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class CopyVisitor implements LogicalPlanVisitor<Copy>
 {
@@ -30,13 +33,22 @@ public class CopyVisitor implements LogicalPlanVisitor<Copy>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Copy current, VisitorContext context)
     {
-        CopyStatement copyStatement = new CopyStatement();
+        Map<String, Object> loadOptionsMap = new HashMap<>();
+        current.loadOptions().ifPresent(options -> retrieveLoadOptions(options, loadOptionsMap));
+        CopyStatement copyStatement = new CopyStatement(loadOptionsMap);
         prev.push(copyStatement);
 
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
         logicalPlanNodes.add(current.sourceDataset());
         logicalPlanNodes.add(current.targetDataset());
         logicalPlanNodes.addAll(current.fields());
+
         return new VisitorResult(copyStatement, logicalPlanNodes);
+    }
+
+    private void retrieveLoadOptions(LoadOptions loadOptions, Map<String, Object> loadOptionsMap)
+    {
+        loadOptions.onError().ifPresent(property -> loadOptionsMap.put("ON_ERROR", property));
+        loadOptions.force().ifPresent(property -> loadOptionsMap.put("FORCE", property));
     }
 }

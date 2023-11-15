@@ -20,10 +20,15 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DMLStatement;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Field;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.ASSIGNMENT_OPERATOR;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
@@ -34,10 +39,12 @@ public class CopyStatement implements DMLStatement
     private Table table;
     private final List<Field> columns;
     private SelectStatement selectStatement;
+    private final Map<String, Object> loadOptions;
 
-    public CopyStatement()
+    public CopyStatement(Map<String, Object> loadOptions)
     {
-        columns = new ArrayList<>();
+        this.columns = new ArrayList<>();
+        this.loadOptions = loadOptions;
     }
 
     public CopyStatement(Table table, List<Field> columns, SelectStatement selectStatement)
@@ -45,6 +52,15 @@ public class CopyStatement implements DMLStatement
         this.table = table;
         this.columns = columns;
         this.selectStatement = selectStatement;
+        this.loadOptions = new HashMap<>();
+    }
+
+    public CopyStatement(Table table, List<Field> columns, SelectStatement selectStatement, Map<String, Object> loadOptions)
+    {
+        this.table = table;
+        this.columns = columns;
+        this.selectStatement = selectStatement;
+        this.loadOptions = loadOptions;
     }
 
     /*
@@ -54,7 +70,7 @@ public class CopyStatement implements DMLStatement
         ( SELECT [<alias>.]$<file_col_num>[:<element>] [ , [<alias>.]$<file_col_num>[:<element>] , ...  ]
             FROM { <internal_location> | <external_location> }
         [ ( FILE_FORMAT => '<namespace>.<named_file_format>', PATTERN => '<regex_pattern>' ) ] [ <alias> ] )
-        on_error = 'ABORT_STATEMENT'
+        [ <load_options> ]
      */
 
     @Override
@@ -87,9 +103,29 @@ public class CopyStatement implements DMLStatement
         builder.append(OPEN_PARENTHESIS);
         selectStatement.genSql(builder);
         builder.append(CLOSING_PARENTHESIS);
-
         builder.append(WHITE_SPACE);
-        builder.append("on_error = 'ABORT_STATEMENT'");
+
+        int ctr = 0;
+        loadOptions.putIfAbsent("ON_ERROR", "ABORT_STATEMENT"); // Add default option into the map
+        for (String option : loadOptions.keySet().stream().sorted().collect(Collectors.toList()))
+        {
+            ctr++;
+            builder.append(option);
+            builder.append(ASSIGNMENT_OPERATOR);
+            if (loadOptions.get(option) instanceof String)
+            {
+                builder.append(SqlGenUtils.singleQuote(loadOptions.get(option).toString().toUpperCase()));
+            }
+            else
+            {
+                builder.append(loadOptions.get(option).toString().toUpperCase());
+            }
+
+            if (ctr < loadOptions.size())
+            {
+                builder.append(COMMA + WHITE_SPACE);
+            }
+        }
     }
 
     @Override

@@ -41,4 +41,8 @@ public interface LoadOptionsAbstract
     Optional<Long> maxBadRecords();
 
     Optional<String> compression();
+
+    Optional<Boolean> force();
+
+    Optional<String> onError();
 }

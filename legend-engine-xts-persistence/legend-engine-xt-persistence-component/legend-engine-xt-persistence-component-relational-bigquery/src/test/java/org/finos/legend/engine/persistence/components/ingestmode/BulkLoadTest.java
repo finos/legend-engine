@@ -205,7 +205,7 @@ public class BulkLoadTest
         String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
             "FROM FILES " +
-            "(uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], max_bad_records=100, quote=''', skip_leading_rows=1, format='CSV', encoding='UTF8', compression='GZIP', field_delimiter=',', null_marker='NULL')";
+            "(uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], compression='GZIP', encoding='UTF8', field_delimiter=',', format='CSV', max_bad_records=100, null_marker='NULL', quote=''', skip_leading_rows=1)";
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +

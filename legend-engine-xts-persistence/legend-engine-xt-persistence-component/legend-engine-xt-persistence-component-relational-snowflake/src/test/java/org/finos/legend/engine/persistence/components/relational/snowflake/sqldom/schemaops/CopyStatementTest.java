@@ -26,7 +26,9 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -60,11 +62,11 @@ public class CopyStatementTest
                 "(\"field1\", \"field2\", \"field3\", \"field4\") " +
                 "FROM " +
                 "(SELECT t.$1 as \"field1\",t.$2 as \"field2\",t.$3 as \"field3\",t.$4 as \"field4\" FROM @my_stage as t) " +
-                "on_error = 'ABORT_STATEMENT'", sql1);
+                "ON_ERROR='ABORT_STATEMENT'", sql1);
     }
 
     @Test
-    void testSelectStageStatementWithPatternAndFileFormat() throws SqlDomException
+    void testSelectStageStatementWithPatternAndFileFormatAndForceOption() throws SqlDomException
     {
         StagedFilesTable stagedFiles = new StagedFilesTable("t","@my_stage");
         stagedFiles.setFileFormat("my_file_format");
@@ -87,14 +89,17 @@ public class CopyStatementTest
                 new Field("field4", QUOTE_IDENTIFIER)
         );
 
-        CopyStatement copyStatement = new CopyStatement(table, columns, selectStatement);
+        Map<String, Object> loadOptions = new HashMap<>();
+        loadOptions.put("FORCE", true);
+
+        CopyStatement copyStatement = new CopyStatement(table, columns, selectStatement, loadOptions);
         String sql1 = genSqlIgnoringErrors(copyStatement);
         assertEquals("COPY INTO \"mydb\".\"mytable1\" " +
                 "(\"field1\", \"field2\", \"field3\", \"field4\") " +
                 "FROM " +
                 "(SELECT t.$1:field1 as \"field1\",t.$1:field2 as \"field2\",t.$1:field3 as \"field3\",t.$1:field4 as \"field4\" " +
                 "FROM @my_stage (FILE_FORMAT => 'my_file_format', PATTERN => 'my_pattern') as t) " +
-                "on_error = 'ABORT_STATEMENT'", sql1);
+                "FORCE=TRUE, ON_ERROR='ABORT_STATEMENT'", sql1);
     }
 
     public static String genSqlIgnoringErrors(SqlGen item)
