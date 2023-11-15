@@ -33,7 +33,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestSnowflakeConnection
 {
-    public static class WithKeyPair extends AbstractConnectionFactoryTest<java.sql.Connection>
+    public static class ForSnowflakeWithKeyPairFlow extends AbstractConnectionFactoryTest<java.sql.Connection>
     {
         private static final String CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK = "CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK";
         private static final String CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE = "CONNECTION_INTEGRATION_TEST__SNOWFLAKE_PK_PASSPHRASE";

@@ -68,7 +68,7 @@ public class ConnectionGrammarComposerExtension implements PureGrammarComposerEx
         String value;
         try
         {
-            // This is very super hacky!
+            // @HACKY: new-connection-framework
             element.sourceInformation = null;
             ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
             objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);

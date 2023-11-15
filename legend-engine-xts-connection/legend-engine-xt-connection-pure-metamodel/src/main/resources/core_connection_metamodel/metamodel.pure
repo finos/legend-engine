@@ -14,5 +14,6 @@
 
 Class meta::pure::metamodel::connection::Connection extends PackageableElement
 {
+    // @HACKY: new-connection-framework
     rawValue: Any[1];
 }

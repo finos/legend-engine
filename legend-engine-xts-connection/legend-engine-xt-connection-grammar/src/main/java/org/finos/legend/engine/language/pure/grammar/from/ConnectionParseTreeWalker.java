@@ -57,7 +57,6 @@ public class ConnectionParseTreeWalker
                 text.append(fragment.getText());
             }
             String rawValueText = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
-            // prepare island grammar walker source information
             connection = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(rawValueText, Connection.class);
         }
         catch (Exception e)
