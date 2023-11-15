@@ -394,7 +394,7 @@ Class meta::legend::test::handlers::model::TestString
    toString(){3->toString()}:String[1];
    toUpper(){$this.string->toUpper()}:String[1];
    trim(){$this.string->trim()}:String[1];
-
+   hashString(){$this.string->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5)}:String[1];
 }
 
 Class meta::legend::test::handlers::model::TestDate
