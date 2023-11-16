@@ -50,4 +50,10 @@ public class AlloySDLC extends SDLC
     {
         return Objects.hashCode(this.project) + 89 * Objects.hashCode(this.version) + 17 * Objects.hashCode(this.groupId) + 17 * Objects.hashCode(artifactId);
     }
+
+    @Override
+    public <T> T accept(SDLCVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

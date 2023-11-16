@@ -18,7 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
+import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
@@ -36,10 +39,6 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
-import org.slf4j.Logger;
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 public class ModelManager
 {
@@ -57,9 +56,16 @@ public class ModelManager
     public final Cache<PureModelContext, PureModel> pureModelCache = CacheBuilder.newBuilder().recordStats().softValues().expireAfterAccess(30, TimeUnit.MINUTES).build();
     private final DeploymentMode deploymentMode;
     private final MutableList<ModelLoader> modelLoaders;
+    private final Tracer tracer;
 
     public ModelManager(DeploymentMode mode, ModelLoader... modelLoaders)
     {
+        this(mode, GlobalTracer.get(), modelLoaders);
+    }
+
+    public ModelManager(DeploymentMode mode, Tracer tracer, ModelLoader... modelLoaders)
+    {
+        this.tracer = tracer;
         this.modelLoaders = Lists.mutable.of(modelLoaders);
         this.modelLoaders.forEach((Procedure<ModelLoader>) loader -> loader.setModelManager(this));
         this.deploymentMode = mode;
@@ -104,7 +110,7 @@ public class ModelManager
     // Remove clientVersion
     public PureModelContextData loadData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm)
     {
-        try (Scope scope = GlobalTracer.get().buildSpan("Load Model").startActive(true))
+        try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
         {
             scope.span().setTag("context", context.getClass().getSimpleName());
             if (context instanceof PureModelContextData)

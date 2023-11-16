@@ -14,7 +14,7 @@
 
 package org.finos.legend.connection;
 
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
@@ -29,12 +29,12 @@ public interface HACKY__RelationalDatabaseConnectionAdapter
 
     class ConnectionFactoryMaterial
     {
-        public final StoreInstance storeInstance;
+        public final Connection connection;
         public final AuthenticationConfiguration authenticationConfiguration;
 
-        public ConnectionFactoryMaterial(StoreInstance storeInstance, AuthenticationConfiguration authenticationConfiguration)
+        public ConnectionFactoryMaterial(Connection connection, AuthenticationConfiguration authenticationConfiguration)
         {
-            this.storeInstance = storeInstance;
+            this.connection = connection;
             this.authenticationConfiguration = authenticationConfiguration;
         }
     }

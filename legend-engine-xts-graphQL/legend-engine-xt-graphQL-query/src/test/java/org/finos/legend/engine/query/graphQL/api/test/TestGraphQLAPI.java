@@ -36,6 +36,7 @@ import org.finos.legend.engine.plan.execution.cache.ExecutionCacheBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -94,6 +95,7 @@ public class TestGraphQLAPI
         handlerCollection.setHandlers(new Handler[] {
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace1.pure"),
                 buildJsonHandler("/api/projects/Project1/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]"),
+                buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/model.one/versions/1.0.0/pureModelContextData","/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace1.pure",new Protocol("pure", PureClientVersions.production),new PureModelContextPointer()),
 
                 buildPMCDMetadataHandler("/api/projects/Project1/workspaces/Workspace2/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project1_Workspace2.pure"),
                 buildJsonHandler("/api/projects/Project1/workspaces/Workspace2/revisions/HEAD/upstreamProjects", "[]"),
@@ -128,7 +130,7 @@ public class TestGraphQLAPI
 
     private GraphQLExecute getGraphQLExecuteWithCache(GraphQLPlanCache cache)
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        ModelManager modelManager = createModelManager();
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers), cache);
@@ -163,6 +165,74 @@ public class TestGraphQLAPI
                 "}" +
                 "}";
         Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteProdAPI_Relational_With_Dataspace() throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allFirms {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeProdWithDataspace(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "defaultExecutionContext", "simple::model::Query", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"allFirms\":[" +
+                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}," +
+                "{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\"}]}," +
+                "{\"legalName\":\"Firm B\",\"employees\":[{\"firstName\":\"Oliver\",\"lastName\":\"Hill\"},{\"firstName\":\"David\",\"lastName\":\"Harris\"}]}" +
+                "]" +
+                "}" +
+                "}";
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteProdAPI_Relational_With_Dataspace_With_Caching() throws Exception
+    {
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(cache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allFirms {\n" +
+                "      legalName,\n" +
+                "      employees {\n" +
+                "        firstName,\n" +
+                "        lastName\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeProdWithDataspace(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "defaultExecutionContext", "simple::model::Query", query, null);
+
+        String expected = "{" +
+                "\"data\":{" +
+                "\"allFirms\":[" +
+                "{\"legalName\":\"Firm X\",\"employees\":[{\"firstName\":\"Peter\",\"lastName\":\"Smith\"},{\"firstName\":\"John\",\"lastName\":\"Johnson\"},{\"firstName\":\"John\",\"lastName\":\"Hill\"},{\"firstName\":\"Anthony\",\"lastName\":\"Allen\"}]}," +
+                "{\"legalName\":\"Firm A\",\"employees\":[{\"firstName\":\"Fabrice\",\"lastName\":\"Roberts\"}]}," +
+                "{\"legalName\":\"Firm B\",\"employees\":[{\"firstName\":\"Oliver\",\"lastName\":\"Hill\"},{\"firstName\":\"David\",\"lastName\":\"Harris\"}]}" +
+                "]" +
+                "}" +
+                "}";
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        response = graphQLExecute.executeProdWithDataspace(mockRequest, "org.finos.legend.graphql", "model.one", "1.0.0", "simple::dataspace", "defaultExecutionContext", "simple::model::Query", query, null);
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
     }
 
     @Test
@@ -222,7 +292,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLExecuteDevAPI_Relational_WithDependencies() throws Exception
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
+        ModelManager modelManager = createModelManager();
         PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLExecute graphQLExecute = new GraphQLExecute(modelManager, executor, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
@@ -250,6 +320,11 @@ public class TestGraphQLAPI
                 "}" +
                 "}";
         Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    private static ModelManager createModelManager()
+    {
+        return new ModelManager(DeploymentMode.TEST, new SDLCLoader(metaDataServerConfiguration, null));
     }
 
 
@@ -483,7 +558,7 @@ public class TestGraphQLAPI
     @Test
     public void testGraphQLDebugGenerateGraphFetchDevAPI()
     {
-        ModelManager modelManager = new ModelManager(DeploymentMode.TEST);
+        ModelManager modelManager = createModelManager();
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
         GraphQLDebug graphQLDebug = new GraphQLDebug(modelManager, metaDataServerConfiguration, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())));
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
@@ -674,7 +749,7 @@ public class TestGraphQLAPI
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath) throws Exception
     {
-        return buildPMCDMetadataHandler(path, resourcePath, null, null);
+        return buildPMCDMetadataHandler(path, resourcePath, new Protocol("pure", PureClientVersions.production), new PureModelContextPointer());
     }
 
     private static Handler buildPMCDMetadataHandler(String path, String resourcePath, Protocol serializer, PureModelContextPointer pointer) throws Exception

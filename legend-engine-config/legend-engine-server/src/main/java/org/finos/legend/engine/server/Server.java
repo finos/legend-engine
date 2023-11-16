@@ -43,22 +43,18 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
-import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
 import org.finos.legend.connection.impl.HACKY__SnowflakeConnectionAdapter;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.engine.api.analytics.BindingAnalytics;
 import org.finos.legend.engine.api.analytics.ClassAnalytics;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
@@ -84,7 +80,7 @@ import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
-import org.finos.legend.engine.language.hostedService.deployment.HostedServiceDeploymentConfiguration;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -99,7 +95,7 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
-import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
@@ -123,8 +119,11 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
@@ -219,6 +218,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(HostedServiceDeploymentConfiguration.class, "hostedServiceConfig"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeAppDeploymentConfiguration.class, "snowflakeAppConfig"));
+        bootstrap.getObjectMapper().registerSubtypes(new NamedType(BigQueryFunctionDeploymentConfiguration.class, "snowflakeAppConfig"));
     }
 
     public CredentialProviderProvider configureCredentialProviders(List<VaultConfiguration> vaultConfigurations)
@@ -397,7 +397,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
                 new RelationalStoreSQLSourceProvider(projectCoordinateLoader),
                 new FunctionSQLSourceProvider(projectCoordinateLoader),
                 new LegendServiceSQLSourceProvider(projectCoordinateLoader)),
-        generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers))));
+                generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers))));
         environment.jersey().register(new SqlGrammar());
 
         // Service
@@ -437,39 +437,48 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     // TODO: @akphi - this is temporary, rework when we find a better way to handle the initialization of connection factory from config or some external source.
     private ConnectionFactory setupConnectionFactory(List<VaultConfiguration> vaultConfigurations)
     {
-        LegendEnvironment environment = new LegendEnvironment.Builder()
-                .withVaults(
+        LegendEnvironment environment = LegendEnvironment
+                .builder()
+                .vaults(
                         new SystemPropertiesCredentialVault(),
                         new EnvironmentCredentialVault(),
                         new PropertiesFileCredentialVault(this.buildVaultProperties(vaultConfigurations))
                 )
-                .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
-                                .withIdentifier("Postgres")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
-                                                UserPasswordAuthenticationConfiguration.class
-                                        ).build()
+                .databaseSupports(
+                        DatabaseSupport
+                                .builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism
+                                                .builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD)
+                                                .authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build(),
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.SNOWFLAKE)
-                                .withIdentifier("Snowflake")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).withAuthenticationConfigurationTypes(
-                                                EncryptedPrivateKeyPairAuthenticationConfiguration.class
-                                        ).build()
+                        DatabaseSupport
+                                .builder()
+                                .type(RelationalDatabaseType.SNOWFLAKE)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism
+                                                .builder()
+                                                .type(CoreAuthenticationMechanismType.KEY_PAIR)
+                                                .authenticationConfigurationTypes(
+                                                        EncryptedPrivateKeyPairAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build()
                 ).build();
 
-        StoreInstanceProvider storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().build();
-        return new ConnectionFactory.Builder(environment, storeInstanceProvider)
-                .withCredentialBuilders(
+        return ConnectionFactory.builder()
+                .environment(environment)
+                .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),
                         new KeyPairCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword(),
                         new SnowflakeConnectionBuilder.WithKeyPair()
                 )

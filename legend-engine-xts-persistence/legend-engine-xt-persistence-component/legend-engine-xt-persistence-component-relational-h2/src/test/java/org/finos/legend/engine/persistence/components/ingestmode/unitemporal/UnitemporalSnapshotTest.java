@@ -18,9 +18,12 @@ import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshot;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.FailEmptyBatch;
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.NoOp;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
@@ -69,8 +72,8 @@ class UnitemporalSnapshotTest extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
-        String dataPass1 = basePathForInput + "without_partition/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "without_partition/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "without_partition/no_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "without_partition/no_version/expected_pass1.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
@@ -81,8 +84,8 @@ class UnitemporalSnapshotTest extends BaseTest
         Assertions.assertEquals(stagingTableList.size(), 3);
 
         // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
-        String dataPass2 = basePathForInput + "without_partition/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "without_partition/expected_pass2.csv";
+        String dataPass2 = basePathForInput + "without_partition/no_version/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "without_partition/no_version/expected_pass2.csv";
         // 1. Load staging table
         loadBasicStagingData(dataPass2);
         // 2. Execute plans and verify results
@@ -93,8 +96,8 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        String dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
-        String expectedDataPass3 = basePathForExpected + "without_partition/expected_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass3.csv";
         // 1. Load Staging table
         loadBasicStagingData(dataPass3);
         // 2. Execute plans and verify results
@@ -127,8 +130,8 @@ class UnitemporalSnapshotTest extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
-        String dataPass1 = basePathForInput + "without_partition/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "without_partition/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "without_partition/no_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "without_partition/no_version/expected_pass1.csv";
         // 1. Load staging table
         loadBasicStagingDataInUpperCase(dataPass1);
         // 2. Execute plans and verify results
@@ -139,8 +142,8 @@ class UnitemporalSnapshotTest extends BaseTest
         Assertions.assertEquals(stagingTableList.size(), 3);
 
         // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
-        String dataPass2 = basePathForInput + "without_partition/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "without_partition/expected_pass2.csv";
+        String dataPass2 = basePathForInput + "without_partition/no_version/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "without_partition/no_version/expected_pass2.csv";
         // 1. Load staging table
         loadBasicStagingDataInUpperCase(dataPass2);
         // 2. Execute plans and verify results
@@ -161,8 +164,8 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        String dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
-        String expectedDataPass3 = basePathForExpected + "without_partition/expected_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass3.csv";
         // 1. Load Staging table
         loadBasicStagingDataInUpperCase(dataPass3);
         // 2. Execute plans and verify results
@@ -191,8 +194,8 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
-        expectedDataPass3 = basePathForExpected + "without_partition/expected_pass2.csv";
+        dataPass3 = "src/test/resources/data/empty_file.csv";
+        expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass2.csv";
         // 1. Load Staging table
         loadBasicStagingDataInUpperCase(dataPass3);
         // 2. Execute plans and verify results
@@ -203,8 +206,8 @@ class UnitemporalSnapshotTest extends BaseTest
         // ------------ Perform unitemporal snapshot milestoning Pass6 (Empty Batch) Empty Data Handling = Skip ------------------------
         options = options.withCleanupStagingData(true);
 
-        dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
-        expectedDataPass3 = basePathForExpected + "without_partition/expected_pass4.csv";
+        dataPass3 = "src/test/resources/data/empty_file.csv";
+        expectedDataPass3 = basePathForExpected + "without_partition/no_version/expected_pass4.csv";
         // 1. Load Staging table
         loadBasicStagingDataInUpperCase(dataPass3);
         // 2. Execute plans and verify results
@@ -244,8 +247,8 @@ class UnitemporalSnapshotTest extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
-        String dataPass1 = basePathForInput + "with_partition/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "with_partition/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "with_partition/no_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_partition/no_version/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataForWithPartition(dataPass1);
         // 2. Execute plans and verify results
@@ -253,8 +256,8 @@ class UnitemporalSnapshotTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
 
         // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
-        String dataPass2 = basePathForInput + "with_partition/staging_data_pass2.csv";
-        String expectedDataPass2 = basePathForExpected + "with_partition/expected_pass2.csv";
+        String dataPass2 = basePathForInput + "with_partition/no_version/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_partition/no_version/expected_pass2.csv";
         // 1. Load staging table
         loadStagingDataForWithPartition(dataPass2);
         // 2. Execute plans and verify results
@@ -265,8 +268,8 @@ class UnitemporalSnapshotTest extends BaseTest
 
         options = options.withCleanupStagingData(true);
 
-        String dataPass3 = basePathForInput + "with_partition/staging_data_pass3.csv";
-        String expectedDataPass3 = basePathForExpected + "with_partition/expected_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_partition/no_version/expected_pass3.csv";
         // 1. Load Staging table
         loadStagingDataForWithPartition(dataPass3);
         // 2. Execute plans and verify results
@@ -346,8 +349,8 @@ class UnitemporalSnapshotTest extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform unitemporal snapshot milestoning With Clean Staging Table ------------------------
-        String dataPass1 = basePathForInput + "with_partition/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "with_partition/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "with_partition/no_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_partition/no_version/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataForWithPartition(dataPass1);
         // 2. Execute plans and verify results
@@ -384,8 +387,8 @@ class UnitemporalSnapshotTest extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
         // ------------ Perform unitemporal snapshot milestoning With Clean Staging Table ------------------------
-        String dataPass1 = basePathForInput + "with_partition/staging_data_pass1.csv";
-        String expectedDataPass1 = basePathForExpected + "with_partition/expected_pass1.csv";
+        String dataPass1 = basePathForInput + "with_partition/no_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_partition/no_version/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataForWithPartition(dataPass1);
         // 2. Execute plans and verify results
@@ -394,5 +397,195 @@ class UnitemporalSnapshotTest extends BaseTest
         // 3. Assert that the staging table is truncated
         List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
         Assertions.assertEquals(stagingTableList.size(), 6);
+    }
+
+    /*
+    Scenario: Test milestoning Logic with max version and without Partition when staging table pre populated
+    */
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicMaxVersionWithoutPartitionAllowDuplicates() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getStagingTableWithNonPkVersion();
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        createStagingTableWithoutPks(stagingTable);
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(DigestBasedResolver.builder().build())
+                .performStageVersioning(true)
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "without_partition/max_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "without_partition/max_version/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(6, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+        // 3. Assert that the staging table is NOT truncated
+        List<Map<String, Object>> stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 6);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "without_partition/max_version/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "without_partition/max_version/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(4, 0, 1, 2, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
+        options = options.withCleanupStagingData(true);
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "without_partition/max_version/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataWithVersion(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 4);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+    }
+
+    /*
+    Scenario: Test milestoning Logic with max version and with Partition when staging table pre populated
+    */
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicMaxVersionWithPartitionFilterDuplicates() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceWithVersionStagingTable();
+
+        String[] schema = new String[]{dateName, entityName, priceName, volumeName, digestName, versionName, batchIdInName, batchIdOutName, batchTimeInName, batchTimeOutName};
+
+        // Create staging table
+        createStagingTableWithoutPks(stagingTable);
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .addAllPartitionFields(Collections.singletonList(dateName))
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(DigestBasedResolver.builder().build())
+                .performStageVersioning(true)
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_partition/max_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_partition/max_version/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithVersion(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(9, 0, 6, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_partition/max_version/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_partition/max_version/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithVersion(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(4, 0, 1, 1, 1);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
+        options = options.withCleanupStagingData(true);
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
+        String expectedDataPass3 = basePathForExpected + "with_partition/max_version/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataForWithPartitionWithVersion(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
+    }
+
+    /*
+    Scenario: Test milestoning Logic with max version and with Partition when staging table pre populated with upper case
+    */
+    @Test
+    void testUnitemporalSnapshotMilestoningLogicMaxVersionWithPartitionFilterDuplicatesUpperCase() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        DatasetDefinition stagingTable = TestUtils.getEntityPriceWithVersionStagingTable();
+
+        String[] schema = new String[]{dateName.toUpperCase(), entityName.toUpperCase(), priceName.toUpperCase(), volumeName.toUpperCase(), digestName.toUpperCase(), versionName.toUpperCase(), batchIdInName.toUpperCase(), batchIdOutName.toUpperCase(), batchTimeInName.toUpperCase(), batchTimeOutName.toUpperCase()};
+
+        // Create staging table
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"DATE\" DATE NOT NULL,\"ENTITY\" VARCHAR NOT NULL,\"PRICE\" DECIMAL(20,2),\"VOLUME\" BIGINT,\"DIGEST\" VARCHAR,\"VERSION\" INTEGER)");
+
+        UnitemporalSnapshot ingestMode = UnitemporalSnapshot.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchIdAndDateTime.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .dateTimeInName(batchTimeInName)
+                .dateTimeOutName(batchTimeOutName)
+                .build())
+            .addAllPartitionFields(Collections.singletonList(dateName))
+            .versioningStrategy(MaxVersionStrategy.builder()
+                .versioningField(versionName)
+                .mergeDataVersionResolver(DigestBasedResolver.builder().build())
+                .performStageVersioning(true)
+                .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePathForInput + "with_partition/max_version/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "with_partition/max_version/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithVersionInUpperCase(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(9, 0, 6, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass2 ------------------------
+        String dataPass2 = basePathForInput + "with_partition/max_version/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "with_partition/max_version/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataForWithPartitionWithVersionInUpperCase(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(4, 0, 1, 1, 1);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_01);
+
+        // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
+        options = options.withCleanupStagingData(true);
+        String dataPass3 = "src/test/resources/data/empty_file.csv";;
+        String expectedDataPass3 = basePathForExpected + "with_partition/max_version/expected_pass3.csv";
+        // 1. Load Staging table
+        loadStagingDataForWithPartitionWithVersionInUpperCase(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = createExpectedStatsMap(0, 0, 0, 0, 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats, fixedClock_2000_01_01);
     }
 }

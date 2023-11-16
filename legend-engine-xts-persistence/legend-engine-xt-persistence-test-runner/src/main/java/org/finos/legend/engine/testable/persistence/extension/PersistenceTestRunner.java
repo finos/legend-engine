@@ -194,7 +194,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets);
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets).get(0);
         return result;
     }
 
@@ -212,7 +212,7 @@ public class PersistenceTestRunner implements TestRunner
                 .enableSchemaEvolution(SCHEMA_EVOLUTION_DEFAULT)
                 .build();
 
-        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets);
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(connection), enrichedDatasets).get(0);
         return result;
     }
 

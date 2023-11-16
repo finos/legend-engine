@@ -19,11 +19,11 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppDeploymentTool;
-import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppArtifact;
-import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppDeploymentConfiguration;
-import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppContent;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
@@ -120,21 +120,38 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         }
     }
 
-    public java.sql.Connection getDeploymentConnection(Identity identity, RelationalDatabaseConnection connection)
+    public Connection getDeploymentConnection(Identity identity, RelationalDatabaseConnection connection)
     {
         return this.connectionManager.getDatabaseConnection(identity, (DatabaseConnection) connection);
     }
 
-    public void deployImpl(Connection jdbcConnection, SnowflakeAppContent context) throws Exception
+    public void deployImpl(Connection jdbcConnection, SnowflakeAppContent context) throws SQLException
     {
-        Statement statement = jdbcConnection.createStatement();
-        String deploymentTableName = this.getDeploymentTableName(jdbcConnection);
+        String catalogName = jdbcConnection.getCatalog();
+        MutableList<String> statements = generateStatements(catalogName, context);
+        for (String s: statements)
+        {
+            Statement statement = jdbcConnection.createStatement();
+            statement.execute(s);
+        }
+    }
 
-        //String createTableSQL = String.format("create table %s (id INTEGER, message VARCHAR(1000)) if not exists", deploymentTableName);
-        //boolean createTableStatus = statement.execute(createTableSQL);
-        String insertSQL = String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER, DESCRIPTION) values('%s', '%s', '%s', '%s', '%s', '%s')",
-                deploymentTableName, context.creationTime, context.applicationName, context.sqlExpressions.getFirst(), context.getVersionInfo(), Lists.mutable.withAll(context.owners).makeString(","), context.description);
-        statement.execute(insertSQL);
+    public MutableList<String> generateStatements(String catalogName, SnowflakeAppContent content)
+    {
+        MutableList<String> statements = Lists.mutable.empty();
+        if (content.type.equals("STAGE"))
+        {
+            String deploymentTableName = String.format("%s.%s." + deploymentTable, catalogName, deploymentSchema);
+            statements.add(String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER, DESCRIPTION) values('%s', '%s', '%s', '%s', '%s', '%s');",
+                    deploymentTableName, content.creationTime, content.applicationName, content.sqlExpressions.getFirst(), content.getVersionInfo(), Lists.mutable.withAll(content.owners).makeString(","), content.description));
+
+        }
+        else
+        {
+            statements.add(String.format("CREATE OR REPLACE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
+            statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
+        }
+        return statements;
     }
 
     public String getDeploymentTableName(Connection jdbcConnection) throws SQLException
@@ -143,7 +160,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         return String.format("%s.%s." + deploymentTable, catalogName, deploymentSchema);
     }
 
-    public java.sql.Connection getDeploymentConnection(Identity identity, SnowflakeAppArtifact artifact)
+    public Connection getDeploymentConnection(Identity identity, SnowflakeAppArtifact artifact)
     {
         RelationalDatabaseConnection connection = extractConnectionFromArtifact(artifact);
         return this.connectionManager.getDatabaseConnection(identity, connection);

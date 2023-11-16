@@ -27,6 +27,8 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Map;
@@ -40,7 +42,7 @@ public class DefaultGraphQLDirectiveExtension implements IGraphQLDirectiveExtens
     }
 
     @Override
-    public ExecutionPlan planDirective(Document document, PureModel pureModel, String rootClassPath, String mappingPath, String runtimePath, RichIterable<? extends Root_meta_pure_extension_Extension> _extensions, Iterable<? extends PlanTransformer> transformers)
+    public ExecutionPlan planDirective(Document document, PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Mapping mapping, Root_meta_core_runtime_Runtime runtime, RichIterable<? extends Root_meta_pure_extension_Extension> _extensions, Iterable<? extends PlanTransformer> transformers)
     {
         return null;
     }

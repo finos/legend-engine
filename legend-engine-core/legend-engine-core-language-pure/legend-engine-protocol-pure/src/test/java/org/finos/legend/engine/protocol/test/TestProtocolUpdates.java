@@ -24,6 +24,6 @@ public class TestProtocolUpdates
     public void testProductionProtocolVersion()
     {
         String productionProtocolVersion = PureClientVersions.production;
-        Assert.assertEquals("v1_32_0", productionProtocolVersion);
+        Assert.assertEquals("v1_33_0", productionProtocolVersion);
     }
 }

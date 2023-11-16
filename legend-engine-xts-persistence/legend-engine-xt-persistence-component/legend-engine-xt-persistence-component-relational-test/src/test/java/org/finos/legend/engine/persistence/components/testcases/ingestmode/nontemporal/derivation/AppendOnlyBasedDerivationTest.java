@@ -20,7 +20,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.scenarios.AppendOnlyScenarios;
 import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.junit.jupiter.api.Assertions;
@@ -33,9 +32,9 @@ public class AppendOnlyBasedDerivationTest
     AppendOnlyScenarios scenarios = new AppendOnlyScenarios();
 
     @Test
-    void testAppendOnlyAllowDuplicatesNoAuditing()
+    void testAppendOnlyAllowDuplicatesNoAuditingNoVersioningNoFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_NO_AUDITING();
+        TestScenario scenario = scenarios.NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField().get());
@@ -44,50 +43,14 @@ public class AppendOnlyBasedDerivationTest
     }
 
     @Test
-    void testAppendOnlyAllowDuplicatesWithAuditing()
+    void testAppendOnlyFailOnDuplicatesWithAuditingAllVersionNoFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_WITH_AUDITING();
-        assertDerivedMainDataset(scenario);
-        AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField().get());
-        Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
-        DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
-        Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof AllowDuplicates);
-    }
-
-    @Test
-    void testAppendOnlyAllowDuplicatesWithAuditingWithDataSplit()
-    {
-        TestScenario scenario = scenarios.ALLOW_DUPLICATES_WITH_AUDITING__WITH_DATASPLIT();
+        // Auditing column is a PK
+        TestScenario scenario = scenarios.WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
-        Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
-        DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
-        Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof AllowDuplicates);
-    }
-
-    @Test
-    void testAppendOnlyFailOnDuplicatesNoAuditing()
-    {
-        TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_NO_AUDITING();
-        assertDerivedMainDataset(scenario);
-        AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField().get());
-        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof FailOnDuplicates);
-    }
-
-    @Test
-    void testAppendOnlyFailOnDuplicatesWithAuditing()
-    {
-        TestScenario scenario = scenarios.FAIL_ON_DUPLICATES_WITH_AUDITING();
-        assertDerivedMainDataset(scenario);
-        AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
@@ -95,51 +58,16 @@ public class AppendOnlyBasedDerivationTest
     }
 
     @Test
-    void testAppendOnlyFilterDuplicatesNoAuditing()
+    void testAppendOnlyAllowDuplicatesWithAuditingNoVersioningNoFilterExistingRecords()
     {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_NO_AUDITING();
-        assertDerivedMainDataset(scenario);
-        AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField().get());
-        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof FilterDuplicates);
-    }
-
-    @Test
-    void testAppendOnlyFilterDuplicatesNoAuditingWithDataSplit()
-    {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_NO_AUDITING_WITH_DATA_SPLIT();
-        assertDerivedMainDataset(scenario);
-        AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField().get());
-        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof FilterDuplicates);
-    }
-
-    @Test
-    void testAppendOnlyFilterDuplicatesWithAuditing()
-    {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING();
+        // Auditing column is not a PK
+        TestScenario scenario = scenarios.WITH_AUDITING__ALLOW_DUPLICATES__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS();
         assertDerivedMainDataset(scenario);
         AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertEquals("DIGEST", mode.digestField().get());
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof FilterDuplicates);
-    }
-
-    @Test
-    void testAppendOnlyFilterDuplicatesWithAuditingWithDataSplit()
-    {
-        TestScenario scenario = scenarios.FILTER_DUPLICATES_WITH_AUDITING_WITH_DATA_SPLIT();
-        assertDerivedMainDataset(scenario);
-        AppendOnly mode = (AppendOnly) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertEquals("DIGEST", mode.digestField().get());
-        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
-        Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
-        DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
-        Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertTrue(mode.deduplicationStrategy() instanceof FilterDuplicates);
+        Assertions.assertTrue(mode.deduplicationStrategy() instanceof AllowDuplicates);
     }
 }

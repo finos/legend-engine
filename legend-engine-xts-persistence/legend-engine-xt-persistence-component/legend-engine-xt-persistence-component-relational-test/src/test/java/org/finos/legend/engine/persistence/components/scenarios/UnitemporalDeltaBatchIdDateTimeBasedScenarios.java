@@ -16,11 +16,14 @@ package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
 {
@@ -30,16 +33,11 @@ public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
     Variables:
     1) transactionMilestoning = BatchIdAndDateTime
     2) deleteIndicator : Enabled, Disabled
-    3) DataSplit: Enabled, Disabled
-
-    Valid Combinations:
-    1) No Delete Ind, No Data Splits
-    2) No Delete Ind, With Data Splits
-    3) With Delete Ind, No Data Splits
-    4) With Delete Ind, With Data Splits
+    3) Deduplication: Allow duplicates, Filter duplicates, Fail on duplicates
+    4) Versioning: No Versioning, Max Versioning, All Versioning
     */
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__NO_DEL_IND__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -53,23 +51,24 @@ public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__NO_DEL_IND__WITH_DATA_SPLITS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__NO_DEL_IND__FILTER_DUPS__ALL_VERSION_WITHOUT_PERFORM()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).performStageVersioning(false).build())
                 .build();
 
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_DEL_IND_MULTI_VALUES__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_DEL_IND_MULTI_VALUES__NO_DEDUP_NO_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -88,7 +87,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithDeleteIndicator, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__NO_DATA_SPLITS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__NO_DEDUP__NO_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -107,11 +106,10 @@ public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithBooleanDeleteIndicator, ingestMode);
     }
 
-    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__WITH_DATA_SPLITS()
+    public TestScenario BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__FAIL_ON_DUP__ALL_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(BatchIdAndDateTime.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
@@ -122,9 +120,11 @@ public class UnitemporalDeltaBatchIdDateTimeBasedScenarios extends BaseTest
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).performStageVersioning(true).build())
                 .build();
 
-        return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBatchIdAndTime, stagingTableWithDeleteIndicator, ingestMode);
     }
 
 }

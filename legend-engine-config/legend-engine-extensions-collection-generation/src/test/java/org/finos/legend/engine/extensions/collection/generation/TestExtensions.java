@@ -28,8 +28,12 @@ import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtens
 import org.finos.legend.engine.generation.DataSpaceAnalyticsArtifactGenerationExtension;
 import org.finos.legend.engine.generation.OpenApiArtifactGenerationExtension;
 import org.finos.legend.engine.generation.SearchDocumentArtifactGenerationExtension;
+import org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph.BigQueryFunctionCompilerExtension;
+import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFunctionGrammarParserExtension;
+import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionCompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
@@ -48,6 +52,7 @@ import org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.
 import org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.to.PersistenceRelationalComposerExtension;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.from.ConnectionParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
@@ -57,6 +62,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarPar
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.ConnectionGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension;
@@ -77,7 +83,13 @@ import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGram
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
-import org.finos.legend.engine.protocol.mongodb.schema.metamodel.MongoDBPureProtocolExtension;
+import org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension;
+import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
+import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
+import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
+import org.finos.legend.engine.testable.mapping.extension.MappingTestableRunnerExtension;
+import org.finos.legend.engine.testable.persistence.extension.PersistenceTestableRunnerExtension;
+import org.finos.legend.engine.testable.service.extension.ServiceTestableRunnerExtension;
 import org.finos.legend.pure.code.core.ElasticsearchPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -132,7 +144,7 @@ public class TestExtensions
     @Test
     public void testPlanGeneratorExtensionArePresent()
     {
-        assertHasExtensions(getExpectedPlanGeneratorExtensions(), PureCoreExtension.class);
+        assertHasExtensions(getExpectedPureExtensions(), PureCoreExtension.class);
     }
 
     @Test
@@ -157,6 +169,18 @@ public class TestExtensions
     public void testExpectedEntitlementServiceExtensionsArePresent()
     {
         assertHasExtensions(EntitlementServiceExtensionLoader.extensions(), getExpectedEntitlementServiceExtensions(), EntitlementServiceExtension.class);
+    }
+
+    @Test
+    public void testExpectedPlanGeneratorExtension()
+    {
+        assertHasExtensions(getExpectedPlanGeneratorExtensions(), PlanGeneratorExtension.class);
+    }
+
+    @Test
+    public void testExpectedTestableRunnerExtension()
+    {
+        assertHasExtensions(getExpectedTestableExtensions(), TestableRunnerExtension.class);
     }
 
     @Test
@@ -266,7 +290,9 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
                 .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.ConnectionProtocolExtension.class)
                 .with(SnowflakeAppProtocolExtension.class)
+                .with(BigQueryFunctionProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension.class)
@@ -291,6 +317,22 @@ public class TestExtensions
                 ;
     }
 
+    protected Iterable<? extends Class<? extends TestableRunnerExtension>> getExpectedTestableExtensions()
+    {
+        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
+        return Lists.mutable.<Class<? extends TestableRunnerExtension>>empty()
+                .with(ServiceTestableRunnerExtension.class)
+                .with(MappingTestableRunnerExtension.class)
+                .with(PersistenceTestableRunnerExtension.class);
+    }
+
+    protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()
+    {
+        return Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
+                .with(LegendPlanGeneratorExtension.class);
+
+    }
+
     protected Iterable<? extends Class<? extends GenerationExtension>> getExpectedGenerationExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
@@ -310,7 +352,9 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
                 .with(CorePureGrammarParser.class)
                 .with(DataSpaceParserExtension.class)
+                .with(ConnectionParserExtension.class)
                 .with(SnowflakeAppGrammarParserExtension.class)
+                .with(BigQueryFunctionGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
                 .with(ExternalFormatGrammarParserExtension.class)
                 .with(GenerationParserExtension.class)
@@ -336,7 +380,9 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureGrammarComposerExtension>>empty()
                 .with(CorePureGrammarComposer.class)
                 .with(DataSpaceGrammarComposerExtension.class)
+                .with(ConnectionGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
+                .with(BigQueryFunctionGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)
                 .with(ExternalFormatGrammarComposerExtension.class)
                 .with(GenerationGrammarComposerExtension.class)
@@ -368,7 +414,9 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends CompilerExtension>>empty()
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DiagramCompilerExtension.class)
                 .with(SnowflakeAppCompilerExtension.class)
+                .with(BigQueryFunctionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
+                .with(ConnectionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtensionImpl.class)
@@ -395,7 +443,7 @@ public class TestExtensions
                 ;
     }
 
-    protected Iterable<? extends Class<? extends PureCoreExtension>> getExpectedPlanGeneratorExtensions()
+    protected Iterable<? extends Class<? extends PureCoreExtension>> getExpectedPureExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureCoreExtension>>empty()
@@ -415,8 +463,7 @@ public class TestExtensions
                 .with(XMLJavaBindingPureCoreExtension.class)
                 .with(ServicePureCoreExtension.class)
                 .with(RelationalJavaBindingPureCoreExtension.class)
-                .with(ArrowPureCoreExtension.class)
-                ;
+                .with(ArrowPureCoreExtension.class);
     }
 
     protected Iterable<? extends Class<? extends ExternalFormatExtension<?>>> getExpectedExternalFormatExtensions()
@@ -478,6 +525,7 @@ public class TestExtensions
                 .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
                 .with("core_analytics_search")
+                .with("core_connection_metamodel")
                 .with("core_data_space")
                 .with("core_data_space_metamodel")
                 .with("core_diagram")
@@ -519,6 +567,7 @@ public class TestExtensions
                 .with("core_servicestore")
                 .with("core_authentication")
                 .with("core_snowflakeapp")
+                .with("core_bigqueryfunction")
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")

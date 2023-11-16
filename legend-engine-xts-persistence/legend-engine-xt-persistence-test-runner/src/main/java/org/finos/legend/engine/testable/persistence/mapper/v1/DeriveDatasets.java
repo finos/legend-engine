@@ -82,7 +82,8 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
         {
             enrichMainSchemaWithDigest();
         }
-        appendOnly.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema));
+        boolean baseSchemaHasPks = baseSchema.fields().stream().anyMatch(field -> field.primaryKey());
+        appendOnly.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema, baseSchemaHasPks));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -123,7 +124,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
 
         enrichMainSchemaWithDigest();
-        nontemporalDelta.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema));
+        nontemporalDelta.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema, true));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -133,8 +134,8 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     public Datasets visit(NontemporalSnapshot nontemporalSnapshot)
     {
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
-
-        nontemporalSnapshot.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema));
+        boolean baseSchemaHasPks = baseSchema.fields().stream().anyMatch(field -> field.primaryKey());
+        nontemporalSnapshot.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema, baseSchemaHasPks));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
