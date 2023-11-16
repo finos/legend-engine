@@ -21,18 +21,17 @@ import org.eclipse.collections.api.map.ConcurrentMutableMap;
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.connection.Authenticator;
 import org.finos.legend.connection.ConnectionManager;
-import org.finos.legend.connection.Database;
-import org.finos.legend.connection.DatabaseManager;
+import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.RelationalDatabaseManager;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
+import org.finos.legend.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 import javax.sql.DataSource;
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -50,7 +49,7 @@ public class JDBCConnectionManager implements ConnectionManager
     private static final int HIKARICP_DEFAULT_MAX_POOL_SIZE = 100;
     private static final int HIKARICP_DEFAULT_MIN_POOL_SIZE = 0;
 
-    private static final ConcurrentHashMap<String, DatabaseManager> managerByName = ConcurrentHashMap.newMap();
+    private static final ConcurrentHashMap<String, RelationalDatabaseManager> managerByName = ConcurrentHashMap.newMap();
     private static final AtomicBoolean isInitialized = new AtomicBoolean();
 
     private static JDBCConnectionManager INSTANCE;
@@ -79,7 +78,7 @@ public class JDBCConnectionManager implements ConnectionManager
             {
                 if (!isInitialized.get())
                 {
-                    for (DatabaseManager manager : ServiceLoader.load(DatabaseManager.class))
+                    for (RelationalDatabaseManager manager : ServiceLoader.load(RelationalDatabaseManager.class))
                     {
                         manager.getIds().forEach(i -> managerByName.put(i, manager));
                     }
@@ -95,24 +94,24 @@ public class JDBCConnectionManager implements ConnectionManager
         JDBCConnectionManager.setup();
     }
 
-    public Connection getConnection(Database database,
-                                    String host,
-                                    int port,
-                                    String databaseName,
-                                    Properties connectionProperties,
-                                    ConnectionPoolConfig connectionPoolConfig,
-                                    Function<Credential, Properties> authenticationPropertiesSupplier,
-                                    Authenticator authenticator,
-                                    Identity identity
+    public java.sql.Connection getConnection(DatabaseType databaseType,
+                                             String host,
+                                             int port,
+                                             String databaseName,
+                                             Properties connectionProperties,
+                                             ConnectionPoolConfig connectionPoolConfig,
+                                             Function<Credential, Properties> authenticationPropertiesSupplier,
+                                             Authenticator authenticator,
+                                             Identity identity
     ) throws SQLException
     {
-        StoreInstance storeInstance = authenticator.getStoreInstance();
-        ConnectionSpecification connectionSpecification = storeInstance.getConnectionSpecification();
+        Connection connection = authenticator.getConnection();
+        ConnectionSpecification connectionSpecification = connection.getConnectionSpecification();
         AuthenticationConfiguration authenticationConfiguration = authenticator.getAuthenticationConfiguration();
         String poolName = getPoolName(identity, connectionSpecification, authenticationConfiguration);
 
         // TODO: @akphi - this is simplistic, we need to handle concurrency and errors
-        Supplier<HikariDataSource> dataSourceSupplier = () -> this.buildDataSource(database, host, port, databaseName, connectionProperties, connectionPoolConfig, authenticationPropertiesSupplier, authenticator, identity);
+        Supplier<HikariDataSource> dataSourceSupplier = () -> this.buildDataSource(databaseType, host, port, databaseName, connectionProperties, connectionPoolConfig, authenticationPropertiesSupplier, authenticator, identity);
         Function0<ConnectionPool> connectionPoolSupplier = () -> new ConnectionPool(dataSourceSupplier.get());
         ConnectionPool connectionPool = this.poolIndex.getIfAbsentPut(poolName, connectionPoolSupplier);
 
@@ -147,7 +146,7 @@ public class JDBCConnectionManager implements ConnectionManager
     }
 
     protected HikariDataSource buildDataSource(
-            Database database,
+            DatabaseType databaseType,
             String host,
             int port,
             String databaseName,
@@ -158,16 +157,16 @@ public class JDBCConnectionManager implements ConnectionManager
             Identity identity
     )
     {
-        StoreInstance storeInstance = authenticator.getStoreInstance();
-        ConnectionSpecification connectionSpecification = storeInstance.getConnectionSpecification();
+        Connection connection = authenticator.getConnection();
+        ConnectionSpecification connectionSpecification = connection.getConnectionSpecification();
         AuthenticationConfiguration authenticationConfiguration = authenticator.getAuthenticationConfiguration();
-        DatabaseManager databaseManager = getManagerForDatabase(database);
+        RelationalDatabaseManager relationalDatabaseManager = getManagerForDatabase(databaseType);
 
-        String jdbcUrl = databaseManager.buildURL(host, port, databaseName, connectionProperties);
+        String jdbcUrl = relationalDatabaseManager.buildURL(host, port, databaseName, connectionProperties);
         String poolName = getPoolName(identity, connectionSpecification, authenticationConfiguration);
 
         HikariConfig jdbcConfig = new HikariConfig();
-        jdbcConfig.setDriverClassName(databaseManager.getDriver());
+        jdbcConfig.setDriverClassName(relationalDatabaseManager.getDriver());
         jdbcConfig.setPoolName(poolName);
         jdbcConfig.setJdbcUrl(jdbcUrl);
 
@@ -184,7 +183,7 @@ public class JDBCConnectionManager implements ConnectionManager
         jdbcConfig.addDataSourceProperty("prepStmtCacheSqlLimit", 0);
         jdbcConfig.addDataSourceProperty("useServerPrepStmts", false);
 
-        jdbcConfig.setDataSource(new DataSourceWrapper(jdbcUrl, connectionProperties, databaseManager, authenticationPropertiesSupplier, authenticator, identity));
+        jdbcConfig.setDataSource(new DataSourceWrapper(jdbcUrl, connectionProperties, relationalDatabaseManager, authenticationPropertiesSupplier, authenticator, identity));
         return new HikariDataSource(jdbcConfig);
     }
 
@@ -213,16 +212,16 @@ public class JDBCConnectionManager implements ConnectionManager
         );
     }
 
-    private static DatabaseManager getManagerForDatabase(Database database)
+    private static RelationalDatabaseManager getManagerForDatabase(DatabaseType databaseType)
     {
         if (!isInitialized.get())
         {
             throw new IllegalStateException("JDBC connection manager has not been configured properly");
         }
-        DatabaseManager manager = managerByName.get(database.getLabel());
+        RelationalDatabaseManager manager = managerByName.get(databaseType.getIdentifier());
         if (manager == null)
         {
-            throw new RuntimeException(String.format("Can't find any matching managers for database type '%s'", database.getLabel()));
+            throw new RuntimeException(String.format("Can't find any matching managers for database type '%s'", databaseType.getIdentifier()));
         }
         return manager;
     }
@@ -334,7 +333,7 @@ public class JDBCConnectionManager implements ConnectionManager
 
         public DataSourceWrapper(
                 String url, Properties connectionProperties,
-                DatabaseManager databaseManager,
+                RelationalDatabaseManager relationalDatabaseManager,
                 Function<Credential, Properties> authenticationPropertiesSupplier,
                 Authenticator authenticator,
                 Identity identity
@@ -344,7 +343,7 @@ public class JDBCConnectionManager implements ConnectionManager
             this.connectionProperties = connectionProperties;
             try
             {
-                this.driver = (Driver) Class.forName(databaseManager.getDriver()).getDeclaredConstructor().newInstance();
+                this.driver = (Driver) Class.forName(relationalDatabaseManager.getDriver()).getDeclaredConstructor().newInstance();
             }
             catch (Exception e)
             {
@@ -356,7 +355,7 @@ public class JDBCConnectionManager implements ConnectionManager
         }
 
         @Override
-        public Connection getConnection() throws SQLException
+        public java.sql.Connection getConnection() throws SQLException
         {
             Properties properties = new Properties();
             properties.putAll(this.connectionProperties);
@@ -377,7 +376,7 @@ public class JDBCConnectionManager implements ConnectionManager
         }
 
         @Override
-        public Connection getConnection(String username, String password) throws SQLException
+        public java.sql.Connection getConnection(String username, String password) throws SQLException
         {
             throw new RuntimeException();
         }

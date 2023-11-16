@@ -15,31 +15,28 @@
 package org.finos.legend.connection.impl;
 
 import org.finos.legend.connection.Authenticator;
-import org.finos.legend.connection.DatabaseType;
-import org.finos.legend.connection.JDBCConnectionBuilder;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
+import org.finos.legend.connection.Connection;
+import org.finos.legend.connection.DatabaseSupport;
+import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PrivateKeyCredential;
 
-import java.sql.Connection;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Function;
 
-import static org.finos.legend.connection.impl.SnowflakeDatabaseManager.*;
+import static org.finos.legend.connection.impl.SnowflakeRelationalDatabaseManager.*;
 
 public class SnowflakeConnectionBuilder
 {
     public static class WithKeyPair extends JDBCConnectionBuilder<PrivateKeyCredential, SnowflakeConnectionSpecification>
     {
         @Override
-        public Connection getConnection(SnowflakeConnectionSpecification connectionSpecification, Authenticator<PrivateKeyCredential> authenticator, Identity identity) throws Exception
+        public java.sql.Connection getConnection(SnowflakeConnectionSpecification connectionSpecification, Authenticator<PrivateKeyCredential> authenticator, Identity identity) throws Exception
         {
-            StoreInstance storeInstance = authenticator.getStoreInstance();
-            RelationalDatabaseStoreSupport.cast(storeInstance.getStoreSupport(), DatabaseType.SNOWFLAKE);
+            Connection connection = authenticator.getConnection();
+            DatabaseSupport.verifyDatabaseType(connection.getDatabaseSupport(), RelationalDatabaseType.SNOWFLAKE);
 
             Properties connectionProperties = generateJDBCConnectionProperties(connectionSpecification);
             Function<Credential, Properties> authenticationPropertiesSupplier = cred ->
@@ -51,7 +48,7 @@ public class SnowflakeConnectionBuilder
                 return properties;
             };
 
-            return this.getConnectionManager().getConnection(DatabaseType.SNOWFLAKE, null, 0, connectionSpecification.databaseName, connectionProperties, this.getConnectionPoolConfig(), authenticationPropertiesSupplier, authenticator, identity);
+            return this.getConnectionManager().getConnection(RelationalDatabaseType.SNOWFLAKE, null, 0, connectionSpecification.databaseName, connectionProperties, this.getConnectionPoolConfig(), authenticationPropertiesSupplier, authenticator, identity);
         }
     }
 

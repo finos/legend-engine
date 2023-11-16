@@ -129,7 +129,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
+            <artifactId>legend-engine-xt-connection-factory</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>org.bouncycastle</groupId>

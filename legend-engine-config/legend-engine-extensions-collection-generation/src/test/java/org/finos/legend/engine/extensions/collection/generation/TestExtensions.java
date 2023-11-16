@@ -33,6 +33,7 @@ import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFu
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionCompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
@@ -51,6 +52,7 @@ import org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.
 import org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.to.PersistenceRelationalComposerExtension;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.from.ServiceParserExtension;
 import org.finos.legend.engine.language.pure.dsl.service.grammar.to.ServiceGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.from.ConnectionParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.CorePureGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.DiagramParserExtension;
@@ -60,6 +62,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarPar
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension;
+import org.finos.legend.engine.language.pure.grammar.to.ConnectionGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension;
@@ -269,6 +272,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
                 .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
+                .with(org.finos.legend.engine.protocol.pure.v1.ConnectionProtocolExtension.class)
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
@@ -314,6 +318,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureGrammarParserExtension>>empty()
                 .with(CorePureGrammarParser.class)
                 .with(DataSpaceParserExtension.class)
+                .with(ConnectionParserExtension.class)
                 .with(SnowflakeAppGrammarParserExtension.class)
                 .with(BigQueryFunctionGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
@@ -341,6 +346,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureGrammarComposerExtension>>empty()
                 .with(CorePureGrammarComposer.class)
                 .with(DataSpaceGrammarComposerExtension.class)
+                .with(ConnectionGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)
@@ -376,6 +382,7 @@ public class TestExtensions
                 .with(SnowflakeAppCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
+                .with(ConnectionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.CoreCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtensionImpl.class)
@@ -485,6 +492,7 @@ public class TestExtensions
                 .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
                 .with("core_analytics_search")
+                .with("core_connection_metamodel")
                 .with("core_data_space")
                 .with("core_data_space_metamodel")
                 .with("core_diagram")

@@ -17,8 +17,10 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.RelationResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CreateAndPopulateTempTableExecutionNode;
@@ -184,6 +186,11 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(BusinessMilestoning.class, "businessMilestoning")
                         .withSubtype(BusinessSnapshotMilestoning.class, "businessSnapshotMilestoning")
                         .withSubtype(ProcessingMilestoning.class, "processingMilestoning")
+                        .build(),
+
+                // Connection Specification
+                ProtocolSubTypeInfo.newBuilder(ConnectionSpecification.class)
+                        .withSubtype(StaticJDBCConnectionSpecification.class, "staticJDBC")
                         .build()
         ));
     }

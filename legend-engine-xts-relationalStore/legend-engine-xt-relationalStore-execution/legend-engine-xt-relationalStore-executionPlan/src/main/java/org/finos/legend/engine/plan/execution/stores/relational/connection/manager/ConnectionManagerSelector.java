@@ -155,7 +155,7 @@ public class ConnectionManagerSelector
                     {
                         try
                         {
-                            return this.connectionFactory.getConnection(identity, connectionFactoryMaterial.storeInstance, connectionFactoryMaterial.authenticationConfiguration);
+                            return this.connectionFactory.getConnection(identity, connectionFactoryMaterial.connection, connectionFactoryMaterial.authenticationConfiguration);
                         }
                         catch (Exception exception)
                         {
