@@ -1,17 +1,17 @@
 # Temporary Tables 
 In some cases, Legend will create and use temporary tables to execute complex queries. 
 
-To do so, the databaseType user used to make the databaseType connection has to be configured with databaseType privileges as follows. 
+To do so, the database user used to make the database connection has to be configured with database privileges as follows. 
 
 __Database__
 
-* A databaseType named `LEGEND_TEMP_DB` must exist 
-* The databaseType user/role must be granted ```USAGE``` privilege on the databaseType 
+* A database named `LEGEND_TEMP_DB` must exist 
+* The database user/role must be granted ```USAGE``` privilege on the database 
 
 __Schema__
 
-* A schema named `LEGEND_TEMP_SCHEMA` must exist in the databaseType `LEGEND_TEMP_DB`
-* The databaseType user/role must be granted ```USAGE``` privilege on the schema 
+* A schema named `LEGEND_TEMP_SCHEMA` must exist in the database `LEGEND_TEMP_DB`
+* The database user/role must be granted ```USAGE``` privilege on the schema 
 
 ```
 
@@ -23,7 +23,7 @@ ACCOUNTADMIN	LEGEND_INTEGRATION_ROLE1    LEGEND_TEMP_DB      NULL               
 ACCOUNTADMIN	LEGEND_INTEGRATION_ROLE1    LEGEND_TEMP_DB      LEGEND_TEMP_SCHEMA  NULL        SCHEMA          USAGE	        NO	            
 ```
 
-In a future release, the temp table behavior will be changed to allow temporary databaseType names/schemas to be configured in the connection grammar (in the model). 
+In a future release, the temp table behavior will be changed to allow temporary database names/schemas to be configured in the connection grammar (in the model). 
 
 # Temporary Stages
 

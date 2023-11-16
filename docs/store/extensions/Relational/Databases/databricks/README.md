@@ -58,7 +58,7 @@ databricks.api.token = dapibd0d233ddaXXXXXXXXXXXXXXX
 
 ### Frontend
 
-Create a new databaseType source of type `Databricks`, and report information of your newly created cluster as follows. 
+Create a new database source of type `Databricks`, and report information of your newly created cluster as follows. 
 Please note the authentication layer that now expects the property value set in our vault configuration (`databricks.api.token`).
 
 ![lg-store-create.png](images/lg-store-create.png)

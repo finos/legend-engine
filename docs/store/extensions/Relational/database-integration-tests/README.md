@@ -10,29 +10,29 @@ See the summary printed on latest run.
 
 **Individual Databases Connectivity Tests**
 
-[BigQuery](https://github.com/finos/legend-engine/actions/workflows/databaseType-bigquery-integration-test.yml)
-&emsp; [Databricks](https://github.com/finos/legend-engine/actions/workflows/databaseType-databricks-integration-test.yml)
-&emsp; [MSSqlServer](https://github.com/finos/legend-engine/actions/workflows/databaseType-mssqlserver-integration-test.yml)
+[BigQuery](https://github.com/finos/legend-engine/actions/workflows/database-bigquery-integration-test.yml)
+&emsp; [Databricks](https://github.com/finos/legend-engine/actions/workflows/database-databricks-integration-test.yml)
+&emsp; [MSSqlServer](https://github.com/finos/legend-engine/actions/workflows/database-mssqlserver-integration-test.yml)
 
-[Postgres](https://github.com/finos/legend-engine/actions/workflows/databaseType-postgresql-integration-test.yml)
-&emsp; [Redshift](https://github.com/finos/legend-engine/actions/workflows/databaseType-redshift-integration-test.yml)
-&emsp; [Snowflake](https://github.com/finos/legend-engine/actions/workflows/databaseType-snowflake-integration-test.yml)
+[Postgres](https://github.com/finos/legend-engine/actions/workflows/database-postgresql-integration-test.yml)
+&emsp; [Redshift](https://github.com/finos/legend-engine/actions/workflows/database-redshift-integration-test.yml)
+&emsp; [Snowflake](https://github.com/finos/legend-engine/actions/workflows/database-snowflake-integration-test.yml)
 
-[Spanner](https://github.com/finos/legend-engine/actions/workflows/databaseType-spanner-integration-test.yml)
-&emsp; [Athena](https://github.com/finos/legend-engine/actions/workflows/databaseType-athena-integration-test.yml)
+[Spanner](https://github.com/finos/legend-engine/actions/workflows/database-spanner-integration-test.yml)
+&emsp; [Athena](https://github.com/finos/legend-engine/actions/workflows/database-athena-integration-test.yml)
 
 **Individual Databases Sql Generation and Execution Tests**
 
-[BigQuery](https://github.com/finos/legend-engine/actions/workflows/databaseType-bigquery-sql-generation-integration-test.yml)
-&emsp; [Databricks](https://github.com/finos/legend-engine/actions/workflows/databaseType-databricks-sql-generation-integration-test.yml)
-&emsp; [MSSqlServer](https://github.com/finos/legend-engine/actions/workflows/databaseType-mssqlserver-sql-generation-integration-test.yml)
+[BigQuery](https://github.com/finos/legend-engine/actions/workflows/database-bigquery-sql-generation-integration-test.yml)
+&emsp; [Databricks](https://github.com/finos/legend-engine/actions/workflows/database-databricks-sql-generation-integration-test.yml)
+&emsp; [MSSqlServer](https://github.com/finos/legend-engine/actions/workflows/database-mssqlserver-sql-generation-integration-test.yml)
 
-[Postgres](https://github.com/finos/legend-engine/actions/workflows/databaseType-postgresql-sql-generation-integration-test.yml)
-&emsp; [Redshift](https://github.com/finos/legend-engine/actions/workflows/databaseType-redshift-sql-generation-integration-test.yml)
-&emsp; [Snowflake](https://github.com/finos/legend-engine/actions/workflows/databaseType-snowflake-sql-generation-integration-test.yml)
+[Postgres](https://github.com/finos/legend-engine/actions/workflows/database-postgresql-sql-generation-integration-test.yml)
+&emsp; [Redshift](https://github.com/finos/legend-engine/actions/workflows/database-redshift-sql-generation-integration-test.yml)
+&emsp; [Snowflake](https://github.com/finos/legend-engine/actions/workflows/database-snowflake-sql-generation-integration-test.yml)
 
-[Spanner](https://github.com/finos/legend-engine/actions/workflows/databaseType-spanner-sql-generation-integration-test.yml)
-&emsp; [Athena](https://github.com/finos/legend-engine/actions/workflows/databaseType-athena-sql-generation-integration-test.yml)
+[Spanner](https://github.com/finos/legend-engine/actions/workflows/database-spanner-sql-generation-integration-test.yml)
+&emsp; [Athena](https://github.com/finos/legend-engine/actions/workflows/database-athena-sql-generation-integration-test.yml)
 
 **Reasons for Failing Tests**
 
@@ -76,4 +76,4 @@ You should use this procedure only if a lot of users depend on that feature, and
 
     For connectivity failures due to incorrectly configured workflow files, make the needed changes, and get them merged to master.
 
-    Read this tutorial section on [executing against databaseType from pure ide](../new-connector-tutorial.md#executing-against-databaseType-from-pure-ide) for making the development process faster.
+    Read this tutorial section on [executing against database from pure ide](../new-connector-tutorial.md#executing-against-database-from-pure-ide) for making the development process faster.

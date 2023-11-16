@@ -25,9 +25,9 @@ Provides details on the model classes & properties used within the query / servi
 ### Store Lineage
 
 Provides details on the `Store` features used in the query/mapping.  For example, if this is a
-relational / databaseType `Store`, then this provides the link between the output columns and the 
-columns used from the specific databaseType tables.  This can provide "dataset level lineage" or "attribute level lineage" 
-between the data model / service and the physical databaseType. 
+relational / database `Store`, then this provides the link between the output columns and the 
+columns used from the specific database tables.  This can provide "dataset level lineage" or "attribute level lineage" 
+between the data model / service and the physical database. 
 
 N.B. When calculating Store lineage a `Runtime` is required for accurate results as the `Connection` can for example 
 contain things like `SchemaMapper`s (which can redirect / re-map the logical table name to a real world physical table 
@@ -54,8 +54,8 @@ The lineage methods are exposed on the Legend Engine service at `pure/v1/analyti
 | --- | ----- | ----------- |
 | /model/propertyPathTree | Model Lineage | Analyze the function to get property path tree |
 | /model/class | Model Lineage | Analyze the function to get referenced model classes |
-| /store/relational/databaseType | Store Lineage | Analyze the function and mapping to get referenced databases and tables |
-| /store/relational/reportColumn | Store Lineage |  Analyze the function and mapping to get referenced databaseType columns for projected columns |
+| /store/relational/database | Store Lineage | Analyze the function and mapping to get referenced databases and tables |
+| /store/relational/reportColumn | Store Lineage |  Analyze the function and mapping to get referenced database columns for projected columns |
 | /store/relational/relationTree | Store Lineage |  Analyze the function and mapping to get relation join tree |
 
 ## Usages / Examples

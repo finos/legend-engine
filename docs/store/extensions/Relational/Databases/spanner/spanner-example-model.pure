@@ -145,7 +145,7 @@ Service foo::service::customerService
 
 
 ###Relational
-Database foo::databaseType::spanner
+Database foo::database::spanner
 (
   Table CUSTOMER
   (
@@ -195,22 +195,22 @@ Mapping foo::mapping::firmperson
   {
     ~primaryKey
     (
-      [foo::databaseType::spanner]PERSON.NAME
+      [foo::database::spanner]PERSON.NAME
     )
-    ~mainTable [foo::databaseType::spanner]PERSON
-    name: [foo::databaseType::spanner]PERSON.NAME,
-    firmId: [foo::databaseType::spanner]PERSON.FIRMID
+    ~mainTable [foo::database::spanner]PERSON
+    name: [foo::database::spanner]PERSON.NAME,
+    firmId: [foo::database::spanner]PERSON.FIRMID
   }
   foo::domain::Firm: Relational
   {
     ~primaryKey
     (
-      [foo::databaseType::spanner]FIRM.ID
+      [foo::database::spanner]FIRM.ID
     )
-    ~mainTable [foo::databaseType::spanner]FIRM
-    id: [foo::databaseType::spanner]FIRM.ID,
-    legalName: [foo::databaseType::spanner]FIRM.LEGALNAME,
-    employees[foo_domain_Person]: [foo::databaseType::spanner]@Firm_Person
+    ~mainTable [foo::database::spanner]FIRM
+    id: [foo::database::spanner]FIRM.ID,
+    legalName: [foo::database::spanner]FIRM.LEGALNAME,
+    employees[foo_domain_Person]: [foo::database::spanner]@Firm_Person
   }
 )
 
@@ -220,11 +220,11 @@ Mapping foo::mapping::customer
   {
     ~primaryKey
     (
-      [foo::databaseType::spanner]CUSTOMER.ID
+      [foo::database::spanner]CUSTOMER.ID
     )
-    ~mainTable [foo::databaseType::spanner]CUSTOMER
-    id: [foo::databaseType::spanner]CUSTOMER.ID,
-    name: [foo::databaseType::spanner]CUSTOMER.NAME
+    ~mainTable [foo::database::spanner]CUSTOMER
+    id: [foo::database::spanner]CUSTOMER.ID,
+    name: [foo::database::spanner]CUSTOMER.NAME
   }
 )
 
@@ -232,7 +232,7 @@ Mapping foo::mapping::customer
 ###Connection
 RelationalDatabaseConnection foo::connection::spanner
 {
-  store: foo::databaseType::spanner;
+  store: foo::database::spanner;
   type: Spanner;
   specification: Spanner
   {
@@ -253,7 +253,7 @@ Runtime foo::runtime::spanner
   ];
   connections:
   [
-    foo::databaseType::spanner:
+    foo::database::spanner:
     [
       connection: foo::connection::spanner
     ]
@@ -268,7 +268,7 @@ Runtime foo::runtime::firmperson
   ];
   connections:
   [
-    foo::databaseType::spanner:
+    foo::database::spanner:
     [
       connection: foo::connection::spanner
     ]

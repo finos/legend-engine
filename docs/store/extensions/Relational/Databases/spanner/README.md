@@ -6,7 +6,7 @@ __Dialect__
 
 Spanner by itself supports two
 dialects : [Google Standard SQL and PostgreSQL](https://cloud.google.com/spanner/docs/postgresql-interface#choose).
-<br>This connector so far uses PostgreSQL compatability, so, on databaseType creation **PostgreSQL dialect** should be
+<br>This connector so far uses PostgreSQL compatability, so, on database creation **PostgreSQL dialect** should be
 chosen.
 <br>
 
@@ -14,10 +14,10 @@ __Object naming conventions__
 
 * [ProjectId](https://cloud.google.com/resource-manager/docs/creating-managing-projects#before_you_begin) - A globally
   unique identifier for your project
-* [InstanceId]((https://cloud.google.com/spanner/docs/create-query-databaseType-console#create-instance)) - When you first
+* [InstanceId]((https://cloud.google.com/spanner/docs/create-query-database-console#create-instance)) - When you first
   use Cloud Spanner, you must create an instance, which is an allocation of resources that are used by Cloud Spanner
   databases in that instance.
-* [DatabaseId](https://cloud.google.com/spanner/docs/create-query-databaseType-console#create-databaseType) - Database name
+* [DatabaseId](https://cloud.google.com/spanner/docs/create-query-database-console#create-database) - Database name
 
 ## Client Library
 
@@ -26,5 +26,5 @@ the [Google Google Cloud Spanner JDBC  Client for Java](https://cloud.google.com
 
 ## Database Authentication
 
-Google Cloud Auth same as [Big Query](../bigquery/README.md#databaseType-authentication)
+Google Cloud Auth same as [Big Query](../bigquery/README.md#database-authentication)
 

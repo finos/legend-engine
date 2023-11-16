@@ -81,7 +81,7 @@ Service foo::service::personService
 
 
 ###Relational
-Database foo::databaseType::bq
+Database foo::database::bq
 (
   Schema dataset1
   (
@@ -146,11 +146,11 @@ Mapping foo::mapping::customer
   {
     ~primaryKey
     (
-      [foo::databaseType::bq]dataset1.CUSTOMER.ID
+      [foo::database::bq]dataset1.CUSTOMER.ID
     )
-    ~mainTable [foo::databaseType::bq]dataset1.CUSTOMER
-    id: [foo::databaseType::bq]dataset1.CUSTOMER.ID,
-    name: [foo::databaseType::bq]dataset1.CUSTOMER.NAME
+    ~mainTable [foo::database::bq]dataset1.CUSTOMER
+    id: [foo::database::bq]dataset1.CUSTOMER.ID,
+    name: [foo::database::bq]dataset1.CUSTOMER.NAME
   }
 )
 
@@ -160,22 +160,22 @@ Mapping foo::mapping::firmperson
   {
     ~primaryKey
     (
-      [foo::databaseType::bq]dataset1.PERSON.NAME
+      [foo::database::bq]dataset1.PERSON.NAME
     )
-    ~mainTable [foo::databaseType::bq]dataset1.PERSON
-    name: [foo::databaseType::bq]dataset1.PERSON.NAME,
-    firmId: [foo::databaseType::bq]dataset1.PERSON.FIRMID
+    ~mainTable [foo::database::bq]dataset1.PERSON
+    name: [foo::database::bq]dataset1.PERSON.NAME,
+    firmId: [foo::database::bq]dataset1.PERSON.FIRMID
   }
   foo::domain::Firm: Relational
   {
     ~primaryKey
     (
-      [foo::databaseType::bq]dataset1.FIRM.ID
+      [foo::database::bq]dataset1.FIRM.ID
     )
-    ~mainTable [foo::databaseType::bq]dataset1.FIRM
-    id: [foo::databaseType::bq]dataset1.FIRM.ID,
-    legalName: [foo::databaseType::bq]dataset1.FIRM.LEGALNAME,
-    employees[foo_domain_Person]: [foo::databaseType::bq]@Firm_Person
+    ~mainTable [foo::database::bq]dataset1.FIRM
+    id: [foo::database::bq]dataset1.FIRM.ID,
+    legalName: [foo::database::bq]dataset1.FIRM.LEGALNAME,
+    employees[foo_domain_Person]: [foo::database::bq]@Firm_Person
   }
 )
 
@@ -185,11 +185,11 @@ Mapping foo::mapping::thing
   {
     ~primaryKey
     (
-      [foo::databaseType::bq]THING.ID
+      [foo::database::bq]THING.ID
     )
-    ~mainTable [foo::databaseType::bq]THING
-    id: [foo::databaseType::bq]THING.ID,
-    value: [foo::databaseType::bq]THING.VALUE
+    ~mainTable [foo::database::bq]THING
+    id: [foo::database::bq]THING.ID,
+    value: [foo::database::bq]THING.VALUE
   }
 )
 
@@ -197,7 +197,7 @@ Mapping foo::mapping::thing
 ###Connection
 RelationalDatabaseConnection foo::connection::bq
 {
-  store: foo::databaseType::bq;
+  store: foo::database::bq;
   type: BigQuery;
   specification: BigQuery
   {
@@ -217,7 +217,7 @@ Runtime foo::runtime::bq
   ];
   connections:
   [
-    foo::databaseType::bq:
+    foo::database::bq:
     [
       connection: foo::connection::bq
     ]
@@ -232,7 +232,7 @@ Runtime foo::runtime::firmperson
   ];
   connections:
   [
-    foo::databaseType::bq:
+    foo::database::bq:
     [
       connection: foo::connection::bq
     ]
