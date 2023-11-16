@@ -1,6 +1,9 @@
 lexer grammar DataSourceSpecificationLexerGrammar;
 
-import CoreLexerGrammar;
+import M3LexerGrammar;
+
+CONNECTION_SPECIFICATION_DSP:               'ConnectionSpecification';
+CONNECTION_SPECIFICATION_RAW_VALUE:         'rawValue';
 
 STATIC_DSP:                                 'Static';
 EMBEDDED_H2_DSP:                            'EmbeddedH2';

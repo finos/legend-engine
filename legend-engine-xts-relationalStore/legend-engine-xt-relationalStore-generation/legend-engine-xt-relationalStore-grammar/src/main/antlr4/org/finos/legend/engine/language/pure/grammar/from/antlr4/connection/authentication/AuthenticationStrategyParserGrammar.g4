@@ -1,6 +1,6 @@
 parser grammar AuthenticationStrategyParserGrammar;
 
-import CoreParserGrammar;
+import M3ParserGrammar;
 
 options
 {
@@ -11,6 +11,18 @@ identifier:                      VALID_STRING
 ;
 
 // ----------------------------- RELATIONAL DATABASE CONNECTION AUTH STRATEGY -----------------------------
+
+authConfigWrapper:                      AUTH_CONFIG_AUTH
+                                            BRACE_OPEN
+                                                (
+                                                    authConfigRawValue
+                                                )*
+                                            BRACE_CLOSE
+;
+authConfigRawValue:                     AUTH_CONFIG_RAW_VALUE COLON ISLAND_OPEN (authConfigRawValueContent)* SEMI_COLON
+;
+authConfigRawValueContent:              ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
 
 apiTokenAuth:                          API_TOKEN_AUTH
                                             BRACE_OPEN

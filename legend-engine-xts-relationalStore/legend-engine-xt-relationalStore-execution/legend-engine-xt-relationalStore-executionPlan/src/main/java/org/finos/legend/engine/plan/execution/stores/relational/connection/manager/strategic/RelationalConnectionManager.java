@@ -17,25 +17,30 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.mana
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionException;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.keys.AuthenticationStrategyKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecificationKey;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceWithStatistics;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationConfigurationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.ConnectionSpecificationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
@@ -49,6 +54,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
@@ -190,6 +196,28 @@ public class RelationalConnectionManager implements ConnectionManager
         if (connection instanceof RelationalDatabaseConnection)
         {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
+
+            if (relationalDatabaseConnection.datasourceSpecification instanceof ConnectionSpecificationWrapper && relationalDatabaseConnection.authenticationStrategy instanceof AuthenticationConfigurationWrapper)
+            {
+                return new ConnectionKey(
+                        () -> ((ConnectionSpecificationWrapper) relationalDatabaseConnection.datasourceSpecification).value.shortId(),
+                        new AuthenticationStrategyKey()
+                        {
+                            @Override
+                            public String shortId()
+                            {
+                                return ((AuthenticationConfigurationWrapper) relationalDatabaseConnection.authenticationStrategy).value.shortId();
+                            }
+
+                            @Override
+                            public String type()
+                            {
+                                return "ConnectionSpecificationWrapper";
+                            }
+                        }
+                );
+            }
+
             return new ConnectionKey(
                     buildDataSourceKey(relationalDatabaseConnection.datasourceSpecification, relationalDatabaseConnection),
                     buildAuthStrategyKey(relationalDatabaseConnection.authenticationStrategy)
@@ -206,6 +234,11 @@ public class RelationalConnectionManager implements ConnectionManager
         }
 
         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connection;
+        if (relationalDatabaseConnection.datasourceSpecification instanceof ConnectionSpecificationWrapper)
+        {
+            return new ConnectionSpecificationWrapperRuntime();
+        }
+
         boolean localMode = this.resolveLocalMode(relationalDatabaseConnection);
         if (localMode)
         {
@@ -239,5 +272,38 @@ public class RelationalConnectionManager implements ConnectionManager
         AuthenticationStrategy authenticationStrategy = relationalDatabaseConnection.authenticationStrategy;
 
         return databaseManager.getLocalDataSourceSpecification(datasourceSpecification, authenticationStrategy);
+    }
+
+    public static class ConnectionSpecificationWrapperRuntime extends DataSourceSpecification
+    {
+        protected ConnectionSpecificationWrapperRuntime()
+        {
+            super(() -> "ConnectionSpecificationWrapper", DatabaseManager.fromString(DatabaseType.H2.name()), new org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy()
+            {
+                @Override
+                public Connection getConnectionImpl(DataSourceWithStatistics ds, Identity identity) throws ConnectionException
+                {
+                    return null;
+                }
+
+                @Override
+                public Pair<String, Properties> handleConnection(String url, Properties properties, DatabaseManager databaseManager)
+                {
+                    return null;
+                }
+
+                @Override
+                public AuthenticationStrategyKey getKey()
+                {
+                    return null;
+                }
+            }, new Properties());
+        }
+
+        @Override
+        public Connection getConnectionUsingIdentity(Identity identity, Optional<CredentialSupplier> databaseCredentialSupplierHolder)
+        {
+            throw new UnsupportedOperationException("New connection framework does not support this flow");
+        }
     }
 }

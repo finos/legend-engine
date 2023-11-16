@@ -17,12 +17,37 @@ package org.finos.legend.engine.language.pure.grammar.from.datasource;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.datasource.DataSourceSpecificationParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.ConnectionSpecificationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 
 public class DataSourceSpecificationParseTreeWalker
 {
+    public ConnectionSpecificationWrapper visitConnectionSpecificationWrapper(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.ConnectionSpecWrapperContext ctx)
+    {
+        ConnectionSpecificationWrapper wrapper = new ConnectionSpecificationWrapper();
+        wrapper.sourceInformation = code.getSourceInformation();
+        DataSourceSpecificationParserGrammar.ConnectionSpecRawValueContext rawValueContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.connectionSpecRawValue(), "rawValue", wrapper.sourceInformation);
+        try
+        {
+            StringBuilder text = new StringBuilder();
+            for (DataSourceSpecificationParserGrammar.ConnectionSpecRawValueContentContext fragment : rawValueContext.connectionSpecRawValueContent())
+            {
+                text.append(fragment.getText());
+            }
+            String rawValueText = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
+            wrapper.value = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(rawValueText, ConnectionSpecification.class);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        return wrapper;
+    }
+
     public LocalH2DatasourceSpecification visitLocalH2DatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.LocalH2DatasourceSpecificationContext dbSpecCtx)
     {
         LocalH2DatasourceSpecification dsSpec = new LocalH2DatasourceSpecification();
@@ -55,8 +80,6 @@ public class DataSourceSpecificationParseTreeWalker
         dsSpec.autoServerMode = Boolean.parseBoolean(autoServerModeCtx.BOOLEAN().getText());
         return dsSpec;
     }
-
-
 
     public StaticDatasourceSpecification visitStaticDatasourceSpecification(DataSourceSpecificationSourceCode code, DataSourceSpecificationParserGrammar.StaticDatasourceSpecificationContext dbSpecCtx)
     {

@@ -163,6 +163,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
             _type = 'gcpWorkloadIdentityFederation',
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
+         ),
+      b:meta::pure::alloy::connections::alloy::authentication::AuthenticationConfigurationWrapper[1] |
+         ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationConfigurationWrapper(
+            _type = 'AuthenticationConfiguration',
+            value = $b.rawValue
          )
    ])->toOneMany())
 }
@@ -189,6 +194,11 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connectio
              _type = 'h2Local',
              testDataSetupCsv = $l.testDataSetupCsv,
              testDataSetupSqls = $l.testDataSetupSqls
+         ),
+      e:meta::pure::alloy::connections::alloy::specification::ConnectionSpecificationWrapper[1] |
+         ^meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::ConnectionSpecificationWrapper(
+            _type = 'ConnectionSpecification',
+            value = $e.rawValue
          )
    ])->toOneMany())
 }

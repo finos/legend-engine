@@ -41,7 +41,6 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.MappingEleme
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
@@ -151,6 +150,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
 
             switch (code.getType())
             {
+                case "ConnectionSpecification":
+                    return parseDataSourceSpecification(code, p -> walker.visitConnectionSpecificationWrapper(code, p.connectionSpecWrapper()));
                 case "LocalH2":
                     return parseDataSourceSpecification(code, p -> walker.visitLocalH2DatasourceSpecification(code, p.localH2DatasourceSpecification()));
                 case "Static":
@@ -172,6 +173,8 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
 
             switch (code.getType())
             {
+                case "AuthenticationConfiguration":
+                    return parseAuthenticationStrategy(code, p -> walker.visitAuthenticationConfigurationWrapper(code, p.authConfigWrapper()));
                 case "DefaultH2":
                     return parseAuthenticationStrategy(code, p -> walker.visitDefaultH2AuthenticationStrategy(code, p.defaultH2Auth()));
                 case "DelegatedKerberos":

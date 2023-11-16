@@ -14,10 +14,16 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationConfigurationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
@@ -30,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.SchemaNameMapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.TableNameMapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.ConnectionSpecificationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
@@ -637,7 +644,32 @@ public class HelperRelationalGrammarComposer
 
     public static String visitRelationalDatabaseConnectionDatasourceSpecification(DatasourceSpecification _spec, RelationalGrammarComposerContext context)
     {
-        if (_spec instanceof LocalH2DatasourceSpecification)
+        if (_spec instanceof ConnectionSpecificationWrapper)
+        {
+            int baseIndentation = 1;
+            String value;
+            try
+            {
+                // @HACKY: new-connection-framework
+                _spec.sourceInformation = null;
+                ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+                value = objectMapper.writeValueAsString(((ConnectionSpecificationWrapper) _spec).value);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+            return "ConnectionSpecification" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    (context.getIndentationString() + getTabString(baseIndentation + 1) + "rawValue: #{\n" +
+                            ListIterate.collect(Lists.mutable.of(value.split("\n")), line -> getTabString(baseIndentation + 2) + line).makeString("\n") + "\n" +
+                            getTabString(baseIndentation + 1) + "}#;\n") +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
+        else if (_spec instanceof LocalH2DatasourceSpecification)
         {
             LocalH2DatasourceSpecification spec = (LocalH2DatasourceSpecification) _spec;
             int baseIndentation = 1;
@@ -675,7 +707,32 @@ public class HelperRelationalGrammarComposer
 
     public static String visitRelationalDatabaseConnectionAuthenticationStrategy(AuthenticationStrategy _auth, RelationalGrammarComposerContext context)
     {
-        if (_auth instanceof TestDatabaseAuthenticationStrategy)
+        if (_auth instanceof AuthenticationConfigurationWrapper)
+        {
+            int baseIndentation = 1;
+            String value;
+            try
+            {
+                // @HACKY: new-connection-framework
+                _auth.sourceInformation = null;
+                ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+                value = objectMapper.writeValueAsString(((AuthenticationConfigurationWrapper) _auth).value);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+            return "AuthenticationConfiguration" +
+                    "\n" +
+                    context.getIndentationString() + getTabString(baseIndentation) + "{\n" +
+                    (context.getIndentationString() + getTabString(baseIndentation + 1) + "rawValue: #{\n" +
+                            ListIterate.collect(Lists.mutable.of(value.split("\n")), line -> getTabString(baseIndentation + 2) + line).makeString("\n") + "\n" +
+                            getTabString(baseIndentation + 1) + "}#;\n") +
+                    context.getIndentationString() + getTabString(baseIndentation) + "}";
+        }
+        else if (_auth instanceof TestDatabaseAuthenticationStrategy)
         {
             return "Test";
         }

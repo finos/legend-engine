@@ -64,6 +64,12 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
     additionalGcpScopes: String[*];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationConfigurationWrapper extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy
+{
+    // @HACKY: new-connection-framework
+    value : String[1];
+}
+
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::LocalH2DatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
 {
     testDataSetupCsv:String[0..1];
@@ -75,6 +81,12 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
     databaseName:String[1];
     directory:String[1];
     autoServerMode:Boolean[1];
+}
+
+Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::ConnectionSpecificationWrapper extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification
+{
+    // @HACKY: new-connection-framework
+    value : String[1];
 }
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::StaticDatasourceSpecification extends meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::DatasourceSpecification

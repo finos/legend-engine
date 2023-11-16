@@ -63,3 +63,8 @@ Class meta::pure::alloy::connections::alloy::authentication::GCPWorkloadIdentity
     <<equality.Key>> serviceAccountEmail : String[1];
     <<equality.Key>> additionalGcpScopes: String[*];
 }
+
+Class meta::pure::alloy::connections::alloy::authentication::AuthenticationConfigurationWrapper extends meta::pure::alloy::connections::alloy::authentication::AuthenticationStrategy
+{
+    <<equality.Key>> rawValue: String[1];
+}

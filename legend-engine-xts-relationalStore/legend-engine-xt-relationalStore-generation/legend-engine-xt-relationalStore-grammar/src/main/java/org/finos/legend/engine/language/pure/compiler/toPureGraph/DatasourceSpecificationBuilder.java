@@ -14,12 +14,19 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.ConnectionSpecificationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.EmbeddedH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_ConnectionSpecificationWrapper;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_ConnectionSpecificationWrapper_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_EmbeddedH2DatasourceSpecification_Impl;
@@ -41,7 +48,24 @@ public class DatasourceSpecificationBuilder implements DatasourceSpecificationVi
     @Override
     public Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification visit(DatasourceSpecification datasourceSpecification)
     {
-        if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
+        if (datasourceSpecification instanceof ConnectionSpecificationWrapper)
+        {
+            Root_meta_pure_alloy_connections_alloy_specification_ConnectionSpecificationWrapper wrapper = new Root_meta_pure_alloy_connections_alloy_specification_ConnectionSpecificationWrapper_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::ConnectionSpecificationWrapper"));
+            // @HACKY: new-connection-framework
+            try
+            {
+                ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+                wrapper._rawValue(objectMapper.writeValueAsString(((ConnectionSpecificationWrapper) datasourceSpecification).value));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+            return wrapper;
+        }
+        else if (datasourceSpecification instanceof LocalH2DatasourceSpecification)
         {
             LocalH2DatasourceSpecification localH2DatasourceSpecification = (LocalH2DatasourceSpecification) datasourceSpecification;
             Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification local = new Root_meta_pure_alloy_connections_alloy_specification_LocalH2DatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification"));

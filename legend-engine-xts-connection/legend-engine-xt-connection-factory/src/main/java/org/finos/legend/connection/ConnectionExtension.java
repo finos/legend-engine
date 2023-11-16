@@ -16,6 +16,7 @@ package org.finos.legend.connection;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public interface ConnectionExtension
 {
@@ -27,5 +28,10 @@ public interface ConnectionExtension
     default List<AuthenticationMechanismType> getExtraAuthenticationMechanismTypes()
     {
         return Collections.emptyList();
+    }
+
+    default Map<String, DatabaseType> getExtraDatabaseTypeMapping()
+    {
+        return Collections.emptyMap();
     }
 }

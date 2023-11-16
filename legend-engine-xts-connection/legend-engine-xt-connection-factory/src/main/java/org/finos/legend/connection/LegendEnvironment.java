@@ -78,15 +78,18 @@ public class LegendEnvironment
         // load database types
         List<DatabaseType> databaseTypes = connectionExtensions.flatCollect(ConnectionExtension::getExtraDatabaseTypes);
         Map<String, DatabaseType> databaseTypesIndex = new LinkedHashMap<>();
+        Map<String, DatabaseType> mappedDatabaseTypesIndex = new LinkedHashMap<>();
+        connectionExtensions.forEach(extension -> mappedDatabaseTypesIndex.putAll(extension.getExtraDatabaseTypeMapping()));
         databaseTypes.forEach(databaseType ->
         {
             if (databaseTypesIndex.containsKey(databaseType.getIdentifier()))
             {
-                throw new RuntimeException(String.format("Found multiple authentication mechanisms with label '%s'", databaseType.getIdentifier()));
+                throw new RuntimeException(String.format("Found multiple database types with label '%s'", databaseType.getIdentifier()));
             }
             databaseTypesIndex.put(databaseType.getIdentifier(), databaseType);
         });
-        this.databaseTypesIndex = Maps.immutable.withAll(databaseTypesIndex);
+        mappedDatabaseTypesIndex.putAll(databaseTypesIndex);
+        this.databaseTypesIndex = Maps.immutable.withAll(mappedDatabaseTypesIndex);
 
         // load authentication configuration types
         Map<String, Class<? extends AuthenticationConfiguration>> authenticationConfigurationTypesIndex = new LinkedHashMap<>();

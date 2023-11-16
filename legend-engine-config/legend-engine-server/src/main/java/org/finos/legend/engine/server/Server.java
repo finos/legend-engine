@@ -48,7 +48,6 @@ import org.finos.legend.connection.ConnectionFactory;
 import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
-import org.finos.legend.connection.impl.HACKY__SnowflakeConnectionAdapter;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
 import org.finos.legend.connection.impl.RelationalDatabaseType;
@@ -80,7 +79,6 @@ import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
-import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -95,7 +93,6 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
-import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
@@ -120,10 +117,12 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
@@ -291,9 +290,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
             relationalExecution.setFlowProviderConfiguration(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         }
         relationalExecution.setConnectionFactory(this.setupConnectionFactory(serverConfiguration.vaults));
-        relationalExecution.setRelationalDatabaseConnectionAdapters(Lists.mutable.of(
-                new HACKY__SnowflakeConnectionAdapter.WithKeyPair()
-        ));
 
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
 

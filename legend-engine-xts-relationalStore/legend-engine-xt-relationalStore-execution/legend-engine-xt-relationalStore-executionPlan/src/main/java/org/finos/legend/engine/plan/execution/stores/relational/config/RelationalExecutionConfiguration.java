@@ -18,7 +18,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.HACKY__RelationalDatabaseConnectionAdapter;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -38,7 +37,6 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     @JsonProperty
     private RelationalGraphFetchExecutionConfig relationalGraphFetchExecutionConfig;
     private ConnectionFactory connectionFactory;
-    private List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters = Lists.mutable.empty();
 
     @Override
     public StoreType getStoreType()
@@ -80,11 +78,6 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         return connectionFactory;
     }
 
-    public List<HACKY__RelationalDatabaseConnectionAdapter> getRelationalDatabaseConnectionAdapters()
-    {
-        return relationalDatabaseConnectionAdapters;
-    }
-
     public void setCredentialProviderProvider(CredentialProviderProvider credentialProviderProvider)
     {
         this.credentialProviderProvider = credentialProviderProvider;
@@ -103,11 +96,6 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
     public void setConnectionFactory(ConnectionFactory connectionFactory)
     {
         this.connectionFactory = connectionFactory;
-    }
-
-    public void setRelationalDatabaseConnectionAdapters(List<HACKY__RelationalDatabaseConnectionAdapter> adapters)
-    {
-        this.relationalDatabaseConnectionAdapters = adapters;
     }
 
     public static Builder newInstance()
@@ -130,7 +118,6 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
         private CredentialProviderProvider credentialProviderProvider;
         private RelationalGraphFetchExecutionConfig relationalGraphFetchExecutionConfig;
         private ConnectionFactory connectionFactory;
-        private final List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters = Lists.mutable.empty();
 
         public Builder withTempPath(String tempPath)
         {
@@ -183,12 +170,6 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             return this;
         }
 
-        public Builder withRelationalDatabaseConnectionAdapters(List<HACKY__RelationalDatabaseConnectionAdapter> adapters)
-        {
-            this.relationalDatabaseConnectionAdapters.addAll(adapters);
-            return this;
-        }
-
         public RelationalExecutionConfiguration build()
         {
             RelationalExecutionConfiguration relationalExecutionConfiguration = new RelationalExecutionConfiguration();
@@ -200,7 +181,6 @@ public class RelationalExecutionConfiguration implements StoreExecutorConfigurat
             relationalExecutionConfiguration.credentialProviderProvider = credentialProviderProvider;
             relationalExecutionConfiguration.relationalGraphFetchExecutionConfig = relationalGraphFetchExecutionConfig;
             relationalExecutionConfiguration.connectionFactory = connectionFactory;
-            relationalExecutionConfiguration.relationalDatabaseConnectionAdapters = relationalDatabaseConnectionAdapters;
             return relationalExecutionConfiguration;
         }
     }

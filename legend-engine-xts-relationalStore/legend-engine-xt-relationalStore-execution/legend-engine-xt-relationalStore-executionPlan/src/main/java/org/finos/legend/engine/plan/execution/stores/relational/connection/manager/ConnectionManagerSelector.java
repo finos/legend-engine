@@ -18,7 +18,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.HACKY__RelationalDatabaseConnectionAdapter;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
@@ -30,7 +29,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.manag
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationConfigurationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.ConnectionSpecificationWrapper;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.pac4j.core.profile.CommonProfile;
@@ -48,11 +49,6 @@ public class ConnectionManagerSelector
     private MutableList<ConnectionManager> connectionManagers;
     private final ConnectionFactory connectionFactory;
 
-    // TODO: @akphi - these are temporary hacks to bootstrap the new connection framework
-    private final List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters = Lists.mutable.empty();
-    public static final String TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK = "org.finos.legend.engine.execution.enableNewConnectionFramework";
-    private boolean enableNewConnectionFramework = false;
-
     public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles)
     {
         this(temporaryTestDb, oauthProfiles, Optional.empty());
@@ -60,25 +56,17 @@ public class ConnectionManagerSelector
 
     public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder)
     {
-        MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
-        this.connectionManagers = Lists.mutable.<ConnectionManager>with(
-                new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, flowProviderHolder)
-        ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles)));
-        this.flowProviderHolder = flowProviderHolder;
-        this.connectionFactory = null;
+        this(temporaryTestDb, oauthProfiles, flowProviderHolder, null);
     }
 
-    public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, ConnectionFactory connectionFactory, List<HACKY__RelationalDatabaseConnectionAdapter> relationalDatabaseConnectionAdapters, boolean enableNewConnectionFrameworkByDefault)
+    public ConnectionManagerSelector(TemporaryTestDbConfiguration temporaryTestDb, List<OAuthProfile> oauthProfiles, Optional<DatabaseAuthenticationFlowProvider> flowProviderHolder, ConnectionFactory connectionFactory)
     {
         MutableList<ConnectionManagerExtension> extensions = Iterate.addAllTo(ServiceLoader.load(ConnectionManagerExtension.class), Lists.mutable.empty());
         this.connectionManagers = Lists.mutable.<ConnectionManager>with(
                 new RelationalConnectionManager(temporaryTestDb.port, oauthProfiles, flowProviderHolder)
         ).withAll(extensions.collect(e -> e.getExtensionManager(temporaryTestDb.port, oauthProfiles)));
         this.flowProviderHolder = flowProviderHolder;
-
         this.connectionFactory = connectionFactory;
-        this.relationalDatabaseConnectionAdapters.addAll(relationalDatabaseConnectionAdapters);
-        this.enableNewConnectionFramework = enableNewConnectionFrameworkByDefault;
     }
 
     public Optional<DatabaseAuthenticationFlowProvider> getFlowProviderHolder()
@@ -137,33 +125,10 @@ public class ConnectionManagerSelector
         {
             RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) databaseConnection;
 
-            if ("true".equals(System.getenv(TEMPORARY__USE_NEW_CONNECTION_FRAMEWORK)) || this.enableNewConnectionFramework)
+            Connection connection = getDatabaseConnectionImplUsingNewConnectionFramework(identity, relationalDatabaseConnection, runtimeContext);
+            if (connection != null)
             {
-                if (this.connectionFactory != null && !this.relationalDatabaseConnectionAdapters.isEmpty())
-                {
-                    HACKY__RelationalDatabaseConnectionAdapter.ConnectionFactoryMaterial connectionFactoryMaterial = null;
-                    for (HACKY__RelationalDatabaseConnectionAdapter adapter : this.relationalDatabaseConnectionAdapters)
-                    {
-                        connectionFactoryMaterial = adapter.adapt(relationalDatabaseConnection, identity, this.connectionFactory.getEnvironment());
-                        if (connectionFactoryMaterial != null)
-                        {
-                            break;
-                        }
-                    }
-
-                    if (connectionFactoryMaterial != null)
-                    {
-                        try
-                        {
-                            return this.connectionFactory.getConnection(identity, connectionFactoryMaterial.connection, connectionFactoryMaterial.authenticationConfiguration);
-                        }
-                        catch (Exception exception)
-                        {
-                            // TODO: @akphi @epsstan - should we throw here?
-                            throw new RuntimeException((exception));
-                        }
-                    }
-                }
+                return connection;
             }
 
             Optional<CredentialSupplier> databaseCredentialHolder = RelationalConnectionManager.getCredential(flowProviderHolder, relationalDatabaseConnection, identity, runtimeContext);
@@ -174,6 +139,34 @@ public class ConnectionManagerSelector
             Without the metadata associated with a RelationalDatabaseConnection we cannot compute a credential.
         */
         return datasource.getConnectionUsingIdentity(identity, Optional.empty());
+    }
+
+    private Connection getDatabaseConnectionImplUsingNewConnectionFramework(Identity identity, RelationalDatabaseConnection relationalDatabaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
+    {
+        if (Boolean.parseBoolean(System.getenv("org.finos.legend.engine.enableNewConnectionFramework")) &&
+                this.connectionFactory != null &&
+                relationalDatabaseConnection.authenticationStrategy instanceof AuthenticationConfigurationWrapper &&
+                relationalDatabaseConnection.datasourceSpecification instanceof ConnectionSpecificationWrapper
+        )
+        {
+            org.finos.legend.connection.DatabaseType databaseType = connectionFactory.getEnvironment().getDatabaseType(relationalDatabaseConnection.type.name());
+            org.finos.legend.connection.Connection connection = org.finos.legend.connection.Connection.builder()
+                    .databaseSupport(connectionFactory.getEnvironment().getDatabaseSupport(databaseType))
+                    .identifier("Converted_Connection")
+                    .connectionSpecification(((ConnectionSpecificationWrapper) relationalDatabaseConnection.datasourceSpecification).value)
+                    .authenticationConfiguration(((AuthenticationConfigurationWrapper) relationalDatabaseConnection.authenticationStrategy).value)
+                    .build();
+            try
+            {
+                return this.connectionFactory.getConnection(identity, connection);
+            }
+            catch (Exception exception)
+            {
+                // TODO: @akphi @epsstan - should we throw here?
+                throw new RuntimeException((exception));
+            }
+        }
+        return null;
     }
 
     public ConnectionKey generateKeyFromDatabaseConnection(DatabaseConnection databaseConnection)

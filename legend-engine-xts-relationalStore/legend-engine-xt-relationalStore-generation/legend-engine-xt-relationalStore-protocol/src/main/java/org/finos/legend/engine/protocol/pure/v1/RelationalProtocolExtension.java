@@ -17,6 +17,8 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationConfigurationWrapper;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.ConnectionSpecificationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -132,10 +134,10 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(ResultType.class)
                         .withSubtype(RelationResultType.class, "relation")
                         .build(),
-            // Embedded Data
-            ProtocolSubTypeInfo.newBuilder(EmbeddedData.class)
-                .withSubtype(RelationalCSVData.class, "relationalCSVData")
-                .build(),
+                // Embedded Data
+                ProtocolSubTypeInfo.newBuilder(EmbeddedData.class)
+                        .withSubtype(RelationalCSVData.class, "relationalCSVData")
+                        .build(),
                 // Execution plan node
                 ProtocolSubTypeInfo.newBuilder(ExecutionNode.class)
                         .withSubtype(RelationalExecutionNode.class, "relational")
@@ -157,8 +159,9 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(RelationalCrossRootQueryTempTableGraphFetchExecutionNode.class, "relationalCrossRootQueryTempTableGraphFetch")
                         .build(),
 
-                //DatasourceSpecification
+                // DatasourceSpecification
                 ProtocolSubTypeInfo.newBuilder(DatasourceSpecification.class)
+                        .withSubtype(ConnectionSpecificationWrapper.class, "ConnectionSpecification") // wrapper type
                         .withSubtype(LocalH2DatasourceSpecification.class, "h2Local")
                         .withSubtype(StaticDatasourceSpecification.class, "static")
                         .withSubtype(EmbeddedH2DatasourceSpecification.class, "h2Embedded")
@@ -166,6 +169,7 @@ public class RelationalProtocolExtension implements PureProtocolExtension
 
                 // AuthenticationStrategy
                 ProtocolSubTypeInfo.newBuilder(AuthenticationStrategy.class)
+                        .withSubtype(AuthenticationConfigurationWrapper.class, "AuthenticationConfiguration") // wrapper type
                         .withSubtype(DefaultH2AuthenticationStrategy.class, "h2Default")
                         .withSubtype(TestDatabaseAuthenticationStrategy.class, "test")
                         .withSubtype(DelegatedKerberosAuthenticationStrategy.class, "delegatedKerberos")
@@ -176,12 +180,12 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(MiddleTierUserNamePasswordAuthenticationStrategy.class, "middleTierUserNamePassword")
                         .build(),
 
-                //Post Processor
+                // Post Processor
                 ProtocolSubTypeInfo.newBuilder(PostProcessor.class)
                         .withSubtype(MapperPostProcessor.class, "mapper")
                         .build(),
 
-                //Post Processor Parameter
+                // Post Processor Parameter
                 ProtocolSubTypeInfo.newBuilder(Milestoning.class)
                         .withSubtype(BusinessMilestoning.class, "businessMilestoning")
                         .withSubtype(BusinessSnapshotMilestoning.class, "businessSnapshotMilestoning")

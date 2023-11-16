@@ -1,6 +1,6 @@
 parser grammar DataSourceSpecificationParserGrammar;
 
-import CoreParserGrammar;
+import M3ParserGrammar;
 
 options
 {
@@ -11,6 +11,19 @@ identifier:                      VALID_STRING
 ;
 
 // ----------------------------- RELATIONAL DATABASE CONNECTION DATASOURCE SPEC -----------------------------
+
+connectionSpecWrapper:                      CONNECTION_SPECIFICATION_DSP
+                                                BRACE_OPEN
+                                                    (
+                                                        connectionSpecRawValue
+                                                    )*
+                                                BRACE_CLOSE
+;
+connectionSpecRawValue:                     CONNECTION_SPECIFICATION_RAW_VALUE COLON ISLAND_OPEN (connectionSpecRawValueContent)* SEMI_COLON
+;
+connectionSpecRawValueContent:              ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
+
 
 localH2DatasourceSpecification:             LOCAL_H2_DSP
                                                 BRACE_OPEN

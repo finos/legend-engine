@@ -65,10 +65,12 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
                                                             pair('gcpApplicationDefaultCredentials', 'GCPApplicationDefaultCredentialsAuthenticationStrategy'),
                                                             pair('apiToken', 'ApiTokenAuthenticationStrategy'),
                                                             pair('gcpWorkloadIdentityFederation','GCPWorkloadIdentityFederationAuthenticationStrategy'),
+                                                            pair('AuthenticationConfiguration', 'AuthenticationConfigurationWrapper'),
 
                                                             pair('static', 'StaticDatasourceSpecification'),
                                                             pair('h2Embedded', 'EmbeddedH2DatasourceSpecification'),
-                                                            pair('h2Local', 'LocalH2DatasourceSpecification(')
+                                                            pair('h2Local', 'LocalH2DatasourceSpecification('), // typo - to be fixed!
+                                                            pair('ConnectionSpecification', 'ConnectionSpecificationWrapper')
                                                           ])
                                             )
                 );
@@ -140,6 +142,10 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             // _type = 'gcpWorkloadIdentityFederationWithAWS',
             serviceAccountEmail = $b.serviceAccountEmail,
             additionalGcpScopes = $b.additionalGcpScopes
+         ),
+      b:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::authentication::AuthenticationConfigurationWrapper[1] |
+         ^meta::pure::alloy::connections::alloy::authentication::AuthenticationConfigurationWrapper(
+            rawValue = $b.value
          )
    ])->toOneMany());
 }
@@ -166,6 +172,10 @@ function meta::protocols::pure::vX_X_X::transformation::toPureGraph::connection:
             //  _type = 'h2Local',
              testDataSetupCsv = $l.testDataSetupCsv,
              testDataSetupSqls = $l.testDataSetupSqls
+         ),
+      e:meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::alloy::specification::ConnectionSpecificationWrapper[1] |
+         ^meta::pure::alloy::connections::alloy::specification::ConnectionSpecificationWrapper(
+            rawValue = $e.value
          )
    ])->toOneMany());
 }

@@ -17,7 +17,9 @@ package org.finos.legend.engine.language.pure.grammar.from.authentication;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.authentication.AuthenticationStrategyParserGrammar;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationConfigurationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
@@ -25,9 +27,32 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
 
 public class AuthenticationStrategyParseTreeWalker
 {
+    public AuthenticationConfigurationWrapper visitAuthenticationConfigurationWrapper(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.AuthConfigWrapperContext ctx)
+    {
+        AuthenticationConfigurationWrapper wrapper = new AuthenticationConfigurationWrapper();
+        wrapper.sourceInformation = code.getSourceInformation();
+        AuthenticationStrategyParserGrammar.AuthConfigRawValueContext rawValueContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.authConfigRawValue(), "rawValue", wrapper.sourceInformation);
+        try
+        {
+            StringBuilder text = new StringBuilder();
+            for (AuthenticationStrategyParserGrammar.AuthConfigRawValueContentContext fragment : rawValueContext.authConfigRawValueContent())
+            {
+                text.append(fragment.getText());
+            }
+            String rawValueText = text.length() > 0 ? text.substring(0, text.length() - 2) : text.toString();
+            wrapper.value = PureProtocolObjectMapperFactory.getNewObjectMapper().readValue(rawValueText, AuthenticationConfiguration.class);
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+        return wrapper;
+    }
+
     public DefaultH2AuthenticationStrategy visitDefaultH2AuthenticationStrategy(AuthenticationStrategySourceCode code, AuthenticationStrategyParserGrammar.DefaultH2AuthContext authCtx)
     {
         DefaultH2AuthenticationStrategy authStrategy = new DefaultH2AuthenticationStrategy();
@@ -60,7 +85,7 @@ public class AuthenticationStrategyParseTreeWalker
         if (authCtx.middleTierUserNamePasswordAuthConfig() != null)
         {
             AuthenticationStrategyParserGrammar.VaultReferenceConfigContext vaultReferenceConfigContext = PureGrammarParserUtility.validateAndExtractRequiredField(authCtx.middleTierUserNamePasswordAuthConfig().vaultReferenceConfig(), "vaultReference", authStrategy.sourceInformation);
-            authStrategy.vaultReference =  PureGrammarParserUtility.fromGrammarString(vaultReferenceConfigContext.STRING().getText(), true);
+            authStrategy.vaultReference = PureGrammarParserUtility.fromGrammarString(vaultReferenceConfigContext.STRING().getText(), true);
         }
         authStrategy.sourceInformation = code.getSourceInformation();
         return authStrategy;

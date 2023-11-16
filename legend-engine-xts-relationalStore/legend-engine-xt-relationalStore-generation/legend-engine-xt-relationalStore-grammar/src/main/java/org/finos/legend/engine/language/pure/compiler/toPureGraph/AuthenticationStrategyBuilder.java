@@ -14,8 +14,13 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import org.eclipse.collections.impl.list.mutable.FastList;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.ApiTokenAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationConfigurationWrapper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
@@ -26,14 +31,16 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_ApiTokenAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationConfigurationWrapper;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationConfigurationWrapper_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DefaultH2AuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_DelegatedKerberosAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_GCPApplicationDefaultCredentialsAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_GCPWorkloadIdentityFederationAuthenticationStrategy_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_MiddleTierUserNamePasswordAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_TestDatabaseAuthenticationStrategy_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_UserNamePasswordAuthenticationStrategy_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_MiddleTierUserNamePasswordAuthenticationStrategy_Impl;
 
 public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisitor<Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>
 {
@@ -47,7 +54,24 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
     @Override
     public Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy visit(AuthenticationStrategy authenticationStrategy)
     {
-        if (authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
+        if (authenticationStrategy instanceof AuthenticationConfigurationWrapper)
+        {
+            Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationConfigurationWrapper wrapper = new Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationConfigurationWrapper_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::AuthenticationConfigurationWrapper"));
+            try
+            {
+                // @HACKY: new-connection-framework
+                ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
+                objectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+                objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+                wrapper._rawValue(objectMapper.writeValueAsString(((AuthenticationConfigurationWrapper) authenticationStrategy).value));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+            return wrapper;
+        }
+        else if (authenticationStrategy instanceof TestDatabaseAuthenticationStrategy)
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_TestDatabaseAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy"));
         }
@@ -63,9 +87,7 @@ public class AuthenticationStrategyBuilder implements AuthenticationStrategyVisi
         else if (authenticationStrategy instanceof MiddleTierUserNamePasswordAuthenticationStrategy)
         {
             return new Root_meta_pure_alloy_connections_alloy_authentication_MiddleTierUserNamePasswordAuthenticationStrategy_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::authentication::MiddleTierUserNamePasswordAuthenticationStrategy"))
-                    ._vaultReference(((MiddleTierUserNamePasswordAuthenticationStrategy) authenticationStrategy).vaultReference)
-                    ;
-
+                    ._vaultReference(((MiddleTierUserNamePasswordAuthenticationStrategy) authenticationStrategy).vaultReference);
         }
         else if (authenticationStrategy instanceof ApiTokenAuthenticationStrategy)
         {

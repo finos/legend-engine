@@ -1,6 +1,9 @@
 lexer grammar AuthenticationStrategyLexerGrammar;
 
-import CoreLexerGrammar;
+import M3LexerGrammar;
+
+AUTH_CONFIG_AUTH:                           'AuthenticationConfiguration';
+AUTH_CONFIG_RAW_VALUE:                      'rawValue';
 
 H2_DEFAULT_AUTH:                            'DefaultH2';
 TEST_DB_AUTH:                               'Test';
