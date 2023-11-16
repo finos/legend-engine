@@ -18,9 +18,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNod
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
-import java.util.Map;
-import java.util.Optional;
-
 @Immutable
 @Style(
     typeAbstract = "*Abstract",
@@ -29,13 +26,11 @@ import java.util.Optional;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface DatasetAdditionalPropertiesAbstract extends LogicalPlanNode
+public interface IcebergPropertiesAbstract extends LogicalPlanNode
 {
-    Optional<TableType> tableType();
+    String catalog();
 
-    Optional<TableOrigin> tableOrigin();
+    String externalVolume();
 
-    Optional<IcebergProperties> icebergProperties();
-
-    Map<String, String> tags();
+    String baseLocation();
 }

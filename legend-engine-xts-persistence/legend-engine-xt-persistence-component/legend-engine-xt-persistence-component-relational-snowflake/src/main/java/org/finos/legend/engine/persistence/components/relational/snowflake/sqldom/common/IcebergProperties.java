@@ -15,19 +15,33 @@
 package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.common;
 
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 
-public class ExternalVolume implements SqlGen
+public class IcebergProperties implements SqlGen
 {
-    private String externalVolume;
+    private final String catalog;
+    private final String externalVolume;
+    private final String baseLocation;
 
-    public ExternalVolume(String externalVolume)
+    public IcebergProperties(String catalog, String externalVolume, String baseLocation)
     {
+        this.catalog = catalog;
         this.externalVolume = externalVolume;
+        this.baseLocation = baseLocation;
     }
 
     @Override
     public void genSql(StringBuilder builder)
     {
-        builder.append(String.format("with EXTERNAL_VOLUME = '%s'", externalVolume));
+        builder.append("CATALOG=");
+        builder.append(SqlGenUtils.singleQuote(catalog));
+        builder.append(SqlGenUtils.COMMA + SqlGenUtils.WHITE_SPACE);
+
+        builder.append("EXTERNAL_VOLUME=");
+        builder.append(SqlGenUtils.singleQuote(externalVolume));
+        builder.append(SqlGenUtils.COMMA + SqlGenUtils.WHITE_SPACE);
+
+        builder.append("BASE_LOCATION=");
+        builder.append(SqlGenUtils.singleQuote(baseLocation));
     }
 }
