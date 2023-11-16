@@ -808,17 +808,23 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       }, false)
 }
 
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggWithinCase():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggWithinFunc():Boolean[1]
 {
-  test('SELECT CASE WHEN(SUM("Integer") <10) THEN max("Integer") ELSE min("Integer") END AS "MIN/MAX", ' +
-                  'CASE WHEN(SUM("Integer") < 10) THEN \'LOW\' ELSE \'HIGH\' END AS "HIGH/LOW" FROM service."/service/service1"',
+  test('SELECT ' +
+          'CASE WHEN(SUM("Integer") <10) THEN max("Integer") ELSE min("Integer") END AS "MIN/MAX", ' +
+          'CASE WHEN(SUM("Integer") < 10) THEN \'LOW\' ELSE \'HIGH\' END AS "HIGH/LOW", ' +
+          'cast(sum("Integer") AS VARCHAR) AS "CAST", ' + 
+          'floor(sum("Integer")) AS "FUNC" ' +
+        'FROM service."/service/service1"',
 
       {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
           [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
         )->groupBy([], [
           agg('MIN/MAX', row | $row.getInteger('Integer'), y | if ($y->sum() < 10, | max($y), | min($y))),
-          agg('HIGH/LOW', row | $row.getInteger('Integer'), y | if ($y->sum() < 10, | 'LOW', | 'HIGH'))
+          agg('HIGH/LOW', row | $row.getInteger('Integer'), y | if ($y->sum() < 10, | 'LOW', | 'HIGH')),
+          agg('CAST', row | $row.getInteger('Integer'), y | $y->sum()->toString()),
+          agg('FUNC', row | $row.getInteger('Integer'), y | floor($y->sum()))
         ])
       }, false)
 }
