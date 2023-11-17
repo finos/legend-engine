@@ -83,13 +83,7 @@ import org.finos.legend.engine.language.snowflakeApp.grammar.to.SnowflakeAppGram
 import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParserExtension;
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
-import org.finos.legend.engine.plan.generation.extension.LegendPlanGeneratorExtension;
-import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
-import org.finos.legend.engine.testable.extension.TestableRunnerExtension;
-import org.finos.legend.engine.testable.mapping.extension.MappingTestableRunnerExtension;
-import org.finos.legend.engine.testable.persistence.extension.PersistenceTestableRunnerExtension;
-import org.finos.legend.engine.testable.service.extension.ServiceTestableRunnerExtension;
 import org.finos.legend.pure.code.core.ElasticsearchPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -144,7 +138,7 @@ public class TestExtensions
     @Test
     public void testPlanGeneratorExtensionArePresent()
     {
-        assertHasExtensions(getExpectedPureExtensions(), PureCoreExtension.class);
+        assertHasExtensions(getExpectedPlanGeneratorExtensions(), PureCoreExtension.class);
     }
 
     @Test
@@ -169,18 +163,6 @@ public class TestExtensions
     public void testExpectedEntitlementServiceExtensionsArePresent()
     {
         assertHasExtensions(EntitlementServiceExtensionLoader.extensions(), getExpectedEntitlementServiceExtensions(), EntitlementServiceExtension.class);
-    }
-
-    @Test
-    public void testExpectedPlanGeneratorExtension()
-    {
-        assertHasExtensions(getExpectedPlanGeneratorExtensions(), PlanGeneratorExtension.class);
-    }
-
-    @Test
-    public void testExpectedTestableRunnerExtension()
-    {
-        assertHasExtensions(getExpectedTestableExtensions(), TestableRunnerExtension.class);
     }
 
     @Test
@@ -317,22 +299,6 @@ public class TestExtensions
                 ;
     }
 
-    protected Iterable<? extends Class<? extends TestableRunnerExtension>> getExpectedTestableExtensions()
-    {
-        // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
-        return Lists.mutable.<Class<? extends TestableRunnerExtension>>empty()
-                .with(ServiceTestableRunnerExtension.class)
-                .with(MappingTestableRunnerExtension.class)
-                .with(PersistenceTestableRunnerExtension.class);
-    }
-
-    protected Iterable<? extends Class<? extends PlanGeneratorExtension>> getExpectedPlanGeneratorExtensions()
-    {
-        return Lists.mutable.<Class<? extends PlanGeneratorExtension>>empty()
-                .with(LegendPlanGeneratorExtension.class);
-
-    }
-
     protected Iterable<? extends Class<? extends GenerationExtension>> getExpectedGenerationExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
@@ -443,7 +409,7 @@ public class TestExtensions
                 ;
     }
 
-    protected Iterable<? extends Class<? extends PureCoreExtension>> getExpectedPureExtensions()
+    protected Iterable<? extends Class<? extends PureCoreExtension>> getExpectedPlanGeneratorExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
         return Lists.mutable.<Class<? extends PureCoreExtension>>empty()
@@ -463,7 +429,8 @@ public class TestExtensions
                 .with(XMLJavaBindingPureCoreExtension.class)
                 .with(ServicePureCoreExtension.class)
                 .with(RelationalJavaBindingPureCoreExtension.class)
-                .with(ArrowPureCoreExtension.class);
+                .with(ArrowPureCoreExtension.class)
+                ;
     }
 
     protected Iterable<? extends Class<? extends ExternalFormatExtension<?>>> getExpectedExternalFormatExtensions()
