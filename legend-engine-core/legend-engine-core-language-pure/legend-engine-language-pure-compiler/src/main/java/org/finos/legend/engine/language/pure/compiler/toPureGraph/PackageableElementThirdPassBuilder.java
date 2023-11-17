@@ -100,6 +100,14 @@ public class PackageableElementThirdPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Function function)
     {
+        if (function.tests != null && !function.tests.isEmpty())
+        {
+            String packageString = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = this.context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
+            ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Third Pass");
+            // process tests
+            return targetFunc;
+        }
         return null;
     }
 

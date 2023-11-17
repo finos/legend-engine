@@ -1,5 +1,4 @@
-
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,13 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function;
 
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
+import java.util.List;
 
-public class MappingTestSuite extends TestSuite
+public class FunctionTestSuite extends TestSuite
 {
-    public Lambda func;
+    public List<ConnectionTestData> connectionsTestData;
+
+    public List<StoreTestData> testData;
+
+    public SourceInformation sourceInformation;
 }

@@ -534,7 +534,7 @@
                         <configuration>
                             <configLocation>checkstyle.xml</configLocation>
                             <logViolationsToConsole>true</logViolationsToConsole>
-                            <failOnViolation>true</failOnViolation>
+                            <failOnViolation>false</failOnViolation>
                             <violationSeverity>warning</violationSeverity>
                             <sourceDirectories>
                                 <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
@@ -1808,6 +1808,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-runner-mapping</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-runner-function</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

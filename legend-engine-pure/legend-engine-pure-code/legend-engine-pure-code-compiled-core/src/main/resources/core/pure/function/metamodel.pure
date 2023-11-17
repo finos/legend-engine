@@ -1,0 +1,127 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::legend::function::metamodel::*;
+import meta::pure::data::*;
+
+Class meta::legend::function::metamodel::FunctionTestSuite extends meta::pure::test::TestSuite
+{
+  connectionsTestData : ConnectionTestData[*];
+  testData: meta::legend::function::metamodel::StoreTestData[*];
+}
+
+Class meta::legend::function::metamodel::StoreTestData
+{
+  doc: String[0..1];
+  store: meta::pure::store::Store[1];
+  data: EmbeddedData[1];
+}
+
+Class meta::legend::function::metamodel::FunctionTest extends meta::pure::test::AtomicTest
+{
+  parameters : ParameterValue[*];
+}
+
+Class meta::legend::function::metamodel::ParameterValue
+{
+  name       : String[1];
+  value      : Any[*];
+}
+
+Class {doc.doc = 'Do not use for now'} meta::legend::function::metamodel::ConnectionTestData
+{
+  doc: String[0..1];
+  connectionId: String[1];
+  testData: EmbeddedData[1];
+}
+
+###Diagram
+Diagram meta::legend::function::metamodel::FunctionTestDiagram(width=0.0, height=0.0)
+{
+    TypeView cview_2(
+        type=meta::legend::function::metamodel::FunctionTestSuite,
+        position=(440.00000, 157.00000),
+        width=256.73633,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_5(
+        type=meta::legend::function::metamodel::ParameterValue,
+        position=(1071.05127, 282.00000),
+        width=110.05859,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_1(
+        type=meta::legend::function::metamodel::FunctionTest,
+        position=(1035.00000, 190.00000),
+        width=182.03516,
+        height=58.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    TypeView cview_6(
+        type=meta::legend::function::metamodel::StoreTestData,
+        position=(792.01758, 174.00000),
+        width=168.42969,
+        height=86.00000,
+        stereotypesVisible=true,
+        attributesVisible=true,
+        attributeStereotypesVisible=true,
+        attributeTypesVisible=true,
+        color=#FFFFCC,
+        lineWidth=1.0)
+
+    PropertyView pview_0(
+        property=meta::legend::function::metamodel::FunctionTest.parameters,
+        source=cview_1,
+        target=cview_5,
+        points=[(1126.01758,219.00000),(1126.08057,311.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+
+    PropertyView pview_1(
+        property=meta::legend::function::metamodel::FunctionTestSuite.testData,
+        source=cview_2,
+        target=cview_6,
+        points=[(568.36816,186.00000),(876.23242,217.00000)],
+        label='',
+        propertyPosition=(0.0,0.0),
+        multiplicityPosition=(0.0,0.0),
+        color=#000000,
+        lineWidth=-1.0,
+        stereotypesVisible=true,
+        nameVisible=true,
+        lineStyle=SIMPLE)
+}

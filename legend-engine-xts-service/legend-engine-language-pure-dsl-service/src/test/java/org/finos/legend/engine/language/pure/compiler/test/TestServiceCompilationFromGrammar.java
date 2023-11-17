@@ -2226,7 +2226,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [106:5-123:5]: Service TestSuites should have atleast 1 test"
+                "COMPILATION error at [106:5-123:5]: Service TestSuites should have at least 1 test"
         );
 
         //Test Single TestSuite without asserts
