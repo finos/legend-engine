@@ -14,64 +14,57 @@
 
 package org.finos.legend.engine.language.snowflakeApp.api;
 
+import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppArtifact;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppContent;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppGenerator;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
-import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
-import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentManager;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
+import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeAppDeploymentManager;
 import org.finos.legend.engine.language.snowflakeApp.deployment.SnowflakeDeploymentResult;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.language.snowflakeApp.generator.SnowflakeAppGenerator;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.generation.PlanGenerator;
-import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppProtocolExtension;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeApp;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_snowflakeApp_SnowflakeDeploymentConfiguration;
-import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionNode;
-import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_SQLExecutionNode;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 
 public class SnowflakeAppService implements FunctionActivatorService<Root_meta_external_function_activator_snowflakeApp_SnowflakeApp, SnowflakeAppDeploymentConfiguration, SnowflakeDeploymentResult>
 {
     private ConnectionManagerSelector connectionManager;
-    private SnowflakeDeploymentManager snowflakeDeploymentManager;
+    private SnowflakeAppDeploymentManager snowflakeDeploymentManager;
 
     public SnowflakeAppService()
     {
         TemporaryTestDbConfiguration conf = new TemporaryTestDbConfiguration();
         conf.port = Integer.parseInt(System.getProperty("h2ServerPort", "1234"));
         this.connectionManager = new ConnectionManagerSelector(conf, FastList.newList());
-        this.snowflakeDeploymentManager = new SnowflakeDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
+        this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
     }
 
     public SnowflakeAppService(ConnectionManagerSelector connectionManager)
     {
         this.connectionManager = connectionManager;
-        this.snowflakeDeploymentManager = new SnowflakeDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
+        this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(new SnowflakeAppDeploymentTool(connectionManager));
+    }
+
+    public SnowflakeAppService(PlanExecutor executor)
+    {
+        this.snowflakeDeploymentManager = new SnowflakeAppDeploymentManager(executor);
     }
 
     @Override
@@ -92,27 +85,37 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     }
 
     @Override
-    public MutableList<? extends FunctionActivatorError> validate(MutableList<CommonProfile> profiles, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+        return validate(artifact);
+    }
+
+    public MutableList<? extends FunctionActivatorError> validate(SnowflakeAppArtifact artifact)
+    {
         int size = ((SnowflakeAppContent)artifact.content).sqlExpressions.size();
         return size != 1 ?
                 Lists.mutable.with(new SnowflakeAppError("SnowflakeApp can't be used with a plan containing '" + size + "' SQL expressions", ((SnowflakeAppContent)artifact.content).sqlExpressions)) :
                 Lists.mutable.empty();
-
     }
 
     @Override
-    public SnowflakeDeploymentResult publishToSandbox(MutableList<CommonProfile> profiles, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public SnowflakeDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, List<SnowflakeAppDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, routerExtensions);
-        return this.snowflakeDeploymentManager.deploy(profiles, artifact, runtimeConfigurations);
+        SnowflakeAppArtifact artifact = SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+        MutableList<? extends  FunctionActivatorError> validationError = validate(artifact);
+        if (validationError.isEmpty())
+        {
+            return this.snowflakeDeploymentManager.deploy(identity, artifact, runtimeConfigurations);
+        }
+        return new SnowflakeDeploymentResult(validationError.collect(v -> v.message));
+
     }
 
     @Override
     public SnowflakeAppArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return SnowflakeAppGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        return SnowflakeAppGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
     }
 
     @Override

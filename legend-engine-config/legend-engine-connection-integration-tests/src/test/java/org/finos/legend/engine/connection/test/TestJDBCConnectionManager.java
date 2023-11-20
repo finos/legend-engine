@@ -16,47 +16,43 @@ package org.finos.legend.engine.connection.test;
 
 import net.bytebuddy.asm.Advice;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.Authenticator;
+import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
-import org.finos.legend.connection.JDBCConnectionBuilder;
 import org.finos.legend.connection.LegendEnvironment;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
+import org.finos.legend.connection.impl.JDBCConnectionBuilder;
 import org.finos.legend.connection.impl.JDBCConnectionManager;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
-import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.sql.Connection;
 import java.sql.SQLTransientConnectionException;
 import java.util.Properties;
 
 public class TestJDBCConnectionManager
 {
     PostgresTestContainerWrapper postgresContainer;
-    private static final String TEST_STORE_INSTANCE_NAME = "test-store";
 
     private LegendEnvironment environment;
     private IdentityFactory identityFactory;
-    private InstrumentedStoreInstanceProvider storeInstanceProvider;
     private ConnectionFactory connectionFactory;
-    private StoreInstance storeInstance;
+    private Connection connection;
 
     @BeforeEach
     public void setup()
@@ -67,32 +63,37 @@ public class TestJDBCConnectionManager
         Properties properties = new Properties();
         properties.put("passwordRef", this.postgresContainer.getPassword());
 
-        LegendEnvironment.Builder environmentBuilder = new LegendEnvironment.Builder()
-                .withVaults(new PropertiesFileCredentialVault(properties))
-                .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
-                                .withIdentifier("Postgres")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
-                                                UserPasswordAuthenticationConfiguration.class
-                                        ).build()
+        LegendEnvironment.Builder environmentBuilder = LegendEnvironment.builder()
+                .vaults(new PropertiesFileCredentialVault(properties))
+                .databaseSupports(
+                        DatabaseSupport.builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism.builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD).authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build()
                 );
 
         this.environment = environmentBuilder.build();
-        this.identityFactory = new IdentityFactory.Builder(this.environment)
+        this.identityFactory = IdentityFactory.builder()
+                .environment(this.environment)
                 .build();
-        this.storeInstanceProvider = new InstrumentedStoreInstanceProvider();
         ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(
                 this.postgresContainer.getHost(),
                 this.postgresContainer.getPort(),
                 this.postgresContainer.getDatabaseName()
         );
-        this.storeInstance = new StoreInstance.Builder(this.environment)
-                .withIdentifier(TEST_STORE_INSTANCE_NAME)
-                .withStoreSupportIdentifier("Postgres")
-                .withConnectionSpecification(connectionSpecification)
+        this.connection = Connection.builder()
+                .databaseSupport(this.environment.getDatabaseSupport(RelationalDatabaseType.POSTGRES))
+                .identifier("test::connection")
+                .connectionSpecification(connectionSpecification)
+                .authenticationConfiguration(new UserPasswordAuthenticationConfiguration(
+                        postgresContainer.getUser(),
+                        new PropertiesFileSecret("passwordRef")
+                ))
                 .build();
     }
 
@@ -114,39 +115,37 @@ public class TestJDBCConnectionManager
                         .withConnectionTimeout(1000L)
                         .build()
         );
-        this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
-                .withCredentialBuilders(
+        this.connectionFactory = ConnectionFactory.builder()
+                .environment(this.environment)
+                .credentialBuilders(
                         new UserPasswordCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         customizedJDBCConnectionBuilder
                 )
                 .build();
-        this.storeInstanceProvider.injectStoreInstance(this.storeInstance);
         Identity identity = identityFactory.createIdentity(
-                new IdentitySpecification.Builder()
-                        .withName("test-user")
+                IdentitySpecification.builder()
+                        .name("test-user")
                         .build()
         );
-        ConnectionSpecification connectionSpecification = this.storeInstance.getConnectionSpecification();
-        AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(
-                postgresContainer.getUser(),
-                new PropertiesFileSecret("passwordRef")
-        );
-        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_STORE_INSTANCE_NAME, authenticationConfiguration);
+        ConnectionSpecification connectionSpecification = this.connection.getConnectionSpecification();
+        AuthenticationConfiguration authenticationConfiguration = this.connection.getAuthenticationConfiguration();
+
+        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, this.connection);
 
         JDBCConnectionManager connectionManager = JDBCConnectionManager.getInstance();
         Assertions.assertEquals(0, connectionManager.getPoolSize());
 
         // 1. Get a connection, this should initialize the pool as well as create a new connection in the empty pool
         // this connection should be active
-        Connection connection0 = this.connectionFactory.getConnection(identity, authenticator);
+        java.sql.Connection connection0 = this.connectionFactory.getConnection(identity, authenticator);
 
         String poolName = JDBCConnectionManager.getPoolName(identity, connectionSpecification, authenticationConfiguration);
         JDBCConnectionManager.ConnectionPool connectionPool = connectionManager.getPool(poolName);
 
         // 2. Close the connection, verify that the pool keeps this connection around in idle state
-        Connection underlyingConnection0 = connection0.unwrap(Connection.class);
+        java.sql.Connection underlyingConnection0 = connection0.unwrap(java.sql.Connection.class);
         connection0.close();
 
         Assertions.assertEquals(1, connectionPool.getTotalConnections());
@@ -154,9 +153,9 @@ public class TestJDBCConnectionManager
         Assertions.assertEquals(1, connectionPool.getIdleConnections());
 
         // 3. Get a new connection, the pool should return the idle connection and create no new connection
-        Connection connection1 = this.connectionFactory.getConnection(identity, authenticator);
+        java.sql.Connection connection1 = this.connectionFactory.getConnection(identity, authenticator);
 
-        Assertions.assertEquals(underlyingConnection0, connection1.unwrap(Connection.class));
+        Assertions.assertEquals(underlyingConnection0, connection1.unwrap(java.sql.Connection.class));
         Assertions.assertEquals(1, connectionPool.getTotalConnections());
         Assertions.assertEquals(1, connectionPool.getActiveConnections());
         Assertions.assertEquals(0, connectionPool.getIdleConnections());
@@ -180,36 +179,33 @@ public class TestJDBCConnectionManager
     @Test
     public void testConnectionPoolingForDifferentIdentities() throws Exception
     {
-        this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
-                .withCredentialBuilders(
+        this.connectionFactory = ConnectionFactory.builder()
+                .environment(this.environment)
+                .credentialBuilders(
                         new UserPasswordCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
                 )
                 .build();
-        this.storeInstanceProvider.injectStoreInstance(this.storeInstance);
         Identity identity1 = identityFactory.createIdentity(
-                new IdentitySpecification.Builder()
-                        .withName("testUser1")
+                IdentitySpecification.builder()
+                        .name("testUser1")
                         .build()
         );
         Identity identity2 = identityFactory.createIdentity(
-                new IdentitySpecification.Builder()
-                        .withName("testUser2")
+                IdentitySpecification.builder()
+                        .name("testUser2")
                         .build()
         );
-        ConnectionSpecification connectionSpecification = this.storeInstance.getConnectionSpecification();
-        AuthenticationConfiguration authenticationConfiguration = new UserPasswordAuthenticationConfiguration(
-                postgresContainer.getUser(),
-                new PropertiesFileSecret("passwordRef")
-        );
+        ConnectionSpecification connectionSpecification = this.connection.getConnectionSpecification();
+        AuthenticationConfiguration authenticationConfiguration = this.connection.getAuthenticationConfiguration();
 
         JDBCConnectionManager connectionManager = JDBCConnectionManager.getInstance();
         Assertions.assertEquals(0, connectionManager.getPoolSize());
 
         // 1. Get a new connection for identity1, which should initialize a pool
-        this.connectionFactory.getConnection(identity1, this.connectionFactory.getAuthenticator(identity1, TEST_STORE_INSTANCE_NAME, authenticationConfiguration));
+        this.connectionFactory.getConnection(identity1, this.connectionFactory.getAuthenticator(identity1, this.connection));
 
         String poolName1 = JDBCConnectionManager.getPoolName(identity1, connectionSpecification, authenticationConfiguration);
         JDBCConnectionManager.ConnectionPool connectionPool1 = connectionManager.getPool(poolName1);
@@ -220,7 +216,7 @@ public class TestJDBCConnectionManager
         Assertions.assertEquals(0, connectionPool1.getIdleConnections());
 
         // 2. Get a new connection for identity2, which should initialize another pool
-        this.connectionFactory.getConnection(identity2, this.connectionFactory.getAuthenticator(identity2, TEST_STORE_INSTANCE_NAME, authenticationConfiguration));
+        this.connectionFactory.getConnection(identity2, this.connectionFactory.getAuthenticator(identity2, this.connection));
 
         String poolName2 = JDBCConnectionManager.getPoolName(identity2, connectionSpecification, authenticationConfiguration);
         JDBCConnectionManager.ConnectionPool connectionPool2 = connectionManager.getPool(poolName2);
@@ -234,7 +230,7 @@ public class TestJDBCConnectionManager
     @Test
     public void testRetryOnBrokenConnection()
     {
-        //
+        // TODO
     }
 
     public static class CustomAdvice
@@ -246,50 +242,4 @@ public class TestJDBCConnectionManager
             value = "hi: " + value;
         }
     }
-
-//    public static class MyWay
-//    {
-//    }
-//
-//    private static class InstrumentedStaticJDBCConnectionBuilder
-//    {
-//        static class WithPlaintextUsernamePassword extends StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword
-//        {
-//            WithPlaintextUsernamePassword(Function<HikariConfig, Void> hikariConfigHandler)
-//            {
-//                this.connectionManager = new InstrumentedJDBCConnectionManager(hikariConfigHandler);
-//            }
-//
-//            @Override
-//            public JDBCConnectionManager getConnectionManager()
-//            {
-//                return this.connectionManager;
-//            }
-//
-//            @Override
-//            protected Type[] actualTypeArguments()
-//            {
-//                Type genericSuperClass = this.getClass().getSuperclass().getGenericSuperclass();
-//                ParameterizedType parameterizedType = (ParameterizedType) genericSuperClass;
-//                return parameterizedType.getActualTypeArguments();
-//            }
-//        }
-//    }
-//
-//    private static class InstrumentedJDBCConnectionManager extends JDBCConnectionManager
-//    {
-//        private final Function<HikariConfig, Void> hikariConfigHandler;
-//
-//        InstrumentedJDBCConnectionManager(Function<HikariConfig, Void> hikariConfigHandler)
-//        {
-//            this.hikariConfigHandler = hikariConfigHandler;
-//        }
-//
-////        @Override
-////        protected void handleHikariConfig(HikariConfig config)
-////        {
-////            config.setRegisterMbeans(true);
-////            this.hikariConfigHandler.apply(config);
-////        }
-//    }
 }

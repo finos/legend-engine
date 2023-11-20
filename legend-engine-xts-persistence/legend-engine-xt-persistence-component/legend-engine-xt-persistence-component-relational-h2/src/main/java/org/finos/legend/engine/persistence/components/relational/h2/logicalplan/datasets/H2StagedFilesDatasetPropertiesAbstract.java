@@ -39,7 +39,7 @@ public interface H2StagedFilesDatasetPropertiesAbstract extends StagedFilesDatas
         {
             throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, only 1 file per load supported");
         }
-        if (!fileFormat().equals(FileFormat.CSV))
+        if (fileFormat() != FileFormat.CSV)
         {
             throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, only CSV file loading supported");
         }

@@ -200,6 +200,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log10(%s)')),
+    dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('ltrim',                  $allStates,            ^ToSql(format='ltrim(%s)')),
     dynaFnToSql('max',                    $allStates,            ^ToSql(format='max(%s)')),
     dynaFnToSql('md5',                    $allStates,            ^ToSql(format='md5(%s)')),
@@ -215,6 +216,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='repeat(%s, %s)')),
     dynaFnToSql('replace',                $allStates,            ^ToSql(format='replace(%s, %s, %s)')),
     dynaFnToSql('reverseString',          $allStates,            ^ToSql(format='reverse(%s)')),
+    dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[*] | $p->joinStrings(', ')})),
     dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('rowNumber',              $allStates,            ^ToSql(format='row_number()')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='sha1(%s)')),
@@ -297,9 +299,56 @@ function meta::relational::functions::sqlQueryToString::default::processSelectCo
        );
 }
 
+function meta::relational::functions::sqlQueryToString::default::convertFullOuterJoinToLeftRightOuter(s:SelectSQLQuery[1]) : RelationalOperationElement[1] 
+{
+    // Emulate full outer join using a union of both a LEFT_OUTER and a RIGHT_OUTER join
+    // https://en.wikipedia.org/wiki/Join_(SQL)#Full_outer_join
+    //
+    // for the RIGHT_OUTER part of the query, we need to filter out rows successfully joined from the LHS (to avoid duplicates
+    // from the LEFT_OUTER query).  Given we don't easily know the join keys / PK, we do this by adding a synthetic constant column to
+    // the LHS query and then filtering on where this synthetic key is null
+
+    ^UnionAll(
+      queries = [
+        ^$s(data = $s.data->map(d|^$d(childrenData = $d.childrenData->cast(@JoinTreeNode)->map(cd|^$cd(joinType = JoinType.LEFT_OUTER))))),
+        ^$s(
+            data = $s.data->map(d|
+                ^$d(
+                    alias = $d.alias->map(a|^$a(relationalElement = $a.relationalElement->cast(@TdsSelectSqlQuery)->map(x|^$x(columns = $x.columns->concatenate(^Alias(name='"_lhsJoinValid_' + + $a.name, relationalElement=^Literal(value=1))))))),
+                    childrenData = $d.childrenData->cast(@JoinTreeNode)->map(cd|^$cd(joinType = JoinType.RIGHT_OUTER))
+                    )
+                )
+            )
+            ->map(newS|
+                ^$newS(
+                        filteringOperation = ^DynaFunction(name = 'not', parameters = ^DynaFunction(name='equal', parameters=[^TableAliasColumn(alias=$newS.data.alias->toOne(),column=^Column(type=^meta::relational::metamodel::datatype::Integer(),name='"_lhsJoinValid_' + + $newS.data.alias.name)),^Literal(value=1)]))
+                    )
+
+            )
+        ]
+      )
+}
+
+function meta::relational::functions::sqlQueryToString::default::processJoinType(joinType:JoinType[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+  if($joinType == JoinType.INNER,
+    | ' ' + $format.separator() + 'inner join ',
+    | if($joinType == JoinType.LEFT_OUTER,
+        | ' ' + $format.separator() + 'left outer join ',
+        | if($joinType == JoinType.RIGHT_OUTER, 
+          | ' ' + $format.separator() + 'right outer join ', 
+          | if($joinType == JoinType.FULL_OUTER, 
+            | ' ' + $format.separator() + 'full outer join ', 
+            | fail('Unsupported join type: ' + $joinType->toString()); ''; 
+            )
+          )
+        )
+    )
+}    
+
 function meta::relational::functions::sqlQueryToString::default::processJoinTreeNodeWithLateralJoinDefault(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
 {
-   if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join ')) + 'lateral '
+   $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('') + 'lateral '
    + $j.alias
        ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
        ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
@@ -323,7 +372,7 @@ function meta::relational::functions::sqlQueryToString::default::processJoinTree
                                        j:JoinTreeNode[1] |
                                              if($j.lateral == true,
                                              | $dbConfig.lateralJoinProcessor($j, $dbConfig, $format, $extensions),
-                                             | if($j.joinType == JoinType.INNER,| ' ' + $format.separator() + 'inner join ',|if($j.joinType == JoinType.LEFT_OUTER,| ' ' + $format.separator() + 'left outer join ',| ' ' + $format.separator() + 'right outer join '))
+                                             | $j.joinType->map(jt|$jt->processJoinType($dbConfig, $format, $extensions))->orElse('')
                                                + $j.alias
                                                    ->map(a|^$a(name = '"' + $a.name + '"')) //Not sure why this is necessary, but it's retained to keep the generated SQL the same as previously (and does no real harm)
                                                    ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()

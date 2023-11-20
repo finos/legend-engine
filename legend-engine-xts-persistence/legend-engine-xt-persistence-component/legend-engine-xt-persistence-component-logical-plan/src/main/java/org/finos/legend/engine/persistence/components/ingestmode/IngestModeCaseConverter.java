@@ -20,11 +20,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
@@ -53,6 +49,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.validitymilesto
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivation;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.ValidityDerivationVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTimeAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 
 import java.util.Optional;
 import java.util.List;
@@ -77,10 +75,11 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     {
         return AppendOnly
                 .builder()
-                .dataSplitField(applyCase(appendOnly.dataSplitField()))
                 .digestField(applyCase(appendOnly.digestField()))
                 .auditing(appendOnly.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(appendOnly.deduplicationStrategy())
+                .versioningStrategy(appendOnly.versioningStrategy().accept(new VersionStrategyCaseConverter()))
+                .filterExistingRecords(appendOnly.filterExistingRecords())
                 .build();
     }
 
@@ -89,8 +88,9 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     {
         return NontemporalSnapshot
                 .builder()
-                .dataSplitField(applyCase(nontemporalSnapshot.dataSplitField()))
                 .auditing(nontemporalSnapshot.auditing().accept(new AuditingCaseConverter()))
+                .deduplicationStrategy(nontemporalSnapshot.deduplicationStrategy())
+                .versioningStrategy(nontemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -100,9 +100,9 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         return NontemporalDelta
                 .builder()
                 .digestField(applyCase(nontemporalDelta.digestField()))
-                .dataSplitField(applyCase(nontemporalDelta.dataSplitField()))
                 .mergeStrategy(nontemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
                 .auditing(nontemporalDelta.auditing().accept(new AuditingCaseConverter()))
+                .deduplicationStrategy(nontemporalDelta.deduplicationStrategy())
                 .versioningStrategy(nontemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
@@ -117,6 +117,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .addAllPartitionFields(applyCase(unitemporalSnapshot.partitionFields()))
                 .putAllPartitionValuesByField(applyCase(unitemporalSnapshot.partitionValuesByField()))
                 .emptyDatasetHandling(unitemporalSnapshot.emptyDatasetHandling())
+                .deduplicationStrategy(unitemporalSnapshot.deduplicationStrategy())
+                .versioningStrategy(unitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -126,10 +128,10 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         return UnitemporalDelta
                 .builder()
                 .digestField(applyCase(unitemporalDelta.digestField()))
-                .dataSplitField(applyCase(unitemporalDelta.dataSplitField()))
                 .addAllOptimizationFilters(unitemporalDelta.optimizationFilters().stream().map(filter -> applyCase(filter)).collect(Collectors.toList()))
                 .transactionMilestoning(unitemporalDelta.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .mergeStrategy(unitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
+                .deduplicationStrategy(unitemporalDelta.deduplicationStrategy())
                 .versioningStrategy(unitemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
@@ -144,6 +146,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .validityMilestoning(bitemporalSnapshot.validityMilestoning().accept(new ValidityMilestoningCaseConverter()))
                 .addAllPartitionFields(applyCase(bitemporalSnapshot.partitionFields()))
                 .putAllPartitionValuesByField(applyCase(bitemporalSnapshot.partitionValuesByField()))
+                .deduplicationStrategy(bitemporalSnapshot.deduplicationStrategy())
+                .versioningStrategy(bitemporalSnapshot.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -153,11 +157,12 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         return BitemporalDelta
                 .builder()
                 .digestField(applyCase(bitemporalDelta.digestField()))
-                .dataSplitField(applyCase(bitemporalDelta.dataSplitField()))
                 .transactionMilestoning(bitemporalDelta.transactionMilestoning().accept(new TransactionMilestoningCaseConverter()))
                 .validityMilestoning(bitemporalDelta.validityMilestoning().accept(new ValidityMilestoningCaseConverter()))
                 .deduplicationStrategy(bitemporalDelta.deduplicationStrategy())
                 .mergeStrategy(bitemporalDelta.mergeStrategy().accept(new MergeStrategyCaseConverter()))
+                .versioningStrategy(bitemporalDelta.versioningStrategy().accept(new VersionStrategyCaseConverter()))
+                .filterExistingRecords(bitemporalDelta.filterExistingRecords())
                 .build();
     }
 
@@ -168,6 +173,8 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                 .batchIdField(applyCase(bulkLoad.batchIdField()))
                 .digestGenStrategy(bulkLoad.digestGenStrategy().accept(new DigestGenStrategyCaseConverter()))
                 .auditing(bulkLoad.auditing().accept(new AuditingCaseConverter()))
+                .deduplicationStrategy(bulkLoad.deduplicationStrategy())
+                .versioningStrategy(bulkLoad.versioningStrategy().accept(new VersionStrategyCaseConverter()))
                 .build();
     }
 
@@ -341,11 +348,23 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
         {
             return MaxVersionStrategy
                     .builder()
-                    .versioningComparator(maxVersionStrategy.versioningComparator())
+                    .mergeDataVersionResolver(maxVersionStrategy.mergeDataVersionResolver())
                     .versioningField(strategy.apply(maxVersionStrategy.versioningField()))
-                    .performDeduplication(maxVersionStrategy.performDeduplication())
+                    .performStageVersioning(maxVersionStrategy.performStageVersioning())
+                    .build();
+        }
+
+        @Override
+        public VersioningStrategy visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+        {
+            return AllVersionsStrategy
+                    .builder()
+                    .mergeDataVersionResolver(allVersionsStrategyAbstract.mergeDataVersionResolver())
+                    .versioningField(strategy.apply(allVersionsStrategyAbstract.versioningField()))
+                    .versioningOrder(allVersionsStrategyAbstract.versioningOrder())
+                    .dataSplitFieldName(strategy.apply(allVersionsStrategyAbstract.dataSplitFieldName()))
+                    .performStageVersioning(allVersionsStrategyAbstract.performStageVersioning())
                     .build();
         }
     }
-
 }

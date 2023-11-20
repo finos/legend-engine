@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.SnowflakeAppParserGrammar;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -28,7 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
-import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.Collections;
@@ -56,21 +58,6 @@ public class SnowflakeAppTreeWalker
         {
             ctx.snowflakeApp().stream().map(this::visitSnowflakeApp).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
         }
-        if (ctx.deploymentConfig() != null && !ctx.deploymentConfig().isEmpty())
-        {
-            ctx.deploymentConfig().stream().map(this::visitDeploymentConfig).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-        }
-    }
-
-    private SnowflakeDeploymentConfiguration visitDeploymentConfig(SnowflakeAppParserGrammar.DeploymentConfigContext ctx)
-    {
-        SnowflakeDeploymentConfiguration config = new SnowflakeDeploymentConfiguration();
-        ConnectionPointer pointer = new ConnectionPointer();
-        pointer.connection = PureGrammarParserUtility.fromQualifiedName(ctx.activationConnection().qualifiedName().packagePath() == null
-                ? Collections.emptyList() : ctx.activationConnection().qualifiedName().packagePath().identifier(), ctx.activationConnection().qualifiedName().identifier());
-        pointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.activationConnection().qualifiedName());
-        config.activationConnection = pointer;
-        return config;
     }
 
     private SnowflakeApp visitSnowflakeApp(SnowflakeAppParserGrammar.SnowflakeAppContext ctx)
@@ -91,10 +78,32 @@ public class SnowflakeAppTreeWalker
         {
             snowflakeApp.owner = PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true);
         }
+        SnowflakeAppParserGrammar.TypeContext typeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.type(), "type", snowflakeApp.sourceInformation);
+        if (typeContext != null)
+        {
+            try
+            {
+                snowflakeApp.type = SnowflakeAppType.valueOf(PureGrammarParserUtility.fromIdentifier(typeContext.identifier()));
+            }
+            catch (Exception e)
+            {
+                throw new EngineException("Unknown type '" + PureGrammarParserUtility.fromIdentifier(typeContext.identifier()) + "'", this.walkerSourceInformation.getSourceInformation(typeContext), EngineErrorType.PARSER);
+            }
+        }
+
         SnowflakeAppParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", snowflakeApp.sourceInformation);
         if (descriptionContext != null)
         {
             snowflakeApp.description = PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true);
+        }
+        SnowflakeAppParserGrammar.ActivationContext activationContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.activation(), "activation", snowflakeApp.sourceInformation);
+        if (activationContext != null)
+        {
+            ConnectionPointer p = new ConnectionPointer();
+            p.connection = PureGrammarParserUtility.fromQualifiedName(activationContext.qualifiedName().packagePath() == null
+                    ? Collections.emptyList() : activationContext.qualifiedName().packagePath().identifier(), activationContext.qualifiedName().identifier());
+            p.sourceInformation = walkerSourceInformation.getSourceInformation(activationContext.qualifiedName());
+            snowflakeApp.activationConfiguration = new SnowflakeAppDeploymentConfiguration(p);
         }
         return snowflakeApp;
     }

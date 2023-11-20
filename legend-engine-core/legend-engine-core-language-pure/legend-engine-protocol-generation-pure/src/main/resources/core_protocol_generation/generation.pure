@@ -513,10 +513,16 @@ function meta::protocols::generation::java::conventions(purePackage:String[1], j
                                                   | '.' + $packageStr;
                                            );
         pair(
-          $c->identifier($package),
+          javaIdentifier($package),
           $c->identifier($x.name->toOne())->toUpperFirstCharacter()->toOne()
         );}
   );
+}
+
+function <<access.private>> meta::protocols::generation::java::javaIdentifier(name: String[1]):String[1]
+{
+   let keywordMap = javaKeywords()->buildKeywordReplacementMap();
+   $name->sanitizeIdentifier($keywordMap);
 }
 
 function meta::protocols::generation::java::addProvidedTypesFromDependencies(conventions: Conventions[1], dependencies: Configuration[*]): Conventions[1]

@@ -14,7 +14,34 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningVisitors;
+import org.immutables.value.Value;
+
+import java.util.Optional;
+
 public interface IngestMode
 {
+    @Value.Derived
+    default Optional<String> dataSplitField()
+    {
+        return this.versioningStrategy().accept(VersioningVisitors.EXTRACT_DATA_SPLIT_FIELD);
+    }
+
+    @Value.Default
+    default DeduplicationStrategy deduplicationStrategy()
+    {
+        return AllowDuplicates.builder().build();
+    }
+
+    @Value.Default
+    default VersioningStrategy versioningStrategy()
+    {
+        return NoVersioningStrategy.builder().build();
+    }
+
     <T> T accept(IngestModeVisitor<T> visitor);
 }

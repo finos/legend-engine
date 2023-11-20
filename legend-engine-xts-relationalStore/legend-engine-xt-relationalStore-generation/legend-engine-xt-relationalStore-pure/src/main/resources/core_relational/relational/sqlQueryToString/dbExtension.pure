@@ -609,6 +609,19 @@ function meta::relational::functions::sqlQueryToString::wrapAsBooleanOperation(e
    if ($e->isBooleanOperation($extensions), | $e, | ^DynaFunction(name ='equal', parameters=[$e, ^Literal(value=true)]););
 }
 
+function meta::relational::functions::sqlQueryToString::maybeWrapAsBooleanCaseOperation(e:RelationalOperationElement[1], sgc:SqlGenerationContext[1]):RelationalOperationElement[1]
+{
+   if ($sgc.dbConfig.dbExtension.isBooleanLiteralSupported,
+    |$e,
+    |$e->wrapAsBooleanCaseOperation($sgc.extensions)
+    );
+}
+ 
+function meta::relational::functions::sqlQueryToString::wrapAsBooleanCaseOperation(e:RelationalOperationElement[1], extensions:Extension[*]):RelationalOperationElement[1]
+{
+   if ($e->isBooleanOperation($extensions), | ^DynaFunction(name='case', parameters = [$e, ^Literal(value=true), ^Literal(value=false)]), | $e);
+}
+
 function meta::relational::functions::sqlQueryToString::isBooleanOperation(relationalElement:RelationalOperationElement[1], extensions:Extension[*]):Boolean[1]
 {
    $relationalElement->match($extensions.moduleExtension('relational')->cast(@RelationalExtension).sqlQueryToString_isBooleanOperation->concatenate([
@@ -690,7 +703,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::proce
                         |
                      if($func.name == 'if',
                         | $func.parameters->head()->map(p | $p->maybeWrapAsBooleanOperation($sgc))->concatenate($func.parameters->tail()),
-                        | $func.parameters
+                        | if (!$func->isBooleanOperation($sgc.extensions),
+                            | $func.parameters->map(p | $p->maybeWrapAsBooleanCaseOperation($sgc)),
+                            | $func.parameters)
                      ));
         let config = $sgc.config;
         let generationState = $sgc.generationState;
@@ -958,6 +973,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   lessThanEqual,
   log,
   log10,
+  lpad,
   ltrim,
   matches,
   max,
@@ -967,6 +983,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   minute,
   mod,
   month,
+  monthName,
   monthNumber,
   mostRecentDayOfWeek,
   not,
@@ -995,6 +1012,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   right,
   round,
   rowNumber,
+  rpad,
   rtrim,
   second,
   sha1,

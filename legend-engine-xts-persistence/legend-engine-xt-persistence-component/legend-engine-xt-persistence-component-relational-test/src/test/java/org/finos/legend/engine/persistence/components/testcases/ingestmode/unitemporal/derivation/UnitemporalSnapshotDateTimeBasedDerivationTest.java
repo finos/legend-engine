@@ -26,23 +26,30 @@ public class UnitemporalSnapshotDateTimeBasedDerivationTest
     UnitemporalSnapshotDateTimeBasedScenarios scenarios = new UnitemporalSnapshotDateTimeBasedScenarios();
 
     @Test
-    void testUnitemporalSnapshotWithoutPartitionNoDataSplits()
+    void testUnitemporalSnapshotWithoutPartitionNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
-    void testUnitemporalSnapshotWithPartitionNoDataSplits()
+    void testUnitemporalSnapshotWithoutPartitionFailOnDupsMaxVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITHOUT_PARTITIONS__FAIL_ON_DUP__MAX_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
-    void testUnitemporalSnapshotWithPartitionFilterNoDataSplits()
+    void testUnitemporalSnapshotWithPartitionNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION();
+        assertDerivedMainDataset(scenario);
+    }
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionFilterNoDedupNoVersion()
+    {
+        TestScenario scenario = scenarios.DATETIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 }

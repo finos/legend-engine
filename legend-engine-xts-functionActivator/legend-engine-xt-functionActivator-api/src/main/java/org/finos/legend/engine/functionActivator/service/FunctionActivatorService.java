@@ -18,16 +18,14 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
-import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
-import org.finos.legend.engine.functionActivator.deployment.DeploymentResult;
+import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 
@@ -37,9 +35,9 @@ public interface FunctionActivatorService<T extends Root_meta_external_function_
 
     boolean supports(Root_meta_external_function_activator_FunctionActivator packageableElement);
 
-    MutableList<? extends FunctionActivatorError> validate(MutableList<CommonProfile> profiles, PureModel pureModel, T functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
+    MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, T functionActivator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 
-    V publishToSandbox(MutableList<CommonProfile> profiles, PureModel pureModel, T functionActivator, PureModelContext inputModel, List<U> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
+    V publishToSandbox(Identity identity, PureModel pureModel, T functionActivator, PureModelContext inputModel, List<U> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 
    FunctionActivatorArtifact renderArtifact(PureModel pureModel, T functionActivator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions);
 

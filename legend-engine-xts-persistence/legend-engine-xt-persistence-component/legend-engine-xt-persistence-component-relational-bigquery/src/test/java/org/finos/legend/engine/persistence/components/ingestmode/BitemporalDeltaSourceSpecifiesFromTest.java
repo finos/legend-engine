@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.getDropTempTableQuery;
+
 public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourceSpecifiesFromTestCases
 {
 
@@ -111,10 +113,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     public void verifyBitemporalDeltaBatchIdBasedNoDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedStageToTemp = "INSERT INTO `mydb`.`temp` " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`data_split` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as legend_persistence_x " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`version`,stage.`data_split` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`legend_persistence_start_date`),MIN(legend_persistence_x.`legend_persistence_end_date`)) as `legend_persistence_end_date` " +
                 "FROM " +
@@ -132,10 +134,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_x.`validity_from_reference` = legend_persistence_y.`legend_persistence_start_date`))";
 
         String expectedMainToTemp = "INSERT INTO `mydb`.`temp` " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
+                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`version`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
                 "INNER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,legend_persistence_x.`legend_persistence_end_date` as `legend_persistence_end_date` " +
                 "FROM " +
@@ -160,12 +162,12 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (sink.`batch_id_out` = 999999999)";
 
         String expectedTempToMain = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `digest`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
-                "(SELECT temp.`id`,temp.`name`,temp.`amount`,temp.`digest`,temp.`batch_id_in`,temp.`batch_id_out`,temp.`validity_from_target`,temp.`validity_through_target` FROM `mydb`.`temp` as temp)";
+                "(`id`, `name`, `amount`, `digest`, `version`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
+                "(SELECT temp.`id`,temp.`name`,temp.`amount`,temp.`digest`,temp.`version`,temp.`batch_id_in`,temp.`batch_id_out`,temp.`validity_from_target`,temp.`validity_through_target` FROM `mydb`.`temp` as temp)";
 
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableWithVersionCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyTempTableWithVersionCreateQuery, operations.get(0).preActionsSql().get(2));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedStageToTemp, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMainToTemp, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
@@ -181,6 +183,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
+
+        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`temp`"), operations.get(0).postCleanupSql().get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         verifyStats(operations.get(0), enrichSqlWithDataSplits(incomingRecordCount,dataSplitRanges.get(0)), rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
@@ -314,6 +318,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`name` STRING NOT NULL," +
                 "`amount` FLOAT64," +
                 "`digest` STRING," +
+                "`version` INT64," +
                 "`batch_id_in` INT64 NOT NULL," +
                 "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
@@ -325,6 +330,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`name` STRING NOT NULL," +
                 "`amount` FLOAT64," +
                 "`digest` STRING," +
+                "`version` INT64," +
                 "`batch_id_in` INT64 NOT NULL," +
                 "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
@@ -333,10 +339,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`) NOT ENFORCED)";
 
         String expectedStageToTemp = "INSERT INTO " + tempName + " " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`delete_indicator`,stage.`data_split` FROM `mydb`.`staging` as stage WHERE (stage.`delete_indicator` NOT IN ('yes','1','true')) AND ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) as legend_persistence_x " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`version`,stage.`delete_indicator`,stage.`data_split` FROM `mydb`.`staging` as stage WHERE (stage.`delete_indicator` NOT IN ('yes','1','true')) AND ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`legend_persistence_start_date`),MIN(legend_persistence_x.`legend_persistence_end_date`)) as `legend_persistence_end_date` " +
                 "FROM " +
@@ -354,10 +360,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_x.`validity_from_reference` = legend_persistence_y.`legend_persistence_start_date`))";
 
         String expectedMainToTemp = "INSERT INTO " + tempName + " " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
+                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`version`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
                 "INNER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,legend_persistence_x.`legend_persistence_end_date` as `legend_persistence_end_date` " +
                 "FROM " +
@@ -382,12 +388,12 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (sink.`batch_id_out` = 999999999)";
 
         String expectedTempToMain = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `digest`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
-                "(SELECT legend_persistence_temp.`id`,legend_persistence_temp.`name`,legend_persistence_temp.`amount`,legend_persistence_temp.`digest`,legend_persistence_temp.`batch_id_in`,legend_persistence_temp.`batch_id_out`,legend_persistence_temp.`validity_from_target`,legend_persistence_temp.`validity_through_target` FROM " + tempName + " as legend_persistence_temp)";
+                "(`id`, `name`, `amount`, `digest`, `version`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
+                "(SELECT legend_persistence_temp.`id`,legend_persistence_temp.`name`,legend_persistence_temp.`amount`,legend_persistence_temp.`digest`,legend_persistence_temp.`version`,legend_persistence_temp.`batch_id_in`,legend_persistence_temp.`batch_id_out`,legend_persistence_temp.`validity_from_target`,legend_persistence_temp.`validity_through_target` FROM " + tempName + " as legend_persistence_temp)";
 
         String expectedMainToTempForDeletion = "INSERT INTO " + tempWithDeleteIndicatorName + " " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `delete_indicator`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_x.`validity_through_target` as `legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,(CASE WHEN legend_persistence_y.`delete_indicator` IS NULL THEN 0 ELSE 1 END) " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `delete_indicator`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_x.`validity_through_target` as `legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,(CASE WHEN legend_persistence_y.`delete_indicator` IS NULL THEN 0 ELSE 1 END) " +
                 "FROM " +
                 "(SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) " +
                 "AND (EXISTS " +
@@ -407,19 +413,19 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (sink.`batch_id_out` = 999999999)";
 
         String expectedTempToMainForDeletion = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`legend_persistence_start_date` as `legend_persistence_start_date`,MAX(legend_persistence_y.`validity_through_target`) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` FROM " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`validity_from_target`),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`legend_persistence_start_date` as `legend_persistence_start_date`,MAX(legend_persistence_y.`validity_through_target`) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` FROM " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`validity_from_target`),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` " +
                 "FROM " + tempWithDeleteIndicatorName + " as legend_persistence_x " +
                 "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_y.`validity_from_target` > legend_persistence_x.`validity_from_target`) AND (legend_persistence_y.`delete_indicator` = 0) " +
                 "WHERE legend_persistence_x.`delete_indicator` = 0 " +
-                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`digest`, legend_persistence_x.`validity_from_target`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`) as legend_persistence_x " +
+                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`version`, legend_persistence_x.`digest`, legend_persistence_x.`validity_from_target`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`) as legend_persistence_x " +
                 "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_y.`validity_through_target` > legend_persistence_x.`legend_persistence_start_date`) AND (legend_persistence_y.`validity_through_target` <= legend_persistence_x.`legend_persistence_end_date`) AND (legend_persistence_y.`delete_indicator` <> 0) " +
-                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`digest`, legend_persistence_x.`legend_persistence_start_date`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`)";
+                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`version`, legend_persistence_x.`digest`, legend_persistence_x.`legend_persistence_start_date`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`)";
 
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableWithVersionCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery, operations.get(0).preActionsSql().get(3));
@@ -445,6 +451,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedCleanupSql(tempWithDeleteIndicatorName, "legend_persistence_tempWithDeleteIndicator"), operations.get(1).ingestSql().get(8));
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
         Assertions.assertEquals(2, operations.size());
+
+        Assertions.assertEquals(getDropTempTableQuery(tempName), operations.get(0).postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery(tempWithDeleteIndicatorName), operations.get(0).postCleanupSql().get(1));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`) AND (sink2.`validity_from_target` = sink.`validity_from_target`)) AND (sink2.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))))";
@@ -540,15 +549,15 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     public void verifyBitemporalDeltaBatchIdBasedNoDeleteIndWithDataSplitsFilterDuplicates(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedStageToStageWithoutDuplicates = "INSERT INTO `mydb`.`stagingWithoutDuplicates` " +
-                "(`id`, `name`, `amount`, `validity_from_reference`, `digest`, `data_split`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`data_split` FROM `mydb`.`staging` as stage " +
+                "(`id`, `name`, `amount`, `validity_from_reference`, `digest`, `version`, `data_split`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`version`,stage.`data_split` FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`digest` = stage.`digest`) AND (sink.`batch_id_out` = 999999999))))";
 
         String expectedStageToTemp = "INSERT INTO `mydb`.`temp` " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`data_split` FROM `mydb`.`stagingWithoutDuplicates` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as legend_persistence_x " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`version`,stage.`data_split` FROM `mydb`.`stagingWithoutDuplicates` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`legend_persistence_start_date`),MIN(legend_persistence_x.`legend_persistence_end_date`)) as `legend_persistence_end_date` " +
                 "FROM " +
@@ -566,10 +575,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_x.`validity_from_reference` = legend_persistence_y.`legend_persistence_start_date`))";
 
         String expectedMainToTemp = "INSERT INTO `mydb`.`temp` " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
+                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`version`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
                 "INNER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,legend_persistence_x.`legend_persistence_end_date` as `legend_persistence_end_date` " +
                 "FROM " +
@@ -594,13 +603,13 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (sink.`batch_id_out` = 999999999)";
 
         String expectedTempToMain = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `digest`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
-                "(SELECT temp.`id`,temp.`name`,temp.`amount`,temp.`digest`,temp.`batch_id_in`,temp.`batch_id_out`,temp.`validity_from_target`,temp.`validity_through_target` FROM `mydb`.`temp` as temp)";
+                "(`id`, `name`, `amount`, `digest`, `version`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
+                "(SELECT temp.`id`,temp.`name`,temp.`amount`,temp.`digest`,temp.`version`,temp.`batch_id_in`,temp.`batch_id_out`,temp.`validity_from_target`,temp.`validity_through_target` FROM `mydb`.`temp` as temp)";
 
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableWithVersionCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyStageWithDataSplitWithoutDuplicatesTableCreateQuery, operations.get(0).preActionsSql().get(3));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyTempTableWithVersionCreateQuery, operations.get(0).preActionsSql().get(2));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyStageWithVersionWithDataSplitWithoutDuplicatesTableCreateQuery, operations.get(0).preActionsSql().get(3));
 
         Assertions.assertEquals(expectedStageToStageWithoutDuplicates, operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedStageToTemp, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));
@@ -619,6 +628,9 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedCleanupSql("`mydb`.`stagingWithoutDuplicates`", "stage"), operations.get(1).ingestSql().get(6));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
+
+        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`temp`"), operations.get(0).postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`stagingWithoutDuplicates`"), operations.get(0).postCleanupSql().get(1));
 
         Assertions.assertEquals(2, operations.size());
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
@@ -763,6 +775,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`name` STRING NOT NULL," +
                 "`amount` FLOAT64," +
                 "`digest` STRING," +
+                "`version` INT64," +
                 "`batch_id_in` INT64 NOT NULL," +
                 "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
@@ -774,6 +787,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`name` STRING NOT NULL," +
                 "`amount` FLOAT64," +
                 "`digest` STRING," +
+                "`version` INT64," +
                 "`batch_id_in` INT64 NOT NULL," +
                 "`batch_id_out` INT64," +
                 "`validity_from_target` DATETIME NOT NULL," +
@@ -787,20 +801,21 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`amount` FLOAT64," +
                 "`validity_from_reference` DATETIME NOT NULL," +
                 "`digest` STRING," +
+                "`version` INT64," +
                 "`delete_indicator` STRING," +
                 "`data_split` INT64 NOT NULL," +
                 "PRIMARY KEY (`id`, `name`, `validity_from_reference`, `data_split`) NOT ENFORCED)";
 
         String expectedStageToStageWithoutDuplicates = "INSERT INTO " + stageWithoutDuplicatesName + " " +
-                "(`id`, `name`, `amount`, `validity_from_reference`, `digest`, `delete_indicator`, `data_split`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`delete_indicator`,stage.`data_split` FROM `mydb`.`staging` as stage " +
+                "(`id`, `name`, `amount`, `validity_from_reference`, `digest`, `version`, `delete_indicator`, `data_split`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest`,stage.`version`,stage.`delete_indicator`,stage.`data_split` FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`digest` = stage.`digest`) AND (sink.`batch_id_out` = 999999999))))";
 
         String expectedStageToTemp = "INSERT INTO " + tempName + " " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT legend_persistence_stageWithoutDuplicates.`id`,legend_persistence_stageWithoutDuplicates.`name`,legend_persistence_stageWithoutDuplicates.`amount`,legend_persistence_stageWithoutDuplicates.`validity_from_reference`,legend_persistence_stageWithoutDuplicates.`digest`,legend_persistence_stageWithoutDuplicates.`delete_indicator`,legend_persistence_stageWithoutDuplicates.`data_split` FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates WHERE (legend_persistence_stageWithoutDuplicates.`delete_indicator` NOT IN ('yes','1','true')) AND ((legend_persistence_stageWithoutDuplicates.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (legend_persistence_stageWithoutDuplicates.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) as legend_persistence_x " +
+                "(SELECT legend_persistence_stageWithoutDuplicates.`id`,legend_persistence_stageWithoutDuplicates.`name`,legend_persistence_stageWithoutDuplicates.`amount`,legend_persistence_stageWithoutDuplicates.`validity_from_reference`,legend_persistence_stageWithoutDuplicates.`digest`,legend_persistence_stageWithoutDuplicates.`version`,legend_persistence_stageWithoutDuplicates.`delete_indicator`,legend_persistence_stageWithoutDuplicates.`data_split` FROM " + stageWithoutDuplicatesName + " as legend_persistence_stageWithoutDuplicates WHERE (legend_persistence_stageWithoutDuplicates.`delete_indicator` NOT IN ('yes','1','true')) AND ((legend_persistence_stageWithoutDuplicates.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (legend_persistence_stageWithoutDuplicates.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`legend_persistence_start_date`),MIN(legend_persistence_x.`legend_persistence_end_date`)) as `legend_persistence_end_date` " +
                 "FROM " +
@@ -818,10 +833,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_x.`validity_from_reference` = legend_persistence_y.`legend_persistence_start_date`))";
 
         String expectedMainToTemp = "INSERT INTO " + tempName + " " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
                 "FROM " +
-                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
+                "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`version`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999) as legend_persistence_x " +
                 "INNER JOIN " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`legend_persistence_start_date`,legend_persistence_x.`legend_persistence_end_date` as `legend_persistence_end_date` " +
                 "FROM " +
@@ -846,12 +861,12 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (sink.`batch_id_out` = 999999999)";
 
         String expectedTempToMain = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `digest`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
-                "(SELECT legend_persistence_temp.`id`,legend_persistence_temp.`name`,legend_persistence_temp.`amount`,legend_persistence_temp.`digest`,legend_persistence_temp.`batch_id_in`,legend_persistence_temp.`batch_id_out`,legend_persistence_temp.`validity_from_target`,legend_persistence_temp.`validity_through_target` FROM " + tempName + " as legend_persistence_temp)";
+                "(`id`, `name`, `amount`, `digest`, `version`, `batch_id_in`, `batch_id_out`, `validity_from_target`, `validity_through_target`) " +
+                "(SELECT legend_persistence_temp.`id`,legend_persistence_temp.`name`,legend_persistence_temp.`amount`,legend_persistence_temp.`digest`,legend_persistence_temp.`version`,legend_persistence_temp.`batch_id_in`,legend_persistence_temp.`batch_id_out`,legend_persistence_temp.`validity_from_target`,legend_persistence_temp.`validity_through_target` FROM " + tempName + " as legend_persistence_temp)";
 
         String expectedMainToTempForDeletion = "INSERT INTO " + tempWithDeleteIndicatorName + " " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `delete_indicator`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_x.`validity_through_target` as `legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,(CASE WHEN legend_persistence_y.`delete_indicator` IS NULL THEN 0 ELSE 1 END) " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `delete_indicator`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_x.`validity_through_target` as `legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,(CASE WHEN legend_persistence_y.`delete_indicator` IS NULL THEN 0 ELSE 1 END) " +
                 "FROM " +
                 "(SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) " +
                 "AND (EXISTS " +
@@ -871,19 +886,19 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (sink.`batch_id_out` = 999999999)";
 
         String expectedTempToMainForDeletion = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`legend_persistence_start_date` as `legend_persistence_start_date`,MAX(legend_persistence_y.`validity_through_target`) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` FROM " +
-                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`validity_from_target`),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` " +
+                "(`id`, `name`, `amount`, `version`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`) " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`legend_persistence_start_date` as `legend_persistence_start_date`,MAX(legend_persistence_y.`validity_through_target`) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` FROM " +
+                "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`version`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,COALESCE(MIN(legend_persistence_y.`validity_from_target`),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) as `legend_persistence_end_date`,legend_persistence_x.`batch_id_in`,legend_persistence_x.`batch_id_out` " +
                 "FROM " + tempWithDeleteIndicatorName + " as legend_persistence_x " +
                 "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_y.`validity_from_target` > legend_persistence_x.`validity_from_target`) AND (legend_persistence_y.`delete_indicator` = 0) " +
                 "WHERE legend_persistence_x.`delete_indicator` = 0 " +
-                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`digest`, legend_persistence_x.`validity_from_target`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`) as legend_persistence_x " +
+                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`version`, legend_persistence_x.`digest`, legend_persistence_x.`validity_from_target`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`) as legend_persistence_x " +
                 "LEFT OUTER JOIN " + tempWithDeleteIndicatorName + " as legend_persistence_y " +
                 "ON ((legend_persistence_x.`id` = legend_persistence_y.`id`) AND (legend_persistence_x.`name` = legend_persistence_y.`name`)) AND (legend_persistence_y.`validity_through_target` > legend_persistence_x.`legend_persistence_start_date`) AND (legend_persistence_y.`validity_through_target` <= legend_persistence_x.`legend_persistence_end_date`) AND (legend_persistence_y.`delete_indicator` <> 0) " +
-                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`digest`, legend_persistence_x.`legend_persistence_start_date`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`)";
+                "GROUP BY legend_persistence_x.`id`, legend_persistence_x.`name`, legend_persistence_x.`amount`, legend_persistence_x.`version`, legend_persistence_x.`digest`, legend_persistence_x.`legend_persistence_start_date`, legend_persistence_x.`batch_id_in`, legend_persistence_x.`batch_id_out`)";
 
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBitemporalFromOnlyMainTableWithVersionCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, operations.get(0).preActionsSql().get(1));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableCreateQuery, operations.get(0).preActionsSql().get(2));
         Assertions.assertEquals(expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery, operations.get(0).preActionsSql().get(3));
@@ -914,6 +929,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         Assertions.assertEquals(getExpectedCleanupSql(stageWithoutDuplicatesName, "legend_persistence_stageWithoutDuplicates"), operations.get(1).ingestSql().get(10));
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
+
+        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`main_legend_persistence_temp`"), operations.get(0).postCleanupSql().get(0));
+        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`main_legend_persistence_tempWithDeleteIndicator`"), operations.get(0).postCleanupSql().get(1));
+        Assertions.assertEquals(getDropTempTableQuery("`mydb`.`staging_legend_persistence_stageWithoutDuplicates`"), operations.get(0).postCleanupSql().get(2));
 
         Assertions.assertEquals(2, operations.size());
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
@@ -1005,7 +1024,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String expectedStageToTemp = "INSERT INTO `mydb`.`temp` " +
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`," +
-                "legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
+                "legend_persistence_y.`legend_persistence_end_date`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
                 "FROM " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest` FROM `mydb`.`staging` as stage) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
@@ -1027,7 +1046,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String expectedMainToTemp = "INSERT INTO `mydb`.`temp` " +
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`," +
-                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
                 "FROM " +
                 "(SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_id_in`,sink.`batch_id_out`,sink.`batch_time_in`," +
                 "sink.`batch_time_out`,sink.`validity_from_target`,sink.`validity_through_target` FROM `mydb`.`main` as sink " +
@@ -1051,7 +1070,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
 
         String expectedUpdateMain = "UPDATE `mydb`.`main` as sink SET " +
                 "sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+                "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
                 "WHERE (EXISTS " +
                 "(SELECT * FROM `mydb`.`temp` as temp WHERE ((sink.`id` = temp.`id`) AND (sink.`name` = temp.`name`)) " +
                 "AND (sink.`validity_from_target` = temp.`validity_from_target`))) AND (sink.`batch_id_out` = 999999999)";
@@ -1086,7 +1105,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
         String expectedStageToTemp = "INSERT INTO `mydb`.`temp` " +
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`,legend_persistence_x.`validity_from_reference` as `legend_persistence_start_date`," +
-                "legend_persistence_y.`legend_persistence_end_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
+                "legend_persistence_y.`legend_persistence_end_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') " +
                 "FROM " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`validity_from_reference`,stage.`digest` FROM `mydb`.`staging` as stage) as legend_persistence_x " +
                 "LEFT OUTER JOIN " +
@@ -1109,7 +1128,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "(`id`, `name`, `amount`, `digest`, `validity_from_target`, `validity_through_target`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT legend_persistence_x.`id`,legend_persistence_x.`name`,legend_persistence_x.`amount`,legend_persistence_x.`digest`," +
                 "legend_persistence_x.`validity_from_target` as `legend_persistence_start_date`,legend_persistence_y.`legend_persistence_end_date`," +
-                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') FROM (SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_time_in`," +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59') FROM (SELECT sink.`id`,sink.`name`,sink.`amount`,sink.`digest`,sink.`batch_time_in`," +
                 "sink.`batch_time_out`,sink.`validity_from_target`,sink.`validity_through_target` " +
                 "FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59')) as legend_persistence_x " +
                 "INNER JOIN " +
@@ -1132,7 +1151,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "AND (legend_persistence_x.`validity_from_target` = legend_persistence_y.`legend_persistence_start_date`))";
 
         String expectedUpdateMain = "UPDATE `mydb`.`main` as sink SET " +
-                "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+                "sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
                 "WHERE (EXISTS (SELECT * FROM `mydb`.`temp` as temp WHERE " +
                 "((sink.`id` = temp.`id`) AND (sink.`name` = temp.`name`)) AND " +
                 "(sink.`validity_from_target` = temp.`validity_from_target`))) AND (sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','9999-12-31 23:59:59'))";
@@ -1154,8 +1173,8 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
 
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
-        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00')) as `rowsInserted`";
+        String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')) as `rowsInserted`";
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }

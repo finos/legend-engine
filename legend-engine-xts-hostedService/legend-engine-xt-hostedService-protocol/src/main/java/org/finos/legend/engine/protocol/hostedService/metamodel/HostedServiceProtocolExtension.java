@@ -17,6 +17,12 @@ package org.finos.legend.engine.protocol.hostedService.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceContent;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.Deployment;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.Ownership;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
@@ -41,6 +47,18 @@ public class HostedServiceProtocolExtension implements PureProtocolExtension
                 ProtocolSubTypeInfo.newBuilder(Ownership.class)
                         .withSubtype(UserList.class, "userList")
                         .withSubtype(Deployment.class, "deployment")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(DeploymentConfiguration.class)
+                        .withSubtype(HostedServiceDeploymentConfiguration.class, "hostedServiceDeploymentConfiguration")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
+                        .withSubtype(org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration.class, "hostedServiceDeploymentConfig")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorArtifact.class)
+                        .withSubtype(HostedServiceArtifact.class, "hostedServiceArtifact")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentContent.class)
+                        .withSubtype(HostedServiceContent.class, "hostedServiceDeploymentContent")
                         .build()
         ));
     }

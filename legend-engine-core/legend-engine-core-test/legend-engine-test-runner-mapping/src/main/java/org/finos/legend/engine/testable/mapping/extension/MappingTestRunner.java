@@ -19,7 +19,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
@@ -57,7 +56,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
-import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder.getElement;
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder.getStore;
 
 public class MappingTestRunner implements TestRunner
 {
@@ -142,7 +141,7 @@ public class MappingTestRunner implements TestRunner
                 Connection conn = connection.getOne();
                 Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("")
                         ._connection(conn.accept(context.getConnectionVisitor()))
-                        ._element(getElement(conn.element, conn.elementSourceInformation, context.getPureModel().getContext()));
+                        ._element(getStore(conn.element, conn.elementSourceInformation, context.getPureModel().getContext()));
                 runtime._connectionStoresAdd(connectionStore);
             });
             handleGenerationOfPlan(connections.stream().map(Pair::getOne).collect(Collectors.toList()), runtime, context);

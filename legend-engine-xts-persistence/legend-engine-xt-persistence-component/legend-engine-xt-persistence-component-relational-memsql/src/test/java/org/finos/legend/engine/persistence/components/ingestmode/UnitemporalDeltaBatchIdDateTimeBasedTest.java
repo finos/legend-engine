@@ -27,7 +27,7 @@ import java.util.List;
 public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaBatchIdDateTimeBasedTestCases
 {
     @Override
-    public void verifyUnitemporalDeltaNoDeleteIndNoAuditing(GeneratorResult operations)
+    public void verifyUnitemporalDeltaNoDeleteIndNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -35,7 +35,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
@@ -45,7 +45,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +
@@ -68,13 +68,13 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
     }
 
     @Override
-    public void verifyUnitemporalDeltaNoDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyUnitemporalDeltaNoDeleteIndFilterDupsAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
-                "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
+                "(EXISTS (SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
                 "(sink.`digest` <> stage.`digest`)))";
 
@@ -82,8 +82,8 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
-                "FROM `mydb`.`staging` as stage " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
+                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +
@@ -101,7 +101,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         Assertions.assertEquals(2, operations.size());
 
         // Stats
-        String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
         String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_in` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'))-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1) as `rowsInserted`";
@@ -111,7 +111,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithDeleteIndMultiValuesNoDataSplits(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithDeleteIndMultiValuesNoDedupNoVersion(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -119,7 +119,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET sink.`batch_id_out` = " +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE " +
                 "(sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
@@ -131,7 +131,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "`batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
                 "WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND (sink.`digest` = stage.`digest`) " +
                 "AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))) AND " +
@@ -154,7 +154,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithDeleteIndNoDataSplits(GeneratorResult operations)
+    public void verifyUnitemporalDeltaWithDeleteInd(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
         List<String> milestoningSql = operations.ingestSql();
@@ -162,7 +162,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET sink.`batch_id_out` = " +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE " +
                 "(sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage " +
@@ -174,7 +174,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "`batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
                 "WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND (sink.`digest` = stage.`digest`) " +
                 "AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))) AND " +
@@ -189,13 +189,13 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
     }
 
     @Override
-    public void verifyUnitemporalDeltaWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyUnitemporalDeltaWithDeleteIndFailOnDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
                 "sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
-                "(EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE " +
+                "(EXISTS (SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE " +
                 "((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
                 "((sink.`digest` <> stage.`digest`) OR (stage.`delete_indicator` IN ('yes','1','true')))))";
@@ -203,7 +203,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM `mydb`.`staging` as stage " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND " +
@@ -236,8 +236,8 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
 
-        String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink SET sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1,sink.`BATCH_TIME_OUT` = '2000-01-01 00:00:00' WHERE (sink.`BATCH_ID_OUT` = 999999999) AND (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` <> stage.`DIGEST`)))";
-        String expectedUpsertQuery = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `BATCH_ID_IN`, `BATCH_ID_OUT`, `BATCH_TIME_IN`, `BATCH_TIME_OUT`) (SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' FROM `MYDB`.`STAGING` as stage WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink WHERE (sink.`BATCH_ID_OUT` = 999999999) AND (sink.`DIGEST` = stage.`DIGEST`) AND ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)))))";
+        String expectedMilestoneQuery = "UPDATE `MYDB`.`MAIN` as sink SET sink.`BATCH_ID_OUT` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')-1,sink.`BATCH_TIME_OUT` = '2000-01-01 00:00:00.000000' WHERE (sink.`BATCH_ID_OUT` = 999999999) AND (EXISTS (SELECT * FROM `MYDB`.`STAGING` as stage WHERE ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (sink.`DIGEST` <> stage.`DIGEST`)))";
+        String expectedUpsertQuery = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `BATCH_ID_IN`, `BATCH_ID_OUT`, `BATCH_TIME_IN`, `BATCH_TIME_OUT`) (SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `MYDB`.`STAGING` as stage WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink WHERE (sink.`BATCH_ID_OUT` = 999999999) AND (sink.`DIGEST` = stage.`DIGEST`) AND ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)))))";
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
@@ -254,7 +254,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE " +
                 "((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`)))";
@@ -263,7 +263,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "(`id`, `name`, `amount`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM `mydb`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND (sink.`digest` = stage.`digest`) " +
@@ -329,7 +329,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
 
         String expectedMilestoneQuery = "UPDATE `my_schema`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `my_schema`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
@@ -339,7 +339,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM `my_schema`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `my_schema`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +
@@ -374,7 +374,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`my_schema`.`main` as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM `mydb`.`my_schema`.`staging` as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
@@ -384,7 +384,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM `mydb`.`my_schema`.`staging` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`my_schema`.`main` as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +
@@ -419,7 +419,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
 
         String expectedMilestoneQuery = "UPDATE main as sink " +
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1," +
-                "sink.`batch_time_out` = '2000-01-01 00:00:00' " +
+                "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_id_out` = 999999999) AND " +
                 "(EXISTS (SELECT * FROM staging as stage " +
                 "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
@@ -429,7 +429,7 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
-                "999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM staging as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM main as sink " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +

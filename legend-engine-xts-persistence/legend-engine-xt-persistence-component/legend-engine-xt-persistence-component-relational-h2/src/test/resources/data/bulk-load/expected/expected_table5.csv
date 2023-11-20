@@ -1,3 +1,6 @@
-1,Andy,5.20,2022-01-11 00:00:00.0,4B39799C7A1FB5EFC4BC328966A159E0,2000-01-01 00:00:00.0,src/test/resources/data/bulk-load/input/staged_file5.csv
-2,Bella,99.99,2022-01-12 00:00:00.0,58467B440BCED7607369DC8A260B0607,2000-01-01 00:00:00.0,src/test/resources/data/bulk-load/input/staged_file5.csv
-49,Sandy,123.45,2022-01-13 00:00:00.0,29B8C8A6CD28B069290372E6B54B6C72,2000-01-01 00:00:00.0,src/test/resources/data/bulk-load/input/staged_file5.csv
+1,Andy,5.20,2022-01-11 00:00:00.0,1
+2,Bella,99.99,2022-01-12 00:00:00.0,1
+49,Sandy,123.45,2022-01-13 00:00:00.0,1
+1,Andy,5.20,2022-01-11 00:00:00.0,2
+2,Bella,99.99,2022-01-12 00:00:00.0,2
+49,Sandy,123.45,2022-01-13 00:00:00.0,2

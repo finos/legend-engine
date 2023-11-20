@@ -40,4 +40,10 @@ public class PureSDLC extends SDLC
     {
         return Objects.hash(this.overrideUrl, this.version, this.baseVersion, this.packageableElementPointers);
     }
+
+    @Override
+    public <T> T accept(SDLCVisitor<T> visitor)
+    {
+        return visitor.visit(this);
+    }
 }

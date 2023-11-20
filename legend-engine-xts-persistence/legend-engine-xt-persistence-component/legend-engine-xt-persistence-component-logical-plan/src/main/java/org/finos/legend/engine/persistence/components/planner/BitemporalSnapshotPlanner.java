@@ -45,9 +45,9 @@ import java.util.stream.Collectors;
 
 class BitemporalSnapshotPlanner extends BitemporalPlanner
 {
-    BitemporalSnapshotPlanner(Datasets datasets, BitemporalSnapshot ingestMode, PlannerOptions plannerOptions)
+    BitemporalSnapshotPlanner(Datasets datasets, BitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // validate
 
@@ -67,7 +67,7 @@ class BitemporalSnapshotPlanner extends BitemporalPlanner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = keyValuesForMilestoningUpdate();
 
@@ -83,23 +83,6 @@ class BitemporalSnapshotPlanner extends BitemporalPlanner
             operations.add(getSqlToMilestoneRows(keyValuePairs));
             // Step 2: Insert records in main table
             operations.add(sqlToUpsertRows());
-        }
-        return LogicalPlan.of(operations);
-    }
-
-    @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            operations.add(Create.of(true, stagingDataset()));
-        }
-        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
-        if (options().enableConcurrentSafety())
-        {
-            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
         }
         return LogicalPlan.of(operations);
     }

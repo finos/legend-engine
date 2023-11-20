@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
+import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -36,23 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.finos.legend.engine.persistence.components.TestUtils.assertTableColumnsEquals;
-import static org.finos.legend.engine.persistence.components.TestUtils.assertUpdatedDataset;
-import static org.finos.legend.engine.persistence.components.TestUtils.createDatasetWithUpdatedField;
-import static org.finos.legend.engine.persistence.components.TestUtils.digestName;
-import static org.finos.legend.engine.persistence.components.TestUtils.expiryDateName;
-import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeFromTable;
-import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeLengthFromTable;
-import static org.finos.legend.engine.persistence.components.TestUtils.getColumnDataTypeScaleFromTable;
-import static org.finos.legend.engine.persistence.components.TestUtils.getIsColumnNullableFromTable;
-import static org.finos.legend.engine.persistence.components.TestUtils.idName;
-import static org.finos.legend.engine.persistence.components.TestUtils.incomeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.mainTableName;
-import static org.finos.legend.engine.persistence.components.TestUtils.name;
-import static org.finos.legend.engine.persistence.components.TestUtils.nameName;
-import static org.finos.legend.engine.persistence.components.TestUtils.startTimeName;
-import static org.finos.legend.engine.persistence.components.TestUtils.testDatabaseName;
-import static org.finos.legend.engine.persistence.components.TestUtils.testSchemaName;
+import static org.finos.legend.engine.persistence.components.TestUtils.*;
 
 class SchemaEvolutionTest extends BaseTest
 {
@@ -74,7 +59,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -82,7 +67,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.ADD_COLUMN);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "add_column_data_pass1.csv";
@@ -90,12 +75,8 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
@@ -110,12 +91,8 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+        expectedStats = createExpectedStatsMap(1, 0, 1, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_02);
     }
 
     @Test
@@ -134,7 +111,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -142,7 +119,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "data_type_conversion_data_pass1.csv";
@@ -150,12 +127,8 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
@@ -171,18 +144,14 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
     @Test
     void testDataTypeSizeChange() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeSizeChangeStagingTable();
 
         // Create staging table
@@ -195,7 +164,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -203,7 +172,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "datatype_type_size_change_data_pass1.csv";
@@ -211,12 +180,8 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForIntIncome(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
@@ -234,18 +199,14 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadStagingDataForIntIncome(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
     @Test
     void testColumnNullabilityChange() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionColumnNullabilityChangeStagingTable();
 
         // Create staging table
@@ -258,7 +219,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -266,7 +227,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "column_nullability_change_data_pass1.csv";
@@ -274,12 +235,8 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
@@ -295,12 +252,8 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
     @Test
@@ -319,7 +272,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -328,7 +281,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "data_type_conversion_and_column_nullability_change_data_pass1.csv";
@@ -336,12 +289,8 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
@@ -358,18 +307,14 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadBasicStagingData(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
     @Test
     void testDataTypeConversionAndDataTypeSizeChange() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionDataTypeConversionAndDataTypeSizeChangeStagingTable();
 
         // Create staging table
@@ -382,7 +327,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -391,7 +336,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_SIZE_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "data_type_conversion_and_data_type_size_change_data_pass1.csv";
@@ -399,12 +344,8 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForDecimalIncome(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
@@ -422,18 +363,14 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadStagingDataForDecimalIncome(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
     @Test
     void testMakeMainColumnNullable() throws Exception
     {
-        DatasetDefinition mainTable = TestUtils.getBasicMainTable();
+        DatasetDefinition mainTable = TestUtils.getMainTableWithBatchUpdateTimeField();
         DatasetDefinition stagingTable = TestUtils.getSchemaEvolutionMakeMainColumnNullableStagingTable();
 
         // Create staging table
@@ -445,7 +382,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -453,7 +390,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.COLUMN_NULLABILITY_CHANGE);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 (Schema Evolution) ------------------------
         String dataPass1 = basePathForInput + "make_main_column_nullable_data_pass1.csv";
@@ -461,12 +398,8 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadStagingDataForWithoutName(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
+        IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_01);
         // 3. Verify schema changes in database
         List<Map<String, Object>> actualTableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         assertTableColumnsEquals(Arrays.asList(schema), actualTableData);
@@ -482,12 +415,8 @@ class SchemaEvolutionTest extends BaseTest
         // 2. Load staging table
         loadStagingDataForWithoutName(dataPass2);
         // 3. Execute plans and verify results
-        expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
-        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet);
+        expectedStats = createExpectedStatsMap(1,0,1,0,0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
     }
 
     @Test
@@ -506,7 +435,7 @@ class SchemaEvolutionTest extends BaseTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestField(digestName)
             .deduplicationStrategy(FilterDuplicates.builder().build())
-            .auditing(NoAuditing.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
 
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).enableSchemaEvolution(true).build();
@@ -514,7 +443,7 @@ class SchemaEvolutionTest extends BaseTest
         schemaEvolutionCapabilitySet.add(SchemaEvolutionCapability.DATA_TYPE_CONVERSION);
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
 
         // ------------ Perform Pass1 ------------------------
         String dataPass1 = basePathForInput + "data_type_conversion_data_pass1.csv";
@@ -522,15 +451,11 @@ class SchemaEvolutionTest extends BaseTest
         // 1. Load staging table
         loadBasicStagingData(dataPass1);
         // 2. Execute plans and verify results
-        Map<String, Object> expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
-        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
-        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        Map<String, Object> expectedStats = createExpectedStatsMap(3,0,3,0,0);
 
         try
         {
-            IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet);
+            IngestorResult result = executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats, schemaEvolutionCapabilitySet, fixedClock_2000_01_03);
             Assertions.fail("Exception was not thrown");
         }
         catch (IncompatibleSchemaChangeException e)

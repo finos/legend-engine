@@ -525,6 +525,12 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
                                         handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)))
                         ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.h("meta::pure::tds::extensions::zScore_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+                        ),
+                        new FunctionExpressionBuilderRegistrationInfo(null,
+                                handlers.m(handlers.h("meta::pure::tds::extensions::iqrClassify_TabularDataSet_1__String_MANY__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res(ps.get(0)._genericType(), "one"), ps -> ps.size() == 4))
+                        ),
                         new FunctionExpressionBuilderRegistrationInfo(Lists.mutable.with(3),
                                 handlers.m(handlers.h("meta::pure::functions::asserts::assertEq_Any_1__Any_1__Function_1__Boolean_1_", false, ps -> handlers.res("Boolean", "one"), ps -> ps.size() == 3 && !handlers.typeOne(ps.get(2), "String")))
                         )

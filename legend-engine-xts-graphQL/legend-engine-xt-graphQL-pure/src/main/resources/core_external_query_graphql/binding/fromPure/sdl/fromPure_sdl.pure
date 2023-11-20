@@ -2,6 +2,7 @@ import meta::pure::model::unit::*;
 import meta::external::query::graphQL::binding::*;
 import meta::external::query::graphQL::binding::fromPure::sdl::*;
 import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
 import meta::external::query::graphQL::metamodel::sdl::typeSystem::*;
 import meta::external::query::graphQL::metamodel::sdl::executable::*;
 
@@ -92,6 +93,8 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
       ->distinct()
       ->filter(t | $t->instanceOf(Class));
 
+  let extendedClasses = $allTypes->map(t | $t->validGeneralizations());
+
   // Build types
   let graphQLTypes = $allTypes->map(c |
     $c->match(
@@ -102,13 +105,13 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
               buildInputObjectTypeDefinition($c)->concatenate(
                 if ($classReturnTypes->contains($c),
                   // Used as both -> needs both input and output types
-                  | buildObjectTypeDefinition($c), 
+                  | buildObjectTypeDefinition($c, $extendedClasses->contains($c)), 
                   // Used as input -> needs input
                   | []
                 )
               ),
               // Not used as input --> needs output (unused types will result in output types)
-            | buildObjectTypeDefinition($c)
+            | buildObjectTypeDefinition($c, $extendedClasses->contains($c))
           ),
         e:Enumeration<Any>[1] |
           ^EnumTypeDefinition(
@@ -130,15 +133,20 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
     ->distinct()
     ->map(s | temporalityToDirectives()->get($s)->toOne());
 
+  let interfaces = $extendedClasses->map(c | $c->buildInterfaceTypeDefinition());
+
   $partitioned.second.values
     // Remove duplicated scalar definitions
     ->concatenate($partitioned.first.values->cast(@ScalarTypeDefinition)->removeDuplicatesBy(s | $s.name->toOne()))
     ->concatenate($processingDirectives)
+    ->concatenate($interfaces)
+    ->concatenate(if($interfaces->isNotEmpty(), | hierarchyDirective(), | []))
     ->meta::pure::functions::collection::sortBy(t | 
       $t->match(
         [
           o : ObjectTypeDefinition[1] | $o.name, 
           i : InputObjectTypeDefinition[1] | $i.name, 
+          i : InterfaceTypeDefinition[1] | $i.name, 
           e : EnumTypeDefinition[1] | $e.name,
           s : ScalarTypeDefinition[1] | $s.name,
           d : DirectiveDefinition[1] | $d.name
@@ -165,7 +173,6 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
     ->map(s | $s.value)
 }
 
-
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::isValidPropertyForGraphQL(p: AbstractProperty<Any>[1]): Boolean[1]
 {
   !$p.name->in(['processingDate', 'businessDate', 'milestoning']);
@@ -186,7 +193,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildInputObjectTypeDefinition(c: Class<Any>[1]): TypeSystemDefinition[*]
 {
-  let props = $c->allProperties()->filter(p | $p->isValidPropertyForGraphQL());
+  let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars();
 
   let temporalStereotypes = $c->getTemporalStereotypes();
@@ -194,7 +201,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
     ->concatenate(
       ^InputObjectTypeDefinition(
         name = toInputTypeName($c.name->toOne()),
-        directives = if($temporalStereotypes->isEmpty(), | [], | $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))),
+        directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, true)),
         fields = $props
                   ->map(p |
                       ^InputValueDefinition
@@ -205,9 +212,9 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
       ));            
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1]): TypeSystemDefinition[*]
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1], isExtended: Boolean[1]): TypeSystemDefinition[*]
 {
-  let props = $c->allProperties()->filter(p | $p->isValidPropertyForGraphQL());
+  let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars();
 
   let temporalStereotypes = $c->getTemporalStereotypes();
@@ -215,9 +222,9 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
     ->concatenate(
       ^ObjectTypeDefinition(
         name = $c.name->toOne(),
-        directives = if($temporalStereotypes->isEmpty(), | [], | $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))),
-        fields = $c->allProperties()
-                    ->filter(p | $p->isValidPropertyForGraphQL())
+        implements = if($isExtended, | $c.name, | $c->validGeneralizations()->map(g | $g.name))->map(n | $n->toInterfaceTypeName()),
+        directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, false)),
+        fields = $props
                     ->map(p |
                       ^FieldDefinition
                       (
@@ -239,6 +246,27 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                       )
                     )
       ));
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildInterfaceTypeDefinition(c: Class<Any>[1]): TypeSystemDefinition[*]
+{
+  let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
+
+  let temporalStereotypes = $c->getTemporalStereotypes();
+  ^InterfaceTypeDefinition(
+    name = $c.name->toOne()->toInterfaceTypeName(),
+    implements = $c->validGeneralizations()->map(g | $g.name)->map(n | $n->toInterfaceTypeName()),
+    directives = $temporalStereotypes->map(s | temporalityToDirectives()->get($s)->toOne())->map(def | ^Directive(name = $def.name))->concatenate(buildHierarchyDirective($c, false)),
+    fields = $props
+                ->map(p |
+                  ^FieldDefinition
+                  (
+                    name = $p.name->toOne(),
+                    type = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity()),
+                    argumentDefinitions = []
+                  )
+                )
+  );
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeCompatibleTypeReference(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1]): TypeReference[1]
@@ -273,6 +301,11 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
   );
 }
 
+function meta::external::query::graphQL::binding::fromPure::sdl::buildHierarchyDirective(c: Class<Any>[1], forInput: Boolean[1]):Directive[*]
+{
+  $c->validGeneralizations()->map(g | ^Directive(name = meta::external::query::graphQL::binding::hierarchyDirective().name, arguments = ^Argument(name = 'class', value = ^StringValue(value = if($forInput, |$g.name->toOne()->toInputTypeName(), | $g.name->toOne())))));
+}
+
 function meta::external::query::graphQL::binding::fromPure::sdl::findTypes(pElems:meta::pure::metamodel::PackageableElement[*]):meta::pure::metamodel::type::Type[*]
 {
   $pElems
@@ -280,4 +313,3 @@ function meta::external::query::graphQL::binding::fromPure::sdl::findTypes(pElem
     ->cast(@meta::pure::metamodel::type::Type)
     ->removeDuplicates()
 }
-

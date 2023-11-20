@@ -15,10 +15,6 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategyAbstract;
@@ -41,7 +37,7 @@ public class IngestModeVisitors
         @Override
         public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return appendOnly.deduplicationStrategy().accept(DEDUPLICATION_STRATEGY_DIGEST_REQUIRED);
+            return appendOnly.filterExistingRecords();
         }
 
         @Override
@@ -158,7 +154,12 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return Collections.singleton(nontemporalDelta.digestField());
+            Set<String> metaFields = new HashSet<>();
+
+            metaFields.add(nontemporalDelta.digestField());
+            nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
+
+            return metaFields;
         }
 
         @Override
@@ -357,27 +358,6 @@ public class IngestModeVisitors
         public List<OptimizationFilter> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             return Collections.emptyList();
-        }
-    };
-
-    private static final DeduplicationStrategyVisitor<Boolean> DEDUPLICATION_STRATEGY_DIGEST_REQUIRED = new DeduplicationStrategyVisitor<Boolean>()
-    {
-        @Override
-        public Boolean visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-        {
-            return false;
         }
     };
 

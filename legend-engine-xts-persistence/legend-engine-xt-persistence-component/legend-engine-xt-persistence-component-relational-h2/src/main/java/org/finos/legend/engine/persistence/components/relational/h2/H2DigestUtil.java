@@ -17,9 +17,20 @@ package org.finos.legend.engine.persistence.components.relational.h2;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 
 public class H2DigestUtil
 {
+    private static final byte[] EMPTY_STRING = new byte[] { 88 };
+
     public static void registerMD5Udf(JdbcHelper sink, String UdfName)
     {
         sink.executeStatement("CREATE ALIAS " + UdfName + " FOR \"org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil.MD5\";");
@@ -27,9 +38,57 @@ public class H2DigestUtil
 
     public static String MD5(String[] columnNameList, String[] columnValueList)
     {
-        String columnNames = String.join("", columnNameList);
-        String columnValues = String.join("", columnValueList);
-        String columnNamesAndColumnValues = columnNames + columnValues;
-        return DigestUtils.md5Hex(columnNamesAndColumnValues).toUpperCase();
+        return calculateMD5Digest(generateRowMap(columnNameList, columnValueList));
+    }
+
+    private static Map<String, Object> generateRowMap(String[] columnNameList, String[] columnValueList)
+    {
+        Map<String, Object> map = new HashMap<>();
+        for (int i = 0; i < columnNameList.length; i++)
+        {
+            map.put(columnNameList[i], columnValueList[i]);
+        }
+        return map;
+    }
+
+    private static String calculateMD5Digest(Map<String, Object> row)
+    {
+        List<String> fieldNames = row.keySet().stream().sorted().collect(Collectors.toList());
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+             DataOutputStream dataOutputStream = new DataOutputStream(byteArrayOutputStream))
+        {
+            fieldNames.stream().forEachOrdered(field ->
+            {
+                Optional<Object> value = Optional.ofNullable(row.get(field));
+                value.ifPresent(v -> writeValueWithFieldName(field, v, dataOutputStream));
+            });
+            dataOutputStream.flush();
+            return DigestUtils.md5Hex(byteArrayOutputStream.toByteArray());
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("Unable to create digest", e);
+        }
+    }
+
+    private static void writeValueWithFieldName(String fieldName, Object value, DataOutputStream dataOutputStream)
+    {
+        try
+        {
+            dataOutputStream.writeInt(fieldName.hashCode());
+            String stringValue = value.toString();
+            if (stringValue == null || stringValue.length() == 0)
+            {
+                dataOutputStream.write(EMPTY_STRING);
+            }
+            else
+            {
+                dataOutputStream.writeBytes(stringValue);
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(String.format("Unable to create digest for field [%s]", fieldName), e);
+        }
     }
 }

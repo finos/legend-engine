@@ -53,7 +53,7 @@ import meta::pure::functions::collection::*;
 function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testFilterEqualsWithOptionalParameter_Snowflake():Boolean[1]
 {
    let generatedPlan = executionPlan({optionalID: String[0..1], optionalActive: Boolean[0..1]|Interaction.all()->filter(i|$i.id==$optionalID && $i.active==$optionalActive)->project(col(i|$i.time, 'Time'))}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = relationalDB,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions());
-   let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Time,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[optionalID:String[0..1],optionalActive:Boolean[0..1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Time,Integer,INT,"")]resultColumns=[("Time",INT)]sql=select"root".timeas"Time"frominteractionTableas"root"where((${optionalVarPlaceHolderOperationSelector(optionalID![],\'"root".ID=${varPlaceHolderToString(optionalID![]"\\\'""\\\'"{"\\\'":"\\\'\\\'"}"null")}\',\'"root".IDisnull\')})and(${optionalVarPlaceHolderOperationSelector(optionalActive![],\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'end=${varPlaceHolderToString(optionalActive![]"\\\'""\\\'"{}"null")}\',\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'endisnull\')}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
+   let expectedPlan = 'RelationalBlockExecutionNode(type=TDS[(Time,Integer,INT,"")](FunctionParametersValidationNode(functionParameters=[optionalID:String[0..1],optionalActive:Boolean[0..1]])SQL(type=VoidresultColumns=[]sql=ALTERSESSIONSETQUERY_TAG=\'{"executionTraceID":"${execID}","engineUser":"${userId}","referer":"${referer}"}\';connection=RelationalDatabaseConnection(type="Snowflake"))Relational(type=TDS[(Time,Integer,INT,"")]resultColumns=[("Time",INT)]sql=select"root".timeas"Time"frominteractionTableas"root"where((${optionalVarPlaceHolderOperationSelector(optionalID![],\'"root".ID=${varPlaceHolderToString(optionalID![]"\\\'""\\\'"{"\\\'":"\\\'\\\'"}"null")}\',\'"root".IDisnull\')})and(${optionalVarPlaceHolderOperationSelector(optionalActive![],\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'end=${varPlaceHolderToString(optionalActive![]""""{}"null")}\',\'casewhen"root".active=\\\'Y\\\'then\\\'true\\\'else\\\'false\\\'endisnull\')}))connection=RelationalDatabaseConnection(type="Snowflake")))finallyExecutionNodes=(SQL(type=VoidresultColumns=[]sql=ALTERSESSIONUNSETQUERY_TAG;connection=RelationalDatabaseConnection(type="Snowflake"))))';
    assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
    assertSameElements(templateFunctionsList(),$generatedPlan.processingTemplateFunctions);
 }
@@ -130,4 +130,22 @@ function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testRelation
   let generatedPlan = executionPlan({|Product.all()->project(p|$p.name, 'Name')}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = 'database',connection=$conn)), meta::relational::extension::relationalExtensions());
   let expectedPlan = 'Relational(type=TDS[(Name,String,VARCHAR(200),"")]resultColumns=[("Name",VARCHAR(200))]sql=select"root".NAMEas"Name"fromproductSchema.productTableas"root"connection=RelationalDatabaseConnection(type="Snowflake"))';
   assertEquals($expectedPlan, $generatedPlan->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::snowflake::testInExecutionWithLiteralListSnowflake():Boolean[1]
+{
+  let intList = range(1,17000);
+  let generatedPlan = executionPlan({|Person.all()->filter(p|$p.age->in($intList))->project([x |$x.name], ['fullName'])}, simpleRelationalMapping, ^Runtime(connectionStores=^ConnectionStore(element = meta::relational::tests::db,connection=meta::pure::executionPlan::tests::snowflake::relationalConnectionForSnowflake(true))), meta::relational::extension::relationalExtensions());
+  let execNodesInRelBlockNode = $generatedPlan.rootExecutionNode.executionNodes;
+
+  let createAndPopulateTempTableNode = $execNodesInRelBlockNode->filter(e|$e->instanceOf(CreateAndPopulateTempTableExecutionNode));
+  
+  let tempTableName = $createAndPopulateTempTableNode->at(0)->cast(@CreateAndPopulateTempTableExecutionNode).tempTableName;
+  assertEquals('LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.tempTableForIn_8', $tempTableName);
+  let inputVarNames = $createAndPopulateTempTableNode->at(0)->cast(@CreateAndPopulateTempTableExecutionNode).inputVarNames;
+  assertEquals('tempVarForIn_8', $inputVarNames->at(0));
+
+  let allocationNode = $execNodesInRelBlockNode->filter(e|$e->instanceOf(AllocationExecutionNode));
+  let varName = $allocationNode->at(0)->cast(@AllocationExecutionNode).varName;
+  assertEquals('tempVarForIn_8', $varName);
 }

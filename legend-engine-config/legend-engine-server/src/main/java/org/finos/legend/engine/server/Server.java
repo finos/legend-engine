@@ -31,6 +31,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
@@ -42,22 +43,18 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
-import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
 import org.finos.legend.connection.impl.HACKY__SnowflakeConnectionAdapter;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.engine.api.analytics.BindingAnalytics;
 import org.finos.legend.engine.api.analytics.ClassAnalytics;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
@@ -82,6 +79,8 @@ import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImpo
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
+import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -95,13 +94,13 @@ import org.finos.legend.engine.language.pure.grammar.api.relationalOperationElem
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
+import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
 import org.finos.legend.engine.plan.execution.api.concurrent.ConcurrentExecutionNodeExecutorPoolInfo;
 import org.finos.legend.engine.plan.execution.api.concurrent.ParallelGraphFetchExecutionExecutorPoolInfo;
-import org.finos.legend.engine.plan.execution.api.request.RequestContextHelper;
-import org.finos.legend.engine.plan.execution.api.result.ResultManager;
 import org.finos.legend.engine.plan.execution.concurrent.ParallelGraphFetchExecutionExecutorPool;
 import org.finos.legend.engine.plan.execution.graphFetch.GraphFetchExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.service.api.ServiceModelingApi;
@@ -120,17 +119,23 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
+import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
-import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeDeploymentConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.grammar.GraphQLGrammar;
 import org.finos.legend.engine.query.pure.api.Execute;
+import org.finos.legend.engine.query.sql.api.SQLExecutor;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecute;
 import org.finos.legend.engine.query.sql.api.grammar.SqlGrammar;
+import org.finos.legend.engine.query.sql.providers.LegendServiceSQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.RelationalStoreSQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.shared.FunctionSQLSourceProvider;
+import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateLoader;
 import org.finos.legend.engine.server.core.ServerShared;
 import org.finos.legend.engine.server.core.api.CurrentUser;
 import org.finos.legend.engine.server.core.api.Info;
@@ -212,7 +217,8 @@ public class Server<T extends ServerConfiguration> extends Application<T>
 
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(LegendDefaultDatabaseAuthenticationFlowProviderConfiguration.class, "legendDefault"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(HostedServiceDeploymentConfiguration.class, "hostedServiceConfig"));
-        bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeDeploymentConfiguration.class, "snowflakeAppConfig"));
+        bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeAppDeploymentConfiguration.class, "snowflakeAppConfig"));
+        bootstrap.getObjectMapper().registerSubtypes(new NamedType(BigQueryFunctionDeploymentConfiguration.class, "snowflakeAppConfig"));
     }
 
     public CredentialProviderProvider configureCredentialProviders(List<VaultConfiguration> vaultConfigurations)
@@ -378,7 +384,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         // Function Activator
-        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), routerExtensions));
+        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor), new HostedServiceService()), routerExtensions));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());
@@ -386,7 +392,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new GraphQLDebug(modelManager, serverConfiguration.metadataserver, routerExtensions));
 
         // SQL
-        environment.jersey().register(new SqlExecute(modelManager, planExecutor, routerExtensions, FastList.newListWith(), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers)));
+        ProjectCoordinateLoader projectCoordinateLoader = new ProjectCoordinateLoader(modelManager, serverConfiguration.metadataserver.getSdlc());
+        environment.jersey().register(new SqlExecute(new SQLExecutor(modelManager, planExecutor, routerExtensions, FastList.newListWith(
+                new RelationalStoreSQLSourceProvider(projectCoordinateLoader),
+                new FunctionSQLSourceProvider(projectCoordinateLoader),
+                new LegendServiceSQLSourceProvider(projectCoordinateLoader)),
+                generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers))));
         environment.jersey().register(new SqlGrammar());
 
         // Service
@@ -420,45 +431,54 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         //TestData Generation
         environment.jersey().register(new TestDataGeneration(modelManager));
 
-        enableCors(environment);
+        enableCors(environment, serverConfiguration);
     }
 
     // TODO: @akphi - this is temporary, rework when we find a better way to handle the initialization of connection factory from config or some external source.
     private ConnectionFactory setupConnectionFactory(List<VaultConfiguration> vaultConfigurations)
     {
-        LegendEnvironment environment = new LegendEnvironment.Builder()
-                .withVaults(
+        LegendEnvironment environment = LegendEnvironment
+                .builder()
+                .vaults(
                         new SystemPropertiesCredentialVault(),
                         new EnvironmentCredentialVault(),
                         new PropertiesFileCredentialVault(this.buildVaultProperties(vaultConfigurations))
                 )
-                .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
-                                .withIdentifier("Postgres")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
-                                                UserPasswordAuthenticationConfiguration.class
-                                        ).build()
+                .databaseSupports(
+                        DatabaseSupport
+                                .builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism
+                                                .builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD)
+                                                .authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build(),
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.SNOWFLAKE)
-                                .withIdentifier("Snowflake")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).withAuthenticationConfigurationTypes(
-                                                EncryptedPrivateKeyPairAuthenticationConfiguration.class
-                                        ).build()
+                        DatabaseSupport
+                                .builder()
+                                .type(RelationalDatabaseType.SNOWFLAKE)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism
+                                                .builder()
+                                                .type(CoreAuthenticationMechanismType.KEY_PAIR)
+                                                .authenticationConfigurationTypes(
+                                                        EncryptedPrivateKeyPairAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build()
                 ).build();
 
-        StoreInstanceProvider storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().build();
-        return new ConnectionFactory.Builder(environment, storeInstanceProvider)
-                .withCredentialBuilders(
+        return ConnectionFactory.builder()
+                .environment(environment)
+                .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),
                         new KeyPairCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword(),
                         new SnowflakeConnectionBuilder.WithKeyPair()
                 )
@@ -479,13 +499,24 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         CollectorRegistry.defaultRegistry.clear();
     }
 
-    private void enableCors(Environment environment)
+    private void enableCors(Environment environment, ServerConfiguration configuration)
     {
+        // Enable CORS
         FilterRegistration.Dynamic corsFilter = environment.servlets().addFilter("CORS", CrossOriginFilter.class);
         corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_METHODS_PARAM, "GET,PUT,POST,DELETE,OPTIONS");
         corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_ORIGINS_PARAM, "*");
         corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_TIMING_ORIGINS_PARAM, "*");
-        corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Access-Control-Allow-Credentials,x-b3-parentspanid,x-b3-sampled,x-b3-spanid,x-b3-traceid," + RequestContextHelper.LEGEND_REQUEST_ID + "," + RequestContextHelper.LEGEND_USE_PLAN_CACHE + "," + ResultManager.LEGEND_RESPONSE_FORMAT);
+
+        if (configuration.cors != null && configuration.cors.getAllowedHeaders() != null)
+        {
+            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, LazyIterate.adapt(configuration.cors.getAllowedHeaders()).makeString(","));
+        }
+        else
+        {
+            // NOTE: this set of headers are kept as default for backward compatibility, the headers starting with prefix `x-` are meant for Zipkin
+            // client using SDLC server. We should consider using the CORS configuration and remove those from this default list.
+            corsFilter.setInitParameter(CrossOriginFilter.ALLOWED_HEADERS_PARAM, "X-Requested-With,Content-Type,Accept,Origin,Access-Control-Allow-Credentials,x-b3-parentspanid,x-b3-sampled,x-b3-spanid,x-b3-traceid");
+        }
         corsFilter.setInitParameter(CrossOriginFilter.CHAIN_PREFLIGHT_PARAM, "false");
         corsFilter.addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), false, "*");
     }

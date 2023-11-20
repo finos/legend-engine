@@ -41,7 +41,7 @@ public interface Transformer<C extends PhysicalPlanNode, P extends PhysicalPlan<
     abstract class TransformOptionsAbstract
     {
 
-        public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS");
 
         @Default
         public Clock executionTimestampClock()
@@ -56,8 +56,6 @@ public interface Transformer<C extends PhysicalPlanNode, P extends PhysicalPlan<
         public abstract Optional<String> batchIdPattern();
 
         public abstract Optional<Long> infiniteBatchIdValue();
-
-        public abstract Optional<String> bulkLoadBatchIdValue();
 
         public abstract Optional<String> bulkLoadBatchStatusPattern();
 

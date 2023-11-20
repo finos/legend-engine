@@ -16,11 +16,14 @@ package org.finos.legend.engine.persistence.components.scenarios;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalDelta;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
 {
@@ -30,16 +33,11 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
     Variables:
     1) transactionMilestoning = DateTime
     2) deleteIndicator : Enabled, Disabled
-    3) DataSplit: Enabled, Disabled
-
-    Valid Combinations:
-    1) No Delete Ind, No Data Splits
-    2) No Delete Ind, With Data Splits
-    3) With Delete Ind, No Data Splits
-    4) With Delete Ind, With Data Splits
+    3) Deduplication: Allow duplicates, Filter duplicates, Fail on duplicates
+    4) Versioning: No Versioning, Max Versioning, All Versioning
     */
 
-    public TestScenario DATETIME_BASED__NO_DEL_IND__NO_DATA_SPLITS()
+    public TestScenario DATETIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSIONING()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -51,21 +49,22 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__NO_DEL_IND__WITH_DATA_SPLITS()
+    public TestScenario DATETIME_BASED__NO_DEL_IND__FAIL_ON_DUPS__ALL_VERSION_WITHOUT_PERFORM()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(TransactionDateTime.builder()
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
                         .build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).performStageVersioning(false).build())
                 .build();
 
         return new TestScenario(mainTableWithDateTime, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITH_DEL_IND__NO_DATA_SPLITS()
+    public TestScenario DATETIME_BASED__WITH_DEL_IND__NO_DEDUP__NO_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
@@ -81,11 +80,10 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicator, ingestMode);
     }
 
-    public TestScenario DATETIME_BASED__WITH_DEL_IND__WITH_DATA_SPLITS()
+    public TestScenario DATETIME_BASED__WITH_DEL_IND__FILTER_DUPS__ALL_VERSION()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
                 .transactionMilestoning(TransactionDateTime.builder()
                         .dateTimeInName(batchTimeInField)
                         .dateTimeOutName(batchTimeOutField)
@@ -94,8 +92,10 @@ public class UnitemporalDeltaDateTimeBasedScenarios extends BaseTest
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).performStageVersioning(true).build())
                 .build();
 
-        return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicatorWithDataSplit, ingestMode);
+        return new TestScenario(mainTableWithDateTime, stagingTableWithDeleteIndicator, ingestMode);
     }
 }

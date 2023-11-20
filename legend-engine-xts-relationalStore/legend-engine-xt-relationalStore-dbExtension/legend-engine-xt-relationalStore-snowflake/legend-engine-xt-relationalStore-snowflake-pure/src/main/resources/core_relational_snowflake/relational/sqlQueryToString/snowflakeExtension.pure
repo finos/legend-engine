@@ -20,7 +20,7 @@ function <<db.ExtensionLoader>> meta::relational::functions::sqlQueryToString::s
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::createDbExtensionForSnowflake():DbExtension[1]
 {
-   let reservedWords = defaultReservedWords();
+   let reservedWords = snowflakeReservedWords();
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForSnowflake());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
@@ -30,7 +30,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       isBooleanLiteralSupported = true,
       collectionThresholdLimit = 16348,
       aliasLimit = 255,
-      isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
+      isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForSnowflake_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
@@ -51,7 +51,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    newMap([
       pair(StrictDate, ^LiteralProcessor(format = '\'%s\'::date', transform = {d:StrictDate[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
       pair(DateTime,   ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:DateTime[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
-      pair(Date,       ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)}))
+      pair(Date,       ^LiteralProcessor(format = '\'%s\'::timestamp', transform = {d:Date[1], dbTimeZone:String[0..1] | $d->convertDateToSqlString($dbTimeZone)})),
+      pair(Boolean,    ^LiteralProcessor(format = '%s', transform = toString_Any_1__String_1_->literalTransform()))
    ])
 }
 
@@ -110,6 +111,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForSnowflake(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAYOFMONTH(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'DYDY\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAYOFWEEKISO(%s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAYOFYEAR(%s)')),
     dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForSnowflake()})),
@@ -135,6 +137,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='MONTH(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'MMMM\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='MONTH(%s)')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='DATE_TRUNC(\'WEEK\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
@@ -352,3 +355,102 @@ function meta::relational::functions::sqlQueryToString::snowflake::preAndFinally
     | []
   );
 }
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::snowflakeReservedWords():String[*]
+{
+  // Based on https://docs.snowflake.com/en/sql-reference/reserved-keywords
+  [
+    'account',
+    'alter',
+    'and',
+    'any',
+    'as',
+    'between',
+    'by',
+    'case',
+    'cast',
+    'check',
+    'column',
+    'connect',
+    'connection',
+    'constraint',
+    'create',
+    'cross',
+    'current',
+    'current_date',
+    'current_time',
+    'current_timestamp',
+    'current_user',
+    'database',
+    'delete',
+    'distinct',
+    'drop',
+    'else',
+    'exists',
+    'false',
+    'following',
+    'for',
+    'from',
+    'full',
+    'grant',
+    'group',
+    'gscluster',
+    'having',
+    'ilike',
+    'in',
+    'increment',
+    'inner',
+    'insert',
+    'intersect',
+    'into',
+    'is',
+    'issue',
+    'join',
+    'lateral',
+    'left',
+    'like',
+    'localtime',
+    'localtimestamp',
+    'minus',
+    'natural',
+    'not',
+    'null',
+    'of',
+    'on',
+    'or',
+    'order',
+    'organization',
+    'qualify',
+    'regexp',
+    'revoke',
+    'right',
+    'rlike',
+    'row',
+    'rows',
+    'sample',
+    'schema',
+    'select',
+    'set',
+    'some',
+    'start',
+    'table',
+    'tablesample',
+    'then',
+    'to',
+    'trigger',
+    'true',
+    'try_cast',
+    'union',
+    'unique',
+    'update',
+    'using',
+    'values',
+    'view',
+    'when',
+    'whenever',
+    'where',
+    'with'
+  ]
+}
+
+

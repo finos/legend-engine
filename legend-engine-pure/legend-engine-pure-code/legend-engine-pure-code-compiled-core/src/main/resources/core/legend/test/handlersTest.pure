@@ -372,6 +372,10 @@ Class meta::legend::test::handlers::model::TestString
    
    length(){$this.string->length()}:Integer[1];
    ltrim(){$this.string->ltrim()}:String[1];
+   lpad(){$this.string->lpad(1)}:String[1];
+   lpad2(){$this.string->lpad(1, '0')}:String[1];   
+   rpad(){$this.string->rpad(1)}:String[1];
+   rpad2(){$this.string->rpad(1, '0')}:String[1];   
    
    parseBoolean(){$this.string->parseBoolean()}:Boolean[1];
    parseDate(){$this.string->parseDate()}:Date[1];
@@ -390,7 +394,7 @@ Class meta::legend::test::handlers::model::TestString
    toString(){3->toString()}:String[1];
    toUpper(){$this.string->toUpper()}:String[1];
    trim(){$this.string->trim()}:String[1];
-
+   hashString(){$this.string->meta::pure::functions::hash::hash(meta::pure::functions::hash::HashType.MD5)}:String[1];
 }
 
 Class meta::legend::test::handlers::model::TestDate

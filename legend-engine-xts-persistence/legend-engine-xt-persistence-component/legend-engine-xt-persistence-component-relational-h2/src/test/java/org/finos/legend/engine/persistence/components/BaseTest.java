@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class BaseTest
 {
@@ -66,7 +68,7 @@ public class BaseTest
     protected final ZonedDateTime fixedExecutionZonedDateTime1 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedExecutionZonedDateTime1.toInstant(), ZoneOffset.UTC);
 
-    protected ZonedDateTime fixedExecutionZonedDateTime2 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 0, ZoneOffset.UTC);
+    protected ZonedDateTime fixedExecutionZonedDateTime2 = ZonedDateTime.of(2000, 1, 2, 0, 0, 0, 123456000, ZoneOffset.UTC);
     protected Clock fixedClock_2000_01_02 = Clock.fixed(fixedExecutionZonedDateTime2.toInstant(), ZoneOffset.UTC);
 
     protected final ZonedDateTime fixedExecutionZonedDateTime3 = ZonedDateTime.of(2000, 1, 3, 0, 0, 0, 0, ZoneOffset.UTC);
@@ -104,6 +106,16 @@ public class BaseTest
         h2Sink.executeStatement("DROP ALL OBJECTS");
     }
 
+    protected void createStagingTableWithoutPks(DatasetDefinition stagingTable) throws Exception
+    {
+        List<Field> fieldsWithoutPk = stagingTable.schema().fields().stream().map(field -> field.withPrimaryKey(false)).collect(Collectors.toList());
+        stagingTable = stagingTable.withSchema(stagingTable.schema().withFields(fieldsWithoutPk));
+        RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
+        LogicalPlan tableCreationPlan = LogicalPlanFactory.getDatasetCreationPlan(stagingTable, true);
+        SqlPlan tableCreationPhysicalPlan = transformer.generatePhysicalPlan(tableCreationPlan);
+        executor.executePhysicalPlan(tableCreationPhysicalPlan);
+    }
+
     protected void createStagingTable(DatasetDefinition stagingTable) throws Exception
     {
         RelationalTransformer transformer = new RelationalTransformer(H2Sink.get());
@@ -133,9 +145,9 @@ public class BaseTest
         return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC());
     }
 
-    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Set<SchemaEvolutionCapability> userCapabilitySet) throws Exception
+    protected IngestorResult executePlansAndVerifyResults(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats, Set<SchemaEvolutionCapability> userCapabilitySet, Clock executionTimestampClock) throws Exception
     {
-        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, Clock.systemUTC(), userCapabilitySet, false);
+        return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, userCapabilitySet, false);
     }
 
     private void verifyLatestStagingFilters(RelationalIngestor ingestor, Datasets datasets) throws Exception
@@ -179,7 +191,7 @@ public class BaseTest
                                                           String expectedDataPath, Map<String, Object> expectedStats, boolean verifyStagingFilters) throws Exception
     {
         // Execute physical plans
-        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets).get(0);
 
         Map<StatisticName, Object> actualStats = result.statisticByName();
 
@@ -214,12 +226,12 @@ public class BaseTest
         return executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, executionTimestampClock, Collections.emptySet(), false);
     }
 
-    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges) throws Exception
     {
-        return executePlansAndVerifyResultsWithDataSplits(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, dataSplitRanges, Clock.systemUTC());
+        return executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPath, expectedStats, dataSplitRanges, Clock.systemUTC());
     }
 
-    protected List<IngestorResult> executePlansAndVerifyResultsWithDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
+    protected List<IngestorResult> executePlansAndVerifyResultsWithSpecifiedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, List<DataSplitRange> dataSplitRanges, Clock executionTimestampClock) throws Exception
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
             .ingestMode(ingestMode)
@@ -231,6 +243,34 @@ public class BaseTest
             .build();
 
         List<IngestorResult> results = ingestor.performFullIngestionWithDataSplits(JdbcConnection.of(h2Sink.connection()), datasets, dataSplitRanges);
+
+        List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
+        TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
+
+        for (int i = 0; i < results.size(); i++)
+        {
+            Map<StatisticName, Object> actualStats = results.get(i).statisticByName();
+            Assertions.assertEquals(expectedStats.get(i).size(), actualStats.size());
+            for (String statistic : expectedStats.get(i).keySet())
+            {
+                Assertions.assertEquals(expectedStats.get(i).get(statistic).toString(), actualStats.get(StatisticName.valueOf(statistic)).toString());
+            }
+        }
+        return results;
+    }
+
+    protected List<IngestorResult> executePlansAndVerifyResultsWithDerivedDataSplits(IngestMode ingestMode, PlannerOptions options, Datasets datasets, String[] schema, String expectedDataPath, List<Map<String, Object>> expectedStats, Clock executionTimestampClock) throws Exception
+    {
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+            .ingestMode(ingestMode)
+            .relationalSink(H2Sink.get())
+            .executionTimestampClock(executionTimestampClock)
+            .cleanupStagingData(options.cleanupStagingData())
+            .collectStatistics(options.collectStatistics())
+            .enableSchemaEvolution(options.enableSchemaEvolution())
+            .build();
+
+        List<IngestorResult> results = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
 
         List<Map<String, Object>> tableData = h2Sink.executeQuery("select * from \"TEST\".\"main\"");
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
@@ -284,9 +324,10 @@ public class BaseTest
 
         datasets = ingestor.create(datasets);
         datasets = ingestor.evolve(datasets);
+        datasets = ingestor.dedupAndVersion(datasets);
 
         executor.begin();
-        IngestorResult result = ingestor.ingest(datasets);
+        IngestorResult result = ingestor.ingest(datasets).get(0);
         // Do more stuff if needed
         executor.commit();
 
@@ -328,6 +369,26 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
+    protected void loadStagingDataWithNoPk(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(name, income, expiry_date) " +
+            "SELECT \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"expiry_date\", DATE)" +
+            " FROM CSVREAD( '" + path + "', 'name, income, expiry_date', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithNoPkInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(NAME, INCOME, EXPIRY_DATE) " +
+            "SELECT \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"EXPIRY_DATE\", DATE)" +
+            " FROM CSVREAD( '" + path + "', 'NAME, INCOME, EXPIRY_DATE', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
     protected void loadStagingDataForWithPartition(String path) throws Exception
     {
         validateFileExists(path);
@@ -335,6 +396,26 @@ public class BaseTest
             "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest) " +
             "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\"" +
             " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForWithPartitionWithVersion(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
+            "INSERT INTO \"TEST\".\"staging\"(date, entity, price, volume, digest, version) " +
+            "SELECT CONVERT( \"date\",DATE ), \"entity\", CONVERT( \"price\", DECIMAL(20,2)), CONVERT( \"volume\", BIGINT), \"digest\", CONVERT( \"version\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'date, entity, price, volume, digest, version', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataForWithPartitionWithVersionInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(DATE, ENTITY, PRICE, VOLUME, DIGEST, VERSION) " +
+            "SELECT CONVERT( \"DATE\",DATE ), \"ENTITY\", CONVERT( \"PRICE\", DECIMAL(20,2)), CONVERT( \"VOLUME\", BIGINT), \"DIGEST\", CONVERT( \"VERSION\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'DATE, ENTITY, PRICE, VOLUME, DIGEST, VERSION', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -355,6 +436,16 @@ public class BaseTest
             "INSERT INTO \"TEST\".\"staging\"(id, name, income, start_time ,expiry_date, digest, version) " +
             "SELECT CONVERT( \"id\",INT ), \"name\", CONVERT( \"income\", BIGINT), CONVERT( \"start_time\", DATETIME), CONVERT( \"expiry_date\", DATE), digest, CONVERT( \"version\",INT)" +
             " FROM CSVREAD( '" + path + "', 'id, name, income, start_time, expiry_date, digest, version', NULL )";
+        h2Sink.executeStatement(loadSql);
+    }
+
+    protected void loadStagingDataWithVersionInUpperCase(String path) throws Exception
+    {
+        validateFileExists(path);
+        String loadSql = "TRUNCATE TABLE \"TEST\".\"STAGING\";" +
+            "INSERT INTO \"TEST\".\"STAGING\"(ID, NAME, INCOME, START_TIME ,EXPIRY_DATE, DIGEST, VERSION) " +
+            "SELECT CONVERT( \"ID\",INT ), \"NAME\", CONVERT( \"INCOME\", BIGINT), CONVERT( \"START_TIME\", DATETIME), CONVERT( \"EXPIRY_DATE\", DATE), DIGEST, CONVERT( \"VERSION\",INT)" +
+            " FROM CSVREAD( '" + path + "', 'ID, NAME, INCOME, START_TIME, EXPIRY_DATE, DIGEST, VERSION', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -448,23 +539,23 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForBitemporalFromOnlyWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithVersionWithDataSplit(String path) throws Exception
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, data_split) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, version, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"version\", BIGINT), CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, version, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithDataSplit(String path) throws Exception
+    protected void loadStagingDataForBitemporalFromOnlyWithDeleteIndWithVersionWithDataSplit(String path) throws Exception
     {
         validateFileExists(path);
         String loadSql = "TRUNCATE TABLE \"TEST\".\"staging\";" +
-            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, delete_indicator, data_split) " +
-            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
-            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, delete_indicator, data_split', NULL )";
+            "INSERT INTO \"TEST\".\"staging\"(index, datetime, balance, digest, version, delete_indicator, data_split) " +
+            "SELECT CONVERT( \"index\", INT), CONVERT( \"datetime\", DATETIME), CONVERT( \"balance\", BIGINT), \"digest\", CONVERT( \"version\", BIGINT), \"delete_indicator\", CONVERT( \"data_split\", BIGINT)" +
+            " FROM CSVREAD( '" + path + "', 'index, datetime, balance, digest, version, delete_indicator, data_split', NULL )";
         h2Sink.executeStatement(loadSql);
     }
 
@@ -498,7 +589,7 @@ public class BaseTest
         h2Sink.executeStatement(loadSql);
     }
 
-    protected void validateFileExists(String path) throws Exception
+    protected static void validateFileExists(String path) throws Exception
     {
         File f = new File(path);
         if (!f.exists())

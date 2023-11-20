@@ -17,25 +17,26 @@ package org.finos.legend.engine.connection.test;
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.Authenticator;
+import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.ConnectionFactory;
+import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.IdentityFactory;
 import org.finos.legend.connection.IdentitySpecification;
-import org.finos.legend.connection.impl.InstrumentedStoreInstanceProvider;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
-import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
+import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,11 +44,8 @@ import org.junit.jupiter.api.Test;
 
 public abstract class AbstractConnectionFactoryTest<T>
 {
-    protected static final String TEST_STORE_INSTANCE_NAME = "test-store";
-
     protected LegendEnvironment environment;
     protected IdentityFactory identityFactory;
-    protected InstrumentedStoreInstanceProvider storeInstanceProvider;
     protected ConnectionFactory connectionFactory;
 
     @BeforeEach
@@ -55,26 +53,30 @@ public abstract class AbstractConnectionFactoryTest<T>
     {
         this.setup();
 
-        LegendEnvironment.Builder environmentBuilder = new LegendEnvironment.Builder()
-                .withVaults(
+        LegendEnvironment.Builder environmentBuilder = LegendEnvironment.builder()
+                .vaults(
                         new SystemPropertiesCredentialVault(),
                         new EnvironmentCredentialVault()
                 )
-                .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
-                                .withIdentifier("Postgres")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
-                                                UserPasswordAuthenticationConfiguration.class
-                                        ).build()
+                .databaseSupports(
+                        DatabaseSupport.builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism.builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD)
+                                                .authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build(),
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.SNOWFLAKE)
-                                .withIdentifier("Snowflake")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).withAuthenticationConfigurationTypes(
-                                                EncryptedPrivateKeyPairAuthenticationConfiguration.class
-                                        ).build()
+                        DatabaseSupport.builder()
+                                .type(RelationalDatabaseType.SNOWFLAKE)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism.builder()
+                                                .type(CoreAuthenticationMechanismType.KEY_PAIR)
+                                                .authenticationConfigurationTypes(
+                                                        EncryptedPrivateKeyPairAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build()
                 );
@@ -82,22 +84,23 @@ public abstract class AbstractConnectionFactoryTest<T>
         CredentialVault credentialVault = this.getCredentialVault();
         if (credentialVault != null)
         {
-            environmentBuilder.withVault(credentialVault);
+            environmentBuilder.vault(credentialVault);
         }
 
         this.environment = environmentBuilder.build();
 
-        this.identityFactory = new IdentityFactory.Builder(this.environment)
+        this.identityFactory = IdentityFactory.builder()
+                .environment(this.environment)
                 .build();
 
-        this.storeInstanceProvider = new InstrumentedStoreInstanceProvider();
-        this.connectionFactory = new ConnectionFactory.Builder(this.environment, this.storeInstanceProvider)
-                .withCredentialBuilders(
+        this.connectionFactory = ConnectionFactory.builder()
+                .environment(this.environment)
+                .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),
                         new KeyPairCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword(),
                         new SnowflakeConnectionBuilder.WithKeyPair()
                 )
@@ -119,9 +122,11 @@ public abstract class AbstractConnectionFactoryTest<T>
         return null;
     }
 
-    public abstract StoreInstance getStoreInstance();
-
     public abstract Identity getIdentity();
+
+    public abstract DatabaseType getDatabaseType();
+
+    public abstract ConnectionSpecification getConnectionSpecification();
 
     public abstract AuthenticationConfiguration getAuthenticationConfiguration();
 
@@ -130,11 +135,19 @@ public abstract class AbstractConnectionFactoryTest<T>
     @Test
     public void runTest() throws Exception
     {
-        this.storeInstanceProvider.injectStoreInstance(this.getStoreInstance());
         Identity identity = this.getIdentity();
+        DatabaseType databaseType = this.getDatabaseType();
+        ConnectionSpecification connectionSpecification = this.getConnectionSpecification();
         AuthenticationConfiguration authenticationConfiguration = this.getAuthenticationConfiguration();
 
-        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, TEST_STORE_INSTANCE_NAME, authenticationConfiguration);
+        Connection databaseConnection = Connection.builder()
+                .databaseSupport(this.environment.getDatabaseSupport(databaseType))
+                .identifier("test::connection")
+                .connectionSpecification(connectionSpecification)
+                .authenticationConfiguration(authenticationConfiguration)
+                .build();
+
+        Authenticator authenticator = this.connectionFactory.getAuthenticator(identity, databaseConnection);
         T connection = this.connectionFactory.getConnection(identity, authenticator);
 
         this.runTestWithConnection(connection);
@@ -146,8 +159,8 @@ public abstract class AbstractConnectionFactoryTest<T>
     protected static Identity getAnonymousIdentity(IdentityFactory identityFactory)
     {
         return identityFactory.createIdentity(
-                new IdentitySpecification.Builder()
-                        .withName("test-user")
+                IdentitySpecification.builder()
+                        .name("test-user")
                         .build()
         );
     }

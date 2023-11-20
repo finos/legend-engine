@@ -39,7 +39,7 @@ import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.sql.api.CatchAllExceptionMapper;
 import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
-import org.finos.legend.engine.query.sql.api.sources.TestSQLSourceProvider;
+import org.finos.legend.engine.query.sql.api.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;

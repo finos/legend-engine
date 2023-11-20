@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
@@ -45,7 +46,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.UUID;
 
 @Immutable
 @Style(
@@ -114,11 +114,7 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
-    @Default
-    public String bulkLoadBatchIdValue()
-    {
-        return UUID.randomUUID().toString();
-    }
+    public abstract Optional<String> bulkLoadTaskIdValue();
 
     @Default
     public String bulkLoadBatchStatusPattern()
@@ -141,6 +137,7 @@ public abstract class RelationalGeneratorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
+            .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
             .build();
     }
 
@@ -152,7 +149,6 @@ public abstract class RelationalGeneratorAbstract
             .batchStartTimestampPattern(batchStartTimestampPattern())
             .batchEndTimestampPattern(batchEndTimestampPattern())
             .infiniteBatchIdValue(infiniteBatchIdValue())
-            .bulkLoadBatchIdValue(bulkLoadBatchIdValue())
             .bulkLoadBatchStatusPattern(bulkLoadBatchStatusPattern())
             .batchIdPattern(batchIdPattern());
 
@@ -192,7 +188,7 @@ public abstract class RelationalGeneratorAbstract
         Datasets datasetsWithCaseConversion = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
         Dataset enrichedMainDataset = ApiUtils.deriveMainDatasetFromStaging(datasetsWithCaseConversion, ingestModeWithCaseConversion);
         Datasets enrichedDatasets = datasetsWithCaseConversion.withMainDataset(enrichedMainDataset);
-        Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions());
+        Planner planner = Planners.get(enrichedDatasets, ingestModeWithCaseConversion, plannerOptions(), relationalSink().capabilities());
         return generateOperations(enrichedDatasets, resources, planner, ingestModeWithCaseConversion);
     }
 
@@ -243,11 +239,26 @@ public abstract class RelationalGeneratorAbstract
             schemaEvolutionDataset = Optional.of(schemaEvolutionResult.evolvedDataset());
 
             // update main dataset with evolved schema and re-initialize planner
-            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions());
+            planner = Planners.get(datasets.withMainDataset(schemaEvolutionDataset.get()), ingestMode, plannerOptions(), relationalSink().capabilities());
+        }
+
+        // deduplication and versioning
+        LogicalPlan deduplicationAndVersioningLogicalPlan = planner.buildLogicalPlanForDeduplicationAndVersioning(resources);
+        Optional<SqlPlan> deduplicationAndVersioningSqlPlan = Optional.empty();
+        if (deduplicationAndVersioningLogicalPlan != null)
+        {
+            deduplicationAndVersioningSqlPlan = Optional.of(transformer.generatePhysicalPlan(deduplicationAndVersioningLogicalPlan));
+        }
+
+        Map<DedupAndVersionErrorStatistics, LogicalPlan> deduplicationAndVersioningErrorChecksLogicalPlan = planner.buildLogicalPlanForDeduplicationAndVersioningErrorChecks(resources);
+        Map<DedupAndVersionErrorStatistics, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan = new HashMap<>();
+        for (DedupAndVersionErrorStatistics statistic : deduplicationAndVersioningErrorChecksLogicalPlan.keySet())
+        {
+            deduplicationAndVersioningErrorChecksSqlPlan.put(statistic, transformer.generatePhysicalPlan(deduplicationAndVersioningErrorChecksLogicalPlan.get(statistic)));
         }
 
         // ingest
-        LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources, relationalSink().capabilities());
+        LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
 
         // metadata-ingest
@@ -286,6 +297,8 @@ public abstract class RelationalGeneratorAbstract
             .postActionsSqlPlan(postActionsSqlPlan)
             .postCleanupSqlPlan(postCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)
+            .deduplicationAndVersioningSqlPlan(deduplicationAndVersioningSqlPlan)
+            .putAllDeduplicationAndVersioningErrorChecksSqlPlan(deduplicationAndVersioningErrorChecksSqlPlan)
             .putAllPreIngestStatisticsSqlPlan(preIngestStatisticsSqlPlan)
             .putAllPostIngestStatisticsSqlPlan(postIngestStatisticsSqlPlan)
             .build();

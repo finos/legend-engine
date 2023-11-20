@@ -20,11 +20,15 @@ import org.finos.legend.engine.persistence.components.ingestmode.NontemporalDelt
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 
-import java.util.Optional;
-
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningComparator;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersionColumnBasedResolver;
 
 public class NonTemporalDeltaScenarios extends BaseTest
 {
@@ -33,12 +37,12 @@ public class NonTemporalDeltaScenarios extends BaseTest
     Test Scenarios for Non-temporal Delta
     Variables:
     1) Auditing: No Auditing, With Auditing
-    2) DataSplit: Enabled, Disabled
-    3) MergeStrategy: No MergeStrategy, With Delete Indicator
-    4) DerivedDataset with different InterBatchDedupStrategy
+    2) MergeStrategy: No MergeStrategy, With Delete Indicator
+    3) Deduplication: Allow duplicates, Filter duplicates, Fail on duplicates
+    4) Versioning: No Versioning, Max Versioning, All Versioning
     */
 
-    public TestScenario NO_AUDTING__NO_DATASPLIT()
+    public TestScenario NO_AUDTING__NO_DEDUP__NO_VERSIONING()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
@@ -47,7 +51,7 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario NO_AUDTING__NO_DATASPLIT__WITH_DELETE_INDICATOR()
+    public TestScenario NO_AUDTING__WITH_DELETE_INDICATOR__NO_DEDUP__NO_VERSIONING()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
@@ -61,33 +65,47 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigestAndDeleteIndicator, ingestMode);
     }
 
-    public TestScenario NO_AUDTING__WITH_DATASPLIT()
+    public TestScenario NO_AUDTING__NO_DEDUP__ALL_VERSION()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(NoAuditing.builder().build())
-                .dataSplitField(Optional.of(dataSplitField))
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
+                .deduplicationStrategy(AllowDuplicates.builder().build())
+                .build();
+        return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaAndDigest, ingestMode);
+    }
+
+    public TestScenario NO_AUDTING__NO_DEDUP__ALL_VERSION_WITHOUT_PERFORM()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+                .digestField(digestField)
+                .auditing(NoAuditing.builder().build())
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").dataSplitFieldName(dataSplitField).performStageVersioning(false).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
+                .deduplicationStrategy(AllowDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
     }
 
-    public TestScenario WITH_AUDTING__NO_DATASPLIT()
+    public TestScenario WITH_AUDTING__FILTER_DUPLICATES__NO_VERSIONING()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+                .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
-    public TestScenario WITH_AUDTING__WITH_DATASPLIT()
+    public TestScenario WITH_AUDTING__FAIL_ON_DUPS__ALL_VERSION()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField(digestField)
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
-                .dataSplitField(Optional.of(dataSplitField))
+                .versioningStrategy(AllVersionsStrategy.builder().versioningField("biz_date").mergeDataVersionResolver(DigestBasedResolver.INSTANCE).dataSplitFieldName(dataSplitField).build())
+                .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaHavingDigestAndDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
    }
 
     public TestScenario NO_VERSIONING__WITH_STAGING_FILTER()
@@ -99,58 +117,61 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithFilters, ingestMode);
     }
 
-    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN__DEDUP__WITH_STAGING_FILTER()
+    public TestScenario FILTER_DUPS__MAX_VERSION__WITH_STAGING_FILTER()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(true)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.builder().versionComparator(VersionComparator.GREATER_THAN).build())
+                .performStageVersioning(true)
                 .build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersionAndSnapshotId, ingestMode);
     }
 
-    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITH_STAGING_FILTER()
+    public TestScenario NO_DEDUP__MAX_VERSION_WITHOUT_PERFORM__WITH_STAGING_FILTER()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(false)
                 .build())
+            .deduplicationStrategy(AllowDuplicates.builder().build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersionAndSnapshotId, ingestMode);
     }
 
-    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN__NO_DEDUP__WITHOUT_STAGING_FILTER()
+    public TestScenario NO_DEDUP__MAX_VERSION_WITHOUT_PERFORM()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN)
-                .performDeduplication(false)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN))
+                .performStageVersioning(false)
                 .build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);
     }
 
-    public TestScenario MAX_VERSIONING_WITH_GREATER_THAN_EQUAL__DEDUP__WITHOUT_STAGING_FILTER()
+    public TestScenario NO_DEDUP__MAX_VERSION()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()
             .digestField(digestField)
             .auditing(NoAuditing.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(version.name())
-                .versioningComparator(VersioningComparator.GREATER_THAN_EQUAL_TO)
-                .performDeduplication(true)
+                .mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN_EQUAL_TO))
+                .performStageVersioning(true)
                 .build())
+            .deduplicationStrategy(AllowDuplicates.builder().build())
             .build();
         return new TestScenario(mainTableWithVersion, stagingTableWithVersion, ingestMode);
     }

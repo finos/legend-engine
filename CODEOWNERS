@@ -8,6 +8,7 @@
 /legend-engine-xts-analytics/**          @finos/legend-engine-maintainers
 /legend-engine-xts-authentication/**     @finos/legend-engine-maintainers
 /legend-engine-xts-avro/**               @finos/legend-engine-maintainers
+/legend-engine-xts-bigqueryFunction/**   @finos/legend-engine-maintainers
 /legend-engine-xts-changetoken/**        @finos/legend-engine-maintainers
 /legend-engine-xts-daml/**               @finos/legend-engine-maintainers
 /legend-engine-xts-data-push/**          @finos/legend-engine-maintainers
@@ -33,6 +34,7 @@
 /legend-engine-xts-service/**            @finos/legend-engine-maintainers
 /legend-engine-xts-serviceStore/**       @finos/legend-engine-maintainers
 /legend-engine-xts-snowflakeApp/**       @finos/legend-engine-maintainers
+/legend-engine-xts-hostedService/**      @finos/legend-engine-maintainers
 /legend-engine-xts-sql/**                @finos/legend-engine-maintainers
 /legend-engine-xts-text/**               @finos/legend-engine-maintainers
 /legend-engine-xts-xml/**                @finos/legend-engine-maintainers

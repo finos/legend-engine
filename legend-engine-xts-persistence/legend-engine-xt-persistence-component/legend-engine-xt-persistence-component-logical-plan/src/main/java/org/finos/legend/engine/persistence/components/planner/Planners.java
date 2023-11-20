@@ -33,6 +33,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnap
 import org.finos.legend.engine.persistence.components.ingestmode.UnitemporalSnapshotAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoadAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
+import org.finos.legend.engine.persistence.components.util.Capability;
+
+import java.util.Set;
 
 public class Planners
 {
@@ -40,73 +43,75 @@ public class Planners
     {
     }
 
-    public static Planner get(Datasets datasets, IngestMode ingestMode)
+    public static Planner get(Datasets datasets, IngestMode ingestMode, Set<Capability> capabilities)
     {
-        return ingestMode.accept(new PlannerFactory(datasets, PlannerOptions.builder().build()));
+        return ingestMode.accept(new PlannerFactory(datasets, PlannerOptions.builder().build(), capabilities));
     }
 
-    public static Planner get(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions)
+    public static Planner get(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        return ingestMode.accept(new PlannerFactory(datasets, plannerOptions));
+        return ingestMode.accept(new PlannerFactory(datasets, plannerOptions, capabilities));
     }
 
     static class PlannerFactory implements IngestModeVisitor<Planner>
     {
         private final Datasets datasets;
         private final PlannerOptions plannerOptions;
+        private final Set<Capability> capabilities;
 
-        PlannerFactory(Datasets datasets, PlannerOptions plannerOptions)
+        PlannerFactory(Datasets datasets, PlannerOptions plannerOptions, Set<Capability> capabilities)
         {
             this.datasets = datasets;
             this.plannerOptions = plannerOptions;
+            this.capabilities = capabilities;
         }
 
         @Override
         public Planner visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return new AppendOnlyPlanner(datasets, (AppendOnly) appendOnly, plannerOptions);
+            return new AppendOnlyPlanner(datasets, (AppendOnly) appendOnly, plannerOptions, capabilities);
         }
 
         @Override
         public Planner visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
         {
-            return new NontemporalSnapshotPlanner(datasets, (NontemporalSnapshot) nontemporalSnapshot, plannerOptions);
+            return new NontemporalSnapshotPlanner(datasets, (NontemporalSnapshot) nontemporalSnapshot, plannerOptions, capabilities);
         }
 
         @Override
         public Planner visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return new NontemporalDeltaPlanner(datasets, (NontemporalDelta) nontemporalDelta, plannerOptions);
+            return new NontemporalDeltaPlanner(datasets, (NontemporalDelta) nontemporalDelta, plannerOptions, capabilities);
         }
 
         @Override
         public Planner visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
         {
-            return new UnitemporalSnapshotPlanner(datasets, (UnitemporalSnapshot) unitemporalSnapshot, plannerOptions);
+            return new UnitemporalSnapshotPlanner(datasets, (UnitemporalSnapshot) unitemporalSnapshot, plannerOptions, capabilities);
         }
 
         @Override
         public Planner visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
         {
-            return new UnitemporalDeltaPlanner(datasets, (UnitemporalDelta) unitemporalDelta, plannerOptions);
+            return new UnitemporalDeltaPlanner(datasets, (UnitemporalDelta) unitemporalDelta, plannerOptions, capabilities);
         }
 
         @Override
         public Planner visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
         {
-            return new BitemporalSnapshotPlanner(datasets, (BitemporalSnapshot) bitemporalSnapshot, plannerOptions);
+            return new BitemporalSnapshotPlanner(datasets, (BitemporalSnapshot) bitemporalSnapshot, plannerOptions, capabilities);
         }
 
         @Override
         public Planner visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
         {
-            return new BitemporalDeltaPlanner(datasets, (BitemporalDelta) bitemporalDelta, plannerOptions);
+            return new BitemporalDeltaPlanner(datasets, (BitemporalDelta) bitemporalDelta, plannerOptions, capabilities);
         }
 
         @Override
         public Planner visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            return new BulkLoadPlanner(datasets, (BulkLoad) bulkLoad, plannerOptions);
+            return new BulkLoadPlanner(datasets, (BulkLoad) bulkLoad, plannerOptions, capabilities);
         }
     }
 }

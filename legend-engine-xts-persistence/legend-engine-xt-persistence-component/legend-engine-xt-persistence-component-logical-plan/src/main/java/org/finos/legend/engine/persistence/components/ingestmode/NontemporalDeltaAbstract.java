@@ -15,12 +15,13 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
-
-import java.util.Optional;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.immutables.value.Value;
 
 import static org.immutables.value.Value.Default;
 import static org.immutables.value.Value.Immutable;
@@ -40,14 +41,6 @@ public interface NontemporalDeltaAbstract extends IngestMode
 
     Auditing auditing();
 
-    Optional<String> dataSplitField();
-
-    @Default
-    default VersioningStrategy versioningStrategy()
-    {
-        return NoVersioningStrategy.builder().build();
-    }
-
     @Default
     default MergeStrategy mergeStrategy()
     {
@@ -58,5 +51,39 @@ public interface NontemporalDeltaAbstract extends IngestMode
     default <T> T accept(IngestModeVisitor<T> visitor)
     {
         return visitor.visitNontemporalDelta(this);
+    }
+
+    @Value.Check
+    default void validate()
+    {
+        versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
+        {
+
+            @Override
+            public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                if (!maxVersionStrategy.mergeDataVersionResolver().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for MaxVersionStrategy");
+                }
+                return null;
+            }
+
+            @Override
+            public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                if (!allVersionsStrategyAbstract.mergeDataVersionResolver().isPresent())
+                {
+                    throw new IllegalStateException("Cannot build NontemporalDelta, VersioningResolver is mandatory for AllVersionsStrategy");
+                }
+                return null;
+            }
+        });
     }
 }
