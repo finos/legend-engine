@@ -2479,7 +2479,9 @@ function meta::relational::functions::pureToSqlQuery::processTDSSort(f:FunctionE
 
 function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-  let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
+  let leftSidePure = $f.parametersValues->at(0);
+  let leftSideOp = processValueSpecificationReturnPropertyMapping($leftSidePure, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+  let mainQuery = $leftSideOp.element->cast(@SelectWithCursor);
   let mainSelect = $mainQuery.select->pushSavedFilteringOperation($extensions);    
   let sortByFunc = $f.parametersValues->evaluateAndDeactivate()->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0);
     
@@ -2505,31 +2507,27 @@ function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionEx
     );,
   | if($sortByFunc->instanceOf(LambdaFunction),
       |
-        let leftSidePure = $f.parametersValues->at(0);
-        let leftSideOp = processValueSpecificationReturnPropertyMapping($leftSidePure, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
-        let leftSide = $leftSideOp.element->cast(@SelectWithCursor);
-
         let paramValue = $f.parametersValues->at(1)->match([e:StoreMappingRoutedValueSpecification[1]|$e.value,v:ValueSpecification[1]|$v]);
-        let updatedState = $state->updateFunctionParamScope($paramValue.genericType.typeArguments.rawType->toOne()->cast(@FunctionType),$leftSide);
+        let updatedState = $state->updateFunctionParamScope($paramValue.genericType.typeArguments.rawType->toOne()->cast(@FunctionType),$mainQuery);
         let lambdaFunction = $f->instanceValuesAtParameter(1, $vars, $updatedState.inScopeVars)->at(0)->cast(@FunctionDefinition<Any>);
         let lambdaFunctionExpression = $lambdaFunction.expressionSequence->at(0);
         let inScopeVarsWithPlaceholdersState = $lambdaFunction->addPlaceHoldersForLambdaOpenVariables($vars, $updatedState);
         let embeddedMapping = if($leftSideOp.currentPropertyMapping->isEmpty(), | $currentPropertyMapping, | $leftSideOp.currentPropertyMapping);
         
-        let rightSide = processValueSpecification($lambdaFunctionExpression, $embeddedMapping, $leftSide, $vars, ^$inScopeVarsWithPlaceholdersState(inFilter=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
+        let rightSide = processValueSpecification($lambdaFunctionExpression, $embeddedMapping, $mainQuery, $vars, ^$inScopeVarsWithPlaceholdersState(inFilter=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
         let rightSideSelect = $rightSide.select;
         let rightSideModified = ^$rightSide(
           select = ^$rightSideSelect(
             columns = if($rightSideSelect.columns->isEmpty(), | [], |^Alias(name = '"' + 'order_key' + '"', relationalElement = $rightSideSelect.columns->toOne()))
           )
         );
-
-        let revisedLeftRightSelects = pair($leftSide.select->pushSavedFilteringOperation($extensions),$rightSideModified.select);
+        
+        let revisedLeftRightSelects = pair($mainSelect,$rightSideModified.select);
         let merge = [$revisedLeftRightSelects.first, $revisedLeftRightSelects.second]->cast(@SelectSQLQuery)->mergeSQLQueryData($nodeId, $updatedState, $context, $extensions);
 
         ^$operation(
-            currentTreeNode = $leftSide.currentTreeNode->toOne()->findOneNode($leftSide.select.data->toOne(), $merge.data->toOne()),
-            positionBeforeLastApplyJoinTreeNode = if ($leftSide.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$leftSide.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($leftSide.select.data->toOne(), $merge.data->toOne())),
+            currentTreeNode = $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne()),
+            positionBeforeLastApplyJoinTreeNode = if ($mainQuery.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$mainQuery.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne())),
             select = ^SelectSQLQuery(
                         columns = $merge.columns,
                         data = $merge.data,
