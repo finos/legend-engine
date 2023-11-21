@@ -84,9 +84,13 @@ function <<access.private>> meta::pure::router::store::routing::modifyMappingBas
         a:AssociationImplementation[1]|$a
     ]
   ));
-  let newMapping = ^Mapping(name=$mapping.name, includes=[], associationMappings=$associationMappings);
-  let includedMappings = $allMappings->map(map|^$map(associationMappings=[]))->map(map|^MappingInclude(owner=$newMapping,included=$map));
-  $newMapping->mutateAdd('includes', $includedMappings);
+  if(
+    $associationMappings->equal($allMappings.associationMappings),
+    | $mapping,
+    | let newMapping = ^Mapping(name=$mapping.name, includes=[], associationMappings=$associationMappings);
+    let includedMappings = $allMappings->map(map|^$map(associationMappings=[]))->map(map|^MappingInclude(owner=$newMapping,included=$map));
+    $newMapping->mutateAdd('includes', $includedMappings);
+  );
 }
 
 function <<access.private>> meta::pure::router::store::routing::getIncludedMappingsRecursively(m : Mapping[1]): Mapping[*]
