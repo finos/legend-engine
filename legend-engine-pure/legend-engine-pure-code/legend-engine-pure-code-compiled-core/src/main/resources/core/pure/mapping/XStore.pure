@@ -124,10 +124,10 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                                                                        multiplicity = PureOne,
                                                                                        values = $returnType.rawType
                                                                                    ),
-                                                                           routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
+                                                                           routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime, $extensions)
                                                                         )
                                                   ),
-                                          routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
+                                          routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime, $extensions)
                                        ),
                                        ^FunctionRoutedValueSpecification
                                        (
@@ -143,7 +143,7 @@ function meta::pure::mapping::xStore::performXStoreQuery(o:Any[1], p:PropertyMap
                                        )
                                     ]
               ),
-      routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime)
+      routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($objectInfo.static.mapping, $objectInfo.static.runtime, $extensions)
    )->evaluateAndDeactivate();
 
    print(if(!$debug.debug, |'',
