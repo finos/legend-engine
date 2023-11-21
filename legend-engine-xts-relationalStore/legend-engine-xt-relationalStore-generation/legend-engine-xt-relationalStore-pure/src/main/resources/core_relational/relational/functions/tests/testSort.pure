@@ -161,25 +161,27 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaAnd
                 ')\n',$rawPlan->planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function <<test.Test, test.ToFix>> meta::relational::tests::query::sort::testSortByLambdaAndGraphFetchDeep():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::query::sort::alloy::testSortByLambdaAndGraphFetchDeep():Boolean[1]
 {
-   let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name)
-                                      ->graphFetch(
-                                        #{
-                                          Person{
-                                            firstName,
-                                            addresses
-                                            {
-                                              name
-                                            }
-                                          }
-                                        }#
+   let gft = #{
+                Person{
+                  firstName,
+                  address
+                  {
+                    name
+                  }
+                }
+              }#;
+   let result = execute(|Person.all()->sortBy(
+                                        p | $p.address->toOne().name
+                                      )->graphFetch(
+                                        $gft
+                                      )->serialize(
+                                        $gft
                                       ), 
                                       simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSize($result.values, 12);
-   assertEquals(['Hoboken', 'Hong Kong', 'New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'New York', 'San Fransisco'], $result.values.address.name);
-   assertEquals(['No address', 'Peter', 'Oliver', 'John', 'John', 'Anthony', 'David', 'No firm', 'New', 'Elena', 'Don', 'Fabrice'], $result.values.firstName);
-   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) order by "addresstable_0".NAME', $result->sqlRemoveFormatting());
+   
+   assertJsonStringsEqual('[{"firstName":"No address","address":null},{"firstName":"Peter","address":{"name":"Hoboken"}},{"firstName":"Oliver","address":{"name":"Hong Kong"}},{"firstName":"John","address":{"name":"New York"}},{"firstName":"John","address":{"name":"New York"}},{"firstName":"Anthony","address":{"name":"New York"}},{"firstName":"David","address":{"name":"New York"}},{"firstName":"No firm","address":{"name":"New York"}},{"firstName":"New","address":{"name":"New York"}},{"firstName":"Elena","address":{"name":"New York"}},{"firstName":"Don","address":{"name":"New York"}},{"firstName":"Fabrice","address":{"name":"San Fransisco"}}]', $result.values);
 }
 
 
