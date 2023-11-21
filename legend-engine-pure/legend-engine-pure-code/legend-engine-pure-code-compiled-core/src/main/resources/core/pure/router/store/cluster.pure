@@ -704,10 +704,10 @@ function meta::pure::router::clustering::clusteredGetAll(set: SetImplementation[
                     (
                       genericType = ^GenericType(rawType=Class, typeArguments=$sourceType), multiplicity = PureOne, values = $sourceType.rawType
                     ),
-                    routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($mapping, $runtime)
+                    routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($mapping, $runtime, $extensions)
                 )
               ),
-      routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($mapping, $runtime)
+      routingStrategy = meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime($mapping, $runtime, $extensions)
    )->evaluateAndDeactivate();
 
    let clustered = list($newExpr)->doCluster(^LambdaFunction<{->Any[1]}>(expressionSequence=^InstanceValue(values='', genericType=^GenericType(rawType=String), multiplicity=PureOne)),

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::metamodel::*;
+import meta::pure::extension::*;
 import meta::pure::graphFetch::*;
 import meta::pure::mapping::*;
 import meta::pure::router::builder::*;
@@ -29,16 +31,67 @@ import meta::pure::runtime::*;
 // Store Mapping Routing Strategy Builder Helper
 // =========================================================================================
 
-function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1]):StoreMappingRoutingStrategy[1]
+function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):StoreMappingRoutingStrategy[1]
 {
-  ^StoreMappingRoutingStrategy(mapping = $mapping,
-                               runtime = $runtime,
-                               setsByDepth = ^Map<String, PermutationSet>(),
-                               classMappingsByClass = $mapping->buildClassMappingsByClassMap(),
-                               processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
-                               processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
-                               wrapValueSpec = wrapValueSpecification_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
-                               toString = {strategy:RoutingStrategy[1] | $strategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()});
+    getRoutingStrategyFromMappingAndRuntime([],$mapping, $runtime, $extensions);
+}
+
+function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRuntime(routingStrategy: RoutingStrategy[0..1], mapping:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):StoreMappingRoutingStrategy[1]
+{
+    let modifiedRuntime = $runtime;
+    let modifiedMapping = modifyMappingBasedOnRuntimeLocality($mapping, $modifiedRuntime, $extensions);
+    let currentStoreMappingRoutingStrategy = $routingStrategy->filter(x | $x->instanceOf(StoreMappingRoutingStrategy))->cast(@StoreMappingRoutingStrategy);
+    if($currentStoreMappingRoutingStrategy->isEmpty(),
+        | ^StoreMappingRoutingStrategy(mapping = $modifiedMapping,
+               runtime = $modifiedRuntime,
+               setsByDepth = ^Map<String, PermutationSet>(),
+               classMappingsByClass = $modifiedMapping->buildClassMappingsByClassMap(),
+               processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
+               processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
+               wrapValueSpec = wrapValueSpecification_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
+               toString = {strategy:RoutingStrategy[1] | $strategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()}
+        );,
+        | let newStoreMappingRoutingStrategy = $currentStoreMappingRoutingStrategy->toOne();
+          ^$newStoreMappingRoutingStrategy(mapping = $modifiedMapping, runtime = $modifiedRuntime, classMappingsByClass = $modifiedMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());
+    );
+}
+
+function <<access.private>> meta::pure::router::store::routing::modifyMappingBasedOnRuntimeLocality(mapping:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions: meta::pure::extension::Extension[*]):Mapping[1]
+{
+  let allMappings = $mapping->getIncludedMappingsRecursively();
+  let classMappings = $allMappings.classMappings;
+  let associationMappings = $allMappings.associationMappings->map(associationMap|$associationMap->match(
+    [
+        x:meta::pure::mapping::xStore::XStoreAssociationImplementation[1]|
+          let mappingIds = $x.propertyMappings.sourceSetImplementationId->concatenate($x.propertyMappings.targetSetImplementationId);
+          let inScopeClassMappings = $classMappings->filter(x|$x.id->in($mappingIds))->distinct();
+          let inScopeStores = $inScopeClassMappings->map(setImpl | meta::pure::router::clustering::storeContractForSetImplementation($setImpl, $mapping, $extensions).second);
+          if(
+            $runtime.connectionStores->size() >= 1,
+            | let connection = $inScopeStores->map(s|$runtime->connectionByElement($s))->distinct();
+            if(
+                $connection->size() == 1,
+                | $connection->toOne()->match(
+                    $extensions.availableStores.localizeXStoreAssociation
+                    ->map(e|$e->eval($x, $inScopeClassMappings, $inScopeStores))
+                    ->concatenate([a:Connection[1] | $x;])->toOneMany()
+                );,
+                | $x
+            );,
+            | $x
+          );,
+
+        a:AssociationImplementation[1]|$a
+    ]
+  ));
+  let newMapping = ^Mapping(name=$mapping.name, includes=[], associationMappings=$associationMappings);
+  let includedMappings = $allMappings->map(map|^$map(associationMappings=[]))->map(map|^MappingInclude(owner=$newMapping,included=$map));
+  $newMapping->mutateAdd('includes', $includedMappings);
+}
+
+function <<access.private>> meta::pure::router::store::routing::getIncludedMappingsRecursively(m : Mapping[1]): Mapping[*]
+{
+  $m->concatenate(if($m.includes->isEmpty(), |[], |$m.includes.included->map(i|$i->getIncludedMappingsRecursively())));
 }
 
 function <<access.private>> meta::pure::router::store::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], s:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
@@ -230,10 +283,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let fromExecutionContext   = if($resolvedParameters->size() == 3, | $resolvedParameters->at(2)->cast(@ExecutionContext), | $executionContext);
 
                 let currentRoutingStrategy = $state.routingStrategy;
-                let newRoutingStrategy     = if($currentRoutingStrategy->instanceOf(StoreMappingRoutingStrategy),
-                                               | let storeMapStrategy = $currentRoutingStrategy->cast(@StoreMappingRoutingStrategy);
-                                                 ^$storeMapStrategy(mapping = $fromMapping, runtime = $fromRuntime, classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());,
-                                               | getRoutingStrategyFromMappingAndRuntime($fromMapping, $fromRuntime));
+                let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $fromMapping, $fromRuntime, $extensions);
                 let newState               = ^$state(routingStrategy = $newRoutingStrategy);
 
                 let processedFunction      = routeFunctionExpression($fe.parametersValues->at(0)->cast(@FunctionExpression), $newState, $fromExecutionContext, $vars, $inScopeVars, $extensions, $debug);
@@ -283,10 +333,7 @@ function  meta::pure::router::store::routing::specializedFunctionExpressionRoute
                 let runtime = $prevalFunc.parametersValues->at(3)->cast(@InstanceValue).values->toOne()->cast(@Runtime);
 
                 let currentRoutingStrategy = $state.routingStrategy;
-                let newRoutingStrategy     = if($currentRoutingStrategy->instanceOf(StoreMappingRoutingStrategy),
-                                               | let storeMapStrategy = $currentRoutingStrategy->cast(@StoreMappingRoutingStrategy);
-                                                 ^$storeMapStrategy(mapping = $mapping, runtime = $runtime, classMappingsByClass = $mapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());,
-                                               | getRoutingStrategyFromMappingAndRuntime($mapping, $runtime));
+                let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $mapping, $runtime, $extensions);
 
                 let processedFirstParam  = processCollection($state, $fe.parametersValues->at(0), $executionContext, $vars, $inScopeVars, {x:Any[1] | true}, $extensions, $debug)->toOne();
                 let processedSave = ^$fe(parametersValues = $processedFirstParam.value->cast(@ValueSpecification)->concatenate($fe.parametersValues->tail()));
