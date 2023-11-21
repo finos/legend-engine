@@ -59,7 +59,7 @@ function meta::external::store::service::extension::serviceStoreExtension() : me
    ^Extension
    (
       type = 'serviceStore',
-      availableStores = [meta::external::store::service::contract::serviceStoreStoreContract()],
+      availableStores = meta::pure::extension::defaultExtensions().availableStores->concatenate(meta::external::store::service::contract::serviceStoreStoreContract()),
       serializerExtension =  meta::external::store::service::extension::serviceStoreSerializerExtension_String_1__String_1_,
       graphExtension_calculateSourceTree = {tree:RootGraphFetchTree<Any>[1] |
          {rsi: RootServiceInstanceSetImplementation[1] |
