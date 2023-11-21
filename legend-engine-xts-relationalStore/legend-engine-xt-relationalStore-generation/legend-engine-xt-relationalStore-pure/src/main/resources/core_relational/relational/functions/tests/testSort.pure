@@ -92,7 +92,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaAnd
                                         #{
                                           Person{
                                             firstName,
-                                            addresses {
+                                            address {
                                               name
                                             }
                                           }
@@ -101,7 +101,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaAnd
                                         #{
                                           Person{
                                             firstName,
-                                            addresses {
+                                            address {
                                               name
                                             }
                                           }
@@ -111,17 +111,17 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaAnd
   assertEquals( 'PureExp\n' +
                 '(\n' +
                 '  type = String\n' +
-                '  expression =  -> serialize(#{meta::relational::tests::model::simple::Person {firstName, addresses() {name}}}#)\n' +
+                '  expression =  -> serialize(#{meta::relational::tests::model::simple::Person {firstName, address {name}}}#)\n' +
                 '  (\n' +
                 '    StoreMappingGlobalGraphFetch\n' +
                 '    (\n' +
-                '      type = PartialClass[impls=[(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)], propertiesWithParameters = [addresses(), firstName]]\n' +
+                '      type = PartialClass[impls=[(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)], propertiesWithParameters = [address, firstName]]\n' +
                 '      resultSizeRange = *\n' +
                 '      store = meta::relational::tests::db\n' +
                 '      localGraphFetchExecutionNode = \n' +
                 '         RelationalGraphFetch\n' +
                 '         (\n' +
-                '           type = PartialClass[impls=[(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)], propertiesWithParameters = [addresses(), firstName]]\n' +
+                '           type = PartialClass[impls=[(meta::relational::tests::model::simple::Person | simpleRelationalMappingInc.meta_relational_tests_model_simple_Person)], propertiesWithParameters = [address, firstName]]\n' +
                 '           nodeIndex = 0\n' +
                 '           relationalNode = \n' +
                 '              SQL\n' +
@@ -141,7 +141,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaAnd
                 '                   (\n' +
                 '                     type = meta::pure::metamodel::type::Any\n' +
                 '                     resultColumns = [("parent_key_gen_0", INT), ("pk_0", INT), ("name", VARCHAR(200))]\n' +
-                '                     sql = select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "unionalias_0".ID as "pk_0", "unionalias_0".NAME as "name" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join personTable as "root" on ("temp_table_node_0_0".pk_0 = "root".ID) left outer join (select "addresstable_0".ID as ID, null as ADDRESSID from addressTable as "addresstable_0" UNION ALL select "firmtable_0".ID as ID, "firmtable_0".ADDRESSID as ADDRESSID from firmTable as "firmtable_0" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID)) as "unionalias_0" on ("unionalias_0".ID = "root".FIRMID or "unionalias_0".ID = "root".ADDRESSID) where "unionalias_0".ID is not null\n' +
+                '                     sql = select distinct "temp_table_node_0_0".pk_0 as "parent_key_gen_0", "addresstable_0".ID as "pk_0", "addresstable_0".NAME as "name" from (select * from (${temp_table_node_0}) as "root") as "temp_table_node_0_0" inner join personTable as "root" on ("temp_table_node_0_0".pk_0 = "root".ID) left outer join addressTable as "addresstable_0" on ("addresstable_0".ID = "root".ADDRESSID) where "addresstable_0".ID is not null\n' +
                 '                     connection = TestDatabaseConnection(type = "H2")\n' +
                 '                   )\n' +
                 '                children = [\n' +
