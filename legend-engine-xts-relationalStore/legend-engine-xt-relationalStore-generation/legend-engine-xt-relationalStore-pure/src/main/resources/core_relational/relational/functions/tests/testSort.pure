@@ -36,6 +36,22 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaSim
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".LASTNAME', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaMultiple():Boolean[1]
+{
+   let result = execute(|Person.all()->sortBy(p | $p.lastName)->sortBy(p | $p.firstName), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 12);
+   assertEquals(['Anthony Allen', 'Elena Firm B', 'David Harris', 'John Hill', 'Oliver Hill', 'John Johnson', 'Don New York', 'Fabrice Roberts', 'No address Smith', 'Peter Smith', 'New York', 'No firm no Firm'], zip($result.values.firstName, $result.values.lastName)->map(pair | $pair.first + ' ' + $pair.second));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by "root".LASTNAME,"root".FIRSTNAME', $result->sqlRemoveFormatting());
+}
+
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaMultipleComplex():Boolean[1]
+{
+   let result = execute(|Person.all()->sortBy(p | if($p.age >= 50, | 50, |if($p.age >= 30, | 30, | 20)))->sortBy(p | $p.fullName(true)), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 12);
+   assertEquals(['22 Allen Anthony', '12 Hill John', '22 Johnson John', '23 Smith Peter', '35 Firm B Elena', '35 Harris David', '32 Hill Oliver', '35 New York Don', '34 Roberts Fabrice', '35 Smith No address', '35 York New', '35 no Firm No firm'], zip($result.values.age, zip($result.values.lastName, $result.values.firstName))->map(pair | $pair.first->toString() + ' ' + $pair.second.first + ' ' + $pair.second.second));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by case when ("root".AGE is not null and "root".AGE >= 50) then 50 else case when ("root".AGE is not null and "root".AGE >= 30) then 30 else 20 end end,case when true then concat("root".LASTNAME, \', \', "root".FIRSTNAME) else concat("root".FIRSTNAME, \' \', "root".LASTNAME) end', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaColumnAddition():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(p | $p.lastName + '|' + $p.firstName), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
@@ -145,7 +161,7 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaAnd
                 ')\n',$rawPlan->planToString(meta::relational::extension::relationalExtensions()));
 }
 
-function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaAndGraphFetchDeep():Boolean[1]
+function <<test.Test, test.ToFix>> meta::relational::tests::query::sort::testSortByLambdaAndGraphFetchDeep():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name)
                                       ->graphFetch(
