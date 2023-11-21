@@ -70,7 +70,7 @@ function <<access.private>> meta::pure::router::store::routing::modifyMappingBas
           let inScopeStores = $inScopeClassMappings->map(setImpl | meta::pure::router::clustering::storeContractForSetImplementation($setImpl, $mapping, $extensions).second);
           if(
             $runtime.connectionStores->size() >= 1,
-            | let connection = $inScopeStores->map(s|$runtime->connectionByElement($s))->distinct();
+            | let connection = $inScopeStores->map(s|$runtime->connectionByElementFailSafe($s))->distinct();
             if(
                 $connection->size() == 1,
                 | $connection->toOne()->match(
