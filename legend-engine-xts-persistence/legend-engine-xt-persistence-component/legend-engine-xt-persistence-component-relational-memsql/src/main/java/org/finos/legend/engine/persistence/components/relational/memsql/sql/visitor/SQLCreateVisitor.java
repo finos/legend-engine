@@ -35,7 +35,8 @@ public class SQLCreateVisitor implements LogicalPlanVisitor<Create>
     public VisitorResult visit(PhysicalPlanNode prev, Create current, VisitorContext context)
     {
         CreateTable createTable = new CreateTable();
-        if (!current.dataset().schema().shardSpecification().isPresent() || current.dataset().schema().shardSpecification().get().shardKeys().size() == 0)
+        // if the table is not sharded, it will be created as REFERENCE TABLE in memsql
+        if (current.dataset().schema().shardSpecification().isPresent() && !current.dataset().schema().shardSpecification().get().isSharded())
         {
             List<TableType> tableTypeList = Arrays.asList(new ReferenceTableType());
             createTable = new CreateTable(tableTypeList);
