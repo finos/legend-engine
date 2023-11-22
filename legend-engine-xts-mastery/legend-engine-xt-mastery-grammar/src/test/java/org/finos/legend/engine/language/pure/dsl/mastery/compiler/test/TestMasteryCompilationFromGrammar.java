@@ -373,6 +373,60 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "    }#;\n" +
             "}\n";
 
+    public static String MASTERY_MODEL_WITH_ONE_RULE = "###Pure\n" +
+            "Class org::dataeng::Widget\n" +
+            "{\n" +
+            "  widgetId: String[0..1];\n" +
+            "  identifiers: org::dataeng::MilestonedIdentifier[*];\n" +
+            "}\n\n" +
+            "Class org::dataeng::MilestonedIdentifier\n" +
+            "{\n" +
+            "  identifierType: String[1];\n" +
+            "  identifier: String[1];\n" +
+            "  FROM_Z: StrictDate[0..1];\n" +
+            "  THRU_Z: StrictDate[0..1];\n" +
+            "}\n\n\n" +
+            MAPPING_AND_CONNECTION +
+            "###Service\n" +
+            "Service org::dataeng::ParseWidget\n" + WIDGET_SERVICE_BODY + "\n" +
+            "Service org::dataeng::TransformWidget\n" + WIDGET_SERVICE_BODY + "\n" +
+            "\n" +
+            "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+            "\n" +
+            "{\n" +
+            "  modelClass: org::dataeng::Widget;\n" +
+            "  identityResolution: \n" +
+            "  {\n" +
+            "    resolutionQueries:\n" +
+            "      [\n" +
+            "        {\n" +
+            "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+            "                   ];\n" +
+            "          precedence: 1;\n" +
+            "        }\n" +
+            "      ]\n" +
+            "  }\n" +
+            "  precedenceRules: [\n" +
+            "    DeleteRule: {\n" +
+            "      path: org::dataeng::Widget.identifiers.identifier;\n" +
+            "      ruleScope: [\n" +
+            "        RecordSourceScope {widget-producer}\n" +
+            "      ];\n" +
+            "    }\n" +
+            "  ]\n" +
+            "  recordSources:\n" +
+            "  [\n" +
+            "    widget-producer: {\n" +
+            "      description: 'REST Acquisition source.';\n" +
+            "      status: Development;\n" +
+            "      recordService: {\n" +
+            "        acquisitionProtocol: REST;\n" +
+            "      };\n" +
+            "      trigger: Manual;\n" +
+            "    }\n" +
+            "  ]\n" +
+            "}\n";
+
     public static String MINIMUM_CORRECT_MASTERY_MODEL = "###Pure\n" +
             "Class org::dataeng::Widget\n" +
             "{\n" +
@@ -924,6 +978,19 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
         assertTrue(packageableElement instanceof Root_meta_pure_mastery_metamodel_MasterRecordDefinition);
         Root_meta_pure_mastery_metamodel_MasterRecordDefinition masterRecordDefinition = (Root_meta_pure_mastery_metamodel_MasterRecordDefinition) packageableElement;
         assertEquals("Widget", masterRecordDefinition._modelClass()._name());
+    }
+
+    @Test
+    public void testMasteryModelWithOneRule()
+    {
+        Pair<PureModelContextData, PureModel> result = test(MASTERY_MODEL_WITH_ONE_RULE);
+        PureModel model = result.getTwo();
+
+        PackageableElement packageableElement = model.getPackageableElement("alloy::mastery::WidgetMasterRecord");
+        assertNotNull(packageableElement);
+        assertTrue(packageableElement instanceof Root_meta_pure_mastery_metamodel_MasterRecordDefinition);
+        Root_meta_pure_mastery_metamodel_MasterRecordDefinition masterRecordDefinition = (Root_meta_pure_mastery_metamodel_MasterRecordDefinition) packageableElement;
+        assertEquals(1, masterRecordDefinition._precedenceRules().size());
     }
 
     @Test
