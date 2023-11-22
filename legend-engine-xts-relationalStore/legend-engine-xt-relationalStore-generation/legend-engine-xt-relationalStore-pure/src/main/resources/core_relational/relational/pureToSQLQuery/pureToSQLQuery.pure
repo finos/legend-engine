@@ -2542,9 +2542,7 @@ function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionEx
                       leftSideOfFilter = $merge.leftSideOfFilter,
                       filteringOperation = $merge.filteringOperation,
                       extraFilteringOperation = $merge.extraFilteringOperation,
-                      orderBy = $mainSelect.orderBy->concatenate(
-                        ^OrderBy(column=$rightSideModified.select.columns->toOne()->cast(@Alias).name->findAliasOrFail($merge).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
-                      )
+                      orderBy = ^OrderBy(column=$rightSideModified.select.columns->toOne()->cast(@Alias).name->findAliasOrFail($merge).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
                   )
       );,
     a: Any[1] | fail('Invalid parameter type to sortBy ' + $sortByFunc->type().name->orElse('unknown')); $operation;
