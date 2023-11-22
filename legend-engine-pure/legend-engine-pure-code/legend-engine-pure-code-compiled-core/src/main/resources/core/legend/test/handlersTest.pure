@@ -128,6 +128,11 @@ Class meta::legend::test::handlers::model::TestMaxMin
    
    minDateTime() {$this.dateTimes->min()}:DateTime[0..1];
    minTwoDateTime() {$this.dateTime->min($this.dateTime)}:DateTime[1];
+
+   greatest() {$this.numbers->greatest()}:Number[0..1];
+   greatestMinOne() {$this.numbersMinOne->greatest()}:Number[1];
+   least() {$this.numbers->least()}:Number[0..1];
+   leastMinOne() {$this.numbersMinOne->least()}:Number[1];
 }
 
 Class meta::legend::test::handlers::model::TestAlgebra

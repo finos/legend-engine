@@ -77,7 +77,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 pair('Integer', 'Integer_table2'),
                 pair('String', 'String_table2')
           ]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, {row1:TDSRow[1], row2:TDSRow[1] | $row1.getInteger('Integer_table1') == $row2.getInteger('Integer_table2')}
-        )->renameColumns([
+        )
+        ->restrict(['Boolean_table1', 'Integer_table1', 'Float_table1', 'Decimal_table1', 'StrictDate_table1', 'DateTime_table1', 'String_table1'])
+        ->renameColumns([
               pair('Boolean_table1', 'Boolean'),
               pair('Integer_table1', 'Integer'),
               pair('Float_table1', 'Float'),
@@ -85,7 +87,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               pair('StrictDate_table1', 'StrictDate'),
               pair('DateTime_table1', 'DateTime'),
               pair('String_table1', 'String')
-        ])->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+        ])
       }
   )
 }
@@ -234,16 +236,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
         ->extend([
           col(row:TDSRow[1] | $row.getString('String'), 'col1'),
-          col(row:TDSRow[1] | $row.getString('String'), 'col2'),
-          col(row:TDSRow[1] | $row.getStrictDate('StrictDate'), 'StrictDate_1'),
-          col(row:TDSRow[1] | $row.getString('String'), 'String_1')
+          col(row:TDSRow[1] | $row.getString('String'), 'col2')
         ])->groupBy(
-          ['StrictDate_1', 'String_1', 'col1', 'col2'],
+          ['StrictDate', 'String', 'col1', 'col2'],
           agg('sum', row | $row.getInteger('Integer'), y | $y->sum())
-        )->renameColumns([
-          pair('StrictDate_1', 'StrictDate'),
-          pair('String_1', 'String')
-        ])->restrict([
+        )->restrict([
           'col1', 'col2', 'StrictDate', 'String', 'sum'
         ])
       }, false
@@ -480,23 +477,42 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       })
 }
 
-function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByWithExtendAlias():Boolean[1]
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByColumnRealiasWithGroupBy():Boolean[1]
 {
-  test(
+  test([
     'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") GROUP BY 1 ORDER BY 1, Calc2 ASC',
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") GROUP BY 1 ORDER BY Calc, Calc2 ASC'
+    ],
 
     {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->project(col(row:TDSRow[1] | 1, 'Calc'))
       ->extend([
-        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc_1'),
         col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc2')
       ])
-      ->restrict(['Calc_1', 'Calc2'])
+      ->restrict(['Calc', 'Calc2'])
       ->distinct()
-      ->sort([asc('Calc_1'), asc('Calc2')])
-      ->renameColumns(pair('Calc_1', 'Calc'))
+      ->sort([asc('Calc'), asc('Calc2')])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testOrderByColumnRealiasWithNoGroupBy():Boolean[1]
+{
+  test([
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") ORDER BY 1, Calc2 ASC',
+    'SELECT Calc AS Calc, Calc AS Calc2 FROM (select 1 AS Calc from service."/service/service1") ORDER BY Calc, Calc2 ASC'
+    ],
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->project(col(row:TDSRow[1] | 1, 'Calc'))
+      ->project([
+        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc'),
+        col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc2')
+      ])
+      ->sort([asc('Calc'), asc('Calc2')])
       })
 }
 
@@ -605,13 +621,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testComparisonOperatorsDate():Boolean[1]
 {
   test(
-    'SELECT * FROM service."/service/service1" WHERE StrictDate > TIMESTAMP \'2023-01-01\' OR StrictDate < CURRENT_DATE OR StrictDate >= TIMESTAMP \'2023-01-02\' OR StrictDate <= CURRENT_DATE OR StrictDate > \'2023-01-03\'',
+    'SELECT * FROM service."/service/service1" WHERE StrictDate > TIMESTAMP \'2023-01-01\' OR StrictDate < CURRENT_DATE OR StrictDate >= TIMESTAMP \'2023-01-02\' ' +
+    'OR StrictDate <= CURRENT_DATE OR StrictDate > \'2023-01-03\' OR StrictDate > date_trunc(\'month\', StrictDate)',
 
     {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->filter(row | ($row.getStrictDate('StrictDate') > parseDate('2023-01-01')) || ($row.getStrictDate('StrictDate') < today())
-            || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-02')) || ($row.getStrictDate('StrictDate') <= today()) || ($row.getStrictDate('StrictDate') > parseDate('2023-01-03')))
+            || ($row.getStrictDate('StrictDate') >= parseDate('2023-01-02')) || ($row.getStrictDate('StrictDate') <= today())
+            || ($row.getStrictDate('StrictDate') > parseDate('2023-01-03'))
+            || ($row.getStrictDate('StrictDate') > firstDayOfMonth($row.getStrictDate('StrictDate'))))
       }, false)
 }
 
@@ -726,7 +745,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithAlias():Boolean[1]
 {
   test(
-    'SELECT String, sum(Integer) AS "sum", Boolean AS "bool" FROM service."/service/service1" GROUP BY String, "bool"',
+    'SELECT String, sum(Integer) AS "sum", Boolean AS "bool" FROM service."/service/service1" GROUP BY String, bool',
 
     {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -846,11 +865,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('Count', row | $row.getInteger('Integer'), y | $y->count()),
           agg('Float Count', row | $row.getFloat('Float'), y | $y->count())
         ])
+        ->restrict(['Count', 'Float Count', 'String_1', 'Float_1', 'Original Float'])
         ->renameColumns([
           pair('String_1', 'String'),
           pair('Float_1', 'Float')
         ])
-        ->restrict(['Count', 'Float Count', 'String', 'Float', 'Original Float'])
       }, false
   )
 }
@@ -929,6 +948,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           'str'
         ], agg('COUNT(1)', row | 1, y | $y->count()))
         ->filter(row | $row.getInteger('COUNT(1)') > 0)
+        ->restrict([
+          'Boolean_table1', 'Integer_table1', 'Float_table1', 'Decimal_table1', 'StrictDate_table1', 'DateTime_table1', 'String_table1', 'str'
+        ])
         ->renameColumns([
                 pair('Boolean_table1', 'Boolean'),
                 pair('Integer_table1', 'Integer'),
@@ -938,7 +960,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 pair('DateTime_table1', 'DateTime'),
                 pair('String_table1', 'String')
         ])
-        ->restrict(['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String', 'str'])
       }, false)
 }
 
@@ -1324,11 +1345,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
-        ->extend([
-          col(row:TDSRow[1]|$row.getString('String'), 'String_1')
-        ])
-        ->restrict('String_1')->distinct()
-        ->renameColumns(pair('String_1', 'String'))
+        ->restrict('String')->distinct()
         ->renameColumns(pair('String', 'String_t0'))
         ->join(FlatInput.all()->project(
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -1904,7 +1921,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCollectionFunctions():Boolean[1]
 {
   test(
-    'SELECT coalesce(NULL, Integer, 1) AS "COALESCE" FROM service."/service/service1"',
+    'SELECT ' + 
+    'coalesce(NULL, Integer, 1) AS "COALESCE", ' +
+    'greatest(NULL, Integer, 1) AS "GREATEST", ' +
+    'least(NULL, Integer, 1) AS "LEAST" ' +
+    'FROM service."/service/service1"',
 
     {|
         FlatInput.all()
@@ -1912,7 +1933,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->project([
-                col(row:TDSRow[1] | meta::pure::tds::extensions::firstNotNull([$row.getInteger('Integer'), 1]), 'COALESCE')
+                col(row:TDSRow[1] | meta::pure::tds::extensions::firstNotNull([$row.getInteger('Integer'), 1]), 'COALESCE'),
+                col(row:TDSRow[1] | greatest([$row.getInteger('Integer'), 1]), 'GREATEST'),
+                col(row:TDSRow[1] | least([$row.getInteger('Integer'), 1]), 'LEAST')
               ])
       })
 }
@@ -2374,7 +2397,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
 {
   $sqls->forAll(sql |
     let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom);
-    let actual = $sqlTransformContext.lambda();
+    let actual = $sqlTransformContext.lambda();  
 
     if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
     if ($assertJSON, | assertLambdaJSONEquals($expected, $actual), | true);

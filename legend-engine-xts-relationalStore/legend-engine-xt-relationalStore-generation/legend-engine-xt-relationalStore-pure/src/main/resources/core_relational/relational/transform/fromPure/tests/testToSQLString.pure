@@ -674,6 +674,20 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
     assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double precision) as "float" from tradeTable as "root"', $result);
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGreatestLeast():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t| greatest([$t.quantity, 1, 3]), 'greatest'),
+          col(t| greatest([]->cast(@String)), 'greatest_empty'),
+          col(t| least([$t.quantity, 1, 3]), 'least'),
+          col(t| least([]->cast(@String)), 'least_empty')
+        ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select greatest("root".quantity, 1, 3) as "greatest", greatest(null) as "greatest_empty", least("root".quantity, 1, 3) as "least", least(null) as "least_empty" from tradeTable as "root"', $result);
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringForTDSStringJoin():Boolean[1]
 {
     let result = toSQLString(

@@ -595,7 +595,7 @@ function meta::pure::router::routing::isGetAllFunction(f:Function<Any>[1]):Boole
 
 function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
-   shouldStopFunctions($extensions)->contains($f);
+  shouldStopFunctions($extensions)->contains($f);
 }
 
 function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure::extension::Extension[*]):Function<Any>[*]
@@ -621,6 +621,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     max_Float_$1_MANY$__Float_1_,
     max_Number_MANY__Number_$0_1$_,
     max_Number_$1_MANY$__Number_1_,
+    greatest_X_MANY__X_$0_1$_,
+    greatest_X_$1_MANY$__X_1_,
     getAllForEachDate_Class_1__Date_MANY__T_MANY_,
     greaterThan_Number_1__Number_1__Boolean_1_,
     greaterThan_String_1__String_1__Boolean_1_,
@@ -684,6 +686,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     min_Date_MANY__Date_$0_1$_,
     min_StrictDate_MANY__StrictDate_$0_1$_,
     min_DateTime_MANY__DateTime_$0_1$_,
+    least_X_MANY__X_$0_1$_,
+    least_X_$1_MANY$__X_1_,
     variancePopulation_Number_MANY__Number_1_,
     varianceSample_Number_MANY__Number_1_,
     makeString_Any_MANY__String_1__String_1_,
