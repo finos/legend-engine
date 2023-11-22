@@ -30,26 +30,21 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.schemaWithAllColumnsWithShardColumnStore;
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.schemaWithColumnStoreWithoutShard;
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.schemaWithRowStoreWithoutShard;
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.schemaWithRowStoreShards;
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.schemaWithAllColumns;
-import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.schemaWithColumnStore;
+import static org.finos.legend.engine.persistence.components.logicalplan.operations.BaseTestUtils.*;
 
 public class CreateTest
 {
 
     @Test
-    public void testCreateTableWithColumnStoreShards()
+    public void testCreateTableWithColumnStoreSharded()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
-            .database("my_db")
-            .group("my_schema")
-            .name("my_table")
-            .alias("my_alias")
-            .schema(schemaWithAllColumnsWithShardColumnStore)
-            .build();
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumnsWithShardsAndColumnStore)
+                .build();
 
         Operation createTable = Create.of(true,dataset);
 
@@ -65,14 +60,14 @@ public class CreateTest
     }
 
     @Test
-    public void testCreateTableWithColumnStoreWithoutShards()
+    public void testCreateTableWithColumnStoreUnsharded()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
                 .database("my_db")
                 .group("my_schema")
                 .name("my_table")
                 .alias("my_alias")
-                .schema(schemaWithColumnStoreWithoutShard)
+                .schema(schemaWithColumnStoreUnsharded)
                 .build();
 
         Operation createTable = Create.of(true,dataset);
@@ -89,14 +84,14 @@ public class CreateTest
     }
 
     @Test
-    public void testCreateTableWithRowStoreWithoutShards()
+    public void testCreateTableWithColumnStoreWithKeylessSharding()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
                 .database("my_db")
                 .group("my_schema")
                 .name("my_table")
                 .alias("my_alias")
-                .schema(schemaWithRowStoreWithoutShard)
+                .schema(schemaWithColumnStoreWithKeylessSharding)
                 .build();
 
         Operation createTable = Create.of(true,dataset);
@@ -107,7 +102,31 @@ public class CreateTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expectedAdd = "CREATE REFERENCE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(`col_int` INTEGER NOT NULL PRIMARY KEY,`col_integer` INTEGER NOT NULL UNIQUE,`col_bigint` BIGINT,INDEX `my_idx` (`col_int`))";
+        String expectedAdd = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(`col_int` INTEGER NOT NULL PRIMARY KEY,`col_integer` INTEGER NOT NULL UNIQUE,`col_bigint` BIGINT,KEY CLUSTERED_COLUMN_INDEX (`col_int`) USING CLUSTERED COLUMNSTORE)";
+
+        Assertions.assertEquals(expectedAdd, list.get(0));
+    }
+
+    @Test
+    public void testCreateTableWithRowStoreWithoutShardDefinition()
+    {
+        DatasetDefinition dataset = DatasetDefinition.builder()
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithRowStoreWithoutShardDefinition)
+                .build();
+
+        Operation createTable = Create.of(true,dataset);
+
+        RelationalTransformer transformer = new RelationalTransformer(MemSqlSink.get());
+
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(createTable).build();
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+
+        String expectedAdd = "CREATE TABLE IF NOT EXISTS `my_db`.`my_schema`.`my_table`(`col_int` INTEGER NOT NULL PRIMARY KEY,`col_integer` INTEGER NOT NULL UNIQUE,`col_bigint` BIGINT,INDEX `my_idx` (`col_int`))";
 
         Assertions.assertEquals(expectedAdd, list.get(0));
     }
@@ -141,12 +160,12 @@ public class CreateTest
     public void testAlterTableWithUpperCase()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
-            .database("my_db")
-            .group("my_schema")
-            .name("my_table")
-            .alias("my_alias")
-            .schema(schemaWithAllColumns)
-            .build();
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .alias("my_alias")
+                .schema(schemaWithAllColumns)
+                .build();
         Field column = Field.builder().name("column").type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).build();
         Field newColumn = Field.builder().name("column1").type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).build();
 
@@ -159,8 +178,8 @@ public class CreateTest
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(add, changeDatatype, nullableColumn, dropColumn, renameColumn).build();
 
         RelationalTransformer transformer = new RelationalTransformer(
-            MemSqlSink.get(),
-            TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
+                MemSqlSink.get(),
+                TransformOptions.builder().addOptimizers(new UpperCaseOptimizer()).build());
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
 
         List<String> list = physicalPlan.getSqlList();
@@ -182,11 +201,11 @@ public class CreateTest
     public void testAlterTableChangeDataTypeAndColumnStore()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
-            .database("my_db")
-            .group("my_schema")
-            .name("my_table")
-            .schema(schemaWithColumnStore)
-            .build();
+                .database("my_db")
+                .group("my_schema")
+                .name("my_table")
+                .schema(schemaWithColumnStore)
+                .build();
         Field column = Field.builder().name("column").type(FieldType.of(DataType.VARCHAR, 64, null)).nullable(false).build();
 
         Operation changeDataType = Alter.of(dataset, Alter.AlterOperation.CHANGE_DATATYPE, column, Optional.empty());
