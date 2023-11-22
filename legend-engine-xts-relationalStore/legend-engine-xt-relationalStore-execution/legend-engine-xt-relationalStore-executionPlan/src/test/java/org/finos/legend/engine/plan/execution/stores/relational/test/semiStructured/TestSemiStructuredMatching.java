@@ -136,7 +136,7 @@ public class TestSemiStructuredMatching extends AbstractTestSemiStructured
                         "    (\n" +
                         "      type = TDS[(Max Amount Flag, Boolean, \"\", \"\")]\n" +
                         "      resultColumns = [(\"Max Amount Flag\", \"\")]\n" +
-                        "      sql = select case when `root`.CUSTOMER::transactionDetails::payment::$@type in ('CashOnDeliveryPayment') then case when `root`.CUSTOMER::transactionDetails::payment::%amountToBePaid < ${maxAmount} then 'true' else 'false' end when `root`.CUSTOMER::transactionDetails::payment::$@type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then case when `root`.CUSTOMER::transactionDetails::payment::%amountPaid < ${maxAmount} then 'true' else 'false' end else null end as `Max Amount Flag` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
+                        "      sql = select case when `root`.CUSTOMER::transactionDetails::payment::$@type in ('CashOnDeliveryPayment') then case when `root`.CUSTOMER::transactionDetails::payment::%amountToBePaid < ${maxAmount} then true else false end when `root`.CUSTOMER::transactionDetails::payment::$@type in ('PrepaidPayment', 'WalletPrepaidPayment', 'CardPrepaidPayment') then case when `root`.CUSTOMER::transactionDetails::payment::%amountPaid < ${maxAmount} then true else false end else null end as `Max Amount Flag` from ORDER_SCHEMA.ORDER_TABLE as `root`\n" +
                         "      connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
                         "    )\n" +
                         "  )\n" +
