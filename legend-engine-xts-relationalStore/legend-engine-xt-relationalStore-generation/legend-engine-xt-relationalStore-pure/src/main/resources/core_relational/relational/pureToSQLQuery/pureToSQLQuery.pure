@@ -7378,6 +7378,24 @@ function meta::relational::functions::pureToSqlQuery::extractTableAliasColumns(e
                );
 }
 
+/*
+* Given a relationalElement and columnName c0, Returns the root Table and the columnName in the root table for the column
+*/
+function meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias(z:RelationalOperationElement[1], columnName:String[0..1]):Pair<Table, String>[1]
+{
+  $z->match([
+    s:SelectSQLQuery[1] | let tac = $s.columns->filter(c|$c->extractColumnName() == $columnName->toOne())->extractTableAliasColumns()->toOne(); $tac->findTableForColumnInAlias($columnName);,
+    a:Alias[1] | $a.relationalElement->findTableForColumnInAlias($columnName),
+    s:SemiStructuredObjectNavigation[1]| $s.operand->findTableForColumnInAlias($columnName),
+    s:SemiStructuredArrayFlatten[1]|$s.navigation->findTableForColumnInAlias($columnName),
+    s:SemiStructuredArrayFlattenOutput[1]|$s.tableAliasColumn->findTableForColumnInAlias($columnName),
+    r:RelationalOperationElementWithJoin[1] | let tac = $r.relationalOperationElement->extractTableAliasColumns()->toOne(); $tac->findTableForColumnInAlias($columnName);,
+    tac:TableAliasColumn[1] | $tac.alias.relationalElement->findTableForColumnInAlias($tac.column.name);, // ignore passed columnName
+    v:View[1] | let rop = $v.columnMappings->filter(c|$c.columnName == $columnName->toOne())->toOne(); $rop.relationalOperationElement->findTableForColumnInAlias([]);,
+    t:Table[1] | assert($t.columns->cast(@Column).name->contains($columnName->toOne()), 'can\'t find ' + $columnName->toOne() + ' in Table: ' + $t.schema.name + '.' + $t.name); pair($t, $columnName->toOne());
+  ]);
+}
+
 function meta::relational::functions::pureToSqlQuery::getJoinTreeNode(relationalPropertyMapping:RelationalPropertyMapping[1]):JoinTreeNode[0..1]
 {
    $relationalPropertyMapping.relationalOperationElement->match([r:RelationalOperationElementWithJoin[1] | $r.joinTreeNode, a:Any[*] | []]);
