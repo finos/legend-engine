@@ -60,7 +60,7 @@ public class ShowCommand implements SqlGen
     {
         builder.append(Clause.SHOW.get());
         builder.append(WHITE_SPACE + operation.name());
-        if (operation == ShowType.TABLES && schemaName.isPresent())
+        if (operation == ShowType.TABLES && schemaName.isPresent() && !schemaName.get().isEmpty())
         {
             builder.append(WHITE_SPACE + Clause.FROM.get());
             builder.append(WHITE_SPACE + SqlGenUtils.getQuotedField(schemaName.get(), quoteIdentifier));

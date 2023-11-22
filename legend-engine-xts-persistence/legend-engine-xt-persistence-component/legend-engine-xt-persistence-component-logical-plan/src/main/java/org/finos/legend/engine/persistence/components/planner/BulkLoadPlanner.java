@@ -21,7 +21,7 @@ import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
-import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerator;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -126,7 +126,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         // Add digest
-        ingestMode().digestGenStrategy().accept(new DigestGenerator(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert, fieldsToSelect));
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
@@ -158,7 +158,7 @@ class BulkLoadPlanner extends Planner
         List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
 
         // Add digest
-        ingestMode().digestGenStrategy().accept(new DigestGenerator(mainDataset(), tempDataset, fieldsToSelect, fieldsToInsertIntoMain, fieldsToSelect));
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), tempDataset, fieldsToSelect, fieldsToInsertIntoMain));
 
         // Add batch_id field
         fieldsToInsertIntoMain.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());

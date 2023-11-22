@@ -23,6 +23,10 @@ public class IcebergProperties implements SqlGen
     private final String externalVolume;
     private final String baseLocation;
 
+    private static final String CATALOG = "CATALOG";
+    private static final String EXTERNAL_VOLUME = "EXTERNAL_VOLUME";
+    private static final String BASE_LOCATION = "BASE_LOCATION";
+
     public IcebergProperties(String catalog, String externalVolume, String baseLocation)
     {
         this.catalog = catalog;
@@ -33,15 +37,18 @@ public class IcebergProperties implements SqlGen
     @Override
     public void genSql(StringBuilder builder)
     {
-        builder.append("CATALOG=");
+        builder.append(CATALOG);
+        builder.append(SqlGenUtils.ASSIGNMENT_OPERATOR);
         builder.append(SqlGenUtils.singleQuote(catalog));
         builder.append(SqlGenUtils.COMMA + SqlGenUtils.WHITE_SPACE);
 
-        builder.append("EXTERNAL_VOLUME=");
+        builder.append(EXTERNAL_VOLUME);
+        builder.append(SqlGenUtils.ASSIGNMENT_OPERATOR);
         builder.append(SqlGenUtils.singleQuote(externalVolume));
         builder.append(SqlGenUtils.COMMA + SqlGenUtils.WHITE_SPACE);
 
-        builder.append("BASE_LOCATION=");
+        builder.append(BASE_LOCATION);
+        builder.append(SqlGenUtils.ASSIGNMENT_OPERATOR);
         builder.append(SqlGenUtils.singleQuote(baseLocation));
     }
 }

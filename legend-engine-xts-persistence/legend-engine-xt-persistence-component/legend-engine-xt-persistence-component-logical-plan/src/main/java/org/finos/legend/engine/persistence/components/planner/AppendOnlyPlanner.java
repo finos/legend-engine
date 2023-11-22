@@ -23,7 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingV
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerator;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -31,16 +31,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.And
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
@@ -52,7 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.ALL_COLUMNS;
@@ -112,8 +107,7 @@ class AppendOnlyPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);
 
         // Add digest generation (if applicable)
-        List<Value> stringFieldValues = fieldsToSelect.stream().map(value -> FunctionImpl.builder().functionName(FunctionName.CONVERT).addValue(value, ObjectValue.of(DataType.VARCHAR.name())).build()).collect(Collectors.toList());
-        ingestMode().digestGenStrategy().accept(new DigestGenerator(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert, stringFieldValues));
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
 
         // Add auditing (if applicable)
         if (ingestMode().auditing().accept(AUDIT_ENABLED))

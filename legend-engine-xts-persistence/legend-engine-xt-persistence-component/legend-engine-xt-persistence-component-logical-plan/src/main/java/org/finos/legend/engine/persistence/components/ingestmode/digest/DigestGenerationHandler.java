@@ -22,21 +22,19 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DigestGenerator implements DigestGenStrategyVisitor<Void>
+public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
 {
     private List<Value> fieldsToSelect;
     private List<Value> fieldsToInsert;
-    private List<Value> fieldsForDigest;
     private Dataset stagingDataset;
     private Dataset mainDataset;
 
-    public DigestGenerator(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert, List<Value> fieldsForDigest)
+    public DigestGenerationHandler(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
     {
         this.mainDataset = mainDataset;
         this.stagingDataset = stagingDataset;
         this.fieldsToSelect = fieldsToSelect;
         this.fieldsToInsert = fieldsToInsert;
-        this.fieldsForDigest = fieldsForDigest;
     }
 
     @Override
@@ -52,7 +50,7 @@ public class DigestGenerator implements DigestGenStrategyVisitor<Void>
             .builder()
             .udfName(udfBasedDigestGenStrategy.digestUdfName())
             .addAllFieldNames(stagingDataset.schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
-            .addAllValues(fieldsForDigest)
+            .addAllValues(fieldsToSelect)
             .dataset(stagingDataset)
             .build();
         String digestField = udfBasedDigestGenStrategy.digestField();

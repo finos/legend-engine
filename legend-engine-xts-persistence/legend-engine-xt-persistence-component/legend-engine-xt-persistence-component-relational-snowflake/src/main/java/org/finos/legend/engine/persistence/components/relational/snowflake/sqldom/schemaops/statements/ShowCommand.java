@@ -91,13 +91,13 @@ public class ShowCommand implements SqlGen
             builder.append(WHITE_SPACE + Clause.LIKE.get());
             builder.append(WHITE_SPACE);
             builder.append(SqlGenUtils.singleQuote(tableName));
-            if (databaseName.isPresent() && schemaName.isPresent())
+            if (databaseName.isPresent() && !databaseName.get().isEmpty() && schemaName.isPresent() && !schemaName.get().isEmpty())
             {
                 builder.append(WHITE_SPACE);
                 builder.append(Clause.IN.get() + WHITE_SPACE);
                 builder.append(SqlGenUtils.getQuotedField(databaseName.get(), quoteIdentifier) + SqlGenUtils.DOT + SqlGenUtils.getQuotedField(schemaName.get(), quoteIdentifier));
             }
-            else if (schemaName.isPresent())
+            else if (schemaName.isPresent() && !schemaName.get().isEmpty())
             {
                 builder.append(WHITE_SPACE);
                 builder.append(Clause.IN.get() + WHITE_SPACE);

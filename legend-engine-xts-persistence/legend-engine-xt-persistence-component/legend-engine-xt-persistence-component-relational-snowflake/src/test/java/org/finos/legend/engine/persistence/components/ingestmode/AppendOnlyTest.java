@@ -61,7 +61,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
-            "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('id',CONVERT(stage.\"id\",VARCHAR),'name',CONVERT(stage.\"name\",VARCHAR),'amount',CONVERT(stage.\"amount\",VARCHAR),'biz_date',CONVERT(stage.\"biz_date\",VARCHAR))) " +
+            "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('id',stage.\"id\",'name',stage.\"name\",'amount',stage.\"amount\",'biz_date',stage.\"biz_date\")) " +
             "FROM \"mydb\".\"staging\" as stage)";
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(0));
@@ -96,7 +96,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql  = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
-            "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('id',CONVERT(stage.\"id\",VARCHAR),'name',CONVERT(stage.\"name\",VARCHAR),'amount',CONVERT(stage.\"amount\",VARCHAR),'biz_date',CONVERT(stage.\"biz_date\",VARCHAR)))," +
+            "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('id',stage.\"id\",'name',stage.\"name\",'amount',stage.\"amount\",'biz_date',stage.\"biz_date\"))," +
             "'2000-01-01 00:00:00.000000' " +
             "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 

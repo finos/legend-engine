@@ -38,7 +38,7 @@ public class IngestModeVisitors
         @Override
         public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return appendOnly.filterExistingRecords() || appendOnly.digestGenStrategy().accept(DIGEST_GEN_STRATEGY_DIGEST_REQUIRED);
+            return appendOnly.digestGenStrategy().accept(DIGEST_GEN_STRATEGY_DIGEST_REQUIRED);
         }
 
         @Override
