@@ -98,7 +98,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
         Assertions.assertEquals(BigQueryTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
-        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
+        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSqlForBizDateAsVersion, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
     }
 
     @Override

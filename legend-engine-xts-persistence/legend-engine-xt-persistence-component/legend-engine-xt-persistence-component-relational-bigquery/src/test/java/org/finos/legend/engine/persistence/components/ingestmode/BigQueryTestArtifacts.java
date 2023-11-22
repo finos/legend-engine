@@ -60,6 +60,15 @@ public class BigQueryTestArtifacts
             "`biz_date` DATE," +
             "`legend_persistence_count` INT64)";
 
+    public static String expectedBaseTempStagingTableWithVersionAndCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+        "(`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`biz_date` DATE," +
+        "`digest` STRING," +
+        "`version` INT64," +
+        "`legend_persistence_count` INT64)";
+
     public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
         "(`id` INT64 NOT NULL," +
         "`name` STRING NOT NULL," +
@@ -488,9 +497,13 @@ public class BigQueryTestArtifacts
     public static String maxDupsErrorCheckSql = "SELECT MAX(stage.`legend_persistence_count`) as `MAX_DUPLICATES` FROM " +
             "`mydb`.`staging_legend_persistence_temp_staging` as stage";
 
-    public static String dataErrorCheckSql = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
+    public static String dataErrorCheckSqlForBizDateAsVersion = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
             "(SELECT COUNT(DISTINCT(`digest`)) as `legend_persistence_distinct_rows` FROM " +
             "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `biz_date`) as stage";
+
+    public static String dataErrorCheckSqlForVersionAsVersion = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
+        "(SELECT COUNT(DISTINCT(`digest`)) as `legend_persistence_distinct_rows` FROM " +
+        "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `version`) as stage";
 
     public static String expectedTempStagingCleanupQueryInUpperCase = "DELETE FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage WHERE 1 = 1";
     public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicatesUpperCase = "INSERT INTO `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` " +

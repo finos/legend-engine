@@ -278,6 +278,22 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
     public abstract void verifyUnitemporalDeltaWithNoVersionAndStagingFilter(GeneratorResult operations);
 
     @Test
+    void testUnitemporalDeltaWithNoVersioningAndFilteredDataset()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__NO_VERSIONING__WITH_FILTERED_DATASET();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .cleanupStagingData(true)
+            .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyUnitemporalDeltaWithNoVersionAndFilteredDataset(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithNoVersionAndFilteredDataset(GeneratorResult operations);
+
+    @Test
     void testUnitemporalDeltaWithFilterDupsMaxVersionWithStagingFilter()
     {
         TestScenario scenario = scenarios.BATCH_ID_BASED__FILTER_DUPS__MAX_VERSION__WITH_STAGING_FILTER();
@@ -293,6 +309,23 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
     }
 
     public abstract void verifyUnitemporalDeltaWithFilterDupsMaxVersionWithStagingFilter(GeneratorResult operations);
+
+    @Test
+    void testUnitemporalDeltaWithFilterDupsMaxVersionWithFilteredDataset()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_BASED__FILTER_DUPS__MAX_VERSION__WITH_FILTERED_DATASET();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .cleanupStagingData(true)
+            .build();
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        this.verifyUnitemporalDeltaWithFilterDupsMaxVersionWithFilteredDataset(operations);
+    }
+
+    public abstract void verifyUnitemporalDeltaWithFilterDupsMaxVersionWithFilteredDataset(GeneratorResult operations);
 
     @Test
     void testUnitemporalDeltaWithNoDedupMaxVersionWithoutPerformAndStagingFilters()

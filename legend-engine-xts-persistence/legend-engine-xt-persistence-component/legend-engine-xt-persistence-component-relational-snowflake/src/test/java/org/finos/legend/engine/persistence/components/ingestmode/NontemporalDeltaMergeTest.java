@@ -266,6 +266,37 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     }
 
     @Override
+    public void verifyNontemporalDeltaWithNoVersionAndFilteredDataset(GeneratorResult operations)
+    {
+        List<String> preActionsSqlList = operations.preActionsSql();
+        List<String> milestoningSqlList = operations.ingestSql();
+
+        String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
+            "USING " +
+            "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-10') OR ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-05'))) as stage " +
+            "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
+            "WHEN MATCHED AND sink.\"digest\" <> stage.\"digest\" " +
+            "THEN UPDATE SET " +
+            "sink.\"id\" = stage.\"id\"," +
+            "sink.\"name\" = stage.\"name\"," +
+            "sink.\"amount\" = stage.\"amount\"," +
+            "sink.\"biz_date\" = stage.\"biz_date\"," +
+            "sink.\"digest\" = stage.\"digest\" " +
+            "WHEN NOT MATCHED THEN " +
+            "INSERT (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\") " +
+            "VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\")";
+
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
+        Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
+
+        String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-10') OR ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-05'))";
+        // Stats
+        Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
     public void verifyNontemporalDeltaWithFilterDupsMaxVersionWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();

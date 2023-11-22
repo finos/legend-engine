@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2023 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -15,23 +15,22 @@
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
-import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DerivedDatasetVisitor implements LogicalPlanVisitor<DerivedDataset>
+public class FilteredDatasetVisitor implements LogicalPlanVisitor<FilteredDataset>
 {
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, DerivedDataset current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, FilteredDataset current, VisitorContext context)
     {
-        Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(current);
+        Condition filterCondition = current.filter();
         List<Value> allColumns = new ArrayList<>(current.schemaReference().fieldValues());
         Selection selection = Selection.builder()
                 .source(current.datasetReference())

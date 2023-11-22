@@ -244,6 +244,22 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
     public abstract void verifyNontemporalDeltaWithNoVersionAndStagingFilter(GeneratorResult operations);
 
     @Test
+    void testNontemporalDeltaWithNoVersionAndFilteredDataset()
+    {
+        TestScenario testScenario = scenarios.NO_VERSIONING__WITH_FILTERED_DATASET();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(testScenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
+        verifyNontemporalDeltaWithNoVersionAndFilteredDataset(operations);
+    }
+
+    public abstract void verifyNontemporalDeltaWithNoVersionAndFilteredDataset(GeneratorResult operations);
+
+    @Test
     void testNontemporalDeltaWithFilterDupsMaxVersionWithStagingFilters()
     {
         TestScenario testScenario = scenarios.FILTER_DUPS__MAX_VERSION__WITH_STAGING_FILTER();

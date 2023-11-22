@@ -69,6 +69,15 @@ public class MemsqlTestArtifacts
             "`biz_date` DATE," +
             "`legend_persistence_count` INTEGER)";
 
+    public static String expectedBaseTempStagingTableWithVersionAndCount = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
+        "(`id` INTEGER NOT NULL," +
+        "`name` VARCHAR(256) NOT NULL," +
+        "`amount` DOUBLE," +
+        "`biz_date` DATE," +
+        "`digest` VARCHAR(256)," +
+        "`version` INTEGER," +
+        "`legend_persistence_count` INTEGER)";
+
     public static String expectedBaseTempStagingTablePlusDigestWithCount = "CREATE REFERENCE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
         "(`id` INTEGER NOT NULL," +
         "`name` VARCHAR(256) NOT NULL," +
@@ -466,9 +475,13 @@ public class MemsqlTestArtifacts
     public static String maxDupsErrorCheckSql = "SELECT MAX(stage.`legend_persistence_count`) as `MAX_DUPLICATES` FROM " +
             "`mydb`.`staging_legend_persistence_temp_staging` as stage";
 
-    public static String dataErrorCheckSql = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
+    public static String dataErrorCheckSqlForBizDateAsVersion = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
             "(SELECT COUNT(DISTINCT(`digest`)) as `legend_persistence_distinct_rows` FROM " +
             "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `biz_date`) as stage";
+
+    public static String dataErrorCheckSqlForVersionAsVersion = "SELECT MAX(`legend_persistence_distinct_rows`) as `MAX_DATA_ERRORS` FROM " +
+        "(SELECT COUNT(DISTINCT(`digest`)) as `legend_persistence_distinct_rows` FROM " +
+        "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `version`) as stage";
 
     public static String expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndAllowDuplicates = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
         "(`id`, `name`, `amount`, `biz_date`, `digest`) " +
