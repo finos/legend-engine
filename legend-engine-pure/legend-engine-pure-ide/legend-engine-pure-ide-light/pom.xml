@@ -122,6 +122,13 @@
 
 
         <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-elasticsearch-executionPlan-test</artifactId>
+            <scope>runtime</scope>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.smoketurner</groupId>
             <artifactId>dropwizard-swagger</artifactId>
         </dependency>

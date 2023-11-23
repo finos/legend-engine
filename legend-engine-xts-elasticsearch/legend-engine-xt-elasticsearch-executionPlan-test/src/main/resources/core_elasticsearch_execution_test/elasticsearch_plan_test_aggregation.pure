@@ -66,3 +66,27 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::tes
 {
   $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r.getNullableString('MPAA'), agg | $agg->count())));
 }
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test distinct on single columns on Elasticsearch (translated as a group by)'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::distinct::testDistinctSingleColumn(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict('Director')->distinct());
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test distinct on multiple columns on Elasticsearch (translated as a group by)'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::distinct::testDistinctMultipleColumns(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict(['Director', 'MPAA'])->distinct());
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test restrict group by columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::testRestrictGroupByColumns(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy(['Director', 'MPAA'], [ agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum()), agg('avgBudget', r | $r.getInteger('Budget'), agg | $agg->average()) ])->restrict(['Director', 'avgBudget']));
+}
