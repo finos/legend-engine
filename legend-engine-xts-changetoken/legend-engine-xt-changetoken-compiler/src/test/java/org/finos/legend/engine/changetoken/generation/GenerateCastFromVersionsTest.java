@@ -56,7 +56,7 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
     @Test
     public void testUpcast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -65,7 +65,8 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
                         "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}, \n" +
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}]\n" +
                         "  ]\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
 
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -80,13 +81,13 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
                         "  \"abc\": 100\n" +
                         "}", Map.class); // updated version and new default value field added
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testDowncast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -96,7 +97,8 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100}]\n" +
                         "  ],\n" +
                         "  \"abc\": 100\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
                 .invoke(null, jsonNode, "ftdm:abcdefg123");
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -110,13 +112,13 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
                         "  ]\n" +
                         "}", Map.class); // remove default values
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testDowncastNull() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -126,7 +128,8 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": null}]\n" +
                         "  ],\n" +
                         "  \"abc\": null\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
                 .invoke(null, jsonNode, "ftdm:abcdefg123");
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -140,13 +143,13 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
                         "  ]\n" +
                         "}", Map.class); // remove default values
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testDowncastNonDefault() throws JsonProcessingException, NoSuchMethodException
     {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -156,9 +159,11 @@ public class GenerateCastFromVersionsTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": 100}]\n" +
                         "  ],\n" +
                         "  \"abc\": 300\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Method downcastMethod = compiledClass.getMethod("downcast", Map.class, String.class);
         InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> downcastMethod.invoke(null, jsonNode, "ftdm:abcdefg123"));
         Assert.assertEquals("Cannot remove non-default value:300", re.getCause().getMessage());
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 }

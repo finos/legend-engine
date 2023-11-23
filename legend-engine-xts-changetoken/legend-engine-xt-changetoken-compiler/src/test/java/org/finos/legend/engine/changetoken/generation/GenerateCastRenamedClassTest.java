@@ -58,7 +58,7 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
     @Test
     public void testUpcast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -68,7 +68,8 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
 
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -83,12 +84,13 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}", Map.class); // updated version and new default value field added
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testUpcastType() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OtherClass\",\n" +
@@ -98,7 +100,8 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
 
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -113,13 +116,13 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}", Map.class); // updated version and new default value field added
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testDowncast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
@@ -129,7 +132,8 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
                 .invoke(null, jsonNode, "ftdm:abcdefg123");
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -144,13 +148,13 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
                         "}", Map.class); // remove default values
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testDowncastType() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OtherClass\",\n" +
@@ -160,7 +164,8 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
                 .invoke(null, jsonNode, "ftdm:abcdefg123");
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -175,6 +180,7 @@ public class GenerateCastRenamedClassTest extends GenerateCastTestBase
                         "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
                         "}", Map.class); // remove default values
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 }
 

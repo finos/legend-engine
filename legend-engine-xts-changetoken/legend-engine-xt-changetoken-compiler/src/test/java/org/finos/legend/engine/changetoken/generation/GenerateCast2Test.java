@@ -103,7 +103,7 @@ public class GenerateCast2Test extends GenerateCastTestBase
     @Test
     public void testDowncast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OuterClass\",\n" +
@@ -112,7 +112,8 @@ public class GenerateCast2Test extends GenerateCastTestBase
                         "    \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "    \"abc\": \"someValue\"\n" +
                         "  }\n" +
-                        "}\n", Map.class);
+                        "}\n";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
 
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class).invoke(null, jsonNode, "ftdm:abcdefg123");
 
@@ -124,5 +125,6 @@ public class GenerateCast2Test extends GenerateCastTestBase
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}\n" +
                         "}\n", Map.class); // moved 'someValue' to '../existingValue'
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 }

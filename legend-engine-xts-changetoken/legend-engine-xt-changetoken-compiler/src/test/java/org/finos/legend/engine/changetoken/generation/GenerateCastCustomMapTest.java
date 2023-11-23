@@ -38,7 +38,7 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
     @Test
     public void testUpcast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -47,7 +47,8 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
                         "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}, \n" +
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}]\n" +
                         "  ]\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
 
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -62,13 +63,13 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
                         "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}\n" +
                         "}", Map.class); // updated version and new default value field added
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testDowncast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -78,7 +79,8 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
                 .invoke(null, jsonNode, "ftdm:abcdefg123");
         Map<String,Object> expectedJsonNodeOut = mapper.readValue(
@@ -92,13 +94,13 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
                         "  ]\n" +
                         "}", Map.class); // remove default values
         Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 
     @Test
     public void testDowncastNonDefault() throws JsonProcessingException, NoSuchMethodException
     {
-        ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> jsonNode = mapper.readValue(
+        String input =
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -108,9 +110,11 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.0}, \"value\":1}}\n" +
-                        "}", Map.class);
+                        "}";
+        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
         Method downcastMethod = compiledClass.getMethod("downcast", Map.class, String.class);
         InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> downcastMethod.invoke(null, jsonNode, "ftdm:abcdefg123"));
-        Assert.assertEquals("Cannot remove non-default value:{@type=Custom, restricted=true, range={min=-1, max=1, @type=intMinMax, round=0.0}, value=1}", re.getCause().getMessage());
+        Assert.assertEquals("Cannot remove non-default value:{@type=Custom, restricted=true, range={min=-1, round=0.0, max=1, @type=intMinMax}, value=1}", re.getCause().getMessage());
+        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
     }
 }
