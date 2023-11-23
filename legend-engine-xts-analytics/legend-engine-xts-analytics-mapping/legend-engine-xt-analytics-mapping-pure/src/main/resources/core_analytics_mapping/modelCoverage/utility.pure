@@ -60,28 +60,6 @@ function meta::analytics::mapping::modelCoverage::utility::getFunctionPath(f:Fun
    $f->elementToPath()->replace($f.name->toOne(), $f.functionName->toOne());
 }
 
-
-function {doc.doc = 'Get the parent or super types of the provided class'}
-  meta::analytics::mapping::modelCoverage::utility::superTypes(class : Class<Any>[1], recursive:Boolean[1]) : Class<Any>[*]
-{
-   let types = if ($recursive, | $class->generalizations(), | $class.generalizations.general.rawType);
-
-   $types->map(rw|
-         $rw->match([
-               c:Class<Any>[1] | if($c != Any && $c != $class, | $c, | []),
-               a:Any[1] | []
-            ])
-   );
-}
-
-
-function {doc.doc = 'Get the parent or super types of the provided class recursively'}
-  meta::analytics::mapping::modelCoverage::utility::superTypes(class : Class<Any>[1]) : Class<Any>[*]
-{
-   $class->superTypes(true);
-}
-
-
 function meta::analytics::mapping::modelCoverage::utility::qualifiedProperties(class:Class<Any>[1]):QualifiedProperty<Any>[*]
 {
    $class->generalizations()->init()->cast(@Class<Any>)->map(c |

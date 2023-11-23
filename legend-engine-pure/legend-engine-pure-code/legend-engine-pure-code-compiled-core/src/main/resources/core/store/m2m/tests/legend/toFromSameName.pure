@@ -17,15 +17,16 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::utils::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a source class',
    doc.doc='Given: a target class of the same name in a different package',
    doc.doc='When:  a mapping is executed using graphFetch and serialize.',
    doc.doc='Then:  the mapping conversion should succeed.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWithTheSameName() : Boolean[1]
 {
    let tree = #{meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person {newFirstName, newLastName, age}}#;
@@ -41,13 +42,13 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWith
    assert(jsonEquivalent('{"newFirstName":"Dave", "newLastName":"Miles", "age":25}'->parseJSON(), $json->parseJSON()));
 }
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a source class',
    doc.doc='Given: a target class of the same name in a different package',
    doc.doc='When:  a mapping is executed using graphFetchChecked and serialize.',
    doc.doc='Then:  the mapping conversion should succeed.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWithTheSameNameChecked() : Boolean[1]
 {
    let tree = #{meta::pure::mapping::modelToModel::test::alloy::simple::toFromSameName::dest::domain::Person {newFirstName, newLastName, age}}#;
@@ -60,7 +61,7 @@ meta::pure::mapping::modelToModel::test::alloy::simple::canMapBetweenClassesWith
    );
 
    let json = $result.values->toOne();
-   let expected= 
+   let expected=
    '{'+
    '  "defects":[],'+
    '  "value":{"newFirstName":"Dave", "newLastName":"Miles", "age":25},'+

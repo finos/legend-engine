@@ -24,10 +24,17 @@ public class EngineRuntime extends Runtime
 {
     public List<PackageableElementPointer> mappings = new ArrayList<>();
     public List<StoreConnections> connections = new ArrayList<>();
+    public List<ConnectionStores> connectionStores = new ArrayList<>();
 
     @JsonIgnore
     public StoreConnections getStoreConnections(String store)
     {
         return this.connections.stream().filter(storeConnections -> storeConnections.store.path.equals(store)).findFirst().orElse(null);
+    }
+
+    @JsonIgnore
+    public ConnectionStores getConnectionStores(String connection)
+    {
+        return this.connectionStores.stream().filter(connectionStores -> connectionStores.connectionPointer.connection.equals(connection)).findFirst().orElse(null);
     }
 }

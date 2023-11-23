@@ -19,7 +19,9 @@ import meta::pure::router::clustering::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::aggregationAware::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::store::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
@@ -63,7 +65,7 @@ function meta::pure::mapping::sourceClass(setImplementation:SetImplementation[1]
 function meta::pure::mapping::buildClassMappingsByClassMap(mapping:Mapping[1]):Map<Class<Any>,List<SetImplementation>>[1]
 {
    let allClassMappings = $mapping->classMappings();
- 
+
    let mappingsInScope = $allClassMappings->filter(s|$s.root == true || $s->instanceOf(EmbeddedSetImplementation))
                            ->concatenate($allClassMappings->map(x | $x->match([
                               a : meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation[1] | $a.aggregateSetImplementations.setImplementation->map(y | ^$y(class = $y.mappingClass->toOne())),
@@ -222,7 +224,7 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
 }
 
 function meta::pure::router::routing::inlineEmbeddedMapping(i:InlineEmbeddedSetImplementation[1], m:Mapping[1]):EmbeddedSetImplementation[1]
-{   
+{
     let cm = $m->classMappingById($i.inlineSetImplementationId);
     assertEquals(1, $cm->size(), | 'Found too many or not enough matches ['+$cm.id->makeString(',')+'] for inline implementation Set Id [' + $i.inlineSetImplementationId+']');
     let pmaps = $cm->cast(@InstanceSetImplementation)->toOne()->allPropertyMappings()->map(pm | ^$pm(owner = $i.owner, sourceSetImplementationId = $i.sourceSetImplementationId));

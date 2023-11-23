@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
+import java.util.Objects;
+
 public class LegendColumn
 {
     private String name;
@@ -43,5 +45,35 @@ public class LegendColumn
     public void setType(String type)
     {
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o)
+        {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass())
+        {
+            return false;
+        }
+        LegendColumn that = (LegendColumn) o;
+        return Objects.equals(name, that.name) && Objects.equals(type, that.type);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return Objects.hash(name, type);
+    }
+
+    @Override
+    public String toString()
+    {
+        return "LegendColumn{" +
+                "name='" + name + '\'' +
+                ", type='" + type + '\'' +
+                '}';
     }
 }

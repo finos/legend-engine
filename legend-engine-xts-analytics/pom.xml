@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.27.2-SNAPSHOT</version>
+        <version>4.35.5-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,6 +31,9 @@
     <modules>
         <module>legend-engine-xts-analytics-lineage</module>
         <module>legend-engine-xts-analytics-mapping</module>
+        <module>legend-engine-xts-analytics-class</module>
+        <module>legend-engine-xts-analytics-function</module>
+        <module>legend-engine-xts-analytics-binding</module>
         <module>legend-engine-xts-analytics-search</module>
         <module>legend-engine-xts-analytics-store</module>
     </modules>

@@ -1,0 +1,9 @@
+{
+  "name": "core_external_format_arrow",
+  "pattern": "(meta::external::format::arrow|meta::protocols::pure)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core"
+  ]
+}

@@ -15,15 +15,19 @@
 import meta::relational::tests::mapping::merge::*;
 import meta::relational::tests::csv::*;
 import meta::relational::metamodel::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::mapping::union::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::mapping::union::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 
@@ -72,7 +76,7 @@ function meta::relational::tests::mapping::merge::createTables():Boolean[1]
 
 function meta::relational::tests::mapping::merge::createRuntime(db:Database[1]):Runtime[1]
 {
-   meta::relational::tests::testRuntime($db);
+   meta::external::store::relational::tests::testRuntime($db);
 }
 
 function <<test.Test>> meta::relational::tests::mapping::merge::testDynafunctionMerge():Boolean[1]

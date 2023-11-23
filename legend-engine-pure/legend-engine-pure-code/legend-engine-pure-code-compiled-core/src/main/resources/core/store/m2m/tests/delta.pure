@@ -13,7 +13,9 @@
 // limitations under the License.
 
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::delta::v1::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::delta::*;
 
@@ -22,7 +24,7 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
     let res = execute(
             |meta::pure::mapping::modelToModel::test::delta::v2::Firm.all()->filter(f|$f.newLegalName == 'GS'),
             simpleDeltaMapping,
-            ^Runtime(connections = ^ModelConnection(element=^ModelStore(), instances= newMap(
+            ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^ModelConnection(instances= newMap(
                                                                                                       pair(meta::pure::mapping::modelToModel::test::delta::v1::Firm , list([
                                                                                                                         ^meta::pure::mapping::modelToModel::test::delta::v1::Firm (legalName='GS',
                                                                                                                                                                                    region = meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString.NewYork,
@@ -42,10 +44,10 @@ function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::
                                                                                                       )
                                                                                             )
                                                    )
-             ),
+             )),
              meta::pure::extension::defaultExtensions()
           );
-   
+
    assertSameElements(10, $res.values->at(0).count);
    assertSameElements([], $res.values->at(0).useless);
    assertSameElements([], $res.values->at(0).nameNoSubsume);
@@ -72,7 +74,7 @@ Class meta::pure::mapping::modelToModel::test::delta::v1::Firm
    count : Integer[1];
    region: meta::pure::mapping::modelToModel::test::delta::v1::RegionEnumToString[1];
    region2: String[1];
-   
+
 }
 
 Class meta::pure::mapping::modelToModel::test::delta::v1::Person
@@ -161,7 +163,7 @@ Mapping meta::pure::mapping::modelToModel::test::delta::simpleDeltaMapping
       ~src meta::pure::mapping::modelToModel::test::delta::v1::Firm
       newLegalName : $src.legalName
    }
-   
+
    meta::pure::mapping::modelToModel::test::delta::v2::Address : Pure
    {
       ~src meta::pure::mapping::modelToModel::test::delta::v1::Address

@@ -18,7 +18,9 @@ import meta::relational::tests::csv::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::mapping::*;
 import meta::relational::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.Test>> meta::relational::tests::tds::presto::tdsConcatenate::testConcatenateWithDistinctAndGroupBy():Boolean[1]
 {

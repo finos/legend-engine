@@ -14,12 +14,19 @@
 
 package org.finos.legend.engine.language.pure.dsl.generation.extension;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Artifact
 {
     public String content;
     public String path;
     public String format;
 
+    public Artifact()
+    {
+        //Empty constructor for Jackson
+    }
 
     public Artifact(String content, String path, String format)
     {

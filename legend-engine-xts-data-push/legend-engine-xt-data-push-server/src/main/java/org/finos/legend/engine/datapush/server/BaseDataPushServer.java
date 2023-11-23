@@ -15,26 +15,46 @@
 package org.finos.legend.engine.datapush.server;
 
 import io.dropwizard.setup.Environment;
-import org.finos.legend.engine.datapush.server.config.DataPushServerConfiguration;
+import org.finos.legend.connection.ConnectionFactory;
+import org.finos.legend.connection.IdentityFactory;
+import org.finos.legend.connection.LegendEnvironment;
+import org.finos.legend.engine.datapush.DataPusherProvider;
+import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.finos.legend.engine.datapush.server.resources.DataPushResource;
+import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.server.support.server.BaseServer;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 
 public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfiguration>
 {
-    protected ServerInfo serverInfo;
+    protected LegendEnvironment environment;
+    protected IdentityFactory identityFactory;
+    protected ConnectionFactory connectionFactory;
+    protected DataPusherProvider dataPushProvider;
 
-    private static String getLocalHostName() throws UnknownHostException
+    @Override
+    public void initialize(io.dropwizard.setup.Bootstrap<DataPushServerConfiguration> bootstrap)
     {
-        return InetAddress.getLocalHost().getHostName();
+        super.initialize(bootstrap);
+
+        PureProtocolObjectMapperFactory.withPureProtocolExtensions(bootstrap.getObjectMapper());
+        ObjectMapperFactory.withStandardConfigurations(bootstrap.getObjectMapper());
+    }
+
+    @Override
+    public void run(DataPushServerConfiguration configuration, Environment environment)
+    {
+        this.environment = this.buildLegendEnvironment(configuration);
+        this.identityFactory = this.buildIdentityFactory(configuration, this.environment);
+        this.connectionFactory = this.buildConnectionFactory(configuration, this.environment);
+        this.dataPushProvider = this.buildDataPushProvider();
+        super.run(configuration, environment);
     }
 
     @Override
     protected void configureServerCore(DataPushServerConfiguration configuration, Environment environment)
     {
-        environment.jersey().register(DataPushResource.class);
+        environment.jersey().register(new DataPushResource(configuration.getMetadataServerConfiguration(), this.environment, this.identityFactory, this.connectionFactory, this.dataPushProvider));
     }
 
     @Override
@@ -43,32 +63,11 @@ public abstract class BaseDataPushServer extends BaseServer<DataPushServerConfig
         super.configureServerExtension(configuration, environment);
     }
 
-    public static final class ServerInfo
-    {
-        private final String hostName;
-        private final String initTime;
-        private final ServerPlatformInfo serverPlatformInfo;
+    public abstract LegendEnvironment buildLegendEnvironment(DataPushServerConfiguration configuration);
 
-        private ServerInfo(String hostName, String initTime, ServerPlatformInfo serverPlatformInfo)
-        {
-            this.hostName = hostName;
-            this.initTime = initTime;
-            this.serverPlatformInfo = (serverPlatformInfo == null) ? new ServerPlatformInfo(null, null, null) : serverPlatformInfo;
-        }
+    public abstract IdentityFactory buildIdentityFactory(DataPushServerConfiguration configuration, LegendEnvironment environment);
 
-        public String getHostName()
-        {
-            return this.hostName;
-        }
+    public abstract ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, LegendEnvironment environment);
 
-        public String getInitTime()
-        {
-            return this.initTime;
-        }
-
-        public ServerPlatformInfo getPlatform()
-        {
-            return this.serverPlatformInfo;
-        }
-    }
+    public abstract DataPusherProvider buildDataPushProvider();
 }

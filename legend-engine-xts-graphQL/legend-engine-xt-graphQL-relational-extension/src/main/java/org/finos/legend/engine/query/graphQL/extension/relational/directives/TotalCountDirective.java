@@ -38,7 +38,7 @@ import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDire
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_graphFetch;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.pac4j.core.profile.CommonProfile;
@@ -57,13 +57,10 @@ public class TotalCountDirective implements IGraphQLDirectiveExtension
     }
 
     @Override
-    public ExecutionPlan planDirective(Document document, PureModel pureModel, String rootClassPath, String mappingPath, String runtimePath, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+    public ExecutionPlan planDirective(Document document, PureModel pureModel, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Mapping mapping, Root_meta_core_runtime_Runtime runtime, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         try
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = pureModel.getClass(rootClassPath);
-            Mapping mapping = pureModel.getMapping(mappingPath);
-            Root_meta_pure_runtime_Runtime runtime = pureModel.getRuntime(runtimePath);
             org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_sdl_Document queryDoc = GraphQLExecute.toPureModel(document, pureModel);
             RichIterable<? extends Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan> purePlans = core_external_query_graphql_transformation_transformation_graphFetch.Root_meta_external_query_graphQL_transformation_queryToPure_getPlanForTotalCountDirective_Class_1__Mapping_1__Runtime_1__Document_1__Extension_MANY__NamedExecutionPlan_MANY_(_class, mapping, runtime, queryDoc, extensions, pureModel.getExecutionSupport());
             List<SerializedNamedPlans> plans = purePlans.toList().stream().map(p ->

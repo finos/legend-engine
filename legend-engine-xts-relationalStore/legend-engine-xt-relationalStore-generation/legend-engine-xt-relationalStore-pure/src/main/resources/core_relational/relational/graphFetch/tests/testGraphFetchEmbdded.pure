@@ -33,7 +33,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    }#;
    let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -58,7 +58,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    }#;
    let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -83,7 +83,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    }#;
    let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
@@ -106,7 +106,7 @@ function <<test.Test, test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0
    }#;
    let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 

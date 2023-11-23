@@ -87,7 +87,7 @@ public class MixedIngestModeTest extends BaseTest
                 .enableConcurrentSafety(true)
                 .build();
 
-        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
+        IngestorResult result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets).get(0);
         MultiTableIngestionTest.verifyResults(1, schema, expectedPath, "main", result, expectedStats);
 
         // Pass 2 : unitemporalDelta
@@ -106,7 +106,7 @@ public class MixedIngestModeTest extends BaseTest
                 .enableConcurrentSafety(true)
                 .build();
 
-        result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
+        result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets).get(0);
         MultiTableIngestionTest.verifyResults(2, schema, expectedPath, "main", result, expectedStats);
 
         // Pass 3 : unitemporalSnapshot
@@ -125,7 +125,7 @@ public class MixedIngestModeTest extends BaseTest
                 .enableConcurrentSafety(true)
                 .build();
 
-        result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets);
+        result = ingestor.performFullIngestion(JdbcConnection.of(h2Sink.connection()), datasets).get(0);
         MultiTableIngestionTest.verifyResults(3, schema, expectedPath, "main", result, expectedStats);
     }
 

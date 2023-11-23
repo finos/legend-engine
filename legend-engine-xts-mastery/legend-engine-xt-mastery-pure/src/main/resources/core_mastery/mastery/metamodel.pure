@@ -171,7 +171,10 @@ meta::pure::mastery::metamodel::identity::ResolutionQuery
   queries : meta::pure::metamodel::function::LambdaFunction<{Any[1],StrictDate[0..1]->Any[*]}>[1..*]; //TODO in compiler check that parameter and return type are of same type, via subclass of LambdaFunction?
 
   {doc.doc='The key type used to define influences how to generate queries issued against the store and validate the results of query execution.'}
-  keyType : meta::pure::mastery::metamodel::identity::ResolutionKeyType[1];
+  keyType : meta::pure::mastery::metamodel::identity::ResolutionKeyType[0..1];
+
+  {doc.doc='Field to identify if key is optional.'}
+  optional : Boolean[0..1];
 
   {doc.doc='The query precedence applied when there are more than one ResoultionQuery definitions on an IdentityResolution, 1 is hiughest.'}
   precedence : Integer[1];
@@ -577,4 +580,18 @@ meta::pure::mastery::metamodel::connection::Proxy
   port: Integer[1];
 
   authentication: meta::pure::mastery::metamodel::authentication::AuthenticationStrategy[0..1];
+}
+
+
+/**************
+ * 
+ * MasteryRuntime
+ *
+ **************/
+
+Class <<typemodifiers.abstract>>
+{doc.doc = 'Provides additional configuration that belong to a group of masterRecords'}
+meta::pure::mastery::metamodel::runtime::MasteryRuntime extends PackageableElement
+{
+  masterRecordDefinitions: meta::pure::mastery::metamodel::MasterRecordDefinition[1..*];
 }

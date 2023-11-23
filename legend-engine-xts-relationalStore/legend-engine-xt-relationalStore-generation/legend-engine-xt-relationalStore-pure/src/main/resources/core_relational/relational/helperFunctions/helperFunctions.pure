@@ -15,7 +15,9 @@
 import meta::pure::mapping::*;
 import meta::relational::tests::csv::*;
 import meta::relational::functions::database::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::router::routing::*;
@@ -60,7 +62,7 @@ function meta::relational::runtime::extractDBs(m:meta::pure::mapping::Mapping[*]
    let dbFromMappings = $allMappings->map(m| let db = $m->extractDBs();
                                             print(if($db->size() > 1, |'WARNING: The system found multiple databases in the mapping "'+$m->elementToPath()+'": '+$db.name->joinStrings(','), |''));
                                             $db;);
-   let dbFromRuntime = $r.connections.element->filter(c | $c->instanceOf(Database))->cast(@Database);
+   let dbFromRuntime = $r.connectionStores.element->filter(c | $c->instanceOf(Database))->cast(@Database);
 
    $dbFromMappings->concatenate($dbFromRuntime)->removeDuplicates();
 }
@@ -147,7 +149,7 @@ function meta::alloy::service::execution::splitCsvRow(s: String[1], delimiter: S
                            ),
                         |  ^$splitterState(prevChar = $currentChar, currentTokenChars = $splitterState.currentTokenChars->add($currentChar))
                        )
-                    )                            
+                    )
                   }, ^meta::alloy::service::execution::SplitterState(tokens=[], inQuotes= false, prevChar = '', currentTokenChars=[]));
 
  $finalSplitterState.tokens->add($finalSplitterState.currentTokenChars->makeString());

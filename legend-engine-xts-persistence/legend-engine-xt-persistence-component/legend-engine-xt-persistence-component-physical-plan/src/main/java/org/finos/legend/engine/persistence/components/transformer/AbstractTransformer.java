@@ -69,6 +69,7 @@ public abstract class AbstractTransformer<C extends PhysicalPlanNode, P extends 
             .batchStartTimestamp(options.batchStartTimestampValue())
             .batchIdPattern(options.batchIdPattern())
             .infiniteBatchIdValue(options.infiniteBatchIdValue())
+            .bulkLoadBatchStatusPattern(options.bulkLoadBatchStatusPattern())
             .addAllOptimizers(options.optimizers())
             .quoteIdentifier(sink.quoteIdentifier())
             .build();

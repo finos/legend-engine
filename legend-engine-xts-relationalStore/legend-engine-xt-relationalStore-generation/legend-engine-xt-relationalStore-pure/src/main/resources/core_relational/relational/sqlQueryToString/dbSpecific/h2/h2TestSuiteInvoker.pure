@@ -13,19 +13,20 @@
 // limitations under the License.
 
 import meta::pure::test::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::dbTestRunner::*;
 
 function <<test.TestCollection>> meta::relational::tests::sqlQueryToString::H2::testSuiteInvoker(): PureTestCollection[1]
 {
   let connection = getTestConnection(DatabaseType.H2, meta::relational::extension::relationalExtensions());
-  
+
   // If a feature described in extension APIs / test suite is not supported,
   // then throw an exception with message that starts with '[unsupported-api]'
   // Tests which raise such exception will be reported as ignored by the runner
-  
+
   meta::relational::tests::dbSpecificTests->collectParameterizedTests('H2',
-                ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection), 
+                ^DbTestConfig(dbType=DatabaseType.H2, connection=$connection),
                 meta::relational::tests::sqlQueryToString::H2::testParamCustomizations_FunctionDefinition_1__DbTestConfig_1__DbTestConfig_1_,
                 []
             );

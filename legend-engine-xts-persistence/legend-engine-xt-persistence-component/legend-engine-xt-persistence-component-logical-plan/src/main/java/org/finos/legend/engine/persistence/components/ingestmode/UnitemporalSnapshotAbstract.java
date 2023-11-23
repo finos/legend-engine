@@ -18,10 +18,17 @@ import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.D
 import org.finos.legend.engine.persistence.components.ingestmode.emptyhandling.EmptyDatasetHandling;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoned;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionMilestoning;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MergeDataVersionResolver;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolverAbstract;
 import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.immutables.value.Value.Derived;
@@ -83,5 +90,37 @@ public interface UnitemporalSnapshotAbstract extends IngestMode, TransactionMile
                 }
             }
         }
+
+        // Allowed Versioning Strategy - NoVersioning, MaxVersioining
+        this.versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
+        {
+            @Override
+            public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                Optional<MergeDataVersionResolver> versionResolver = maxVersionStrategy.mergeDataVersionResolver();
+                if (!versionResolver.isPresent())
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, MergeDataVersionResolver is mandatory for MaxVersionStrategy");
+                }
+                if (!(versionResolver.orElseThrow(IllegalStateException::new) instanceof DigestBasedResolverAbstract))
+                {
+                    throw new IllegalStateException("Cannot build UnitemporalSnapshot, Only DIGEST_BASED VersioningResolver allowed for this ingest mode");
+                }
+                return null;
+            }
+
+            @Override
+            public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                throw new IllegalStateException("Cannot build UnitemporalSnapshot, AllVersionsStrategy not supported");
+            }
+        });
+
     }
 }

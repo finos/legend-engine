@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::functions::sqlstring::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
@@ -29,10 +30,13 @@ import meta::relational::functions::toDDL::*;
 import meta::relational::mapping::*;
 
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import meta::relational::runtime::authentication::*;
+import meta::external::store::relational::runtime::authentication::*;
 
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::sqlFunction::setUp():Boolean[1]
@@ -47,7 +51,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::sqlFunction::s
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::parseDate::testToSQLStringWithParseDateInQueryForH2():Boolean[1]
-{  
+{
   let result = execute(|SqlFunctionDemo.all()->project([s | $s.string2TimestampStr->parseDate()], ['timestamp']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
   assertEquals([%2016-06-23T00:00:00.123000000+0000, %2016-06-23T00:00:00.345000000+0000], $result.values->at(0).rows.values);
   assertEquals('select cast(parsedatetime("root".string2date,\'yyyy-MM-dd HH:mm:ss[.SSSSSSSSS][.SSSSSSSS][.SSSSSSS][.SSSSSS][.SSSSS][.SSSS][.SSS][.SS][.S]\') as timestamp) as "timestamp" from dataTable as "root"',$result->sqlRemoveFormatting());
@@ -247,7 +251,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sin::testF
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatSinResult  > 0.9)->project([s | $s.floatSinResult], ['sin']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.9738476308781951], $result.values->at(0).rows.values);
-    assertEquals('select sin("root".float1) as "sin" from dataTable as "root" where sin("root".float1) > 0.9',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select sin("root".float1) as "sin" from dataTable as "root" where sin("root".float1) > 0.9',
+      'select sin("root".float1) as "sin" from dataTable as "root" where sin("root".float1) > CAST(0.9 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::cos::testProject():Boolean[1]
@@ -331,7 +339,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::atan2::tes
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.floatATan2Result  > 0.8)->project([s | $s.floatATan2Result], ['atan2']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.8329812666744317], $result.values->at(0).rows.values);
-    assertEquals('select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root" where atan2("root".float1,"root".int1) > 0.8',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root" where atan2("root".float1,"root".int1) > 0.8',
+      'select atan2("root".float1,"root".int1) as "atan2" from dataTable as "root" where atan2("root".float1,"root".int1) > CAST(0.8 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::sqrt::testProject():Boolean[1]
@@ -535,7 +547,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::pow::testF
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.powerResult < 1.4)->project([s | $s.powerResult], ['power']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([1.3310000000000004], $result.values->at(0).rows.values);
-    assertEquals('select power("root".float1, 3) as "power" from dataTable as "root" where power("root".float1, 3) < 1.4',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select power("root".float1, 3) as "power" from dataTable as "root" where power("root".float1, 3) < 1.4',
+      'select power("root".float1, 3) as "power" from dataTable as "root" where power("root".float1, 3) < CAST(1.4 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::exp::testProject():Boolean[1]
@@ -563,7 +579,11 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::log::testF
 {
     let result = execute(|SqlFunctionDemo.all()->filter(s | $s.logResult < 0.1)->project([s | $s.logResult], ['log']), testMapping, testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
     assertEquals([0.09531017980432493], $result.values->at(0).rows.values);
-    assertEquals('select ln("root".float1) as "log" from dataTable as "root" where ln("root".float1) < 0.1',$result->sqlRemoveFormatting());
+    assertEqualsH2Compatible(
+      'select ln("root".float1) as "log" from dataTable as "root" where ln("root".float1) < 0.1',
+      'select ln("root".float1) as "log" from dataTable as "root" where ln("root".float1) < CAST(0.1 AS FLOAT)',
+      $result->sqlRemoveFormatting()
+    );
 }
 
 function <<test.Test>> meta::relational::tests::mapping::sqlFunction::indexOf::testProject():Boolean[1]
@@ -621,7 +641,7 @@ function <<test.Test>> meta::relational::tests::mapping::sqlFunction::testAdjust
       |SqlFunctionDemo.all()->project([s | $s.adjustDate], ['Dt']),
       testMapping,
       testDataTypeMappingRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    assertEquals([%2003-07-12T00:00:00.000000000+0000, %2003-07-13T00:00:00.000000000+0000], $result.values->at(0).rows.values);
    meta::relational::functions::asserts::assertSameSQL('select dateadd(DAY, -7, "root".dateTime) as "Dt" from dataTable as "root"', $result);
 }
@@ -653,7 +673,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    floatATan2Result : Float[1];
    floatSqrtResult : Float[1];
    float1VarianceSample: Float[1];
-   float1VariancePopulation: Float[1];   
+   float1VariancePopulation: Float[1];
    string2Float : Float[1];
    string2decimal: String[1];
    string2Decimal: Decimal[1];
@@ -662,7 +682,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
    floatRemResult : Integer[1];
 
    string2Date: Date[1];
-   string2TimestampStr: String[1];   
+   string2TimestampStr: String[1];
    string2TimestampFormat : Date[1];
    string2DateTime: DateTime[1];
    convertToDate1: Date[1];
@@ -705,7 +725,7 @@ Class meta::relational::tests::mapping::sqlFunction::model::domain::SqlFunctionD
 
 function meta::relational::tests::mapping::sqlFunction::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(myDB);
+   meta::external::store::relational::tests::testRuntime(myDB);
 }
 
 ###Relational
@@ -767,13 +787,13 @@ Mapping meta::relational::tests::mapping::sqlFunction::model::mapping::testMappi
           floatATan2Result : atan2(float1, int1),
           floatSqrtResult : sqrt(int1),
           float1VarianceSample: varianceSample(int1),
-          float1VariancePopulation: variancePopulation(int1),          
+          float1VariancePopulation: variancePopulation(int1),
           string2Float : parseFloat(string2float),
           string2Decimal : parseDecimal(string2Decimal),
           string2decimal: trim(string2Decimal),
           string2Date  : parseDate(string2date),
-          string2TimestampStr : string2date,                    
-          string2TimestampFormat : toTimestamp(stringDateTimeFormat,'YYYY-MM-DD HH24:MI:SS'),              
+          string2TimestampStr : string2date,
+          string2TimestampFormat : toTimestamp(stringDateTimeFormat,'YYYY-MM-DD HH24:MI:SS'),
           string2Integer  : parseInteger(string2Integer),
           convertToDate1: convertDate(stringDateFormat),
           convertToDate: convertDate(stringDateFormat,'yyyy-MM-dd'),

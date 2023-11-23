@@ -41,7 +41,7 @@ import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -256,7 +256,7 @@ public abstract class TestExternalFormatQueries
             extensions.addAllIterable(core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
 
             Mapping mapping = model.getMapping(mappingPath);
-            Root_meta_pure_runtime_Runtime runtime = model.getRuntime(runtimePath);
+            Root_meta_core_runtime_Runtime runtime = model.getRuntime(runtimePath);
             String plan = PlanGenerator.generateExecutionPlanAsString(lambda, mapping, runtime, context, model, "vX_X_X", PlanPlatform.JAVA, "test", extensions, LegendPlanTransformers.transformers);
             PlanExecutor executor = PlanExecutor.newPlanExecutorWithAvailableStoreExecutors(true);
             StreamingResult streamingResult = (StreamingResult) executor.execute(plan, input);

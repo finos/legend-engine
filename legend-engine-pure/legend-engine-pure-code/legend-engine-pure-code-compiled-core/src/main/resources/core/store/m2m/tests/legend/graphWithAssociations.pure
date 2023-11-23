@@ -17,17 +17,19 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithAssociations::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithAssociations::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithAssociations::dest::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a simple graph using an association',
    doc.doc='When:  a mapping is executed using graphFetch and serialize.',
    doc.doc='Then:  the mapping is applied and the result of the mapping is serialized demonstrating the translated graph.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::simple::serializeGraphWithAssociations() : Boolean[1]
 {
    let tree = #{Firm {name, employees {fullName}} }#;
@@ -35,12 +37,11 @@ meta::pure::mapping::modelToModel::test::alloy::simple::serializeGraphWithAssoci
    let result = execute(
       |Firm.all()->graphFetch($tree)->serialize($tree),
       firmMappings,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm, 
+      ^Runtime(connectionStores = ^ConnectionStore(element=^ModelStore(), connection=^JsonModelConnection(
+                                class=_Firm,
                                 url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
                              )
-      ),
+      )),
       meta::pure::extension::defaultExtensions()
    );
 
@@ -64,7 +65,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::simple::graphWithAssociati
 
 Association meta::pure::mapping::modelToModel::test::alloy::simple::graphWithAssociations::src::_Firm__Person
 {
-   firm      : _Firm[1];        
+   firm      : _Firm[1];
    employees : _Person[*];
 }
 
@@ -80,7 +81,7 @@ Class meta::pure::mapping::modelToModel::test::alloy::simple::graphWithAssociati
 
 Association meta::pure::mapping::modelToModel::alloy::test::simple::graphWithAssociations::dest::Firm_Person
 {
-   firm      : Firm[1];        
+   firm      : Firm[1];
    employees : Person[*];
 }
 
@@ -96,7 +97,7 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::graphWithAssocia
                name  : $src.name,
                employees: $src.employees
             }
-   
+
    Person : Pure
             {
                ~src _Person

@@ -15,6 +15,7 @@
 import meta::relational::functions::asserts::*;
 import meta::relational::tests::milestoning::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::latestDate::setUp():Any[0..1]
 {
@@ -25,21 +26,21 @@ function <<test.BeforePackage>> meta::relational::tests::milestoning::latestDate
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedClassesAllQuery():Boolean[1]
 {
    let result = execute(|Product.all(%latest), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".type as "type" from ProductTableNoMilestoning as "root"',$result);   
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".type as "type" from ProductTableNoMilestoning as "root"',$result);
 }
 
 
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedBiTemporalClassesAllQuery():Boolean[1]
 {
    let result = execute(|BiTemporalProduct.all(%latest, %latest), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
-   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type" from ProductTableNoMilestoning as "root"',$result);   
+   assertSameSQL('select "root".id as "pk_0", "root".name as "pk_1", "root".id as "id", "root".name as "name", "root".type as "type" from ProductTableNoMilestoning as "root"',$result);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::latestDate::testLatestIgnoredForNonMilestonedMappedClasses():Boolean[1]
 {
    let result = execute(|Order.all()->filter(o|or($o.product(%latest).type=='STOCK',$o.product(%latest).type=='OPTION')), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
    let result2 = execute(|Order.all()->filter(o|or($o.product(%2015-08-15).type=='STOCK',$o.product(%2015-10-16).type=='OPTION')), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
-   
+
    let orders = $result.values;
    assertEquals(1,$orders->size());
    assertEquals(1, $orders->at(0).id);

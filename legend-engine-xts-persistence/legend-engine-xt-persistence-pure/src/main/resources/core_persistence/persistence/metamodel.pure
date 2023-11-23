@@ -37,6 +37,7 @@ import meta::pure::persistence::metamodel::target::*;
 import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::persistence::metamodel::persistenceTest::*;
 
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 import meta::relational::metamodel::*;
@@ -180,13 +181,13 @@ Class
 meta::pure::persistence::metamodel::notifier::Notifyee
 {
 }
- 
+
 Class
 meta::pure::persistence::metamodel::notifier::EmailNotifyee extends Notifyee
 {
    emailAddress: String[1];
 }
- 
+
 Class
 meta::pure::persistence::metamodel::notifier::PagerDutyNotifyee extends Notifyee
 {

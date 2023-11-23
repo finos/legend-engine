@@ -1,0 +1,57 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::analytics::function::modelCoverage::*;
+
+Class meta::analytics::function::modelCoverage::FunctionModelCoverageAnalysisResult
+{
+  classes: Class<Any>[*];
+  enumerations: Enumeration<Enum>[*];
+}
+
+function meta::analytics::function::modelCoverage::getFunctionModelCoverage(functions: ConcreteFunctionDefinition<Any>[*]):FunctionModelCoverageAnalysisResult[1]
+{
+  let returnTypes = $functions->map(f | $f->functionReturnType().rawType->toOne());
+  let coveredClasses = $returnTypes->filter(t | $t->instanceOf(Class))->cast(@Class<Any>);
+  let coveredEnumerations = $returnTypes->filter(t | $t->instanceOf(Enumeration))->cast(@Enumeration<Enum>);
+
+  let parameters = $functions->map(f | $f->functionType().parameters);
+  let parameterTypes = $parameters->map(p | $p.genericType.rawType);
+  
+  let parameterTypeClasses = $parameterTypes->filter(t | $t->instanceOf(Class))->cast(@Class<Any>);
+  let parameterTypeEnumerations = $parameterTypes->filter(t | $t->instanceOf(Enumeration))->cast(@Enumeration<Enum>);
+
+  let prunedClasses = $coveredClasses->concatenate($parameterTypeClasses)->removeDuplicates()->map(c|^Class<Any>(
+    name = $c.name,
+    package = $c.package
+  ));
+
+  // NOTE: following, we prune the tagged values and stereotypes from the enumerations, associations, and classes
+  // so we don't have to return them, if in the future, we need to return these (as this analytics require to do so)
+  // we should reconsider these optimization
+  let prunedEnumerations = $coveredEnumerations->concatenate($parameterTypeEnumerations)->removeDuplicates()->map(e|^$e(
+    stereotypes = [],
+    taggedValues = [],
+    values = meta::pure::functions::meta::enumValues($e)->map(v|^$v(
+      stereotypes = [],
+      taggedValues = []
+    ))->toOneMany() // this is a hack to work around a problem with validation on size of enumeration values
+  ));
+
+  ^FunctionModelCoverageAnalysisResult
+  (
+    classes = $prunedClasses,
+    enumerations = $prunedEnumerations
+  );
+}

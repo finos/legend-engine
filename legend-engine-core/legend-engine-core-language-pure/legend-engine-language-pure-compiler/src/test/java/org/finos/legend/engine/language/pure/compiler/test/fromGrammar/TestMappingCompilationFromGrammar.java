@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.generated.Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_PureInstanceSetImplementation_Impl;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1462,7 +1462,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "\n" +
                 "\n").getTwo();
 
-        Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl classA = (Root_meta_pure_mapping_modelToModel_PureInstanceSetImplementation_Impl) model.getMapping("test::M1")._classMappings().getFirst();
+        Root_meta_external_store_model_PureInstanceSetImplementation_Impl classA = (Root_meta_external_store_model_PureInstanceSetImplementation_Impl) model.getMapping("test::M1")._classMappings().getFirst();
         Assert.assertEquals(classA._propertyMappings().getLast()._targetSetImplementationId(), "test_B");
     }
 

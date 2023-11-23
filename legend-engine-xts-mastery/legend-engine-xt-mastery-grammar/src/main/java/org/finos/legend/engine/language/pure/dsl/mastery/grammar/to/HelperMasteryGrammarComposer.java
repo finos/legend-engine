@@ -48,6 +48,8 @@ public class HelperMasteryGrammarComposer
 {
 
     private static final String PRECEDENCE_LAMBDA_WITH_FILTER_PREFIX = "\\{?input: .*\\[1]\\|\\$input\\.";
+    private static final String INPUT = "input";
+    private static final String BRACKETS = "\\(|\\)";
     private static final String PRECEDENCE_LAMBDA_WITH_FILTER_SUFFIX = ".*";
 
     private HelperMasteryGrammarComposer()
@@ -250,7 +252,7 @@ public class HelperMasteryGrammarComposer
         {
             String precedenceRuleString = precedenceRule.accept(new PrecedenceRuleComposer(indentLevel + 1, context, uniqueSourcePrecedenceRules));
             nonSourcePrecedenceRulesBuilder.append(precedenceRuleString);
-            nonSourcePrecedenceRulesBuilder.append(i < precedenceRules.size() && !precedenceRuleString.equals("") ? "," : "");
+            nonSourcePrecedenceRulesBuilder.append(i < precedenceRules.size() - 1 && !precedenceRuleString.equals("") ? "," : "");
         });
         return combinePrecedenceRules(uniqueSourcePrecedenceRules, nonSourcePrecedenceRulesBuilder.toString(), indentLevel);
     }
@@ -402,10 +404,10 @@ public class HelperMasteryGrammarComposer
         private String visitLambda(Lambda lambda)
         {
             StringBuilder builder = new StringBuilder();
-            String lambdaStr = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+            String lambdaStr = lambda.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()).replaceAll(BRACKETS, "");
             if (lambdaStr.matches(PRECEDENCE_LAMBDA_WITH_FILTER_PREFIX + PRECEDENCE_LAMBDA_WITH_FILTER_SUFFIX))
             {
-                String filterPath = lambdaStr.replaceAll(PRECEDENCE_LAMBDA_WITH_FILTER_PREFIX, "");
+                String filterPath = lambdaStr.replaceAll(PRECEDENCE_LAMBDA_WITH_FILTER_PREFIX, "").replace(INPUT, "");
                 builder.append("{$.").append(filterPath).append("}");
             }
             return builder.toString();
@@ -445,7 +447,14 @@ public class HelperMasteryGrammarComposer
             builder.append("\n").append(getTabString(indentLevel + 4)).append("queries: [ ");
             builder.append(renderQueries(resolutionQuery, indentLevel + 5, context));
             builder.append(getTabString(indentLevel + 4)).append("         ];\n");
-            builder.append(getTabString(indentLevel + 4)).append("keyType: ").append(resolutionQuery.keyType).append(";\n");
+            if (resolutionQuery.keyType != null)
+            {
+                builder.append(getTabString(indentLevel + 4)).append("keyType: ").append(resolutionQuery.keyType).append(";\n");
+            }
+            if (resolutionQuery.optional != null)
+            {
+                builder.append(getTabString(indentLevel + 4)).append("optional: ").append(resolutionQuery.optional).append(";\n");
+            }
             builder.append(getTabString(indentLevel + 4)).append("precedence: ").append(resolutionQuery.precedence).append(";\n");
             builder.append(getTabString(indentLevel + 3)).append("}");
         });

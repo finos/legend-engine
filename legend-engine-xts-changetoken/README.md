@@ -15,6 +15,7 @@ For those kind of detected operations user confirmation should be required, in o
 
 ## Change Token Types
 - **AddedClass** / **RemovedClass** - current no-op - should be emitted if a class of entity was added/removed.
+- **RenamedClass** - token describing that a class was renamed or moved to another package.
 - **AddField** / **RemoveField** - token describing that a field was added or removed to specific entity class.
   This token should provide **fieldName**, **fieldType** and **class** properties together with **defaultValue**, of e.g. **ConstValue** **@type**.
   The **value** should be of expected primitive or nested object type (in case of object type **@type** property is mandatory).

@@ -32,6 +32,8 @@ Mapping test::simpleModelMapping
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 

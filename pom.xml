@@ -17,7 +17,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-
     <parent>
         <groupId>org.finos</groupId>
         <artifactId>finos</artifactId>
@@ -27,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.27.2-SNAPSHOT</version>
+    <version>4.35.5-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -48,12 +47,16 @@
         <module>legend-engine-xts-mongodb</module>
         <module>legend-engine-xts-elasticsearch</module>
 
+        <!-- RelationalAI -->
+        <module>legend-engine-xts-relationalai</module>
+
         <!-- External Formats -->
         <module>legend-engine-xts-xml</module>
         <module>legend-engine-xts-protobuf</module>
         <module>legend-engine-xts-flatdata</module>
         <module>legend-engine-xts-json</module>
         <module>legend-engine-xts-avro</module>
+        <module>legend-engine-xts-arrow</module>
 
         <!-- Table Formats -->
         <module>legend-engine-xts-iceberg</module>
@@ -72,6 +75,7 @@
         <!-- Function Activators -->
         <module>legend-engine-xts-functionActivator</module>
         <module>legend-engine-xts-snowflakeApp</module>
+        <module>legend-engine-xts-bigqueryFunction</module>
         <module>legend-engine-xts-service</module>
         <module>legend-engine-xts-persistence</module>
         <module>legend-engine-xts-hostedService</module>
@@ -83,32 +87,26 @@
         <module>legend-engine-xts-changetoken</module>
         <module>legend-engine-xts-generation</module>
 
-        <!-- App -->
-        <module>legend-engine-xts-mastery</module>
-
         <!-- Translator -->
         <module>legend-engine-xts-openapi</module>
 
         <!-- Misc -->
         <module>legend-engine-xts-authentication</module>
+        <module>legend-engine-xts-connection</module>
         <module>legend-engine-config</module>
 
         <!-- Analytics -->
         <module>legend-engine-xts-analytics</module>
 
-
-
+        <!-- Application -->
+        <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
-
-        <!-- Data Push -->
         <module>legend-engine-xts-data-push</module>
-        <!-- Data Push -->
-
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.5.15</legend.pure.version>
+        <legend.pure.version>4.10.1</legend.pure.version>
         <legend.shared.version>0.24.1</legend.shared.version>
 
         <!-- SONAR -->
@@ -132,99 +130,104 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.release>8</maven.compiler.release>
-	<maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
-	<maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
+        <maven.enforcer.requireJavaVersion>[11.0.10,12)</maven.enforcer.requireJavaVersion>
+        <maven.enforcer.requireMavenVersion>3.6.2</maven.enforcer.requireMavenVersion>
         <project.build.outputTimestamp>1680115922</project.build.outputTimestamp>
         <surefire.vm.params>-XX:SoftRefLRUPolicyMSPerMB=1</surefire.vm.params>
         <surefire.reports.directory />
 
         <!-- Databases -->
+        <databricks.version>2.6.27</databricks.version>
         <hikaricp.version>4.0.3</hikaricp.version>
         <h2.version>2.1.214</h2.version>
-        <snowflake.version>3.13.5</snowflake.version>
-        <databricks.version>2.6.27</databricks.version>
-        <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
-        <postgres.version>9.4.1208.jre7</postgres.version>
         <mariadb.version>3.0.6</mariadb.version>
+        <postgres.version>9.4.1208.jre7</postgres.version>
+        <redshiftJDBC.version>2.0.0.3</redshiftJDBC.version>
+        <snowflake.version>3.13.5</snowflake.version>
 
         <!-- Dependency versions -->
-        <junit.version>4.13.1</junit.version>
-        <mockito-core.version>4.4.0</mockito-core.version>
-        <eclipsecollections.version>10.2.0</eclipsecollections.version>
-        <jackson.version>2.10.5</jackson.version>
-        <jackson.databind.version>2.10.5.1</jackson.databind.version>
-        <mongodb.version>3.12.8</mongodb.version>
-        <test.mongodb.version>1.38.0</test.mongodb.version>
-        <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
-        <log4j.version>1.2.17</log4j.version>
-        <slf4j.version>1.7.25</slf4j.version>
-        <jaxrs.version>2.0.1</jaxrs.version>
+        <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
+        <antlr.version>4.8-1</antlr.version>
+        <arrow.version>13.0.0</arrow.version>
+        <bouncycastle.version>1.67</bouncycastle.version>
+        <byte-buddy.version>1.11.20</byte-buddy.version>
         <commons-codec.version>1.15</commons-codec.version>
         <commons-compress.version>1.21</commons-compress.version>
-        <commons-lang3.version>3.7</commons-lang3.version>
-        <commons-lang.version>2.6</commons-lang.version>
         <commons-csv.version>1.5</commons-csv.version>
         <commons-io.version>2.7</commons-io.version>
+        <commons-lang.version>2.6</commons-lang.version>
+        <commons-lang3.version>3.7</commons-lang3.version>
         <commons-text.version>1.10.0</commons-text.version>
-        <freemarker.version>2.3.30</freemarker.version>
-        <opentracing.version>0.32.0</opentracing.version>
-        <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
-        <prometheus.version>0.8.1</prometheus.version>
-        <httpclient.version>4.5.13</httpclient.version>
-        <httpasyncclient.version>4.1.5</httpasyncclient.version>
-        <httpcore.version>4.4.13</httpcore.version>
-        <janino.version>3.1.0</janino.version>
-        <github.classgraph.version>4.8.25</github.classgraph.version>
-        <pac4j.version>3.7.0</pac4j.version>
-        <pac4j.jaxrs.version>3.0.0</pac4j.jaxrs.version>
-        <pac4j.jersey.version>3.0.0</pac4j.jersey.version>
-        <antlr.version>4.8-1</antlr.version>
-        <jetty.version>9.4.44.v20210927</jetty.version>
-        <jersey.version>2.25.1</jersey.version>
-        <javax.servlet.version>3.1.0</javax.servlet.version>
-        <javax.inject.version>1</javax.inject.version>
-        <swagger.annotation.version>1.5.20</swagger.annotation.version>
-        <joda.time.version>2.10.6</joda.time.version>
-        <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
-        <dropwizard.version>1.3.29</dropwizard.version>
+        <deephaven-csv.version>0.12.0</deephaven-csv.version>
         <dropwizard-swagger.version>1.3.17-1</dropwizard-swagger.version>
         <dropwizard.metrics.version>4.1.16</dropwizard.metrics.version>
-        <hk2.version>2.5.0-b32</hk2.version>
+        <dropwizard.version>1.3.29</dropwizard.version>
+        <eclipsecollections.version>10.2.0</eclipsecollections.version>
+        <freemarker.version>2.3.30</freemarker.version>
+        <github.classgraph.version>4.8.25</github.classgraph.version>
         <guava.version>30.0-jre</guava.version>
-        <jsonunit.version>2.17.0</jsonunit.version>
-        <janino.version>3.1.0</janino.version>
         <hamcrest.core.version>1.3</hamcrest.core.version>
-        <openjdk.jol.version>0.9</openjdk.jol.version>
+        <hibernate-validator.version>5.4.3.Final</hibernate-validator.version>
+        <hk2.version>2.5.0-b32</hk2.version>
+        <httpasyncclient.version>4.1.5</httpasyncclient.version>
+        <httpclient.version>4.5.13</httpclient.version>
+        <httpcore.version>4.4.13</httpcore.version>
+        <io.netty.version>4.1.96.Final</io.netty.version>
+        <jackson.databind.version>2.10.5.1</jackson.databind.version>
+        <jackson.version>2.10.5</jackson.version>
+        <janino.version>3.1.0</janino.version>
+        <janino.version>3.1.0</janino.version>
+        <javax.inject.version>1</javax.inject.version>
+        <javax.servlet.version>3.1.0</javax.servlet.version>
+        <jaxrs.version>2.0.1</jaxrs.version>
+        <jersey.version>2.25.1</jersey.version>
+        <jetty.version>9.4.44.v20210927</jetty.version>
+        <joda.time.version>2.10.6</joda.time.version>
         <json-smart.version>2.4.7</json-smart.version>
-        <byte-buddy.version>1.11.20</byte-buddy.version>
-        <wiremock.version>2.27.2</wiremock.version>
-        <io.netty.version>4.1.95.Final</io.netty.version>
-        <amazon.awssdk.version>2.17.129</amazon.awssdk.version>
-        <opencsv.version>4.6</opencsv.version>
-        <logback.version>1.2.3</logback.version>
+        <jsonunit.version>2.17.0</jsonunit.version>
+        <junit-jupiter.version>5.4.0</junit-jupiter.version>
+        <junit.version>4.13.1</junit.version>
+        <log4j.version>1.2.17</log4j.version>
         <logback-contrib.version>0.1.5</logback-contrib.version>
+        <logback.version>1.2.3</logback.version>
+        <minio.version>8.5.5</minio.version>
+        <mockito-core.version>4.4.0</mockito-core.version>
+        <mongodb.version>3.12.8</mongodb.version>
+        <opencsv.version>4.6</opencsv.version>
+        <openjdk.jol.version>0.9</openjdk.jol.version>
+        <opentracing.contrib.version>0.3.0</opentracing.contrib.version>
+        <opentracing.version>0.32.0</opentracing.version>
+        <pac4j.jaxrs.version>3.0.0</pac4j.jaxrs.version>
+        <pac4j.jersey.version>3.0.0</pac4j.jersey.version>
+        <pac4j.version>3.7.0</pac4j.version>
+        <prometheus.version>0.8.1</prometheus.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <swagger.annotation.version>1.5.20</swagger.annotation.version>
+        <test.mongodb.version>1.38.0</test.mongodb.version>
+        <testcontainers.version>1.18.3</testcontainers.version>
+        <wiremock.version>2.27.2</wiremock.version>
+        <zipkin.reporter.version>2.15.0</zipkin.reporter.version>
 
         <!-- Plugin versions -->
+        <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
+        <depgraph-maven-plugin.version>4.0.2</depgraph-maven-plugin.version>
+        <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
+        <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
+        <jacoco.maven.plugin.version>0.8.10</jacoco.maven.plugin.version>
+        <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
-        <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
-        <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
-        <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
-        <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
-        <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
         <maven.enforcer.plugin.version>3.0.0-M1</maven.enforcer.plugin.version>
         <maven.jar.plugin.version>3.1.2</maven.jar.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
-        <maven.checkstyle.plugin.version>3.1.1</maven.checkstyle.plugin.version>
-        <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
-        <nexus.staging.maven.plugin.version>1.6.13</nexus.staging.maven.plugin.version>
-        <jacoco.maven.plugin.version>0.8.10</jacoco.maven.plugin.version>
-        <exec.maven.plugin.version>3.0.0</exec.maven.plugin.version>
-        <build-helper.maven.plugin.version>3.2.0</build-helper.maven.plugin.version>
-        <dockerfile.maven.plugin.version>1.4.13</dockerfile.maven.plugin.version>
+        <maven.plugin.plugin.version>3.6.0</maven.plugin.plugin.version>
         <maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
-        <depgraph-maven-plugin.version>4.0.2</depgraph-maven-plugin.version>
-        <testcontainers.version>1.18.3</testcontainers.version>
+        <maven.resources.plugin.version>3.2.0</maven.resources.plugin.version>
+        <maven.shade.plugin.version>3.4.1</maven.shade.plugin.version>
+        <maven.source.plugin.version>3.2.0</maven.source.plugin.version>
+        <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
+        <nexus.staging.maven.plugin.version>1.6.13</nexus.staging.maven.plugin.version>
+        <versions.maven.plugin.version>2.7</versions.maven.plugin.version>
     </properties>
 
     <scm>
@@ -483,9 +486,9 @@
                                 <requireJavaVersion>
                                     <version>${maven.enforcer.requireJavaVersion}</version>
                                 </requireJavaVersion>
-				<requireMavenVersion>
-				  <version>${maven.enforcer.requireMavenVersion}</version>
-				</requireMavenVersion>
+                                <requireMavenVersion>
+                                    <version>${maven.enforcer.requireMavenVersion}</version>
+                                </requireMavenVersion>
                                 <dependencyConvergence />
                                 <bannedDependencies>
                                     <excludes>
@@ -580,7 +583,11 @@
                 <artifactId>legend-engine-xt-functionActivator-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-functionActivator-deployment</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
 
             <!-- ENGINE -->
@@ -639,7 +646,41 @@
                 <artifactId>legend-engine-xt-snowflakeApp-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-bigqueryFunction-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+<!--            <dependency>-->
+<!--                <groupId>org.finos.legend.engine</groupId>-->
+<!--                <artifactId>legend-engine-xt-snowflakeApp-generator</artifactId>-->
+<!--                <version>${project.version}</version>-->
+<!--            </dependency>-->
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-pure</artifactId>
@@ -657,11 +698,6 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-authentication-connection-factory</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-implementation-core</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -673,6 +709,31 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-authentication-implementation-gcp-federation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-connection-factory</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-connection-compiler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-connection-grammar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-connection-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-connection-pure-metamodel</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -948,8 +1009,9 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-xt-relationalStore-postgres-connection-tests</artifactId>
+                <artifactId>legend-engine-xt-relationalStore-postgres-test-support</artifactId>
                 <version>${project.version}</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
@@ -973,12 +1035,22 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-sparksql-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-hive-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-presto-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalai-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1039,6 +1111,11 @@
                 <version>${project.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-snowflake-connection</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-snowflake-execution</artifactId>
@@ -1464,6 +1541,39 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-analytics-mapping-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-class-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-class-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-function-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-function-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-binding-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-analytics-binding-pure</artifactId>
                 <version>${project.version}</version>
             </dependency>
 
@@ -1950,6 +2060,32 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-shared</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-shared</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-relationalStore</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-sql-providers-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-sql-grammar-integration</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2001,6 +2137,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-openapi-generation</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-arrow-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-arrow-runtime</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <!-- ENGINE -->
@@ -2330,6 +2476,16 @@
                 <artifactId>mockito-core</artifactId>
                 <version>${mockito-core.version}</version>
                 <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-api</artifactId>
+                <version>${junit-jupiter.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter-engine</artifactId>
+                <version>${junit-jupiter.version}</version>
             </dependency>
             <!-- JUNIT -->
 
@@ -2896,6 +3052,17 @@
                 <artifactId>docker-java-api</artifactId>
                 <version>3.3.0</version>
             </dependency>
+            <dependency>
+                <groupId>io.minio</groupId>
+                <artifactId>minio</artifactId>
+                <version>${minio.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.jetbrains</groupId>
+                        <artifactId>*</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
             <!-- Test Containers -->
 
             <dependency>
@@ -3017,8 +3184,62 @@
                 </exclusions>
             </dependency>
 
-        </dependencies>
+            <!-- Deephaven CSV -->
+            <dependency>
+                <groupId>io.deephaven</groupId>
+                <artifactId>deephaven-csv</artifactId>
+                <version>${deephaven-csv.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.deephaven</groupId>
+                <artifactId>deephaven-csv-fast-double-parser</artifactId>
+                <version>${deephaven-csv.version}</version>
+                <scope>runtime</scope>
+            </dependency>
 
+            <!-- Apache Arrow -->
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-memory-netty</artifactId>
+                <version>${arrow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-vector</artifactId>
+                <version>${arrow.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>com.fasterxml.jackson.datatype</groupId>
+                        <artifactId>jackson-datatype-jsr310</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-memory-core</artifactId>
+                <version>${arrow.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.arrow</groupId>
+                <artifactId>arrow-jdbc</artifactId>
+                <version>${arrow.version}</version>
+            </dependency>
+            <!-- Apache Arrow -->
+
+            <!-- Bouncy Castle -->
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcprov-jdk15on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.bouncycastle</groupId>
+                <artifactId>bcpkix-jdk15on</artifactId>
+                <version>${bouncycastle.version}</version>
+            </dependency>
+            <!-- Bouncy Castle -->
+
+        </dependencies>
     </dependencyManagement>
 
     <repositories>
@@ -3053,5 +3274,13 @@
                 </plugins>
             </build>
         </profile>
+        <profile>
+            <id>generate-protocol-version</id>
+            <properties>
+                <protocol.SourceVersion>vX_X_X</protocol.SourceVersion>
+                <protocol.TargetVersion>v1_33_0</protocol.TargetVersion>
+            </properties>
+        </profile>
     </profiles>
+
 </project>

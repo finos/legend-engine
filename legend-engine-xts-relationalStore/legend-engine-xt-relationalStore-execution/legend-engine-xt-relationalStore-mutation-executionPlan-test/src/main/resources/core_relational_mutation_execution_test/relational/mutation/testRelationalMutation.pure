@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::extension::*;
 import meta::pure::executionPlan::*;
@@ -31,7 +32,7 @@ function <<access.private>> meta::relational::mutation::executionPlan::test::tes
 
 function <<test.Test>> meta::relational::mutation::executionPlan::test::testSimpleMutationPlanGeneration(): Boolean[1]
 {
-  let additionalColumnGenerator = 
+  let additionalColumnGenerator =
     ',\n' +
     '    (\n' +
     '          generatedColumnName_LAST_NAME,\n' +
@@ -236,84 +237,84 @@ function <<access.private>> meta::relational::mutation::executionPlan::test::req
 
 function <<access.private>> meta::relational::mutation::executionPlan::test::baseExecutionPlan(): String[1]
 {
-  'Sequence\n' + 
-  '(\n' + 
-  '  type = String\n' + 
-  '  (\n' + 
-  '    FunctionParametersValidationNode\n' + 
-  '    (\n' + 
-  '      functionParameters = [jsonString:String[1]]\n' + 
-  '    )\n' + 
-  '    RelationalSave\n' + 
-  '    (\n' + 
-  '      type = String\n' + 
-  '      requires = [jsonString(String[1])]\n' + 
-  '      sql = %s\n' + 
-  '      generatedVariableName = generatedVariableSingleRecordFromStream\n' + 
-  '      columnValueGenerators =\n' + 
-  '      [\n' + 
-  '    (\n' + 
-  '          generatedColumnName_FIRM,\n' + 
-  '              ExternalFormat_Externalize\n' + 
-  '          (\n' + 
-  '            type = String\n' + 
-  '            resultSizeRange = 1\n' + 
-  '            checked = false\n' + 
-  '            binding = meta::relational::mutation::executionPlan::test::Firm_Binding\n' + 
-  '\n' + 
-  '            (\n' + 
-  '              PureExp\n' + 
-  '              (\n' + 
-  '                type = Class[impls=]\n' + 
-  '                requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' + 
-  '                expression = $generatedVariableSingleRecordFromStream.firm\n' + 
-  '              )\n' + 
-  '            )\n' + 
-  '          )\n' + 
-  '    ),\n' + 
-  '    (\n' + 
-  '          generatedColumnName_FIRST_NAME,\n' + 
-  '              PureExp\n' + 
-  '          (\n' + 
-  '            type = String\n' + 
-  '            requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' + 
-  '            expression = $generatedVariableSingleRecordFromStream.firstName\n' + 
-  '          )\n' + 
-  '    ),\n' + 
-  '    (\n' + 
-  '          generatedColumnName_KERBEROS,\n' + 
-  '              PureExp\n' + 
-  '          (\n' + 
-  '            type = String\n' + 
-  '            requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' + 
-  '            expression = $generatedVariableSingleRecordFromStream.kerberos\n' + 
-  '          )\n' + 
-  '    )%s\n' + 
-  '  ]\n' + 
-  '      connection = RelationalDatabaseConnection(type = "%s")\n' + 
-  '\n' + 
-  '    \n' + 
-  '      (\n' + 
-  '        ExternalFormat_Internalize\n' + 
-  '        (\n' + 
-  '          type = Class[impls=]\n' + 
-  '          resultSizeRange = *\n' + 
-  '          binding = meta::relational::mutation::executionPlan::test::Person_Binding[application/json]\n' + 
-  '          enableConstraints = true\n' + 
-  '          checked = false\n' + 
-  '          graphFetchTree = #{meta::relational::mutation::executionPlan::test::Person{firm{name,numberOfEmployees},firstName,kerberos,lastName}}#\n' + 
-  '\n' + 
-  '          (\n' + 
-  '            VariableResolution\n' + 
-  '            (\n' + 
-  '              type = String\n' + 
-  '              varName = jsonString\n' + 
-  '\n' + 
-  '            )\n' + 
-  '          )\n' + 
-  '        )\n' + 
-  '      ) \n' + 
-  '    )\n' + 
-  '  )\n' + 
+  'Sequence\n' +
+  '(\n' +
+  '  type = String\n' +
+  '  (\n' +
+  '    FunctionParametersValidationNode\n' +
+  '    (\n' +
+  '      functionParameters = [jsonString:String[1]]\n' +
+  '    )\n' +
+  '    RelationalSave\n' +
+  '    (\n' +
+  '      type = String\n' +
+  '      requires = [jsonString(String[1])]\n' +
+  '      sql = %s\n' +
+  '      generatedVariableName = generatedVariableSingleRecordFromStream\n' +
+  '      columnValueGenerators =\n' +
+  '      [\n' +
+  '    (\n' +
+  '          generatedColumnName_FIRM,\n' +
+  '              ExternalFormat_Externalize\n' +
+  '          (\n' +
+  '            type = String\n' +
+  '            resultSizeRange = 1\n' +
+  '            checked = false\n' +
+  '            binding = meta::relational::mutation::executionPlan::test::Firm_Binding\n' +
+  '\n' +
+  '            (\n' +
+  '              PureExp\n' +
+  '              (\n' +
+  '                type = Class[impls=]\n' +
+  '                requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
+  '                expression = $generatedVariableSingleRecordFromStream.firm\n' +
+  '              )\n' +
+  '            )\n' +
+  '          )\n' +
+  '    ),\n' +
+  '    (\n' +
+  '          generatedColumnName_FIRST_NAME,\n' +
+  '              PureExp\n' +
+  '          (\n' +
+  '            type = String\n' +
+  '            requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
+  '            expression = $generatedVariableSingleRecordFromStream.firstName\n' +
+  '          )\n' +
+  '    ),\n' +
+  '    (\n' +
+  '          generatedColumnName_KERBEROS,\n' +
+  '              PureExp\n' +
+  '          (\n' +
+  '            type = String\n' +
+  '            requires = [generatedVariableSingleRecordFromStream(meta::relational::mutation::executionPlan::test::Person[1])]\n' +
+  '            expression = $generatedVariableSingleRecordFromStream.kerberos\n' +
+  '          )\n' +
+  '    )%s\n' +
+  '  ]\n' +
+  '      connection = RelationalDatabaseConnection(type = "%s")\n' +
+  '\n' +
+  '    \n' +
+  '      (\n' +
+  '        ExternalFormat_Internalize\n' +
+  '        (\n' +
+  '          type = Class[impls=]\n' +
+  '          resultSizeRange = *\n' +
+  '          binding = meta::relational::mutation::executionPlan::test::Person_Binding[application/json]\n' +
+  '          enableConstraints = true\n' +
+  '          checked = false\n' +
+  '          graphFetchTree = #{meta::relational::mutation::executionPlan::test::Person{firm{name,numberOfEmployees},firstName,kerberos,lastName}}#\n' +
+  '\n' +
+  '          (\n' +
+  '            VariableResolution\n' +
+  '            (\n' +
+  '              type = String\n' +
+  '              varName = jsonString\n' +
+  '\n' +
+  '            )\n' +
+  '          )\n' +
+  '        )\n' +
+  '      ) \n' +
+  '    )\n' +
+  '  )\n' +
   ')\n'
 }

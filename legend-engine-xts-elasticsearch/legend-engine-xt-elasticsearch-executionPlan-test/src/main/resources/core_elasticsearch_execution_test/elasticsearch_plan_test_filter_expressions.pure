@@ -79,7 +79,7 @@ function
   {doc.doc = 'Test filter date adjust expression'}
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testAdjustExpression(config:TestConfig[1]):Boolean[1]
 {
-  let val = %1984-06-07T00:00:00+0000;
+  let val = %1984-06-07T00:00:00.700+0000;
   $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') == adjust($val, 1, DurationUnit.DAYS)));
 }
 
@@ -104,6 +104,6 @@ function
   {doc.doc = 'Test filter adjust today expression'}
 meta::external::store::elasticsearch::executionTest::testCase::tds::filter::expressions::testAdjustTodayExpression(config:TestConfig[1]):Boolean[1]
 {
-  let val = -1 * dateDiff(%1984-06-08T00:00:00+0000, now(), DurationUnit.DAYS);
-  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') == adjust(parseDate(today()->toString() + 'T00:00:00'), $val, DurationUnit.DAYS)));
+  let val = -1 * dateDiff(%1984-06-08T00:00:00.700+0000, now(), DurationUnit.DAYS);
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') == adjust(parseDate(today()->toString() + 'T00:00:00.700'), $val, DurationUnit.DAYS)));
 }

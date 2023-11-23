@@ -13,15 +13,17 @@
 // limitations under the License.
 
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 
 function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[1]
 {
    createTablesAndFillDb();
-    
+
    let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
    //firm with no people
    executeInDb('insert into FirmTable (id, legalName, addressId) values (8, \'No Employees\', 11);', $connection);
@@ -35,7 +37,7 @@ function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (10, \'New\', \'York\',35, 7,1,null);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (11, \'Elena\', \'Firm B\',35, 7,3,null);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, age, addressId, firmId, managerId) values (12, \'Don\', \'New York\',35, 7,1,null);', $connection);
- 
+
    true;
 }
 

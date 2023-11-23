@@ -20,15 +20,7 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.NontemporalSnapshot;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Exists;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -43,21 +35,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Optional;
 
-import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
-import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.ALL_COLUMNS;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.getPrimaryKeyMatchCondition;
 
 class NontemporalSnapshotPlanner extends Planner
 {
-    NontemporalSnapshotPlanner(Datasets datasets, NontemporalSnapshot ingestMode, PlannerOptions plannerOptions)
+    NontemporalSnapshotPlanner(Datasets datasets, NontemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
     }
 
     @Override
@@ -67,35 +52,12 @@ class NontemporalSnapshotPlanner extends Planner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
-        Dataset stagingDataset = stagingDataset();
-        List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        Optional<Condition> selectCondition = Optional.empty();
+        List<Value> dataFields = getDataFields();
+        List<Value> fieldsToSelect = new ArrayList<>(dataFields);
+        List<Value> fieldsToInsert = new ArrayList<>(dataFields);
 
-        // If data splits is enabled, add the condition to pick only the latest data split
-        if (ingestMode().dataSplitField().isPresent())
-        {
-            String dataSplitField = ingestMode().dataSplitField().get();
-            LogicalPlanUtils.removeField(fieldsToSelect, dataSplitField);
-            LogicalPlanUtils.removeField(fieldsToInsert, dataSplitField);
-            DatasetReference stagingRight = stagingDataset.datasetReference().withAlias("stage_right");
-            FieldValue dataSplitLeft = FieldValue.builder()
-                .fieldName(dataSplitField)
-                .datasetRef(stagingDataset.datasetReference())
-                .build();
-            FieldValue dataSplitRight = dataSplitLeft.withDatasetRef(stagingRight.datasetReference());
-            selectCondition = Optional.of(Not.of(Exists.of(Selection.builder()
-                    .source(stagingRight)
-                    .condition(And.builder()
-                            .addConditions(
-                                    LessThan.of(dataSplitLeft, dataSplitRight),
-                                    getPrimaryKeyMatchCondition(stagingDataset, stagingRight, primaryKeys.toArray(new String[0])))
-                            .build())
-                    .addAllFields(ALL_COLUMNS())
-                    .build())));
-        }
         // If audit is enabled, add audit column to select and insert fields
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
@@ -103,16 +65,8 @@ class NontemporalSnapshotPlanner extends Planner
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
         }
-        else if (!ingestMode().dataSplitField().isPresent())
-        {
-            fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
-        }
 
-        Selection selectStaging = Selection.builder()
-                .source(stagingDataset)
-                .addAllFields(fieldsToSelect)
-                .condition(selectCondition)
-                .build();
+        Selection selectStaging = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
 
         List<Operation> operations = new ArrayList<>();
         // Step 1: Delete all rows from existing table
@@ -120,22 +74,6 @@ class NontemporalSnapshotPlanner extends Planner
         // Step 2: Insert new dataset
         operations.add(Insert.of(mainDataset(), selectStaging, fieldsToInsert));
 
-        return LogicalPlan.of(operations);
-    }
-
-    @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            operations.add(Create.of(true, stagingDataset()));
-        }
-        if (options().enableConcurrentSafety())
-        {
-            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
-        }
         return LogicalPlan.of(operations);
     }
 
@@ -154,6 +92,17 @@ class NontemporalSnapshotPlanner extends Planner
 
     protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
+    }
+
+    @Override
+    List<String> getDigestOrRemainingColumns()
+    {
+        List<String> remainingCols = new ArrayList<>();
+        if (!primaryKeys.isEmpty())
+        {
+            remainingCols = getNonPKNonVersionDataFields();
+        }
+        return remainingCols;
     }
 
     @Override

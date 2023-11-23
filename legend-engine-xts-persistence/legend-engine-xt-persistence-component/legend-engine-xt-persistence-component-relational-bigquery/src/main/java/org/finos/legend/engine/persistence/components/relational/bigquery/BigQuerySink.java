@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery;
 
+import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
@@ -21,13 +23,19 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.PartitionKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Alter;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Truncate;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -35,6 +43,8 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
+import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryConnection;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryExecutor;
@@ -45,12 +55,18 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.BatchStartTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.CopyVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DatetimeValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DeleteVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.PartitionKeyVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SchemaDefinitionVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesDatasetReferenceVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesDatasetVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesFieldValueVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -65,6 +81,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
+import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
 
 public class BigQuerySink extends AnsiSqlSink
 {
@@ -97,6 +116,12 @@ public class BigQuerySink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(DatetimeValue.class, new DatetimeValueVisitor());
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
         logicalPlanVisitorByClass.put(BatchStartTimestamp.class, new BatchStartTimestampVisitor());
+        logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
+        logicalPlanVisitorByClass.put(StagedFilesDatasetReference.class, new StagedFilesDatasetReferenceVisitor());
+        logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
@@ -228,5 +253,33 @@ public class BigQuerySink extends AnsiSqlSink
                 .fieldAlias(evolveTo.fieldAlias()).nullable(nullability)
                 .identity(evolveTo.identity()).unique(evolveTo.unique())
                 .defaultValue(evolveTo.defaultValue()).type(modifiedFieldType).build();
+    }
+
+    @Override
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    {
+        BigQueryExecutor bigQueryExecutor = (BigQueryExecutor) executor;
+        Map<StatisticName, Object> stats = bigQueryExecutor.executeLoadPhysicalPlanAndGetStats(ingestSqlPlan, placeHolderKeyValues);
+
+        IngestorResult.Builder resultBuilder = IngestorResult.builder()
+            .updatedDatasets(datasets)
+            .putAllStatisticByName(stats)
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null));
+        IngestorResult result;
+
+        if ((long) stats.get(StatisticName.ROWS_WITH_ERRORS) == 0)
+        {
+            result = resultBuilder
+                .status(IngestStatus.SUCCEEDED)
+                .build();
+        }
+        else
+        {
+            result = resultBuilder
+                .status(IngestStatus.FAILED)
+                .build();
+        }
+        return result;
     }
 }

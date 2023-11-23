@@ -17,9 +17,11 @@ import meta::relational::tests::mapping::inheritance::cross::*;
 import meta::relational::tests::mapping::inheritance::relational::*;
 import meta::relational::tests::model::inheritance::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::relational::selfJoin::setUp():Boolean[1]
@@ -61,11 +63,11 @@ Database meta::relational::tests::mapping::inheritance::relational::selfJoin::my
         vid INT,
         name VARCHAR(200),
         wheelCount INT,
-        engineType INT, 
+        engineType INT,
         description VARCHAR(200),
         personId INT
     )
-    
+
     Join PersonCar(OneTable.ID = {target}.personId)
     Join PersonBicycle(OneTable.ID = {target}.personId)
     Filter PersonFilter(OneTable.type = 1)
@@ -89,7 +91,7 @@ Mapping meta::relational::tests::mapping::inheritance::relational::selfJoin::inh
                roadVehicles[map1] : [myDB]@PersonCar,
                roadVehicles[map2] : [myDB]@PersonBicycle
             }
-            
+
    Car[map1]: Relational
             {
                ~filter [myDB]CarFilter

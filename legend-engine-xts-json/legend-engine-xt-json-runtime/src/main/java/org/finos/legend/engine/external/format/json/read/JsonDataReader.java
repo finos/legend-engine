@@ -39,10 +39,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -56,6 +58,7 @@ public abstract class JsonDataReader<T>
     private long recordCount = 0;
 
     private final Queue<IChecked<T>> queue = new LinkedList<>();
+    private final Set<String> declaredMethods = Arrays.stream(this.getClass().getDeclaredMethods()).map(Method::getName).collect(Collectors.toSet());
 
     public JsonDataReader(InputStream in, boolean useBigDecimalForFloats, String pathOffset)
     {
@@ -186,14 +189,7 @@ public abstract class JsonDataReader<T>
 
     protected boolean readMethodExists(String name)
     {
-        for (Method method : this.getClass().getDeclaredMethods())
-        {
-            if (method.getName().equals(name))
-            {
-                return true;
-            }
-        }
-        return false;
+        return declaredMethods.contains(name);
     }
 
     protected Object readMethodInvoke(String name, JsonNode node)

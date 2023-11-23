@@ -1,4 +1,5 @@
 import meta::relational::functions::sqlQueryToString::default::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::*;
@@ -79,11 +80,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForH2(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='cast(truncate(%s) as date)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='DAY_OF_MONTH(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dayname(%s)')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='%s',transform={p:String[1..2]| if($p->size()==1,| 'DAY_OF_WEEK('+$p->at(0)+')',|$p->dayOfWeekNumberH2());})),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAY_OF_YEAR(%s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_decode(%s)')),
     dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='legend_h2_extension_base64_encode(%s)')),
-    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),    
+    dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForH2()})),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(%s) - 1), %s)', transform={p:String[1] | $p->repeat(2)})),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='dateadd(MONTH, 3 * quarter(%s) - 3, dateadd(DAY, -(dayofyear(%s) - 1), %s))', transform={p:String[1] | $p->repeat(3)})),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())')),
@@ -104,6 +106,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='monthname(%s)')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAY_OF_WEEK(%s) > 0 then %s - DAY_OF_WEEK(%s) - 7 else %s - DAY_OF_WEEK(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentH2('current_date()')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp()')),
     dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='parsedatetime(%s,%s)')),
@@ -122,6 +125,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='legend_h2_extension_hash_sha1(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='rawtohex(hash(\'SHA256\', %s))')),
+    dynaFnToSql('splitPart',              $allStates,            ^ToSql(format='legend_h2_extension_split_part(%s, %s, %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
@@ -131,8 +135,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampH2()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
-    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)')),
-    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='dayname(%s)'))
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
 }
 
@@ -157,11 +160,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 
   let castTo = if ($returnType->in(['CHAR', 'VARCHAR', 'STRING']), | 'varchar', |
   if ($returnType->in(['DATETIME', 'TIMESTAMP']), | 'timestamp', |
-  if ($returnType == 'DATE', | 'date', |   
+  if ($returnType == 'DATE', | 'date', |
   if ($returnType == 'BOOLEAN', | 'boolean', |
   if ($returnType == 'FLOAT', | 'float', |
-  if ($returnType == 'INTEGER', | 'integer', |  
-  $returnType)))))); 
+  if ($returnType == 'INTEGER', | 'integer', |
+  $returnType))))));
 
   format('cast(%s as %s)', [$relationalPropertyAccess, $castTo]);
 }
@@ -185,7 +188,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 {
    $s->match([
       o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc)
-   ])  
+   ])
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredObjectNavigationForH2(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
@@ -254,9 +257,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::transformToTimestampH2(params:String[2]):String[1]
 {
   //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
-   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported '); 
-   let timestampFormat = '\'yyyy-MM-dd hh:mm:ss\'';   
-   'parsedatetime('+$params->at(0)+','+ $timestampFormat+')';    
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = '\'yyyy-MM-dd hh:mm:ss\'';
+   'parsedatetime('+$params->at(0)+','+ $timestampFormat+')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processDateDiffDurationUnitForH2(durationUnit:String[1]):String[1]

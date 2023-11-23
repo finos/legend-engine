@@ -18,10 +18,6 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.MaxVersionStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.NoVersioningStrategyAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.VersioningStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTimeAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTimeAbstract;
@@ -35,6 +31,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
@@ -46,6 +44,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.SelectV
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
+import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
@@ -56,13 +55,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_UPDATED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS;
 
 abstract class UnitemporalPlanner extends Planner
 {
@@ -73,16 +71,17 @@ abstract class UnitemporalPlanner extends Planner
     protected final Condition openRecordCondition;
     protected final Condition digestMatchCondition;
     protected final Condition digestDoesNotMatchCondition;
-
+    protected final String digestField;
     protected Condition primaryKeysMatchCondition;
 
-    UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions)
+    UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets.metadataDataset().isPresent()
                 ? datasets
                 : datasets.withMetadataDataset(MetadataDataset.builder().build()),
             transactionMilestoned,
-            plannerOptions);
+            plannerOptions,
+            capabilities);
 
         // validate
         validatePrimaryKeysNotEmpty(primaryKeys);
@@ -93,6 +92,7 @@ abstract class UnitemporalPlanner extends Planner
         this.mainTableName = StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
         this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
         this.batchEndTimestamp = BatchEndTimestamp.INSTANCE;
+        this.digestField = transactionMilestoned.digestField();
         this.openRecordCondition = transactionMilestoned.transactionMilestoning().accept(new DetermineOpenRecordCondition(mainDataset()));
         this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField());
         this.primaryKeysMatchCondition = LogicalPlanUtils.getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0]));
@@ -108,8 +108,35 @@ abstract class UnitemporalPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(stagingDataset());
+        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(originalStagingDataset());
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
+    }
+
+    @Override
+    List<String> getDigestOrRemainingColumns()
+    {
+        return Arrays.asList(digestField);
+    }
+
+    @Override
+    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        operations.add(Create.of(true, mainDataset()));
+        if (options().createStagingDataset())
+        {
+            operations.add(Create.of(true, originalStagingDataset()));
+        }
+        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
+        if (options().enableConcurrentSafety())
+        {
+            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+        }
+        if (isTempTableNeededForStaging)
+        {
+            operations.add(Create.of(true, tempStagingDatasetWithoutPks()));
+        }
+        return LogicalPlan.of(operations);
     }
 
     protected void validatePrimaryKey(List<Field> fields, String targetFieldName)
@@ -147,35 +174,6 @@ abstract class UnitemporalPlanner extends Planner
             if (!filterField.primaryKey())
             {
                 throw new IllegalStateException(String.format("Optimization filter [%s] has to be a primary key", filter.fieldName()));
-            }
-        }
-    }
-
-    protected void validateVersioningField(VersioningStrategy versioningStrategy, Dataset dataset)
-    {
-        Optional<String> versioningField = versioningStrategy.accept(new VersioningStrategyVisitor<Optional<String>>()
-        {
-            @Override
-            public Optional<String> visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
-            {
-                return Optional.empty();
-            }
-
-            @Override
-            public Optional<String> visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
-            {
-                return Optional.of(maxVersionStrategy.versioningField());
-            }
-        });
-
-        if (versioningField.isPresent())
-        {
-            Field filterField = dataset.schema().fields().stream()
-                .filter(field -> field.name().equals(versioningField.get()))
-                .findFirst().orElseThrow(() -> new IllegalStateException(String.format("Versioning field [%s] not found in Staging Schema", versioningField.get())));
-            if (!SUPPORTED_DATA_TYPES_FOR_VERSIONING_COLUMNS.contains(filterField.type().dataType()))
-            {
-                throw new IllegalStateException(String.format("Versioning field's data type [%s] is not supported", filterField.type().dataType()));
             }
         }
     }

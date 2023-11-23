@@ -15,20 +15,18 @@
 
 package org.finos.legend.tableformat.iceberg.testsupport;
 
-import java.sql.Connection;
-import java.sql.Statement;
 import org.apache.iceberg.catalog.Catalog;
 import org.apache.iceberg.catalog.Namespace;
 import org.apache.iceberg.catalog.SupportsNamespaces;
 import org.apache.iceberg.catalog.TableIdentifier;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.*;
 import org.testcontainers.DockerClientFactory;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
+import java.sql.Connection;
+import java.sql.Statement;
 
+@Ignore
 public class IceboxTrinoTest
 {
     @ClassRule

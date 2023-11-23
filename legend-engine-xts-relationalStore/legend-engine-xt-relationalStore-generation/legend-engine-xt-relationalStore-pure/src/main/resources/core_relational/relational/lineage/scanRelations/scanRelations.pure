@@ -19,7 +19,9 @@ import meta::relational::metamodel::operation::*;
 import meta::relational::functions::pureToSqlQuery::*;
 import meta::pure::router::clustering::*;
 import meta::relational::functions::sqlQueryToString::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::lineage::analytics::*;
 import meta::pure::functions::io::http::*;
@@ -248,7 +250,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::scanRelationColu
 {
    let pn = $p.value->cast(@PropertyPathNode);
    $pn.property->toOne()->match([
-      prop : Property<Nil,Any|*>[1] | 
+      prop : Property<Nil,Any|*>[1] |
          let propMappings = if($prop->hasGeneratedMilestoningDatePropertyStereotype(),
                                | [],
                                | if($epm->isNotEmpty(),
@@ -387,19 +389,19 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateSQLQuery
 }
 
 function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalOperationElement(relOp:RelationalOperationElement[1], debug: meta::pure::tools::DebugContext[1], extensions:Extension[*]):RelationTree[*]
-{   
+{
    if($debug.debug, | print($debug.space + 'Generate Relation Tree From Relational Operation Element\n'), | []);
-      
+
    $relOp->match([
       vs:ViewSelectSQLQuery[1]          | if($debug.debug, | print($debug.space + 'Process ViewSelectSQLQuery - ' + $vs.name + '\n'), |[]);
-                 
+
                                           let viewSelectTree = $vs.selectSQLQuery->generateRelationTreeFromRelationalOperationElement($debug->indent(), $extensions)->toOne();
                                           let nestedViewTree = ^RelationTree(root = true, children = $viewSelectTree);
                                           ^RelationTree(relation = $vs.view, nestedViewTree= $nestedViewTree);,
-                 
+
       t:Table[1]                        | if($debug.debug, | print($debug.space + 'Process Table - ' + $t.name + '\n'), |[]);
                                           ^RelationTree(relation = $t);,
-                 
+
       v:View[1]                         | if($debug.debug, | print($debug.space + 'Process View - ' + $v.name + '\n'), |[]);
                                           ^RelationTree(relation = $v);,
 
@@ -413,7 +415,7 @@ function meta::pure::lineage::scanRelations::generateRelationTreeFromRelationalO
                                           let orderByColumns = $sel.orderBy->map(o | $o.column->extractTableAliasColumns());
                                           let groupByColumns = $sel.groupBy->map(o | $o->extractTableAliasColumns());
                                           let havingColumns  = $sel.havingOperation->map(o | $o->extractTableAliasColumns());
-                           
+
                                           let allColumns     = $projectColumns->concatenate($filterColumns)->concatenate($orderByColumns)->concatenate($groupByColumns)->concatenate($havingColumns)->removeDuplicates();
                                           if($debug.debug, | print($debug.space + 'Processed Columns - ' + $allColumns->map(tac | $tac.alias.name + '.' + $tac.column.name)->joinStrings('[',', ', ']') + '\n');, |[]);
 
@@ -444,16 +446,16 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateRelation
 
    $r->match([
       j : JoinTreeNode[1] | if($debug.debug, | print($debug.space + 'Process JoinTreeNode - \n'), | []);
-             
+
                             let columnsFromChildren  = $j->children()->map(child | $child.join.operation->extractTableAliasColumns());
                             let allColumns           = $columns->concatenate($columnsFromChildren)->removeDuplicates();
-             
+
                             if($debug.debug, | print($debug.space + 'Processed Columns - ' + $allColumns->map(tac | $tac.alias.name + '.' + $tac.column.name)->joinStrings('[',', ', ']') + '\n');, |[]);
 
                             let baseTrees            = $j.alias->generateRelationTreeFromRelationalOperationElement($debug->indent(), $extensions);
                             let baseTreesColumns     = $allColumns->filter(col | $col.alias.name == $j.alias.name);
                             let baseTreesWithColumns = $baseTrees->map(tree | $tree->addColumnsToRelationTree($baseTreesColumns));
-             
+
                             if($debug.debug, | print($debug.space + 'Generated Base Trees - \n\n' + $baseTreesWithColumns->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
 
                             let treesWithJoin        = $baseTreesWithColumns->map(tree | let processedJoin = processJoinFromTreeNode($j, $parentOperation->toOne(), $parentRelations, $tree.relation->toOne(), $tree, $parentTree->toOne(), $debug, $extensions);
@@ -465,9 +467,9 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateRelation
 
                             if($debug.debug, | print($debug.space + 'Generated Trees - \n\n' + $result->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
                             $result;,
-      
+
       r : RootJoinTreeNode[1] | if($debug.debug, | print($debug.space + 'Process RootJoinTreeNode\n'), | []);
-                                
+
                                 let colFromChildren      = $r->children()->map(child | $child.join.operation->extractTableAliasColumns());
                                 let allColumns           = $columns->concatenate($colFromChildren)->removeDuplicates();
 
@@ -478,7 +480,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::generateRelation
                                 let baseTreesWithColumns = $baseTrees->map(tree | $tree->addColumnsToRelationTree($baseTreesColumns));
 
                                 if($debug.debug, | print($debug.space + 'Generated Base Trees - \n\n' + $baseTreesWithColumns->map(tree | relationTreeAsString($tree, $debug->indent().space))->joinStrings($debug.space + '[\n','\n', '\n' +$debug.space+ ']')  + '\n\n'), |[]);
-                                
+
                                 let childTreeCols = $allColumns->filter(c | $c.alias.name != $r.alias.name);
                                 let result        = $baseTreesWithColumns->map(tree | let childTrees = $r->children()->map(child | $child->generateRelationTreeFromRelationalTreeNode($r.alias, $tree->flattenRelationTree().relation, $tree, $childTreeCols, $debug->indent(), $extensions););
                                                                                       $tree->addChildTrees($childTrees););
@@ -496,7 +498,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::getRelationName(
 
 function meta::pure::lineage::scanRelations::flattenRelationTree(tree:RelationTree[1]):RelationTree[*]
 {
-   $tree->concatenate($tree.nestedViewTree->map(t | $t->flattenRelationTree()))->concatenate($tree.children->map(child | $child->flattenRelationTree()));      
+   $tree->concatenate($tree.nestedViewTree->map(t | $t->flattenRelationTree()))->concatenate($tree.children->map(child | $child->flattenRelationTree()));
 }
 
 function <<access.private>> meta::pure::lineage::scanRelations::addChildTrees(parent: RelationTree[1], children:RelationTree[*]):RelationTree[1]
@@ -509,9 +511,9 @@ function <<access.private>> meta::pure::lineage::scanRelations::addChildTree(par
 {
    let parentRelation = $parent.relation->toOne();
    let parentRelationFromJoin = $child.join->map(x|$x->otherTable($child.relation->toOne())).relation->toOne();
-   
+
    if(getRelationName($parentRelation) == getRelationName($parentRelationFromJoin),
-      | ^$parent(children += $child);, 
+      | ^$parent(children += $child);,
       | ^$parent(children = $parent.children->map(pc | addChildTree($pc, $child))));
 }
 
@@ -524,7 +526,7 @@ function meta::pure::lineage::scanRelations::addColumnToRelationTree(tree:Relati
 {
    let columnOwner = $column.column.owner;
    let treeRelation = $tree.relation;
-   
+
    if(($columnOwner->isNotEmpty() && $treeRelation->isNotEmpty() && ($treeRelation->toOne()->getRelationName() == $columnOwner->toOne()->getRelationName()) && $treeRelation.columns->cast(@Column)->exists(tc | $tc.name == $column.column.name)),
       |^$tree(columns = $tree.columns->concatenate($column.column)->removeDuplicates()),
       |$tree;
@@ -542,13 +544,13 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
    let tableAliasColumns        = $j.join.operation->extractTableAliasColumns()->removeDuplicates();
 
    let oldToNewTableColumnAlias = $tableAliasColumns->map(tac | let orgColumn     = $tac.column;
-                                                          
+
                                                                 assert($tac.alias.name->in([$targetAliasName, $sourceAliasName]), | 'Columns in join should refer either source alias or target alias');
-                                                          
+
                                                                 let alias         = if($tac.alias.name == $sourceAliasName, | $sourceOperation, |$targetOperation);
                                                                 let tree          = if($tac.alias.name == $sourceAliasName, | $sourceTree, |$targetTree);
                                                                 let sourceColumn  = $tac->extractSourceColumn($alias, $relationIndentifiers, $tree);
-                                                                
+
                                                                 if($sourceColumn->isEmpty(),
                                                                    |pair($tac, ^SQLNull()),
                                                                    |let namedRelation       = $sourceColumn.owner->cast(@NamedRelation)->toOne();
@@ -558,7 +560,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
 
    let nonNullPairs             = $oldToNewTableColumnAlias->filter(p | $p.second->instanceOf(TableAliasColumn))->cast(@Pair<TableAliasColumn, TableAliasColumn>);
    let newAliases               = $nonNullPairs.second.alias->removeDuplicatesBy(ta | $ta.relation->getRelationName());
-   
+
    let updatedNonNullPairs      = if($newAliases->size() == 1,
                                       |$nonNullPairs->map(p | let isTargetOperation = ($p.first.alias.name == $targetAliasName);
                                                               if($isTargetOperation,
@@ -612,7 +614,7 @@ function <<access.private>> meta::pure::lineage::scanRelations::processJoinFromT
                                                                                |let d              = $r->cast(@DynaFunction);
                                                                                 let filteredParams = $d.parameters->filter(p | !($p->instanceOf(DynaFunction) && $p->cast(@DynaFunction)->isNull($extensions)));
                                                                                 assert($filteredParams->size() >= 1, | 'Expected atleast 1 parameter after filtering nulls');
-                                                                                if($filteredParams->size() == 1, 
+                                                                                if($filteredParams->size() == 1,
                                                                                    | $filteredParams->toOne(),
                                                                                    | ^$d(parameters = $filteredParams));,
                                                                                |$r)};
@@ -653,14 +655,14 @@ function <<access.private>> meta::pure::lineage::scanRelations::extractSourceCol
 
 function <<access.private>> meta::pure::lineage::scanRelations::extractSourceColumnFromSelectSQLQuery(select : SelectSQLQuery[1], tableAliasColumn:TableAliasColumn[1], relationIdentifiers:String[*], sourceTree:RelationTree[1]):Column[0..1]
 {
-   let reqTableAliasColumn = $select.columns->filter(col | let colName = $col->match([a:Alias[1] | $a.name, 
+   let reqTableAliasColumn = $select.columns->filter(col | let colName = $col->match([a:Alias[1] | $a.name,
                                                                                       tac:TableAliasColumn[1] | $tac.column.name]);
                                                            $colName == $tableAliasColumn.column.name;)->extractTableAliasColumns()->removeDuplicates();
 
    assert($reqTableAliasColumn->size() <= 1 ,|'Expected max 1 column. Found : ' + $reqTableAliasColumn->size()->toString());
 
-   if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(), 
-      |[], 
+   if($reqTableAliasColumn->isEmpty() || $select.data->isEmpty(),
+      |[],
       |let rootTree        = $select.data->toOne();
        let childTrees      = $rootTree->children()->map(child | $child->extractLine());
        let sourceOperation = $rootTree->concatenate($childTrees)->filter(tree | $tree.alias.name == $reqTableAliasColumn.alias.name).alias->toOne();

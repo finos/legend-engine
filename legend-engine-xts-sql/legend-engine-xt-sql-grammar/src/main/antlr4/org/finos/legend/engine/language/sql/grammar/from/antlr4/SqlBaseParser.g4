@@ -316,9 +316,9 @@ valueExpression
 primaryExpression
     : parameterOrLiteral                                                             #defaultParamOrLiteral
     | explicitFunction                                                               #explicitFunctionDefault
-    | qname OPEN_ROUND_BRACKET ASTERISK CLOSE_ROUND_BRACKET filter? over?            #functionCall
+    | qname OPEN_ROUND_BRACKET ASTERISK CLOSE_ROUND_BRACKET within? filter? over?    #functionCall
     | ident                                                                          #columnReference
-    | qname OPEN_ROUND_BRACKET (setQuant? expr (COMMA expr)*)? CLOSE_ROUND_BRACKET filter?
+    | qname OPEN_ROUND_BRACKET (setQuant? expr (COMMA expr)*)? CLOSE_ROUND_BRACKET within? filter?
         ((IGNORE|RESPECT) NULLS)? over?                                              #functionCall
     | subqueryExpression                                                             #subqueryExpressionDefault
     | OPEN_ROUND_BRACKET base=primaryExpression CLOSE_ROUND_BRACKET
@@ -450,6 +450,10 @@ namedWindow
 
 over
     : OVER windowDefinition
+    ;
+
+within
+    : WITHIN GROUP OPEN_ROUND_BRACKET ORDER BY sortItem CLOSE_ROUND_BRACKET
     ;
 
 windowDefinition

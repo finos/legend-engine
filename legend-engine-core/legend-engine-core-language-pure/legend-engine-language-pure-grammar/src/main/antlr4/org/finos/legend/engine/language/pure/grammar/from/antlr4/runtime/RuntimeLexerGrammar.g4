@@ -9,3 +9,4 @@ RUNTIME:                        'Runtime';
 IMPORT:                         'import';
 MAPPINGS:                       'mappings';
 CONNECTIONS:                    'connections';
+CONNECTIONSTORES:               'connectionStores';

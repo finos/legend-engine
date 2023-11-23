@@ -25,6 +25,7 @@ import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::utils::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
 Class meta::pure::router::RoutedVariablePlaceHolder
@@ -52,10 +53,10 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
 
       let unavailableVars = $reqVars.name->removeAllOptimized($inScopeVars.first->concatenate($funcParams));
       assert($unavailableVars->isEmpty(), 'Unable to resolve var(s): ' + $unavailableVars->joinStrings(','));
-      
+
       let unResolvedVars  = $reqVars->filter(v|let resolved = $a.second->get($v.name);
                                                $resolved.values->isEmpty() || $resolved.values->at(0)->instanceOf(RoutedVariablePlaceHolder););
-      
+
       if($unResolvedVars->isNotEmpty(),
         {|
           let unRoutedFunction = ^$l(expressionSequence = $vs, openVariables=$a.second->keys());
@@ -63,7 +64,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
           let vars             = $a.second->put($varName->toOne(), ^List<RoutedVariablePlaceHolder>(values=^RoutedVariablePlaceHolder(name=$varName->toOne())));
           ^$a
           (
-            first  = ^$routedFunction(expressionSequence = $a.first.expressionSequence->concatenate($routedFunction.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>), 
+            first  = ^$routedFunction(expressionSequence = $a.first.expressionSequence->concatenate($routedFunction.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>),
             second = $vars
           );
         },
@@ -95,7 +96,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
       );
     },
     pair($l->cast(@FunctionDefinition<Any>), $f->openVariableValues())
-  );    
+  );
 
   let vs      = $expressions->last()->toOne();
   let varName = $vs->extractLetVariableName();
@@ -117,7 +118,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
                                 | assert($fOpenVariables->keys()->intersection($inScopeVars)->isEmpty(),'Routing : unable to determine open variables for FunctionDefinition, suplied inScopeVars and FunctionDefinitionOpenVariables intersect');
                                   $fOpenVariables->putAll($inScopeVars->toOne()->keyValues());,
                                 | $fOpenVariables);
-   
+
    let functionExpressions = $f.expressionSequence->evaluateAndDeactivate()->cast(@FunctionExpression);
 
    // Enriching Function Expressions with relevant info (mapping / binding / platform)
@@ -127,7 +128,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
    // Enriching Function Expressions with more information based on type of expression (subTypes of ExtendedRoutedValueSpecification)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));
    let enrichedExpressionsAfterStrategyBasedEnrichment = $enrichedExpressions->map(exp | $exp->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug));
-   
+
    // Clustering Function Expressions into clusters
    print(if($debug.debug,|'\n'+$debug.space+'Clustering Function Expressions:\n',|''));
    let clusters = $enrichedExpressionsAfterStrategyBasedEnrichment->map(exp| $exp->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space + '  ')));
@@ -145,7 +146,7 @@ function meta::pure::router::enrichExpressionWithStrategyBasedEnrichment(vs: Ext
      sm: StoreMappingRoutedValueSpecification[1]   | $sm->enrichStoreMappingRoutedValueSpecification($exeCtx, $extensions, $debug),
      ef: ExternalFormatRoutedValueSpecification[1] | ^$ef(value = $ef.value->enrichExternalFormatRoutedValueSpecification($exeCtx, $extensions, $debug)),
      pl: PlatformRoutedValueSpecification[1]       | ^$pl(value = $pl.value->enrichPlatformRoutedValueSpecification($exeCtx, $extensions, $debug)),
-     er: ExtendedRoutedValueSpecification[1]       | fail('Unexpected ExtendedRoutedValueSpecification encountered. Please raise the issue with dev team!'); @ExtendedRoutedValueSpecification; 
+     er: ExtendedRoutedValueSpecification[1]       | fail('Unexpected ExtendedRoutedValueSpecification encountered. Please raise the issue with dev team!'); @ExtendedRoutedValueSpecification;
    ])
 }
 
@@ -165,6 +166,6 @@ function meta::pure::router::clusterFunctionExpressions(vs:ExtendedRoutedValueSp
                                                         |let cluster = $clusteredVal->cast(@ClusteredValueSpecification);
                                                          ^$cluster(val = ^$pl(value = $cluster.val));,
                                                         |meta::pure::router::platform::clustering::wrapValueSpecByPlatformCluster($pl, $openVariables, $exeCtx));,
-     er: ExtendedRoutedValueSpecification[1]       | fail('Unexpected ExtendedRoutedValueSpecification encountered. Please raise the issue with dev team!'); @ClusteredValueSpecification; 
+     er: ExtendedRoutedValueSpecification[1]       | fail('Unexpected ExtendedRoutedValueSpecification encountered. Please raise the issue with dev team!'); @ClusteredValueSpecification;
    ]);
 }

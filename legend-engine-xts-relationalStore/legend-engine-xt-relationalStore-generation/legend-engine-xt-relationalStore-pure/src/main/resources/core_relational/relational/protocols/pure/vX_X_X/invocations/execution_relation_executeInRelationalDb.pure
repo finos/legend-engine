@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::alloy::metadataServer::*;
 import meta::pure::functions::io::http::*;
 import meta::protocols::pure::vX_X_X::invocation::execution::executeInRelationalDb::*;
@@ -21,9 +22,9 @@ function meta::protocols::pure::vX_X_X::invocation::execution::executeInRelation
 {
   let conn1= $conn->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::transformDatabaseConnection($extensions)
                   ->cast(@meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::RelationalDatabaseConnection);
-  
+
   let input= ^ExecuteInRelationalDbInput(sqls=$sqls, connection = $conn1)->alloyToJSON();
-  
+
   let resp= executeHTTPRaw(^URL(host=$host, port=$port , path='/api/pure/v1/utilities/tests/executeInRelationalDb'),
                              HTTPMethod.POST ,
                              'application/json',

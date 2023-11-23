@@ -49,9 +49,9 @@ import java.util.stream.Collectors;
 
 class UnitemporalSnapshotPlanner extends UnitemporalPlanner
 {
-    UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions)
+    UnitemporalSnapshotPlanner(Datasets datasets, UnitemporalSnapshot ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets, ingestMode, plannerOptions);
+        super(datasets, ingestMode, plannerOptions, capabilities);
 
         // validate
         if (ingestMode.partitioned())
@@ -72,7 +72,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForIngest(Resources resources, Set<Capability> capabilities)
+    public LogicalPlan buildLogicalPlanForIngest(Resources resources)
     {
         List<Pair<FieldValue, Value>> keyValuePairs = keyValuesForMilestoningUpdate();
 
@@ -90,23 +90,6 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
             operations.add(sqlToUpsertRows());
             return LogicalPlan.of(operations);
         }
-    }
-
-    @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            operations.add(Create.of(true, stagingDataset()));
-        }
-        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
-        if (options().enableConcurrentSafety())
-        {
-            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
-        }
-        return LogicalPlan.of(operations);
     }
 
     /*
@@ -156,12 +139,13 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
                 .addFields(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().digestField()).build())
                 .build()));
 
-        List<Value> fieldsToSelect = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> dataFields = getDataFields();
+        List<Value> fieldsToSelect = new ArrayList<>(dataFields);
         List<Value> milestoneUpdateValues = transactionMilestoningFieldValues();
         fieldsToSelect.addAll(milestoneUpdateValues);
         Dataset selectStage = Selection.builder().source(stagingDataset()).condition(notInSinkCondition).addAllFields(fieldsToSelect).build();
 
-        List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<Value> fieldsToInsert = new ArrayList<>(dataFields);
         fieldsToInsert.addAll(transactionMilestoningFields());
 
         return Insert.of(mainDataset(), selectStage, fieldsToInsert);
@@ -177,7 +161,7 @@ class UnitemporalSnapshotPlanner extends UnitemporalPlanner
        sink."batch_id_out" = 999999999 and
        not exists
        (
-        sink."digest" <> stage."digest" and sink.primaryKeys = stage.primaryKeys
+        sink."digest" = stage."digest" and sink.primaryKeys = stage.primaryKeys
        )
 
       Partition :

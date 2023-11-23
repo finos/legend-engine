@@ -100,7 +100,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
 
         // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
-        String dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "without_partition/expected_pass3.csv";
         // 1. Load Staging table
         loadBasicStagingData(dataPass3);
@@ -118,7 +118,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
                 .emptyDatasetHandling(FailEmptyBatch.builder().build())
                 .build();
 
-        dataPass3 = basePathForInput + "without_partition/staging_data_pass3.csv";
+        dataPass3 = "src/test/resources/data/empty_file.csv";
         expectedDataPass3 = basePathForExpected + "without_partition/expected_pass3.csv";
         // 1. Load Staging table
         loadBasicStagingData(dataPass3);
@@ -183,7 +183,7 @@ class UnitemporalSnapshotWithBatchTimeTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats, fixedClock_2000_01_02);
 
         // ------------ Perform unitemporal snapshot milestoning Pass3 (Empty Batch) ------------------------
-        String dataPass3 = basePathForInput + "with_partition/staging_data_pass3.csv";
+        String dataPass3 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass3 = basePathForExpected + "with_partition/expected_pass3.csv";
         // 1. Load Staging table
         loadStagingDataForWithPartition(dataPass3);

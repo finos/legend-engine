@@ -84,7 +84,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecificati
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_AggregateValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_BasicColumnSpecification_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_tds_SortInformation_Impl;
@@ -261,9 +261,9 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
 
     public ValueSpecification processClassInstance(RuntimeInstance runtimeInstance)
     {
-        Root_meta_pure_runtime_Runtime _runtime = HelperRuntimeBuilder.buildPureRuntime(runtimeInstance.runtime, this.context);
+        Root_meta_core_runtime_Runtime _runtime = HelperRuntimeBuilder.buildPureRuntime(runtimeInstance.runtime, this.context);
         return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
-                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::pure::runtime::Runtime")))
+                ._genericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(this.context.pureModel.getType("meta::core::runtime::Runtime")))
                 ._multiplicity(this.context.pureModel.getMultiplicity("one"))
                 ._values(FastList.newListWith(_runtime));
     }

@@ -66,23 +66,27 @@ Mapping meta::relational::functions::sqlQueryToString::tests::redshift::testQuot
 )
 
 ###Pure
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
 import meta::relational::functions::asserts::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::functions::sqlstring::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::profiles::*;
 
 
 function meta::relational::functions::sqlQueryToString::tests::redshift::testRuntimeForRedshift():Runtime[1]
 {
-   meta::relational::tests::testRuntime(meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb);
+   meta::external::store::relational::tests::testRuntime(meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::db::rsDb);
 }
 
 function <<test.Test>> meta::relational::functions::sqlQueryToString::tests::redshift::testQuoting::tableAndColumnNamesAreQuoted():Boolean[1]

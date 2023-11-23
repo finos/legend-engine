@@ -86,7 +86,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
     $t->match(
       [
         c:Class<Any>[1] |
-            let fields = $c->allProperties()->map(p|
+            let fields = $c->allProperties()->filter(p|$p.genericType.rawType != Any)->map(p|
                                       ^__Field
                                       (
                                         name = $p.name->toOne(),

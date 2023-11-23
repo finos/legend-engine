@@ -138,10 +138,15 @@ public class Element extends ReadHandler
                 }
                 while (context.reader.isStartElement())
                 {
-                    QName name = context.reader.getName();
-                    String msg = "Unexpected element '" + XmlUtils.toShortString(name) + "'" + context.getPath();
-                    context.getUnexpectedElementHandling().handle(context, msg);
                     context.reader.skipElement();
+                    if (textContent != null)
+                    {
+                        textContent.process(context);
+                    }
+                    if (particle != null)
+                    {
+                        particle.process(context);
+                    }
                 }
             }
 

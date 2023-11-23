@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.DataQualityExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.VariableResolutionExecutionNode;
@@ -130,6 +131,8 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .withSubtype(VariableResolutionExecutionNode.class, "varResolution")
                         .withSubtype(ExternalFormatInternalizeExecutionNode.class, "externalFormatInternalize")
                         .withSubtype(ExternalFormatExternalizeExecutionNode.class, "externalFormatExternalize")
+                        .withSubtype(ExternalFormatExternalizeTDSExecutionNode.class, "externalFormatExternalizeTDS")
+
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(TestSuite.class)
                         .withSubtype(MappingTestSuite.class, "mappingTestSuite")

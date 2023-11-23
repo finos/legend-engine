@@ -104,12 +104,12 @@ Database meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db1
 (
    Table tradeTable (tradeId_source INT PRIMARY KEY, quantity INT, productId VARCHAR(100), traderKerb VARCHAR(100))
    Table traderTable (kerberos VARCHAR(100) PRIMARY KEY, firstName VARCHAR(100), lastName VARCHAR(100))
-   
+
    Filter kerbFilter(startsWith(traderTable.kerberos,'gs_') = 'true')
-   
+
    Join trade_trader(traderTable.kerberos = tradeTable.traderKerb)
-   
-   
+
+
 )
 
 ###Relational
@@ -117,7 +117,7 @@ Database meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db2
 (
    Table productTable (productId VARCHAR(100) PRIMARY KEY, productName VARCHAR(100), description VARCHAR(1000))
    Table synonymTable (synonymId INT PRIMARY KEY, productId VARCHAR(100), type VARCHAR(200), name    VARCHAR(200))
-   
+
    Join productTable_synonymTable (productTable.productId = synonymTable.productId)
 )
 
@@ -139,43 +139,43 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMappi
       +prodId : String[1] : [db1]tradeTable.productId,
       trader[trader_set] : [db1]@trade_trader
    }
-   
+
    Product[prod_set] : Relational {
       productId : [db2]productTable.productId,
       productName : [db2]productTable.productName,
       description : [db2]productTable.description,
       synonyms[synonym_set] : [db2]@productTable_synonymTable
    }
-   
+
    Synonym[synonym_set] : Relational {
       name : [db2]synonymTable.name,
       type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
       product[prod_set] : [db2]@productTable_synonymTable
    }
-   
+
    Trader[trader_set] : Relational {
       kerberos : [db1]traderTable.kerberos,
       firstName : [db1]traderTable.firstName,
       lastName : [db1]traderTable.lastName
    }
-   
+
    TradeEvent[trade_event_set] : Relational {
       eventId : [db3]tradeEventTable.eventId,
       description : [db3]tradeEventTable.description,
       timestamp : [db3]tradeEventTable.timestamp,
       +tradeIdLocal : Integer[1] : [db3]tradeEventTable.tradeId
    }
-   
+
    Trade_Product : XStore {
       product[trade_set, prod_set] : $this.prodId == $that.productId,
       trades[prod_set, trade_set] : $this.productId == $that.prodId
    }
-   
+
    Trade_TradeEvent : XStore {
       tradeEvents[trade_set, trade_event_set] : $this.tradeId == $that.tradeIdLocal,
       trade[trade_event_set, trade_set] : $this.tradeIdLocal == $that.tradeId
    }
-   
+
    SynonymType : EnumerationMapping SynonymTypeMapping {
       CUSIP : ['cusip', 'CUSIP'],
       ISIN  : ['isin', 'ISIN']
@@ -193,14 +193,14 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMappi
       +prodId : String[1] : [db1]tradeTable.productId,
       trader[trader_set] : [db1]@trade_trader
    }
-   
+
    TradeEvent[trade_event_set] : Relational {
       eventId : [db3]tradeEventTable.eventId,
       description : [db3]tradeEventTable.description,
       timestamp : [db3]tradeEventTable.timestamp,
       +tradeIdLocal : Integer[1] : [db3]tradeEventTable.tradeId
    }
-   
+
    Trade_TradeEvent : XStore {
       tradeEvents[trade_set, trade_event_set] : ($this.tradeId == $that.tradeIdLocal) && ($that.timestamp > %2018-01-06),
       trade[trade_event_set, trade_set] : ($this.timestamp > %2018-01-06) && ($this.tradeIdLocal == $that.tradeId)
@@ -219,32 +219,32 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMappi
       quantity            : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
       trader[trader_set]  : $src
    }
-   
+
    Trader[trader_set] : Pure {
       ~src S_Trade
       kerberos  : $src.s_traderDetails->split(':')->at(0),
       firstName : $src.s_traderDetails->split(':')->at(1),
       lastName  : $src.s_traderDetails->split(':')->at(2)
    }
-   
+
    Product[prod_set] : Relational {
       productId : [db2]productTable.productId,
       productName : [db2]productTable.productName,
       description : [db2]productTable.description,
       synonyms[synonym_set] : [db2]@productTable_synonymTable
    }
-   
+
    Synonym[synonym_set] : Relational {
       name : [db2]synonymTable.name,
       type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
       product[prod_set] : [db2]@productTable_synonymTable
    }
-   
+
    Trade_Product : XStore {
       product[trade_set, prod_set] : $this.prodId == $that.productId,
       trades[prod_set, trade_set]  : $this.productId == $that.prodId
    }
-   
+
    SynonymType : EnumerationMapping SynonymTypeMapping {
       CUSIP : ['cusip', 'CUSIP'],
       ISIN  : ['isin', 'ISIN']
@@ -263,32 +263,32 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMappi
       quantity            : $src.s_tradeDetails->split(':')->at(1)->parseInteger(),
       trader[trader_set]  : $src
    }
-   
+
    Trader[trader_set] : Pure {
       ~src S_Trade
       kerberos  : $src.s_traderDetails->split(':')->at(0),
       firstName : $src.s_traderDetails->split(':')->at(1),
       lastName  : $src.s_traderDetails->split(':')->at(2)
    }
-   
+
    Product[prod_set] : Relational {
       productId : [db2]productTable.productId,
       productName : [db2]productTable.productName,
       description : [db2]productTable.description,
       synonyms[synonym_set] : [db2]@productTable_synonymTable
    }
-   
+
    Synonym[synonym_set] : Relational {
       name : [db2]synonymTable.name,
       type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
       product[prod_set] : [db2]@productTable_synonymTable
    }
-   
+
    T_Trade_Product : XStore {
       product[trade_set, prod_set] : $this.prodId == $that.productId,
       t_trades[prod_set, trade_set]  : $this.productId == $that.prodId
    }
-   
+
    SynonymType : EnumerationMapping SynonymTypeMapping {
       CUSIP : ['cusip', 'CUSIP'],
       ISIN  : ['isin', 'ISIN']
@@ -306,25 +306,25 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMappi
       prodId*             : $src.s_trades.s_tradeDetails->map(detail | $detail->split(':')->at(0)),
       quantity*           : $src.s_trades.s_tradeDetails->map(detail | $detail->split(':')->at(1)->parseInteger())
    }
-   
+
    Product[prod_set] : Relational {
       productId : [db2]productTable.productId,
       productName : [db2]productTable.productName,
       description : [db2]productTable.description,
       synonyms[synonym_set] : [db2]@productTable_synonymTable
    }
-   
+
    Synonym[synonym_set] : Relational {
       name : [db2]synonymTable.name,
       type: EnumerationMapping SynonymTypeMapping : [db2]synonymTable.type,
       product[prod_set] : [db2]@productTable_synonymTable
    }
-   
+
    T_Trade_Product : XStore {
       product[trade_set, prod_set] : $this.prodId == $that.productId,
       t_trades[prod_set, trade_set]  : $this.productId == $that.prodId
    }
-   
+
    SynonymType : EnumerationMapping SynonymTypeMapping {
       CUSIP : ['cusip', 'CUSIP'],
       ISIN  : ['isin', 'ISIN']
@@ -336,8 +336,10 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMappi
 import meta::pure::mapping::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::mapping::*;
 import meta::pure::graphFetch::executionPlan::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
@@ -347,30 +349,43 @@ import meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
 import meta::pure::graphFetcha::tests::XStore::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::createTablesInDb():Boolean[1]
 {
-   let runtime =  ^Runtime(connections = [^TestDatabaseConnection(element=db1, type=DatabaseType.H2), ^TestDatabaseConnection(element=db2, type=DatabaseType.H2), ^TestDatabaseConnection(element=db3, type=DatabaseType.H2)]);
-   let dbConn1 = $runtime.connections->at(0)->cast(@DatabaseConnection);   
-   let dbConn2 = $runtime.connections->at(1)->cast(@DatabaseConnection);
-   let dbConn3 = $runtime.connections->at(2)->cast(@DatabaseConnection);
+   let runtime =  ^Runtime(connectionStores= [
+    ^ConnectionStore(
+      element=db1,
+      connection=
+      ^TestDatabaseConnection(type=DatabaseType.H2)),
+    ^ConnectionStore(
+      element=db2,
+      connection=
+      ^TestDatabaseConnection(type=DatabaseType.H2)),
+    ^ConnectionStore(
+      element=db3,
+      connection=
+      ^TestDatabaseConnection(type=DatabaseType.H2))]);
+   let dbConn1 = $runtime.connectionStores->at(0).connection->cast(@DatabaseConnection);
+   let dbConn2 = $runtime.connectionStores->at(1).connection->cast(@DatabaseConnection);
+   let dbConn3 = $runtime.connectionStores->at(2).connection->cast(@DatabaseConnection);
 
    dropAndCreateTableInDb(db1, 'tradeTable', $dbConn1);
    dropAndCreateTableInDb(db1, 'traderTable', $dbConn2);
    dropAndCreateTableInDb(db2, 'productTable', $dbConn2);
    dropAndCreateTableInDb(db2, 'synonymTable', $dbConn2);
    dropAndCreateTableInDb(db3, 'tradeEventTable', $dbConn3);
-   
+
    executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (1, 100, 30, \'abc\');', $dbConn2);
    executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (2, 200, 31, \'abc\');', $dbConn2);
    executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (3, 300, 30, \'xyz\');', $dbConn2);
    executeInDb('insert into tradeTable (tradeId_source, quantity, productId, traderkerb) values (4, 400, 31, \'xyz\');', $dbConn2);
 
-   
+
    executeInDb('insert into productTable (productId, productname, description) values (30, \'Prod_1\', \'Product 1 description\');', $dbConn2);
    executeInDb('insert into productTable (productId, productname, description) values (31, \'Prod_2\', \'Product 2 description\');', $dbConn2);
-   
+
    executeInDb('insert into synonymTable (synonymId, productId, type, name) values (1, 30, \'CUSIP\', \'Syn_1\');', $dbConn2);
    executeInDb('insert into synonymTable (synonymId, productId, type, name) values (2, 30, \'ISIN\', \'Syn_2\');', $dbConn2);
    executeInDb('insert into synonymTable (synonymId, productId, type, name) values (3, 31, \'cusip\', \'Syn_3\');', $dbConn2);
@@ -378,11 +393,11 @@ function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::inMemoryA
 
    executeInDb('insert into traderTable (kerberos, firstName, lastName) values (\'abc\', \'F_Name1\', \'L_Name_1\');', $dbConn2);
    executeInDb('insert into traderTable (kerberos, firstName, lastName) values (\'xyz\', \'F_Name2\', \'L_Name_2\');', $dbConn2);
-   
+
    executeInDb('insert into tradeEventTable (eventId, tradeId, timestamp, description) values (\'1\', 1, \'2018-01-01 00:00:00\', \'Event_1\');', $dbConn3);
    executeInDb('insert into tradeEventTable (eventId, tradeId, timestamp, description) values (\'2\', 1, \'2019-01-01 00:00:00\', \'Event_2\');', $dbConn3);
    executeInDb('insert into tradeEventTable (eventId, tradeId, timestamp, description) values (\'3\', 2, \'2019-01-01 00:00:00\', \'Event_3\');', $dbConn3);
-   
+
    true;
 }
 
@@ -398,10 +413,10 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[{"product":{"productName":"Prod_1"},"tradeId":1},'+
       '{"product":{"productName":"Prod_2"},"tradeId":2},'+
@@ -425,10 +440,10 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeId":1},'+
       '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"tradeId":2},'+
@@ -446,21 +461,21 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
          product {
             productId,
             productName,
-            description           
+            description
          },
          tradeEvents {
             eventId,
             description,
-            timestamp            
+            timestamp
          }
       }
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[{"product":{"productId":"30","description":"Product 1 description","productName":"Prod_1"},"tradeEvents":[{"eventId":"1","description":"Event_1","timestamp":"2018-01-01T00:00:00.000000000"},{"eventId":"2","description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":1},' +
        '{"product":{"productId":"31","description":"Product 2 description","productName":"Prod_2"},"tradeEvents":[{"eventId":"3","description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":2},' +
@@ -492,16 +507,16 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
          tradeEvents {
             eventId,
             description,
-            timestamp            
+            timestamp
          }
       }
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -549,7 +564,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
             description,
             synonyms {
                name,
-               type               
+               type
             }
          },
          tradeEvents {
@@ -564,10 +579,10 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -639,10 +654,10 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -708,7 +723,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
                   description,
                   synonyms {
                      name,
-                     type                     
+                     type
                   }
                }
             }
@@ -717,10 +732,10 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping1;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -760,16 +775,16 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
          tradeEvents {
             eventId,
             description,
-            timestamp            
+            timestamp
          }
       }
    }#;
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping2;
-   let runtime = meta::relational::tests::testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[{"tradeEvents":[{"eventId":"2","description":"Event_2","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":1},'+
       '{"tradeEvents":[{"eventId":"3","description":"Event_3","timestamp":"2019-01-01T00:00:00.000000000"}],"tradeId":2},'+
@@ -800,23 +815,22 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
          }
       }
    }#;
-   
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
 
    let query = {|Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
-   
+   let runtime = ^$dbRuntime(connectionStores= $dbRuntime.connectionStores->concatenate(^ConnectionStore(element=^meta::external::store::model::ModelStore(),connection=$jsonConnection)));
+
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
@@ -867,25 +881,24 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
          }
       }
    }#;
-   
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
-   
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
+
    let query = {|T_Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping4;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
-   
+   let runtime = ^$dbRuntime(connectionStores= $dbRuntime.connectionStores->concatenate(^ConnectionStore(element=^meta::external::store::model::ModelStore(),connection=$jsonConnection)));
+
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -929,25 +942,24 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
          }
       }
    }#;
-   
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+
+   let jsonConnection = ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_TradesWrapper, 
+                            class   = S_TradesWrapper,
                             url     = 'data:application/json,'+
                                       '{"s_trades" : [{"s_tradeId": 1, "s_tradeDetails": "30:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"},'+
                                                      '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"},'+
                                                      '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"},'+
                                                      '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}]}'
                          );
-   let dbRuntime = meta::relational::tests::testRuntime();
-   
+   let dbRuntime = meta::external::store::relational::tests::testRuntime();
+
    let query = {|T_Trade.all()->graphFetch($tree)->serialize($tree)};
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping5;
-   let runtime = ^$dbRuntime(connections = $dbRuntime.connections->concatenate($jsonConnection));
-   
+   let runtime = ^$dbRuntime(connectionStores= $dbRuntime.connectionStores->concatenate(^ConnectionStore(element=^meta::external::store::model::ModelStore(),connection=$jsonConnection)));
+
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
-   
+
    assertJsonStringsEqual(
       '[' +
          '{' +
@@ -985,45 +997,48 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::pur
          }
       }
    }#;
-   
-   let jsonConnection = ^meta::pure::mapping::modelToModel::JsonModelConnection
+
+   let jsonConnection = ^ConnectionStore(
+                            element = ^meta::external::store::model::ModelStore(),
+                            connection=
+                        ^meta::external::store::model::JsonModelConnection
                          (
-                            element = ^meta::pure::mapping::modelToModel::ModelStore(), 
-                            class   = S_Trade, 
+                            class   = S_Trade,
                             url     = 'data:application/json,'+
                                       '{"s_tradeId": 1, "s_tradeDetails": "productID 2:100", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 2, "s_tradeDetails": "31:200", "s_traderDetails": "abc:F_Name_1:L_Name_1"}'+
                                       '{"s_tradeId": 3, "s_tradeDetails": "30:300", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'+
                                       '{"s_tradeId": 4, "s_tradeDetails": "31:400", "s_traderDetails": "xyz:F_Name_2:L_Name_2"}'
-                         );
-  
+                         ));
+
 
   let dbRuntimeFromCSv  =   ^EngineRuntime(
                                  mappings = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3,
-                                connections =  ^meta::pure::alloy::connections::RelationalDatabaseConnection(
+                                connectionStores =
+                                        ^ConnectionStore(
+                                        connection= ^meta::external::store::relational::runtime::RelationalDatabaseConnection(
                                                     type = DatabaseType.H2,
-                                                    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv =     
+                                                    datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv =
                                                                 'default\n'+
                                                                 'productTable\n'+
                                                                 'productId,productName,description\n'+
                                                                 'productID 2,productName 84,description 67\n'
                                                                                   ),
-                                                    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy(),
-                                                  element = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db2
-                                                 )
-  );
+                                                    authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
+                                                 ),
+                                        element = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::db2));
 
 
    let mapping = meta::pure::graphFetch::tests::XStore::inMemoryAndRelational::crossMapping3;
-   let runtime = ^$dbRuntimeFromCSv(connections = $dbRuntimeFromCSv.connections->concatenate($jsonConnection));
+   let runtime = ^$dbRuntimeFromCSv(connectionStores = $dbRuntimeFromCSv.connectionStores->concatenate($jsonConnection));
 
    let query = {|Trade.all()->graphFetch($tree)->from($mapping,$runtime)->serialize($tree)};
-   
-   
+
+
    let plan = executionPlan($query, meta::relational::extension::relationalExtensions());
 
   assertEquals(7, $plan.rootExecutionNode.executionNodes->at(0)->cast(@StoreMappingGlobalGraphFetchExecutionNode).children->at(0).localGraphFetchExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@RelationalDatabaseConnection)
-  .datasourceSpecification->cast(@LocalH2DatasourceSpecification).testDataSetupSqls->size());   
+  .datasourceSpecification->cast(@LocalH2DatasourceSpecification).testDataSetupSqls->size());
   let result = meta::legend::executeLegendQuery($query,[], meta::relational::extension::relationalExtensions());
   assertJsonStringsEqual('{"builder":{"_type":"json"},"values":[{"tradeId":1,"product":{"productId":"productID 2","productName":"productName 84","description":"description 67"}},{"tradeId":2,"product":null},{"tradeId":3,"product":null},{"tradeId":4,"product":null}]}',$result);
 

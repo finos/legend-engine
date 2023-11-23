@@ -24,6 +24,7 @@ public enum FunctionName
     MAX("MAX"),
     MIN("MIN"),
     COUNT("COUNT"),
+    DISTINCT("DISTINCT"),
     COALESCE("COALESCE"),
     CURRENT_TIME("CURRENT_TIME"),
     CURRENT_DATE("CURRENT_DATE"),
@@ -36,6 +37,7 @@ public enum FunctionName
     UPPER("UPPER"),
     SUBSTRING("SUBSTRING"),
     ROW_NUMBER("ROW_NUMBER"),
+    DENSE_RANK("DENSE_RANK"),
     DATE("DATE"),
     DATE_TRUNC("DATE_TRUNC"),
     DATETIME_TRUNC("DATETIME_TRUNC"),
@@ -45,7 +47,8 @@ public enum FunctionName
     PARSE_DATETIME("PARSE_DATETIME"),
     PARSE_JSON("PARSE_JSON"),
     TO_VARIANT("TO_VARIANT"),
-    OBJECT_CONSTRUCT("OBJECT_CONSTRUCT");
+    OBJECT_CONSTRUCT("OBJECT_CONSTRUCT"),
+    TO_JSON("TO_JSON");
 
     private static final Map<String, FunctionName> BY_NAME = Arrays
         .stream(FunctionName.values())

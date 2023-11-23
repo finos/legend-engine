@@ -15,15 +15,10 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
+import org.immutables.value.Value;
 
 import java.util.Optional;
 
-import static org.immutables.value.Value.Check;
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
@@ -39,43 +34,12 @@ public interface AppendOnlyAbstract extends IngestMode
 {
     Optional<String> digestField();
 
-    Optional<String> dataSplitField();
-
     Auditing auditing();
 
-    DeduplicationStrategy deduplicationStrategy();
-
-    @Check
-    default void validate()
+    @Value.Default
+    default boolean filterExistingRecords()
     {
-        deduplicationStrategy().accept(new DeduplicationStrategyVisitor<Void>()
-        {
-            @Override
-            public Void visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-            {
-                return null;
-            }
-
-            @Override
-            public Void visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-            {
-                if (!digestField().isPresent())
-                {
-                    throw new IllegalStateException("Cannot build AppendOnly, [digestField] must be specified since [deduplicationStrategy] is set to filter duplicates");
-                }
-                return null;
-            }
-
-            @Override
-            public Void visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-            {
-                if (dataSplitField().isPresent())
-                {
-                    throw new IllegalStateException("Cannot build AppendOnly, DataSplits not supported for failOnDuplicates mode");
-                }
-                return null;
-            }
-        });
+        return false;
     }
 
     @Override

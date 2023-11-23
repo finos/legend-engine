@@ -15,10 +15,9 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategyVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitors;
 
 import java.util.Collections;
@@ -38,7 +37,7 @@ public class IngestModeVisitors
         @Override
         public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return appendOnly.deduplicationStrategy().accept(DEDUPLICATION_STRATEGY_DIGEST_REQUIRED);
+            return appendOnly.filterExistingRecords();
         }
 
         @Override
@@ -80,7 +79,7 @@ public class IngestModeVisitors
         @Override
         public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            return bulkLoad.generateDigest();
+            return bulkLoad.digestGenStrategy().accept(DIGEST_GEN_STRATEGY_DIGEST_REQUIRED);
         }
     };
 
@@ -131,7 +130,7 @@ public class IngestModeVisitors
         @Override
         public Optional<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
-            return bulkLoad.digestField();
+            return bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
         }
     };
 
@@ -155,7 +154,12 @@ public class IngestModeVisitors
         @Override
         public Set<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return Collections.singleton(nontemporalDelta.digestField());
+            Set<String> metaFields = new HashSet<>();
+
+            metaFields.add(nontemporalDelta.digestField());
+            nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
+
+            return metaFields;
         }
 
         @Override
@@ -198,7 +202,8 @@ public class IngestModeVisitors
         public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             Set<String> metaFields = new HashSet<>();
-            bulkLoad.digestField().ifPresent(metaFields::add);
+            Optional<String> digestField = bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+            digestField.ifPresent(metaFields::add);
             return metaFields;
         }
     };
@@ -356,24 +361,34 @@ public class IngestModeVisitors
         }
     };
 
-    private static final DeduplicationStrategyVisitor<Boolean> DEDUPLICATION_STRATEGY_DIGEST_REQUIRED = new DeduplicationStrategyVisitor<Boolean>()
+    private static final DigestGenStrategyVisitor<Boolean> DIGEST_GEN_STRATEGY_DIGEST_REQUIRED = new DigestGenStrategyVisitor<Boolean>()
     {
         @Override
-        public Boolean visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
+        public Boolean visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy)
         {
             return false;
         }
 
         @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
+        public Boolean visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
         {
             return true;
         }
+    };
+
+    public static final DigestGenStrategyVisitor<Optional<String>> EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY = new DigestGenStrategyVisitor<Optional<String>>()
+    {
+        @Override
+        public Optional<String> visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy)
+        {
+            return Optional.empty();
+        }
 
         @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
+        public Optional<String> visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
         {
-            return false;
+            return Optional.of(udfBasedDigestGenStrategy.digestField());
         }
     };
+
 }

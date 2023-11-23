@@ -17,9 +17,15 @@ package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppArtifact;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppContent;
 
 import java.util.List;
 import java.util.Map;
@@ -34,6 +40,18 @@ public class SnowflakeAppProtocolExtension implements PureProtocolExtension
         return Lists.fixedSize.with(() -> Lists.mutable.with(
                 ProtocolSubTypeInfo.newBuilder(PackageableElement.class)
                         .withSubtype(SnowflakeApp.class, packageJSONType)
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(DeploymentConfiguration.class)
+                        .withSubtype(SnowflakeAppDeploymentConfiguration.class, "snowflakeDeploymentConfiguration")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
+                        .withSubtype(org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration.class, "snowflakeDeploymentConfig")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorArtifact.class)
+                        .withSubtype(SnowflakeAppArtifact.class, "snowflakeArtifact")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentContent.class)
+                        .withSubtype(SnowflakeAppContent.class, "snowflakeDeploymentContent")
                         .build()
         ));
     }

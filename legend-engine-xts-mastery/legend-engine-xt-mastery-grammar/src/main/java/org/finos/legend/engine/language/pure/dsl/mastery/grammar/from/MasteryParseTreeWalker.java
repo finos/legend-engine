@@ -43,6 +43,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionKeyType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
@@ -56,6 +57,7 @@ import java.util.function.Function;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 
 public class MasteryParseTreeWalker
 {
@@ -64,13 +66,16 @@ public class MasteryParseTreeWalker
     private final ImportAwareCodeSection section;
     private final DomainParser domainParser;
     private final List<Function<SpecificationSourceCode, Connection>> connectionProcessors;
+    private final List<Function<SpecificationSourceCode, MasteryRuntime>> masteryRuntimeProcessors;
     private final List<Function<SpecificationSourceCode, Trigger>> triggerProcessors;
     private final List<Function<SpecificationSourceCode, Authorization>> authorizationProcessors;
     private final List<Function<SpecificationSourceCode, AcquisitionProtocol>> acquisitionProtocolProcessors;
 
 
     private static final String SIMPLE_PRECEDENCE_LAMBDA = "{input: %s[1]| true}";
-    private static final String PRECEDENCE_LAMBDA_WITH_FILTER = "{input: %s[1]| $input.%s}";
+    private static final String INPUT = "\\$input";
+    private static final String DOLLAR_SIGN = "\\$";
+    private static final String PRECEDENCE_LAMBDA_WITH_FILTER = "{input: %s[1]| %s}";
     private static final String DATA_PROVIDER_STRING = "DataProvider";
 
     public MasteryParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation,
@@ -78,6 +83,7 @@ public class MasteryParseTreeWalker
                                   ImportAwareCodeSection section,
                                   DomainParser domainParser,
                                   List<Function<SpecificationSourceCode, Connection>> connectionProcessors,
+                                  List<Function<SpecificationSourceCode, MasteryRuntime>> masteryRuntimeProcessors,
                                   List<Function<SpecificationSourceCode, Trigger>> triggerProcessors,
                                   List<Function<SpecificationSourceCode, Authorization>> authorizationProcessors,
                                   List<Function<SpecificationSourceCode, AcquisitionProtocol>> acquisitionProtocolProcessors)
@@ -87,6 +93,7 @@ public class MasteryParseTreeWalker
         this.section = section;
         this.domainParser = domainParser;
         this.connectionProcessors = connectionProcessors;
+        this.masteryRuntimeProcessors = masteryRuntimeProcessors;
         this.triggerProcessors = triggerProcessors;
         this.authorizationProcessors = authorizationProcessors;
         this.acquisitionProtocolProcessors = acquisitionProtocolProcessors;
@@ -94,7 +101,9 @@ public class MasteryParseTreeWalker
 
     public void visit(MasteryParserGrammar.DefinitionContext ctx)
     {
-        ctx.elementDefinition().stream().map(this::visitElement).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        List<PackageableElement> packageableElements = ctx.elementDefinition().stream().map(this::visitElement).collect(toList());
+        packageableElements.stream().peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        validateMasteryRuntime(packageableElements);
     }
 
     private PackageableElement visitElement(MasteryParserGrammar.ElementDefinitionContext ctx)
@@ -112,6 +121,10 @@ public class MasteryParseTreeWalker
         else if (ctx.connection() != null)
         {
             return visitConnection(ctx.connection());
+        }
+        else if (ctx.masteryRuntime() != null)
+        {
+            return visitMasteryRuntime(ctx.masteryRuntime());
         }
 
         throw new EngineException("Unrecognized element", sourceInformation, EngineErrorType.PARSER);
@@ -348,7 +361,7 @@ public class MasteryParseTreeWalker
     {
         MasteryParserGrammar.SubPathContext subPathContext = ctx.subPath();
         PropertyPath propertyPath = new PropertyPath();
-        propertyPath.property = subPathContext.VALID_STRING().getText();
+        propertyPath.property = subPathContext.validString().getText();
         if (ctx.filter() != null)
         {
             propertyPath.filter = visitLambdaWithFilter(propertyPath.property, ctx.filter().combinedExpression());
@@ -362,8 +375,9 @@ public class MasteryParseTreeWalker
 
     private Lambda visitLambdaWithFilter(String propertyName, MasteryParserGrammar.CombinedExpressionContext ctx)
     {
+        String inputFilter = ctx.getText().replaceAll(DOLLAR_SIGN, INPUT);
         return domainParser.parseLambda(
-                format(PRECEDENCE_LAMBDA_WITH_FILTER, propertyName, ctx.getText()),
+                format(PRECEDENCE_LAMBDA_WITH_FILTER, propertyName, inputFilter),
                 "", 0, 0, true);
     }
 
@@ -442,7 +456,7 @@ public class MasteryParseTreeWalker
         DataProviderTypeScope dataProviderTypeScope = new DataProviderTypeScope();
         SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
-        String dataProviderType = ctx.VALID_STRING().getText();
+        String dataProviderType = ctx.validString().getText();
 
         dataProviderTypeScope.sourceInformation = sourceInformation;
         dataProviderTypeScope.dataProviderType = dataProviderType;
@@ -708,8 +722,15 @@ public class MasteryParseTreeWalker
         resolutionQuery.queries = ListIterate.flatCollect(ctx.queryExpressions(), this::visitQueryExpressions);
 
         //keyType
-        MasteryParserGrammar.ResolutionQueryKeyTypeContext resolutionQueryKeyTypeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.resolutionQueryKeyType(), "keyType", sourceInformation);
-        resolutionQuery.keyType = visitResolutionKeyType(resolutionQueryKeyTypeContext);
+        MasteryParserGrammar.ResolutionQueryKeyTypeContext resolutionQueryKeyTypeContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.resolutionQueryKeyType(), "keyType", sourceInformation);
+        if (resolutionQueryKeyTypeContext != null)
+        {
+            resolutionQuery.keyType = visitResolutionKeyType(resolutionQueryKeyTypeContext);
+        }
+
+        //optional
+        MasteryParserGrammar.ResolutionQueryOptionalContext resolutionQueryOptionalContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.resolutionQueryOptional(), "optional", sourceInformation);
+        resolutionQuery.optional = evaluateBoolean(resolutionQueryOptionalContext, (resolutionQueryOptionalContext != null ? resolutionQueryOptionalContext.boolean_value() : null), null);
 
         //precedence - Field 'precedence' should be specified only once
         MasteryParserGrammar.ResolutionQueryPrecedenceContext resolutionQueryPrecedenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.resolutionQueryPrecedence(), "precedence", sourceInformation);
@@ -766,7 +787,24 @@ public class MasteryParseTreeWalker
 
         connection.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         connection._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        connection.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
         return connection;
+    }
+
+    /**********
+     * mastery runtime
+     **********/
+    private MasteryRuntime visitMasteryRuntime(MasteryParserGrammar.MasteryRuntimeContext ctx)
+    {
+        SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        MasteryParserGrammar.RuntimeContext runtimeContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.runtime(), "runtime", sourceInformation);
+
+        MasteryRuntime masteryRuntime = IMasteryParserExtension.process(extraSpecificationCode(runtimeContext.islandSpecification(), walkerSourceInformation), masteryRuntimeProcessors, "mastery runtime");
+
+        masteryRuntime.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
+        masteryRuntime._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
+        masteryRuntime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+        return masteryRuntime;
     }
 
     private String extractDataProviderTypeValue(String dataProviderTypeText)
@@ -841,4 +879,18 @@ public class MasteryParseTreeWalker
     {
         return PureGrammarParserUtility.fromQualifiedName(qualifiedNameContext.packagePath() == null ? Collections.emptyList() : qualifiedNameContext.packagePath().identifier(), qualifiedNameContext.identifier());
     }
+
+    private void validateMasteryRuntime(List<PackageableElement> packageableElements)
+    {
+        List<MasteryRuntime> masteryRuntimes = ListIterate.selectInstancesOf(packageableElements, MasteryRuntime.class);
+        //validate master record definitions is unique across all mastery runtimes
+        Set<String> uniqueMasterRecordDefinitions = new HashSet<>();
+        List<String> masterRecordDefinitions = ListIterate.flatCollect(masteryRuntimes, m -> m.masterRecordDefinitions);
+        List<String> duplicateMasterRecords = ListIterate.select(masterRecordDefinitions, m -> !uniqueMasterRecordDefinitions.add(m));
+        if (!duplicateMasterRecords.isEmpty())
+        {
+            throw new EngineException(format("The following master record definitions %s appear multiple times. There cannot be duplicate masterRecordDefinitions across one or multiple mastery runtimes.", duplicateMasterRecords), EngineErrorType.PARSER);
+        }
+    }
+
 }

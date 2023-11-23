@@ -17,17 +17,19 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::*;
+import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithoutAssociations::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithoutAssociations::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithoutAssociations::dest::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 
-function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>> 
+function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a simple graph using direct (not via association) relationship',
    doc.doc='When:  a mapping is executed using graphFetch and serialize.',
    doc.doc='Then:  the mapping is applied and the result of the mapping is serialized demonstrating the translated graph.'
-} 
+}
 meta::pure::mapping::modelToModel::test::alloy::simple::serializeGraphWithoutAssociations() : Boolean[1]
 {
    let tree = #{Firm {name, employees {fullName}} }#;
@@ -35,11 +37,13 @@ meta::pure::mapping::modelToModel::test::alloy::simple::serializeGraphWithoutAss
    let result = execute(
       |Firm.all()->graphFetch($tree)->serialize($tree),
       firmMappings,
-      ^Runtime(connections = ^JsonModelConnection(
-                                element=^ModelStore(), 
-                                class=_Firm, 
-                                url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
-                             )
+      ^Runtime(
+        connectionStores = ^ConnectionStore(
+                                element=^ModelStore(),
+                                connection=^JsonModelConnection(
+                                  class=_Firm,
+                                  url='data:application/json,{"name":"Metallurgy Inc.", "employees":[{"firstName":"Pierre","lastName":"Doe"}, {"firstName":"Dave","lastName":"Miles"}]}'
+                              ))
       ),
       meta::pure::extension::defaultExtensions()
    );
@@ -87,7 +91,7 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::simple::graphWithoutAsso
                name  : $src.name,
                employees: $src.employees
             }
-   
+
    Person : Pure
             {
                ~src _Person

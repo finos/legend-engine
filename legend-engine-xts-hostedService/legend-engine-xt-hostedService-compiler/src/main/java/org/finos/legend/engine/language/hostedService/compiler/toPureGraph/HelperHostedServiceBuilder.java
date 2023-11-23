@@ -70,7 +70,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Single
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Test;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_TestContainer_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_service_service_helperFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -115,7 +115,7 @@ public class HelperHostedServiceBuilder
 //        {
 //            PureSingleExecution pureSingleExecution = (PureSingleExecution) execution;
 //            Mapping mapping = null;
-//            Root_meta_pure_runtime_Runtime runtime = null;
+//            Root_meta_core_runtime_Runtime runtime = null;
 //            LambdaFunction<?> lambda;
 //            if (pureSingleExecution.mapping != null && pureSingleExecution.runtime != null)
 //            {
@@ -166,7 +166,7 @@ public class HelperHostedServiceBuilder
 //    {
 //        Mapping mapping = context.resolveMapping(keyedExecutionParameter.mapping, keyedExecutionParameter.mappingSourceInformation);
 //        inferEmbeddedRuntimeMapping(keyedExecutionParameter.runtime, keyedExecutionParameter.mapping);
-//        Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(keyedExecutionParameter.runtime, context);
+//        Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(keyedExecutionParameter.runtime, context);
 //        HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, keyedExecutionParameter.runtime.sourceInformation);
 //        if (!executionKeyValues.add(keyedExecutionParameter.key))
 //        {
@@ -316,7 +316,7 @@ public class HelperHostedServiceBuilder
             SingleExecutionParameters execParams = (SingleExecutionParameters) params;
             Mapping mapping = context.resolveMapping(execParams.mapping, execParams.mappingSourceInformation);
             inferEmbeddedRuntimeMapping(execParams.runtime, execParams.mapping);
-            Root_meta_pure_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
+            Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(execParams.runtime, context);
             HelperRuntimeBuilder.checkRuntimeMappingCoverage(runtime, Lists.fixedSize.of(mapping), context, execParams.runtime.sourceInformation);
             return new Root_meta_legend_service_metamodel_SingleExecutionParameters_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::SingleExecutionParameters"))
                     ._key(execParams.key)

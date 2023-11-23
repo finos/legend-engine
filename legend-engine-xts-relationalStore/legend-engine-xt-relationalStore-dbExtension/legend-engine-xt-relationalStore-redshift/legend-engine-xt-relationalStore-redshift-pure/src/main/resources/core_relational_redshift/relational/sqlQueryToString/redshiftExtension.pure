@@ -4,6 +4,7 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -20,7 +21,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
    let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
      getDynaFunctionToSqlForRedshift()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();
-     
+
    ^DbExtension(
       isBooleanLiteralSupported = true,
       isDbReservedIdentifier = {str:String[1]| $str->in($reservedWords)},
@@ -50,12 +51,15 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
   [
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('datePart',               $allStates,            ^ToSql(format='trunc(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'FMDay\')')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(hour, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='extract(month from %s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='extract(month from %s)')),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
@@ -73,7 +77,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
-    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),    
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)'))

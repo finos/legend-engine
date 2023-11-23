@@ -26,6 +26,7 @@ public class ServerConnectionConfiguration
     public String host;
     public Integer port;
     public String prefix = "";
+    public MetadataServerPac4jConfiguration pac4j;
 
     public ServerConnectionConfiguration()
     {

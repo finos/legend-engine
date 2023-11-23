@@ -75,13 +75,17 @@ public class PostgresServerTest
         )
         {
             ResultSetMetaData resultSetMetaData = statement.getMetaData();
-            Assert.assertEquals(3, resultSetMetaData.getColumnCount());
+            Assert.assertEquals(5, resultSetMetaData.getColumnCount());
             Assert.assertEquals("Id", resultSetMetaData.getColumnName(1));
             Assert.assertEquals("Name", resultSetMetaData.getColumnName(2));
             Assert.assertEquals("Employee Type", resultSetMetaData.getColumnName(3));
+            Assert.assertEquals("Full Name", resultSetMetaData.getColumnName(4));
+            Assert.assertEquals("Derived Name", resultSetMetaData.getColumnName(5));
             Assert.assertEquals("int4", resultSetMetaData.getColumnTypeName(1));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(2));
             Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(3));
+            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(4));
+            Assert.assertEquals("varchar", resultSetMetaData.getColumnTypeName(5));
         }
     }
 

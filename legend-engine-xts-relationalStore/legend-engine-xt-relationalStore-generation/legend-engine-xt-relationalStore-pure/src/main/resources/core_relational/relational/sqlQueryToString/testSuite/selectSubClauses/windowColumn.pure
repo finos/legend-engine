@@ -15,16 +15,20 @@
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::windowColumn::windowAvg(config:DbTestConfig[1]):Boolean[1]
-{ 
+{
   let func ={|meta::relational::tests::model::simple::PersonSortable.all()
     ->project([
         col(p |$p.id, 'id'),

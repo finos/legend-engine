@@ -82,7 +82,7 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
     }
 
     @Override
-    public List<Function2<Connection, CompileContext, Root_meta_pure_runtime_Connection>> getExtraConnectionValueProcessors()
+    public List<Function2<Connection, CompileContext, Root_meta_core_runtime_Connection>> getExtraConnectionValueProcessors()
     {
         return Lists.fixedSize.with(
                 (connectionValue, context) ->

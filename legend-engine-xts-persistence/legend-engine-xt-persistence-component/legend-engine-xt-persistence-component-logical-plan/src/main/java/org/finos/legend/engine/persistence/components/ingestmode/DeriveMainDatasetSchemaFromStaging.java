@@ -17,10 +17,6 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
@@ -72,13 +68,13 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitAppendOnly(AppendOnlyAbstract appendOnly)
     {
+        boolean isAuditingFieldPK = doesDatasetContainsAnyPK(mainSchemaFields);
+        appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
         if (appendOnly.digestField().isPresent())
         {
             addDigestField(mainSchemaFields, appendOnly.digestField().get());
         }
         removeDataSplitField(appendOnly.dataSplitField());
-        boolean isAuditingFieldPK = appendOnly.deduplicationStrategy().accept(new DeriveAuditingFieldPKForAppendOnly(appendOnly.dataSplitField().isPresent()));
-        appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
@@ -142,20 +138,18 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
-        if (bulkLoad.generateDigest())
+        Optional<String> digestField = bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
+        if (digestField.isPresent())
         {
-            addDigestField(mainSchemaFields, bulkLoad.digestField().get());
+            addDigestField(mainSchemaFields, digestField.get());
         }
+        Field batchIdField = Field.builder()
+                .name(bulkLoad.batchIdField())
+                .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
+                .primaryKey(false)
+                .build();
+        mainSchemaFields.add(batchIdField);
         bulkLoad.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, false));
-        if (bulkLoad.lineageField().isPresent())
-        {
-            Field lineageField = Field.builder()
-                    .name(bulkLoad.lineageField().get())
-                    .type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty()))
-                    .primaryKey(false)
-                    .build();
-            mainSchemaFields.add(lineageField);
-        }
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
@@ -182,36 +176,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
 
     private boolean doesDatasetContainsAnyPK(List<Field> mainSchemaFields)
     {
-        return mainSchemaFields.stream().anyMatch(field -> field.primaryKey());
-    }
-
-    public static class DeriveAuditingFieldPKForAppendOnly implements DeduplicationStrategyVisitor<Boolean>
-    {
-
-        private boolean isDataSplitEnabled;
-
-        public DeriveAuditingFieldPKForAppendOnly(boolean isDataSplitEnabled)
-        {
-            this.isDataSplitEnabled = isDataSplitEnabled;
-        }
-
-        @Override
-        public Boolean visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-        {
-            return isDataSplitEnabled;
-        }
-
-        @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-        {
-            return false;
-        }
+        return mainSchemaFields.stream().anyMatch(Field::primaryKey);
     }
 
 

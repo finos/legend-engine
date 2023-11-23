@@ -16,9 +16,11 @@ import meta::relational::mapping::*;
 import meta::relational::tests::mapping::propertyfunc::model::domain::*;
 import meta::relational::tests::mapping::propertyfunc::model::store::*;
 import meta::relational::tests::mapping::propertyfunc::model::mapping::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
-import meta::relational::runtime::authentication::*;
+import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::mapping::propertyfunc::model::store::*;
@@ -81,7 +83,7 @@ function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin:
    let res = $result.values;
    assertEquals(['Fabrice', 'Roberts_p4', 'Roberts_p4, Fabrice'], [$res->at(0).firstName, $res->at(0).lastName, $res->at(0).fullName]);
    assertEquals('select "root".ID as "pk_0", substring("root".FULLNAME, 0, position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2))-1) as "firstName", "root".FULLNAME as "displayName", substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) as "lastName" from personTable as "root" left outer join personTableExtension as "persontableextension_0" on ("root".ID = "persontableextension_0".ID) where substring(concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2), (position(\',\', concat("root".FULLNAME, "persontableextension_0".FULLNAME_PART2)) + 2)) = \'Roberts_p4\'', $result->sqlRemoveFormatting());
-} 
+}
 
 function <<test.Test>> meta::relational::tests::mapping::propertyfunc::withjoin::testSimplePropertyFuncGetAllWithJoin():Boolean[1]
 {
@@ -105,7 +107,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::propertyfunc::
 
 function meta::relational::tests::mapping::propertyfunc::model::store::testDataTypeMappingRuntime():Runtime[1]
 {
-   meta::relational::tests::testRuntime(myDB);
+   meta::external::store::relational::tests::testRuntime(myDB);
 }
 
 
@@ -166,7 +168,7 @@ Mapping meta::relational::tests::mapping::propertyfunc::model::mapping::Property
                scope([myDB]default.personTable)
                (
                   firstName : substring(FULLNAME, 0, sub(position(',', FULLNAME), 1)),
-                  displayName : FULLNAME 
+                  displayName : FULLNAME
                )
                ,
                lastName : substring([myDB]default.personTable.FULLNAME, add(position(',', [myDB]default.personTable.FULLNAME),2))
@@ -185,7 +187,7 @@ Mapping meta::relational::tests::mapping::propertyfunc::model::mapping::Property
                scope([myDB]default.personTable)
                (
                   firstName : substring(FULLNAME, 0, sub(position(',', concat(FULLNAME, @personExtension|personTableExtension.FULLNAME_PART2)),1)),
-                  displayName : FULLNAME 
+                  displayName : FULLNAME
                )
                ,
                lastName : substring(

@@ -14,6 +14,7 @@
 
 import meta::json::*;
 import meta::alloy::objectReference::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 

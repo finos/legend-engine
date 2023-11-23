@@ -14,6 +14,7 @@
 
 ###Pure
 import meta::pure::metamodel::serialization::grammar::*;
+import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::metamodel::constraint::*;
 import meta::protocols::pure::v1_32_0::transformation::fromPureGraph::*;
@@ -254,7 +255,7 @@ function meta::protocols::pure::v1_32_0::transformation::fromPureGraph::transfor
                                                                package = if($p.package->isEmpty(),|[],|$p.package->toOne()->elementToPath()),
                                                                stereotypes = $p.p_stereotypes->map(s|$s.value),
                                                                tags = $p.p_tags->map(t|$t.value)
-                                           
+
                                                           )
-                                   
+
 }

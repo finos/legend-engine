@@ -17,6 +17,7 @@ import meta::relational::graphFetch::tests::chain::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::chain::setup(): Boolean[1]
 {
@@ -31,15 +32,15 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
          employeeCount
       }
    }#;
-   
+
    let query = {|Target_Firm.all()->graphFetch($tree)->serialize($tree)};
    let mapping = M2M_Mapping;
-   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+   let modelChainConnection = ^meta::external::store::model::ModelChainConnection(
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
-   let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+   let runtime = ^meta::core::runtime::Runtime(
+      connectionStores =
+      meta::external::store::relational::tests::testRuntime().connectionStores->concatenate(^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -67,15 +68,15 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
          }
       }
    }#;
-   
+
    let query = {|Target_Firm.all()->graphFetch($tree)->serialize($tree)};
    let mapping = M2M_Mapping;
-   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+   let modelChainConnection = ^meta::external::store::model::ModelChainConnection(
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
-   let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+   let runtime = ^meta::core::runtime::Runtime(
+      connectionStores =
+      meta::external::store::relational::tests::testRuntime().connectionStores->concatenate(^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -147,15 +148,15 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
          employeeCount
       }
    }#;
-   
+
    let query = {|Target_Firm.all()->filter(x | $x.firmName == 'FIRM X')->graphFetch($tree)->serialize($tree)};
    let mapping = M2M_Mapping;
-   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+   let modelChainConnection = ^meta::external::store::model::ModelChainConnection(
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
-   let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+   let runtime = ^meta::core::runtime::Runtime(
+      connectionStores =
+      meta::external::store::relational::tests::testRuntime().connectionStores->concatenate(^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -171,18 +172,18 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
          employeeCount
       }
    }#;
-   
+
    let query = {|
       let name = 'FIRM X';
       Target_Firm.all()->filter(x | $x.firmName == $name)->graphFetch($tree)->serialize($tree);
    };
    let mapping = M2M_Mapping;
-   let modelChainConnection = ^meta::pure::mapping::modelToModel::ModelChainConnection(
-      element = ^meta::pure::mapping::modelToModel::ModelStore(),
+   let modelChainConnection = ^meta::external::store::model::ModelChainConnection(
       mappings = [meta::relational::tests::simpleRelationalMapping]
    );
-   let runtime = ^meta::pure::runtime::Runtime(
-      connections = meta::relational::tests::testRuntime().connections->concatenate($modelChainConnection)
+   let runtime = ^meta::core::runtime::Runtime(
+      connectionStores =
+      meta::external::store::relational::tests::testRuntime().connectionStores->concatenate(^meta::core::runtime::ConnectionStore(element = ^meta::external::store::model::ModelStore(),connection=$modelChainConnection))
    );
 
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
@@ -203,7 +204,7 @@ Class meta::relational::graphFetch::tests::chain::Target_Firm
 Class meta::relational::graphFetch::tests::chain::Target_Person
 {
    fullName : String[1];
-   managers : String[0..1]; 
+   managers : String[0..1];
 }
 
 ###Mapping
@@ -218,7 +219,7 @@ Mapping meta::relational::graphFetch::tests::chain::M2M_Mapping
       employeeCount : $src.employees->count(),
       employees     : $src.employees
    }
-   
+
    Target_Person : Pure {
       ~src Person
       fullName : $src.firstName->toUpper() + ' ' + $src.lastName->toUpper(),

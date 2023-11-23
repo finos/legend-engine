@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.dataProvider.DataProvider;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 
 import java.util.Collections;
@@ -56,6 +57,10 @@ public class MasteryGrammarComposerExtension implements IMasteryComposerExtensio
                 {
                     return renderConnection((Connection) element, context);
                 }
+                if (element instanceof MasteryRuntime)
+                {
+                    return renderMasteryRuntime((MasteryRuntime) element, context);
+                }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
         });
@@ -70,6 +75,7 @@ public class MasteryGrammarComposerExtension implements IMasteryComposerExtensio
             composableElements.addAll(ListIterate.selectInstancesOf(elements, MasterRecordDefinition.class));
             composableElements.addAll(ListIterate.selectInstancesOf(elements, Connection.class));
             composableElements.addAll(ListIterate.selectInstancesOf(elements, DataProvider.class));
+            composableElements.addAll(ListIterate.selectInstancesOf(elements, MasteryRuntime.class));
 
             return composableElements.isEmpty()
                     ? null
@@ -87,6 +93,10 @@ public class MasteryGrammarComposerExtension implements IMasteryComposerExtensio
                             else if (element instanceof Connection)
                             {
                                 return MasteryGrammarComposerExtension.renderConnection((Connection) element, context);
+                            }
+                            else if (element instanceof MasteryRuntime)
+                            {
+                                return MasteryGrammarComposerExtension.renderMasteryRuntime((MasteryRuntime) element, context);
                             }
                             throw new UnsupportedOperationException("Unsupported type " + element.getClass().getName());
                         })
@@ -108,6 +118,12 @@ public class MasteryGrammarComposerExtension implements IMasteryComposerExtensio
     {
         List<IMasteryComposerExtension> extensions = IMasteryComposerExtension.getExtensions(context);
         return IMasteryComposerExtension.process(connection, ListIterate.flatCollect(extensions, IMasteryComposerExtension::getExtraMasteryConnectionComposers), 1, context);
+    }
+
+    private static String renderMasteryRuntime(MasteryRuntime masteryRuntime, PureGrammarComposerContext context)
+    {
+        List<IMasteryComposerExtension> extensions = IMasteryComposerExtension.getExtensions(context);
+        return IMasteryComposerExtension.process(masteryRuntime, ListIterate.flatCollect(extensions, IMasteryComposerExtension::getExtraMasteryRuntimeComposers), 1, context);
     }
 
     @Override

@@ -200,3 +200,23 @@ function <<test.Test>> meta::external::store::elasticsearch::v7::specification::
 
   assertJsonStringsEqual($expected->meta::json::toJSON(), $actual->meta::json::toJSON());
 }
+
+function meta::external::store::elasticsearch::v7::specification::utils::property::defaultRuntimePropertyForPureType(type: DataType[1]): PropertyBase[1]
+{
+  if ($type == String || $type->_subTypeOf(Enum),
+    | ^KeywordProperty(),
+    | if ($type == Integer,
+      | ^LongNumberProperty(),
+      | if ($type == Float,
+        | ^DoubleNumberProperty(),
+        | if ($type == Boolean,
+          | ^BooleanProperty(),
+          | if ($type == Date || $type == DateTime || $type == StrictDate,
+            | ^DateProperty(),
+            | fail(|'Datatype not supported for runtime mapping: ' + $type->elementToPath())->cast(@PropertyBase)
+          )
+        )
+      )
+    )
+  )
+}

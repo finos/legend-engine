@@ -18,7 +18,6 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph.GenerationCompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -27,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.CredentialSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_acquisition_AcquisitionProtocol;
@@ -34,6 +34,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_authenti
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_authentication_CredentialSecret;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_authorization_Authorization;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_connection_Connection;
+import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_runtime_MasteryRuntime;
 import org.finos.legend.pure.generated.Root_meta_pure_mastery_metamodel_trigger_Trigger;
 
 import java.util.Collections;
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.function.Function;
 
 public interface IMasteryCompilerExtension extends GenerationCompilerExtension
 {
@@ -63,6 +63,11 @@ public interface IMasteryCompilerExtension extends GenerationCompilerExtension
     static Root_meta_pure_mastery_metamodel_connection_Connection process(Connection connection, List<Function2<Connection, CompileContext, Root_meta_pure_mastery_metamodel_connection_Connection>> processors, CompileContext context)
     {
         return process(connection, processors, context, "connection", connection.sourceInformation);
+    }
+
+    static Root_meta_pure_mastery_metamodel_runtime_MasteryRuntime process(MasteryRuntime masteryRuntime, List<Function2<MasteryRuntime, CompileContext, Root_meta_pure_mastery_metamodel_runtime_MasteryRuntime>> processors, CompileContext context)
+    {
+        return process(masteryRuntime, processors, context, "mastery runtime", masteryRuntime.sourceInformation);
     }
 
     static Root_meta_pure_mastery_metamodel_authentication_AuthenticationStrategy process(AuthenticationStrategy authenticationStrategy, List<Function2<AuthenticationStrategy, CompileContext, Root_meta_pure_mastery_metamodel_authentication_AuthenticationStrategy>> processors, CompileContext context)
@@ -90,6 +95,11 @@ public interface IMasteryCompilerExtension extends GenerationCompilerExtension
     }
 
     default List<Function2<Connection, CompileContext, Root_meta_pure_mastery_metamodel_connection_Connection>> getExtraMasteryConnectionProcessors()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function2<MasteryRuntime, CompileContext, Root_meta_pure_mastery_metamodel_runtime_MasteryRuntime>> getExtraMasteryRuntimeProcessors()
     {
         return Collections.emptyList();
     }

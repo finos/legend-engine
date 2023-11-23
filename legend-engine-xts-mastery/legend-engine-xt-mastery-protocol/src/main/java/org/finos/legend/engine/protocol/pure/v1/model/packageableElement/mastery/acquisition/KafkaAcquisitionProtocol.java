@@ -14,12 +14,15 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition;
 
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.KafkaConnection;
-
 public class KafkaAcquisitionProtocol extends AcquisitionProtocol
 {
     public String recordTag;
     public KafkaDataType kafkaDataType;
     public String connection;
 
+    @Override
+    public boolean isKafkaAcquisitionProtocol()
+    {
+        return true;
+    }
 }

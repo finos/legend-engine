@@ -154,10 +154,13 @@ public class MappingVisitors
         private SchemaDefinition.Builder schemaDefinitionBuilder;
         private SchemaDefinition baseSchema;
 
-        public EnrichSchemaWithAuditing(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema)
+        private boolean isPk;
+
+        public EnrichSchemaWithAuditing(SchemaDefinition.Builder schemaDefinitionBuilder, SchemaDefinition baseSchema, boolean isPk)
         {
             this.schemaDefinitionBuilder = schemaDefinitionBuilder;
             this.baseSchema = baseSchema;
+            this.isPk = isPk;
         }
 
         @Override
@@ -175,6 +178,7 @@ public class MappingVisitors
                 Field auditDateTime = Field.builder()
                         .name(auditing.dateTimeName)
                         .type(FieldType.of(DataType.TIMESTAMP, Optional.empty(), Optional.empty()))
+                        .primaryKey(isPk)
                         .build();
                 schemaDefinitionBuilder.addFields(auditDateTime);
             }

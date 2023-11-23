@@ -17,9 +17,11 @@ import meta::relational::functions::asserts::*;
 import meta::relational::tests::mapping::inheritance::relational::multiJoins::*;
 import meta::relational::tests::model::inheritance::*;
 import meta::relational::tests::*;
+import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::relational::multiJoins::setUp():Boolean[1]
@@ -67,7 +69,7 @@ function meta::relational::tests::mapping::inheritance::relational::multiJoins::
    executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (1, 1, 4, \'Peugeot\', 1);', $connection);
    executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (2, 1, 4, \'Renault\', 2);', $connection);
    executeInDb('insert into Car (id, c_PersonID, db_car_wheelCount, c_description, engineType) values (3, 2, 4, \'Nissan\', 3);', $connection);
-   
+
    executeInDb('Drop table if exists Bicycle;', $connection);
    executeInDb('Create Table Bicycle(id INT, b_PersonID VARCHAR(200), db_bic_wheelCount INTEGER, b_description VARCHAR(200));', $connection);
    executeInDb('insert into Bicycle (id, b_PersonID, db_bic_wheelCount, b_description) values (1, 1, 2, \'MBK\');', $connection);
@@ -86,18 +88,18 @@ Database meta::relational::tests::mapping::inheritance::relational::multiJoins::
         ID INT PRIMARY KEY,
         name VARCHAR(200)
     )
-    
+
     Table PersonMidTable
     (
        ID1 INT PRIMARY KEY,
-       ID2 INT PRIMARY KEY 
+       ID2 INT PRIMARY KEY
     )
 
     Table Car
     (
         ID INT PRIMARY KEY,
         db_car_wheelCount INT,
-        engineType INT, 
+        engineType INT,
         c_Description VARCHAR(200),
         c_PersonID INT
     )
@@ -109,7 +111,7 @@ Database meta::relational::tests::mapping::inheritance::relational::multiJoins::
         b_Description VARCHAR(200),
         b_PersonID INT
     )
-    
+
     Join PersonPersonMid(Person.ID = PersonMidTable.ID1)
     Join PersonCar(PersonMidTable.ID2 = Car.c_PersonID)
     Join PersonBicycle(PersonMidTable.ID2 = Bicycle.b_PersonID)
@@ -129,14 +131,14 @@ Mapping meta::relational::tests::mapping::inheritance::relational::multiJoins::i
                roadVehicles[map1] : [myDB]@PersonPersonMid > @PersonCar,
                roadVehicles[map2] : [myDB]@PersonPersonMid > @PersonBicycle
             }
-            
+
    Car[map1]: Relational
             {
                id : [myDB] Car.ID,
                engineType : EnumerationMapping engineTypeMapping : [myDB] Car.engineType,
                wheelCount :  [myDB] Car.db_car_wheelCount,
                description : [myDB] Car.c_Description,
-               person : [myDB] @PersonCar > @PersonPersonMid 
+               person : [myDB] @PersonCar > @PersonPersonMid
             }
 
    Bicycle[map2] : Relational
@@ -144,7 +146,7 @@ Mapping meta::relational::tests::mapping::inheritance::relational::multiJoins::i
                id : [myDB] Bicycle.ID,
                wheelCount :  [myDB] Bicycle.db_bic_wheelCount,
                description : [myDB] Bicycle.b_Description,
-               person : [myDB] @PersonBicycle > @PersonPersonMid 
+               person : [myDB] @PersonBicycle > @PersonPersonMid
             }
 
    EngineType: EnumerationMapping engineTypeMapping
@@ -155,7 +157,7 @@ Mapping meta::relational::tests::mapping::inheritance::relational::multiJoins::i
       W: [4],
       X: [5]
    }
-   
+
    Vehicle : Operation
                  {
                     meta::pure::router::operations::inheritance_OperationSetImplementation_1__SetImplementation_MANY_()

@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-code</artifactId>
-        <version>4.27.2-SNAPSHOT</version>
+        <version>4.35.5-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-pure-code-compiled-core</artifactId>
@@ -368,4 +368,48 @@
         </dependency>
         <!-- TEST -->
     </dependencies>
+    <profiles>
+        <profile>
+            <id>generate-protocol-version</id>
+            <properties>
+                <folderBindingPath>core/pure/binding/protocols/pure</folderBindingPath>
+                <folderCorePath>core/pure/binding/protocols/pure</folderCorePath>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-protocol-file</id>
+                                <phase>generate-sources</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target name="protocol">
+                                        <copy todir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}">
+                                            <fileset dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.SourceVersion}" />
+                                        </copy>
+					<replace dir="${basedir}/src/main/resources/${folderBindingPath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
+					<copy todir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}">
+                                            <fileset dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.SourceVersion}" />
+                                        </copy>
+                                        <replace dir="${basedir}/src/main/resources/${folderCorePath}/${protocol.TargetVersion}" token="${protocol.SourceVersion}" value="${protocol.TargetVersion}" />
+
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+
+
+
+
 </project>

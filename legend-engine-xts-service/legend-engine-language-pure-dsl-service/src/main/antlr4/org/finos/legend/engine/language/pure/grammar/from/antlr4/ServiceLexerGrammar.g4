@@ -18,7 +18,11 @@ SERVICE_PATTERN:                    'pattern';
 SERVICE_OWNERS:                     'owners';
 SERVICE_DOCUMENTATION:              'documentation';
 SERVICE_AUTO_ACTIVATE_UPDATES:      'autoActivateUpdates';
-
+SERVICE_OWNERSHIP:                  'ownership';
+SERVICE_OWNERSHIP_DEPLOYMENT:       'DID';
+SERVICE_OWNERSHIP_DEPLOYMENT_ID:    'identifier';
+SERVICE_OWNERSHIP_USERLIST:         'UserList';
+SERVICE_OWNERSHIP_USERLIST_USERS:   'users';
 SERVICE_EXECUTION:                  'execution';
 SERVICE_EXECUTION_EXECUTIONS:       'executions';
 SERVICE_FUNCTION:                   'query';

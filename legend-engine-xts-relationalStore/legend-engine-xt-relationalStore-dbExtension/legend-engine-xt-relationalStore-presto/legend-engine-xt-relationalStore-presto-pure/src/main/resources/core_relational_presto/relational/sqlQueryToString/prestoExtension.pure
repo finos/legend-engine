@@ -4,6 +4,7 @@ import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::metamodel::operation::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
+import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -57,6 +58,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='date_diff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForPresto(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='Date(%s)')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='date_format(%s, \'%W\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='day_of_week(%s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='day_of_year(%s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
@@ -69,7 +71,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='date_trunc(\'day\', %s)')),
     dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'second\', %s)')),
     dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
-    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),    
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
     dynaFnToSql('left',                   $allStates,            ^ToSql(format='substr(%s,1,%s)')),
@@ -78,6 +80,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthName',              $allStates,            ^ToSql(format='date_format(%s, \'%M\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='date_add(\'day\', case when %s - day_of_week(%s) > 0 then %s - day_of_week(%s) - 7 else %s - day_of_week(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentPresto('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
@@ -97,7 +100,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
     dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
-    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),    
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
     dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='%s', transform={p:String[2] | $p->transformToTimestampPresto()})),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
@@ -153,8 +156,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
 function <<access.private>> meta::relational::functions::sqlQueryToString::presto::transformToTimestampPresto(params:String[2]):String[1]
 {
   //Standardizing the format as per Postgres specification, will include mappings for the formats in future.
-   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported '); 
-   let timestampFormat = '\'%Y-%m-%d %H:%i:%s\'';   
+   assert($params->at(1)->replace('\'', '') == 'YYYY-MM-DD HH24:MI:SS', | $params->at(1) +' not supported ');
+   let timestampFormat = '\'%Y-%m-%d %H:%i:%s\'';
    'date_parse('+$params->at(0)+','+$timestampFormat+')';
 }
 

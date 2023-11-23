@@ -31,9 +31,15 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     protected String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage";
     protected String incomingRecordCountWithSplits = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE " +
             "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+    protected String incomingRecordCountWithSplitsTempStaginTable = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE " +
+            "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+
+    protected String incomingRecordCountWithSplitsAndDuplicates = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE " +
+            "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+
     protected String rowsTerminated = "SELECT 0 as `rowsTerminated`";
     protected String rowsDeleted = "SELECT 0 as `rowsDeleted`";
-    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as `rowsDeleted` FROM `mydb`.`main` as sink WHERE EXISTS (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`) AND (stage.`delete_indicator` IN ('yes','1','true')))";
+    protected String rowsDeletedWithDeleteIndicator = "SELECT COUNT(*) as `rowsDeleted` FROM `mydb`.`main` as sink WHERE EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`) AND (stage.`delete_indicator` IN ('yes','1','true')))";
 
 
     @Override
@@ -43,7 +49,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -73,13 +79,13 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaWithAuditingNoDataSplit(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithAuditingFilterDupsNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String mergeSql = "MERGE INTO `mydb`.`main` as sink " +
-                "USING `mydb`.`staging` as stage " +
+                "USING `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "ON (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`) " +
                 "WHEN MATCHED AND sink.`digest` <> stage.`digest` " +
                 "THEN UPDATE SET " +
@@ -88,10 +94,10 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
                 "sink.`amount` = stage.`amount`," +
                 "sink.`biz_date` = stage.`biz_date`," +
                 "sink.`digest` = stage.`digest`," +
-                "sink.`batch_update_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+                "sink.`batch_update_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
                 "WHEN NOT MATCHED THEN INSERT " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'))";
+                "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(mergeSql, milestoningSqlList.get(0));
@@ -103,7 +109,31 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNonTemporalDeltaNoAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    {
+        String mergeSql = "MERGE INTO `mydb`.`main` as sink " +
+                "USING (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
+                "as stage ON (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`) " +
+                "WHEN MATCHED AND sink.`digest` <> stage.`digest` " +
+                "THEN UPDATE SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest` " +
+                "WHEN NOT MATCHED " +
+                "THEN INSERT (`id`, `name`, `amount`, `biz_date`, `digest`) " +
+                "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`)";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(mergeSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
+        Assertions.assertEquals(enrichSqlWithDataSplits(mergeSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
+
+        // Stats
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplitsTempStaginTable, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplitsTempStaginTable, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(rowsTerminated, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+        Assertions.assertEquals(rowsDeleted, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
+    }
+
+    @Override
+    public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersionWithoutPerform(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO `mydb`.`main` as sink " +
                 "USING (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage " +
@@ -127,31 +157,31 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNonTemporalDeltaWithWithAuditingWithDataSplit(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
+    public void verifyNonTemporalDeltaWithWithAuditingFailOnDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO `mydb`.`main` as sink " +
-                "USING (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging` as stage " +
+                "USING (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
                 "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
                 "as stage ON (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`) " +
                 "WHEN MATCHED AND sink.`digest` <> stage.`digest` " +
-                "THEN UPDATE SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`batch_update_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00') " +
+                "THEN UPDATE SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`batch_update_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
                 "WHEN NOT MATCHED " +
                 "THEN INSERT (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`) " +
-                "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00'))";
+                "VALUES (stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(mergeSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(mergeSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
 
         // Stats
-        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplits, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
-        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplits, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplitsAndDuplicates, dataSplitRanges.get(0)), operations.get(0).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
+        Assertions.assertEquals(enrichSqlWithDataSplits(incomingRecordCountWithSplitsAndDuplicates, dataSplitRanges.get(1)), operations.get(1).postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
         Assertions.assertEquals(rowsTerminated, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
         Assertions.assertEquals(rowsDeleted, operations.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
     }
 
     @Override
-    public void verifyNontemporalDeltaNoAuditingNoDataSplitWithDeleteIndicator(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoAuditingWithDeleteIndicatorNoDedupNoVersioning(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -250,15 +280,14 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersioningAndStagingFiltersWithDedup(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithFilterDupsMaxVersionWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String mergeSql = "MERGE INTO `mydb`.`main` as sink " +
             "USING " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version` FROM " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`,ROW_NUMBER() OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) as `legend_persistence_row_num` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972) as stage WHERE stage.`legend_persistence_row_num` = 1) as stage " +
+            "`mydb`.`staging_legend_persistence_temp_staging` as stage " +
             "ON (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`) " +
             "WHEN MATCHED AND stage.`version` > sink.`version` " +
             "THEN UPDATE SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version` " +
@@ -275,7 +304,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersioningNoDedupAndStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaWithNoDedupMaxVersioningWithoutPerformWithStagingFilters(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -299,7 +328,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaWithMaxVersioningNoDedupWithoutStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaNoDedupMaxVersionWithoutPerform(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
@@ -322,15 +351,14 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     }
 
     @Override
-    public void verifyNontemporalDeltaWithWithMaxVersioningDedupEnabledAndUpperCaseWithoutStagingFilters(GeneratorResult operations)
+    public void verifyNontemporalDeltaAllowDuplicatesMaxVersionWithUpperCase(GeneratorResult operations)
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
         String mergeSql = "MERGE INTO `MYDB`.`MAIN` as sink " +
             "USING " +
-            "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,stage.`VERSION` FROM " +
-            "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,stage.`VERSION`,ROW_NUMBER() OVER (PARTITION BY stage.`ID`,stage.`NAME` ORDER BY stage.`VERSION` DESC) as `LEGEND_PERSISTENCE_ROW_NUM` FROM `MYDB`.`STAGING` as stage) as stage WHERE stage.`LEGEND_PERSISTENCE_ROW_NUM` = 1) as stage " +
+            "`MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage " +
             "ON (sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`) " +
             "WHEN MATCHED AND stage.`VERSION` >= sink.`VERSION` " +
             "THEN UPDATE SET sink.`ID` = stage.`ID`,sink.`NAME` = stage.`NAME`,sink.`AMOUNT` = stage.`AMOUNT`,sink.`BIZ_DATE` = stage.`BIZ_DATE`,sink.`DIGEST` = stage.`DIGEST`,sink.`VERSION` = stage.`VERSION` " +

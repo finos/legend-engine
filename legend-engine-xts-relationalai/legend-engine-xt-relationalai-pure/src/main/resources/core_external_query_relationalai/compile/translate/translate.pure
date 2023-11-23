@@ -1,0 +1,833 @@
+/**
+  * The main logic of the compiler from PURE to Rel queries.
+  *
+  * The compiler receives instances of `PExpr`, which is the parent
+  * (abstract) type of each IR object. For each type `T` of IR object,
+  * we provide a function
+  * ```
+  * compile(T[1], FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1], CompilationState[1]): Result<CompilationState|0..1>[1]
+  * ```
+  * which carries out the actual compilation step. The second argument is
+  * a generic callback function that can be used by parent expression
+  * to guide compilation of child expressions, while `CompilationState`
+  * tracks outputs of previous compilation steps. 
+  */
+
+import meta::rel::utils::*;
+import meta::rel::utils::collection::*;
+import meta::rel::utils::lang::*;
+import meta::rel::compile::*;
+import meta::rel::compile::ir::*;
+import meta::rel::compile::utils::*;
+import meta::rel::metamodel::*;
+import meta::rel::metamodel::syntactic::*;
+import meta::rel::mapping::*;
+import meta::rel::lib::*;
+
+
+function meta::rel::compile::compile(
+  expr: PExpr[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $expr->match([
+    all: All[1] | $all->compile($callback, $state),
+    s: StringConst[1] | ^$state(current=meta::rel::metamodel::const($s.value)->annotate(String))->ok(),
+    i: IntegerConst[1] | ^$state(current=meta::rel::metamodel::const($i.value)->annotate(Integer))->ok(),
+    f: FloatConst[1] | ^$state(current=meta::rel::metamodel::const($f.value)->annotate(Float))->ok(),
+    b: BooleanConst[1] | ^$state(
+      current=
+        if($b.value, | booleanTrue(), | booleanFalse())
+          ->annotate(Boolean)
+      )
+      ->ok(),
+    d: StrictDateConst[1] | ^$state(current=meta::rel::metamodel::const($d.value)->annotate(StrictDate))->ok(),
+    d: DateTimeConst[1] | ^$state(current=meta::rel::metamodel::const($d.value)->annotate(DateTime))->ok(),
+    property: PropertyAccess[1] | $property->compile($callback, $state),
+    access: SetAccess[1] | $access->compile($callback, $state),
+    access: ColumnAccess[1] | $access->compile($callback, $state),
+    filter: Filter[1] | $filter->compile($callback, $state),
+    map: MapExpr[1] | $map->compile($callback, $state),
+    project: Project[1] | $project->compile($callback, $state),
+    scoped: Scoped[1] | $scoped->compile($callback, $state),
+    groupBy: GroupBy[1] | $groupBy->compile($callback, $state),
+    variablePlaceholder: VariablePlaceholder[1] | $variablePlaceholder->compile($callback, $state),
+    fexpr: FunctionExpr<|*>[1] | $fexpr->compile($callback, $state),
+    exists: meta::rel::compile::ir::Exists[1] | $exists->compile($callback, $state),
+    forAll: meta::rel::compile::ir::ForAll[1] | $forAll->compile($callback, $state),
+    step: CompilationStep[1] | $step.logic->eval($callback, $state),
+    ifThenElse: meta::rel::compile::ir::IfThenElse[1] | $ifThenElse->compile($callback, $state),
+    join: meta::rel::compile::ir::tds::Join[1] | $join->meta::rel::compile::tds::compile($callback, $state),
+    filter: meta::rel::compile::ir::tds::TDSFilter[1] | $filter->meta::rel::compile::tds::compile($callback, $state)
+  ]);
+}
+
+function meta::rel::compile::compile(
+  all: All[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $all.set.classExpr
+    ->okOr(
+      | 'Mappings with empty class expressions not yet supported. No class expression found ' +
+      'for class ' + $all.set.class.name->else(| '<<unknown>>')->quote()
+    )
+    ->then(expr: Expr[1] | ^$state(current=$expr->annotate($all.set.class)))
+}
+
+function meta::rel::compile::compile(
+  filter: Filter[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $filter.parent
+    ->compile($callback, $state)
+    ->step({parent: Expr[1] |
+      let bound = var($state.variableFactory->next());
+
+      $filter.predicate
+        ->compile({a: Any[1] |
+          $a
+            ->tryCast(@String)
+            ->andThen({var: String[1] |
+              if ($var == $filter.predicate.variables->toOne(), 
+                | ok($bound), 
+                | $callback->eval($a)
+              );
+            })
+        }, $state)
+        ->step({predicate: Expr[1] | 
+          $predicate
+            ->abstract($bound->in($parent))
+            ->annotate($parent.annotation)
+            ->ok();
+          /*$parent
+            ->atom([$index, $bound])
+            ->and($predicate)
+            ->abstract(vars([$index, $bound]))
+            ->annotate($parent.annotation)
+            ->ok();*/
+        })
+        ->current();
+    });
+}
+
+function meta::rel::compile::compile<|n>(
+  fexpr: FunctionExpr<|n>[1],
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $fexpr.arguments
+    ->map(a | $a->compile($callback, $state)->current())
+    ->collect()
+    ->them({params: Expr[*] | $fexpr.fn->eval($params); })
+    ->then({result: Expr[1] | ^$state(current=$result); });
+}
+
+function meta::rel::compile::compile(
+  exists: meta::rel::compile::ir::Exists[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $exists.parent
+    ->compile($callback, $state)
+    ->step({parent: Expr[1] |
+      let bound = var($state.variableFactory->next());
+
+      $exists.predicate
+        ->compile({a: Any[1] | 
+          $a
+            ->tryCast(@String)
+            ->andThen({var: String[1] |
+              if ($var == $exists.predicate.variables->toOne(), 
+                | ok($bound), 
+                | $callback->eval($a)
+              );
+            })
+        }, $state)
+        ->step({predicate: Expr[1] | 
+            /*[
+              meta::rel::metamodel::const(1),
+              $parent
+                ->atom([$index, $bound])
+                ->and($predicate)
+                ->abstract(vars([$index, $bound]))
+                ->exists()
+            ]
+            ->product()
+            ->group()
+            ->annotate(Boolean)
+            ->ok()*/
+            $predicate
+              ->abstract($bound->in($parent))
+              ->exists()
+              ->annotate(Boolean)
+              ->ok()
+        })
+        ->current();
+    });
+}
+
+function meta::rel::compile::compile(
+  forAll: meta::rel::compile::ir::ForAll[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $forAll.parent
+    ->compile($callback, $state)
+    ->step({parent: Expr[1] |
+      let bound = var($state.variableFactory->next());
+
+      $forAll.predicate
+        ->compile({a: Any[1] | 
+          $a
+            ->tryCast(@String)
+            ->andThen({var: String[1] |
+              if ($var == $forAll.predicate.variables->toOne(), 
+                | ok($bound), 
+                | $callback->eval($a)
+              );
+            })
+        }, $state)
+        ->step({predicate: Expr[1] | 
+          $bound
+            ->in($parent)
+            ->forAll($predicate)
+            ->annotate(Boolean)
+            ->ok();
+
+            /*[
+              meta::rel::metamodel::const(1),
+              vars([$index, $bound])
+              ->where(
+                $parent
+                  ->atom([$index, $bound])
+              )
+              ->forAll($predicate)
+            ]
+            ->product()
+            ->group()
+            ->annotate(Boolean)
+            ->ok();*/
+        })
+        ->current();
+    });
+}
+
+function meta::rel::compile::compile(
+  access: SetAccess[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $callback
+    ->eval($access.variable)
+    ->then({var: Expr[1] | ^$state(current=$var->annotate($access.set.class)); });
+}
+
+function meta::rel::compile::compile(
+  access: ColumnAccess[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $callback
+    ->eval($access)
+    ->then({expr: Expr[1] |
+      ^$state(
+        current=$expr
+      );
+    });
+}
+
+function meta::rel::compile::compile(
+  access: PropertyAccess[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $access.parent
+    ->compile($callback, $state)
+    ->step({parent: Expr[1] |
+      $access.property.name
+        ->okOr(| 'No name specified for property.')
+        ->andThen({propertyName: String[1] |
+          $access.parent
+            ->set()
+            ->map(set | $set->meta::pure::mapping::propertyMappingsByPropertyName($propertyName); )
+            ->okOr(| format('No property mapping found for property %s', [$propertyName->quote()]))
+            ->them(inner: meta::pure::mapping::PropertyMapping[*] | $inner->first()->toOne())
+            ->tryCast(@RelPropertyMapping)
+            ->andThen({mapping: RelPropertyMapping[1] | 
+              $access.property.genericType.rawType
+                ->okOr(| 'Could not determine type of property ' + $propertyName)
+                ->then({type: Type[1] |
+                  $mapping
+                    .target
+                    ->appl($parent);
+                })              
+            });
+        })
+    });
+}
+
+function meta::rel::compile::compile(
+  expr: MapExpr[1],
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $expr.parent
+    ->compile($callback, $state)
+    ->step({parent: Expr[1] |
+      let bound = var($state.variableFactory->next());
+      
+      $expr.body
+        ->compile({a: Any[1] |
+          $a
+            ->tryCast(@String)
+            ->andThen({var: String[1] |
+              if ($var == $expr.body.variables->toOne(), 
+                | ok($bound), 
+                | $callback->eval($a)
+              );
+            })
+        }, $state)
+        ->step({body: Expr[1] |
+          $body
+            ->from($bound->in($parent))
+            ->group()
+            ->annotate($body.annotation)
+            ->ok()
+
+          /*[$index, $body]
+            ->product()
+            ->from(
+              vars([$index, $bound])
+                ->where($parent->group()->atom([$index, $bound]))
+            )
+            ->group()
+            ->annotate($body.annotation)
+            ->ok()*/
+        })
+        ->current();
+    });
+}
+
+function meta::rel::compile::compile(
+  expr: Scoped[1],
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $expr.inner->compile($callback, $state);
+}
+
+function meta::rel::compile::compile(
+  expr: Project[1],
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $expr.parent
+    ->compile($callback, $state)
+    ->andThen({state: CompilationState[1] |
+      let parent = $state.current->toOne();
+      let targetTable = $state.relFactory->next('tbl');
+
+      if ($parent.annotation == TabularDataSet, {|
+        $expr.projections
+          ->map({pair: Pair<String, Scoped>[1] |
+            let name = $pair.first;
+            let vi = var('i');
+            
+            $pair.second
+              ->compile({a: Any[1] |
+                $a->tryCast(@ColumnAccess)
+                  ->andThen({access: ColumnAccess[1] |
+                    $parent
+                      ->appl([label($access.column), $vi])
+                      ->ok();
+                  });
+              }, $state)
+              ->current()
+              ->then({map: Expr[1] |
+                let head = 
+                  rel($targetTable)
+                    ->appl(label($name));
+                let body = $map->for($vi);
+
+                def($head, $body);
+              });
+          })
+          ->collect();
+      }, {|
+        let vx = var('x');
+
+        let baseRule =
+          def(
+            rel($targetTable)->appl(label('base')),
+            $vx->from($vx->in($parent))
+          );
+
+        $expr.projections
+          ->map({pair: Pair<String, Scoped>[1] |
+            let name = $pair.first;
+            let vx = var('x');
+
+            $pair.second
+              ->compile({a: Any[1] |
+                $a->tryCast(@String)
+                  ->andThen({var: String[1] |
+                    if ($var == $pair.second.variables->toOne(), | ok($vx), | $callback->eval($var));
+                  });
+              }, $state)
+              ->current()
+              ->then({scope: Expr[1] |  
+                def(
+                  rel($targetTable)
+                    ->appl([label($name), $vx]),
+                  [
+                    $scope, 
+                    rel($targetTable)
+                      ->atom([label('base'), $vx])
+                  ]->product()
+                );
+              });              
+          })
+          ->collect()
+          ->them({projections: Rule[*] | $baseRule->concatenate($projections)});
+      })
+      ->them({rules: Rule[*] |
+        ^$state(
+          program=$state.program->with($rules),
+          current=rel($targetTable)->annotate(TabularDataSet),
+          cols=columns($expr.projections.first)
+        );
+      });
+    });
+}
+
+
+function meta::rel::compile::compile(
+  expr: VariablePlaceholder[1],
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $callback
+    ->eval($expr.identifier)
+    ->then(subst: Expr[1] | ^$state(current=$subst)); 
+}
+
+function meta::rel::compile::compile(
+  expr: GroupBy[1],
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $expr->match([
+    gs: GroupByScopes[1] | $gs->compile($callback, $state),
+    gc: GroupByColumns[1] | $gc->compile($callback, $state)
+  ]);
+}
+
+function meta::rel::compile::compile(
+  expr: GroupByScopes[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $expr.parent
+    ->compile($callback, $state)
+    ->andThen({parentState: CompilationState[1] |
+      let parent = $parentState.current->toOne();
+      let parentVariable = var($parentState.variableFactory->next());
+      let indexVariable = var($parentState.variableFactory->next());
+      let baseTable = $parentState.relFactory->next('tbl');
+      
+      $expr.group->map({g: Scoped[1] |
+        $g->compile({a: Any[1] |
+          $a->tryCast(@String)
+            ->andThen({var: String[1] |
+              if ($var == $g.variables->toOne(), | ok($parentVariable), | $callback->eval($a));
+            });
+        }, $parentState)
+        ->current();
+      })
+      ->collect()
+      ->them({group: Expr[*] |
+        let rules = 
+          $group
+            ->toIndexed()
+            ->fold({pair: Pair<Integer, Expr>[1], accum |
+              let body = 
+                $pair.second
+                  ->for(
+                    $parentVariable
+                      ->where($baseTable->atom([label('base'), $parentVariable]))
+                  );
+              
+              let head = 
+                rel($baseTable)
+                  ->appl([label('group'), label($pair.first->toString())]);
+
+              let rule = def($head, $body);
+              
+              $accum->concatenate($rule);
+            }, [])
+            ->concatenate(
+              rel($baseTable)
+                ->appl(label('base'))
+                ->def(var('x')->from(var('x')->in($parent)))
+            )
+            // def tbl1[:groups] = sort[(tbl1:group[:"0"][j], tbl1:group[:"1"][j] from j)]
+            ->concatenate(
+              if ($expr.group->isEmpty(), | [], {|
+                def(
+                  rel($baseTable)
+                    ->appl(label('groups')),
+                  rel('sort')
+                    ->appl(
+                      $expr.group
+                        ->toIndexed()
+                        ->map({pair: Pair<Integer, Scoped>[1] |
+                          rel($baseTable)
+                            ->appl([label('group'), label($pair.first->toString()), var('j')])
+                        })
+                        ->toOneMany()
+                        ->product()
+                        ->from(var('j'))
+                        ->group()
+                    )
+                )
+              })
+            )
+            ->concatenate(
+              //def tbl1[:Underlying] = tbl1[:groups][i, x, _] for i, x
+              $expr.group
+                ->toIndexed()
+                ->map({pair: Pair<Integer, Scoped>[1] |
+                  let index = $pair.first;
+                  let name = $expr.names->at($index);
+
+                  def(
+                    rel($baseTable)
+                      ->appl(label($name)),
+                    rel($baseTable)
+                      ->appl([label('groups'), var('i')])
+                      ->appl(
+                        range(0, $index)
+                          ->map(i | dontCare())
+                          ->concatenate(var('x'))
+                          ->concatenate(
+                            range($index + 1, $expr.group->size())
+                              ->map(i | dontCare())
+                          )
+                      )
+                      ->for(vars(['i', 'x']))
+                  );
+                })
+            );
+
+        pair(
+          ^$parentState(
+            program = $parentState.program->with($rules),
+            variableFactory=$parentState.variableFactory->reset(),
+            cols=$parentState.cols->clear()
+          ),
+          $baseTable
+        );
+      });
+    })
+    ->andThen({pair: Pair<CompilationState, String>[1] |
+      let state = $pair.first;
+      let baseTable = $pair.second;
+
+      let factory = $state.variableFactory->reset();
+      let groupByVariables = $expr.group->map(_g | $factory->next()->var());
+      let head = $state.current->toOne();
+
+      $expr.aggregates->map({agg: Aggregate[1] |
+        let aggVar = $factory->next()->var();
+        
+        $agg.aggregateFunction->compile({a: Any[1] |
+          $a->tryCast(@String)
+            ->andThen({var: String[1] |
+              if ($var == $agg.aggregateFunction.variables->toOne(), {| 
+                $agg.map->compile({a: Any[1] |
+                  $a->tryCast(@String)
+                    ->andThen({var: String[1] |
+                      if ($var == $agg.map.variables->toOne(), | ok($aggVar), | $callback->eval($a));
+                    })
+                }, $state)
+                ->step({mapExpr: Expr[1] |
+                  let body = $groupByVariables
+                    ->toIndexed()
+                    ->fold({pair: Pair<Integer, Variable>[1], accum |
+                      let groupBy = $pair.second;
+                      let head = 
+                        rel($baseTable)
+                          ->appl([label('group'), label($pair.first->toString())]);
+
+                      $accum->and($head->atom([$aggVar, $groupBy]));
+                    }, 
+                      rel($baseTable)
+                        ->appl(label('base'))
+                        ->atom($aggVar)
+                    );
+                  
+                  $mapExpr
+                    ->from(
+                      $aggVar
+                        ->where($body)
+                    )
+                    ->ok();
+                })
+                ->current()
+              },| $callback->eval($a));
+            });
+        }, $state)
+        ->current();
+      })
+      ->collect()
+      ->them({aggregates: Expr[*] |
+        let offset = $groupByVariables->size();
+        let vi = var('i');
+
+        let grouper = $groupByVariables
+          ->toIndexed()
+          ->map({pair: Pair<Integer, Variable>[1] |
+            rel($baseTable)
+              ->appl($expr.names->at($pair.first)->label())
+              ->atom([$vi, $pair.second])
+          });
+
+        let rules = 
+          $aggregates
+            ->toIndexed()
+            ->map({pair: Pair<Integer, Expr>[1] |
+              let head = rel($baseTable)
+                ->appl($expr.names->at($pair.first + $offset)->label());
+              
+              let binding = vars($vi->concatenate($groupByVariables)->toOneMany());
+              let bound = 
+                [$vi, $pair.second]
+                    ->product();
+
+              let body = 
+                if($grouper->size() == 0, {|
+                  $bound->from($vi->in(meta::rel::metamodel::const(1)));
+                }, {|
+                  $bound->from(
+                      $binding
+                        ->where(
+                          $grouper
+                            ->toOneMany()
+                            ->and()
+                        )
+                  );
+                });
+              
+              def($head, $body);
+            });
+
+        ^$state(
+          current=rel($baseTable)->annotate(TabularDataSet), 
+          program=$state.program->with($rules),
+          cols=columns($expr.names)
+        );
+      });
+    });
+}
+
+function meta::rel::compile::compile(
+  expr: GroupByColumns[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $expr.parent
+    ->compile($callback, $state)
+    ->andThen({parentState: CompilationState[1] |
+      let parent = $parentState.current->toOne();
+      let targetTable = $parentState.relFactory->next('tbl');
+
+      let groupRules = 
+        $expr.group
+          ->toIndexed()
+          ->fold({pair: Pair<Integer, String>[1], accum |
+            let index = $pair.first;
+            let column = $pair.second;
+            let vx = var('x');
+            let vi = var('i');
+
+            // Group reference rules of the form `tbl:group[:"i"] = ...`
+            let rules = [
+              def(
+                rel($targetTable)
+                  ->appl([label('group'), label($index->toString())]),
+                $parent->appl(label($column))
+              ),            
+              // Target rules of the form `tbl:column = ...`
+              def(
+                rel($targetTable)
+                  ->appl(label($column)),
+                rel($targetTable)
+                  ->appl([label('groups'), $vi])
+                  ->appl(
+                    range(0, $index)
+                      ->map(i | dontCare())
+                      ->concatenate(var('x'))
+                      ->concatenate(
+                        range($index + 1, $expr.group->size())
+                          ->map(i | dontCare())
+                      )
+                  )
+                  ->for(vars([$vi, $vx]))
+              )
+            ];
+
+            $accum->concatenate($rules);
+          }, [])
+          ->concatenate(
+            if ($expr.group->isEmpty(), | [], {|
+              def(
+                rel($targetTable)
+                  ->appl(label('groups')),
+                rel('sort')
+                  ->appl(
+                    $expr.group
+                      ->toIndexed()
+                      ->map({pair: Pair<Integer, Scoped>[1] |
+                          rel($targetTable)
+                            ->appl([label('group'), label($pair.first->toString()), var('j')])
+                        })
+                      ->toOneMany()
+                      ->product()
+                      ->from(var('j'))
+                      ->group()
+                  )
+              )
+            })
+          );
+
+      $expr.aggregates
+        ->map({agg: Aggregate[1] |
+          let head = rel($targetTable)
+            ->appl($agg.name->toOne()->label());
+          let vxs = $expr.group->map(g | $parentState.variableFactory->next('x')->var());
+          let vj = var('j');
+       
+          $agg.aggregateFunction->compile({a: Any[1] |
+            $a->tryCast(@String)
+              ->andThen({var: String[1] |
+                if ($var == $agg.aggregateFunction.variables->toOne(), {|
+                  $agg.map->compile({a: Any[1] |
+                    $a->match([
+                      {var: String[1] | 
+                        if ($var == $agg.map.variables->toOne(), {| 
+                          ok(reltrue());
+                        }, | $callback->eval($var)); 
+                      },
+                      {access: ColumnAccess[1] |
+                        $access.parent->compile({a: Any[1] | 
+                          $a->tryCast(@String)
+                            ->andThen({var: String[1] | 
+                              if ($var == $agg.map.variables->toOne(), {|
+                                $parent
+                                  ->appl([label($access.column), $vj])
+                                  ->ok();
+                              },  | $callback->eval($var));
+                            });
+                          }, $state)
+                          ->current();
+                      }
+                    ])
+                    ->then({map: Expr[1] |
+                      let binding = 
+                        if ($expr.group->isEmpty(), {| 
+                          $vj->where($parent->appl([dontCare(), $vj, dontCare()]))
+                        }, {|
+                          $vj->where(
+                            range($expr.group->size())
+                              ->fold({i, accum | 
+                                $accum->concatenate(
+                                  rel($targetTable)
+                                    ->atom([label('group'), label($i->toString()), $vj, $vxs->at($i)])
+                                )
+                              }, [])
+                              ->toOneMany()
+                              ->and()
+                              //->product()
+                          );
+                        });
+
+                      $map->for($binding);
+                    });
+                  }, $parentState)
+                  ->current();
+                }, | $callback->eval($var));
+              });
+          }, $parentState)
+          ->current()
+          ->then({aggBody: Expr[1] |
+            let vi = var('i');
+
+            let binding = 
+              if ($expr.group->isEmpty(), {| 
+                //vars($vi->concatenate($vxs)->toOneMany())
+                $vi->in(meta::rel::metamodel::const(1));
+              }, {|
+                vars([$vi]->concatenate($vxs)->toOneMany())
+                  ->where(
+                    $expr.group
+                      ->zip($vxs)
+                      ->fold({group, accum | 
+                        $accum->concatenate(
+                          rel($targetTable)
+                            ->appl(label($group.first))
+                            ->appl([$vi, $group.second])
+                        )
+                      }, [])
+                      ->toOneMany()
+                      ->and()
+                  );
+              });
+
+            let body = 
+              [$vi, $aggBody]
+                ->product()
+                ->from($binding);
+
+            def($head, $body);
+          });
+        })
+        ->collect()
+        ->them({aggregateRules: Rule[*] |
+          ^$parentState(
+            program=$parentState.program
+              ->with($groupRules)
+              ->with($aggregateRules),
+            current=rel($targetTable)->annotate(TabularDataSet),
+            cols=columns($expr.names)
+          );    
+        });
+    });
+}
+
+
+function meta::rel::compile::compile(
+  ifThenElse: meta::rel::compile::ir::IfThenElse[1], 
+  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
+  state: CompilationState[1]
+): Result<CompilationState|0..1>[1] {
+  $ifThenElse.condition
+    ->compile($callback, $state)
+    ->andThen({state: CompilationState[1] |
+      let condition = $state->current()->unwrap();
+      $ifThenElse.then
+        ->compile($callback, $state)
+        ->andThen({state: CompilationState[1] |
+          let then = $state->current()->unwrap();
+
+          $ifThenElse.else
+            ->compile($callback, $state)
+            ->step({else: Expr[1] |
+              $condition
+                ->meta::rel::metamodel::ifThenElse($then, $else)
+                ->ok();
+            });
+        });
+    });
+}

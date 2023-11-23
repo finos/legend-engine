@@ -17,19 +17,19 @@ package org.finos.legend.engine.persistence.components.scenarios;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.BitemporalDelta;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.TransactionDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.ValidDateTime;
 import org.finos.legend.engine.persistence.components.ingestmode.validitymilestoning.derivation.SourceSpecifiesFromDateTime;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 
 import java.util.Arrays;
-import java.util.Optional;
 
 public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
 {
@@ -86,7 +86,12 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
     {
         BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+                .versioningStrategy(AllVersionsStrategy.builder()
+                    .versioningField(versionField)
+                    .dataSplitFieldName(dataSplitField)
+                    .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                    .performStageVersioning(false)
+                    .build())
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
@@ -102,9 +107,9 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
 
         TestScenario testScenario = new TestScenario(ingestMode);
         testScenario.setDatasets(Datasets.builder()
-                .mainDataset(mainTableWithBitemporalFromOnlySchema)
-                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithDataSplit)
-                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .mainDataset(mainTableWithBitemporalFromOnlyWithVersionSchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithVersionWithDataSplit)
+                .tempDataset(tempTableWithBitemporalFromOnlyWithVersionSchema)
                 .build());
         return testScenario;
     }
@@ -143,7 +148,12 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
     {
         BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+                .versioningStrategy(AllVersionsStrategy.builder()
+                    .versioningField(versionField)
+                    .dataSplitFieldName(dataSplitField)
+                    .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                    .performStageVersioning(false)
+                    .build())
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
@@ -160,7 +170,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
                 .build();
-        return new TestScenario(mainTableWithBitemporalFromOnlySchema, stagingTableWithBitemporalFromOnlySchemaWithDeleteIndWithDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBitemporalFromOnlyWithVersionSchema, stagingTableWithBitemporalFromOnlySchemaWithDeleteIndWithVersionWithDataSplit, ingestMode);
     }
 
     public TestScenario BATCH_ID_BASED__NO_DEL_IND__NO_DATA_SPLITS__FILTER_DUPLICATES()
@@ -178,7 +188,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                                 .sourceDateTimeFromField(validityFromReferenceField)
                                 .build())
                         .build())
-                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .filterExistingRecords(true)
                 .build();
         TestScenario testScenario = new TestScenario(ingestMode);
         testScenario.setDatasets(Datasets.builder()
@@ -194,7 +204,12 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
     {
         BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+                .versioningStrategy(AllVersionsStrategy.builder()
+                    .versioningField(versionField)
+                    .dataSplitFieldName(dataSplitField)
+                    .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                    .performStageVersioning(false)
+                    .build())
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
@@ -206,7 +221,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                                 .sourceDateTimeFromField(validityFromReferenceField)
                                 .build())
                         .build())
-                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .filterExistingRecords(true)
                 .build();
 
         TestScenario testScenario = new TestScenario(ingestMode);
@@ -214,13 +229,13 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                 .database(stagingWithoutDuplicatesDbName)
                 .name(stagingTableWithoutDuplicatesName)
                 .alias(stagingTableWithoutDuplicatesAlias)
-                .schema(bitemporalFromOnlyStagingTableSchemaWithDataSplit)
+                .schema(bitemporalFromOnlyStagingTableSchemaWithVersionWithDataSplit)
                 .build();
 
         testScenario.setDatasets(Datasets.builder()
-                .mainDataset(mainTableWithBitemporalFromOnlySchema)
-                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithDataSplit)
-                .tempDataset(tempTableWithBitemporalFromOnlySchema)
+                .mainDataset(mainTableWithBitemporalFromOnlyWithVersionSchema)
+                .stagingDataset(stagingTableWithBitemporalFromOnlySchemaWithVersionWithDataSplit)
+                .tempDataset(tempTableWithBitemporalFromOnlyWithVersionSchema)
                 .stagingDatasetWithoutDuplicates(stagingTableWithoutDuplicates)
                 .build());
         return testScenario;
@@ -245,7 +260,7 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
-                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .filterExistingRecords(true)
                 .build();
 
         TestScenario testScenario = new TestScenario(ingestMode);
@@ -269,7 +284,12 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
     {
         BitemporalDelta ingestMode = BitemporalDelta.builder()
                 .digestField(digestField)
-                .dataSplitField(Optional.of(dataSplitField))
+                .versioningStrategy(AllVersionsStrategy.builder()
+                    .versioningField(versionField)
+                    .dataSplitFieldName(dataSplitField)
+                    .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                    .performStageVersioning(false)
+                    .build())
                 .transactionMilestoning(BatchId.builder()
                         .batchIdInName(batchIdInField)
                         .batchIdOutName(batchIdOutField)
@@ -285,10 +305,10 @@ public class BitemporalDeltaSourceSpecifiesFromOnlyScenarios extends BaseTest
                         .deleteField(deleteIndicatorField)
                         .addAllDeleteValues(Arrays.asList(deleteIndicatorValues))
                         .build())
-                .deduplicationStrategy(FilterDuplicates.builder().build())
+                .filterExistingRecords(true)
                 .build();
 
-        return new TestScenario(mainTableWithBitemporalFromOnlySchema, stagingTableWithBitemporalFromOnlySchemaWithDeleteIndWithDataSplit, ingestMode);
+        return new TestScenario(mainTableWithBitemporalFromOnlyWithVersionSchema, stagingTableWithBitemporalFromOnlySchemaWithDeleteIndWithVersionWithDataSplit, ingestMode);
     }
 
 

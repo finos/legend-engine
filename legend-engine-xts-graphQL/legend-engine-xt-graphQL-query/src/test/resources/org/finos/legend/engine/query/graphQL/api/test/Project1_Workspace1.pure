@@ -78,6 +78,11 @@ Association simple::model::Firm_Employees
 }
 
 ###Relational
+Database meta::relational::graphFetch::tests::domain::TestStore
+(
+)
+
+###Relational
 Database simple::store::DB
 (
   Table FIRM_TABLE
@@ -113,6 +118,21 @@ Database simple::store::DB
   Join PERSON_FIRM(PERSON_TABLE.FIRM_ID = FIRM_TABLE.ID)
   Join PERSON_ADDRESS(PERSON_TABLE.ID = ADDRESS_TABLE.PERSON_ID)
 )
+
+###DataSpace
+DataSpace simple::dataspace
+{
+  executionContexts:
+  [
+    {
+      name: 'dummyContext';
+      mapping: simple::mapping::Map;
+      defaultRuntime: simple::runtime::Runtime;
+    }
+  ];
+  defaultExecutionContext: 'dummyContext';
+}
+
 
 ###Mapping
 import simple::model::*;

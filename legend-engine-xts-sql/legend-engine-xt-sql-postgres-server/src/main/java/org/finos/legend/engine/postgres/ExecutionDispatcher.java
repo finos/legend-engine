@@ -15,13 +15,12 @@
 
 package org.finos.legend.engine.postgres;
 
+import java.util.List;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParserBaseVisitor;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.handler.empty.EmptySessionHandler;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedName;
-
-import java.util.List;
 
 public class ExecutionDispatcher extends SqlBaseParserBaseVisitor<SessionHandler>
 {

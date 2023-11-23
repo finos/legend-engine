@@ -20,6 +20,7 @@ public enum FunctionName
     MAX,
     MIN,
     COUNT,
+    DISTINCT,
     COALESCE,
     CURRENT_TIME,
     CURRENT_DATE,
@@ -27,6 +28,7 @@ public enum FunctionName
     CURRENT_TIMESTAMP,
     UPPER,
     ROW_NUMBER,
+    DENSE_RANK,
     SUBSTRING,
     PARSE_JSON,
     DATE,
@@ -37,5 +39,6 @@ public enum FunctionName
     GENERATE_ARRAY,
     PARSE_DATETIME,
     OBJECT_CONSTRUCT,
-    TO_VARIANT;
+    TO_VARIANT,
+    TO_JSON;
 }

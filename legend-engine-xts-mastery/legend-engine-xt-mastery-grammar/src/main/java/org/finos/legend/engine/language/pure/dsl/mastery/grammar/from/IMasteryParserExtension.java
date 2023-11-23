@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authentication.CredentialSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.connection.Connection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.runtime.MasteryRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -53,6 +54,11 @@ public interface IMasteryParserExtension extends PureGrammarParserExtension
     }
 
     default List<Function<SpecificationSourceCode, Connection>> getExtraMasteryConnectionParsers()
+    {
+        return Collections.emptyList();
+    }
+
+    default List<Function<SpecificationSourceCode, MasteryRuntime>> getExtraMasteryRuntimeParsers()
     {
         return Collections.emptyList();
     }
