@@ -32,6 +32,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
@@ -135,6 +136,59 @@ class AppendOnlyTest extends BaseTest
         // 3. Assert that the staging table is truncated
         stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"STAGING\"");
         Assertions.assertEquals(stagingTableList.size(), 0);
+    }
+
+    /*
+    Scenario: Test Append Only vanilla case + staging table is cleaned up in the end with upper case (2)
+    */
+    @Test
+    void testAppendOnlyVanillaUpperCaseWithFilteredDataset() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        FilteredDataset stagingTable = TestUtils.getFilteredStagingTableWithComplexFilter();
+
+        // Create staging table
+        h2Sink.executeStatement("CREATE TABLE IF NOT EXISTS \"TEST\".\"STAGING\"(\"NAME\" VARCHAR(64) NOT NULL,\"INCOME\" BIGINT,\"EXPIRY_DATE\" DATE)");
+
+        // Generate the milestoning object
+        AppendOnly ingestMode = AppendOnly.builder()
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
+            .deduplicationStrategy(AllowDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .filterExistingRecords(false)
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{nameName.toUpperCase(), incomeName.toUpperCase(), expiryDateName.toUpperCase()};
+
+        // ------------ Perform incremental (append) milestoning With Clean Staging Table ------------------------
+        String dataPass1 = basePath + "input/with_staging_filter/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/with_staging_filter/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithNoPkInUpperCase(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 2);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform incremental (append) milestoning With Clean Staging Table ------------------------
+        String dataPass2 = basePath + "input/with_staging_filter/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/with_staging_filter/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithNoPkInUpperCase(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 2);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_UPDATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        executePlansAndVerifyForCaseConversion(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 
     /*

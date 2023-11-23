@@ -269,7 +269,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .cleanupStagingData(true)
+                .cleanupStagingData(false)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaWithNoVersionAndStagingFilter(operations);
@@ -285,7 +285,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
             .ingestMode(scenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .executionTimestampClock(fixedClock_2000_01_01)
-            .cleanupStagingData(true)
+            .cleanupStagingData(false)
             .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalDeltaWithNoVersionAndFilteredDataset(operations);
@@ -302,7 +302,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .cleanupStagingData(true)
+                .cleanupStagingData(false)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithFilterDupsMaxVersionWithStagingFilter(operations);
@@ -319,7 +319,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
             .ingestMode(scenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .executionTimestampClock(fixedClock_2000_01_01)
-            .cleanupStagingData(true)
+            .cleanupStagingData(false)
             .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithFilterDupsMaxVersionWithFilteredDataset(operations);
@@ -336,7 +336,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .ingestMode(scenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .cleanupStagingData(true)
+                .cleanupStagingData(false)
                 .collectStatistics(true)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());

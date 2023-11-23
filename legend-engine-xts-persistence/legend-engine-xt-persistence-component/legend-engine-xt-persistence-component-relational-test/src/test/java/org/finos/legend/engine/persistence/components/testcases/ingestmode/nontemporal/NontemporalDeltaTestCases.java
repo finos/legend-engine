@@ -234,6 +234,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
+                .cleanupStagingData(false)
                 .collectStatistics(true)
                 .build();
 
@@ -250,6 +251,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
+            .cleanupStagingData(false)
             .collectStatistics(true)
             .build();
 
@@ -266,6 +268,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
+            .cleanupStagingData(false)
             .collectStatistics(true)
             .build();
 
@@ -282,6 +285,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
+            .cleanupStagingData(false)
             .collectStatistics(true)
             .build();
 
