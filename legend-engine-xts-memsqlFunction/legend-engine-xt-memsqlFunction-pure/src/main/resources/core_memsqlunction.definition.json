@@ -1,0 +1,9 @@
+{
+  "name": "core_memsqlfunction",
+  "pattern": "(meta::external::function::activator::memSqlFunction|meta::protocols)(::.*)?",
+  "dependencies": [
+    "platform",
+    "core_function_activator",
+    "core_relational"
+  ]
+}
