@@ -291,14 +291,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
       a: SemiStructuredArrayElementAccess[1] | semiStructuredArrayElementAccessForH2($processedOperand, $a.index->cast(@Literal).value->toString())
    ]);
 
-   if ($s.returnType == String, | 'cast(' + $elementAccess + ' as varchar)', |
-   if ($s.returnType == Boolean, | 'cast(' + $elementAccess + ' as boolean)', |
-   if ($s.returnType == Float, | 'cast(' + $elementAccess + ' as float)', |
-   if ($s.returnType == Integer, | 'cast(' + $elementAccess + ' as integer)', |
-   if ($s.returnType == StrictDate, | 'cast(' + $elementAccess + ' as date)', |
-   if ($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | 'cast(' + $elementAccess + ' as timestamp)', |
-   if ($s.returnType->isNotEmpty() && $s.returnType->toOne()->instanceOf(Enumeration), | 'cast(' + $elementAccess + ' as varchar)', |
-   $elementAccess)))))));
+   $elementAccess->castToReturnTypeForSemiStructuredData($s.returnType);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processJoinStringsOperationForH2(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
