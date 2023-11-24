@@ -3350,7 +3350,6 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(expression: 
                                                               if($setImpls->size()==1,| $processRootSetImpl->eval($setImpls->at(0))
                                                                                      ,| let milestoningContext = getMilestoningContextForAll($expression,$o, $parameters, $state, $vars, $context, $extensions);
                                                                                         let union = buildUnion($setImpls, [], false, $state.inProject, $milestoningContext, $nodeId, $state, $context, $extensions);
-                                                                                        let propMap = $setImpls->at(0)->cast(@RelationalInstanceSetImplementation)->dataTypePropertyMappings();
                                                                                         let newRoot = ^RootJoinTreeNode(alias = ^TableAlias(name='unionBase', relationalElement=$union));
                                                                                         let fullCols = $union.queries->at(0).columns->cast(@Alias).name->filter(n | $n != 'u_type');
                                                                                         ^SelectWithCursor( select = ^SelectSQLQuery( columns = ^Alias(name= 'u_type', relationalElement = ^TableAliasColumn(alias = $newRoot.alias, column = ^Column(name='u_type', type=^meta::relational::metamodel::datatype::Integer())))

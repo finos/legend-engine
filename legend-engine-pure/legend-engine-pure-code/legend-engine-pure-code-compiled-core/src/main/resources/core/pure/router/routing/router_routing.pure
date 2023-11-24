@@ -42,6 +42,7 @@ Class meta::pure::router::routing::RoutingState
    routingStrategy : RoutingStrategy[1];
    shouldBeRouted  : Boolean[1];
    value           : Any[0..1];
+   graphFetchFlow  : Boolean[0..1];
 }
 
 Class meta::pure::router::routing::PropertyMap
@@ -49,9 +50,9 @@ Class meta::pure::router::routing::PropertyMap
    v : Pair<String,Any>[*];
 }
 
-function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
-   let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy),
+   let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow),
                                               $expressions,
                                               $executionContext,
                                               newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),
@@ -65,6 +66,11 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Func
       evs: ExtendedRoutedValueSpecification[1] | $evs,
       vs: ValueSpecification[1]                | $fxn.routingStrategy.wrapValueSpec($vs, 'strategy_wrapper', $executionContext, $extensions, $debug)
    ]));
+}
+
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+{
+  enrichFunctionExpressions($expressions, $routingStrategy, $executionContext, $inScopeVars, false, $extensions, $debug);
 }
 
 function meta::pure::router::routing::processCollection(state:RoutingState[1], col:Any[*], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldProcess:Function<{Any[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[*]
