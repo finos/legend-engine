@@ -15,17 +15,11 @@
 package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-
-import static org.junit.Assert.assertThrows;
 
 public class GenerateCastMoveNestedTest extends GenerateCastTestBase
 {
@@ -65,8 +59,7 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
     @Test
     public void testUpcast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        expect(upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"1d\"}, \"xyz\": {\"@type\":\"String\"}},\n" +
@@ -75,11 +68,7 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"3d\"}, \"xyz\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"String\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Map<String, Object> jsonNodeOut = (Map<String, Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
-
-        Map<String, Object> expectedJsonNodeOut = mapper.readValue(
+                        "}"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -89,16 +78,13 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"3d\"}, \"abc\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"String\", \"value\":\"4d\"}, \"abc\": {\"@type\":\"String\"}\n" +
-                        "}", Map.class); // updated version and new default value field added
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}\n");
     }
 
     @Test
     public void testDowncast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"1d\"}, \"abc\": {\"@type\":\"String\"}},\n" +
@@ -107,11 +93,7 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"3d\"}, \"abc\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"String\", \"value\":\"4d\"}, \"abc\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
-                .invoke(null, jsonNode, "ftdm:abcdefg123");
-        Map<String,Object> expectedJsonNodeOut = mapper.readValue(
+                        "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -121,16 +103,13 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"3d\"}, \"xyz\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"String\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"String\"}\n" +
-                        "}", Map.class); // remove default values
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}\n");
     }
 
     @Test
     public void testUpcastSame() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        expect(upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"1d\"}, \"xyz\": {\"@type\":\"String\"}},\n" +
@@ -139,11 +118,7 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"3d\"}, \"xyz\": {\"@type\":\"String\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"String\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Map<String, Object> jsonNodeOut = (Map<String, Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
-
-        Map<String, Object> expectedJsonNodeOut = mapper.readValue(
+                        "}"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -153,16 +128,13 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"3d\"}, \"abc\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"String\", \"value\":\"4d\"}, \"abc\": {\"@type\":\"String\"}\n" +
-                        "}", Map.class); // updated version and new default value field added
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}\n");
     }
 
     @Test
     public void testDowncastSame() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"1d\"}, \"abc\": {\"@type\":\"String\"}},\n" +
@@ -171,11 +143,7 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"3d\"}, \"abc\": {\"@type\":\"String\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"String\", \"value\":\"4d\"}, \"abc\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
-                .invoke(null, jsonNode, "ftdm:abcdefg123");
-        Map<String,Object> expectedJsonNodeOut = mapper.readValue(
+                        "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -185,16 +153,13 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"3d\"}, \"xyz\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"String\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"String\"}\n" +
-                        "}", Map.class); // remove default values
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}\n");
     }
 
     @Test
     public void testUpcastDifferent() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        exception(() -> upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"1d\"}, \"xyz\": {\"@type\":\"String\"}},\n" +
@@ -203,19 +168,14 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"3d\"}, \"xyz\": {\"@type\":\"String\", \"value\":\"5d\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"String\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Method upcastMethod = compiledClass.getMethod("upcast", Map.class);
-        InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> upcastMethod.invoke(null, jsonNode));
-        Assert.assertEquals("Cannot overwrite with different value:5d", re.getCause().getMessage());
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}"),
+                "Cannot overwrite with different value:5d");
     }
 
     @Test
     public void testDowncastDifferent() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        exception(() -> downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"1d\"}, \"abc\": {\"@type\":\"String\"}},\n" +
@@ -224,19 +184,14 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"3d\"}, \"abc\": {\"@type\":\"String\", \"value\":\"6d\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"String\", \"value\":\"4d\"}, \"abc\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Method downcastMethod = compiledClass.getMethod("downcast", Map.class, String.class);
-        InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> downcastMethod.invoke(null, jsonNode, "ftdm:abcdefg123"));
-        Assert.assertEquals("Cannot overwrite with different value:6d", re.getCause().getMessage());
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}", "ftdm:abcdefg123"),
+                "Cannot overwrite with different value:6d");
     }
 
     @Test
     public void testUpcastInvalidDestination() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        exception(() -> upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"1d\"}, \"xyz\": {\"@type\":\"String\"}},\n" +
@@ -245,19 +200,14 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"3d\"}, \"xyz\": \"invalid\"}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"String\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Method upcastMethod = compiledClass.getMethod("upcast", Map.class);
-        InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> upcastMethod.invoke(null, jsonNode));
-        Assert.assertEquals("Destination is not a map: xyz", re.getCause().getMessage());
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}"),
+                "Destination is not a map: xyz");
     }
 
     @Test
     public void testDowncastInvalidDestination() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        exception(() -> downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"1d\"}, \"abc\": {\"@type\":\"String\"}},\n" +
@@ -266,19 +216,14 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"3d\"}, \"abc\":  \"invalid\"}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"String\", \"value\":\"4d\"}, \"abc\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Method downcastMethod = compiledClass.getMethod("downcast", Map.class, String.class);
-        InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> downcastMethod.invoke(null, jsonNode, "ftdm:abcdefg123"));
-        Assert.assertEquals("Destination is not a map: abc", re.getCause().getMessage());
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}", "ftdm:abcdefg123"),
+                "Destination is not a map: abc");
     }
 
     @Test
     public void testUpcastInvalidSource() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        exception(() -> upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"String\", \"value\":\"1d\"}, \"xyz\": {\"@type\":\"String\"}},\n" +
@@ -287,19 +232,14 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"invalid\", \"xyz\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"abc\": {\"@type\":\"String\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Method upcastMethod = compiledClass.getMethod("upcast", Map.class);
-        InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> upcastMethod.invoke(null, jsonNode));
-        Assert.assertEquals("Source is not a map: abc", re.getCause().getMessage());
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}"),
+                "Source is not a map: abc");
     }
 
     @Test
     public void testDowncastInvalidSource() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        exception(() -> downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": {\"@type\":\"String\", \"value\":\"1d\"}, \"abc\": {\"@type\":\"String\"}},\n" +
@@ -308,11 +248,7 @@ public class GenerateCastMoveNestedTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"xyz\": \"invalid\", \"abc\": {\"@type\":\"String\"}}]\n" +
                         "  ],\n" +
                         "  \"xyz\": {\"@type\":\"String\", \"value\":\"4d\"}, \"abc\": {\"@type\":\"String\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Method downcastMethod = compiledClass.getMethod("downcast", Map.class, String.class);
-        InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, () -> downcastMethod.invoke(null, jsonNode, "ftdm:abcdefg123"));
-        Assert.assertEquals("Source is not a map: xyz", re.getCause().getMessage());
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}", "ftdm:abcdefg123"),
+                "Source is not a map: xyz");
     }
 }

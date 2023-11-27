@@ -15,14 +15,11 @@
 package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 
 public class GenerateCastMoveExtractTest extends GenerateCastTestBase
 {
@@ -83,8 +80,7 @@ public class GenerateCastMoveExtractTest extends GenerateCastTestBase
     @Test
     public void testUpcast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        expect(upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"names\": {\"@type\":\"NamesClass\", \"first\":\"1d\", \"middle\":\"\", \"last\":\"2d\"}},\n" +
@@ -93,11 +89,7 @@ public class GenerateCastMoveExtractTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"names\": {\"@type\":\"NamesClass\", \"first\":\"5d\", \"middle\":\"\", \"last\":\"6d\"}}]\n" +
                         "  ],\n" +
                         "  \"names\": {\"@type\":\"NamesClass\", \"first\":\"7d\", \"middle\":\"\", \"last\":\"8d\"}\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Map<String, Object> jsonNodeOut = (Map<String, Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
-
-        Map<String, Object> expectedJsonNodeOut = mapper.readValue(
+                        "}"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -107,16 +99,13 @@ public class GenerateCastMoveExtractTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"firstName\":\"5d\", \"lastName\":\"6d\"}]\n" +
                         "  ],\n" +
                         "  \"firstName\":\"7d\", \"lastName\":\"8d\"\n" +
-                        "}", Map.class); // updated version and new default value field added
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}\n");
     }
 
     @Test
     public void testDowncast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input =
-                "{\n" +
+        expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"firstName\":\"1d\", \"lastName\":\"2d\"},\n" +
@@ -125,11 +114,7 @@ public class GenerateCastMoveExtractTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"firstName\":\"5d\", \"lastName\":\"6d\"}]\n" +
                         "  ],\n" +
                         "  \"firstName\":\"7d\", \"lastName\":\"8d\"\n" +
-                        "}";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class)
-                .invoke(null, jsonNode, "ftdm:abcdefg123");
-        Map<String,Object> expectedJsonNodeOut = mapper.readValue(
+                        "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
@@ -139,8 +124,6 @@ public class GenerateCastMoveExtractTest extends GenerateCastTestBase
                         "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"names\": {\"@type\":\"NamesClass\", \"first\":\"5d\", \"middle\":\"\", \"last\":\"6d\"}}]\n" +
                         "  ],\n" +
                         "  \"names\": {\"@type\":\"NamesClass\", \"first\":\"7d\", \"middle\":\"\", \"last\":\"8d\"}\n" +
-                        "}", Map.class); // remove default values
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}\n");
     }
 }
