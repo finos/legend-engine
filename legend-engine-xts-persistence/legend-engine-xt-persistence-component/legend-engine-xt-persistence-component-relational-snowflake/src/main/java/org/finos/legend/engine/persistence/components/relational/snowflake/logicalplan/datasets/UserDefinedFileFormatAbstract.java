@@ -12,37 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+
+package org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets;
 
 import org.immutables.value.Value;
 
-import java.util.Optional;
-
 @Value.Immutable
 @Value.Style(
-    typeAbstract = "*Abstract",
-    typeImmutable = "*",
-    jdkOnly = true,
-    optionalAcceptNullable = true,
-    strictBuilder = true
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
 )
-public interface LoadOptionsAbstract
+public interface UserDefinedFileFormatAbstract extends FileFormat
 {
-    Optional<String> fieldDelimiter();
-
-    Optional<String> encoding();
-
-    Optional<String> nullMarker();
-
-    Optional<String> quote();
-
-    Optional<Long> skipLeadingRows();
-
-    Optional<Long> maxBadRecords();
-
-    Optional<String> compression();
-
-    Optional<Boolean> force();
-
-    Optional<String> onError();
+    @Value.Parameter(order = 0)
+    String formatName();
 }

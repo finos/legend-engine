@@ -62,7 +62,7 @@ class BulkLoadPlanner extends Planner
     private Dataset tempDataset;
     private StagedFilesDataset stagedFilesDataset;
     private BulkLoadMetadataDataset bulkLoadMetadataDataset;
-    private Optional<String> bulkLoadTaskIdValue;
+    private Optional<String> bulkLoadEventIdValue;
 
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
@@ -75,7 +75,7 @@ class BulkLoadPlanner extends Planner
             throw new IllegalArgumentException("Only StagedFilesDataset are allowed under Bulk Load");
         }
 
-        bulkLoadTaskIdValue = plannerOptions.bulkLoadTaskIdValue();
+        bulkLoadEventIdValue = plannerOptions.bulkLoadEventIdValue();
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
         bulkLoadMetadataDataset = bulkLoadMetadataDataset().orElseThrow(IllegalStateException::new);
 
@@ -139,7 +139,7 @@ class BulkLoadPlanner extends Planner
         }
 
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
-        return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert, stagedFilesDataset.stagedFilesDatasetProperties().loadOptions())));
+        return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert, stagedFilesDataset.stagedFilesDatasetProperties())));
     }
 
     private LogicalPlan buildLogicalPlanForCopyAndTransform(Resources resources)
@@ -150,7 +150,7 @@ class BulkLoadPlanner extends Planner
         // Operation 1: Copy into a temp table
         List<Value> fieldsToSelectFromStage = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelectFromStage).build();
-        operations.add(Copy.of(tempDataset, selectStage, fieldsToSelectFromStage, stagedFilesDataset.stagedFilesDatasetProperties().loadOptions()));
+        operations.add(Copy.of(tempDataset, selectStage, fieldsToSelectFromStage, stagedFilesDataset.stagedFilesDatasetProperties()));
 
 
         // Operation 2: Transfer from temp table into target table, adding extra columns at the same time
@@ -263,9 +263,18 @@ class BulkLoadPlanner extends Planner
     private String jsonifyBatchSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties)
     {
         Map<String, Object> batchSourceMap = new HashMap();
-        List<String> files = stagedFilesDatasetProperties.files();
-        batchSourceMap.put("files", files);
-        bulkLoadTaskIdValue.ifPresent(taskId -> batchSourceMap.put("task_id", taskId));
+        List<String> filePaths = stagedFilesDatasetProperties.filePaths();
+        List<String> filePatterns = stagedFilesDatasetProperties.filePatterns();
+
+        if (filePaths != null && !filePaths.isEmpty())
+        {
+            batchSourceMap.put("file_paths", filePaths);
+        }
+        if (filePatterns != null && !filePatterns.isEmpty())
+        {
+            batchSourceMap.put("file_patterns", filePatterns);
+        }
+        bulkLoadEventIdValue.ifPresent(taskId -> batchSourceMap.put("event_id", taskId));
         ObjectMapper objectMapper = new ObjectMapper();
         try
         {

@@ -14,10 +14,13 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.FileFormat;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.StandardFileFormat;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.UserDefinedFileFormat;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements.CopyStatement;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -26,16 +29,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class CopyVisitor implements LogicalPlanVisitor<Copy>
 {
-
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Copy current, VisitorContext context)
     {
-        Map<String, Object> loadOptionsMap = new HashMap<>();
-        current.loadOptions().ifPresent(options -> retrieveLoadOptions(options, loadOptionsMap));
-        CopyStatement copyStatement = new CopyStatement(loadOptionsMap);
+        SnowflakeStagedFilesDatasetProperties properties = (SnowflakeStagedFilesDatasetProperties) current.stagedFilesDatasetProperties();
+        CopyStatement copyStatement = new CopyStatement();
+        setCopyStatementProperties(properties, copyStatement);
         prev.push(copyStatement);
 
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
@@ -46,9 +49,34 @@ public class CopyVisitor implements LogicalPlanVisitor<Copy>
         return new VisitorResult(copyStatement, logicalPlanNodes);
     }
 
-    private void retrieveLoadOptions(LoadOptions loadOptions, Map<String, Object> loadOptionsMap)
+    private static void setCopyStatementProperties(SnowflakeStagedFilesDatasetProperties properties, CopyStatement copyStatement)
     {
-        loadOptions.onError().ifPresent(property -> loadOptionsMap.put("ON_ERROR", property));
-        loadOptions.force().ifPresent(property -> loadOptionsMap.put("FORCE", property));
+        copyStatement.setFilePatterns(properties.filePatterns());
+        copyStatement.setFilePaths(properties.filePaths());
+
+        // Add default option into the map
+        Map<String, Object> copyOptions = new HashMap<>(properties.copyOptions());
+        if (!copyOptions.containsKey("ON_ERROR") && !copyOptions.containsKey("on_error"))
+        {
+            copyOptions.put("ON_ERROR", "ABORT_STATEMENT");
+        }
+        copyStatement.setCopyOptions(copyOptions);
+
+        Optional<FileFormat> fileFormat = properties.fileFormat();
+        if (fileFormat.isPresent())
+        {
+            FileFormat format = properties.fileFormat().get();
+            if (format instanceof UserDefinedFileFormat)
+            {
+                UserDefinedFileFormat userDefinedFileFormat = (UserDefinedFileFormat) format;
+                copyStatement.setUserDefinedFileFormatName(userDefinedFileFormat.formatName());
+            }
+            else if (format instanceof StandardFileFormat)
+            {
+                StandardFileFormat standardFileFormat = (StandardFileFormat) format;
+                copyStatement.setFileFormatType(standardFileFormat.formatType());
+                copyStatement.setFileFormatOptions(standardFileFormat.formatOptions());
+            }
+        }
     }
 }

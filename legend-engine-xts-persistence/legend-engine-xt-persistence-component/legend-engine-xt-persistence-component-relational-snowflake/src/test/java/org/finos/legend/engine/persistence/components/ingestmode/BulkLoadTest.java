@@ -15,7 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.LoadOptions;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
@@ -33,6 +33,8 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.StandardFileFormat;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.UserDefinedFileFormat;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -87,8 +89,11 @@ public class BulkLoadTest
                 .stagedFilesDatasetProperties(
                         SnowflakeStagedFilesDatasetProperties.builder()
                            .location("my_location")
-                           .fileFormat("my_file_format")
-                           .addAllFiles(filesList).build())
+                           .fileFormat(StandardFileFormat.builder()
+                                   .formatType(FileFormatType.CSV)
+                                   .putFormatOptions("FIELD_DELIMITER", ",")
+                                   .build())
+                           .addAllFilePatterns(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
                 .build();
 
@@ -102,7 +107,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .bulkLoadTaskIdValue("task123")
+                .bulkLoadEventIdValue("task123")
                 .batchIdPattern("{NEXT_BATCH_ID}")
                 .build();
 
@@ -118,11 +123,13 @@ public class BulkLoadTest
                 "(\"col_int\", \"col_integer\", \"batch_id\", \"append_time\") " +
                 "FROM " +
                 "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000' " +
-                "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage)" +
-                " ON_ERROR='ABORT_STATEMENT'";
+                "FROM my_location as legend_persistence_stage) " +
+                "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
+                "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV')" +
+                " ON_ERROR = 'ABORT_STATEMENT'";
 
         String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (\"batch_id\", \"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
-                "(SELECT {NEXT_BATCH_ID},'my_name','2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"task_id\":\"task123\"}'))";
+                "(SELECT {NEXT_BATCH_ID},'my_name','2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"task123\",\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -147,8 +154,8 @@ public class BulkLoadTest
                 .stagedFilesDatasetProperties(
                         SnowflakeStagedFilesDatasetProperties.builder()
                                 .location("my_location")
-                                .fileFormat("my_file_format")
-                                .addAllFiles(filesList).build())
+                                .fileFormat(StandardFileFormat.builder().formatType(FileFormatType.CSV).build())
+                                .addAllFilePaths(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3, col4)).build())
                 .alias("t")
                 .build();
@@ -162,7 +169,7 @@ public class BulkLoadTest
                 .ingestMode(bulkLoad)
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
-                .bulkLoadTaskIdValue("task123")
+                .bulkLoadEventIdValue("task123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -176,8 +183,10 @@ public class BulkLoadTest
                 "(\"col_bigint\", \"col_variant\", \"batch_id\") " +
                 "FROM " +
                 "(SELECT t.$4 as \"col_bigint\",TO_VARIANT(PARSE_JSON(t.$5)) as \"col_variant\",(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME') " +
-                "FROM my_location (FILE_FORMAT => 'my_file_format', PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as t) " +
-                "ON_ERROR='ABORT_STATEMENT'";
+                "FROM my_location as t) " +
+                "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
+                "FILE_FORMAT = (TYPE = 'CSV') " +
+                "ON_ERROR = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -200,8 +209,8 @@ public class BulkLoadTest
                 .stagedFilesDatasetProperties(
                         SnowflakeStagedFilesDatasetProperties.builder()
                                 .location("my_location")
-                                .fileFormat("my_file_format")
-                                .addAllFiles(filesList).build())
+                                .fileFormat(UserDefinedFileFormat.of("my_file_format"))
+                                .addAllFilePaths(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
                 .build();
 
@@ -233,13 +242,14 @@ public class BulkLoadTest
                 "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\"," +
                 "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('COL_INT',legend_persistence_stage.$1,'COL_INTEGER',legend_persistence_stage.$2))," +
                 "(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
-                "FROM my_location (FILE_FORMAT => 'my_file_format', " +
-                "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
-                "ON_ERROR='ABORT_STATEMENT'";
+                "FROM my_location as legend_persistence_stage) " +
+                "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
+                "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
+                "ON_ERROR = 'ABORT_STATEMENT'";
 
         String expectedMetadataIngestSql = "INSERT INTO BULK_LOAD_BATCH_METADATA (\"BATCH_ID\", \"TABLE_NAME\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
             "(SELECT (SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
-            "'MY_NAME','2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+            "'MY_NAME','2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -313,7 +323,7 @@ public class BulkLoadTest
                     .relationalSink(SnowflakeSink.get())
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
-                    .bulkLoadTaskIdValue("batch123")
+                    .bulkLoadEventIdValue("batch123")
                     .build();
 
             GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
@@ -338,8 +348,8 @@ public class BulkLoadTest
                 .stagedFilesDatasetProperties(
                         SnowflakeStagedFilesDatasetProperties.builder()
                                 .location("my_location")
-                                .fileFormat("my_file_format")
-                                .addAllFiles(filesList).build())
+                                .fileFormat(UserDefinedFileFormat.of("my_file_format"))
+                                .addAllFilePaths(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
                 .build();
 
@@ -353,7 +363,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .bulkLoadTaskIdValue("task123")
+                .bulkLoadEventIdValue("task123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -370,9 +380,10 @@ public class BulkLoadTest
                 "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
                 "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
                 "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
-                "FROM my_location (FILE_FORMAT => 'my_file_format', " +
-                "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
-                "ON_ERROR='ABORT_STATEMENT'";
+                "FROM my_location as legend_persistence_stage) " +
+                "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
+                "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
+                "ON_ERROR = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -396,9 +407,9 @@ public class BulkLoadTest
             .stagedFilesDatasetProperties(
                 SnowflakeStagedFilesDatasetProperties.builder()
                     .location("my_location")
-                    .fileFormat("my_file_format")
-                    .loadOptions(LoadOptions.builder().force(true).build())
-                    .addAllFiles(filesList).build())
+                    .fileFormat(UserDefinedFileFormat.of("my_file_format"))
+                    .putCopyOptions("FORCE", true)
+                    .addAllFilePatterns(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
             .build();
 
@@ -412,7 +423,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue("task123")
+            .bulkLoadEventIdValue("task123")
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -429,9 +440,10 @@ public class BulkLoadTest
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
             "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
             "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
-            "FROM my_location (FILE_FORMAT => 'my_file_format', " +
-            "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
-            "FORCE=TRUE, ON_ERROR='ABORT_STATEMENT'";
+            "FROM my_location as legend_persistence_stage) " +
+            "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
+            "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
+            "FORCE = true, ON_ERROR = 'ABORT_STATEMENT'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -455,9 +467,12 @@ public class BulkLoadTest
             .stagedFilesDatasetProperties(
                 SnowflakeStagedFilesDatasetProperties.builder()
                     .location("my_location")
-                    .fileFormat("my_file_format")
-                    .loadOptions(LoadOptions.builder().force(false).onError("SKIP_FILE_10%").build())
-                    .addAllFiles(filesList).build())
+                    .fileFormat(StandardFileFormat.builder()
+                                .formatType(FileFormatType.CSV)
+                                .putFormatOptions("FIELD_DELIMITER", ",")
+                                .build())
+                    .putCopyOptions("ON_ERROR", "SKIP_FILE")
+                    .addAllFilePatterns(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2)).build())
             .build();
 
@@ -471,7 +486,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue("task123")
+            .bulkLoadEventIdValue("task123")
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -488,9 +503,10 @@ public class BulkLoadTest
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\"," +
             "LAKEHOUSE_UDF(OBJECT_CONSTRUCT('col_int',legend_persistence_stage.$1,'col_integer',legend_persistence_stage.$2))," +
             "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
-            "FROM my_location (FILE_FORMAT => 'my_file_format', " +
-            "PATTERN => '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)') as legend_persistence_stage) " +
-            "FORCE=FALSE, ON_ERROR='SKIP_FILE_10%'";
+            "FROM my_location as legend_persistence_stage) " +
+            "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
+            "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV') " +
+            "ON_ERROR = 'SKIP_FILE'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));

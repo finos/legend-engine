@@ -15,8 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.FileFormat;
-import org.finos.legend.engine.persistence.components.common.LoadOptions;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
@@ -40,10 +39,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
@@ -102,8 +98,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -117,7 +113,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .batchIdPattern("{NEXT_BATCH_ID}")
             .build();
 
@@ -141,7 +137,7 @@ public class BulkLoadTest
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT {NEXT_BATCH_ID},'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"task_id\":\"xyz123\"}'))";
+            "(SELECT {NEXT_BATCH_ID},'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
@@ -163,20 +159,21 @@ public class BulkLoadTest
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .build();
 
+        Map<String, Object> loadOptions = new HashMap<>();
+        loadOptions.put("encoding", "UTF8");
+        loadOptions.put("max_bad_records", 100L);
+        loadOptions.put("null_marker", "NULL");
+        loadOptions.put("quote", "'");
+        loadOptions.put("compression", "GZIP");
+        loadOptions.put("field_delimiter", ",");
+        loadOptions.put("skip_leading_rows", 1L);
+
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .loadOptions(LoadOptions.builder()
-                        .encoding("UTF8")
-                        .maxBadRecords(100L)
-                        .nullMarker("NULL")
-                        .quote("'")
-                        .compression("GZIP")
-                        .fieldDelimiter(",")
-                        .skipLeadingRows(1L)
-                        .build())
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .putAllLoadOptions(loadOptions)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -214,7 +211,7 @@ public class BulkLoadTest
 
         String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
             "(SELECT (SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
-            "PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+            "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
@@ -239,8 +236,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -254,7 +251,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -297,8 +294,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -312,7 +309,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -355,8 +352,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -370,7 +367,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 
@@ -462,7 +459,7 @@ public class BulkLoadTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(BigQuerySink.get())
-                .bulkLoadTaskIdValue(TASK_ID_VALUE)
+                .bulkLoadEventIdValue(TASK_ID_VALUE)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();

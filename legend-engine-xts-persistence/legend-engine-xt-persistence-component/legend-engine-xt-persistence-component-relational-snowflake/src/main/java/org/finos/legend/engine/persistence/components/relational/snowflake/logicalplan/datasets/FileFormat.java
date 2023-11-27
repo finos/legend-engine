@@ -12,28 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 package org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
-import org.immutables.value.Value;
-
-import java.util.Map;
-import java.util.Optional;
-
-@Value.Immutable
-@Value.Style(
-        typeAbstract = "*Abstract",
-        typeImmutable = "*",
-        jdkOnly = true,
-        optionalAcceptNullable = true,
-        strictBuilder = true
-)
-public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFilesDatasetProperties
+public interface FileFormat
 {
-    String location();
 
-    Optional<FileFormat> fileFormat();
-
-    Map<String, Object> copyOptions();
 }

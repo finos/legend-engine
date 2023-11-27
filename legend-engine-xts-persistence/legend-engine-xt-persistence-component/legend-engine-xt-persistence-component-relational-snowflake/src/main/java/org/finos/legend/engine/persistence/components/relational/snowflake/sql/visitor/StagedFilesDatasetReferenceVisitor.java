@@ -34,8 +34,6 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
         }
         SnowflakeStagedFilesDatasetProperties datasetProperties = (SnowflakeStagedFilesDatasetProperties) current.properties();
         StagedFilesTable stagedFiles = new StagedFilesTable(datasetProperties.location());
-        datasetProperties.fileFormat().ifPresent(stagedFiles::setFileFormat);
-        stagedFiles.setFilePattern(datasetProperties.files().stream().map(s -> '(' + s + ')').collect(Collectors.joining("|")));
         current.alias().ifPresent(stagedFiles::setAlias);
         prev.push(stagedFiles);
         return new VisitorResult(null);

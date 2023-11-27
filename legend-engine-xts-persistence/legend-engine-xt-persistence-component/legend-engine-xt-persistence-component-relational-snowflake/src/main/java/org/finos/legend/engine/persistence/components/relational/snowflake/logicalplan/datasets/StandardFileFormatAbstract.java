@@ -12,12 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets;
 
-public enum FileFormat
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
+import org.immutables.value.Value;
+
+import java.util.Map;
+
+@Value.Immutable
+@Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface StandardFileFormatAbstract extends FileFormat
 {
-    CSV,
-    JSON,
-    AVRO,
-    PARQUET;
+    FileFormatType formatType();
+
+    Map<String, Object> formatOptions();
 }

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements;
 
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
@@ -21,6 +22,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Field;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,12 +41,16 @@ public class CopyStatement implements DMLStatement
     private Table table;
     private final List<Field> columns;
     private SelectStatement selectStatement;
-    private final Map<String, Object> loadOptions;
+    private List<String> filePatterns;
+    private List<String> filePaths;
+    private String userDefinedFileFormatName;
+    private FileFormatType fileFormatType;
+    private Map<String, Object> fileFormatOptions;
+    private Map<String, Object> copyOptions;
 
-    public CopyStatement(Map<String, Object> loadOptions)
+    public CopyStatement()
     {
         this.columns = new ArrayList<>();
-        this.loadOptions = loadOptions;
     }
 
     public CopyStatement(Table table, List<Field> columns, SelectStatement selectStatement)
@@ -52,25 +58,20 @@ public class CopyStatement implements DMLStatement
         this.table = table;
         this.columns = columns;
         this.selectStatement = selectStatement;
-        this.loadOptions = new HashMap<>();
-    }
-
-    public CopyStatement(Table table, List<Field> columns, SelectStatement selectStatement, Map<String, Object> loadOptions)
-    {
-        this.table = table;
-        this.columns = columns;
-        this.selectStatement = selectStatement;
-        this.loadOptions = loadOptions;
     }
 
     /*
      Copy GENERIC PLAN for Snowflake:
-        COPY INTO [<namespace>.]<table_name> (COLUMN_LIST)
-        FROM
-        ( SELECT [<alias>.]$<file_col_num>[:<element>] [ , [<alias>.]$<file_col_num>[:<element>] , ...  ]
-            FROM { <internal_location> | <external_location> }
-        [ ( FILE_FORMAT => '<namespace>.<named_file_format>', PATTERN => '<regex_pattern>' ) ] [ <alias> ] )
-        [ <load_options> ]
+     --------------------------------
+     COPY INTO [<namespace>.]<table_name> (COLUMN_LIST)
+     FROM
+     ( SELECT [<alias>.]$<file_col_num>[.<element>] [ , [<alias>.]$<file_col_num>[.<element>] ... ]
+         FROM { internalStage | externalStage } )
+    [ FILES = ( '<file_name>' [ , '<file_name>' ] [ , ... ] ) ]
+    [ PATTERN = '<regex_pattern>' ]
+    [ FILE_FORMAT = ( { FORMAT_NAME = '[<namespace>.]<file_format_name>' |
+                    TYPE = { CSV | JSON | AVRO | ORC | PARQUET | XML } [ formatTypeOptions ] } ) ]
+    [ copyOptions ]
      */
 
     @Override
@@ -103,27 +104,66 @@ public class CopyStatement implements DMLStatement
         builder.append(OPEN_PARENTHESIS);
         selectStatement.genSql(builder);
         builder.append(CLOSING_PARENTHESIS);
-        builder.append(WHITE_SPACE);
 
-        int ctr = 0;
-        loadOptions.putIfAbsent("ON_ERROR", "ABORT_STATEMENT"); // Add default option into the map
-        for (String option : loadOptions.keySet().stream().sorted().collect(Collectors.toList()))
+        // File Paths
+        if (filePaths != null && !filePaths.isEmpty())
         {
-            ctr++;
-            builder.append(option);
-            builder.append(ASSIGNMENT_OPERATOR);
-            if (loadOptions.get(option) instanceof String)
-            {
-                builder.append(SqlGenUtils.singleQuote(loadOptions.get(option).toString().toUpperCase()));
-            }
-            else
-            {
-                builder.append(loadOptions.get(option).toString().toUpperCase());
-            }
+            String filePathsStr = filePaths.stream().map(path -> SqlGenUtils.singleQuote(path)).collect(Collectors.joining(", "));
+            builder.append(String.format(" FILES = (%s)", filePathsStr));
+        }
+        // File Patterns
+        else if (filePatterns != null && !filePatterns.isEmpty())
+        {
+            String filePatternStr = filePatterns.stream().map(s -> '(' + s + ')').collect(Collectors.joining("|"));
+            builder.append(String.format(" PATTERN = '%s'", filePatternStr));
+        }
 
-            if (ctr < loadOptions.size())
+        // FILE_FORMAT
+        if (StringUtils.notEmpty(userDefinedFileFormatName))
+        {
+            builder.append(String.format(" FILE_FORMAT = (FORMAT_NAME = '%s')", userDefinedFileFormatName));
+        }
+        else if (fileFormatType != null)
+        {
+            builder.append(" FILE_FORMAT = ");
+            builder.append(OPEN_PARENTHESIS);
+            fileFormatOptions = new HashMap<>(fileFormatOptions);
+            fileFormatOptions.put("TYPE", fileFormatType.name());
+            addOptions(fileFormatOptions, builder);
+            builder.append(CLOSING_PARENTHESIS);
+        }
+
+        // Add copy Options
+        if (copyOptions != null && !copyOptions.isEmpty())
+        {
+            builder.append(WHITE_SPACE);
+            addOptions(copyOptions, builder);
+        }
+    }
+
+
+    private void addOptions(Map<String, Object> options, StringBuilder builder)
+    {
+        if (options != null && options.size() > 0)
+        {
+            int ctr = 0;
+            for (String option : options.keySet().stream().sorted().collect(Collectors.toList()))
             {
-                builder.append(COMMA + WHITE_SPACE);
+                ctr++;
+                builder.append(option);
+                builder.append(WHITE_SPACE + ASSIGNMENT_OPERATOR + WHITE_SPACE);
+                if (options.get(option) instanceof String)
+                {
+                    builder.append(SqlGenUtils.singleQuote(options.get(option)));
+                }
+                else
+                {
+                    builder.append(options.get(option));
+                }
+                if (ctr < options.size())
+                {
+                    builder.append(COMMA + WHITE_SPACE);
+                }
             }
         }
     }
@@ -156,5 +196,35 @@ public class CopyStatement implements DMLStatement
         {
             throw new SqlDomException("table is mandatory for Copy Table Command");
         }
+    }
+
+    public void setFilePatterns(List<String> filePatterns)
+    {
+        this.filePatterns = filePatterns;
+    }
+
+    public void setFilePaths(List<String> filePaths)
+    {
+        this.filePaths = filePaths;
+    }
+
+    public void setUserDefinedFileFormatName(String userDefinedFileFormatName)
+    {
+        this.userDefinedFileFormatName = userDefinedFileFormatName;
+    }
+
+    public void setFileFormatType(FileFormatType fileFormatType)
+    {
+        this.fileFormatType = fileFormatType;
+    }
+
+    public void setFileFormatOptions(Map<String, Object> fileFormatOptions)
+    {
+        this.fileFormatOptions = fileFormatOptions;
+    }
+
+    public void setCopyOptions(Map<String, Object> copyOptions)
+    {
+        this.copyOptions = copyOptions;
     }
 }

@@ -14,12 +14,11 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.operations;
 
-import org.finos.legend.engine.persistence.components.common.LoadOptions;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Parameter;
@@ -45,5 +44,5 @@ public interface CopyAbstract extends Operation
     List<Value> fields();
 
     @Parameter(order = 3)
-    Optional<LoadOptions> loadOptions();
+    StagedFilesDatasetProperties stagedFilesDatasetProperties();
 }
