@@ -240,6 +240,7 @@ Class meta::external::query::sql::metamodel::FunctionCall extends meta::external
   <<equality.Key>> filter: meta::external::query::sql::metamodel::Expression[0..1];
   <<equality.Key>> window: meta::external::query::sql::metamodel::Window[0..1];
   <<equality.Key>> group: meta::external::query::sql::metamodel::Group[0..1];
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
 }
 
 Class meta::external::query::sql::metamodel::SimpleCaseExpression extends meta::external::query::sql::metamodel::Expression

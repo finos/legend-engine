@@ -78,6 +78,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   [
     dynaFnToSql('adjust',                    $allStates,            ^ToSql(format='adddate(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
     dynaFnToSql('atan2',                     $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('booland',                   $allStates,            ^ToSql(format='every(%s)')),
+    dynaFnToSql('boolor',                    $allStates,            ^ToSql(format='any(%s)')),            
     dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
     dynaFnToSql('convertVarchar128',         $allStates,            ^ToSql(format='convert(%s, CHAR)')),

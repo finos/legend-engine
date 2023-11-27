@@ -760,12 +760,16 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFunctions():Boolean[1]
 {
-  test('SELECT count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", SUM(Integer) AS "sum", avg(Integer) AS "avg", ' +
-                  'stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
-                  'var_pop(Integer) AS "variancePop", var_samp(Integer) AS "varianceSamp", variance(Integer) AS "variance", ' +
-                  'min(Integer) AS "minInt", min(StrictDate) AS "minDate", min(String) AS "minString", ' +
-                  'max(Integer) AS "maxInt", max(StrictDate) AS "maxDate", max(String) AS "maxString", ' +
-                  'string_agg(String) AS "stringAgg", string_agg(cast(Integer AS VARCHAR), \' \') AS "stringAgg2" FROM service."/service/service1" GROUP BY String',
+  test('SELECT ' + 
+          'count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", SUM(Integer) AS "sum", avg(Integer) AS "avg", ' +
+          'stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
+          'var_pop(Integer) AS "variancePop", var_samp(Integer) AS "varianceSamp", variance(Integer) AS "variance", ' +
+          'min(Integer) AS "minInt", min(StrictDate) AS "minDate", min(String) AS "minString", ' +
+          'max(Integer) AS "maxInt", max(StrictDate) AS "maxDate", max(String) AS "maxString", ' +
+          'string_agg(String) AS "stringAgg", string_agg(cast(Integer AS VARCHAR), \' \') AS "stringAgg2", ' + 
+          'bool_and(Boolean) AS "boolAnd", bool_and(Integer > 1) AS "boolAndExp", ' + 
+          'every(Boolean) AS "every", every(Integer > 1) AS "everyExp" ' +
+          'FROM service."/service/service1" GROUP BY String',
 
       {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -788,8 +792,13 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('maxDate', row | $row.getStrictDate('StrictDate'), y | $y->max()),
           agg('maxString', row | $row.getString('String'), y | $y->max()),
           agg('stringAgg', row | $row.getString('String'), y | $y->joinStrings()),
-          agg('stringAgg2', row | $row.getInteger('Integer')->toString(), y | $y->joinStrings(' '))
-        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString', 'maxInt', 'maxDate', 'maxString', 'stringAgg', 'stringAgg2'])
+          agg('stringAgg2', row | $row.getInteger('Integer')->toString(), y | $y->joinStrings(' ')),
+          agg('boolAnd', row | $row.getBoolean('Boolean'), y | $y->and()),
+          agg('boolAndExp', row | $row.getInteger('Integer') > 1, y | $y->and()),
+          agg('every', row | $row.getBoolean('Boolean'), y | $y->and()),
+          agg('everyExp', row | $row.getInteger('Integer') > 1, y | $y->and())
+        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString', 
+                      'maxInt', 'maxDate', 'maxString', 'stringAgg', 'stringAgg2', 'boolAnd', 'boolAndExp', 'every', 'everyExp'])
       }, false)
 }
 
@@ -1972,7 +1981,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'SELECT String AS "string", Integer, ' +
     'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
     'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
-    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
+    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK", ' +
+    'max(Integer) OVER (PARTITION BY String ORDER BY String ASC) AS "MAX" ' + 
     'FROM service."/service/service1"',
 
     {|
@@ -1983,10 +1993,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->extend([
               col(row:TDSRow[1] | $row.getString('String'), 'string')
             ])
-            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
-            ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
-            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
-            ->restrict(['string', 'Integer', 'ROW', 'DENSE RANK', 'RANK'])
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+            ->olapGroupBy(['String'], asc('String'), func('Integer', y | $y->max()), 'MAX')
+            ->restrict(['string', 'Integer', 'ROW', 'DENSE RANK', 'RANK', 'MAX'])
       }, false)
 }
 
@@ -2009,9 +2020,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               col(row:TDSRow[1] | toUpper($row.getString('String')), 'upper(String)'),
               col(row:TDSRow[1] | year($row.getStrictDate('StrictDate')) + 10, 'EXTRACT(\'year\' FROM StrictDate) + 10')
             ])
-            ->olapGroupBy(['upper(String)'], asc('EXTRACT(\'year\' FROM StrictDate) + 10'), y | $y->meta::pure::functions::math::olap::rowNumber(), 'ROW')
-            ->olapGroupBy(['String'], desc('Integer'), y | $y->meta::pure::functions::math::olap::denseRank(), 'DENSE RANK')
-            ->olapGroupBy(['String'], asc('Integer'), y | $y->meta::pure::functions::math::olap::rank(), 'RANK')
+            ->olapGroupBy(['upper(String)'], asc('EXTRACT(\'year\' FROM StrictDate) + 10'), func(y | $y->meta::pure::functions::math::olap::rowNumber()), 'ROW')
+            ->olapGroupBy(['String'], desc('Integer'), func(y | $y->meta::pure::functions::math::olap::denseRank()), 'DENSE RANK')
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
             ->restrict(['String', 'ABS', 'ROW', 'DENSE RANK', 'RANK'])
       }, false)
 }

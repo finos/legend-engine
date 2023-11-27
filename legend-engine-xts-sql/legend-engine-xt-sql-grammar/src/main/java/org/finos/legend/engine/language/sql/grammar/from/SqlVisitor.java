@@ -1562,6 +1562,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         functionCall.distinct = isDistinct(context.setQuant());
         functionCall.window = visitIfPresent(context.over(), Window.class).orElse(null);
         functionCall.group = visitIfPresent(context.within(), Group.class).orElse(null);
+        functionCall.orderBy = visitCollection(context.sortItem(), SortItem.class);
 
         return functionCall;
     }
