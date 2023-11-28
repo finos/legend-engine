@@ -78,6 +78,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('asin',                   $allStates,            ^ToSql(format='asin(%s)')),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('atan',                   $allStates,            ^ToSql(format='atan(%s)')),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='logical_and(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='logical_or(%s)')),        
     dynaFnToSql('average',                $allStates,            ^ToSql(format='avg(1.0 * %s)')),
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceiling(%s)')),
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),

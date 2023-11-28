@@ -107,7 +107,7 @@ function meta::external::query::sql::transformation::queryToPure::getPlan(
   let lambda = $context.lambda()->meta::pure::router::preeval::preval($extensions);
 
 
-  meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $extensions);
+  trace(| meta::pure::executionPlan::executionPlan($lambda, $mapping, $runtime, $extensions), 'generating plan');
 }
 
 function meta::external::query::sql::transformation::queryToPure::parameterConstantValue(value:ValueSpecification[1], many:Boolean[1]):Any[0..1]
@@ -182,7 +182,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
 function meta::external::query::sql::transformation::queryToPure::processRootQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
 {
   debug('processRootQuery', $context.debug);
-  wrapWithFrom($query->cast(@Query)->processQuery($context));
+  trace(| wrapWithFrom($query->cast(@Query)->processQuery($context)), 'converting query');
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processQuery(query: Query[1], context: SqlTransformContext[1]): SqlTransformContext[1]
@@ -305,7 +305,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   
   walk($expression,
     t | $t,
-    f:FunctionCall[1] | if (isExpressionAggregate($f, false, false), | $f, | $f.arguments->map(a | $a->extractAggregatesFromExpression()))
+    f:FunctionCall[1] | if (isExpressionAggregate($f, false), | $f, | $f.arguments->map(a | $a->extractAggregatesFromExpression()))
   )
 }
 
@@ -491,12 +491,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                                 ])->cast(@FunctionCall);
 
                                 // we take the first as the map only cares about the argument and we ensure they are the same above
-                                let mapExpression = processMapFunction($functionCalls->at(0), $context);
+                                let aggregationFunctionCall = $functionCalls->at(0);
+                                let processor = aggregateProcessor($aggregationFunctionCall.name);
+                                let adjusted = $processor.preProcess($column.expression, $aggregationFunctionCall);
+
+                                let mapExpression = processMapFunctionArgument($adjusted.map, $context);
                                 let mapReturnType = $mapExpression.genericType.rawType->toOne();
                                 let mapFunctionType = functionType('row', TDSRow, PureOne, $mapReturnType, ZeroOne);
                                 let mapLambda = lambda($mapFunctionType, $mapExpression);
 
-                                let aggLambda = processAggregationLambda($column.expression, $mapReturnType, $context);
+                                let aggLambda = processAggregationLambda($adjusted.aggregate, $mapReturnType, $context);
                                 let aggReturnType = $aggLambda->functionReturnType();
 
                                 let typeParameters = [^GenericType(rawType = $mapReturnType), $aggReturnType];
@@ -538,9 +542,9 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggregationLambda(expression:meta::external::query::sql::metamodel::Expression[1], type:Type[1], context:SqlTransformContext[1]):LambdaFunction<Any>[1]
 {
-  let expContext = expressionContext(^VariableExpression(genericType = ^GenericType(rawType = $type),name = 'y', multiplicity = PureOne), ^Map<String, VariableExpression>());
+  let expContext = expressionContext(^VariableExpression(genericType = ^GenericType(rawType = $type),name = 'y', multiplicity = ZeroMany), ^Map<String, VariableExpression>());
 
-  let aggExpression = processExpression($expression, ^$expContext(withinAggregate = true), $context);
+  let aggExpression = processExpression($expression, $expContext, $context);
 
   let aggReturnType = $aggExpression.genericType.rawType->toOne();
 
@@ -569,14 +573,29 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   assert($window.orderBy->size() <= 1, | 'multiple window sort items not yet supported');
   assert($window.windowFrame->isEmpty(), | 'window frame not yet supported');
 
-  let func = processAggregationLambda(^$functionCall(window = []), TDSRow, $context);
+  let processor = functionProcessor($functionCall.name);
+
+  let func = if ($processor.isAggregate, 
+    | let extacted = $processor->cast(@AggregateFunctionProcessor).preProcess(^$functionCall(window = []), ^$functionCall(window = []));
+      let aggregation = processAggregationLambda($extacted.aggregate, Number, $context);
+
+      let type = $aggregation->functionReturnType().rawType->toOne()->normalizeType();
+      assertEquals(Number, $type, | 'only numberic aggregations supported in window aggregation expression');
+
+      let map = $extacted.map->match([
+        q:QualifiedNameReference[1] | $q.name.parts->joinStrings(''),
+        e:meta::external::query::sql::metamodel::Expression[1] | fail('unsupported window aggregation expression')
+      ]);
+      sfe(func_String_1__FunctionDefinition_1__TdsOlapAggregation_1_, [iv($map), iv($aggregation)]);,
+    | let aggregation = processAggregationLambda(^$functionCall(window = []), TDSRow, $context);
+      sfe(func_FunctionDefinition_1__TdsOlapRank_1_, iv($aggregation)););
 
   let partitions = $window.partitions->map(partition | $partition->extractNameFromExpression($context));
 
   let sort = $window.orderBy->map(si | $si->createSortItemFunction($context));
 
-  appendTdsFunc($tds, olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__FunctionDefinition_1__String_1__TabularDataSet_1_, [
-    list(iv($partitions)), list(iv($sort)), list(iv($func)), list(iv($name))
+  appendTdsFunc($tds, olapGroupBy_TabularDataSet_1__String_MANY__SortInformation_$0_1$__OlapOperation_1__String_1__TabularDataSet_1_, [
+    list(iv($partitions)), list(iv($sort)), list($func), list(iv($name))
   ]);
 }
 
@@ -648,16 +667,16 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::isSelectItemAggregate(si: SelectItem[1]):Boolean[1]
 {
-  $si->instanceOf(SingleColumn) && isExpressionAggregate($si->cast(@SingleColumn).expression, true, false)
+  $si->instanceOf(SingleColumn) && isExpressionAggregate($si->cast(@SingleColumn).expression, true)
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionAggregate(e:meta::external::query::sql::metamodel::Expression[0..1], includeParameters:Boolean[1], includeWindow:Boolean[1]):Boolean[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isExpressionAggregate(e:meta::external::query::sql::metamodel::Expression[0..1], includeParameters:Boolean[1]):Boolean[1]
 {
   walk($e,
     t | $t->exists(v | $v),
     f:FunctionCall[1] |
         let functionProcessor = functionProcessor($f.name);
-        $functionProcessor.isAggregate || ($includeWindow && $functionProcessor.isWindow) || ($includeParameters && $f.arguments->exists(a | $a->isExpressionAggregate($includeParameters, $includeWindow)));
+        $f.window->isEmpty() && ($functionProcessor.isAggregate || ($includeParameters && $f.arguments->exists(a | $a->isExpressionAggregate($includeParameters))));
   )
 }
 
@@ -1388,7 +1407,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::expressionContext(defaultVar:VariableExpression[0..1], vars:Map<String, VariableExpression>[1]):SqlTransformExpressionContext[1]
 {
-  let expContext = ^SqlTransformExpressionContext(defaultVar = $defaultVar, varMap = $vars, processFunctionCallAsIdentifier = false, doCastNonPrimitiveColumnAccessor = false, withinAggregate = false);
+  let expContext = ^SqlTransformExpressionContext(defaultVar = $defaultVar, varMap = $vars, processFunctionCallAsIdentifier = false, doCastNonPrimitiveColumnAccessor = false);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::createFilter(expression: meta::external::query::sql::metamodel::Expression[1], context: SqlTransformContext[1]):SqlTransformContext[1]
@@ -1833,6 +1852,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug('processFunctionCall', $context.debug);
 
   assert($f.window->isEmpty(), | 'window functions not currently supported');
+  assert($f.orderBy->isEmpty(), | 'order by in function calls not currently supported');
 
   if ($expContext.processFunctionCallAsIdentifier,
     | processFunctionCallAsIdentifier($f, $expContext, $context),
@@ -1855,13 +1875,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 {
   debug('processFunctionCallAsFunction', $context.debug);
 
-  let processed = if ($expContext.withinAggregate && isExpressionAggregate($f, false, true), | processAggregateFunctionCall($f), | $f);
+  let args = $f.arguments->map(a | $a->processExpression($expContext, $context));
 
-  let args = $processed.arguments->map(a | $a->processExpression($expContext, $context));
-
-  if ($processed.distinct,
-    | processFunctionCallAsFunction(^$processed(distinct = false, arguments = ^FunctionCall(name = ^QualifiedName(parts = 'distinct'), arguments = $processed.arguments, distinct = false)), ^$expContext(withinAggregate = false), $context),
-    | functionCall($processed.name, $args, $f, $expContext));
+  if ($f.distinct,
+    | processFunctionCallAsFunction(^$f(distinct = false, arguments = ^FunctionCall(name = ^QualifiedName(parts = 'distinct'), arguments = $f.arguments, distinct = false)), $expContext, $context),
+    | functionCall($f.name, $args, $f, $expContext));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::functionCall(name:QualifiedName[1], args:ValueSpecification[*], f:FunctionCall[1], expContext:SqlTransformExpressionContext[1]):ValueSpecification[1]
@@ -1885,6 +1903,19 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
   $processor->toOne();
 }
 
+function meta::external::query::sql::transformation::queryToPure::aggregateProcessor(name:QualifiedName[1]):AggregateFunctionProcessor[1]
+{
+  assertEquals(1, $name.parts->size(), | 'function name has more than 1 part ' + $name->extractNameFromQualifiedName([]));
+  aggregateProcessor($name.parts->at(0));
+}
+
+function meta::external::query::sql::transformation::queryToPure::aggregateProcessor(name:String[1]):AggregateFunctionProcessor[1]
+{
+  let processor = functionProcessor($name);
+  assert($processor->instanceOf(AggregateFunctionProcessor), | 'processor for ' + $name + ' is not aggregate processor');
+  $processor->cast(@AggregateFunctionProcessor);
+}
+
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::getAggregationArgumentType(args:ValueSpecification[*]):Type[1]
 {
   $args->match([
@@ -1896,13 +1927,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 function meta::external::query::sql::transformation::queryToPure::functionProcessors():FunctionProcessor[*]
 {
   [
-      processor('count', count_Any_MANY__Integer_1_, true),
-      processor('distinct', true, false, Any, {args, fc, ctx |
-        let type = getAggregationArgumentType($args);
-        let genericType = ^GenericType(rawType = $type);
-        sfe(distinct_T_MANY__T_MANY_, $genericType, $genericType, $args);
-      }),
-      processor('min', true, {args, fc, ctx |
+      //AGGREGATE FUNCTIONS
+      aggregate('count', count_Any_MANY__Integer_1_),
+      aggregate('bool_and', and_Boolean_MANY__Boolean_1_),
+      aggregate('bool_or', or_Boolean_MANY__Boolean_1_),
+      aggregate('every', and_Boolean_MANY__Boolean_1_),
+      aggregate('min', [], {args, fc, ctx |
         let type = getAggregationArgumentType($args);
 
         [
@@ -1915,7 +1945,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair(DateTime, |sfe(min_DateTime_MANY__DateTime_$0_1$_, $args))
         ]->getValue($type, | sfe(min_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
       }),
-      processor('max', true, {args, fc, ctx |
+      aggregate('max', [], {args, fc, ctx |
         let type = getAggregationArgumentType($args);
 
         [
@@ -1928,10 +1958,53 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
           pair(DateTime, |sfe(max_DateTime_MANY__DateTime_$0_1$_, $args))
         ]->getValue($type, | sfe(max_X_MANY__X_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $args))->eval();
       }),
+      aggregate('string_agg', String, {args, fc, ctx |
+        let func = [
+          pair(1, joinStrings_String_MANY__String_1_),
+          pair(2, joinStrings_String_MANY__String_1__String_1_)
+        ]->getValue($args->size());
+
+        sfe($func, $args);
+      }),
+
+      aggregate('avg', Float, {args, fc, ctx |
+        let type = getAggregationArgumentType($args);
+
+        let func = [
+          pair(Integer, average_Integer_MANY__Float_1_),
+          pair(Float, average_Float_MANY__Float_1_)
+        ]->getValue($type, average_Number_MANY__Float_1_);
+
+        sfe($func, $args);
+      }),
+      aggregate('percentile_cont', Number, {args, fc, ctx |
+        processPercentile('percentile_cont', $args, true, $fc, $ctx)
+      }, percentilePreProcessor_Expression_1__FunctionCall_1__AggregateFunctionPreProcessorWrapper_1_),
+      aggregate('percentile_disc', Number, {args, fc, ctx |
+        processPercentile('percentile_disc', $args, false, $fc, $ctx)
+      }, percentilePreProcessor_Expression_1__FunctionCall_1__AggregateFunctionPreProcessorWrapper_1_),
+      aggregate('stddev_pop', stdDevPopulation_Number_MANY__Number_1_),
+      aggregate('stddev_samp', stdDevSample_Number_MANY__Number_1_),
+      aggregate('stddev', stdDevSample_Number_MANY__Number_1_),
+      aggregate('sum', Number, {args, fc, ctx |
+        let type = getAggregationArgumentType($args);
+
+        let func = [
+          pair(Integer, sum_Integer_MANY__Integer_1_),
+          pair(Float, sum_Float_MANY__Float_1_)
+        ]->getValue($type, sum_Number_MANY__Number_1_);
+
+        sfe($func, $args);
+      }),
+
+      aggregate('variance', varianceSample_Number_MANY__Number_1_),
+      aggregate('var_samp', varianceSample_Number_MANY__Number_1_),
+      aggregate('var_pop', variancePopulation_Number_MANY__Number_1_),
 
       //MATH
       processor('abs', Number, {args, fc, ctx |
-        let type = getAggregationArgumentType($args);
+        assert($args->size() == 1, 'incorrect number of args for abs');
+        let type = $args->at(0).genericType.rawType->toOne();
 
         let func = [
           pair(Integer, abs_Integer_1__Integer_1_),
@@ -1945,16 +2018,6 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('asin', asin_Number_1__Float_1_),
       processor('atan', atan_Number_1__Float_1_),
       processor('atan2', atan2_Number_1__Number_1__Float_1_),
-      processor('avg', true, false, Float, {args, fc, ctx |
-        let type = getAggregationArgumentType($args);
-
-        let func = [
-          pair(Integer, average_Integer_MANY__Float_1_),
-          pair(Float, average_Float_MANY__Float_1_)
-        ]->getValue($type, average_Number_MANY__Float_1_);
-
-        sfe($func, $args);
-      }),
       processor('cbrt', cbrt_Number_1__Float_1_),
       processor('ceil', ceiling_Number_1__Integer_1_),
       processor('ceiling', ceiling_Number_1__Integer_1_),
@@ -1968,12 +2031,6 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('log', log10_Number_1__Float_1_),
       processor('mod', rem_Number_1__Number_1__Number_1_),
       processor('pi', pi__Float_1_),
-      processor('percentile_cont', true, false, [], {args, fc, ctx |
-        processPercentile('percentile_cont', $args, true, $fc, $ctx)
-      }),
-      processor('percentile_disc', true, false, [], {args, fc, ctx |
-        processPercentile('percentile_disc', $args, false, $fc, $ctx)
-      }),
       processor('power', pow_Number_1__Number_1__Number_1_),
       processor('radians', toRadians_Number_1__Float_1_),
       processor('round', Number, {args, fc, ctx |
@@ -1984,19 +2041,6 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
       processor('sign', sign_Number_1__Integer_1_),
       processor('sin', sin_Number_1__Float_1_),
-      processor('stddev_pop', stdDevPopulation_Number_MANY__Number_1_, true),
-      processor('stddev_samp', stdDevSample_Number_MANY__Number_1_, true),
-      processor('stddev', stdDevSample_Number_MANY__Number_1_, true),
-      processor('sum', true, false, Number, {args, fc, ctx |
-        let type = getAggregationArgumentType($args);
-
-        let func = [
-          pair(Integer, sum_Integer_MANY__Integer_1_),
-          pair(Float, sum_Float_MANY__Float_1_)
-        ]->getValue($type, sum_Number_MANY__Number_1_);
-
-        sfe($func, $args);
-      }),
       processor('sqrt', sqrt_Number_1__Float_1_),
       processor('tan', tan_Number_1__Float_1_),
       processor('trunc', Integer, {args, fc, ctx |
@@ -2009,9 +2053,6 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         createIfStatement($condition, $truth, $else);
       }),
-      processor('variance', varianceSample_Number_MANY__Number_1_, true),
-      processor('var_samp', varianceSample_Number_MANY__Number_1_, true),
-      processor('var_pop', variancePopulation_Number_MANY__Number_1_, true),
 
       //STRING
       processor('ascii', ascii_String_1__Integer_1_),
@@ -2049,18 +2090,9 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe(splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_, $arguments);
       }),
       processor('starts_with', startsWith_String_1__String_1__Boolean_1_),
-
-      processor('string_agg', true, false, String, {args, fc, ctx |
-        let func = [
-          pair(1, joinStrings_String_MANY__String_1_),
-          pair(2, joinStrings_String_MANY__String_1__String_1_)
-        ]->getValue($args->size());
-
-        sfe($func, $args);
-      }),
       processor('strpos', indexOf_String_1__String_1__Integer_1_),
-      processor('substr', false, {args, fc, ctx | processSubstring($args)}),
-      processor('substring', false, {args, fc, ctx | processSubstring($args)}),
+      processor('substr', String, {args, fc, ctx | processSubstring($args)}),
+      processor('substring', String, {args, fc, ctx | processSubstring($args)}),
       processor('upper', toUpper_String_1__String_1_),
       //DATE
       processor('date', Date, {args, fc, ctx |
@@ -2107,14 +2139,14 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
 
       //COLLECTION
-      processor('coalesce',  false, false, [], {args, fc, ctx |
+      processor('coalesce', [], {args, fc, ctx |
         let filteredArgs = getNonNullArguments($args);
         let type = $filteredArgs.genericType->first().rawType;
 
         sfe(meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
       }),
 
-      processor('greatest', false, false, [], {args, fc, ctx | 
+      processor('greatest', [], {args, fc, ctx |
         let filteredArgs = getNonNullArguments($args);
         let type = $filteredArgs.genericType->first().rawType;
 
@@ -2123,17 +2155,24 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         sfe($func, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
       }),
 
-      processor('least', false, false, [], {args, fc, ctx | 
+      processor('least', [], {args, fc, ctx |
         let filteredArgs = getNonNullArguments($args);
         let type = $filteredArgs.genericType->first().rawType;
 
         let func = if ($filteredArgs->isEmpty(), | least_X_MANY__X_$0_1$_, | least_X_$1_MANY$__X_1_);
 
         sfe($func, ^GenericType(rawType = $type), ^GenericType(rawType = $type), $filteredArgs->iv());
-      }),   
+      }),
+
+      processor('distinct', Any, {args, fc, ctx |
+        let type = getAggregationArgumentType($args);
+        let genericType = ^GenericType(rawType = $type);
+        sfe(distinct_T_MANY__T_MANY_, $genericType, $genericType, $args);
+      }),
 
       //FORMAT
       processor('to_char', String, {args, fc, ctx |
+        assertEquals(2, $args->size(), 'incorrect number of args for t-_char');
         assertEquals(2, $args->size(), 'incorrect number of args for to_char');
 
         let arg = $args->at(0);
@@ -2146,15 +2185,15 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       }),
 
       //WINDOW
-      processor('row_number',  false, true, [], {args, fc, ctx |
+      window('row_number', [], {args, fc, ctx |
         let values = $ctx.defaultVar->toOne()->concatenate($args);
         sfe(meta::pure::functions::math::olap::rowNumber_Any_MANY__Map_1_, ^GenericType(rawType = Map, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Integer)]), [^GenericType(rawType = Any), ^GenericType(rawType = Integer)], $values);
       }),
-      processor('dense_rank',  false, true, [], {args, fc, ctx |
+      window('dense_rank', [], {args, fc, ctx |
         let values = $ctx.defaultVar->toOne()->concatenate($args);
         sfe(meta::pure::functions::math::olap::denseRank_Any_MANY__Map_1_, ^GenericType(rawType = Map, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Integer)]), [^GenericType(rawType = Any), ^GenericType(rawType = Integer)], $values);
       }),
-      processor('rank',  false, true, [], {args, fc, ctx |
+      window('rank', [], {args, fc, ctx |
         let values = $ctx.defaultVar->toOne()->concatenate($args);
         sfe(meta::pure::functions::math::olap::rank_Any_MANY__Map_1_, ^GenericType(rawType = Map, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Integer)]), [^GenericType(rawType = Any), ^GenericType(rawType = Integer)], $values);
       })
@@ -2903,6 +2942,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   nullOrSfe($func, [$left, $right]);
 }
 
+//this walk allows user to accumulate a result from walking through the expressions
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::walk<T|m>(e:meta::external::query::sql::metamodel::Expression[0..1], accumulator:Function<{T[*]->T[m]}>[1], extras:Function<{Nil[1]->T[m]}>[1]):T[m]
 {
   let result = $e->match($extras->concatenate([
@@ -2946,6 +2986,49 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $expressions->map(e | $e->walk($accumulator, $extras));
 }
 
+//this walk function walks all expressions and then allows caller to pass in matches to then perform some operation on the expression
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::walk(e:meta::external::query::sql::metamodel::Expression[0..1], extras:Function<{Nil[1]->meta::external::query::sql::metamodel::Expression[1]}>[*]):meta::external::query::sql::metamodel::Expression[0..1]
+{
+  $e->match([
+    a:ArithmeticExpression[1] | ^$a(left = $a.left->walk($extras)->toOne(), right = $a.right->walk($extras)->toOne()),
+    b:BetweenPredicate[1] | ^$b(min = $b.min->walk($extras)->toOne(), max = $b.max->walk($extras)->toOne(), value = $b.value->walk($extras)->toOne()),
+    c:Cast[1] | ^$c(expression = $c.expression->walk($extras)->toOne()),
+    c:ComparisonExpression[1] | ^$c(left = $c.left->walk($extras)->toOne(), right = $c.right->walk($extras)->toOne()),
+    e:Extract[1] | ^$e(expression = $e.expression->walk($extras)->toOne()),
+    f:FunctionCall[1] |
+      let window = if ($f.window->isNotEmpty(), |
+        let w = $f.window->toOne();
+        ^$w(
+          partitions = $w.partitions->map(p | $p->walk($extras)),
+          orderBy = $w.orderBy->map(o | ^$o(sortKey = $o.sortKey->walk($extras)->toOne())));, | []);
+
+      let group = if ($f.group->isNotEmpty(), |
+        let g = $f.group->toOne();
+        let o = $g.orderBy;
+        ^$g(orderBy = ^$o(sortKey = $o.sortKey->walk($extras)->toOne()));, | []);
+
+      ^$f(window = $window, group = $group, arguments = $f.arguments->map(a | $a->walk($extras)));,
+    i:InListExpression[1] | ^$i(values = $i.values->map(v | $v->walk($extras))),
+    i:IsNotNullPredicate[1] | ^$i(value = $i.value->walk($extras)->toOne()),
+    i:IsNullPredicate[1] | ^$i(value = $i.value->walk($extras)->toOne()),
+    l:LikePredicate[1] | ^$l(value = $l.value->walk($extras)->toOne(), pattern = $l.pattern->walk($extras)->toOne()),
+    l:LogicalBinaryExpression[1] | ^$l(left = $l.left->walk($extras)->toOne(), right = $l.right->walk($extras)->toOne()),
+    n:NegativeExpression[1] | ^$n(value = $n.value->walk($extras)->toOne()),
+    n:NotExpression[1] | ^$n(value = $n.value->walk($extras)->toOne()),
+    s:SimpleCaseExpression[1] | ^$s(
+      operand = $s.operand->walk($extras)->toOne(),
+      defaultValue = $s.defaultValue->walk($extras),
+      whenClauses = $s.whenClauses->map(wc | ^$wc(operand = $wc.operand->walk($extras)->toOne(), result = $wc.result->walk($extras)->toOne()))
+    ),
+    s:SearchedCaseExpression[1] | ^$s(
+      defaultValue = $s.defaultValue->walk($extras),
+      whenClauses = $s.whenClauses->map(wc | ^$wc(operand = $wc.operand->walk($extras)->toOne(), result = $wc.result->walk($extras)->toOne()))
+    ),
+    e:meta::external::query::sql::metamodel::Expression[1] | $e
+  ])->match($extras->concatenate([
+    e:meta::external::query::sql::metamodel::Expression[1] | $e
+  ])->toOneMany());
+}
 
 function meta::external::query::sql::transformation::queryToPure::appendTdsFunc(lambda:LambdaFunction<Any>[1], execFunc: meta::pure::metamodel::function::Function<Any>[1], args: List<Any>[*]): LambdaFunction<Any>[1]
 {
@@ -3001,6 +3084,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   $v->evaluateAndDeactivate().multiplicity == ZeroOne;
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::isZeroMany(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroMany;
+}
+
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::sfe(func: meta::pure::metamodel::function::Function<Any>[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
 {
@@ -3022,9 +3110,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let zipped = $func->getParameters()->evaluateAndDeactivate()->zip($pvs);
 
-  let parameters = $zipped->map(p | if ($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(),
-    | sfe(toOne_T_MANY__T_1_, $p.second->evaluateAndDeactivate().genericType, [], PureOne, $p.second->evaluateAndDeactivate()),
-    | $p.second->evaluateAndDeactivate()));
+  let parameters = $zipped->map(p | 
+
+    [
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), | sfe(toOne_T_MANY__T_1_, $p.second->evaluateAndDeactivate().genericType, [], PureOne, $p.second->evaluateAndDeactivate())),
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroMany(), | sfe(toOneMany_T_MANY__T_$1_MANY$_, $p.second->evaluateAndDeactivate().genericType, [], OneMany, $p.second->evaluateAndDeactivate()))
+    ]->getValue(true, | $p.second->evaluateAndDeactivate())->eval();
+  );
 
   ^SimpleFunctionExpression(
     func = $func,
@@ -3222,11 +3314,10 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
     );
   }: LambdaFunction<Any>[1];
   source(type:String[1], arguments:SQLSourceArgument[*]){
-      let source = $this.sources->filter(s | $s.matches($type, $arguments));
+      let source = $this.sources->filter(s | $s.matches($type, $arguments))->first();
 
       assertNotEquals(0, $source->size(), 'No source found for type ' + $type);
-      assertFalse($source->size() > 1, 'Multiple sources found for type ' + $type);
-
+      
       $source->toOne();
   }:SQLSource[1];
 }
@@ -3238,7 +3329,6 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
   varMap:Map<String, VariableExpression>[1];
   processFunctionCallAsIdentifier: Boolean[1];
   doCastNonPrimitiveColumnAccessor: Boolean[1];
-  withinAggregate: Boolean[1];
   type: Type[0..1];
 
   var() {
@@ -3253,43 +3343,108 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformExpre
   }:VariableExpression[1];
 }
 
+Class meta::external::query::sql::transformation::queryToPure::AggregateFunctionProcessor extends FunctionProcessor
+{
+  preProcessor: Function<{meta::external::query::sql::metamodel::Expression[1], meta::external::query::sql::metamodel::FunctionCall[1] -> AggregateFunctionPreProcessorWrapper[1]}>[1];
+  preProcess(column:meta::external::query::sql::metamodel::Expression[1], aggregate:meta::external::query::sql::metamodel::FunctionCall[1]){
+    $this.preProcessor->eval($column, $aggregate)
+  }:AggregateFunctionPreProcessorWrapper[1];
+}
+
+Class meta::external::query::sql::transformation::queryToPure::WindowFunctionProcessor extends FunctionProcessor
+{
+}
+
 Class meta::external::query::sql::transformation::queryToPure::FunctionProcessor
 {
   name: String[1];
   transform: Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1] ->ValueSpecification[1]}>[1];
-  isAggregate: Boolean[1];
-  isWindow: Boolean[1];
   returnType: Type[0..1];
+  isAggregate(){
+    $this->instanceOf(AggregateFunctionProcessor);
+  }:Boolean[1];
+  isWindow(){
+    $this->instanceOf(WindowFunctionProcessor)
+  }:Boolean[1];
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processor(name:String[1], func:Function<Any>[1]):FunctionProcessor[1]
 {
-  processor($name, false, false, $func->functionReturnType().rawType, simpleFunctionTransform($func));
-}
-
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processor(name:String[1], func:Function<Any>[1], isAggregate:Boolean[1]):FunctionProcessor[1]
-{
-  processor($name, $isAggregate, false, $func->functionReturnType().rawType, simpleFunctionTransform($func));
-}
-
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processor(name:String[1], isAggregate:Boolean[1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1]->ValueSpecification[1]}>[1]):FunctionProcessor[1]
-{
-  processor($name, $isAggregate, false, [], $transform);
+  processor($name, $func->functionReturnType().rawType, simpleFunctionTransform($func));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processor(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1]->ValueSpecification[1]}>[1]):FunctionProcessor[1]
 {
-  processor($name, false, false, $returnType, $transform);
+  ^FunctionProcessor(name = $name, returnType = $returnType, transform = $transform);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::processor(name:String[1], isAggregate:Boolean[1], isWindow:Boolean[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1]->ValueSpecification[1]}>[1]):FunctionProcessor[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::aggregate(name:String[1], func:Function<Any>[1]):AggregateFunctionProcessor[1]
 {
-  ^FunctionProcessor(name = $name, isAggregate = $isAggregate, isWindow = $isWindow, returnType = $returnType, transform = $transform);
+  aggregate($name, $func->functionReturnType().rawType, simpleFunctionTransform($func));
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::aggregate(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1]->ValueSpecification[1]}>[1]):AggregateFunctionProcessor[1]
+{
+  aggregate($name, $returnType, $transform, defaultAggregatePreProcessor_Expression_1__FunctionCall_1__AggregateFunctionPreProcessorWrapper_1_);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::aggregate(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1]->ValueSpecification[1]}>[1], preProcessor:Function<{meta::external::query::sql::metamodel::Expression[1], meta::external::query::sql::metamodel::FunctionCall[1] -> AggregateFunctionPreProcessorWrapper[1]}>[1]):AggregateFunctionProcessor[1]
+{
+  ^AggregateFunctionProcessor(name = $name, returnType = $returnType, transform = $transform, preProcessor = $preProcessor);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::window(name:String[1], returnType:Type[0..1], transform:Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1]->ValueSpecification[1]}>[1]):WindowFunctionProcessor[1]
+{
+  ^WindowFunctionProcessor(name = $name, returnType = $returnType, transform = $transform);
+}
+
+Class meta::external::query::sql::transformation::queryToPure::AggregateFunctionPreProcessorWrapper
+{
+  map:meta::external::query::sql::metamodel::Expression[0..1];
+  aggregate:meta::external::query::sql::metamodel::Expression[1];
+}
+
+function meta::external::query::sql::transformation::queryToPure::percentilePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
+{
+  assert($aggregate.group->isNotEmpty(), 'percentile must be within group');
+  assert($aggregate.orderBy->isEmpty(), 'aggregate order by not supported');
+
+  ^AggregateFunctionPreProcessorWrapper(
+    map = $aggregate.group.orderBy.sortKey->toOne(),
+    aggregate = $column
+  );
+}
+
+function meta::external::query::sql::transformation::queryToPure::defaultAggregatePreProcessor(column:meta::external::query::sql::metamodel::Expression[1], aggregate:FunctionCall[1]):AggregateFunctionPreProcessorWrapper[1]
+{
+  assert($aggregate.group->isEmpty(), 'aggregate within group not supported');
+  assert($aggregate.orderBy->isEmpty(), 'aggregate order by not supported');
+
+  ^AggregateFunctionPreProcessorWrapper(
+    map = $aggregate.arguments->first(),
+    aggregate = $column->replaceAggregateArguments()
+  );
 }
 
 function meta::external::query::sql::transformation::queryToPure::simpleFunctionTransform(func:Function<Any>[1]):Function<{ValueSpecification[*], FunctionCall[1], SqlTransformExpressionContext[1]->ValueSpecification[1]}>[1]
 {
   {args:ValueSpecification[*], f:FunctionCall[1], c:SqlTransformExpressionContext[1] | nullOrSfe($func, $args)}
+}
+
+function meta::external::query::sql::transformation::queryToPure::replaceAggregateArguments(column:meta::external::query::sql::metamodel::Expression[1]):meta::external::query::sql::metamodel::Expression[1]
+{
+  $column->walk([
+      f:FunctionCall[1] |
+        let processor = $f.name->functionProcessor();
+        let var = ^QualifiedNameReference(name=^QualifiedName());
+        if ($processor.isAggregate,
+          | ^$f(arguments = $f.arguments->match([
+              a:meta::external::query::sql::metamodel::Expression[0..1] | $var,
+              a:meta::external::query::sql::metamodel::Expression[1..*] | $var->concatenate($a->tail()),
+              a:meta::external::query::sql::metamodel::Expression[*] | fail('aggregation type currently not supported'); [];
+          ])),
+          | $f);
+    ])->toOne()
 }
 
 //MISC
@@ -3320,6 +3475,11 @@ function meta::external::query::sql::transformation::queryToPure::getParameters(
       f:FunctionType[1] | $f.parameters,
       a:Any[*] | []
    ]);
+}
+
+function meta::external::query::sql::transformation::queryToPure::trace<V|m>(func:Function<{->V[m]}>[1], name:String[1]):V[m]
+{
+  meta::pure::functions::tracing::traceSpan($func, 'Legend SQL: ' + $name);
 }
 
 function meta::external::query::sql::transformation::queryToPure::debug(a:String[1], debug:DebugContext[1]):Any[0]

@@ -102,7 +102,10 @@ public class SQLGrammarComposer
                 String args = visit(val.arguments, ", ");
                 String window = val.window != null ? " OVER (" + visit(val.window) + ")" : "";
                 String group = val.group != null ? " " + visit(val.group) : "";
-                return String.join(".", val.name.parts) + "(" + args + ")" + group + window;
+                String orderBy = val.orderBy != null && !val.orderBy.isEmpty()
+                        ? " ORDER BY " + visit(val.orderBy, ", ")
+                        : "";
+                return String.join(".", val.name.parts) + "(" + args + orderBy + ")" + group + window;
             }
 
             @Override
