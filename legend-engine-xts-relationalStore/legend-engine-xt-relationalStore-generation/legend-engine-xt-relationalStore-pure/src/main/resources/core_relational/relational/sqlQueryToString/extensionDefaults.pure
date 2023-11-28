@@ -159,6 +159,13 @@ function meta::relational::functions::sqlQueryToString::default::convertGreatest
   )->joinStrings('case ', ' ', ' else null end'));
 }
 
+function meta::relational::functions::sqlQueryToString::default::convertBoolAndOrToCaseStatement(param:String[1], and:Boolean[1]):String[1]
+{
+  let fn = if ($and, | 'min', | 'max');
+
+  'case when ' + $fn + '(' + $param + ') = \'true\' then \'true\' else \'false\' end';
+}
+
 function meta::relational::functions::sqlQueryToString::default::processJoinStringsOperationWithConcatCall(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
 {
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});

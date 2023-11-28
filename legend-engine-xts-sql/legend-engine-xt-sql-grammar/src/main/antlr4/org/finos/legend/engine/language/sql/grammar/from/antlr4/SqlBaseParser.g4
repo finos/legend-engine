@@ -318,7 +318,7 @@ primaryExpression
     | explicitFunction                                                               #explicitFunctionDefault
     | qname OPEN_ROUND_BRACKET ASTERISK CLOSE_ROUND_BRACKET within? filter? over?    #functionCall
     | ident                                                                          #columnReference
-    | qname OPEN_ROUND_BRACKET (setQuant? expr (COMMA expr)*)? CLOSE_ROUND_BRACKET within? filter?
+    | qname OPEN_ROUND_BRACKET (setQuant? expr (COMMA expr)*)? (ORDER BY sortItem (COMMA sortItem)*)? CLOSE_ROUND_BRACKET within? filter?
         ((IGNORE|RESPECT) NULLS)? over?                                              #functionCall
     | subqueryExpression                                                             #subqueryExpressionDefault
     | OPEN_ROUND_BRACKET base=primaryExpression CLOSE_ROUND_BRACKET

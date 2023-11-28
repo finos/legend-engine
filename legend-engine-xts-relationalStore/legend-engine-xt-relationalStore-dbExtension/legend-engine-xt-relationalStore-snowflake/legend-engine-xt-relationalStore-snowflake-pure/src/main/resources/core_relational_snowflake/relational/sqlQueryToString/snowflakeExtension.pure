@@ -103,6 +103,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='booland(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='boolor(%s)')),    
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),

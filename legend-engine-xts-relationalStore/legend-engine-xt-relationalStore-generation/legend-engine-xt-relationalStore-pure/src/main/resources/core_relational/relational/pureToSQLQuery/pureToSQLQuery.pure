@@ -4464,10 +4464,25 @@ function meta::relational::functions::pureToSqlQuery::processAggFn(v:ValueSpecif
                if($f.func == cast_Any_m__T_1__T_m_,
                   | $f.parametersValues->at(1)->cast(@ValueSpecification)->processAggFn($params),
                   |
+
+                    let fn = $f.func.functionName->toOne();
+                    let singleArgument = $f.parametersValues->match([
+                      i:InstanceValue[1] | $i.values->size() == 1,
+                      v:ValueSpecification[1] | true,
+                      v:ValueSpecification[*] | false
+                    ]);
+
+                    let name = [
+                      pair($f.func == and_Boolean_MANY__Boolean_1_ && $singleArgument, 'booland'),
+                      pair($f.func == or_Boolean_$1_MANY$__Boolean_1_ && $singleArgument, 'boolor'),
+                      pair($f.func == or_Boolean_MANY__Boolean_1_ && $singleArgument, 'boolor'),
+                      pair(true, $fn)
+                    ]->filter(p | $p.first)->first()->toOne().second;
+
                     newDynaFunction(
-                          $f.func.functionName->toOne(),
+                          $name,
                           $f.parametersValues->map(p|$p->processAggFn($params))
-                    )
+                    );
                   ),
          a:VariableExpression[1]|$params,
          i:InstanceValue[1]| if($i.values->isEmpty(),
@@ -7701,6 +7716,7 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::lessThanEqual_Date_1__Date_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::and_Boolean_MANY__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::or_Boolean_MANY__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processDynaFunction_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::collection::isNotEmpty_Any_$0_1$__Boolean_1_,second=meta::relational::functions::pureToSqlQuery::processIsNotEmpty_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
