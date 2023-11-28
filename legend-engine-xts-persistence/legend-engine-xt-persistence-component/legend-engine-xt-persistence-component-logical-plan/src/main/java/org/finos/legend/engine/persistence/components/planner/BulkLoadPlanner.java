@@ -274,7 +274,7 @@ class BulkLoadPlanner extends Planner
         {
             batchSourceMap.put("file_patterns", filePatterns);
         }
-        bulkLoadEventIdValue.ifPresent(taskId -> batchSourceMap.put("event_id", taskId));
+        bulkLoadEventIdValue.ifPresent(eventId -> batchSourceMap.put("event_id", eventId));
         ObjectMapper objectMapper = new ObjectMapper();
         try
         {
