@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::relational::mapping::*;
 import meta::pure::router::store::routing::*;
 import meta::pure::lineage::scanProperties::*;
 import meta::pure::milestoning::*;
@@ -70,9 +69,6 @@ function meta::pure::graphFetch::routing::propertyMappingInfo(prop: PropertyGrap
                                                                                                                                      });,
                                                                                                                                    | $propertyMappings
                                                                                                                                );
-
-
-
                                                                                                 ^PropertyMappingInfo(property=$property, propertyMappings=$resolvedPropertyMappings, sets=$sets););
 }
 
