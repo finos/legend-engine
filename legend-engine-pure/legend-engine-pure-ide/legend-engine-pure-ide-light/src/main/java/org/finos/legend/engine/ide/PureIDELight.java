@@ -100,6 +100,7 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-sql/legend-engine-xt-sql-pure", "external-query-sql"))
                 .with(this.buildCore("legend-engine-xts-authentication/legend-engine-xt-authentication-pure", "authentication"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-pure-specification-metamodel", "elasticsearch_specification_metamodel"))
+                .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-executionPlan-test", "elasticsearch_execution_test"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-V7-pure-metamodel", "elasticsearch_seven_metamodel"))
                 .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-pure","nonrelational-mongodb"))
                 .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure","nonrelational-mongodb-java-platform-binding"))

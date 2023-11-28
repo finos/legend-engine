@@ -20,6 +20,14 @@ import meta::external::store::elasticsearch::executionTest::utils::*;
 
 function 
   <<paramTest.Test>>
+  {doc.doc = 'Test restrict on Elasticsearch on boolean field'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::boolean::testRestrictBoolean(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | $x.isNull('MPAA'), 'has mpaa')])->restrict('has mpaa'));
+}
+
+function 
+  <<paramTest.Test>>
   {doc.doc = 'Test projection on Elasticsearch with pure isEmpty expressions'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::project::boolean::testProjectExpressionIsEmpty(config:TestConfig[1]):Boolean[1]
 {

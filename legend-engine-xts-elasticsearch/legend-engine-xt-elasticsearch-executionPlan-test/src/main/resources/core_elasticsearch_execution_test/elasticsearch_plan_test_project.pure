@@ -18,22 +18,22 @@ import meta::external::store::elasticsearch::executionTest::testCase::tds::*;
 import meta::external::store::elasticsearch::executionTest::test::*;
 import meta::external::store::elasticsearch::executionTest::utils::*;
 
-// function 
-//   <<paramTest.Test>>
-//   {doc.doc = 'Test projection on Elasticsearch with pure constant expressions'} 
-// meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionConstant(config:TestConfig[1]):Boolean[1]
-// {
-//   $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | 'Hello World!', 'Bucket')]));
-// }
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure constant expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionConstant(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | 'Hello World!', 'Bucket')]));
+}
 
-// function 
-//   <<paramTest.Test>>
-//   {doc.doc = 'Test projection on Elasticsearch with pure constant expressions'} 
-// meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionConstantWithVariable(config:TestConfig[1]):Boolean[1]
-// {
-//   let val = 12345;
-//   $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $val, 'Bucket')]));
-// }
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure constant expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::project::misc::testProjectExpressionConstantWithVariable(config:TestConfig[1]):Boolean[1]
+{
+  let val = 12345;
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | $val, 'Bucket')]));
+}
 
 function 
   <<paramTest.Test>>
