@@ -21,7 +21,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
+public class GenerateCastRenamedClassRenameFieldTest extends GenerateCastTestBase
 {
     @BeforeClass
     public static void setupSuite() throws IOException, ClassNotFoundException
@@ -39,16 +39,19 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
                 "      \"prevVersion\": \"ftdm:abcdefg123\",\n" +
                 "      \"changeTokens\": [\n" +
                 "        {\n" +
+                "          \"@type\": \"meta::pure::changetoken::RenamedClass\",\n" +
+                "          \"newName\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                "          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
+                "        },\n" +
+                "        {\n" +
                 "          \"@type\": \"meta::pure::changetoken::RenameField\",\n" +
                 "          \"oldFieldName\": [\n" +
-                "            \"abc\",\n" +
-                "            \"value\"\n" +
+                "            \"abc\"\n" +
                 "          ],\n" +
                 "          \"newFieldName\": [\n" +
-                "            \"abc\",\n" +
-                "            \"valueCustom\"\n" +
+                "            \"xyz\"\n" +
                 "          ],\n" +
-                "          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
+                "          \"class\": \"meta::pure::changetoken::tests::nested::NewSampleClass\"\n" +
                 "        }\n" +
                 "      ]\n" +
                 "    }\n" +
@@ -71,13 +74,13 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
                         "}"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
-                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"1d\"}},\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"4d\"}\n" +
+                        "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}\n");
     }
 
@@ -87,22 +90,22 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
         expect(upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OtherClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"1d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"4d\"}\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OtherClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"1d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"4d\"}\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}\n");
     }
 
@@ -112,22 +115,22 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
         expect(upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"1d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"def\": {\"@type\":\"Custom\", \"valueOther\":\"4d\"}\n" +
+                        "  \"def\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
-                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"1d\"}},\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"def\": {\"@type\":\"Custom\", \"valueOther\":\"4d\"}\n" +
+                        "  \"def\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}\n");
     }
 
@@ -136,13 +139,13 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
     {
         expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
-                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"4d\"}},\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"3d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"2d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"1d\"}\n" +
+                        "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
                         "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
@@ -162,22 +165,22 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
         expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OtherClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"4d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"3d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"2d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"1d\"}\n" +
+                        "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
                         "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OtherClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"4d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"3d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"2d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::OtherClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"OtherCustom\", \"value\":\"1d\"}\n" +
+                        "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
                         "}\n");
     }
 
@@ -186,21 +189,21 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
     {
         expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
-                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"4d\"}},\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"2d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n" +
                         "  ],\n" +
                         "  \"def\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
                         "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"4d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"4d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
                         "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"3d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"valueOther\":\"2d\"}}]\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"def\": {\"@type\":\"Custom\", \"value\":\"2d\"}}]\n" +
                         "  ],\n" +
                         "  \"def\": {\"@type\":\"Custom\", \"value\":\"1d\"}\n" +
                         "}\n");
@@ -212,22 +215,22 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
         expect(upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\", \"valueCustom\":\"1d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\", \"valueCustom\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\", \"valueCustom\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\", \"valueCustom\":\"4d\"}\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
-                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"1d\"}},\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"valueCustom\":\"4d\"}\n" +
+                        "  \"xyz\": {\"@type\":\"Custom\", \"value\":\"4d\"}\n" +
                         "}\n");
     }
 
@@ -236,13 +239,13 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
     {
         expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
-                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\", \"valueCustom\":\"5d\"}},\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"5d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\", \"valueCustom\":\"6d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\", \"valueCustom\":\"7d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"6d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"7d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"8d\", \"valueCustom\":\"8d\"}\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"8d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"8d\"}\n" +
                         "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
@@ -262,14 +265,14 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
         exception(() -> upcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\", \"valueCustom\":\"1d\"}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"1d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"1d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\", \"valueCustom\":\"2d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\", \"valueCustom\":\"3d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"2d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"2d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"3d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"3d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\", \"valueCustom\":\"9d\"}\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"4d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"9d\"}\n" +
                         "}"),
-                "Cannot overwrite with different value:9d");
+                "Cannot overwrite with different value:{@type=Custom, value=9d}");
     }
 
     @Test
@@ -277,14 +280,14 @@ public class GenerateCastRenameNestedPropertyTest extends GenerateCastTestBase
     {
         exception(() -> downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
-                        "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\", \"valueCustom\":\"5d\"}},\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\",\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"5d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"5d\"}},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\", \"valueCustom\":\"6d\"}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\", \"valueCustom\":\"7d\"}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"6d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"6d\"}},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::nested::NewSampleClass\", \"abc\": {\"@type\":\"Custom\", \"value\":\"7d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"7d\"}}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"8d\", \"valueCustom\":\"9d\"}\n" +
+                        "  \"abc\": {\"@type\":\"Custom\", \"value\":\"8d\"}, \"xyz\": {\"@type\":\"Custom\", \"value\":\"9d\"}\n" +
                         "}", "ftdm:abcdefg123"),
-                "Cannot overwrite with different value:8d");
+                "Cannot overwrite with different value:{@type=Custom, value=8d}");
     }
 }

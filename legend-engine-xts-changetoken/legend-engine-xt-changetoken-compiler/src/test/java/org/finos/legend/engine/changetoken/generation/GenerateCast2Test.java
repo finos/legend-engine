@@ -15,13 +15,11 @@
 package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Map;
 
 public class GenerateCast2Test extends GenerateCastTestBase
 {
@@ -63,23 +61,19 @@ public class GenerateCast2Test extends GenerateCastTestBase
     @Test
     public void testUpcast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        String input = "{\n" +
-                "  \"version\": \"ftdm:abcdefg123\",\n" +
-                "  \"@type\": \"meta::pure::changetoken::tests::SomeClassWithAnArray\",\n" +
-                "  \"array\": [\n" +
-                "    {\n" +
-                "      \"@type\": \"meta::pure::changetoken::tests::OuterClass\",\n" +
-                "      \"existingValue\": \"someValue\",\n" +
-                "      \"innerObject\": {\n" +
-                "        \"@type\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
-                "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}\n";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-        Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, jsonNode);
-
-        Map<String,Object> expectedJsonNodeOut = mapper.readValue(
+        expect(upcast("{\n" +
+                        "  \"version\": \"ftdm:abcdefg123\",\n" +
+                        "  \"@type\": \"meta::pure::changetoken::tests::SomeClassWithAnArray\",\n" +
+                        "  \"array\": [\n" +
+                        "    {\n" +
+                        "      \"@type\": \"meta::pure::changetoken::tests::OuterClass\",\n" +
+                        "      \"existingValue\": \"someValue\",\n" +
+                        "      \"innerObject\": {\n" +
+                        "        \"@type\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
+                        "      }\n" +
+                        "    }\n" +
+                        "  ]\n" +
+                        "}\n"),
                 "{\n" +
                         "  \"version\": \"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SomeClassWithAnArray\",\n" +
@@ -93,18 +87,13 @@ public class GenerateCast2Test extends GenerateCastTestBase
                         "      }\n" +
                         "    }\n" +
                         "  ]\n" +
-                        "}\n", Map.class); // copied 'someValue' from '../existingValue'
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
-
-        // assert that the input is not mutated
-        Assert.assertEquals(mapper.readValue(input, Map.class), jsonNode);
+                        "}\n");
     }
 
     @Test
     public void testDowncast() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
-        Map<String,Object> jsonNode = mapper.readValue(
-                "{\n" +
+        expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OuterClass\",\n" +
                         "  \"existingValue\": \"someValue\",\n" +
@@ -112,17 +101,12 @@ public class GenerateCast2Test extends GenerateCastTestBase
                         "    \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
                         "    \"abc\": \"someValue\"\n" +
                         "  }\n" +
-                        "}\n", Map.class);
-
-        Map<String,Object> jsonNodeOut = (Map<String,Object>) compiledClass.getMethod("downcast", Map.class, String.class).invoke(null, jsonNode, "ftdm:abcdefg123");
-
-        Map<String,Object> expectedJsonNodeOut = mapper.readValue(
+                        "}\n", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::OuterClass\",\n" +
                         "  \"existingValue\": \"someValue\",\n" +
                         "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\"}\n" +
-                        "}\n", Map.class); // moved 'someValue' to '../existingValue'
-        Assert.assertEquals(expectedJsonNodeOut, jsonNodeOut);
+                        "}\n");
     }
 }
