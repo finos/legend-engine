@@ -149,6 +149,26 @@ function meta::external::store::elasticsearch::v7::pureToEs::processRestrict(vs 
   );
 }
 
+function meta::external::store::elasticsearch::v7::pureToEs::processRenameColumns(vs : FunctionExpression[1], initReq: State[1]): State[1]
+{
+  $initReq.debug(|'Processing ->renameColumns');
+  let currReq = process($vs.parametersValues->at(0), $initReq);
+
+  let toRename = $vs->instanceValuesAtParameter(1, $currReq.sq.inScopeVars)->match([
+        p:Pair<String,String>[*] | $p,
+        vss:ValueSpecification[*] | $vss->map(vs|$vs->reactivate($currReq.sq.inScopeVars)->evaluateAndDeactivate()->cast(@Pair<String,String>));
+  ]);
+
+  let toRenameMap = $toRename->newMap();
+
+  let newESDetails = $currReq.tdsESDetails->map(c | 
+        let newName = $toRenameMap->get($c.name);
+        if($newName->isNotEmpty(), | ^$c(name=$newName->toOne()), | $c);
+  );
+
+  ^$currReq(tdsESDetails = $newESDetails);
+}
+
 function meta::external::store::elasticsearch::v7::pureToEs::processDistinct(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
   $initReq.debug(|'Processing ->distinct');
@@ -600,7 +620,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::supportedRoutingFun
     pair(supportedIfEqual(extend_TabularDataSet_1__BasicColumnSpecification_MANY__TabularDataSet_1_),     processExtend_FunctionExpression_1__State_1__State_1_),
     pair(supportedIfEqual(restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_),                     processRestrict_FunctionExpression_1__State_1__State_1_),
     pair(supportedIfEqual(distinct_TabularDataSet_1__TabularDataSet_1_),                                  processDistinct_FunctionExpression_1__State_1__State_1_),
-
+    pair(supportedIfEqual(renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_),                  processRenameColumns_FunctionExpression_1__State_1__State_1_),
 
     pair(supportedIfEqual(filter_TabularDataSet_1__Function_1__TabularDataSet_1_),                        processFilter_FunctionExpression_1__State_1__State_1_),
 

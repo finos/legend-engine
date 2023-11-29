@@ -146,3 +146,11 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::misc::testSl
   $config->testTdsExpression(x | $x->sort('Title')->slice(3, $var4));
   $config->testTdsExpression(x | $x->sort('Title')->slice($var3, 4));
 }
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test rename column on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::misc::testRenameColumn(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->renameColumns(pair('Title', 'Titulo')));
+}
