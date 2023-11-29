@@ -534,6 +534,13 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(Trim val)
+            {
+                String chars = val.characters != null ? " " + visit(val.characters) : "";
+                return "trim(" + val.mode.name() + chars + " FROM " + visit(val.value) + ")";
+            }
+
+            @Override
             public String visit(Union val)
             {
                 String operator = val.distinct ? " UNION " : " UNION ALL ";
