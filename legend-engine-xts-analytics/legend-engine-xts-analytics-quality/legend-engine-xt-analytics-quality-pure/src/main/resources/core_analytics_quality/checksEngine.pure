@@ -220,7 +220,7 @@ function meta::analytics::quality::model::domain::runChecksAsHtml(pkgs:Packageab
          ('<td>' + $bug.rule.description->makeString() + '</td>'),
          ('<td>' + $bug.detail.message->makeString() + '</td>'),
          if($service
-         ,|('<td><a href="http://pure.site.gs.com/showCode/' + $pe->elementToPath() + '">' + $peName + '</a></td>')
+         ,|('<td><a>' + $pe->cast(@PackageableElement)->fullPackageName('::') + '</a></td>')
          ,|('<td>' + '<a href=\'#\' onclick=\'openFile(\"' +  $bug.sourceInfo->toOne().source + '\",' + $bug.sourceInfo->toOne().startLine->toString() + ',' + $bug.sourceInfo->toOne().startColumn->toString() + ',false); return false;\'>'
                  + $peName+ '</a>'+ '</td>')
          ),
@@ -314,7 +314,7 @@ function <<access.private>> meta::analytics::quality::model::domain::createRuleH
   '<tr><td>'+$type +'</td><td>'+$r.severity->toString() + '</td><td>' +  $r.category->toString() + '</td><td>' + $r.description +'</td>' +
 
   if($service
-    ,|('<td><a href="http://pure.site.gs.com/showCode/' + $pe->elementToPath() + '">' + $pe->cast(@PackageableElement)->fullPackageName('::') + '</a></td>')
+    ,|('<td><a>' + $pe->cast(@PackageableElement)->fullPackageName('::') + '</a></td>')
     ,|('<td>' + '<a href=\'#\' onclick=\'openFile(\"' +  $si.source + '\",' + $si.startLine->toString() + ',' + $si.startColumn->toString() + ',false); return false;\'>'
                  + $pe->cast(@PackageableElement)->fullPackageName('::') + '</a>'+ '</td>')
     );
