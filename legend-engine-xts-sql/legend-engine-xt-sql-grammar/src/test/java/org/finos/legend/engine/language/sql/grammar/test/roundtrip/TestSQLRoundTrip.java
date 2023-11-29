@@ -322,6 +322,13 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testTrim()
+    {
+        check("SELECT trim(BOTH ' ' FROM 'abc') FROM myTable");
+        check("SELECT trim(BOTH FROM 'abc') FROM myTable");
+    }
+
+    @Test
     public void testNested()
     {
         check("SELECT * from (select col from myTable)");
