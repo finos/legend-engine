@@ -424,6 +424,12 @@ public class TableSourceExtractor implements NodeVisitor<Set<TableSource>>
     }
 
     @Override
+    public Set<TableSource> visit(Trim val)
+    {
+        return val.value.accept(this);
+    }
+
+    @Override
     public Set<TableSource> visit(Union val)
     {
         Set<TableSource> leftTableNames = val.left.accept(this);

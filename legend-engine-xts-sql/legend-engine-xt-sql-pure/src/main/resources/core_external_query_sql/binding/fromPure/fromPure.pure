@@ -1382,6 +1382,7 @@ function meta::external::query::sql::transformation::queryToPure::extractNameFro
       let when = $s.whenClauses->map(w | $w->extractNameFromExpression($context))->joinStrings(' ');
       let default = if ($s.defaultValue->isEmpty(), | '', | ' ELSE ' + $s.defaultValue->toOne()->extractNameFromExpression($context));
       'CASE ' + $when + $default + ' END';,
+    t:Trim[1] | 'TRIM(' + $t.mode->toString() + if ($t.characters->isEmpty(), | '', | ' ' + $t.characters->toOne()->extractNameFromExpression($context)) + ' FROM ' + $t.value->extractNameFromExpression($context) + ')',
     w:WhenClause[1] | 'WHEN ' + $w.operand->extractNameFromExpression($context) + ' THEN ' + $w.result->extractNameFromExpression($context),
     e:meta::external::query::sql::metamodel::Expression[1] | ''
   ])
@@ -1461,6 +1462,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     q:QualifiedNameReference[1] | processQualifiedNameReference($q, $expContext, $context),
     s:SimpleCaseExpression[1] | processSimpleCaseExpression($s, $expContext, $context),
     s:SearchedCaseExpression[1] | processSearchedCaseExpression($s, $expContext, $context),
+    t:Trim[1] | processTrim($t, $expContext, $context),
     e:meta::external::query::sql::metamodel::Expression[*] | fail('Expression type not yet supported'); iv(1);
   ])->evaluateAndDeactivate();
 }
@@ -1537,7 +1539,6 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let func = [
     pair(CurrentTimeType.DATE, today__StrictDate_1_),
-    pair(CurrentTimeType.TIME, now__DateTime_1_),
     pair(CurrentTimeType.TIMESTAMP, now__DateTime_1_)
   ]->getValue($c.type);
 
@@ -1726,6 +1727,21 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     pair('NUMERIC', Decimal),
     pair('TIMESTAMP', DateTime)
   ]->getValue($c.type.name->toUpper());
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::processTrim(t:Trim[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
+{
+  debug('processTrim', $context.debug);
+
+  let name = [
+      pair(TrimMode.LEADING, 'ltrim'),
+      pair(TrimMode.TRAILING, 'rtrim'),
+      pair(TrimMode.BOTH, 'btrim')
+  ]->getValue($t.mode);
+
+  ^FunctionCall(name = ^QualifiedName(parts = $name), 
+                distinct = false, 
+                arguments = $t.value->concatenate($t.characters))->processFunctionCall($expContext, $context);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSearchedCaseExpression(s:SearchedCaseExpression[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
@@ -2062,15 +2078,39 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
       processor('concat', String, {args, fc, ctx |
         sfe(plus_String_MANY__String_1_, iv($args))
       }),
+      processor('decode', String, {args, fc, ctx | 
+        assert($args->size() == 2, | 'incorrect number of args to decode');
+        
+        let type = $args->at(1)->reactivate()->cast(@String)->toOne();
+        
+        let func = [
+          pair('base64', decodeBase64_String_1__String_1_)
+        ]->getValue($type->toLower());
+
+        nullOrSfe($func, $args->at(0));
+      }),        
+      processor('encode', String, {args, fc, ctx | 
+        assert($args->size() == 2, | 'incorrect number of args to encode');
+        
+        let type = $args->at(1)->reactivate()->cast(@String)->toOne();
+        
+        let func = [
+          pair('base64', encodeBase64_String_1__String_1_)
+        ]->getValue($type->toLower());
+
+        nullOrSfe($func, $args->at(0));
+      }),    
       processor('length', length_String_1__Integer_1_),
       processor('lower', toLower_String_1__String_1_),
       processor('lpad', String, {args, fc, ctx | processPad($args, true)}),
       processor('ltrim', String, {args, fc, ctx | processTrim(ltrim_String_1__String_1_, $args)}),
+      processor('left', left_String_1__Integer_1__String_1_),
       processor('md5', String, {args, fc, ctx | processHash($args, meta::pure::functions::hash::HashType.MD5)}),
       processor('regexp_like', matches_String_1__String_1__Boolean_1_),
       processor('repeat', repeatString_String_$0_1$__Integer_1__String_$0_1$_),
       processor('replace', replace_String_1__String_1__String_1__String_1_),
       processor('reverse', reverseString_String_1__String_1_),
+      processor('right', right_String_1__Integer_1__String_1_),
       processor('rpad', String, {args, fc, ctx | processPad($args, false)}),
       processor('rtrim', String, {args, fc, ctx | processTrim(rtrim_String_1__String_1_, $args)}),
       processor('sha256', String, {args, fc, ctx | processHash($args, meta::pure::functions::hash::HashType.SHA256)}),
@@ -2137,6 +2177,37 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
 
         nullOrSfe($func, $args->at(1));
       }),
+      processor('localtimestamp', Date, {args, fc, ctx | 
+        assertEquals(0, $args->size(), 'only zero arg localtimestamp supported');
+
+        sfe(now__DateTime_1_, []);
+      }),
+      processor('make_date', Date, {args, fc, ctx | 
+        assertEquals(3, $args->size(), 'incorrect number of args for make_date');
+
+        let year = $args->at(0)->reactivate()->toOne()->cast(@Integer);
+        let month = $args->at(1)->reactivate()->toOne()->cast(@Integer);
+        let day = $args->at(2)->reactivate()->toOne()->cast(@Integer);
+
+        let date = date($year, $month, $day);
+
+        iv($date);
+      }),
+
+      processor('make_timestamp', Date, {args, fc, ctx | 
+        assertEquals(6, $args->size(), 'incorrect number of args for make_timestamp');
+
+        let year = $args->at(0)->reactivate()->toOne()->cast(@Integer);
+        let month = $args->at(1)->reactivate()->toOne()->cast(@Integer);
+        let day = $args->at(2)->reactivate()->toOne()->cast(@Integer);
+        let hours = $args->at(3)->reactivate()->toOne()->cast(@Integer);
+        let minutes = $args->at(4)->reactivate()->toOne()->cast(@Integer);
+        let seconds = $args->at(5)->reactivate()->toOne()->cast(@Number);
+
+        let date = date($year, $month, $day, $hours, $minutes, $seconds);
+
+        iv($date);
+      }),      
 
       //COLLECTION
       processor('coalesce', [], {args, fc, ctx |
@@ -2179,7 +2250,7 @@ function meta::external::query::sql::transformation::queryToPure::functionProces
         let type = $arg.genericType.rawType;
         let format = $args->at(1)->reactivate()->toOne()->cast(@String);
 
-        assert($type->isNotEmpty() && $type->toOne()->normalizeType() == Date, 'to_char currently only supported for know date inputs');
+        assert($type->isNotEmpty() && $type->toOne()->normalizeType() == Date, 'to_char currently only supported for date inputs');
 
         toChar($format, [], $arg->evaluateAndDeactivate());
       }),
@@ -2504,6 +2575,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     q:QualifiedNameReference[1] | $context.columnByNameParts($q.name.parts, true).type->toOne(),
     s:SearchedCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
     s:SimpleCaseExpression[1] | caseExpressionType($s.whenClauses, $s.defaultValue, $context),
+    t:Trim[1] | String,
     e:meta::external::query::sql::metamodel::Expression[1] | Any
   ]);
 }
@@ -2964,6 +3036,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     n:NotExpression[1] | walk($n.value, $accumulator, $extras),
     s:SimpleCaseExpression[1] | $s->convertToSearchedCaseExpression()->walk($accumulator, $extras),
     s:SearchedCaseExpression[1] | $s.whenClauses->map(w | walk($w.operand, $w.result, $accumulator, $extras))->concatenate(walk($s.defaultValue, $accumulator, $extras)),
+    t:Trim[1] | walk($t.value, $t.characters, $accumulator, $extras),
     e:meta::external::query::sql::metamodel::Expression[0..1] | []
   ])->toOneMany());
 
@@ -3023,6 +3096,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     s:SearchedCaseExpression[1] | ^$s(
       defaultValue = $s.defaultValue->walk($extras),
       whenClauses = $s.whenClauses->map(wc | ^$wc(operand = $wc.operand->walk($extras)->toOne(), result = $wc.result->walk($extras)->toOne()))
+    ),
+    t:Trim[1] | ^$t(
+      value = $t.value->walk($extras)->toOne(),
+      characters = $t.characters->walk($extras)
     ),
     e:meta::external::query::sql::metamodel::Expression[1] | $e
   ])->match($extras->concatenate([

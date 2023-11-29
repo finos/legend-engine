@@ -51,6 +51,34 @@ function {doc.doc = 'Lower cases the first charater of the provided string'} met
          })
 }
 
+function {doc.doc = 'Return first n characters in the string'}
+meta::pure::functions::string::left(string:String[1], length:Integer[1]):String[1]
+{
+  assert($length >= 0, 'length must be >= 0');
+
+  let strLength = $string->length();
+
+  let digits = if ($length > $strLength,
+                    | $strLength,
+                    | $length);
+
+  $string->substring(0, $digits);
+}
+
+function {doc.doc = 'Return last n characters in the string'}
+meta::pure::functions::string::right(string:String[1], length:Integer[1]):String[1]
+{
+  assert($length >= 0, 'length must be >= 0');
+
+  let strLength = $string->length();
+
+  let digits = if ($length > $strLength,
+                    | 0,
+                    | $strLength - $length);
+
+  $string->substring($digits, $strLength);
+}
+
 function meta::pure::functions::string::repeatString(str:String[0..1], times:Integer[1]):String[0..1]
 {
   if ($str->isNotEmpty(), | $str->toOne()->repeat($times)->joinStrings(), | []);
