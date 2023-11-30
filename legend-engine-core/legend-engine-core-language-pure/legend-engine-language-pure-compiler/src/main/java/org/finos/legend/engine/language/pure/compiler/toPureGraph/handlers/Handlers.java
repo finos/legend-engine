@@ -490,6 +490,9 @@ public class Handlers
 
         register("meta::pure::functions::collection::size_Any_MANY__Integer_1_", true, ps -> res("Integer", "one"));
 
+        register("meta::pure::functions::collection::pair_U_1__V_1__Pair_1_", false, ps -> res(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(this.pureModel.getType("meta::pure::functions::collection::Pair"))
+                ._typeArguments(Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList()))), "one"));
 
         register("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"));
 
@@ -1797,6 +1800,7 @@ public class Handlers
         map.put("meta::pure::functions::collection::removeDuplicates_T_MANY__T_MANY_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::collection::reverse_T_m__T_m_", (List<ValueSpecification> ps) -> ps.size() == 1);
         map.put("meta::pure::functions::collection::size_Any_MANY__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1);
+        map.put("meta::pure::functions::collection::pair_U_1__V_1__Pair_1_", (List<ValueSpecification> ps) -> ps.size() == 2);
         map.put("meta::pure::functions::collection::slice_T_MANY__Integer_1__Integer_1__T_MANY_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Integer".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::collection::paginated_T_MANY__Integer_1__Integer_1__T_MANY_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "Integer".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "Integer".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::collection::sortBy_T_m__Function_$0_1$__T_m_", (List<ValueSpecification> ps) -> ps.size() == 2 && matchZeroOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || check(funcType(ps.get(1)._genericType()), (FunctionType ft) -> isOne(ft._returnMultiplicity()) && check(ft._parameters().toList(), (List<? extends VariableExpression> nps) -> nps.size() == 1 && isOne(nps.get(0)._multiplicity())))));
