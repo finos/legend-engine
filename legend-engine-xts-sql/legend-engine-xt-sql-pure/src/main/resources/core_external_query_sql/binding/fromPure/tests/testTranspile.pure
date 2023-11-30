@@ -1481,7 +1481,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCurrentTime():Boolean[1]
 {
   test(
-    'SELECT CURRENT_TIME, CURRENT_TIMESTAMP, CURRENT_DATE, CURRENT_TIME AS time, CURRENT_TIMESTAMP AS timestamp, CURRENT_DATE AS date FROM service."/service/service1"',
+    'SELECT CURRENT_TIMESTAMP, CURRENT_DATE, CURRENT_TIMESTAMP AS timestamp, CURRENT_DATE AS date FROM service."/service/service1"',
 
     {|
         FlatInput.all()
@@ -1489,12 +1489,32 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
               [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
             ->project([
-                col(row:TDSRow[1] | now(), 'CURRENT_TIME'),
                 col(row:TDSRow[1] | now(), 'CURRENT_TIMESTAMP'),
                 col(row:TDSRow[1] | today(), 'CURRENT_DATE'),
-                col(row:TDSRow[1] | now(), 'time'),
                 col(row:TDSRow[1] | now(), 'timestamp'),
                 col(row:TDSRow[1] | today(), 'date')
+              ])
+      })
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateFunctions():Boolean[1]
+{
+  test(
+    'SELECT ' + 
+    'localtimestamp() AS "LOCALTIMESTAMP", ' + 
+    'make_date(2023, 01, 02) AS "MAKEDATE", ' +
+    'make_timestamp(2023, 01, 02, 12, 11, 10.5) AS "MAKETIMESTAMP" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->project([
+                col(row:TDSRow[1] | now(), 'LOCALTIMESTAMP'),
+                col(row:TDSRow[1] | %2023-01-02, 'MAKEDATE'),
+                col(row:TDSRow[1] | %2023-01-02T12:11:10.5, 'MAKETIMESTAMP')
               ])
       })
 }
@@ -1633,7 +1653,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS",' +
         'reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", ' +
         'split_part(String, \',\', Integer) AS "SPLITPART2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2",' +
-        'lpad(String, 2) AS "LPAD", lpad(String, 2, \'a\') AS "LPAD2", rpad(String, 2) AS "RPAD", rpad(String, 2, \'a\') AS "RPAD2" FROM service."/service/service1"',
+        'lpad(String, 2) AS "LPAD", lpad(String, 2, \'a\') AS "LPAD2", rpad(String, 2) AS "RPAD", rpad(String, 2, \'a\') AS "RPAD2", left(String, 1) AS "LEFT", right(String, 1) AS "RIGHT", ' + 
+        'decode(String, \'base64\') AS "DECODE", encode(String, \'base64\') AS "ENCODE", ' +
+        'trim(BOTH from String) AS "TRIMB", trim(BOTH \' \' from String) AS "TRIMB2", trim(LEADING from String) AS "TRIML", trim(LEADING \' \' from String) AS "TRIML2", ' + 
+        'trim(TRAILING from String) AS "TRIMT", trim(TRAILING \' \' from String) AS "TRIMT2"' +
+        'FROM service."/service/service1"',
 
         {|
         FlatInput.all()
@@ -1670,7 +1694,17 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | lpad($row.getString('String'), 2), 'LPAD'),
                 col(row:TDSRow[1] | lpad($row.getString('String'), 2, 'a'), 'LPAD2'),
                 col(row:TDSRow[1] | rpad($row.getString('String'), 2), 'RPAD'),
-                col(row:TDSRow[1] | rpad($row.getString('String'), 2, 'a'), 'RPAD2')                
+                col(row:TDSRow[1] | rpad($row.getString('String'), 2, 'a'), 'RPAD2'),
+                col(row:TDSRow[1] | left($row.getString('String'), 1), 'LEFT'),
+                col(row:TDSRow[1] | right($row.getString('String'), 1), 'RIGHT'),
+                col(row:TDSRow[1] | decodeBase64($row.getString('String')), 'DECODE'),
+                col(row:TDSRow[1] | encodeBase64($row.getString('String')), 'ENCODE'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIMB'),
+                col(row:TDSRow[1] | trim($row.getString('String')), 'TRIMB2'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'TRIML'),
+                col(row:TDSRow[1] | ltrim($row.getString('String')), 'TRIML2'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'TRIMT'),
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'TRIMT2')              
               ])
       })
 }
@@ -1682,7 +1716,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       'ltrim(NULL, \' \') AS "LTRIM2", md5(NULL) AS "MD5", upper(NULL) AS "UPPER", lower(NULL) AS "LOWER", replace(NULL, \'A\', \'a\') AS "REPLACE", starts_with(NULL, \'a\') AS "STARTSWITH", ' +
       'strpos(NULL, \'abc\') AS "STRPOS", reverse(NULL) AS "REVERSE", rtrim(NULL) AS "RTRIM", rtrim(NULL, \' \') AS "RTRIM2", sha256(NULL) AS "SHA256", substring(NULL, 1) AS "SUBSTRING", ' +
       'substr(NULL, 1, 2) AS "SUBSTR", btrim(NULL) AS "TRIM", btrim(NULL, \' \') AS "TRIM2", lpad(NULL, 2) AS "LPAD", lpad(String, NULL) AS "LPAD2", lpad(String, 2, NULL) AS "LPAD3",' +
-      'rpad(NULL, 2) AS "RPAD", rpad(String, NULL) AS "RPAD2", rpad(String, 2, NULL) AS "RPAD3" FROM service."/service/service1"',
+      'rpad(NULL, 2) AS "RPAD", rpad(String, NULL) AS "RPAD2", rpad(String, 2, NULL) AS "RPAD3", left(NULL, 1) AS "LEFT", left(String, NULL) AS "LEFT2", right(NULL, 1) AS "RIGHT", right(String, NULL) AS "RIGHT2", ' + 
+      'decode(NULL, \'base64\') AS "DECODE", encode(NULL, \'base64\') AS "ENCODE", trim(BOTH from NULL) AS "TRIM3" ' +
+      'FROM service."/service/service1"',
 
       {|
         FlatInput.all()
@@ -1716,7 +1752,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | []->cast(@String), 'LPAD3'),
                 col(row:TDSRow[1] | []->cast(@String), 'RPAD'),
                 col(row:TDSRow[1] | []->cast(@String), 'RPAD2'),
-                col(row:TDSRow[1] | []->cast(@String), 'RPAD3')
+                col(row:TDSRow[1] | []->cast(@String), 'RPAD3'),
+                col(row:TDSRow[1] | []->cast(@String), 'LEFT'),
+                col(row:TDSRow[1] | []->cast(@String), 'LEFT2'),
+                col(row:TDSRow[1] | []->cast(@String), 'RIGHT'),
+                col(row:TDSRow[1] | []->cast(@String), 'RIGHT2'),
+                col(row:TDSRow[1] | []->cast(@String), 'DECODE'),
+                col(row:TDSRow[1] | []->cast(@String), 'ENCODE'),
+                col(row:TDSRow[1] | []->cast(@String), 'TRIM3')                                
               ])
       })
 }
@@ -2381,6 +2424,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^SimpleCaseExpression(operand = ^BooleanLiteral(value = true),
                                   whenClauses = ^WhenClause(operand = ^BooleanLiteral(value = false),result = ^IntegerLiteral(value = 2)),
                                   defaultValue = ^IntegerLiteral(value = 1)), 'CASE WHEN true = false THEN 2 ELSE 1 END');
+
+  doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), characters = ^StringLiteral(value = ' ', quoted = true), mode =TrimMode.BOTH), 'TRIM(BOTH \' \' FROM \'abc\')');
+  doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), mode = TrimMode.BOTH), 'TRIM(BOTH FROM \'abc\')');
 }
 
 
