@@ -2487,29 +2487,74 @@ function meta::relational::functions::pureToSqlQuery::processTDSSort(f:FunctionE
 
 function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-   let mainQuery = processValueSpecification($f.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne()->cast(@SelectWithCursor);
-   let mainSelect = $mainQuery.select->pushSavedFilteringOperation($extensions);
+  let leftSidePure = $f.parametersValues->at(0);
+  let leftSideOp = processValueSpecificationReturnPropertyMapping($leftSidePure, $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context, $extensions)->toOne();
+  let mainQuery = $leftSideOp.element->cast(@SelectWithCursor);
+  let mainSelect = $mainQuery.select->pushSavedFilteringOperation($extensions);    
+  let sortByFunc = $f.parametersValues->evaluateAndDeactivate()->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0);
+  
+  $sortByFunc->match([
+    path: Path<Nil,Any|*>[1] | 
+      let pathName = 'o_'+$path->buildColumnNameOutOfPath();
+      let joinResult = processPath($path, $pathName, '1', $mainQuery, $vars, ^$state(inFilter=false), $nodeId, $aggFromMap, $context->shift(), $extensions).element->cast(@SelectWithCursor).select;
 
-   let sortByFunc = $f.parametersValues->evaluateAndDeactivate()->at(1)->byPassRouterInfo()->cast(@InstanceValue).values->at(0);
-   assert($sortByFunc->instanceOf(Path), 'sortBy can currently be converted to SQL only if the parameter is a Path.');
-   let path = $sortByFunc->cast(@Path<Nil,Any|*>);
-   let pathName = 'o_'+$path->buildColumnNameOutOfPath();
-   let joinResult = processPath($path, $pathName, '1', $mainQuery, $vars, ^$state(inFilter=false), $nodeId, $aggFromMap, $context->shift(), $extensions).element->cast(@SelectWithCursor).select;
+      let merge = $mainSelect->concatenate($joinResult)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
 
-   let merge = $mainSelect->concatenate($joinResult)->mergeSQLQueryData($nodeId, $state, $context, $extensions);
+      ^$operation(
+          currentTreeNode = $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne()),
+          positionBeforeLastApplyJoinTreeNode = if ($mainQuery.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$mainQuery.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne())),
+          select = ^SelectSQLQuery(
+                      columns = $merge.columns,
+                      data = $merge.data,
+                      leftSideOfFilter = $merge.leftSideOfFilter,
+                      filteringOperation = $merge.filteringOperation,
+                      extraFilteringOperation = $merge.extraFilteringOperation,
+                      orderBy = ^OrderBy(column=$joinResult.columns->at(0)->cast(@Alias).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
+                  )
+      );,
+    l: LambdaFunction<Any>[1] | 
+      /*
+        - already have a mainQuery - select ...
+        - process the lambda function inside sortBy with the state to generate a sql query 
+            select <sql_expr> as "generated_order_key" from ...
+          where <sql_expr> is a sql representation for lambda function and "generated_order_key" is a temporary alias introduced
+        - merge these two queries
+        - modify the merged query to move the sql_expr from select to order by
+            select ... order by <sql_expr>
+      */
 
-   ^$operation(
-      currentTreeNode = $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne()),
-      positionBeforeLastApplyJoinTreeNode = if ($mainQuery.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$mainQuery.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne())),
-      select = ^SelectSQLQuery(
-                  columns = $merge.columns,
-                  data = $merge.data,
-                  leftSideOfFilter = $merge.leftSideOfFilter,
-                  filteringOperation = $merge.filteringOperation,
-                  extraFilteringOperation = $merge.extraFilteringOperation,
-                  orderBy = ^OrderBy(column=$joinResult.columns->at(0)->cast(@Alias).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
-               )
-   );
+      let generated_order_key = '"generated_order_key"';
+      let paramValue = $f.parametersValues->at(1)->match([e:StoreMappingRoutedValueSpecification[1]|$e.value,v:ValueSpecification[1]|$v]);
+      let updatedState = $state->updateFunctionParamScope($paramValue.genericType.typeArguments.rawType->toOne()->cast(@FunctionType),$mainQuery);
+      let lambdaFunction = $f->instanceValuesAtParameter(1, $vars, $updatedState.inScopeVars)->at(0)->cast(@FunctionDefinition<Any>);
+      let lambdaFunctionExpression = $lambdaFunction.expressionSequence->at(0);
+      let inScopeVarsWithPlaceholdersState = $lambdaFunction->addPlaceHoldersForLambdaOpenVariables($vars, $updatedState);
+      let embeddedMapping = if($leftSideOp.currentPropertyMapping->isEmpty(), | $currentPropertyMapping, | $leftSideOp.currentPropertyMapping);
+      
+      let rightSide = processValueSpecification($lambdaFunctionExpression, $embeddedMapping, $mainQuery, $vars, ^$inScopeVarsWithPlaceholdersState(inFilter=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
+      let rightSideSelect = $rightSide.select;
+      let rightSideModified = ^$rightSide(
+        select = ^$rightSideSelect(
+          columns = if($rightSideSelect.columns->isEmpty(), | [], |^Alias(name = $generated_order_key, relationalElement = $rightSideSelect.columns->toOne()))
+        )
+      );
+      
+      let revisedLeftRightSelects = pair($mainSelect,$rightSideModified.select);
+      let merge = [$revisedLeftRightSelects.first, $revisedLeftRightSelects.second]->cast(@SelectSQLQuery)->mergeSQLQueryData($nodeId, $updatedState, $context, $extensions);
+      ^$operation(
+          currentTreeNode = $mainQuery.currentTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne()),
+          positionBeforeLastApplyJoinTreeNode = if ($mainQuery.positionBeforeLastApplyJoinTreeNode->isEmpty(),|[],|$mainQuery.positionBeforeLastApplyJoinTreeNode->toOne()->findOneNode($mainQuery.select.data->toOne(), $merge.data->toOne())),
+          select = ^SelectSQLQuery(
+                      columns = $merge.columns->filter(c|!$c->instanceOf(Alias) || $c->cast(@Alias).name != $generated_order_key),
+                      data = $merge.data,
+                      leftSideOfFilter = $merge.leftSideOfFilter,
+                      filteringOperation = $merge.filteringOperation,
+                      extraFilteringOperation = $merge.extraFilteringOperation,
+                      orderBy = ^OrderBy(column=$rightSideModified.select.columns->toOne()->cast(@Alias).name->findAliasOrFail($merge).relationalElement, direction=meta::relational::metamodel::SortDirection.ASC)
+                  )
+      );,
+    a: Any[1] | fail('Invalid parameter type to sortBy ' + $sortByFunc->type().name->orElse('unknown')); $operation;
+  ]);
 }
 
 function meta::relational::functions::pureToSqlQuery::processSlice(f:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
