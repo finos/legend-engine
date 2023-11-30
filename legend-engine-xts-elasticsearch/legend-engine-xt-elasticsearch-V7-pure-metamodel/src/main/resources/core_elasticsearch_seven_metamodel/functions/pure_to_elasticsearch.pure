@@ -1389,12 +1389,16 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessIsNo
   let field = $fieldPair.first.values->cast(@TDSESDetail)->toOne('isNotEmpty only works on tds columns for now');
   let req = $fieldPair.second;
 
-  let script = $field.resultPath.property->match([
+  pair(^InlineScript(source = $field->painlessIsNotEmpty()->literal(), params = newMap([])), $req);
+}
+
+
+function meta::external::store::elasticsearch::v7::pureToEs::painlessIsNotEmpty(field: TDSESDetail[1]): String[1]
+{
+  $field.resultPath.property->match([
     text: TextProperty[1] | 'params[\'_source\'][\'%s\'] != null',
     any: Any[1] | 'doc[\'%s\'].size() != 0';
   ])->format($field.path());
-
-  pair(^InlineScript(source = $script->literal(), params = newMap([])), $req);
 }
 
 function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBooleanComparison(fe: FunctionExpression[1], initReq: State[1]): Pair<InlineScript, State>[1]
@@ -1459,12 +1463,12 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
         any: Any[*] | 'params[\'%s\']'
       ])->format($param.first);
 
-      let script = '%s.toInstant().toEpochMilli() %s %s'->format([painlessExtractField($tdsESDetail), $operation, $paramScript]);
+      let script = '(%s && %s.toInstant().toEpochMilli() %s %s)'->format([painlessIsNotEmpty($tdsESDetail), painlessExtractField($tdsESDetail), $operation, $paramScript]);
       let literalOrExpression = $newValue->literalOrExpression(true)->toOne();
       pair(^InlineScript(source = $script->literal(), params = newMap(pair($param.first, $literalOrExpression))), $param.second);
     },
     {|
-      let script = '%s %s params[\'%s\']'->format([painlessExtractField($tdsESDetail), $operation, $param.first]);
+      let script = '(%s && %s %s params[\'%s\'])'->format([painlessIsNotEmpty($tdsESDetail), painlessExtractField($tdsESDetail), $operation, $param.first]);
       let literalOrExpression = $value->literalOrExpression(true)->toOne();
       pair(^InlineScript(source = $script->literal(), params = newMap(pair($param.first, $literalOrExpression))), $param.second);
     }
