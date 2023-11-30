@@ -29,7 +29,6 @@ public class Test_Pure_ElasticSearch_ExecutionPlan
         TestSuite suite = new TestSuite();
         if (DockerClientFactory.instance().isDockerAvailable())
         {
-            System.setProperty("org.finos.legend.engine.plan.execution.stores.elasticsearch.test.password", "s3cret");
             CompiledExecutionSupport executionSupport = PureTestBuilderCompiled.getClassLoaderExecutionSupport();
             suite.addTest(PureTestBuilderCompiled.buildSuite(
                     TestCollection.collectTests(

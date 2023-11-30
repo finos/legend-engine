@@ -577,6 +577,10 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 }
                 else
                 {
+                    if (!this.activities.isEmpty())
+                    {
+                        return false;
+                    }
                     processor = ExecutionRequestVisitor.this::processNotAggregateResponse;
                 }
 
