@@ -766,7 +766,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
    let res = if ($isQualified,
                 {|
                    let newVars      = newVarsForMilestoningContext($propTree, $inScopeVars);
-                   let updatedState = ^$pureToSqlState(inGetterFlow = true, qualifierBase=^OperationWithParentPropertyMapping(element = $base), inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars));
+                   let updatedState = ^$pureToSqlState(inGetterFlow = true, milestoningUseOtherwise = true, qualifierBase=^OperationWithParentPropertyMapping(element = $base), inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars));
                    processQualifiedProperty($propTree.property->cast(@QualifiedProperty<Any>), [], $base, ^Map<VariableExpression, ValueSpecification>(), $updatedState, JoinType.LEFT_OUTER, '_gftq', ^List<ColumnGroup>(), $debug, $extensions).element->cast(@SelectWithCursor);
                 },
                 {|
@@ -796,7 +796,7 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
                    let newVars       = newVarsForMilestoningContext($propTree, $inScopeVars);
                    let mcForProperty = milestoningContextFromPropertyTree($propTree, $parentTree, $mc, ^$pureToSqlState(inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars)), $debug->indent(), $extensions);
                    let baseWithMc    = ^$base(milestoningContext = $mcForProperty);
-                   let updatedState  = ^$pureToSqlState(inGetterFlow = true, qualifierBase = ^OperationWithParentPropertyMapping(element = $baseWithMc), inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars));
+                   let updatedState  = ^$pureToSqlState(inGetterFlow = true, milestoningUseOtherwise = true, qualifierBase = ^OperationWithParentPropertyMapping(element = $baseWithMc), inScopeVars = $pureToSqlState.inScopeVars->putAll($newVars));
                    let withQualifier = processQualifiedProperty($propTree.property->cast(@QualifiedProperty<Any>), [], $baseWithMc, ^Map<VariableExpression, ValueSpecification>(), $updatedState, JoinType.LEFT_OUTER, '_gftq', ^List<ColumnGroup>(), $debug, $extensions).element->cast(@SelectWithCursor);
                    let newSelect     = $withQualifier.select->pushFilters($extensions);
                    let innerRes      = ^$withQualifier(select = ^$newSelect(leftSideOfFilter = []));
