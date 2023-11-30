@@ -238,11 +238,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   debug('processQuerySpec', $context.debug);
   let from = $querySpec.from->processFrom($context);
 
-  //if the from context comes back and is still the same (ie no subquery, realias etc) then we can use that directly, else we
-  //need to subnest the context
-  let fromContext = if ($from.root || $from.name == $context.name, | $from, | ^$context(contexts = ^$from(contexts = []), expression = $from.expression));
-
-  let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $querySpec.where->processWhere($fromContext));
+  let projection = $querySpec.select->processProjection($querySpec.groupBy, $querySpec.having, $querySpec.orderBy.sortKey, $querySpec.where->processWhere($from));
 
   let query = $querySpec.limit->processLimitOffset($querySpec.offset,
     $querySpec.orderBy->processOrderBy($projection.second.selectItems,
@@ -266,7 +262,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         ^$alias(alias = if ($finalAlias->isEmpty(), | $alias.alias, | $finalAlias.alias), realias = $realias);,
       a:AllColumns[1] |
         if ($a.prefix->isEmpty(),
-          | $query.aliases;,//$query.contexts->map(c | $c.aliases)->concatenate($query.aliases),
+          | $query.aliases;,
           | $query.context($a.prefix).aliases->map(alias | 
               let finalAlias = $query.alias($alias.name, $alias.alias, false);
               let realias = if ($alias.realias->isNotEmpty() && $finalAlias->isEmpty(), | $alias.realias, | $finalAlias.realias);
@@ -3283,6 +3279,10 @@ Class meta::external::query::sql::transformation::queryToPure::SQLLambdaParamete
   name:String[1];
   variable: VariableExpression[1];
   value: ValueSpecification[1];
+
+  toString(){
+    $this.name;
+  }:String[1];
 }
 
 function meta::external::query::sql::transformation::queryToPure::rootContext(sources: SQLSource[*], extensions: meta::pure::extension::Extension[*]):SqlTransformContext[1]
@@ -3330,7 +3330,8 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
       $indent + 'root: ' + $this.root->toString() + '\n' +
       if ($this.aliases->isNotEmpty(), | $indent + 'aliases: \n' + $indent + '  ' + $this.aliases.toString()->joinStrings('\n' + $indent + '  ') + '\n', | '') +
       if ($this.contexts->isNotEmpty(), | $indent + 'contexts: \n' + $this.contexts->map(c | $c.toString($indent + '    '))->joinStrings('\n'), | '') +
-      if ($this.assignments->isNotEmpty(), | $indent + 'assigments: ' + $this.assignments->size()->toString(), | '')
+      if ($this.assignments->isNotEmpty(), | $indent + 'assigments: ' + $this.assignments->size()->toString(), | '') +
+      if ($this.parameters->isNotEmpty(), | $indent + 'parameters: ' + $this.parameters->map(p | $p.toString)->joinStrings('\n'), | '')
   }:String[1];
 
   context(name:String[0..1]){

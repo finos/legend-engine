@@ -1409,7 +1409,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               pair('int', 'int_t0'),
               pair('str', 'str_t0')]),
           meta::relational::metamodel::join::JoinType->extractEnumValue('INNER'),
-          {row1, row2|(($row2.getInteger('Integer_t1') == $row2.getInteger('int_t0')) && ($row2.getString('String_t1') == $row2.getString('str_t0')))})
+          {row1, row2|(($row1.getInteger('Integer_t1') == $row2.getInteger('int_t0')) && ($row1.getString('String_t1') == $row2.getString('str_t0')))})
         ->restrict(['int_t0', 'Integer_t1'])
         ->renameColumns([
           pair('int_t0', 'int'),
@@ -2241,9 +2241,10 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testParameterizedMultiLineJoin():Boolean[1]
 {
-  test(
-    'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') union select ID, Integer, "The Enum Value" from service(\'/service/service3\')',
-
+  test([
+    'SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') union select ID, Integer, "The Enum Value" AS "Enum" from service(\'/service/service3\')',
+    'SELECT t.* FROM (SELECT * FROM service(\'/service/service4/{id}\', id => \'abc\') union select ID, Integer, "The Enum Value" as "Enum" from service(\'/service/service3\')) "t"'
+    ],
     {id_1:String[1], ints_1:Integer[*], date_1:StrictDate[0..1]|
 
       let const_3 = 123;
@@ -2262,7 +2263,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [
           'ID', 'Integer', 'The Enum Value', 'The Type', 'Const'
         ]
-      )->restrict(['ID', 'Integer', 'The Enum Value']));})
+      )->restrict(['ID', 'Integer', 'The Enum Value'])->renameColumns(pair('The Enum Value', 'Enum')));})
 }
 
 
