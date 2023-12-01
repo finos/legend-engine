@@ -376,14 +376,15 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(grou
     | 
       if ($doFilterBucket,
       | 
-        let buckets = $filterBuckets.second.values;
+        let buckets = $filterBuckets.second.values->filter(x | $x.query->isNotEmpty());
+        let elseBucket = $filterBuckets.second.values->filter(x | $x.query->isEmpty())->toOne();
         let bucketsMap = $buckets->toIndexed()->map({bucket | 
             let prevBuckets = $buckets->slice(0, $bucket.first);
             let notPrevQuery = $prevBuckets->isNotEmpty()->if(|^QueryContainer(bool = ^BoolQuery(must_not = ^QueryContainer(bool = ^BoolQuery(should = $prevBuckets.query)))), |[]);        
             pair($bucket.second.name->toOne(), ^QueryContainer(bool = ^BoolQuery(must = $notPrevQuery->concatenate($bucket.second.query))));
         })->newMap();
 
-        let filtersAggregation = ^FiltersAggregation(filters = ^Buckets<QueryContainer>(keyed = $bucketsMap));
+        let filtersAggregation = ^FiltersAggregation(filters = ^Buckets<QueryContainer>(keyed = $bucketsMap), other_bucket = true->literal(), other_bucket_key = $elseBucket.name->literal());
         newMap(pair($groupByTdsESDetails->at(0).path(), ^AggregationContainer(filters = $filtersAggregation, aggregations = $aggregations)));
       ,  
       |
