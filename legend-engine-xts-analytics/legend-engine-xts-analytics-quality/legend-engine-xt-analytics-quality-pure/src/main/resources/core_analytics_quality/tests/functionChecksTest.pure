@@ -1,0 +1,223 @@
+import meta::analytics::quality::tests::*;
+import meta::analytics::quality::model::*;
+import meta::analytics::quality::model::domain::*;
+import meta::relational::runtime::*;
+import meta::analytics::quality::model::domain::tests::*;
+
+function {rule.ignore='Invalid Equality'}
+         meta::analytics::quality::model::domain::tests::pack1::ignoreMe():Boolean[1]
+{
+  'this is not false, obviously' == false
+}
+
+
+function meta::analytics::quality::model::domain::tests::pack1::invalidEqualsFunc():Boolean[1]
+{
+   'hello' == 1;
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::invalidNestedEqualsFunc():Boolean[1]
+{
+
+   [1,2,3,4]->map(i | $i == 'hello' );
+   'hello' == 5;
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::invalidContainsFunc():Boolean[1]
+{
+   [1,2,3,4]->contains('hello');
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::validContainsFunc():Boolean[1]
+{
+   true==true;
+   [1,2,3,4]->contains(2);
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::badUseOfSizeFunc1():Boolean[1]
+{
+   ['hello']->size() == 0;
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::badUseOfSizeFunc2():Boolean[1]
+{
+   ['hello']->size() != 0;
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::badUseOfSizeFunc3():Boolean[1]
+{
+   ['hello']->size() > 0;
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::invalidMatchStatement():Integer[1]
+{
+   ['hello']->match([i:Integer[1] | $i]);
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::validMatchStatement():String[1]
+{
+   ['hello']->match([i:String[1] | $i]);
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::invalidInstanceOfFunc():Boolean[1]
+{
+   'hello'->instanceOf(Float);
+}
+
+function meta::analytics::quality::model::domain::tests::pack2::validInstanceOfFunc():Boolean[1]
+{
+   let x = 5;
+   $x->cast(@Any)->instanceOf(Number);
+
+   pair(1,'hello')->instanceOf(Pair);
+}
+
+
+function meta::analytics::quality::model::domain::tests::pack1::unnecessaryUseOfCastFunc():String[1]
+{
+   'hello'->cast(@String);
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::unnecessaryUseOfToOneFunc():String[1]
+{
+   'hello'->toOne();
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::unnecessaryComparisonToBooleanFunc():String[1]
+{
+   if(meta::analytics::quality::model::domain::tests::pack1::booleanFunc() == true,
+      | 'yes',
+      | 'no'
+      );
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::booleanFunc():Boolean[1]
+{
+   true;
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::unnecessaryMapToGetProperty():Integer[*]
+{
+   [pair(1,2), pair(3,4)]->map(p|$p.first);
+}
+
+function meta::analytics::quality::model::domain::tests::pack1::myFuncWithNotNecessaryLet():Boolean[1]
+{
+    let a = true;
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::findBadInstanceOfChecksTest():Boolean[1]
+{
+   let results = list([meta::analytics::quality::model::domain::tests::pack1::invalidInstanceOfFunc__Boolean_1_,
+      meta::analytics::quality::model::domain::tests::pack2::validInstanceOfFunc__Boolean_1_]
+                   )->findBadInstanceOfChecks();
+
+   println($results->map(x|let si = $x->sourceInformation(); $si.source->makeString() + '@' + $si.line->makeString() + 'c' + $si.column->makeString();));
+
+   assertEquals(1, $results->size());
+
+   true;
+}
+
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::findUsagesTest():Boolean[1]
+{
+   let qc = [equal_Any_MANY__Any_MANY__Boolean_1_, is_Any_1__Any_1__Boolean_1_];
+   assertSize(meta::analytics::quality::model::domain::tests::pack1::invalidNestedEqualsFunc__Boolean_1_->getUsages($qc), 2);
+   assertSize(meta::analytics::quality::model::domain::tests::pack1::invalidEqualsFunc__Boolean_1_->getUsages($qc), 1);
+   assertEmpty(meta::analytics::quality::model::domain::tests::pack1::unnecessaryMapToGetProperty__Integer_MANY_->getUsages($qc));
+   assertEmpty(meta::analytics::quality::model::domain::tests::pack1::booleanFunc__Boolean_1_->getUsages($qc));
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::findInvalidEqualityComparisonsTest():Boolean[1]
+{
+   let results = list(meta::analytics::quality::model::domain::tests::pack1::invalidEqualsFunc__Boolean_1_)->validEqualityComparisons();
+   assertEquals(1, $results->size());
+   $results->map(result| assertFalse($result.second.isValid,| $result.second.message));
+
+   true;
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::findInvalidNestedEqualityComparisonsTest():Boolean[1]
+{
+   let fun = meta::analytics::quality::model::domain::tests::pack1::invalidNestedEqualsFunc__Boolean_1_;
+   let funs= $fun->sourceInformation();
+   let results = list($fun)->validEqualityComparisons();
+   assertEquals(2, $results->size());
+   $results->map(result| assertFalse($result.second.isValid,| $result.second.message));
+
+   $results->map(r | let si = $r.first->sourceInformation();
+                     assert($si.source == $funs.source &&
+                                        ($funs.startLine <= $si.startLine ) && ( $si.startLine <=$funs.endLine ), | $si.source->toOne()) ;
+                    );
+   true;
+}
+
+
+function <<test.Test>>  meta::analytics::quality::model::domain::tests::findInvalidContainsComparisonsTest():Boolean[1]
+{
+
+   let funs = [ meta::analytics::quality::model::domain::tests::pack1::invalidContainsFunc__Boolean_1_,
+               meta::analytics::quality::model::domain::tests::pack1::booleanFunc__Boolean_1_];
+   let invalidApplications = list($funs)->findInvalidContainsComparisons();
+
+   assertEquals(1, $invalidApplications->size());
+
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::findInvalidMatchUsageTest():Boolean[1]
+{
+   assertEmpty(list(meta::analytics::quality::model::domain::tests::pack1::invalidContainsFunc__Boolean_1_)->findInvalidMatchUsage());
+   assertEmpty(list(meta::analytics::quality::model::domain::tests::pack1::booleanFunc__Boolean_1_)->findInvalidMatchUsage());
+   assertEmpty(list(meta::analytics::quality::model::domain::tests::pack1::validMatchStatement__String_1_)->findInvalidMatchUsage());
+   assertSize(list(meta::analytics::quality::model::domain::tests::pack1::invalidMatchStatement__Integer_1_)->findInvalidMatchUsage(), 1);
+}
+
+
+function <<access.private>> meta::analytics::quality::model::domain::tests::getUsages(srcFn :FunctionDefinition<Any>[1],fns:Function<Any>[*]):FunctionExpression[*]
+{
+   meta::analytics::quality::model::domain::getUsages(list($srcFn), $fns);
+}
+
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::findUnnecesaryLetsTest():Boolean[1]
+{
+
+   let results = list(meta::analytics::quality::model::domain::tests::pack1::invalidContainsFunc__Boolean_1_)
+                 ->findUnnecessaryLetFunctionsCheck();
+
+   assertSize($results,1);
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::castCompatibleTypesTest():Boolean[1]
+{
+
+   assert(meta::pure::metamodel::type::Type->castCompatibleTypes(meta::pure::metamodel::type::Class), 'Type vs. Class');
+   assert(meta::pure::metamodel::extension::AnnotatedElement->castCompatibleTypes(meta::pure::metamodel::type::Class), 'AnnotatedElement vs. Class');
+  //  assert(meta::relational::runtime::DatabaseConnection->castCompatibleTypes(meta::relational::datalake::runtime::LakeWarehouseConnectionInfo), 'DatabaseConnection vs. LakeWarehouseConnectionInfo');
+   assert(meta::pure::store::Store->castCompatibleTypes(meta::relational::metamodel::Database), 'Store vs. DB');
+   assert(meta::relational::metamodel::Database->castCompatibleTypes(meta::pure::store::Store), 'Db vs. Store');
+   assert(Number->castCompatibleTypes(Float), 'Number vs Float');
+   assert(Float->castCompatibleTypes(Number), 'Float vs Number');
+   assert(!String->castCompatibleTypes(Number), 'String vs Number');
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::equalityCompatibleTypesTest():Boolean[1]
+{
+
+  //  assert(meta::relational::runtime::DatabaseConnection->equalityCompatibleTypes(meta::relational::datalake::runtime::LakeWarehouseConnectionInfo), 'DatabaseConnection vs. LakeWarehouseConnectionInfo');
+   assert(TabularDataSet->equalityCompatibleTypes(Any), 'TabularDataSet vs. Any');
+   assert(TabularDataSet->equalityCompatibleTypes(TabularDataSet), 'TabularDataSet vs. TabularDataSet');
+   assert(Float->equalityCompatibleTypes(Integer), 'Float vs. Integer');
+   assert(!Float->equalityCompatibleTypes(String), 'Float vs. String');
+   assert(VariableExpression->equalityCompatibleTypes(ValueSpecification), 'VariableExpression vs. ValueSpecification');
+}
+
+function <<test.Test>>   meta::analytics::quality::model::domain::tests::castNotNecessaryTest():Boolean[1]
+{
+
+   assert(!meta::pure::store::Store->castNotNecessary(meta::relational::metamodel::Database), 'Store vs. DB');
+   assert(meta::relational::metamodel::Database->castNotNecessary(meta::pure::store::Store), 'Db vs. Store');
+   assert(!Number->castNotNecessary(Float), 'Number vs Float');
+   assert(Float->castNotNecessary(Number), 'Float vs Number');
+}
