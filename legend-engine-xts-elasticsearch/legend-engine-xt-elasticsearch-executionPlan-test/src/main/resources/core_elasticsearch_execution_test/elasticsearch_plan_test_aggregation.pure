@@ -90,3 +90,48 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::te
 {
   $config->testTdsExpression(x|$x->groupBy(['Director', 'MPAA'], [ agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum()), agg('avgBudget', r | $r.getInteger('Budget'), agg | $agg->average()) ])->restrict(['Director', 'avgBudget']));
 }
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionNestedIf(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < %1990-01-01, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < %2000-01-01, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < %2010-01-01, 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionNestedIfAggregateOnExpression(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < %1990-01-01, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < %2000-01-01, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < %2010-01-01, 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('countBuckets', r | $r.getString('Bucket'), agg | $agg->count())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionOverridesExistingColumnName(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < %1990-01-01, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < %2000-01-01, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < %2010-01-01, 
+                |'Newer',
+                |'Newest'))), 'ReleaseDate'), col(x: TDSRow[1] | $x.getInteger('Budget'), 'Budget')])->groupBy('ReleaseDate', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
