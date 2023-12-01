@@ -64,10 +64,3 @@ function meta::pure::changetoken::tests::getVersionsCustomMap():Versions[1]
             ]
     );
 }
-
-function <<test.Test>> meta::pure::changetoken::tests::testGenerateCast():Boolean[1]
-{
-  let project = generateCast('meta::pure::changetoken:tests::getVersions3', 'TestCastFunction');
-  printProject($project);
-  assertInstanceOf($project, Project);
-}

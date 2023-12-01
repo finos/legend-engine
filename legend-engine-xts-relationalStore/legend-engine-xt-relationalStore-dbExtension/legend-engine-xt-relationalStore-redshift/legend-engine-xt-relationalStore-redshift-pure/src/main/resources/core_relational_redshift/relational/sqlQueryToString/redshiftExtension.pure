@@ -50,6 +50,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
 
   [
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),        
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='trunc(%s)')),
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'FMDay\')')),

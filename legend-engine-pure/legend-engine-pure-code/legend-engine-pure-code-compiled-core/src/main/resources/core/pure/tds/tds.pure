@@ -453,8 +453,9 @@ function
    {doc.doc = 'Remove duplicate rows from the priovded TDS'}
    meta::pure::tds::distinct(tds:TabularDataSet[1]):TabularDataSet[1]
 {
-   fail('Not implemented yet!');
-   $tds;
+   let newTds = ^$tds(rows = []);
+   let distinctRows = $tds.rows->removeDuplicates({l, r | $l.values == $r.values})->map(r | ^$r(parent = $newTds));
+   $newTds->mutateAdd('rows', $distinctRows);
 }
 
 function 

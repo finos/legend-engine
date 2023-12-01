@@ -47,6 +47,13 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
          fc2(min_T_$1_MANY$__Function_1__T_1_,                                   {ctx,collection,comp          | if( $collection.type->isJavaList(), | minComp($ctx, $collection, $comp, $library), | $collection )}),
          fc1(max_X_MANY__X_$0_1$_,                                               {ctx,collection               | if( $collection.type->isJavaList(), | max($ctx, $collection, $library), | $collection )}),
          fc1(min_X_MANY__X_$0_1$_,                                               {ctx,collection               | if( $collection.type->isJavaList(), | min($ctx, $collection, $library), | $collection )}),
+         fc(max_X_$1_MANY$__X_1_,                                                fcAlias(                        max_X_MANY__X_$0_1$_)),
+         fc(min_X_$1_MANY$__X_1_,                                                fcAlias(                        min_X_MANY__X_$0_1$_)),
+
+         fc(greatest_X_MANY__X_$0_1$_,                                           fcAlias(                        max_X_MANY__X_$0_1$_)),
+         fc(least_X_MANY__X_$0_1$_,                                              fcAlias(                        min_X_MANY__X_$0_1$_)),
+         fc(greatest_X_$1_MANY$__X_1_,                                           fcAlias(                        max_X_MANY__X_$0_1$_)),
+         fc(least_X_$1_MANY$__X_1_,                                              fcAlias(                        min_X_MANY__X_$0_1$_)),
 
          fc1(range_Integer_1__Integer_MANY_,                                     {ctx,stop                     | javaLongStream()->j_invoke('range', [j_long(0), $stop])->j_invoke('boxed', [])}),
          fc2(range_Integer_1__Integer_1__Integer_MANY_,                          {ctx,start,stop               | javaLongStream()->j_invoke('range', [$start, $stop])->j_invoke('boxed', [])}),
@@ -100,6 +107,7 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::collec
 
          fc1(and_Boolean_MANY__Boolean_1_,                                       {ctx,collection               | $collection->j_streamOf()->js_reduce(j_true(), j_lambda([$x, $y], $x->j_and($y)))}),
          fc1(or_Boolean_$1_MANY$__Boolean_1_,                                    {ctx,collection               | $collection->j_streamOf()->js_reduce(j_false(), j_lambda([$x, $y], $x->j_or($y)))}),
+         fc1(or_Boolean_MANY__Boolean_1_,                                        {ctx,collection               | $collection->j_streamOf()->js_reduce(j_false(), j_lambda([$x, $y], $x->j_or($y)))}),
 
          fc1(size_Any_MANY__Integer_1_,                                          {ctx,collection               | $collection->j_streamOf()->js_count()}),
          fc (count_Any_MANY__Integer_1_,                                         fcAlias(                        size_Any_MANY__Integer_1_)),

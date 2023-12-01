@@ -47,6 +47,7 @@ Class meta::external::query::graphQL::binding::fromPure::sdl::tests::model::Clas
   date: Date[1];
   datetime: DateTime[1];
   decimal: Decimal[1];
+  strictDate: StrictDate[1];
 }
 
 Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sdl::tests::model::MutationPrimitive
@@ -178,11 +179,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  date: Date!\n' +
     '  datetime: DateTime!\n' +
     '  decimal: BigDecimal!\n' +
+    '  strictDate: StrictDate!\n' +
     '}\n' +
     '\n' +
     'scalar Date\n' +
     '\n' +
-    'scalar DateTime', $res);
+    'scalar DateTime\n' +
+    '\n' +
+    'scalar StrictDate', $res);
 }
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypesAreNotDuplicated():Boolean[1]
@@ -200,6 +204,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  date: Date!\n' +
     '  datetime: DateTime!\n' +
     '  decimal: BigDecimal!\n' +
+    '  strictDate: StrictDate!\n' +
     '}\n' +
     '\n' +
     'input ClassWithPrimitiveTypesInput {\n' +
@@ -210,6 +215,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  date: Date!\n' +
     '  datetime: DateTime!\n' +
     '  decimal: BigDecimal!\n' +
+    '  strictDate: StrictDate!\n' +
     '}\n' +
     '\n' +
     'scalar Date\n' +
@@ -219,6 +225,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     'type MutationPrimitive {\n' +
     '  upsertClass(class: ClassWithPrimitiveTypesInput!): ClassWithPrimitiveTypes\n' +
     '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
     '\n' +
     'schema {\n' +
     '  mutation : MutationPrimitive\n' +
@@ -265,7 +273,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'scalar StrictDate\n' +
     '\n' +
-    'directive @extends on OBJECT | INPUT_OBJECT',
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
 }
 
@@ -313,7 +321,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'scalar StrictDate\n' +
     '\n' +
-    'directive @extends on OBJECT | INPUT_OBJECT',
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
 }
 
@@ -349,7 +357,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  members: [Employee!]!\n' +
     '}\n' +
     '\n' +
-    'directive @extends on OBJECT | INPUT_OBJECT',
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
 }
 
@@ -414,7 +422,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  members: [EmployeeInput!]!\n' +
     '}\n' +
     '\n' +
-    'directive @extends on OBJECT | INPUT_OBJECT\n' +
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT\n' +
     '\n' +
     'schema {\n' +
     '  query : QueryHierarchy\n' +

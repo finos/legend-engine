@@ -62,12 +62,10 @@ public class GenerateCastUtilTest extends GenerateCastTestBase
     public void testResolvePath() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
         Method m = compiledClass.getMethod("resolvePath", List.class, String.class);
-
         // note that "0" is cast to int in resolveRelativeReference or setRelativeReference
         Assert.assertArrayEquals(
                 Arrays.asList("a", "b", 1, "c", "0").toArray(),
-                ((List<Object>)m.invoke(null, Arrays.asList("a", "b", 1, "c", 2), "../0")).toArray());
-
+                ((List<Object>) m.invoke(null, Arrays.asList("a", "b", 1, "c", 2), "../0")).toArray());
         InvocationTargetException ex = Assert.assertThrows(InvocationTargetException.class,
                 () -> m.invoke(null, Arrays.asList("a", "b", 1, "c", 2), "../../../../../../x"));
         Assert.assertEquals("Relative reference escapes root (a/b/1/c/2) at index 5 of ../../../../../../x", ex.getCause().getMessage());
@@ -77,7 +75,6 @@ public class GenerateCastUtilTest extends GenerateCastTestBase
     public void testResolveRelativeReference() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
         Method m = compiledClass.getMethod("resolveRelativeReference", Map.class, List.class, String.class);
-
         ObjectMapper mapper = new ObjectMapper();
         String input = "{\n" +
                 "  \"version\": \"ftdm:abcdefg123\",\n" +
@@ -92,18 +89,15 @@ public class GenerateCastUtilTest extends GenerateCastTestBase
                 "    }\n" +
                 "  ]\n" +
                 "}\n";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-
+        Map<String, Object> jsonNode = parse(input);
         Assert.assertEquals("someValue",
                 m.invoke(null, jsonNode,
                         Arrays.asList("array", 0, "innerObject", "@type"),
                         "../../existingValue"));
-
         Assert.assertEquals("meta::pure::changetoken::tests::SampleClass",
                 m.invoke(null, jsonNode,
                         Collections.emptyList(),
                         "array/0/innerObject/@type"));
-
         InvocationTargetException ex = Assert.assertThrows(InvocationTargetException.class,
                 () -> m.invoke(null, jsonNode,
                         Collections.emptyList(),
@@ -115,8 +109,7 @@ public class GenerateCastUtilTest extends GenerateCastTestBase
     public void testSetRelativeReference() throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
         Method m = compiledClass.getMethod("setRelativeReference", Map.class, List.class, String.class, Object.class);
-        
-        ObjectMapper mapper = new ObjectMapper();
+
         String input = "{\n" +
                 "  \"version\": \"ftdm:abcdefg123\",\n" +
                 "  \"@type\": \"meta::pure::changetoken::tests::SomeClassWithAnArray\",\n" +
@@ -130,15 +123,13 @@ public class GenerateCastUtilTest extends GenerateCastTestBase
                 "    }\n" +
                 "  ]\n" +
                 "}\n";
-        Map<String,Object> jsonNode = mapper.readValue(input, Map.class);
-
+        Map<String, Object> jsonNode = parse(input);
         m.invoke(null, jsonNode,
                 Arrays.asList("array", 0, "innerObject", "@type"), "../newValue", 123);
         Assert.assertEquals(123,
                 compiledClass.getMethod("resolveRelativeReference", Map.class, List.class, String.class).invoke(null, jsonNode,
                         Arrays.asList("array", 0, "innerObject", "@type"),
                         "../newValue"));
-
         {
             InvocationTargetException ex = Assert.assertThrows(InvocationTargetException.class,
                     () -> m.invoke(null, jsonNode,
@@ -146,7 +137,6 @@ public class GenerateCastUtilTest extends GenerateCastTestBase
                             "array/blah", 456));
             Assert.assertEquals("java.lang.NumberFormatException: For input string: \"blah\": at index 1 of array/blah", ex.getCause().getMessage());
         }
-
         {
             InvocationTargetException ex = Assert.assertThrows(InvocationTargetException.class,
                     () -> m.invoke(null, jsonNode,

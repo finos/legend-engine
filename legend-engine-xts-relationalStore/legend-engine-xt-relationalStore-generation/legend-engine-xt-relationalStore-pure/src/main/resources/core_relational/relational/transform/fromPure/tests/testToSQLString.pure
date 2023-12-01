@@ -431,6 +431,31 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testPad():
    )->distinct() == [true];
 }
 
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testLeftRight():Boolean[1]
+{
+
+   let expected = [
+    pair(DatabaseType.DB2, 'select trim(left("root".FIRSTNAME, 1)) as "left", trim(right("root".FIRSTNAME, 1)) as "right" from personTable as "root"'),
+    pair(DatabaseType.H2, 'select left("root".FIRSTNAME,1) as "left", right("root".FIRSTNAME,1) as "right" from personTable as "root"')
+  ];
+
+   $expected->map(p|
+      let driver = $p.first;
+      let expectedSql = $p.second;
+
+      let result = toSQLString(
+        |Person.all()->project([
+          a | $a.firstName->left(1),
+          a | $a.firstName->right(1)
+         ],
+         ['left', 'right']),
+         simpleRelationalMapping,
+         $driver, meta::relational::extension::relationalExtensions());
+
+      assertEquals($expectedSql, $result, '\nSQL not as expected for %s\n\nexpected: %s\nactual:   %s', [$driver, $expectedSql, $result]);
+   )->distinct() == [true];
+}
+
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testCbrt():Boolean[1]
 {
   let common = 'select cbrt("root".quantity) as "cbrt" from tradeTable as "root"';
@@ -672,6 +697,20 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
         ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
     assertEquals('select cast("root".quantity as decimal) as "decimal", cast("root".quantity as double precision) as "float" from tradeTable as "root"', $result);
+}
+
+function <<test.Test>> meta::relational::tests::functions::sqlstring::testGreatestLeast():Boolean[1]
+{
+    let result = toSQLString(
+     |Trade.all()
+        ->project([
+          col(t| greatest([$t.quantity, 1, 3]), 'greatest'),
+          col(t| greatest([]->cast(@String)), 'greatest_empty'),
+          col(t| least([$t.quantity, 1, 3]), 'least'),
+          col(t| least([]->cast(@String)), 'least_empty')
+        ]), simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
+
+    assertEquals('select greatest("root".quantity, 1, 3) as "greatest", greatest(null) as "greatest_empty", least("root".quantity, 1, 3) as "least", least(null) as "least_empty" from tradeTable as "root"', $result);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringForTDSStringJoin():Boolean[1]

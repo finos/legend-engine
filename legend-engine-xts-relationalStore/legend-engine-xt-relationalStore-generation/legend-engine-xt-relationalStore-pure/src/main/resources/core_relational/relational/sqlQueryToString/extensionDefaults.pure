@@ -150,6 +150,22 @@ function meta::relational::functions::sqlQueryToString::default::convertDateToSq
       | format('%t{[' + $timeZone + ']yyyy-MM-dd}', $date));
 }
 
+function meta::relational::functions::sqlQueryToString::default::convertGreatestLeastToCaseStatement(func:String[1], params:String[*]):String[1]
+{
+  let nonNullParams = $params->filter(p | $p->toLower() != 'null');
+
+  if ($nonNullParams->isEmpty(), | 'null', | $nonNullParams->filter(p | $p != 'null')->map(p | 
+    'when ' + $nonNullParams->map(c | $p + ' ' + $func + ' ' + $c)->joinStrings(' and ') + ' then ' + $p
+  )->joinStrings('case ', ' ', ' else null end'));
+}
+
+function meta::relational::functions::sqlQueryToString::default::convertBoolAndOrToCaseStatement(param:String[1], and:Boolean[1]):String[1]
+{
+  let fn = if ($and, | 'min', | 'max');
+
+  'case when ' + $fn + '(' + $param + ') = \'true\' then \'true\' else \'false\' end';
+}
+
 function meta::relational::functions::sqlQueryToString::default::processJoinStringsOperationWithConcatCall(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]
 {
    processJoinStringsOperation($js, $sgc, [], {strs, sep| $strs->joinStrings('concat(', if('\'\'' == $sep, |', ', |',' + $sep + ',') , ')')});
@@ -187,6 +203,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('floor',                  $allStates,            ^ToSql(format='floor(%s)')),
     dynaFnToSql('greaterThan',            $allStates,            ^ToSql(format='%s > %s')),
     dynaFnToSql('greaterThanEqual',       $allStates,            ^ToSql(format='%s >= %s')),
+    dynaFnToSql('greatest',               $allStates,            ^ToSql(format='greatest(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
     dynaFnToSql('group',                  $allStates,            ^ToSql(format='(%s)')),
     dynaFnToSql('if',                     $allStates,            ^ToSql(format='case when %s then %s else %s end', parametersWithinWhenClause = [true, false, false])),
     dynaFnToSql('in',                     $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
@@ -196,6 +213,7 @@ function meta::relational::functions::sqlQueryToString::default::getDynaFunction
     dynaFnToSql('isNotEmpty',             $allStates,            ^ToSql(format='%s is not null')),
     dynaFnToSql('isNotNull',              $allStates,            ^ToSql(format='%s is not null')),
     dynaFnToSql('isNull',                 $allStates,            ^ToSql(format='%s is null')),
+    dynaFnToSql('least',                  $allStates,            ^ToSql(format='least(%s)', transform={p:String[*]|$p->joinStrings(', ')})),
     dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
     dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
     dynaFnToSql('log',                    $allStates,            ^ToSql(format='ln(%s)')),

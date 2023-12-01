@@ -1,3 +1,6 @@
+import meta::relational::metamodel::relation::*;
+import meta::pure::extension::*;
+import meta::relational::metamodel::join::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
@@ -20,6 +23,7 @@ function meta::relational::functions::sqlQueryToString::h2::v1_4_200::createDbEx
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
+      lateralJoinProcessor = processJoinTreeNodeWithLateralJoinForH2_JoinTreeNode_1__DbConfig_1__Format_1__Extension_MANY__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForH2_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationForH2_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
@@ -72,6 +76,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='every(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='any(%s)')),    
     dynaFnToSql('char',                   $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateH2()})),
@@ -149,6 +155,24 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
   'merge into ' + $upsertQuery.data.name + ' (' + $columnNames + ') values (' + $literalValues + ')';
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processJoinTreeNodeWithLateralJoinForH2(j:JoinTreeNode[1], dbConfig : DbConfig[1], format:Format[1], extensions:Extension[*]):String[1]
+{
+  // keeping consistent with snowflake
+  assert(processOperation($j.join.operation, $dbConfig, $format->indent(), ^Config(), $extensions) == '1 = 1', | 'Filter in column projections is not supported. Use a Post Filter if filtering is necessary');
+
+  assert($j.alias.relationalElement->instanceOf(SemiStructuredArrayFlatten), | 'Lateral join in H2 should be followed by flatten operation');
+
+  let lhs = ^TableAliasColumn(column = ^Column(name = '__INPUT__', type = ^meta::relational::metamodel::datatype::SemiStructured()),alias = $j.alias);
+  let rhs = $j.alias.relationalElement->cast(@SemiStructuredArrayFlatten).navigation->cast(@SemiStructuredObjectNavigation);
+  let joinOperation = ^DynaFunction(name= 'equal', parameters = [$lhs, ^$rhs(returnType=String)]);
+
+  ' ' + $format.separator() + 'left outer join '
+  + $j.alias
+        ->map(a|^$a(name = '"' + $a.name + '"'))
+        ->toOne()->processOperation($dbConfig, $format->indent(), $extensions) + $format.separator()
+        + ' ' + 'on (' + processOperation($joinOperation, $dbConfig, $format->indent(), ^Config(), $extensions) + ')';
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processExtractFromSemiStructuredParamsForH2(params:String[3]):String[1]
 {
   let baseRelationalOp = $params->at(0);
@@ -187,8 +211,67 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredElementForH2(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
 {
    $s->match([
-      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc)
+      o:SemiStructuredObjectNavigation[1] | $o->processSemiStructuredObjectNavigationForH2($sgc),
+      a:SemiStructuredArrayFlatten[1] | $a->processSemiStructuredArrayFlattenForH2($sgc),
+      a:SemiStructuredArrayFlattenOutput[1] | $a->processSemiStructuredArrayFlattenOutputForH2($sgc)
    ])
+}
+
+/*
+* returns property accesses to extract the semi structured property starting from root
+*/
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::propertyAccessForSemiStructuredObjectNavigationH2(z:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[*]
+{
+  let elementAccess = $z->match([
+    p: SemiStructuredPropertyAccess[1] |
+        let propertyAccess = '"' + $p.property->cast(@Literal).value->cast(@String) + '"';
+        if ($p.index->isNotEmpty(),
+            | $propertyAccess->concatenate($p.index->toOne()->cast(@Literal).value->toString()),
+            | $propertyAccess
+        );,
+    a: SemiStructuredArrayElementAccess[1] | $a.index->toOne()->cast(@Literal).value->toString()
+  ]);
+  $z.operand->match([
+    s: SemiStructuredObjectNavigation[1] | $s->propertyAccessForSemiStructuredObjectNavigationH2($sgc),
+    a: SemiStructuredArrayFlatten[1] | $a.navigation->cast(@SemiStructuredObjectNavigation)->propertyAccessForSemiStructuredObjectNavigationH2($sgc)->concatenate('"*"'),
+    s: SemiStructuredArrayFlattenOutput[1] | let flattening = $s.tableAliasColumn.alias.relationalElement->cast(@SemiStructuredArrayFlatten);
+                                             $flattening.navigation->cast(@SemiStructuredObjectNavigation)->propertyAccessForSemiStructuredObjectNavigationH2($sgc)->concatenate('"*"');,
+    a: Any[1] | []
+  ])->concatenate($elementAccess);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredArrayFlattenForH2(s:SemiStructuredArrayFlatten[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  let rootTableAndColumnName = $s->meta::relational::functions::pureToSqlQuery::findTableForColumnInAlias([]);
+
+  let jsonPaths = $s.navigation->match([  // assumes input to ssaf is always sson
+    s: SemiStructuredObjectNavigation[1] | $s->propertyAccessForSemiStructuredObjectNavigationH2($sgc)
+  ]);
+  
+  let schema = $rootTableAndColumnName.first.schema.name;
+
+  let processedNavigation = $s.navigation->processOperation($sgc);
+  'legend_h2_extension_flatten_array(' + '\'' + $rootTableAndColumnName.first->processOperation($sgc) + '\',\'' + $rootTableAndColumnName.second->processColumnName($sgc.dbConfig) + '\',ARRAY[\'' + $jsonPaths->joinStrings('\',\'') + '\'])';
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredArrayFlattenOutputForH2(s:SemiStructuredArrayFlattenOutput[1], sgc:SqlGenerationContext[1]): String[1]
+{
+   let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
+   let processedIdentifier = $sgc.dbConfig.identifierProcessor($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote);
+   let elementAccess = $processedIdentifier + '.' + processColumnName('VALUE', $sgc.dbConfig);
+   $elementAccess->castToReturnTypeForSemiStructuredData($s.returnType);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::castToReturnTypeForSemiStructuredData(elementAccess:String[1], returnType:Type[0..1]): String[1]
+{
+  if ($returnType == String, | 'cast(' + $elementAccess + ' as varchar)', |
+  if ($returnType == Boolean, | 'cast(' + $elementAccess + ' as boolean)', |
+  if ($returnType == Float, | 'cast(' + $elementAccess + ' as float)', |
+  if ($returnType == Integer, | 'cast(' + $elementAccess + ' as integer)', |
+  if ($returnType == StrictDate, | 'cast(' + $elementAccess + ' as date)', |
+  if ($returnType->isNotEmpty() && $returnType->toOne()->_subTypeOf(Date), | 'cast(' + $elementAccess + ' as timestamp)', |
+  if ($returnType->isNotEmpty() && $returnType->toOne()->instanceOf(Enumeration), | 'cast(' + $elementAccess + ' as varchar)', |
+  $elementAccess)))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processSemiStructuredObjectNavigationForH2(s:SemiStructuredObjectNavigation[1], sgc:SqlGenerationContext[1]): String[1]
@@ -210,14 +293,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v
       a: SemiStructuredArrayElementAccess[1] | semiStructuredArrayElementAccessForH2($processedOperand, $a.index->cast(@Literal).value->toString())
    ]);
 
-   if ($s.returnType == String, | 'cast(' + $elementAccess + ' as varchar)', |
-   if ($s.returnType == Boolean, | 'cast(' + $elementAccess + ' as boolean)', |
-   if ($s.returnType == Float, | 'cast(' + $elementAccess + ' as float)', |
-   if ($s.returnType == Integer, | 'cast(' + $elementAccess + ' as integer)', |
-   if ($s.returnType == StrictDate, | 'cast(' + $elementAccess + ' as date)', |
-   if ($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | 'cast(' + $elementAccess + ' as timestamp)', |
-   if ($s.returnType->isNotEmpty() && $s.returnType->toOne()->instanceOf(Enumeration), | 'cast(' + $elementAccess + ' as varchar)', |
-   $elementAccess)))))));
+   $elementAccess->castToReturnTypeForSemiStructuredData($s.returnType);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::v1_4_200::processJoinStringsOperationForH2(js:JoinStrings[1], sgc:SqlGenerationContext[1]): String[1]

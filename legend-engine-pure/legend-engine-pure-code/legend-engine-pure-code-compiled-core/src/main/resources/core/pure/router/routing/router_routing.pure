@@ -42,6 +42,7 @@ Class meta::pure::router::routing::RoutingState
    routingStrategy : RoutingStrategy[1];
    shouldBeRouted  : Boolean[1];
    value           : Any[0..1];
+   graphFetchFlow  : Boolean[0..1];
 }
 
 Class meta::pure::router::routing::PropertyMap
@@ -49,9 +50,9 @@ Class meta::pure::router::routing::PropertyMap
    v : Pair<String,Any>[*];
 }
 
-function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], graphFetchFlow: Boolean[0..1],extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
 {
-   let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy),
+   let processedFunctions = processCollection(^RoutingState(shouldBeRouted=false, lambdaContext=[], counter=0, depth='', propertyMap = ^PropertyMap(), routingStrategy = $routingStrategy, graphFetchFlow = $graphFetchFlow),
                                               $expressions,
                                               $executionContext,
                                               newMap([]->cast(@Pair<VariableExpression, ValueSpecification>), VariableExpression->classPropertyByName('name')->cast(@Property<VariableExpression,String|1>)),
@@ -65,6 +66,11 @@ function meta::pure::router::routing::enrichFunctionExpressions(expressions:Func
       evs: ExtendedRoutedValueSpecification[1] | $evs,
       vs: ValueSpecification[1]                | $fxn.routingStrategy.wrapValueSpec($vs, 'strategy_wrapper', $executionContext, $extensions, $debug)
    ]));
+}
+
+function meta::pure::router::routing::enrichFunctionExpressions(expressions:FunctionExpression[*], routingStrategy:RoutingStrategy[1], executionContext:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[*]
+{
+  enrichFunctionExpressions($expressions, $routingStrategy, $executionContext, $inScopeVars, false, $extensions, $debug);
 }
 
 function meta::pure::router::routing::processCollection(state:RoutingState[1], col:Any[*], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], shouldProcess:Function<{Any[1]->Boolean[1]}>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[*]
@@ -594,7 +600,7 @@ function meta::pure::router::routing::isGetAllFunction(f:Function<Any>[1]):Boole
 
 function meta::pure::router::routing::shouldStop(f:Function<Any>[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
-   shouldStopFunctions($extensions)->contains($f);
+  shouldStopFunctions($extensions)->contains($f);
 }
 
 function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure::extension::Extension[*]):Function<Any>[*]
@@ -620,6 +626,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     max_Float_$1_MANY$__Float_1_,
     max_Number_MANY__Number_$0_1$_,
     max_Number_$1_MANY$__Number_1_,
+    greatest_X_MANY__X_$0_1$_,
+    greatest_X_$1_MANY$__X_1_,
     getAllForEachDate_Class_1__Date_MANY__T_MANY_,
     greaterThan_Number_1__Number_1__Boolean_1_,
     greaterThan_String_1__String_1__Boolean_1_,
@@ -683,6 +691,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     min_Date_MANY__Date_$0_1$_,
     min_StrictDate_MANY__StrictDate_$0_1$_,
     min_DateTime_MANY__DateTime_$0_1$_,
+    least_X_MANY__X_$0_1$_,
+    least_X_$1_MANY$__X_1_,
     variancePopulation_Number_MANY__Number_1_,
     varianceSample_Number_MANY__Number_1_,
     makeString_Any_MANY__String_1__String_1_,
@@ -727,6 +737,7 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     func_FunctionDefinition_1__TdsOlapRank_1_,
     and_Boolean_MANY__Boolean_1_,
     or_Boolean_$1_MANY$__Boolean_1_,
+    or_Boolean_MANY__Boolean_1_,
     tdsContains_T_1__Function_MANY__TabularDataSet_1__Boolean_1_,
     tdsContains_T_1__Function_MANY__String_MANY__TabularDataSet_1__Function_1__Boolean_1_,
     splitPart_String_$0_1$__String_1__Integer_1__String_$0_1$_,
@@ -734,6 +745,8 @@ function meta::pure::router::routing::shouldStopFunctions(extensions:meta::pure:
     lpad_String_1__Integer_1__String_1__String_1_,
     rpad_String_1__Integer_1__String_1_,
     rpad_String_1__Integer_1__String_1__String_1_,
+    left_String_1__Integer_1__String_1_,
+    right_String_1__Integer_1__String_1_,
     meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_,
     meta::pure::functions::date::calendar::annualized_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,
     meta::pure::functions::date::calendar::cme_Date_1__String_1__Date_1__Number_$0_1$__Number_$0_1$_,

@@ -76,5 +76,5 @@ function meta::external::query::graphQL::binding::temporalityToDirectives(): Map
 
 function meta::external::query::graphQL::binding::hierarchyDirective(): DirectiveDefinition[1]
 {
-  ^DirectiveDefinition(name = 'extends', typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]);
+  ^DirectiveDefinition(name = 'extends', argumentDefinitions = [^InputValueDefinition(name = 'class', type = ^NamedTypeReference(nullable = false, name = 'String'))], typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]);
 }

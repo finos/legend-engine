@@ -21,6 +21,14 @@ import meta::relational::tests::mapping::embedded::advanced::mapping::*;
 import meta::relational::tests::mapping::embedded::advanced::model::*;
 import meta::relational::tests::mapping::embedded::advanced::*;
 
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testProjectionOtherwise():Boolean[1]
+ {
+   let result = execute(|Product.all()->project([p| $p.name, p | $p.bondDetails.description], ['name', 'description'])
+                         , testMappingEmbeddedOtherwise, testRuntime(), meta::relational::extension::relationalExtensions());
+
+  assertEquals('name,description\n' + 'Product 1,Bond 1\n' + 'Product 2,Bond 2\n' + 'Product 3,SuperBond 3 super\n', $result.values->toOne()->toCSV());
+  assertEquals('select "root".PRODUCT_NAME as "name", "root".BOND_DETAILS as "description" from PRODUCT_DENORM as "root"', $result->sqlRemoveFormatting());
+ }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestFilter():Boolean[1]
 {
@@ -60,6 +68,22 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::mapping::embe
   assertEquals('Party 3', $result3.values->at(0).bondDetails.holder.name);
 }
 
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testProjectionOtherwiseDeepTraversal():Boolean[1]
+ {
+   let result = execute(|Product.all()->project([p | $p.bondDetails.holder.name], ['holder'])
+                         , testMappingEmbeddedOtherwise, testRuntime(), meta::relational::extension::relationalExtensions());
+  
+  assertEquals('select "party_0".name as "holder" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) left outer join Party as "party_0" on ("bond_detail_0".HOLDERID = "party_0".id)', $result->sqlRemoveFormatting());
+ }
+
+ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::testProjectionOtherwiseNonPrimitive():Boolean[1]
+ {
+   let result = execute(|Product.all()->project([p | $p.name, p | $p.bondDetails.holder.name, p | $p.bondDetails.bondClassification.type], ['name', 'holder', 'type'])
+                         , testMappingEmbeddedOtherwise3, testRuntime(), meta::relational::extension::relationalExtensions());
+  
+  assertEquals('select "root".PRODUCT_NAME as "name", "party_0".name as "holder", "bondclassificationtable_0".type as "type" from PRODUCT_DENORM as "root" left outer join BOND_DETAIL as "bond_detail_0" on ("root".PRODUCT_ID = "bond_detail_0".BOND_ID) left outer join Party as "party_0" on ("bond_detail_0".HOLDERID = "party_0".id) left outer join BondClassificationTable as "bondclassificationtable_0" on ("root".PRODUCT_ID = "bondclassificationtable_0".PRODUCT_ID)', $result->sqlRemoveFormatting());
+  assertEquals('name,holder,type\n' + 'Product 1,Party 1,Corporate\n' + 'Product 2,Party 2,\n' + 'Product 3,Party 3,\n', $result.values->toOne()->toCSV());
+ }
 
 function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::otherwiseTestProjection():Boolean[1]
 {
@@ -290,7 +314,7 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
      )
   }
 
-   
+
   BondDetail[bondMapping2]: Relational
    {
       scope([eDB]BOND_DETAIL)
@@ -309,7 +333,6 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
    {
       name : [eDB]Party.name
    }
-
 )
 
 Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedOtherwise2
@@ -357,6 +380,50 @@ Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappi
       )
    }
 
+)
+
+Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedOtherwise3
+(
+
+  Product[pMapping1]: Relational
+  {
+     scope([eDB]PRODUCT_DENORM)
+     (
+        name: PRODUCT_NAME,
+        market: MARKET_NAME,
+        bondDetails
+        (
+          description:BOND_DETAILS,
+          bondClassification:[eDB]@BondDetailBondClassification
+        ) Otherwise([bondMapping2]:@BondDetailJoin)
+     )
+  }
+
+
+  BondDetail[bondMapping2]: Relational
+   {
+      scope([eDB]BOND_DETAIL)
+      (
+         description:NOT_SO_GOOD_DETAIL,
+         type: TYPE,
+         issuer
+         (
+            name : 'test'
+         ),
+         holder:[eDB]@BondDetailPartyJoin,
+         bondClassification: [eDB]@BondDetailJoin > [eDB]@BondDetailBondClassification
+      )
+   }
+
+   Party : Relational
+   {
+      name : [eDB]Party.name
+   }
+
+   BondClassification : Relational
+   {
+      type: [eDB]BondClassificationTable.type
+   }
 )
 
 Mapping meta::relational::tests::mapping::embedded::advanced::mapping::testMappingEmbeddedOtherwiseWithUnion

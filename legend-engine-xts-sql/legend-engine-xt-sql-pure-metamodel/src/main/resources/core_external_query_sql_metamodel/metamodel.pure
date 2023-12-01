@@ -240,6 +240,7 @@ Class meta::external::query::sql::metamodel::FunctionCall extends meta::external
   <<equality.Key>> filter: meta::external::query::sql::metamodel::Expression[0..1];
   <<equality.Key>> window: meta::external::query::sql::metamodel::Window[0..1];
   <<equality.Key>> group: meta::external::query::sql::metamodel::Group[0..1];
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
 }
 
 Class meta::external::query::sql::metamodel::SimpleCaseExpression extends meta::external::query::sql::metamodel::Expression
@@ -265,6 +266,13 @@ Class meta::external::query::sql::metamodel::Extract extends meta::external::que
 {
   <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
   <<equality.Key>> field: meta::external::query::sql::metamodel::ExtractField[1];
+}
+
+Class meta::external::query::sql::metamodel::Trim extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> characters: meta::external::query::sql::metamodel::Expression[0..1 ];
+  <<equality.Key>> mode: meta::external::query::sql::metamodel::TrimMode[1];
 }
 
 Class meta::external::query::sql::metamodel::Join extends meta::external::query::sql::metamodel::Relation
