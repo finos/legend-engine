@@ -81,6 +81,8 @@ Class meta::external::store::elasticsearch::v7::pureToEs::TDSESDetail
   path(){
     $this.resultPath.path()
   }:String[1];
+  runtimeMappingVS: ValueSpecification[0..1];
+  runtimeMappingVSTDSDetails: TDSESDetail[*];
   format: String[0..1];
 }
 
@@ -223,9 +225,10 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProjectColum
   $expr->extractSimpleValue($initReq).first.values->match([
     tdsDetail: TDSESDetail[1] | pair(^$tdsDetail(name = $name, type = $type), $initReq),
     {vs: ValueSpecification[1] |
-      let resultPath = ^DocValueResultPath(fieldPath = $name, property = $type->defaultRuntimePropertyForPureType());
-      let scripted = $vs->toRuntimeMapping($resultPath, $initReq);
-      pair(^TDSESDetail(type = $type, name = $name, resultPath = $resultPath, format = $scripted.search.runtime_mappings->toOne()->get($name).format.value), $scripted);
+      let withCounter = ^$initReq(counter = $initReq.counter + 1);
+      let resultPath = ^DocValueResultPath(fieldPath = 'runtime_mapping_' + $initReq.counter->toString(), property = $type->defaultRuntimePropertyForPureType());
+      let scripted = $vs->toRuntimeMapping($resultPath, $withCounter);
+      pair(^TDSESDetail(type = $type, name = $name, resultPath = $resultPath, runtimeMappingVS = $vs, runtimeMappingVSTDSDetails = $scripted.tdsESDetails, format = $scripted.search.runtime_mappings->toOne()->get($resultPath.path()).format.value), $scripted);
     },
     {any: Any[*] | 
       $any->type()->match([
@@ -233,7 +236,7 @@ function meta::external::store::elasticsearch::v7::pureToEs::processProjectColum
           let resultPath = ^DocValueResultPath(fieldPath = $name, property = $pt->defaultRuntimePropertyForPureType());
           let iv = ^InstanceValue(multiplicity = $vs.func->functionReturnMultiplicity(), genericType = ^GenericType(rawType = $type), values=$any)->evaluateAndDeactivate();
           let scripted = $iv->toRuntimeMapping($resultPath, $initReq);
-          pair(^TDSESDetail(type = $type, name = $name, resultPath = $resultPath, format = $scripted.search.runtime_mappings->toOne()->get($name).format.value), $scripted);
+          pair(^TDSESDetail(type = $type, name = $name, resultPath = $resultPath, runtimeMappingVS = $iv, runtimeMappingVSTDSDetails = $scripted.tdsESDetails, format = $scripted.search.runtime_mappings->toOne()->get($resultPath.path()).format.value), $scripted);
         },
         other: Any[*] | fail(|'Cannot project column - %s:%s'->format([$name,$any->type()->elementToPath()]))->cast(@Pair<TDSESDetail, State>)
       ])
@@ -328,15 +331,15 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(vs: 
   processGroupBy($groupByTdsESDetails, $aggregateValues, $groupedReq);
 }
 
-function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(groupByTdsESDetails: TDSESDetail[*], aggregateValues: meta::pure::tds::AggregateValue<Any, Any>[*], groupedReq: State[1]): State[1]
+function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(groupByTdsESDetails: TDSESDetail[*], aggregateValues: meta::pure::tds::AggregateValue<Any, Any>[*], initReq: State[1]): State[1]
 {
   let aggPairs = $aggregateValues->map({x |
-    let rawToAggregate = processProjectColumn(^BasicColumnSpecification<TDSRow>(func = $x.mapFn, name = $x.name), $groupedReq).first;
+    let rawToAggregate = processProjectColumn(^BasicColumnSpecification<TDSRow>(func = $x.mapFn, name = $x.name), $initReq).first;
     let aggFunc = $x.aggregateFn->deepByPassRouterInfo()->cast(@FunctionDefinition<Any>).expressionSequence->toOne('tds aggregation only supports simple expressions: max, min, sum, etc.');
 
     let container = if ($aggFunc->instanceOf(FunctionExpression),
       |
-        $groupedReq.supportedAggregationFunctions->findAndEvalSupportedFunction($aggFunc->cast(@FunctionExpression), $rawToAggregate.path(), $groupedReq)
+        $initReq.supportedAggregationFunctions->findAndEvalSupportedFunction($aggFunc->cast(@FunctionExpression), $rawToAggregate.path(), $initReq)
       ,
       |
         fail('Unsupported aggregation functions: ' + $aggFunc->printValueSpecification(''));
@@ -344,10 +347,25 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(grou
     );
 
     let aggReturnType = $x.aggregateFn->functionReturnType().rawType->toOne()->cast(@DataType);
-    let resultPath = ^AggregateResultPath(fieldPath = $rawToAggregate.name, property = $rawToAggregate.resultPath.property);
+    let resultPath = ^AggregateResultPath(fieldPath = $rawToAggregate.name, property = $rawToAggregate.resultPath.property, fieldToAggregate = $rawToAggregate.resultPath);
     let toAggregate = ^$rawToAggregate(type = $aggReturnType, resultPath = $resultPath);
     pair($toAggregate, $container);
   });
+
+  let filterBuckets = if($groupByTdsESDetails->size() == 1 && $groupByTdsESDetails->at(0).path()->in($aggPairs.first.resultPath->cast(@AggregateResultPath).fieldToAggregate.path())->not(), 
+                        |
+                          let detailsAtRutimeMappingTime = $groupByTdsESDetails->at(0).runtimeMappingVSTDSDetails;
+                          let result = $groupByTdsESDetails->at(0).runtimeMappingVS->optimizeForFiltersAggregation(false, ^$initReq(tdsESDetails = $detailsAtRutimeMappingTime)); 
+                          let reqResult = $result.first;
+                          pair(^$reqResult(tdsESDetails = $initReq.tdsESDetails), $result.second);
+                        ,  
+                        |
+                          pair($initReq, list(^BucketsForFiltersAggregation()))
+                      );
+
+  let doFilterBucket = $filterBuckets.second.values->forAll(x | $x.name->isNotEmpty());  
+
+  let groupedReq = $filterBuckets.first;
 
   let aggregations = newMap($aggPairs->map(x | pair($x.first.name, $x.second)));
   let aggregationsForSearch = if ($groupByTdsESDetails->isEmpty(),
@@ -355,26 +373,42 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(grou
       // no group by field - just run the aggregations
       $aggregations
     ,
-    |
-      // with group by fields, we need to wrap it on composite
-      let composite = ^CompositeAggregation(
-        size = [], // todo allow to set limit?
-        sources = $groupByTdsESDetails->map(x | newMap(pair($x.name, ^CompositeAggregationSource( terms = ^TermsAggregation(field = $x.path()->literal(), missing_bucket = true->literal())))))
-      );
-      newMap(pair('groupByComposite', ^AggregationContainer(composite = $composite, aggregations = $aggregations)));
-  );
+    | 
+      if ($doFilterBucket,
+      | 
+        let buckets = $filterBuckets.second.values->filter(x | $x.query->isNotEmpty());
+        let elseBucket = $filterBuckets.second.values->filter(x | $x.query->isEmpty())->toOne();
+        let bucketsMap = $buckets->toIndexed()->map({bucket | 
+            let prevBuckets = $buckets->slice(0, $bucket.first);
+            let notPrevQuery = $prevBuckets->isNotEmpty()->if(|^QueryContainer(bool = ^BoolQuery(must_not = ^QueryContainer(bool = ^BoolQuery(should = $prevBuckets.query)))), |[]);        
+            pair($bucket.second.name->toOne(), ^QueryContainer(bool = ^BoolQuery(must = $notPrevQuery->concatenate($bucket.second.query))));
+        })->newMap();
+
+        let filtersAggregation = ^FiltersAggregation(filters = ^Buckets<QueryContainer>(keyed = $bucketsMap), other_bucket = true->literal(), other_bucket_key = $elseBucket.name->literal());
+        newMap(pair($groupByTdsESDetails->at(0).path(), ^AggregationContainer(filters = $filtersAggregation, aggregations = $aggregations)));
+      ,  
+      |
+        // with group by fields, we need to wrap it on composite
+        let composite = ^CompositeAggregation(
+          size = [], // todo allow to set limit?
+          sources = $groupByTdsESDetails->map(x | newMap(pair($x.path(), ^CompositeAggregationSource( terms = ^TermsAggregation(field = $x.path()->literal(), missing_bucket = true->literal())))))
+        );
+        newMap(pair('groupByComposite', ^AggregationContainer(composite = $composite, aggregations = $aggregations)));
+  ));
 
   let groupByTdsESDetailsAsAgg = $groupByTdsESDetails->map({x |
-    let resultPath = ^AggregateResultPath(fieldPath = $x.name, property = $x.resultPath.property);
+    let resultPath = ^AggregateResultPath(fieldPath = $x.resultPath.fieldPath, property = $x.resultPath.property);
     let toAggregate = ^$x(resultPath = $resultPath);
   });
 
   let search = $groupedReq.search;
+  // $search.runtime_mappings = // todo remove runtime mapping if optmized
   let newSearch = ^$search(
      size = 0->literal() // avoiding reading all the matches, we just want the aggregate results
     ,aggregations = $aggregationsForSearch
     ,docvalue_fields = []
     ,_source = ^SourceConfig(fetch = false->literal())
+    ,runtime_mappings = if($doFilterBucket, | $search.runtime_mappings->toOne()->keyValues()->filter(x | $x.first != $groupByTdsESDetails->at(0).path())->newMap(), |$search.runtime_mappings)
   );
 
   ^$groupedReq(
@@ -383,6 +417,56 @@ function meta::external::store::elasticsearch::v7::pureToEs::processGroupBy(grou
   );
 }
 
+function meta::external::store::elasticsearch::v7::pureToEs::optimizeForFiltersAggregation(vs: ValueSpecification[*], elseBlock: Boolean[1], state: State[1]): Pair<State, List<BucketsForFiltersAggregation>>[1]
+{
+  $vs->match([
+    fe: FunctionExpression[1] | 
+      if($fe.func == if_Boolean_1__Function_1__Function_1__T_m_ && $fe.genericType.rawType == String,
+        | $fe->bucketsForFiltersAggregation($state),
+        | pair($state, list(^BucketsForFiltersAggregation()))          
+      ),
+    iv: InstanceValue[1] | 
+      $iv.values->filter(x | $elseBlock)->match([
+        elseBucketName: String[1] | pair($state, list(^BucketsForFiltersAggregation(name = $elseBucketName))),
+        other: Any[*] | pair($state, list(^BucketsForFiltersAggregation()))
+      ]),
+    any: Any[*] | pair($state, list(^BucketsForFiltersAggregation()))
+  ]);
+}
+
+function meta::external::store::elasticsearch::v7::pureToEs::bucketsForFiltersAggregation(fe: FunctionExpression[1], state: State[1]): Pair<State, List<BucketsForFiltersAggregation>>[1]
+{
+  let ifTrue = $fe.parametersValues->at(1)->cast(@InstanceValue).values->cast(@FunctionDefinition<Any>)->toOne();
+
+  $ifTrue.expressionSequence->match([
+    iv: InstanceValue[1] |
+          $iv.values->match([
+            {bucketName: String[1] | 
+                let expr = $fe.parametersValues->at(0); // convert to query contaier
+                let subState = ^$state(inFilter = true, inProject = false, aggregationQuery = false, search = ^SearchRequestBody());
+                // todo hmmm tds details are wrong here :(
+                let reqWithFilter = processFilterLambda($expr, $subState);
+                let filterQuery = $reqWithFilter.search.query;
+                let newState = ^$reqWithFilter(inFilter = $state.inFilter, inProject = $state.inProject, aggregationQuery = $state.aggregationQuery, search = $state.search);
+
+                let ifTrueBucket = ^BucketsForFiltersAggregation(name = $bucketName, query = $filterQuery);
+
+                let ifFalse =$fe.parametersValues->at(2);
+                let ifFalseBuckets = optimizeForFiltersAggregation($ifFalse->cast(@InstanceValue).values->cast(@FunctionDefinition<Any>)->toOne().expressionSequence, true, $newState);
+
+                pair($ifFalseBuckets.first, list($ifTrueBucket->concatenate($ifFalseBuckets.second.values)));
+            },
+            any: Any[*] | pair($state, list(^BucketsForFiltersAggregation()))
+        ]),
+    any: Any[*] | pair($state, list(^BucketsForFiltersAggregation()))
+  ]);
+}
+
+Class meta::external::store::elasticsearch::v7::pureToEs::BucketsForFiltersAggregation
+{
+  name: String[0..1];
+  query: QueryContainer[0..1];
+}
 
 function meta::external::store::elasticsearch::v7::pureToEs::processFilter(vs : FunctionExpression[1], initReq: State[1]): State[1]
 {
@@ -464,9 +548,9 @@ function meta::external::store::elasticsearch::v7::pureToEs::processSort(vs : Fu
           // but cannot sort values from the actual aggregations
           // for that, we switch to limiting TermsAggregation
 
-          let sortOnAggregatedValues = $columnsToSort->filter(x | $x->in($compositeSources.first)->not());
+          let sortOnAggregatedValues = $toSort.first->filter(x | $x.path()->in($compositeSources.first)->not());
 
-          let toSortByName = $toSort->map(x | pair($x.first.name, $x.second));
+          let toSortByName = $toSort->map(x | pair($x.first.path(), $x.second));
 
           let sortedContainer = if ($sortOnAggregatedValues->isEmpty(),
             | sortOnCompositeAggregationContainer($toSortByName, $container.aggregations, $composite, $compositeSources)
@@ -1452,16 +1536,11 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
       ]);
 
       let paramScript = $newValue->match([
-        pv: PlanVarPlaceHolder[1] |
-          if($pv.type == StrictDate,
-            |'LocalDate.parse(params[\'%s\']).atTime(0, 0).toInstant(ZoneOffset.UTC).toEpochMilli()',
-            | if($pv.type == DateTime,
-              |'ZonedDateTime.parse(params[\'%s\']).toInstant().toEpochMilli()',
-              | fail('Type not supported on variable - %s:%s'->format([$pv.name, $pv.type->elementToPath()]))->cast(@String)
-            )
-          ),
-        any: Any[*] | 'params[\'%s\']'
-      ])->format($param.first);
+        pv: PlanVarPlaceHolder[1] | 
+            '(params[\'%s\'].length() <= 10 ? LocalDate.parse(params[\'%s\']).atTime(0, 0) : LocalDateTime.parse(params[\'%s\'])).toInstant(ZoneOffset.UTC).toEpochMilli()'
+                      ->format([$param.first, $param.first, $param.first]),
+        any: Any[*] | 'params[\'%s\']'->format($param.first)
+      ]);
 
       let script = '(%s && %s.toInstant().toEpochMilli() %s %s)'->format([painlessIsNotEmpty($tdsESDetail), painlessExtractField($tdsESDetail), $operation, $paramScript]);
       let literalOrExpression = $newValue->literalOrExpression(true)->toOne();

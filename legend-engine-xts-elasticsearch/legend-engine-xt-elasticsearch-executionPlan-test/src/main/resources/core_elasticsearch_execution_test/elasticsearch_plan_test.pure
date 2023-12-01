@@ -284,10 +284,10 @@ function meta::external::store::elasticsearch::executionTest::testCase::assertTd
   );
 
   let zipped = if ($description->contains('sort('),
-    | $expected.rows->map(r | $expected.columns.name->map(c | $r.get($c)))
-        ->zip($actual.rows->map(r | $actual.columns.name->map(c | $r.get($c)))),
-    | $expected->sort($expected.columns.name).rows->map(r | $expected.columns.name->map(c | $r.get($c)))
-        ->zip($actual->sort($actual.columns.name).rows->map(r | $actual.columns.name->map(c | $r.get($c))))
+    | $expected.rows->map(r | $expected.columns->map(c | $r.get($c)))
+        ->zip($actual.rows->map(r | $actual.columns->map(c | $r.get($c)))),
+    | $expected->sort($expected.columns.name).rows->map(r | $expected.columns->map(c | $r.get($c)))
+        ->zip($actual->sort($actual.columns.name).rows->map(r | $actual.columns->map(c | $r.get($c))))
   );
 
   $zipped->forAll(x | assert(comparePrimitives($x.first, $x.second)));
