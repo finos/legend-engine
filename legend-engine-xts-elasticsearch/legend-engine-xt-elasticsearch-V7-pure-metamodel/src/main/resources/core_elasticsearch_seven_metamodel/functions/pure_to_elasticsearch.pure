@@ -1535,16 +1535,11 @@ function meta::external::store::elasticsearch::v7::pureToEs::processPainlessBool
       ]);
 
       let paramScript = $newValue->match([
-        pv: PlanVarPlaceHolder[1] |
-          if($pv.type == StrictDate,
-            |'LocalDate.parse(params[\'%s\']).atTime(0, 0).toInstant(ZoneOffset.UTC).toEpochMilli()',
-            | if($pv.type == DateTime,
-              |'ZonedDateTime.parse(params[\'%s\']).toInstant().toEpochMilli()',
-              | fail('Type not supported on variable - %s:%s'->format([$pv.name, $pv.type->elementToPath()]))->cast(@String)
-            )
-          ),
-        any: Any[*] | 'params[\'%s\']'
-      ])->format($param.first);
+        pv: PlanVarPlaceHolder[1] | 
+            '(params[\'%s\'].length() <= 10 ? LocalDate.parse(params[\'%s\']).atTime(0, 0) : LocalDateTime.parse(params[\'%s\'])).toInstant(ZoneOffset.UTC).toEpochMilli()'
+                      ->format([$param.first, $param.first, $param.first]),
+        any: Any[*] | 'params[\'%s\']'->format($param.first)
+      ]);
 
       let script = '(%s && %s.toInstant().toEpochMilli() %s %s)'->format([painlessIsNotEmpty($tdsESDetail), painlessExtractField($tdsESDetail), $operation, $paramScript]);
       let literalOrExpression = $newValue->literalOrExpression(true)->toOne();

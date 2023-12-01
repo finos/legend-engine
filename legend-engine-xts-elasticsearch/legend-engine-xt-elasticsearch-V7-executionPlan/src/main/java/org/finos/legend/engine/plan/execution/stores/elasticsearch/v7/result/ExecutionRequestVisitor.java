@@ -273,11 +273,16 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 
         for (Map.Entry<String, FiltersBucket> bucketEntry : buckets.keyed.entrySet())
         {
+            FiltersBucket value = bucketEntry.getValue();
+
+            if (value.doc_count.getLiteral() == 0)
+            {
+                continue;
+            }
+
             MutableMap<String, Object> result = Maps.mutable.empty();
 
             result.put(key, bucketEntry.getKey());
-
-            FiltersBucket value = bucketEntry.getValue();
 
             for (Map.Entry<String, Aggregate> aggregateEntry : value.__additionalProperties.entrySet())
             {
