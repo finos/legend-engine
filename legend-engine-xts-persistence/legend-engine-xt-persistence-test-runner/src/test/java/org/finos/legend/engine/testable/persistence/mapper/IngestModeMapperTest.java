@@ -23,6 +23,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchId;
@@ -82,9 +83,10 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         AppendOnly appendOnly = (AppendOnly) componentIngestMode;
-        Assert.assertEquals("DIGEST", appendOnly.digestField().get());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof AllowDuplicates);
+        Assert.assertFalse(appendOnly.filterExistingRecords());
 
         ingestMode = getAppendOnlyNoAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -93,9 +95,10 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
-        Assert.assertEquals("DIGEST", appendOnly.digestField().get());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof NoAuditing);
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof FilterDuplicates);
+        Assert.assertTrue(appendOnly.filterExistingRecords());
 
         ingestMode = getAppendOnlyDatetimeAuditingNoFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -104,11 +107,12 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
-        Assert.assertEquals("DIGEST", appendOnly.digestField().get());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof AllowDuplicates);
+        Assert.assertFalse(appendOnly.filterExistingRecords());
 
         ingestMode = getAppendOnlyDatetimeAuditingWithFilteringDuplicates();
         persistence = getPersistence(ingestMode);
@@ -117,11 +121,12 @@ public class IngestModeMapperTest extends MapperBaseTest
         Assert.assertTrue(componentIngestMode instanceof AppendOnly);
 
         appendOnly = (AppendOnly) componentIngestMode;
-        Assert.assertEquals("DIGEST", appendOnly.digestField().get());
+        Assert.assertTrue(appendOnly.digestGenStrategy() instanceof UserProvidedDigestGenStrategy);
+        Assert.assertEquals("DIGEST", ((UserProvidedDigestGenStrategy) appendOnly.digestGenStrategy()).digestField());
         Assert.assertTrue(appendOnly.auditing() instanceof DateTimeAuditing);
         dateTimeAuditing = (DateTimeAuditing) appendOnly.auditing();
         Assert.assertEquals("AUDIT_TIME", dateTimeAuditing.dateTimeField());
-        Assert.assertTrue(appendOnly.deduplicationStrategy() instanceof FilterDuplicates);
+        Assert.assertTrue(appendOnly.filterExistingRecords());
     }
 
     @Test

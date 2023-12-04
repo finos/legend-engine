@@ -130,6 +130,7 @@ function <<access.private>> meta::external::format::json::schema::constraint::to
                                        pair('meta::json::schema::discriminateOneOf_Any_1__Any_1__Type_MANY__DiscriminatorMapping_MANY__Boolean_1_',meta::external::format::json::schema::constraint::buildSubTypeDiscriminator_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
                                        pair('meta::pure::functions::string::isUUID_String_$0_1$__Boolean_1_',meta::external::format::json::schema::constraint::buildUUID_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
                                        pair('meta::pure::functions::collection::or_Boolean_$1_MANY$__Boolean_1_', meta::external::format::json::schema::constraint::buildOr_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
+                                       pair('meta::pure::functions::collection::or_Boolean_MANY__Boolean_1_', meta::external::format::json::schema::constraint::buildOr_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_),
                                        pair('meta::pure::functions::math::rem_Number_1__Number_1__Number_1_', meta::external::format::json::schema::constraint::builtMultipleOf_SimpleFunctionExpression_1__JSONSchemaConfigInternal_1__SchemaConstraint_1_)
 
 

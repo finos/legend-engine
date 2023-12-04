@@ -132,7 +132,9 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
               );
               if ($name == 'minus' && $vals->size() == 1,
                   | $m->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($space),
-                  | '(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')'
+                  | if ($name->in(['and', 'or']) && $vals->size() == 1,
+                      | $name + '(' + $vals->at(0)->printValueSpecification($space) + ')',
+                      | '(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')')
               );
          );
     );

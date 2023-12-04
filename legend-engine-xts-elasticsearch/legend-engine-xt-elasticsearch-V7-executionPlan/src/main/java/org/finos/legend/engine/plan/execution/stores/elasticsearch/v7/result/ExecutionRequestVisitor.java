@@ -81,8 +81,11 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.typ
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregateBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregationContainer;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AvgAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.Buckets;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.DoubleTermsBucket;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.FiltersAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.FiltersBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.LongTermsBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MinAggregate;
@@ -229,6 +232,15 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 Iterator<MultiTermsBucket> bucketsIterator = bucketsParser.readValuesAs(MultiTermsBucket.class);
                 objectNodeStream = processMultiTermsBucket(aggregationContainerEntry.getKey(), aggregateTDSResultVisitor, bucketsIterator, lastBucket);
             }
+            else if (aggregationContainer.filters != null)
+            {
+                String key = aggregationContainerEntry.getKey();
+                FilteringParserDelegate filtersParser = new FilteringParserDelegate(aggsParser, new JsonPointerBasedFilter("/filters#" + key), false, false);
+                filtersParser.nextToken();
+                filtersParser.clearCurrentToken();
+                FiltersAggregate filtersAggregate = filtersParser.readValueAs(FiltersAggregate.class);
+                objectNodeStream = processFiltersBucket(aggregateTDSResultVisitor, key, filtersAggregate);
+            }
         }
 
         if (objectNodeStream == null)
@@ -251,6 +263,35 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         }
 
         return new CollectIterator<>(objectNodeStream, h -> extractors.stream().map(x -> x.apply(h)).toArray());
+    }
+
+    private static Iterator<ObjectNode> processFiltersBucket(AggregateTDSResultVisitor aggregateTDSResultVisitor, String key, FiltersAggregate filtersAggregate)
+    {
+        Buckets<FiltersBucket> buckets = filtersAggregate.buckets;
+
+        List<ObjectNode> bucketResults = Lists.mutable.empty();
+
+        for (Map.Entry<String, FiltersBucket> bucketEntry : buckets.keyed.entrySet())
+        {
+            FiltersBucket value = bucketEntry.getValue();
+
+            if (value.doc_count.getLiteral() == 0)
+            {
+                continue;
+            }
+
+            MutableMap<String, Object> result = Maps.mutable.empty();
+
+            result.put(key, bucketEntry.getKey());
+
+            for (Map.Entry<String, Aggregate> aggregateEntry : value.__additionalProperties.entrySet())
+            {
+                result.put(aggregateEntry.getKey(), ((AggregateBase) aggregateEntry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+            }
+
+            bucketResults.add(ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(result));
+        }
+        return bucketResults.iterator();
     }
 
     private static Iterator<ObjectNode> processComposite(AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<CompositeBucket> buckets, Procedure<MultiBucketBase> lastBucket)
@@ -578,6 +619,11 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 else
                 {
                     processor = ExecutionRequestVisitor.this::processNotAggregateResponse;
+                }
+
+                if (!next && !this.activities.isEmpty())
+                {
+                    return false;
                 }
 
                 HttpUriRequest request = this.searchRequest.accept(new ElasticsearchV7RequestToHttpRequestVisitor(ExecutionRequestVisitor.this.url, ExecutionRequestVisitor.this.executionState));

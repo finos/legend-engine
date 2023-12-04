@@ -19,6 +19,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
+import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.*;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
@@ -36,6 +39,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Deriv
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
@@ -80,6 +84,7 @@ public class LogicalPlanUtils
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";
     public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
+    public static final String TEMP_STAGING_DATASET_BASE_NAME = "legend_persistence_temp_staging";
     public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
 
     private LogicalPlanUtils()
@@ -436,6 +441,47 @@ public class LogicalPlanUtils
                     .alias(TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME)
                     .build();
         }
+    }
+
+    public static Dataset getTempStagingDatasetDefinition(Dataset stagingDataset, IngestMode ingestMode)
+    {
+        String alias = stagingDataset.datasetReference().alias().orElse(TEMP_STAGING_DATASET_BASE_NAME);
+        String datasetName = stagingDataset.datasetReference().name().orElseThrow(IllegalStateException::new) + UNDERSCORE + TEMP_STAGING_DATASET_BASE_NAME;
+        SchemaDefinition tempStagingSchema = ingestMode.versioningStrategy().accept(new DeriveTempStagingSchemaDefinition(stagingDataset.schema(), ingestMode.deduplicationStrategy()));
+        return DatasetDefinition.builder()
+                .schema(tempStagingSchema)
+                .database(stagingDataset.datasetReference().database())
+                .group(stagingDataset.datasetReference().group())
+                .name(datasetName)
+                .alias(alias)
+                .build();
+    }
+
+    public static Dataset getTempStagingDatasetWithoutPks(Dataset tempStagingDataset)
+    {
+        List<Field> fieldsWithoutPk = tempStagingDataset.schema().fields().stream()
+                .map(field -> field.withPrimaryKey(false)).collect(Collectors.toList());
+        return tempStagingDataset.withSchema(tempStagingDataset.schema().withFields(fieldsWithoutPk));
+    }
+
+    public static Dataset getDedupedAndVersionedDataset(DeduplicationStrategy deduplicationStrategy, VersioningStrategy versioningStrategy, Dataset stagingDataset, List<String> primaryKeys)
+    {
+        Dataset dedupedDataset = deduplicationStrategy.accept(new DatasetDeduplicationHandler(stagingDataset));
+        boolean isTempTableNeededForVersioning = versioningStrategy.accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED);
+        if (isTempTableNeededForVersioning && dedupedDataset instanceof Selection)
+        {
+            Selection selection = (Selection) dedupedDataset;
+            dedupedDataset = selection.withAlias(stagingDataset.datasetReference().alias());
+        }
+        Dataset versionedDataset = versioningStrategy.accept(new DatasetVersioningHandler(dedupedDataset, primaryKeys));
+        return versionedDataset;
+    }
+
+    public static boolean isTempTableNeededForStaging(IngestMode ingestMode)
+    {
+        boolean isTempTableNeededForVersioning = ingestMode.versioningStrategy().accept(VersioningVisitors.IS_TEMP_TABLE_NEEDED);
+        boolean isTempTableNeededForDedup = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.IS_TEMP_TABLE_NEEDED);
+        return isTempTableNeededForVersioning || isTempTableNeededForDedup;
     }
 
     public static Set<DataType> SUPPORTED_DATA_TYPES_FOR_OPTIMIZATION_COLUMNS =

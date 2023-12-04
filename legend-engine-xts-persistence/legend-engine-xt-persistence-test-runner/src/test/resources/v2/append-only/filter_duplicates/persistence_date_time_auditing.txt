@@ -20,7 +20,7 @@ Database test::TestDatabase
   (
     ID INTEGER PRIMARY KEY,
     NAME VARCHAR(100),
-    BATCH_TIME_IN TIMESTAMP
+    BATCH_TIME_IN TIMESTAMP PRIMARY KEY
   )
 )
 ###Service

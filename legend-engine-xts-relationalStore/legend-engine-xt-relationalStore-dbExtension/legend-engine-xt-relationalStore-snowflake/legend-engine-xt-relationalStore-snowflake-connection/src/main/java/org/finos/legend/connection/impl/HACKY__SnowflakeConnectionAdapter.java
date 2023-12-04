@@ -14,15 +14,16 @@
 
 package org.finos.legend.connection.impl;
 
+import org.finos.legend.connection.Connection;
 import org.finos.legend.connection.HACKY__RelationalDatabaseConnectionAdapter;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.SnowflakeConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class HACKY__SnowflakeConnectionAdapter
@@ -56,10 +57,10 @@ public class HACKY__SnowflakeConnectionAdapter
                 connectionSpecification.accountType = datasourceSpecification.accountType;
                 connectionSpecification.role = datasourceSpecification.role;
 
-                StoreInstance storeInstance = new StoreInstance.Builder(environment)
-                        .withIdentifier("adapted-store")
-                        .withStoreSupportIdentifier("Snowflake")
-                        .withConnectionSpecification(connectionSpecification)
+                Connection connection = Connection.builder()
+                        .databaseSupport(environment.getDatabaseSupport(RelationalDatabaseType.SNOWFLAKE))
+                        .identifier("adapted-store")
+                        .connectionSpecification(connectionSpecification)
                         .build();
 
                 EncryptedPrivateKeyPairAuthenticationConfiguration authenticationConfiguration = new EncryptedPrivateKeyPairAuthenticationConfiguration();
@@ -67,7 +68,7 @@ public class HACKY__SnowflakeConnectionAdapter
                 authenticationConfiguration.privateKey = new PropertiesFileSecret(authenticationStrategy.privateKeyVaultReference);
                 authenticationConfiguration.passphrase = new PropertiesFileSecret(authenticationStrategy.passPhraseVaultReference);
 
-                return new ConnectionFactoryMaterial(storeInstance, authenticationConfiguration);
+                return new ConnectionFactoryMaterial(connection, authenticationConfiguration);
             }
             return null;
         }

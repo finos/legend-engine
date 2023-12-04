@@ -28,28 +28,28 @@ public class UnitemporalDeltaBatchIdDateTimeBasedDerivationTest
     @Test
     void testUnitemporalDeltaNoDeleteIndNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__NO_DEL_IND__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__NO_DEL_IND__NO_DEDUP__NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
     void testUnitemporalDeltaNoDeleteIndWithDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__NO_DEL_IND__WITH_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__NO_DEL_IND__FILTER_DUPS__ALL_VERSION_WITHOUT_PERFORM();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
     void testUnitemporalDeltaWithDeleteIndNoDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__NO_DEDUP__NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
     void testUnitemporalDeltaWithDeleteIndWithDataSplits()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__WITH_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_DEL_IND__FAIL_ON_DUP__ALL_VERSION();
         assertDerivedMainDataset(scenario);
     }
 }

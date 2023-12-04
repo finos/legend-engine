@@ -1,0 +1,9 @@
+{
+  "name": "core_connection_metamodel",
+  "pattern": "(meta::pure::metamodel::connection)(::.*)?",
+  "dependencies": [
+    "platform",
+    "platform_functions",
+    "core"
+  ]
+}

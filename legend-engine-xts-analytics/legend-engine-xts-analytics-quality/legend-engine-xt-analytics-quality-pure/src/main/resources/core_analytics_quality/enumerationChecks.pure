@@ -1,0 +1,65 @@
+import meta::analytics::quality::*;
+import meta::analytics::quality::model::*;
+import meta::analytics::quality::model::domain::*;
+
+function meta::analytics::quality::model::domain::enumerationRules():Rule<Enumeration<Any>>[*]
+{
+   [
+   meta::analytics::quality::model::domain::enumerationName_Enumeration_1__CheckResult_MANY_,
+   meta::analytics::quality::model::domain::enumerationValue_Enumeration_1__CheckResult_MANY_
+   ]->map(rule|createRule($rule)->cast(@Rule<Enumeration<Any>>));
+
+}
+
+function { rule.rule = 'Invalid Enumeration Names',
+           rule.description ='Enum name should start with Upper case, not contain underscores or the word Enum',
+           rule.severity = 'Medium',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the enum name meets the guidelines'}
+meta::analytics::quality::model::domain::enumerationName(e:Enumeration<Any>[1]):CheckResult[*]
+{
+   let issues = if(!$e->enumName()->toOne()->meta::pure::functions::string::substring(0,1)->isUpperCase(),
+                   | 'should start with upper case',
+                   | [])
+                  ->concatenate(if ($e->enumName()->contains('_'),
+                     | 'should not contain \'_\'',
+                     | []
+                    ))
+                  ->concatenate(if ($e->enumName()->contains('Enum'),
+                     | 'should not contain \'Enum\'',
+                     | []
+                    ));
+
+   let message = if($issues->isEmpty(),
+                 | 'Enumeration name (' + $e->enumName() + ') matches required standards',
+                 | 'Enumeration name (' + $e->enumName() + ') does not match required standards: ' + $issues->joinStrings(';')
+                 );
+
+   ^CheckResult(isValid=$issues->isEmpty(), message=$message);
+}
+
+function { rule.rule = 'Invalid Enumeration Values',
+           rule.description ='Enum value name should should start with, but not be all, Upper case nor contain underscore',
+           rule.severity = 'Low',
+           rule.category = 'Modelling',
+           doc.doc = 'Returns true if the enum name meets the guidelines'}
+meta::analytics::quality::model::domain::enumerationValue(e:Enumeration<Any>[1]):CheckResult[*]
+{
+   let issues = if($e->enumName()->toOne()->meta::pure::functions::string::isUpperCase()
+                 || true->in($e->enumValues()->map(v|$v->cast(@Enum).name->meta::pure::functions::string::isUpperCase())),
+                  | 'should not be all upper case',
+                  | [])
+                  ->concatenate(if (true->in($e->enumValues()->map(v|$v->cast(@Enum).name->contains('_'))),
+                     | 'should not contain \'_\'',
+                     | []))
+                     ->concatenate(if (false->in($e->enumValues()->map(v|$v->cast(@Enum).name->toOne()->meta::pure::functions::string::substring(0,1)->isUpperCase())),
+                        | 'should start with upper case',
+                        | []));
+
+   let message = if($issues->isEmpty(),
+                 | 'Enumeration name (' + $e->enumName() + ') matches required standards',
+                 | 'Enumeration name (' + $e->enumName() + ') does not match required standards: ' + $issues->joinStrings(';')
+                 );
+
+   ^CheckResult(isValid=$issues->isEmpty(), message=$message);
+}

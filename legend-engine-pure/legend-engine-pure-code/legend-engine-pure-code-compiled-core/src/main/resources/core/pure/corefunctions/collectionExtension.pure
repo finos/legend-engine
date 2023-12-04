@@ -123,6 +123,11 @@ function meta::pure::functions::collection::and(vals:Boolean[*]):Boolean[1]
    $vals->fold({i,a|$i && $a}, true)
 }
 
+function meta::pure::functions::collection::or(vals:Boolean[*]):Boolean[1]
+{
+   $vals->fold({i,a|$i || $a}, false)
+}
+
 function meta::pure::functions::collection::or(vals:Boolean[1..*]):Boolean[1]
 {
    $vals->fold({i,a|$i || $a}, false)
@@ -175,6 +180,36 @@ function meta::pure::functions::collection::uniqueValueOnly<T>(values : T[*], de
       | $values->meta::pure::functions::collection::max(), 
       | $defaultValue
       );
+}
+
+function meta::pure::functions::collection::greatest<X>(values : X[*]):X[0..1]
+{
+   max($values);
+}
+
+function meta::pure::functions::collection::least<X>(values : X[*]):X[0..1]
+{
+   min($values);
+}
+
+function meta::pure::functions::collection::greatest<X>(values : X[1..*]):X[1]
+{
+   max($values);
+}
+
+function meta::pure::functions::collection::least<X>(values : X[1..*]):X[1]
+{
+   min($values);
+}
+
+function meta::pure::functions::collection::max<X>(values : X[1..*]):X[1]
+{
+   $values->sort()->last()->toOne();
+}
+
+function meta::pure::functions::collection::min<X>(values : X[1..*]):X[1]
+{
+   $values->sort()->first()->toOne();
 }
 
 function meta::pure::functions::collection::max<X>(values : X[*]):X[0..1]

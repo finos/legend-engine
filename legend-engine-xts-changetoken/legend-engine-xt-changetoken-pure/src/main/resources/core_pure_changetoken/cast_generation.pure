@@ -258,7 +258,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
     j_return($resVar)
   ])));
 
-  let typeVar = j_variable(javaString(), 'type');
+  let typeVar = $resVar->j_invoke('get', [j_string('@type')], javaObject());
   let rootObjVar = j_parameter(objectNode(), 'rootObjectNode');
   let pathVar = j_parameter(javaList(javaObject()), 'path');
   let changeTokenHandlers = $version.changeTokens
@@ -282,13 +282,10 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
         javaRuntimeException()->j_new(j_string('Missing @type'))->j_throw()
       ),
       // Map<String,Object> res = new HashMap<>()
-      $resVar->j_declare(javaHashMap()->j_new([])),
-
-      // String type = (String) objectNode.get("@type")
-      $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], javaObject())->j_cast(javaString()))
+      $resVar->j_declare(javaHashMap()->j_new([]))
     ]
-    ->concatenate($changeTokenHandlers)
     ->concatenate($class2->_generateSingleCastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar, $pathVar, $rootObjVar, $resVar))
+    ->concatenate($changeTokenHandlers)
     ->concatenate([
       j_return($resVar)
     ]))));
@@ -336,7 +333,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
     j_return($resVar)
   ])));
 
-  let typeVar = j_variable(javaString(), 'type');
+  let typeVar = $resVar->j_invoke('get', [j_string('@type')], javaObject());
   let changeTokenHandlers = $version.changeTokens->reverse()
     ->map(t|$t->match([
       t:AddField[1]|_handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
@@ -358,12 +355,10 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_generateS
         javaRuntimeException()->j_new(j_string('Missing @type'))->j_throw()
       ),
       // Map<String,Object> res = new HashMap<>()
-      $resVar->j_declare(javaHashMap()->j_new([])),
-      // String type = (String) objectNode.get("@type")
-      $typeVar->j_declare($objVar->j_invoke('get', [j_string('@type')], javaObject())->j_cast(javaString()))
+      $resVar->j_declare(javaHashMap()->j_new([]))
     ]
-    ->concatenate($changeTokenHandlers)
     ->concatenate($class2->_generateSingleCastObjectRecurseBlock($objRecurseFuncName, $arrRecurseFuncName, $objVar, $pathVar, $rootObjVar, $resVar))
+    ->concatenate($changeTokenHandlers)
     ->concatenate([
       j_return($resVar)
     ]))));
@@ -537,33 +532,33 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleRen
   ):Code[1]
 {
   $oldFieldName->size()->range()->tail()->reverse()->fold({i,r|
-  j_if($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_instanceof(javaRawMap()),$r,
-  j_if(j_ne($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar),j_null()),
+  j_if($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)->j_instanceof(javaRawMap()),$r,
+  j_if(j_ne($oldFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar),j_null()),
   javaRuntimeException()->j_new(j_plus(j_string('Source is not a map: '), j_string($oldFieldName->take($i)->joinStrings('.'))))->j_throw()
   ))},
   j_if(
-  j_ne($oldFieldName->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar),j_null())
+  j_ne($oldFieldName->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar),j_null())
   ,
   j_block(
   $newFieldName->size()->range()->tail()->map({i|
-    j_if($newFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)->j_instanceof(javaRawMap())->j_not(),
+    j_if($newFieldName->take($i)->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)->j_instanceof(javaRawMap())->j_not(),
       javaRuntimeException()->j_new(j_plus(j_string('Destination is not a map: '), j_string($newFieldName->take($i)->joinStrings('.'))))->j_throw()
   )})->concatenate([
-    j_if($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+    j_if($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)
      ->j_cast(objectNode())->j_invoke('get', [j_string($newFieldName->last()->toOne())], javaObject())->j_ne(j_null())
-     ->j_and($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+     ->j_and($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)
      ->j_cast(objectNode())->j_invoke('get', [j_string($newFieldName->last()->toOne())], javaObject())->j_invoke('equals',
-       $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+       $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)
        ->j_cast(objectNode())->j_invoke('get', [j_string($oldFieldName->last()->toOne())], javaVoid()))->j_not()),
           javaRuntimeException()->j_new([j_string('Cannot overwrite with different value:')
-          ->j_plus($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+          ->j_plus($newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)
           ->j_cast(objectNode())->j_invoke('get', [j_string($newFieldName->last()->toOne())], javaObject()))])->j_throw()),
-    $newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+    $newFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)
     ->j_cast(objectNode())->j_invoke('put', [j_string($newFieldName->last()->toOne()),
-      $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+      $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)
       ->j_cast(objectNode())->j_invoke('get', [j_string($oldFieldName->last()->toOne())], javaVoid())
     ], javaVoid()),
-    $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $objVar)
+    $oldFieldName->init()->fold({t,res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject()) }, $resVar)
     ->j_cast(objectNode())->j_invoke('remove', [j_string($oldFieldName->last()->toOne())], javaVoid())
   ])
   )
@@ -580,7 +575,7 @@ token:RenamedClass[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathV
   // if (type.equals(token.class))
   j_if(
   $typeVar->j_invoke('equals', [j_string($token.class)]),
-  $objVar->j_invoke('put', [j_string('@type'), j_string($token.newName)])
+  $resVar->j_invoke('put', [j_string('@type'), j_string($token.newName)])
   );
 }
 
@@ -593,7 +588,7 @@ token:RenamedClass[1], objVar:Code[1], typeVar:Code[1], version:String[1], pathV
   // if (type.equals(token.newName))
   j_if(
   $typeVar->j_invoke('equals', [j_string($token.newName)]),
-  $objVar->j_invoke('put', [j_string('@type'), j_string($token.class)])
+  $resVar->j_invoke('put', [j_string('@type'), j_string($token.class)])
   );
 }
 
@@ -614,17 +609,17 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
       df:ConstValue[1] | if(_isPrimitive($token.fieldType) || !_isComplex($df.value),|
       [
         $valVar->j_declare([_getValueAsFieldType($token.fieldType, $df.value)]),
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
-          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
-        $objVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
+        j_if($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
+          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+        $resVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
       ],| j_block([
         $mapVar->j_declare(javaStream()->j_invoke('of',
         $df.value->cast(@String)->parseJSON()->cast(@meta::json::JSONObject).keyValuePairs->map(kv | _inlineJsonValue($kv.key.value, $kv.value)),
         javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()))
       ]->concatenate([
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not()),
-          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
-        $objVar->j_invoke('put', [j_string($token.fieldName), $mapVar], javaVoid())
+        j_if($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not()),
+          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+        $resVar->j_invoke('put', [j_string($token.fieldName), $mapVar], javaVoid())
       ]))
       ),
       df:CopyValue[1] |
@@ -636,8 +631,8 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
           j_string($df.source->cast(@RelativeFieldReference).path) // TODO: handle other types of references
         ], javaObject())),
         // res.put("abc", value);
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
-          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+        j_if($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
+          javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
         $resVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
       ]
     ])
@@ -787,7 +782,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleCha
         $class->j_invoke(_getChangeFieldTypeConverter($token.oldFieldType, $token.newFieldType), 
         [
           $pathVar, 
-          $objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())
+          $resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())
         ], javaObject())
       ], javaVoid())
     ]
@@ -821,11 +816,11 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
         $valVar->j_declare([_getValueAsFieldType($token.fieldType, $df.value)])
       ]->concatenate([
         // if ((Integer)objectNode.get(fieldName) != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
-            javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+        j_if($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
+            javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
 
-        // objectNode.remove(fieldName)
-        $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid()) 
+        // res.remove(fieldName)
+        $resVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
       ])),
       |
       j_block([
@@ -834,11 +829,11 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
         javaVoid())->j_invoke('collect', [javaCollectors()->j_invoke('toMap', [j_methodReference(AbstractMap_SimpleEntry(), 'getKey', javaFunctionType([], javaObject())), j_methodReference(AbstractMap_SimpleEntry(), 'getValue', javaFunctionType([], javaObject()))], javaVoid())], javaVoid()))
       ]->concatenate([
         // if ((Integer)objectNode.get(fieldName) != defaultValue) throw new RuntimeException("Cannot remove non-default value" + objectNode.get("fieldName")) // TODO: handle non-int
-        j_if($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not()),
-        javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($objVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+        j_if($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $mapVar)->j_not()),
+        javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
 
-        // objectNode.remove(fieldName)
-        $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
+        // res.remove(fieldName)
+        $resVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
       ]))
       ),
       df:CopyValue[1] | 
@@ -848,11 +843,11 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleAdd
           $rootObjVar, 
           $pathVar, 
           j_string($df.source->cast(@RelativeFieldReference).path), // TODO: handle other types of references
-          $objVar->j_invoke('get', [j_string($token.fieldName)], javaVoid())
+          $resVar->j_invoke('get', [j_string($token.fieldName)], javaVoid())
         ], javaObject()),
 
-        // objectNode.remove("abc");
-        $objVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
+        // res.remove("abc");
+        $resVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
       ]
     ])
   );
@@ -874,7 +869,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::_handleCha
         $class->j_invoke(_getChangeFieldTypeConverter($token.newFieldType, $token.oldFieldType), 
         [
           $pathVar, 
-          $objVar->j_invoke('get', [j_string($token.fieldName)], javaObject())
+          $resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())
         ], javaObject())
       ], javaVoid())
     ]

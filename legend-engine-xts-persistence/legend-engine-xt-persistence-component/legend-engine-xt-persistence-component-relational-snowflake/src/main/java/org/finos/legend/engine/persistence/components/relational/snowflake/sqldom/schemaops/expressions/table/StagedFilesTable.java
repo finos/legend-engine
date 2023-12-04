@@ -18,16 +18,9 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.TableLike;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.*;
-
 public class StagedFilesTable extends TableLike
 {
     private String location;
-    private String fileFormat;
-    private String filePattern;
 
     public StagedFilesTable(String location)
     {
@@ -53,22 +46,6 @@ public class StagedFilesTable extends TableLike
     {
         validate();
         builder.append(location);
-        // Add FILE_FORMAT, PATTERN
-        if (StringUtils.notEmpty(fileFormat) || StringUtils.notEmpty(filePattern))
-        {
-            builder.append(WHITE_SPACE + OPEN_PARENTHESIS);
-            List<String> options = new ArrayList<>();
-            if (StringUtils.notEmpty(fileFormat))
-            {
-                options.add(String.format("FILE_FORMAT => '%s'", fileFormat));
-            }
-            if (StringUtils.notEmpty(filePattern))
-            {
-                options.add(String.format("PATTERN => '%s'", filePattern));
-            }
-            builder.append(String.join(COMMA + WHITE_SPACE, options));
-            builder.append(CLOSING_PARENTHESIS);
-        }
     }
 
     @Override
@@ -83,15 +60,5 @@ public class StagedFilesTable extends TableLike
         {
             throw new SqlDomException("location is mandatory");
         }
-    }
-
-    public void setFileFormat(String fileFormat)
-    {
-        this.fileFormat = fileFormat;
-    }
-
-    public void setFilePattern(String filePattern)
-    {
-        this.filePattern = filePattern;
     }
 }

@@ -35,7 +35,7 @@ public interface DatasetAdditionalPropertiesAbstract extends LogicalPlanNode
 
     Optional<TableOrigin> tableOrigin();
 
-    Optional<String> externalVolume();
+    Optional<IcebergProperties> icebergProperties();
 
     Map<String, String> tags();
 }

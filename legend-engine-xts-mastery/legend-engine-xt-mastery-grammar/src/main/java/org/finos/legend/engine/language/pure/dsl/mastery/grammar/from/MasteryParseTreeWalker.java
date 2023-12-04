@@ -378,13 +378,13 @@ public class MasteryParseTreeWalker
         String inputFilter = ctx.getText().replaceAll(DOLLAR_SIGN, INPUT);
         return domainParser.parseLambda(
                 format(PRECEDENCE_LAMBDA_WITH_FILTER, propertyName, inputFilter),
-                "", 0, 0, true);
+                "", 0, 0, walkerSourceInformation.getReturnSourceInfo());
     }
 
     private Lambda visitLambdaWithoutFilter(String propertyName)
     {
         return domainParser.parseLambda(format(SIMPLE_PRECEDENCE_LAMBDA, propertyName),
-                "", 0, 0, true);
+                "", 0, 0, walkerSourceInformation.getReturnSourceInfo());
     }
 
     private RuleScope visitRuleScopeWithoutPrecedence(MasteryParserGrammar.ScopeContext ctx, Set<String> uniqueScopes,PrecedenceRule precedenceRule)
@@ -748,7 +748,7 @@ public class MasteryParseTreeWalker
 
     private Lambda visitLambda(MasteryParserGrammar.LambdaFunctionContext ctx)
     {
-        return domainParser.parseLambda(ctx.getText(), "", 0, 0, true);
+        return domainParser.parseLambda(ctx.getText(), "", 0, 0, walkerSourceInformation.getReturnSourceInfo());
     }
 
     private ResolutionKeyType visitResolutionKeyType(MasteryParserGrammar.ResolutionQueryKeyTypeContext ctx)

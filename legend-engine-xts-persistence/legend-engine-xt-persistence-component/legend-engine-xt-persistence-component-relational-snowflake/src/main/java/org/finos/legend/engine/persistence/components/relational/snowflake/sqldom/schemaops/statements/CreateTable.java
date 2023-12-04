@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements;
 
-import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.common.ExternalVolume;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.common.IcebergProperties;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.tabletypes.IcebergTableType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -38,15 +38,12 @@ public class CreateTable implements DDLStatement
 {
     private Table table;
     private final List<TableModifier> modifiers; // dataset
-
-    private ExternalVolume externalVolume;
     private final List<Column> columns; // schema
     private final List<TableConstraint> tableConstraints; // table level
     private final List<TableType> types; // dataset
     private final List<ClusteringKeyConstraint> clusterKeys;
     private Map<String, String> tags;
-
-    private static final String ICEBERG_CATALOG_INTEGRATION_SUFFIX = "ICEBERG_TABLE_2022 = true";
+    private IcebergProperties icebergProperties;
 
     public CreateTable()
     {
@@ -79,14 +76,6 @@ public class CreateTable implements DDLStatement
         // Table name
         builder.append(WHITE_SPACE);
         table.genSqlWithoutAlias(builder);
-
-        // External Volume
-        if (externalVolume != null)
-        {
-            builder.append(WHITE_SPACE);
-            externalVolume.genSql(builder);
-            builder.append(WHITE_SPACE);
-        }
 
         // Columns + table constraints
         builder.append(OPEN_PARENTHESIS);
@@ -121,10 +110,11 @@ public class CreateTable implements DDLStatement
             builder.append(CLOSING_PARENTHESIS);
         }
 
-        // Iceberg unified Catalog suppoprt
+        // Iceberg Unified Catalog support
         if (types.stream().anyMatch(tableType -> tableType instanceof IcebergTableType))
         {
-            builder.append(WHITE_SPACE + ICEBERG_CATALOG_INTEGRATION_SUFFIX);
+            builder.append(WHITE_SPACE);
+            icebergProperties.genSql(builder);
         }
     }
 
@@ -156,9 +146,9 @@ public class CreateTable implements DDLStatement
         {
             clusterKeys.add((ClusteringKeyConstraint) node);
         }
-        else if (node instanceof ExternalVolume)
+        else if (node instanceof IcebergProperties)
         {
-            externalVolume = (ExternalVolume) node;
+            icebergProperties = (IcebergProperties) node;
         }
         else if (node instanceof Map)
         {
@@ -176,9 +166,9 @@ public class CreateTable implements DDLStatement
         {
             throw new SqlDomException("Columns list is mandatory for Create Table Command");
         }
-        if (types.stream().anyMatch(tableType -> tableType instanceof IcebergTableType) && externalVolume == null)
+        if (types.stream().anyMatch(tableType -> tableType instanceof IcebergTableType) && icebergProperties == null)
         {
-            throw new SqlDomException("External Volume is mandatory for Iceberg Table");
+            throw new SqlDomException("Iceberg properties are mandatory for Iceberg Table");
         }
     }
 }

@@ -14,32 +14,71 @@
 
 package org.finos.legend.engine.datapush.server.test;
 
-import io.dropwizard.setup.Environment;
-import org.finos.legend.engine.datapush.server.BaseDataPushServer;
-import org.finos.legend.engine.datapush.server.config.DataPushServerConfiguration;
-import org.finos.legend.engine.datapush.server.resources.DataPushTestResource;
-import org.finos.legend.engine.server.support.server.BaseServer;
+import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
+import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
+import org.finos.legend.connection.AuthenticationMechanism;
+import org.finos.legend.connection.ConnectionFactory;
+import org.finos.legend.connection.DatabaseSupport;
+import org.finos.legend.connection.LegendEnvironment;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
+import org.finos.legend.connection.impl.KerberosCredentialExtractor;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
+import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
+import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
+import org.finos.legend.engine.datapush.server.DataPushServer;
+import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 
-public class DataPushServerForTest extends BaseDataPushServer
+public class DataPushServerForTest extends DataPushServer
 {
     public DataPushServerForTest()
     {
     }
 
-    @Override
-    protected void configureServerExtension(DataPushServerConfiguration configuration, Environment environment)
-    {
-        environment.jersey().register(new DataPushTestResource());
-    }
-
-    @Override
-    protected BaseServer.ServerPlatformInfo newServerPlatformInfo()
-    {
-        return new ServerPlatformInfo(null, null, null);
-    }
-
     public static void main(String... args) throws Exception
     {
         new DataPushServerForTest().run(args);
+    }
+
+    @Override
+    public LegendEnvironment buildLegendEnvironment(DataPushServerConfiguration configuration)
+    {
+        return LegendEnvironment.builder()
+                .vaults(
+                        new SystemPropertiesCredentialVault(),
+                        new EnvironmentCredentialVault()
+                )
+                .databaseSupports(
+                        DatabaseSupport.builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism.builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD)
+                                                .authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
+                                )
+                                .build()
+                ).build();
+    }
+
+    @Override
+    public ConnectionFactory buildConnectionFactory(DataPushServerConfiguration configuration, LegendEnvironment environment)
+    {
+        return ConnectionFactory.builder()
+                .environment(this.environment)
+                .credentialBuilders(
+                        new KerberosCredentialExtractor(),
+                        new UserPasswordCredentialBuilder()
+                )
+                .connectionBuilders(
+                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword()
+                )
+                .build();
+    }
+
+    public LegendEnvironment getEnvironment()
+    {
+        return environment;
     }
 }
