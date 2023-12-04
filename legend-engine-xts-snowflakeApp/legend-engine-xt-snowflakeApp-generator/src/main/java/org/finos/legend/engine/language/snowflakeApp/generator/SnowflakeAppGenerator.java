@@ -67,7 +67,9 @@ public class SnowflakeAppGenerator
                     .getFirst();
             connection   = (RelationalDatabaseConnection) Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
-            return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection));
+            SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification)connection.datasourceSpecification;
+            String deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/xg82255/%s,", ds.region, ds.accountName);
+            return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection), deployedLocation);
         }
 
         return new SnowflakeAppArtifact(content);

@@ -54,6 +54,12 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
     private static final  String deploymentTable = "APP_METADATA";
 
+    private static String deployStub = "/data/databases/%S/schemas/"+deploymentSchema+"/user-function/%S()";
+
+    private String enrichDeploymentLocation(String deploymentLocation, String appName)
+    {
+        return deploymentLocation+String.format(deployStub, appName);
+    }
     public SnowflakeAppDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
     {
         this.snowflakeAppDeploymentTool = deploymentTool;
@@ -90,7 +96,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             this.deployImpl(jdbcConnection, (SnowflakeAppContent)artifact.content);
             jdbcConnection.commit();
             LOGGER.info("Completed deployment successfully");
-            result = new SnowflakeDeploymentResult(appName, true);
+            result = new SnowflakeDeploymentResult(appName, true, enrichDeploymentLocation(artifact.deployedLocation, appName));
         }
         catch (Exception e)
         {
@@ -112,7 +118,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         try
         {
             this.snowflakeAppDeploymentTool.deploy(datasourceSpecification, authenticationStrategy, applicationName);
-            return new SnowflakeDeploymentResult("",true);
+            return new SnowflakeDeploymentResult("",true, " ");
         }
         catch (Exception e)
         {
@@ -148,7 +154,6 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         }
         else
         {
-            statements.add(String.format("CREATE OR REPLACE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
             statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
         }
         return statements;
