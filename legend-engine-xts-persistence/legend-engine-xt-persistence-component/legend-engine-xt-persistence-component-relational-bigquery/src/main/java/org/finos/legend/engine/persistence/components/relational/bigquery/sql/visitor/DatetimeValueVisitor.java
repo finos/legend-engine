@@ -26,7 +26,7 @@ import org.finos.legend.engine.persistence.components.transformer.VisitorContext
 public class DatetimeValueVisitor implements LogicalPlanVisitor<DatetimeValue>
 {
 
-    private static final String DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%S";
+    private static final String DATE_TIME_FORMAT = "%Y-%m-%d %H:%M:%E6S";
 
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, DatetimeValue current, VisitorContext context)

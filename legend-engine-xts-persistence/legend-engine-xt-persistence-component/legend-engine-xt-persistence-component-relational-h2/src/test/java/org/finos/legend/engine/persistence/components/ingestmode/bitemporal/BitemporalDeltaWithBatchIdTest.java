@@ -27,6 +27,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.junit.jupiter.api.Assertions;
@@ -847,6 +848,59 @@ class BitemporalDeltaWithBatchIdTest extends BaseTest
         expectedStats = new ArrayList<>();
         expectedStats.add(createExpectedStatsMap(1, 0, 0, 0, 0));
         executePlansAndVerifyResultsWithSpecifiedDataSplits(ingestMode, options, datasets, schema, expectedDataPass6, expectedStats, dataSplitRanges);
+    }
+
+    /*
+    Scenario: Test milestoning Logic with only validity from time specified when staging table pre populated
+    */
+    @Test
+    void testMilestoningSourceSpecifiesFromSet6WithStagingFilter() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        FilteredDataset stagingTable = TestUtils.getBitemporalFromOnlyFilteredStagingTableIdBased();
+
+        String[] schema = new String[] {indexName, balanceName, digestName, startDateTimeName, endDateTimeName, batchIdInName, batchIdOutName};
+
+        // Create staging table
+        createStagingTable(TestUtils.getBitemporalFromOnlyStagingTableIdBased());
+
+        BitemporalDelta ingestMode = BitemporalDelta.builder()
+            .digestField(digestName)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInName)
+                .batchIdOutName(batchIdOutName)
+                .build())
+            .validityMilestoning(ValidDateTime.builder()
+                .dateTimeFromName(startDateTimeName)
+                .dateTimeThruName(endDateTimeName)
+                .validityDerivation(SourceSpecifiesFromDateTime.builder()
+                    .sourceDateTimeFromField(dateTimeName)
+                    .build())
+                .build())
+            .build();
+
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainTable).stagingDataset(stagingTable).build();
+
+        // ------------ Perform Pass1 ------------------------
+        String dataPass1 = basePathForInput + "source_specifies_from/without_delete_ind/set_6_with_staging_filter/staging_data_pass1.csv";
+        String expectedDataPass1 = basePathForExpected + "source_specifies_from/without_delete_ind/set_6_with_staging_filter/expected_pass1.csv";
+        // 1. Load Staging table
+        loadStagingDataForBitemporalFromOnly(dataPass1);
+        // 2. Execute Plan and Verify Results
+        Map<String, Object> expectedStats = createExpectedStatsMap(3, 0, 3, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getBitemporalFromOnlyFilteredStagingTableIdBasedSecondPass());
+        String dataPass2 = basePathForInput + "source_specifies_from/without_delete_ind/set_6_with_staging_filter/staging_data_pass2.csv";
+        String expectedDataPass2 = basePathForExpected + "source_specifies_from/without_delete_ind/set_6_with_staging_filter/expected_pass2.csv";
+        // 1. Load Staging table
+        loadStagingDataForBitemporalFromOnly(dataPass2);
+        // 2. Execute Plan and Verify Results
+        expectedStats = createExpectedStatsMap(8, 0, 6, 3, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 
     /*

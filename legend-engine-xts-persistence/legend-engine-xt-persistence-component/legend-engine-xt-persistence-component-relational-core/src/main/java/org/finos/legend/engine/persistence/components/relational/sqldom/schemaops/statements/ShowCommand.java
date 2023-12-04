@@ -18,33 +18,33 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomEx
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.ShowType;
+import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
+
+import java.util.Optional;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class ShowCommand implements SqlGen
 {
     private final ShowType operation;
-    private String schemaName;
+    private Optional<String> schemaName;
+    private final String quoteIdentifier;
 
-    public ShowCommand(ShowType operation)
-    {
-        this(operation, null);
-    }
-
-    public ShowCommand(ShowType operation, String schemaName)
+    public ShowCommand(ShowType operation, Optional<String> schemaName, String quoteIdentifier)
     {
         this.operation = operation;
         this.schemaName = schemaName;
+        this.quoteIdentifier = quoteIdentifier;
     }
 
-    public String getSchemaName()
+    public Optional<String> getSchemaName()
     {
         return schemaName;
     }
 
     public void setSchemaName(String schemaName)
     {
-        this.schemaName = schemaName;
+        this.schemaName = Optional.of(schemaName);
     }
 
     /*
@@ -60,10 +60,10 @@ public class ShowCommand implements SqlGen
     {
         builder.append(Clause.SHOW.get());
         builder.append(WHITE_SPACE + operation.name());
-        if (operation == ShowType.TABLES && schemaName != null)
+        if (operation == ShowType.TABLES && schemaName.isPresent() && !schemaName.get().isEmpty())
         {
             builder.append(WHITE_SPACE + Clause.FROM.get());
-            builder.append(WHITE_SPACE + schemaName);
+            builder.append(WHITE_SPACE + SqlGenUtils.getQuotedField(schemaName.get(), quoteIdentifier));
         }
     }
 }

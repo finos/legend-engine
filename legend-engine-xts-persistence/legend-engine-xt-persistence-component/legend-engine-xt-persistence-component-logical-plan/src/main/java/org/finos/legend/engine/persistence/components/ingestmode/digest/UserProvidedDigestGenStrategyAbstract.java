@@ -12,22 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.common;
+package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
-import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.immutables.value.Value;
 
-public class ExternalVolume implements SqlGen
+@Value.Immutable
+@Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface UserProvidedDigestGenStrategyAbstract extends DigestGenStrategy
 {
-    private String externalVolume;
-
-    public ExternalVolume(String externalVolume)
-    {
-        this.externalVolume = externalVolume;
-    }
+    String digestField();
 
     @Override
-    public void genSql(StringBuilder builder)
+    default <T> T accept(DigestGenStrategyVisitor<T> visitor)
     {
-        builder.append(String.format("with EXTERNAL_VOLUME = '%s'", externalVolume));
+        return visitor.visitUserProvidedDigestGenStrategy(this);
     }
 }

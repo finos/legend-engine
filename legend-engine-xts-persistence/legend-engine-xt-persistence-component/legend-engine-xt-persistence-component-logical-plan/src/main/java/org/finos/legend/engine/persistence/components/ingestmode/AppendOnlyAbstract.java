@@ -15,9 +15,9 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
 import org.immutables.value.Value;
-
-import java.util.Optional;
 
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -32,7 +32,11 @@ import static org.immutables.value.Value.Style;
 )
 public interface AppendOnlyAbstract extends IngestMode
 {
-    Optional<String> digestField();
+    @Value.Default
+    default DigestGenStrategy digestGenStrategy()
+    {
+        return NoDigestGenStrategy.builder().build();
+    }
 
     Auditing auditing();
 

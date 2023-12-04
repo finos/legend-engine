@@ -37,9 +37,9 @@ public class DeleteStatement implements DMLStatement
     }
 
     /*
-             DELETE GENERIC PLAN:
-             DELETE FROM table-Name [[AS] correlation-Name] [WHERE clause]
-             */
+     DELETE GENERIC PLAN:
+     DELETE FROM table-Name [[AS] correlation-Name] [WHERE clause]
+     */
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {

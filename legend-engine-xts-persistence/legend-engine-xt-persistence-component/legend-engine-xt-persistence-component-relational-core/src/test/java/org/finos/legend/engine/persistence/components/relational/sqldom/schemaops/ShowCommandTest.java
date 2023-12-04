@@ -19,6 +19,8 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.ShowCommand;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ShowCommandTest
@@ -28,9 +30,9 @@ public class ShowCommandTest
     public void testShowCommand()
     {
         Table table = new Table("CITIBIKE", "public", "trips", null, BaseTest.QUOTE_IDENTIFIER);
-        ShowCommand command = new ShowCommand(ShowType.TABLES, table.getSchema());
+        ShowCommand command = new ShowCommand(ShowType.TABLES, Optional.of(table.getSchema()), BaseTest.QUOTE_IDENTIFIER);
         String sql = BaseTest.genSqlIgnoringErrors(command);
-        String expected = "SHOW TABLES FROM public";
+        String expected = "SHOW TABLES FROM \"public\"";
         assertEquals(expected, sql);
     }
 
@@ -38,7 +40,7 @@ public class ShowCommandTest
     public void testShowCommandWithoutSchema()
     {
         Table table = new Table("CITIBIKE", null, "trips", null, BaseTest.QUOTE_IDENTIFIER);
-        ShowCommand command = new ShowCommand(ShowType.TABLES);
+        ShowCommand command = new ShowCommand(ShowType.TABLES, Optional.empty(), BaseTest.QUOTE_IDENTIFIER);
         String sql = BaseTest.genSqlIgnoringErrors(command);
         String expected = "SHOW TABLES";
         assertEquals(expected, sql);

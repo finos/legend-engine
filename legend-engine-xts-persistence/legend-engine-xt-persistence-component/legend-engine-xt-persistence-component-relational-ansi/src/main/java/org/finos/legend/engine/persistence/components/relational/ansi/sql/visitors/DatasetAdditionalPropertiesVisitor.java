@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.IcebergProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableOrigin;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.tabletypes.CachedTableType;
@@ -33,26 +34,28 @@ public class DatasetAdditionalPropertiesVisitor implements LogicalPlanVisitor<or
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, DatasetAdditionalProperties current, VisitorContext context)
     {
-        // Handle Table Type
+        // Handle table type
         if (current.tableType().isPresent())
         {
             handleTableType(prev, current.tableType().get());
         }
-        // Handle Table Origin
+
+        // Handle table origin
         if (current.tableOrigin().isPresent())
         {
             handleTableOrigin(prev, current.tableOrigin().get());
         }
 
-        // Handle external Volume
-        if (current.externalVolume().isPresent())
-        {
-            handleExternalVolume(prev, current.externalVolume().get());
-        }
         // Handle tags
         if (!current.tags().isEmpty())
         {
             handleTags(prev, current.tags());
+        }
+
+        // Handle iceberg properties
+        if (current.icebergProperties().isPresent())
+        {
+            handleIcebergProperties(prev, current.icebergProperties().get());
         }
 
         return new VisitorResult(null);
@@ -80,9 +83,9 @@ public class DatasetAdditionalPropertiesVisitor implements LogicalPlanVisitor<or
         throw new UnsupportedOperationException("Tags not supported");
     }
 
-    protected void handleExternalVolume(PhysicalPlanNode prev, String s)
+    protected void handleIcebergProperties(PhysicalPlanNode prev, IcebergProperties icebergProperties)
     {
-        throw new UnsupportedOperationException("External Volume not supported");
+        throw new UnsupportedOperationException("Iceberg properties not supported");
     }
 
     private TableType mapTableType(org.finos.legend.engine.persistence.components.logicalplan.datasets.TableType tableType)

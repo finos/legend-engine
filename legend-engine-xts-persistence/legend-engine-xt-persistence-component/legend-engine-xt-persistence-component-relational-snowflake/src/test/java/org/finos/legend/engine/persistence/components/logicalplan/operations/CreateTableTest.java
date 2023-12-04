@@ -17,12 +17,11 @@ package org.finos.legend.engine.persistence.components.logicalplan.operations;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.IcebergProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableOrigin;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.tabletypes.IcebergTableType;
-import org.finos.legend.engine.persistence.components.relational.sqldom.tabletypes.TableType;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.junit.jupiter.api.Assertions;
@@ -141,7 +140,7 @@ public class CreateTableTest
     }
 
     @Test
-    public void testCreateIcebergTableExternalVolumeMissing()
+    public void testCreateIcebergTablePropertiesMissing()
     {
         DatasetDefinition dataset = DatasetDefinition.builder()
                 .database("my_db")
@@ -162,7 +161,7 @@ public class CreateTableTest
         }
         catch (Exception e)
         {
-            Assertions.assertTrue(e.getMessage().contains("External Volume is mandatory for Iceberg Table"));
+            Assertions.assertTrue(e.getMessage().contains("Iceberg properties are mandatory for Iceberg Table"));
         }
 
     }
@@ -178,7 +177,7 @@ public class CreateTableTest
                 .schema(schemaWithAllColumns)
                 .datasetAdditionalProperties(DatasetAdditionalProperties.builder()
                         .tableOrigin(TableOrigin.ICEBERG)
-                        .externalVolume("my_ext_vol")
+                        .icebergProperties(IcebergProperties.builder().externalVolume("my_ext_vol").catalog("SNOWFLAKE").baseLocation("my_location").build())
                         .build())
                 .build();
         Operation create = Create.of(true, dataset);
@@ -187,13 +186,12 @@ public class CreateTableTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expected = "CREATE ICEBERG TABLE IF NOT EXISTS \"my_db\".\"my_schema\".\"my_table\"" +
-                " with EXTERNAL_VOLUME = 'my_ext_vol' " +
                 "(\"col_int\" INTEGER NOT NULL PRIMARY KEY,\"col_integer\" INTEGER NOT NULL UNIQUE,\"col_bigint\" BIGINT," +
                 "\"col_tinyint\" TINYINT,\"col_smallint\" SMALLINT,\"col_char\" CHAR,\"col_varchar\" VARCHAR," +
                 "\"col_string\" VARCHAR,\"col_timestamp\" TIMESTAMP,\"col_datetime\" DATETIME,\"col_date\" DATE," +
                 "\"col_real\" DOUBLE,\"col_float\" DOUBLE,\"col_decimal\" NUMBER(10,4),\"col_double\" DOUBLE," +
                 "\"col_binary\" BINARY,\"col_time\" TIME,\"col_numeric\" NUMBER(38,0),\"col_boolean\" BOOLEAN," +
-                "\"col_varbinary\" BINARY(10)) ICEBERG_TABLE_2022 = true";
+                "\"col_varbinary\" BINARY(10)) CATALOG='SNOWFLAKE', EXTERNAL_VOLUME='my_ext_vol', BASE_LOCATION='my_location'";
 
         Assertions.assertEquals(expected, list.get(0));
     }

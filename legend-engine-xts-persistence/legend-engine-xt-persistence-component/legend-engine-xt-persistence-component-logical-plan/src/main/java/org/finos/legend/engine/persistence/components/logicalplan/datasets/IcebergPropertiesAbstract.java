@@ -12,33 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
-import org.immutables.value.Value;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
+import org.immutables.value.Value.Immutable;
+import org.immutables.value.Value.Style;
 
-import java.util.Optional;
-
-@Value.Immutable
-@Value.Style(
+@Immutable
+@Style(
     typeAbstract = "*Abstract",
     typeImmutable = "*",
     jdkOnly = true,
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface LoadOptionsAbstract
+public interface IcebergPropertiesAbstract extends LogicalPlanNode
 {
-    Optional<String> fieldDelimiter();
+    String catalog();
 
-    Optional<String> encoding();
+    String externalVolume();
 
-    Optional<String> nullMarker();
-
-    Optional<String> quote();
-
-    Optional<Long> skipLeadingRows();
-
-    Optional<Long> maxBadRecords();
-
-    Optional<String> compression();
+    String baseLocation();
 }
