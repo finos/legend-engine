@@ -270,7 +270,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
               ^$alias(alias = if ($finalAlias->isEmpty(), | $alias.alias, | $finalAlias.alias), realias = $realias);
           ););
     ])
-  );
+  )->removeDuplicatesBy(a | $a.actual);
 
   let expected = $expectedWithRealias->map(p |
           let clash = $expectedWithRealias.expected->filter(f | $f == $p.expected)->size() > 1;
@@ -724,7 +724,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processRestrict(columns:String[*], context: SqlTransformContext[1]):FunctionExpression[1]
 {
-  appendTdsFunc($context.expression->toOne(), restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, list(iv($columns)));
+  appendTdsFunc($context.expression->toOne(), restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_, list(iv($columns->removeDuplicates())));
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processRename(selectItems:SingleColumn[*], context: SqlTransformContext[1]):FunctionExpression[1]
