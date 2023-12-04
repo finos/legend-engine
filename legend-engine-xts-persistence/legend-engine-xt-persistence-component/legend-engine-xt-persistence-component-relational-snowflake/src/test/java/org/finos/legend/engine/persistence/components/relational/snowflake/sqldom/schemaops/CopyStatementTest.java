@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops;
 
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.expressions.table.StagedFilesTable;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements.CopyStatement;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.StagedFilesField;
@@ -26,7 +27,9 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -35,7 +38,7 @@ public class CopyStatementTest
     public static String QUOTE_IDENTIFIER = "\"%s\"";
 
     @Test
-    void testSelectStageStatement() throws SqlDomException
+    void testCopyStatementWithFilesAndStandardFileFormat() throws SqlDomException
     {
         StagedFilesTable stagedFiles = new StagedFilesTable("t","@my_stage");
         List<Value> selectItems = Arrays.asList(
@@ -55,20 +58,29 @@ public class CopyStatementTest
         );
 
         CopyStatement copyStatement = new CopyStatement(table, columns, selectStatement);
+        copyStatement.setFilePaths(Arrays.asList("path1", "path2"));
+        copyStatement.setFileFormatType(FileFormatType.CSV);
+        Map<String, Object> fileFormatOptions = new HashMap<>();
+        fileFormatOptions.put("COMPRESSION", "AUTO");
+        copyStatement.setFileFormatOptions(fileFormatOptions);
+        Map<String, Object> copyOptions = new HashMap<>();
+        copyOptions.put("ON_ERROR", "ABORT_STATEMENT");
+        copyStatement.setCopyOptions(copyOptions);
+
         String sql1 = genSqlIgnoringErrors(copyStatement);
         assertEquals("COPY INTO \"mydb\".\"mytable1\" " +
                 "(\"field1\", \"field2\", \"field3\", \"field4\") " +
                 "FROM " +
                 "(SELECT t.$1 as \"field1\",t.$2 as \"field2\",t.$3 as \"field3\",t.$4 as \"field4\" FROM @my_stage as t) " +
-                "on_error = 'ABORT_STATEMENT'", sql1);
+                "FILES = ('path1', 'path2') " +
+                "FILE_FORMAT = (COMPRESSION = 'AUTO', TYPE = 'CSV') " +
+                "ON_ERROR = 'ABORT_STATEMENT'", sql1);
     }
 
     @Test
-    void testSelectStageStatementWithPatternAndFileFormat() throws SqlDomException
+    void testCopyStatementWithPatternAndFileFormatAndForceOption() throws SqlDomException
     {
         StagedFilesTable stagedFiles = new StagedFilesTable("t","@my_stage");
-        stagedFiles.setFileFormat("my_file_format");
-        stagedFiles.setFilePattern("my_pattern");
 
         List<Value> selectItems = Arrays.asList(
                 new StagedFilesField(QUOTE_IDENTIFIER, 1, "t", "field1", "field1"),
@@ -87,14 +99,24 @@ public class CopyStatementTest
                 new Field("field4", QUOTE_IDENTIFIER)
         );
 
+        Map<String, Object> copyOptions = new HashMap<>();
+        copyOptions.put("FORCE", true);
+        copyOptions.put("ON_ERROR", "ABORT_STATEMENT");
         CopyStatement copyStatement = new CopyStatement(table, columns, selectStatement);
+        copyStatement.setFilePatterns(Arrays.asList("my_pattern1", "my_pattern2"));
+        copyStatement.setUserDefinedFileFormatName("my_file_format");
+        copyStatement.setCopyOptions(copyOptions);
+
         String sql1 = genSqlIgnoringErrors(copyStatement);
-        assertEquals("COPY INTO \"mydb\".\"mytable1\" " +
+        String expectedStr = "COPY INTO \"mydb\".\"mytable1\" " +
                 "(\"field1\", \"field2\", \"field3\", \"field4\") " +
                 "FROM " +
                 "(SELECT t.$1:field1 as \"field1\",t.$1:field2 as \"field2\",t.$1:field3 as \"field3\",t.$1:field4 as \"field4\" " +
-                "FROM @my_stage (FILE_FORMAT => 'my_file_format', PATTERN => 'my_pattern') as t) " +
-                "on_error = 'ABORT_STATEMENT'", sql1);
+                "FROM @my_stage as t) " +
+                "PATTERN = '(my_pattern1)|(my_pattern2)' " +
+                "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
+                "FORCE = true, ON_ERROR = 'ABORT_STATEMENT'";
+        assertEquals(expectedStr, sql1);
     }
 
     public static String genSqlIgnoringErrors(SqlGen item)

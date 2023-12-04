@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.immutables.value.Value;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
@@ -68,5 +69,12 @@ public interface SchemaDefinitionAbstract extends Schema
     interface ShardSpecificationAbstract
     {
         List<Field> shardKeys();
+
+        // Keyless sharding can create a sharded table even without explicit shard keys
+        @Value.Default
+        default boolean isSharded()
+        {
+            return true;
+        }
     }
 }

@@ -12,12 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
-public enum FileFormat
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
+import org.immutables.value.Value;
+
+@Value.Immutable
+@Value.Style(
+        typeAbstract = "*Abstract",
+        typeImmutable = "*",
+        jdkOnly = true,
+        optionalAcceptNullable = true,
+        strictBuilder = true
+)
+public interface FilteredDatasetAbstract extends DatasetDefinitionAbstract
 {
-    CSV,
-    JSON,
-    AVRO,
-    PARQUET;
+    Condition filter();
 }

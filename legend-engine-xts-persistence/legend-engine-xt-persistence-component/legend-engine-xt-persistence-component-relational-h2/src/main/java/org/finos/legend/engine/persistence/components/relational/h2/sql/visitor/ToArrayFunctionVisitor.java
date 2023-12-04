@@ -15,9 +15,6 @@
 package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
@@ -49,17 +46,7 @@ public class ToArrayFunctionVisitor implements LogicalPlanVisitor<ToArrayFunctio
         if (current.values() != null)
         {
             List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
-            for (Value value : current.values())
-            {
-                if (value instanceof StagedFilesFieldValue)
-                {
-                    logicalPlanNodeList.add(FieldValue.builder().fieldName(((StagedFilesFieldValue) value).fieldName()).build());
-                }
-                else
-                {
-                    logicalPlanNodeList.add(value);
-                }
-            }
+            logicalPlanNodeList.addAll(current.values());
             return new VisitorResult(function, logicalPlanNodeList);
         }
         return new VisitorResult(null);

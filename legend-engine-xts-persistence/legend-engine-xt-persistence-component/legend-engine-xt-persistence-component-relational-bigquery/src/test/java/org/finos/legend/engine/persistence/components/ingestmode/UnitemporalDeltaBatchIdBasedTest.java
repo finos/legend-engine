@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DATA_ERRORS;
+
 public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBasedTestCases
 {
     @Override
@@ -317,6 +319,35 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     }
 
     @Override
+    public void verifyUnitemporalDeltaWithNoVersionAndFilteredDataset(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
+            "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 WHERE (sink.`batch_id_out` = 999999999) AND " +
+            "(EXISTS (SELECT * FROM `mydb`.`staging` as stage WHERE (((sink.`id` = stage.`id`) AND " +
+            "(sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`)) AND (stage.`batch_id_in` > 5)))";
+
+        String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 FROM `mydb`.`staging` as stage " +
+            "WHERE (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) " +
+            "AND (sink.`digest` = stage.`digest`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))) " +
+            "AND (stage.`batch_id_in` > 5))";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
     public void verifyUnitemporalDeltaWithFilterDupsMaxVersionWithStagingFilter(GeneratorResult operations)
     {
         List<String> preActionsSql = operations.preActionsSql();
@@ -338,10 +369,72 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableBatchIdAndVersionBasedCreateQuery, preActionsSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTempStagingTableWithVersionAndCount, preActionsSql.get(2));
+
+        String expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `version`, `legend_persistence_count`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
+            "stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
+            "stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER " +
+            "(PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) as `legend_persistence_rank` " +
+            "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
+            "stage.`version`,COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
+            "WHERE stage.`batch_id_in` > 5 GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, " +
+            "stage.`digest`, stage.`version`) as stage) as stage WHERE stage.`legend_persistence_rank` = 1)";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
+        Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSqlForVersionAsVersion, operations.deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
         Assertions.assertEquals(getExpectedMetadataTableIngestWithStagingFiltersQuery(), metadataIngestSql.get(0));
+    }
+
+    @Override
+    public void verifyUnitemporalDeltaWithFilterDupsMaxVersionWithFilteredDataset(GeneratorResult operations)
+    {
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> milestoningSql = operations.ingestSql();
+        List<String> metadataIngestSql = operations.metadataIngestSql();
+        String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
+            "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
+            "WHERE (sink.`batch_id_out` = 999999999) AND (EXISTS (SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`)))";
+
+        String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `version`, `batch_id_in`, `batch_id_out`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 FROM `mydb`.`staging_legend_persistence_temp_staging` " +
+            "as stage WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`batch_id_out` = 999999999) " +
+            "AND (stage.`version` <= sink.`version`) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableBatchIdAndVersionBasedCreateQuery, preActionsSql.get(0));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSql.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTempStagingTableWithVersionAndCount, preActionsSql.get(2));
+
+        String expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters = "INSERT INTO `mydb`.`staging_legend_persistence_temp_staging` " +
+            "(`id`, `name`, `amount`, `biz_date`, `digest`, `version`, `legend_persistence_count`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
+            "stage.`legend_persistence_count` as `legend_persistence_count` FROM " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
+            "stage.`legend_persistence_count` as `legend_persistence_count`,DENSE_RANK() OVER " +
+            "(PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`version` DESC) as `legend_persistence_rank` " +
+            "FROM (SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
+            "stage.`version`,COUNT(*) as `legend_persistence_count` FROM `mydb`.`staging` as stage " +
+            "WHERE stage.`batch_id_in` > 5 GROUP BY stage.`id`, stage.`name`, stage.`amount`, stage.`biz_date`, " +
+            "stage.`digest`, stage.`version`) as stage) as stage WHERE stage.`legend_persistence_rank` = 1)";
+
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
+        Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSqlForVersionAsVersion, operations.deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+
+        Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
+        Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
     }
 
     @Override

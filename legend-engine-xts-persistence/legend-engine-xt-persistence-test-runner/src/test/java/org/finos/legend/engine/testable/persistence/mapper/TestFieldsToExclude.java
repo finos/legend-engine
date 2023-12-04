@@ -41,7 +41,7 @@ public class TestFieldsToExclude extends MapperBaseTest
     {
         IngestMode ingestMode = getAppendOnlyNoAuditingNoFilteringDuplicates();
         Set<String> fieldsToIgnore = ingestMode.accept(IngestModeVisitors.EXTRACT_FIELDS_TO_EXCLUDE);
-        Assert.assertTrue(fieldsToIgnore.isEmpty());
+        Assert.assertTrue(fieldsToIgnore.contains("DIGEST"));
 
         ingestMode = getAppendOnlyNoAuditingWithFilteringDuplicates();
         fieldsToIgnore = ingestMode.accept(IngestModeVisitors.EXTRACT_FIELDS_TO_EXCLUDE);
@@ -50,6 +50,7 @@ public class TestFieldsToExclude extends MapperBaseTest
         ingestMode = getAppendOnlyDatetimeAuditingNoFilteringDuplicates();
         fieldsToIgnore = ingestMode.accept(IngestModeVisitors.EXTRACT_FIELDS_TO_EXCLUDE);
         Assert.assertTrue(fieldsToIgnore.contains("AUDIT_TIME"));
+        Assert.assertTrue(fieldsToIgnore.contains("DIGEST"));
 
         ingestMode = getAppendOnlyDatetimeAuditingWithFilteringDuplicates();
         fieldsToIgnore = ingestMode.accept(IngestModeVisitors.EXTRACT_FIELDS_TO_EXCLUDE);

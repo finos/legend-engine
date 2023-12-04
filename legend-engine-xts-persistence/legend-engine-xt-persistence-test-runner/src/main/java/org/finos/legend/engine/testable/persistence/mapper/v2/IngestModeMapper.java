@@ -193,11 +193,7 @@ public class IngestModeMapper
                     else
                     {
                         ignoreAuditField(fieldsToIgnore, nontemporal);
-                        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly appendOnlyHandling = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly) nontemporal.updatesHandling;
-                        if (appendOnlyHandling.appendStrategy instanceof FilterDuplicates)
-                        {
-                            enrichMainSchemaWithDigest(baseSchema, mainSchemaDefinitionBuilder);
-                        }
+                        enrichMainSchemaWithDigest(baseSchema, mainSchemaDefinitionBuilder);
                         Dataset stagingDataset = getStagingDataset(baseSchema, stagingDatasetBuilder, fieldsToIgnore, fieldsToAdd);
                         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
                         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -288,22 +284,9 @@ public class IngestModeMapper
                 }
                 else
                 {
-                    if (nontemporal.updatesHandling instanceof Overwrite)
-                    {
-                        ignoreAuditField(fieldsToIgnore, nontemporal);
-                        fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
-                        return fieldsToIgnore;
-                    }
-                    else
-                    {
-                        ignoreAuditField(fieldsToIgnore, nontemporal);
-                        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly appendOnlyHandling = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly) nontemporal.updatesHandling;
-                        if (appendOnlyHandling.appendStrategy instanceof FilterDuplicates)
-                        {
-                            fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
-                        }
-                        return fieldsToIgnore;
-                    }
+                    ignoreAuditField(fieldsToIgnore, nontemporal);
+                    fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
+                    return fieldsToIgnore;
                 }
             }
             case Unitemporal:

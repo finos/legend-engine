@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.IcebergProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableOrigin;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.common.ExternalVolume;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.tabletypes.IcebergTableType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.tabletypes.TableType;
 
@@ -39,9 +39,13 @@ public class DatasetAdditionalPropertiesVisitor extends org.finos.legend.engine.
         prev.push(tags);
     }
 
-    protected void handleExternalVolume(PhysicalPlanNode prev, String externalVolume)
+    protected void handleIcebergProperties(PhysicalPlanNode prev, IcebergProperties icebergProperties)
     {
-        prev.push(new ExternalVolume(externalVolume));
+        prev.push(new org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.common.IcebergProperties(
+            icebergProperties.catalog(),
+            icebergProperties.externalVolume(),
+            icebergProperties.baseLocation()
+        ));
     }
 
     private TableType mapTableType(TableOrigin tableOrigin)

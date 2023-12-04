@@ -40,7 +40,7 @@ public class ShowTest
         LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expected = "SHOW TABLES LIKE 'trips' IN CITIBIKE.public";
+        String expected = "SHOW TABLES LIKE 'trips' IN \"CITIBIKE\".\"public\"";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
@@ -57,7 +57,7 @@ public class ShowTest
         LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expected = "SHOW TABLES LIKE 'TRIPS' IN CITIBIKE.PUBLIC";
+        String expected = "SHOW TABLES LIKE 'TRIPS' IN \"CITIBIKE\".\"PUBLIC\"";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
@@ -83,7 +83,7 @@ public class ShowTest
         LogicalPlan logicalPlan = LogicalPlanFactory.getLogicalPlanForDoesDatasetExist(dataset);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expected = "SHOW TABLES LIKE 'trips' IN public";
+        String expected = "SHOW TABLES LIKE 'trips' IN \"public\"";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
