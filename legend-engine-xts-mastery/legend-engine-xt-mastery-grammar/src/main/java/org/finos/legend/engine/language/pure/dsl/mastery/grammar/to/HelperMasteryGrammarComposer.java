@@ -252,7 +252,7 @@ public class HelperMasteryGrammarComposer
         {
             String precedenceRuleString = precedenceRule.accept(new PrecedenceRuleComposer(indentLevel + 1, context, uniqueSourcePrecedenceRules));
             nonSourcePrecedenceRulesBuilder.append(precedenceRuleString);
-            nonSourcePrecedenceRulesBuilder.append(i < precedenceRules.size() && !precedenceRuleString.equals("") ? "," : "");
+            nonSourcePrecedenceRulesBuilder.append(i < precedenceRules.size() - 1 && !precedenceRuleString.equals("") ? "," : "");
         });
         return combinePrecedenceRules(uniqueSourcePrecedenceRules, nonSourcePrecedenceRulesBuilder.toString(), indentLevel);
     }

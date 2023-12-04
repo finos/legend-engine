@@ -113,7 +113,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
 
         // ------------ Perform bitemporal snapshot milestoning Pass4 (Empty Batch) ------------------------
-        String dataPass4 = basePathForInput + "without_partition/staging_data_pass4.csv";
+        String dataPass4 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass4 = basePathForExpected + "without_partition/expected_pass4.csv";
         // 1. Load Staging table
         loadStagingDataForBitemp(dataPass4);
@@ -181,7 +181,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
 
         // ------------ Perform bitemporal snapshot milestoning Pass4 (Empty Batch) ------------------------
-        String dataPass4 = basePathForInput + "has_from_time_only/staging_data_pass4.csv";
+        String dataPass4 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass4 = basePathForExpected + "has_from_time_only/expected_pass4.csv";
         // 1. Load Staging table
         loadStagingDataForBitemp(dataPass4);
@@ -250,7 +250,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
 
         // ------------ Perform bitemporal snapshot milestoning Pass4 (Empty Batch) ------------------------
-        String dataPass4 = basePathForInput + "with_partition/staging_data_pass4.csv";
+        String dataPass4 = "src/test/resources/data/empty_file.csv";
         String expectedDataPass4 = basePathForExpected + "with_partition/expected_pass4.csv";
         // 1. Load Staging table
         loadStagingDataForBitemp(dataPass4);
@@ -315,7 +315,7 @@ class BitemporalSnapshotWithBatchIdTest extends BaseTest
     Scenario: Test milestoning Logic when staging table is pre populated and staging table is cleaned up in the end
     */
     @Test
-    void testBitemporalSnapshotMilestoningLogicWithPartitionWithcleanStagingData() throws Exception
+    void testBitemporalSnapshotMilestoningLogicWithPartitionWithCleanStagingData() throws Exception
     {
         DatasetDefinition mainTable = TestUtils.getBitemporalMainTable();
         DatasetDefinition stagingTable = TestUtils.getBitemporalStagingTable();

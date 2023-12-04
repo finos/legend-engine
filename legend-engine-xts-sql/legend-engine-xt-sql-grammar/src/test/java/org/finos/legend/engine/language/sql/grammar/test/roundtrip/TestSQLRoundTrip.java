@@ -316,6 +316,19 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testFunctionCallWithOrder()
+    {
+        check("SELECT string_agg(Col1, ', ' ORDER BY Col2 ASC, Col3 DESC) FROM myTable");
+    }
+
+    @Test
+    public void testTrim()
+    {
+        check("SELECT trim(BOTH ' ' FROM 'abc') FROM myTable");
+        check("SELECT trim(BOTH FROM 'abc') FROM myTable");
+    }
+
+    @Test
     public void testNested()
     {
         check("SELECT * from (select col from myTable)");

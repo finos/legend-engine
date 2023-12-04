@@ -18,9 +18,9 @@ package org.finos.legend.engine.language.pure.modelManager.sdlc.workspace;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.function.Function;
 import javax.security.auth.Subject;
@@ -34,13 +34,12 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetadataServerPrivateAccessTokenConfiguration;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
-import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.finos.legend.engine.shared.core.kerberos.ExecSubject;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -65,8 +64,11 @@ public class WorkspaceSDLCLoader
 
     public PureModelContextData loadWorkspace(MutableList<CommonProfile> pm, WorkspaceSDLC sdlc, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
     {
-        String url = sdlcServerConnectionConfig.getBaseUrl() + "/api/projects/" + sdlc.project + (sdlc.isGroupWorkspace ? "/groupWorkspaces/" : "/workspaces/") + sdlc.getWorkspace() + "/pureModelContextData";
-        return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url, httpClientProvider, x -> prepareHttpRequest(pm, x));
+        return this.doAs(pm, () ->
+        {
+            String url = sdlcServerConnectionConfig.getBaseUrl() + "/api/projects/" + sdlc.project + (sdlc.isGroupWorkspace ? "/groupWorkspaces/" : "/workspaces/") + sdlc.getWorkspace() + "/pureModelContextData";
+            return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url, httpClientProvider, x -> prepareHttpRequest(pm, x));
+        });
     }
 
     public void setModelManager(ModelManager modelManager)
@@ -76,50 +78,59 @@ public class WorkspaceSDLCLoader
 
     public PureModelContextData getSDLCDependenciesPMCD(MutableList<CommonProfile> pm, String clientVersion, WorkspaceSDLC sdlc, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
     {
-        CloseableHttpClient httpclient;
-
-        if (httpClientProvider != null)
+        return this.doAs(pm, () ->
         {
-            httpclient = httpClientProvider.apply(pm);
-        }
-        else
-        {
-            httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
-        }
+            CloseableHttpClient httpclient;
 
-        try (
-                CloseableHttpClient client = httpclient;
-                Scope scope = GlobalTracer.get().buildSpan("Load project upstream dependencies").startActive(true)
-        )
-        {
-            String url = String.format("%s/api/projects/%s/%s/%s/revisions/HEAD/upstreamProjects",
-                    sdlcServerConnectionConfig.getBaseUrl(),
-                    sdlc.project,
-                    sdlc.isGroupWorkspace ? "groupWorkspaces" : "workspaces",
-                    sdlc.getWorkspace());
-
-            HttpGet httpRequest = this.prepareHttpRequest(pm, url);
-            HttpEntity entity = SDLCLoader.execHttpRequest(scope.span(), client, httpRequest);
-
-            try (InputStream content = entity.getContent())
+            if (httpClientProvider != null)
             {
-                List<SDLCProjectDependency> dependencies = mapper.readValue(content, SDLC_PROJECT_DEPENDENCY_TYPE);
-
-                PureModelContextData.Builder builder = PureModelContextData.newBuilder();
-
-                dependencies.forEach(dependency ->
-                {
-                    builder.addPureModelContextData(this.loadDependencyData(pm, clientVersion, dependency));
-                });
-
-                builder.removeDuplicates();
-                return builder.build();
+                httpclient = httpClientProvider.apply(pm);
             }
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
+            else
+            {
+                httpclient = (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore());
+            }
+
+            try (
+                    CloseableHttpClient client = httpclient;
+                    Scope scope = GlobalTracer.get().buildSpan("Load project upstream dependencies").startActive(true)
+            )
+            {
+                String url = String.format("%s/api/projects/%s/%s/%s/revisions/HEAD/upstreamProjects",
+                        sdlcServerConnectionConfig.getBaseUrl(),
+                        sdlc.project,
+                        sdlc.isGroupWorkspace ? "groupWorkspaces" : "workspaces",
+                        sdlc.getWorkspace());
+
+                HttpGet httpRequest = this.prepareHttpRequest(pm, url);
+                HttpEntity entity = SDLCLoader.execHttpRequest(scope.span(), client, httpRequest);
+
+                try (InputStream content = entity.getContent())
+                {
+                    List<SDLCProjectDependency> dependencies = mapper.readValue(content, SDLC_PROJECT_DEPENDENCY_TYPE);
+
+                    PureModelContextData.Builder builder = PureModelContextData.newBuilder();
+
+                    dependencies.forEach(dependency ->
+                    {
+                        builder.addPureModelContextData(this.loadDependencyData(pm, clientVersion, dependency));
+                    });
+
+                    builder.removeDuplicates();
+                    return builder.build();
+                }
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private PureModelContextData doAs(MutableList<CommonProfile> pm, PrivilegedAction<PureModelContextData> action)
+    {
+        Subject kerberosCredential = ProfileManagerHelper.extractSubject(pm);
+        return kerberosCredential == null ? action.run() : Subject.doAs(kerberosCredential, action);
     }
 
     private HttpGet prepareHttpRequest(MutableList<CommonProfile> pm, String url)
@@ -147,16 +158,14 @@ public class WorkspaceSDLCLoader
 
     private PureModelContextData loadDependencyData(MutableList<CommonProfile> profiles, String clientVersion, SDLCProjectDependency dependency)
     {
-        Subject subject = ProfileManagerHelper.extractSubject(profiles);
         PureModelContextPointer pointer = new PureModelContextPointer();
         AlloySDLC sdlcInfo = new AlloySDLC();
         sdlcInfo.groupId = dependency.getGroupId();
         sdlcInfo.artifactId = dependency.getArtifactId();
         sdlcInfo.version = dependency.getVersionId();
         pointer.sdlcInfo = sdlcInfo;
-        return subject == null ?
-                this.modelManager.loadData(pointer, PureClientVersions.production, profiles) :
-                ExecSubject.exec(subject, () -> this.modelManager.loadData(pointer, clientVersion, profiles));
+        pointer.serializer = new Protocol("pure", clientVersion);
+        return this.modelManager.loadData(pointer, clientVersion, profiles);
     }
 
     private static class SDLCProjectDependency

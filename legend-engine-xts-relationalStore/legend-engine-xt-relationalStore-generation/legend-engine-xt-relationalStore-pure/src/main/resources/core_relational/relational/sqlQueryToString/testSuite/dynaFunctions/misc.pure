@@ -50,3 +50,59 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let expected = ^Literal(value='2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
   runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
 }
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::greatest::string(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='greatest', parameters=[^Literal(value = 'b'), ^Literal(value = 'c'), ^Literal(value = 'a')]);
+  let expected = ^Literal(value = 'c');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::greatest::number(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='greatest', parameters=[^Literal(value = 2), ^Literal(value = 3), ^Literal(value = 1)]);
+  let expected = ^Literal(value = 3);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::greatest::date(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='greatest', parameters=[^Literal(value = %2023-06-01), ^Literal(value = %2023-12-01), ^Literal(value = %2023-01-01)]);
+  let expected = ^Literal(value = %2023-12-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::greatest::boolean(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='greatest', parameters=[^Literal(value = true), ^Literal(value = false)]);
+  let expected = ^Literal(value = true);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::least::string(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='least', parameters=[^Literal(value = 'b'), ^Literal(value = 'a'), ^Literal(value = 'c')]);
+  let expected = ^Literal(value = 'a');
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::least::number(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='least', parameters=[^Literal(value = 2), ^Literal(value = 1), ^Literal(value = 3)]);
+  let expected = ^Literal(value = 1);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::least::date(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='least', parameters=[^Literal(value = %2023-06-01), ^Literal(value = %2023-01-01), ^Literal(value = %2023-12-01)]);
+  let expected = ^Literal(value = %2023-01-01);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::dynaFunctions::least::boolean(config:DbTestConfig[1]):Boolean[1]
+{
+  let dynaFunc = ^DynaFunction(name='least', parameters=[^Literal(value = true), ^Literal(value = false)]);
+  let expected = ^Literal(value = false);
+  runDynaFunctionDatabaseTest($dynaFunc, $expected, $config);
+}

@@ -46,8 +46,8 @@ public abstract class StringCaseOptimizer extends org.finos.legend.engine.persis
         else if (component instanceof ShowCommand)
         {
             ShowCommand command = (ShowCommand) component;
-            command.setSchemaName(applyCase(command.getSchemaName()));
-            command.setDatabaseName(applyCase(command.getDatabaseName()));
+            command.setSchemaName(applyCase(command.getSchemaName().orElse(null)));
+            command.setDatabaseName(applyCase(command.getDatabaseName().orElse(null)));
             command.setTableName(applyCase(command.getTableName()));
             return command;
         }

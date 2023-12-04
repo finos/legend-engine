@@ -66,3 +66,133 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::tes
 {
   $config->testTdsExpression(x|$x->groupBy('MPAA', agg('count', r | $r.getNullableString('MPAA'), agg | $agg->count())));
 }
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test distinct on single columns on Elasticsearch (translated as a group by)'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::distinct::testDistinctSingleColumn(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict('Director')->distinct());
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test distinct on multiple columns on Elasticsearch (translated as a group by)'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::distinct::testDistinctMultipleColumns(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict(['Director', 'MPAA'])->distinct());
+}
+
+function
+  <<paramTest.Test>>
+  {doc.doc = 'Test restrict group by columns on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::testRestrictGroupByColumns(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->groupBy(['Director', 'MPAA'], [ agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum()), agg('avgBudget', r | $r.getInteger('Budget'), agg | $agg->average()) ])->restrict(['Director', 'avgBudget']));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionNestedIf(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < %1990-01-01, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < %2000-01-01, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < %2010-01-01, 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionNestedIfAggregateOnExpression(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < %1990-01-01, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < %2000-01-01, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < %2010-01-01, 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('countBuckets', r | $r.getString('Bucket'), agg | $agg->count())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionOverridesExistingColumnName(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->project([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < %1990-01-01, 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < %2000-01-01, 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < %2010-01-01, 
+                |'Newer',
+                |'Newest'))), 'ReleaseDate'), col(x: TDSRow[1] | $x.getInteger('Budget'), 'Budget')])->groupBy('ReleaseDate', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByIfExpressionOnAdjustTodayFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < today()->adjust(-15, DurationUnit.YEARS), 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < today()->adjust(-10, DurationUnit.YEARS), 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < today()->adjust(-5, DurationUnit.YEARS), 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionOnAdjustTodayFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+        $x.getDate('ReleaseDate') < today()->adjust(-15, DurationUnit.YEARS), 
+          'Is Old?')])->groupBy('Is Old?', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
+
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByIfExpressionOnAdjustNowFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+          if($x.getDate('ReleaseDate') < now()->adjust(-15, DurationUnit.YEARS), 
+            |'Oldest', 
+            |if($x.getDate('ReleaseDate') < now()->adjust(-10, DurationUnit.YEARS), 
+              |'Older',
+              |if($x.getDate('ReleaseDate') < now()->adjust(-5, DurationUnit.YEARS), 
+                |'Newer',
+                |'Newest'))), 'Bucket')])->groupBy('Bucket', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionOnAdjustNowFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+        $x.getDate('ReleaseDate') < now()->adjust(-15, DurationUnit.YEARS), 
+          'Is Old?')])->groupBy('Is Old?', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test projection on Elasticsearch with pure nested if expressions'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::groupBy::testGroupByExpressionOnAdjustNowFunctions2(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->extend([col(x: TDSRow[1] | 
+        $x.getDate('ReleaseDate') < now(), 
+          'Is Old?')])->groupBy('Is Old?', agg('sumBudget', r | $r.getInteger('Budget'), agg | $agg->sum())));
+}

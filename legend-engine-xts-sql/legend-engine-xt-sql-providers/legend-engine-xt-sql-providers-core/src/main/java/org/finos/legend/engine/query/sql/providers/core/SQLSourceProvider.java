@@ -24,16 +24,5 @@ public interface SQLSourceProvider
 {
     String getType();
 
-    //TODO remove default impl
-    default SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, MutableList<CommonProfile> profiles)
-    {
-        return null;
-    }
-
-    //TODO remove default impl
-    @Deprecated
-    default org.finos.legend.engine.query.sql.api.sources.SQLSourceResolvedContext resolve(List<org.finos.legend.engine.query.sql.api.sources.TableSource> sources, org.finos.legend.engine.query.sql.api.sources.SQLContext context, MutableList<CommonProfile> profiles)
-    {
-        return null;
-    }
+    SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, MutableList<CommonProfile> profiles);
 }

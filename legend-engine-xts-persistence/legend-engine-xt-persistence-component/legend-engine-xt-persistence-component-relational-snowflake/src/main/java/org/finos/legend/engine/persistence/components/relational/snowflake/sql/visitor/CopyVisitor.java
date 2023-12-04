@@ -17,26 +17,66 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.sql.
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.FileFormat;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.StandardFileFormat;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.UserDefinedFileFormat;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements.CopyStatement;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class CopyVisitor implements LogicalPlanVisitor<Copy>
 {
-
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Copy current, VisitorContext context)
     {
+        SnowflakeStagedFilesDatasetProperties properties = (SnowflakeStagedFilesDatasetProperties) current.stagedFilesDatasetProperties();
         CopyStatement copyStatement = new CopyStatement();
+        setCopyStatementProperties(properties, copyStatement);
         prev.push(copyStatement);
 
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
         logicalPlanNodes.add(current.sourceDataset());
         logicalPlanNodes.add(current.targetDataset());
         logicalPlanNodes.addAll(current.fields());
+
         return new VisitorResult(copyStatement, logicalPlanNodes);
+    }
+
+    private static void setCopyStatementProperties(SnowflakeStagedFilesDatasetProperties properties, CopyStatement copyStatement)
+    {
+        copyStatement.setFilePatterns(properties.filePatterns());
+        copyStatement.setFilePaths(properties.filePaths());
+
+        // Add default option into the map
+        Map<String, Object> copyOptions = new HashMap<>(properties.copyOptions());
+        if (!copyOptions.containsKey("ON_ERROR") && !copyOptions.containsKey("on_error"))
+        {
+            copyOptions.put("ON_ERROR", "ABORT_STATEMENT");
+        }
+        copyStatement.setCopyOptions(copyOptions);
+
+        Optional<FileFormat> fileFormat = properties.fileFormat();
+        if (fileFormat.isPresent())
+        {
+            FileFormat format = properties.fileFormat().get();
+            if (format instanceof UserDefinedFileFormat)
+            {
+                UserDefinedFileFormat userDefinedFileFormat = (UserDefinedFileFormat) format;
+                copyStatement.setUserDefinedFileFormatName(userDefinedFileFormat.formatName());
+            }
+            else if (format instanceof StandardFileFormat)
+            {
+                StandardFileFormat standardFileFormat = (StandardFileFormat) format;
+                copyStatement.setFileFormatType(standardFileFormat.formatType());
+                copyStatement.setFileFormatOptions(standardFileFormat.formatOptions());
+            }
+        }
     }
 }

@@ -15,8 +15,11 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.ingestmode.audit.Auditing;
-
-import java.util.Optional;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategyAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.VersioningStrategyVisitor;
+import org.immutables.value.Value;
 
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
@@ -33,11 +36,35 @@ public interface NontemporalSnapshotAbstract extends IngestMode
 {
     Auditing auditing();
 
-    Optional<String> dataSplitField();
-
     @Override
     default <T> T accept(IngestModeVisitor<T> visitor)
     {
         return visitor.visitNontemporalSnapshot(this);
+    }
+
+    @Value.Check
+    default void validate()
+    {
+        // Allowed Versioning Strategy - NoVersioning, MaxVersioining
+        this.versioningStrategy().accept(new VersioningStrategyVisitor<Void>()
+        {
+            @Override
+            public Void visitNoVersioningStrategy(NoVersioningStrategyAbstract noVersioningStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitMaxVersionStrategy(MaxVersionStrategyAbstract maxVersionStrategy)
+            {
+                return null;
+            }
+
+            @Override
+            public Void visitAllVersionsStrategy(AllVersionsStrategyAbstract allVersionsStrategyAbstract)
+            {
+                throw new IllegalStateException("Cannot build NontemporalSnapshot, AllVersionsStrategy not supported");
+            }
+        });
     }
 }

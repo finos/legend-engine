@@ -65,6 +65,6 @@ public class TestScenario
 
     public void setMainTable(Dataset dataset)
     {
-        this.mainTable = mainTable;
+        this.mainTable = dataset;
     }
 }

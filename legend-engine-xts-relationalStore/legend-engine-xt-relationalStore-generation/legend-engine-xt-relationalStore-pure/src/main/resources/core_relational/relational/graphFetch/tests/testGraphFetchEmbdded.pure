@@ -93,7 +93,56 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    );
 }
 
-function <<test.Test, test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testEmbeddedMappingQualifiedPropertyAccess(): Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testEmbeddedMappingQualifiedPropertyAccess(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         firm {
+            legalName,
+            nameAndAddress
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","firm":{"legalName":"Firm X","nameAndAddress()":"Firm X,200 west"}},' + 
+      '{"firstName":"John","firm":{"legalName":"Firm X","nameAndAddress()":"Firm X,200 west"}},' + 
+      '{"firstName":"Fabrice","firm":{"legalName":"Firm A","nameAndAddress()":"Firm A,3 somewhere"}}]',
+      $result
+   );
+}
+
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testEmbeddedMappingQualifiedPropertyAccess2(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         firm {
+            legalName,
+            maxEmployeesAge
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::embedded::model::mapping::testMappingEmbedded;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '{}',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly, test.ToFix>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::embedded::testEmbeddedMappingQualifiedPropertyAccessWithArgs(): Boolean[1]
 {
    let tree = #{
       Person {
@@ -111,9 +160,7 @@ function <<test.Test, test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0
    let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
 
    assertJsonStringsEqual(
-      '[{"firstName":"Peter","firm":{"legalName":"Firm X","employeeByLastNameFirstName":"Peter"}},' +
-      '{"firstName":"John","firm":{"legalName":"Firm X","employeeByLastNameFirstName":"Peter"}},' +
-      '{"firstName":"Fabrice","firm":{"legalName":"Firm A","employeeByLastNameFirstName":null}}]',
+      '{}',
       $result
    );
 }

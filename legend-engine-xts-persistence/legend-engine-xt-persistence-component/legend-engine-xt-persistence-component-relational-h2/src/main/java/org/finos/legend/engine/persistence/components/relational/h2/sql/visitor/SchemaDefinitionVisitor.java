@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Index;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
 import org.finos.legend.engine.persistence.components.relational.sqldom.constraints.column.ColumnConstraint;
@@ -63,6 +64,10 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
                 columnConstraints.add(new UniqueColumnConstraint());
             }
             Column column = new Column(f.name(), dataType, columnConstraints, context.quoteIdentifier());
+            for (Optimizer optimizer : context.optimizers())
+            {
+                column = (Column) optimizer.optimize(column);
+            }
             prev.push(column);
         }
 

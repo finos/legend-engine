@@ -15,6 +15,8 @@
 
 package org.finos.legend.engine.query.sql.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
@@ -52,7 +54,7 @@ import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
 import org.finos.legend.engine.query.sql.providers.core.TableSource;
-import org.finos.legend.engine.query.sql.api.sources.TableSourceArgument;
+import org.finos.legend.engine.query.sql.providers.shared.utils.TraceUtils;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -77,6 +79,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExecutionPlan;
@@ -84,6 +87,8 @@ import static org.finos.legend.engine.plan.generation.PlanGenerator.transformExe
 public class SQLExecutor
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SQLExecutor.class);
+    private static final ObjectMapper OBJECT_MAPPER = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
     private final ModelManager modelManager;
     private final PlanExecutor planExecutor;
     private final Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions;
@@ -128,7 +133,7 @@ public class SQLExecutor
                 {
                     Root_meta_pure_executionPlan_ExecutionPlan l = PlanPlatform.JAVA.bindPlan(p._plan(), null, pureModel, routerExtensions.apply(pureModel));
                     SingleExecutionPlan m = transformExecutionPlan(l, pureModel, PureClientVersions.production, profiles, routerExtensions.apply(pureModel), transformers);
-                    result = planExecutor.execute(m, Maps.mutable.empty(), "pentej", profiles);
+                    result = planExecutor.execute(m, Maps.mutable.empty(), user, profiles);
                 }
 
                 return Tuples.pair(p._name(), result);
@@ -143,7 +148,7 @@ public class SQLExecutor
             MetricsHandler.observe("execute", start, System.currentTimeMillis());
 
             return result;
-        }, context, profiles);
+        }, "execute", context, profiles);
     }
 
     public Lambda lambda(Query query, SQLContext context, MutableList<CommonProfile> profiles)
@@ -155,12 +160,12 @@ public class SQLExecutor
                     return transformLambda(lambda, pureModel);
                 },
                 (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport())._scopeWithFrom(false),
-                context, profiles);
+                "lambda", context, profiles);
     }
 
     public SingleExecutionPlan plan(Query query, SQLContext context, MutableList<CommonProfile> profiles)
     {
-        return process(query, (transformedContext, pureModel, sources) -> transformExecutionPlan(planResult(transformedContext, pureModel, sources)._plan(), pureModel, PureClientVersions.production, profiles, routerExtensions.apply(pureModel), transformers), context, profiles);
+        return process(query, (transformedContext, pureModel, sources) -> transformExecutionPlan(planResult(transformedContext, pureModel, sources)._plan(), pureModel, PureClientVersions.production, profiles, routerExtensions.apply(pureModel), transformers), "plan", context, profiles);
     }
 
     public Schema schema(Query query, MutableList<CommonProfile> profiles)
@@ -170,7 +175,7 @@ public class SQLExecutor
         {
             Root_meta_external_query_sql_schema_metamodel_Schema schema = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getSchema_SqlTransformContext_1__Schema_1_(t, pm.getExecutionSupport());
             return new MetamodelToProtocolTranslator().translate(schema);
-        }, context, profiles);
+        }, "schema", context, profiles);
     }
 
     private Root_meta_external_query_sql_transformation_queryToPure_PlanGenerationResult planResult(Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformedContext, PureModel pureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> sources)
@@ -178,32 +183,39 @@ public class SQLExecutor
         return core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_getPlanResult_SqlTransformContext_1__SQLSource_MANY__Extension_MANY__PlanGenerationResult_1_(transformedContext, sources, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
     }
 
-    private <T> T process(Query query, Function3<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, T> func, SQLContext context, MutableList<CommonProfile> profiles)
+    private <T> T process(Query query, Function3<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, T> func, String name, SQLContext context, MutableList<CommonProfile> profiles)
     {
-        return process(query, func, (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport()), context, profiles);
+        return process(query, func, (sources, extensions, pureModel) -> core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_rootContext_SQLSource_MANY__Extension_MANY__SqlTransformContext_1_(sources, extensions, pureModel.getExecutionSupport()), name, context, profiles);
     }
 
     private <T> T process(Query query,
                           Function3<Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext, PureModel, RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, T> func,
                           Function3<RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource>, RichIterable<? extends Root_meta_pure_extension_Extension>, PureModel, Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext> transformContextFunc,
+                          String name,
                           SQLContext context,
                           MutableList<CommonProfile> profiles)
     {
-        Pair<RichIterable<SQLSource>, PureModelContext> sqlSourcesAndPureModel = getSourcesAndModel(query, context, profiles);
-        RichIterable<SQLSource> sources = sqlSourcesAndPureModel.getOne();
-        PureModelContext pureModelContext = sqlSourcesAndPureModel.getTwo();
+        return TraceUtils.trace(name, span ->
+        {
+            span.setTag("queryHash", hash(query));
 
-        PureModel pureModel = modelManager.loadModel(pureModelContext, PureClientVersions.production, profiles, "");
+            Pair<RichIterable<SQLSource>, PureModelContext> sqlSourcesAndPureModel = getSourcesAndModel(query, context, profiles);
+            RichIterable<SQLSource> sources = sqlSourcesAndPureModel.getOne();
+            PureModelContext pureModelContext = sqlSourcesAndPureModel.getTwo();
 
-        Root_meta_external_query_sql_metamodel_Query compiledQuery = new ProtocolToMetamodelTranslator().translate(query, pureModel);
+            PureModel pureModel = modelManager.loadModel(pureModelContext, PureClientVersions.production, profiles, "");
 
-        RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
-        LOGGER.info("{}", new LogInfo(profiles, LoggingEventType.GENERATE_PLAN_START));
+            Root_meta_external_query_sql_metamodel_Query compiledQuery = new ProtocolToMetamodelTranslator().translate(query, pureModel);
 
-        Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformedContext = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_processRootQuery_Query_1__SqlTransformContext_1__SqlTransformContext_1_(
-                compiledQuery, transformContextFunc.value(compiledSources, routerExtensions.apply(pureModel), pureModel), pureModel.getExecutionSupport());
+            RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
+            LOGGER.info("{}", new LogInfo(profiles, LoggingEventType.GENERATE_PLAN_START));
 
-        return func.value(transformedContext, pureModel, compiledSources);
+            Root_meta_external_query_sql_transformation_queryToPure_SqlTransformContext transformedContext = core_external_query_sql_binding_fromPure_fromPure.Root_meta_external_query_sql_transformation_queryToPure_processRootQuery_Query_1__SqlTransformContext_1__SqlTransformContext_1_(
+                    compiledQuery, transformContextFunc.value(compiledSources, routerExtensions.apply(pureModel), pureModel), pureModel.getExecutionSupport());
+
+            return func.value(transformedContext, pureModel, compiledSources);
+        });
+
     }
 
     private Pair<RichIterable<SQLSource>, PureModelContext> getSourcesAndModel(Query query, SQLContext context, MutableList<CommonProfile> profiles)
@@ -243,15 +255,6 @@ public class SQLExecutor
 
     private SQLSourceResolvedContext resolve(MutableCollection<TableSource> tables, SQLContext context, SQLSourceProvider extension, MutableList<CommonProfile> profiles)
     {
-        //TODO remove deprecated flow
-        org.finos.legend.engine.query.sql.api.sources.SQLSourceResolvedContext resolved = extension.resolve(tables.collect(t -> new org.finos.legend.engine.query.sql.api.sources.TableSource(t.getType(),
-                ListIterate.collect(t.getArguments(), a -> new TableSourceArgument(a.getName(), a.getIndex(), a.getValue())))).toList(), new org.finos.legend.engine.query.sql.api.sources.SQLContext(context.getQuery()), profiles);
-
-        if (resolved != null)
-        {
-            return new SQLSourceResolvedContext(resolved.getPureModelContexts(), ListIterate.collect(resolved.getSources(), s -> new SQLSource(s.getType(), s.getFunc(), s.getMapping(), s.getRuntime(), s.getExecutionOptions(), s.getExecutionContext(), s.getKey())));
-        }
-
         return extension.resolve(tables.toList(), context, profiles);
     }
 
@@ -297,6 +300,18 @@ public class SQLExecutor
         catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e)
         {
             throw new RuntimeException(e);
+        }
+    }
+
+    private Integer hash(Query query)
+    {
+        try
+        {
+            return Objects.hash(OBJECT_MAPPER.writeValueAsString(query));
+        }
+        catch (JsonProcessingException e)
+        {
+            return null;
         }
     }
 }

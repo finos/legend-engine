@@ -17,10 +17,6 @@ package org.finos.legend.engine.persistence.components.ingestmode;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategyVisitor;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicatesAbstract;
-import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicatesAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.DeleteIndicatorMergeStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.MergeStrategyVisitor;
 import org.finos.legend.engine.persistence.components.ingestmode.merge.NoDeletesMergeStrategyAbstract;
@@ -72,13 +68,10 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitAppendOnly(AppendOnlyAbstract appendOnly)
     {
-        if (appendOnly.digestField().isPresent())
-        {
-            addDigestField(mainSchemaFields, appendOnly.digestField().get());
-        }
-        removeDataSplitField(appendOnly.dataSplitField());
-        boolean isAuditingFieldPK = appendOnly.deduplicationStrategy().accept(new DeriveAuditingFieldPKForAppendOnly(appendOnly.dataSplitField().isPresent()));
+        boolean isAuditingFieldPK = doesDatasetContainsAnyPK(mainSchemaFields);
         appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
+        appendOnly.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(digest -> addDigestField(mainSchemaFields, digest));
+        removeDataSplitField(appendOnly.dataSplitField());
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
 
@@ -142,11 +135,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
-        Optional<String> digestField = bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
-        if (digestField.isPresent())
-        {
-            addDigestField(mainSchemaFields, digestField.get());
-        }
+        bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         Field batchIdField = Field.builder()
                 .name(bulkLoad.batchIdField())
                 .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))
@@ -180,37 +169,9 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
 
     private boolean doesDatasetContainsAnyPK(List<Field> mainSchemaFields)
     {
-        return mainSchemaFields.stream().anyMatch(field -> field.primaryKey());
+        return mainSchemaFields.stream().anyMatch(Field::primaryKey);
     }
 
-    public static class DeriveAuditingFieldPKForAppendOnly implements DeduplicationStrategyVisitor<Boolean>
-    {
-
-        private boolean isDataSplitEnabled;
-
-        public DeriveAuditingFieldPKForAppendOnly(boolean isDataSplitEnabled)
-        {
-            this.isDataSplitEnabled = isDataSplitEnabled;
-        }
-
-        @Override
-        public Boolean visitAllowDuplicates(AllowDuplicatesAbstract allowDuplicates)
-        {
-            return isDataSplitEnabled;
-        }
-
-        @Override
-        public Boolean visitFilterDuplicates(FilterDuplicatesAbstract filterDuplicates)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitFailOnDuplicates(FailOnDuplicatesAbstract failOnDuplicates)
-        {
-            return false;
-        }
-    }
 
     public static class EnrichSchemaWithMergeStrategy implements MergeStrategyVisitor<Void>
     {

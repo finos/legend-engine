@@ -82,24 +82,24 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
     {
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
-                "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1,sink.\"batch_time_out\" = '2000-01-01 00:00:00' " +
+                "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1,sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.\"batch_id_out\" = 999999999) AND (EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE " +
                 "((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
                 "(sink.\"validity_from_target\" = stage.\"validity_from_reference\") AND (sink.\"digest\" <> stage.\"digest\")))";
 
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" (\"id\", \"name\", \"amount\", \"validity_from_target\", " +
-                "\"validity_through_target\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"batch_time_in\", \"batch_time_out\") " +
+                "\"validity_through_target\", \"digest\", \"version\", \"batch_id_in\", \"batch_id_out\", \"batch_time_in\", \"batch_time_out\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\",stage.\"validity_through_reference\"," +
-                "stage.\"digest\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
-                "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,'2000-01-01 00:00:00','9999-12-31 23:59:59' " +
+                "stage.\"digest\",stage.\"version\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+                "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
                 "FROM \"mydb\".\"staging\" as stage WHERE (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE " +
                 "(sink.\"batch_id_out\" = 999999999) AND (sink.\"digest\" = stage.\"digest\") " +
                 "AND ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND " +
                 "(sink.\"validity_from_target\" = stage.\"validity_from_reference\")))) AND " +
                 "((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')))";
 
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalMainTableWithBatchIdDatetimeCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalMainTableWithVersionWithBatchIdDatetimeCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
@@ -164,7 +164,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
     public void verifyBitemporalDeltaDatetimeBasedWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET " +
-                "sink.\"batch_time_out\" = '2000-01-01 00:00:00' " +
+                "sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.\"batch_time_out\" = '9999-12-31 23:59:59') AND " +
                 "(EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage " +
                 "WHERE ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND " +
@@ -173,10 +173,10 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "((sink.\"digest\" <> stage.\"digest\") OR (stage.\"delete_indicator\" IN ('yes','1','true')))))";
 
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
-                "(\"id\", \"name\", \"amount\", \"validity_from_target\", \"validity_through_target\", \"digest\", " +
+                "(\"id\", \"name\", \"amount\", \"validity_from_target\", \"validity_through_target\", \"digest\", \"version\", " +
                 "\"batch_time_in\", \"batch_time_out\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"validity_from_reference\"," +
-                "stage.\"validity_through_reference\",stage.\"digest\",'2000-01-01 00:00:00'," +
+                "stage.\"validity_through_reference\",stage.\"digest\",stage.\"version\",'2000-01-01 00:00:00.000000'," +
                 "'9999-12-31 23:59:59' FROM \"mydb\".\"staging\" as stage WHERE " +
                 "((NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '9999-12-31 23:59:59') " +
                 "AND (sink.\"digest\" = stage.\"digest\") AND ((sink.\"id\" = stage.\"id\") AND " +
@@ -184,7 +184,7 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
                 "AND ((stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))) AND " +
                 "(stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
 
-        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalMainTableWithDatetimeCreateQuery, operations.get(0).preActionsSql().get(0));
+        Assertions.assertEquals(AnsiTestArtifacts.expectedBitemporalMainTableWithVersionBatchDateTimeCreateQuery, operations.get(0).preActionsSql().get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), operations.get(0).preActionsSql().get(1));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
@@ -196,10 +196,10 @@ public class BitemporalDeltaSourceSpecifiesFromAndThroughTest extends Bitemporal
         Assertions.assertEquals(2, operations.size());
 
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"data_split\" >= 1) AND (stage.\"data_split\" <= 1)";
-        String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_time_in\" = '2000-01-01 00:00:00')))";
+        String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_time_in\" = '2000-01-01 00:00:00.000000')))";
         String rowsDeleted = "SELECT 0 as \"rowsDeleted\"";
-        String rowsInserted = "SELECT (SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_time_in\" = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_time_in\" = '2000-01-01 00:00:00')))) as \"rowsInserted\"";
-        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_time_out\" = '2000-01-01 00:00:00')-(SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '2000-01-01 00:00:00') AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_time_in\" = '2000-01-01 00:00:00')))) as \"rowsTerminated\"";
+        String rowsInserted = "SELECT (SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_time_in\" = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_time_in\" = '2000-01-01 00:00:00.000000')))) as \"rowsInserted\"";
+        String rowsTerminated = "SELECT (SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\") AND (sink2.\"validity_from_target\" = sink.\"validity_from_target\")) AND (sink2.\"batch_time_in\" = '2000-01-01 00:00:00.000000')))) as \"rowsTerminated\"";
         verifyStats(operations.get(0), incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
 

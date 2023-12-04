@@ -26,23 +26,37 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedDerivationTest
     UnitemporalSnapshotBatchIdDateTimeBasedScenarios scenarios = new UnitemporalSnapshotBatchIdDateTimeBasedScenarios();
 
     @Test
-    void testUnitemporalSnapshotWithoutPartitionNoDataSplits()
+    void testUnitemporalSnapshotWithoutPartitionNoDedupNoVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
-    void testUnitemporalSnapshotWithPartitionNoDataSplits()
+    void testUnitemporalSnapshotWithoutPartitionNoDedupMaxVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__NO_DEDUP__MAX_VERSION();
         assertDerivedMainDataset(scenario);
     }
 
     @Test
-    void testUnitemporalSnapshotWithPartitionFilterNoDataSplits()
+    void testUnitemporalSnapshotWithoutPartitionFilterDupsMaxVersion()
     {
-        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DATA_SPLITS();
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITHOUT_PARTITIONS__FILTER_DUPS__MAX_VERSION();
+        assertDerivedMainDataset(scenario);
+    }
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionNoDedupNoVersion()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITIONS__NO_DEDUP__NO_VERSION();
+        assertDerivedMainDataset(scenario);
+    }
+
+    @Test
+    void testUnitemporalSnapshotWithPartitionFilterNoDedupNoVersion()
+    {
+        TestScenario scenario = scenarios.BATCH_ID_AND_TIME_BASED__WITH_PARTITION_FILTER__NO_DEDUP__NO_VERSION();
         assertDerivedMainDataset(scenario);
     }
 }

@@ -18,6 +18,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.deduplication.A
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DeduplicationStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.dataset.DatasetType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.appendonly.AppendOnly;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.Nontemporal;
@@ -30,12 +31,9 @@ public class AppendOnlyMapper
 {
     public static org.finos.legend.engine.persistence.components.ingestmode.AppendOnly from(AppendOnly appendOnly)
     {
-        DeduplicationStrategy deduplicationStrategy = appendOnly.filterDuplicates ?
-                FilterDuplicates.builder().build() : AllowDuplicates.builder().build();
-
         return org.finos.legend.engine.persistence.components.ingestmode.AppendOnly.builder()
-                .digestField(DIGEST_FIELD_DEFAULT)
-                .deduplicationStrategy(deduplicationStrategy)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(DIGEST_FIELD_DEFAULT).build())
+                .filterExistingRecords(appendOnly.filterDuplicates)
                 .auditing(appendOnly.auditing.accept(MappingVisitors.MAP_TO_COMPONENT_AUDITING))
                 .build();
     }
@@ -47,22 +45,16 @@ public class AppendOnlyMapper
         {
             temporality.auditing = new NoAuditing();
         }
+        boolean filterExistingRecords = false;
         org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly appendOnlyHandling = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly) temporality.updatesHandling;
         if (appendOnlyHandling.appendStrategy instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FilterDuplicates)
         {
-            deduplicationStrategy = FilterDuplicates.builder().build();
+            filterExistingRecords = true;
         }
-        else if (appendOnlyHandling.appendStrategy instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.appendStrategy.FailOnDuplicates)
-        {
-            deduplicationStrategy = FailOnDuplicates.builder().build();
-        }
-        else
-        {
-            deduplicationStrategy = AllowDuplicates.builder().build();
-        }
+
         return org.finos.legend.engine.persistence.components.ingestmode.AppendOnly.builder()
-                .digestField(DIGEST_FIELD_DEFAULT)
-                .deduplicationStrategy(deduplicationStrategy)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(DIGEST_FIELD_DEFAULT).build())
+                .filterExistingRecords(filterExistingRecords)
                 .auditing(temporality.auditing.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_NONTEMPORAL_AUDITING))
                 .build();
     }

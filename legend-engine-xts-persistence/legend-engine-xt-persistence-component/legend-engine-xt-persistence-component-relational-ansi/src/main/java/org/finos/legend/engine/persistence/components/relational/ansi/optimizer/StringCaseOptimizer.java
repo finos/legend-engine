@@ -110,7 +110,7 @@ public abstract class StringCaseOptimizer implements CaseConversionOptimizer
         else if (component instanceof ShowCommand)
         {
             ShowCommand command = (ShowCommand) component;
-            command.setSchemaName(applyCase(command.getSchemaName()));
+            command.setSchemaName(applyCase(command.getSchemaName().orElse(null)));
             return command;
         }
         return component;

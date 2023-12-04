@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.changetoken.generation;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.classgraph.ClassGraph;
 import org.finos.legend.engine.external.language.java.generation.GenerateJavaProject;
@@ -22,26 +23,27 @@ import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryClassLoader;
 import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryFileManager;
 import org.junit.Assert;
 import org.junit.ClassRule;
+import org.junit.function.ThrowingRunnable;
 import org.junit.rules.TemporaryFolder;
 
-import javax.tools.DiagnosticCollector;
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.SimpleJavaFileObject;
-import javax.tools.ToolProvider;
+import javax.tools.*;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
+
+import static org.junit.Assert.assertThrows;
 
 public abstract class GenerateCastTestBase
 {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(GenerateCastTestBase.class);
 
     protected static Class<?> compiledClass;
-    protected static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     @ClassRule
     public static TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -103,6 +105,58 @@ public abstract class GenerateCastTestBase
         }
 
         compiledClass = new MemoryClassLoader(fileManager, Thread.currentThread().getContextClassLoader()).loadClass(fullClassName);
+    }
+
+    private Map<String, Object> upcast(Map<String, Object> objectNode) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        return (Map<String, Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, objectNode);
+    }
+
+    private Map<String, Object> downcast(Map<String, Object> objectNode, String targetVersion) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        return (Map<String, Object>) compiledClass.getMethod("downcast", Map.class, String.class).invoke(null, objectNode, targetVersion);
+    }
+
+    protected Map<String, Object> parse(String value) throws JsonProcessingException
+    {
+        return mapper.readValue(value, Map.class);
+    }
+
+    public Map<String, Object> upcast(String input) throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        Map<String, Object> jsonNode = parse(input);
+        try
+        {
+            return upcast(jsonNode);
+        }
+        finally
+        {
+            Assert.assertEquals(parse(input), jsonNode);
+        }
+    }
+
+    public Map<String, Object> downcast(String input, String targetVersion) throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        Map<String, Object> jsonNode = parse(input);
+        try
+        {
+            return downcast(jsonNode, targetVersion);
+        }
+        finally
+        {
+            Assert.assertEquals(parse(input), jsonNode);
+        }
+    }
+
+    public void expect(Map<String, Object> actual, String expected) throws JsonProcessingException
+    {
+        Assert.assertEquals(parse(expected), actual);
+    }
+
+    public void exception(ThrowingRunnable runnable, String expected)
+    {
+        InvocationTargetException re = assertThrows("non-default", InvocationTargetException.class, runnable);
+        Assert.assertEquals(expected, re.getCause().getMessage());
     }
 
     private static class SourceFile extends SimpleJavaFileObject

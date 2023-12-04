@@ -300,6 +300,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'booland',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Bit()}
+            )
+         ])
+      ),      
+
+      pair(
+         'boolor',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Bit()}
+            )
+         ])
+      ),          
+
+      pair(
          'case',
          list([
             pair(
@@ -470,6 +490,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'dayOfMWeek',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 9)}
+            )
+         ])
+      ),      
 
       pair(
          'dayOfWeekNumber',
@@ -720,6 +750,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'greatest',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
+            )
+         ])
+      ),      
+
+      pair(
          'hour',
          list([
             pair(
@@ -820,6 +860,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
       ),
 
       pair(
+         'least',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | $params->at(0)->inferRelationalType()}
+            )
+         ])
+      ),            
+
+      pair(
          'left',
          list([
             pair(
@@ -888,6 +938,26 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'lpad',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->match([l:Literal[1] | $l.value->match([i:Integer[1] | $i])]))}
+            )
+         ])
+      ),
+
+      pair(
+         'rpad',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = $params->at(1)->match([l:Literal[1] | $l.value->match([i:Integer[1] | $i])]))}
+            )
+         ])
+      ),      
 
       pair(
          'max',
@@ -966,6 +1036,16 @@ function <<access.private>> meta::relational::functions::typeInference::getDynaF
             )
          ])
       ),
+
+      pair(
+         'monthName',
+         list([
+            pair(
+               {params: RelationalOperationElement[*] | true},
+               {params: RelationalOperationElement[*] | ^meta::relational::metamodel::datatype::Varchar(size = 9)}
+            )
+         ])
+      ),      
 
       pair(
          'monthNumber',

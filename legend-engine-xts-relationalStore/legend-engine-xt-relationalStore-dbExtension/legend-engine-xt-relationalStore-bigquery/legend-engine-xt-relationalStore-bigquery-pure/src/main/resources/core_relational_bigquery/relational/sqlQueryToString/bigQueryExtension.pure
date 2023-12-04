@@ -54,6 +54,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::bigQu
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | $p->at(0) + ', INTERVAL ' + $p->at(1) + ' ' + $p->at(2)->mapToDBUnitType()})),
     dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='logical_and(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='logical_or(%s)')),            
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='extract(hour from %s)')),

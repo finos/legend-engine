@@ -113,6 +113,11 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
+  routeFunction($f, $routingStrategy, $exeCtx, $inScopeVars, false, $extensions, $debug);
+}
+
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
+{
    let fOpenVariables      = $f->openVariableValues();
    let openVariables       = if($inScopeVars->isNotEmpty(),
                                 | assert($fOpenVariables->keys()->intersection($inScopeVars)->isEmpty(),'Routing : unable to determine open variables for FunctionDefinition, suplied inScopeVars and FunctionDefinitionOpenVariables intersect');
@@ -123,7 +128,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
 
    // Enriching Function Expressions with relevant info (mapping / binding / platform)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with relevant info (mapping / binding / platform) and assigning routing strategy:\n',|''));
-   let enrichedExpressions = enrichFunctionExpressions($functionExpressions, $routingStrategy, $exeCtx, $openVariables, $extensions, $debug);
+   let enrichedExpressions = enrichFunctionExpressions($functionExpressions, $routingStrategy, $exeCtx, $openVariables, $graphFetchFlow, $extensions, $debug);   
 
    // Enriching Function Expressions with more information based on type of expression (subTypes of ExtendedRoutedValueSpecification)
    print(if($debug.debug,|'\n'+$debug.space+'Enriching Function Expressions with strategy based info (mapping / binding / platform):\n',|''));

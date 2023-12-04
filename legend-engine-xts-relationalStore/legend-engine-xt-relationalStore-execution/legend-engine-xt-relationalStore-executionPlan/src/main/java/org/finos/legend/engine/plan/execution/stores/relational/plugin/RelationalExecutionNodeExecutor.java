@@ -1909,7 +1909,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                                 {
                                 }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
-                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.profiles);
+                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.profiles);
                             }
                             else if (node.parentTempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
                             {

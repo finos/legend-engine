@@ -31,28 +31,18 @@ public class NontemporalSnapshotBasedDerivationTest
     NontemporalSnapshotTestScenarios scenarios = new NontemporalSnapshotTestScenarios();
 
     @Test
-    void testNontemporalSnapshotNoAuditingNoDataSplit()
+    void testNontemporalSnapshotNoAuditingNoDedupNoVersioning()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__NO_DATASPLIT();
+        TestScenario scenario = scenarios.NO_AUDTING__NO_DEDUP__NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
     }
 
     @Test
-    void testNontemporalSnapshotNoAuditingWithDataSplit()
+    void testNontemporalSnapshotWithAuditingFilterDupsNoVersioning()
     {
-        TestScenario scenario = scenarios.NO_AUDTING__WITH_DATASPLIT();
-        assertDerivedMainDataset(scenario);
-        NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
-        Assertions.assertTrue(mode.auditing() instanceof NoAuditing);
-        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
-    }
-
-    @Test
-    void testNontemporalSnapshotWithAuditingNoDataSplit()
-    {
-        TestScenario scenario = scenarios.WITH_AUDTING__NO_DATASPLIT();
+        TestScenario scenario = scenarios.WITH_AUDTING__FILTER_DUPLICATES__NO_VERSIONING();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
@@ -61,15 +51,14 @@ public class NontemporalSnapshotBasedDerivationTest
     }
 
     @Test
-    void testNontemporalSnapshotWithAuditingWithDataSplit()
+    void testNontemporalSnapshotWithAuditingFailOnDupMaxVersion()
     {
-        TestScenario scenario = scenarios.WITH_AUDTING__WITH_DATASPLIT();
+        TestScenario scenario = scenarios.WITH_AUDTING__FAIL_ON_DUP__MAX_VERSION();
         assertDerivedMainDataset(scenario);
         NontemporalSnapshot mode = (NontemporalSnapshot) scenario.getIngestMode().accept(new IngestModeCaseConverter(String::toUpperCase));
         Assertions.assertTrue(mode.auditing() instanceof DateTimeAuditing);
         DateTimeAuditing auditing = (DateTimeAuditing) mode.auditing();
         Assertions.assertEquals("BATCH_UPDATE_TIME", auditing.dateTimeField());
-        Assertions.assertEquals("DATA_SPLIT", mode.dataSplitField().get());
     }
 
 }
