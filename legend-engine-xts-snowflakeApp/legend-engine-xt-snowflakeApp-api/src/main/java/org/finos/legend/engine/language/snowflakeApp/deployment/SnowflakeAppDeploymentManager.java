@@ -54,7 +54,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
     private static final  String deploymentTable = "APP_METADATA";
 
-    private static String deployStub = "/data/databases/%S/schemas/" + deploymentSchema + "/user-function/%S()";
+    private static String deployStub = "/schemas/" + deploymentSchema + "/user-function/%S()";
 
     private String enrichDeploymentLocation(String deploymentLocation, String appName)
     {
