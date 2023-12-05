@@ -1,4 +1,5 @@
 ###Pure
+import meta::external::query::graphQL::binding::*;
 import meta::pure::functions::doc::*;
 import meta::external::query::graphQL::metamodel::introspection::*;
 import meta::external::query::graphQL::transformation::introspection::*;
@@ -67,6 +68,20 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
       ])
     )
   )->concatenate(
+    $types->map(t|
+      if($t->instanceOf(Class) && !$t->cast(@Class<Any>)->cast(@AnnotatedElement).stereotypes.value->contains('Query'),
+        | pair(
+            $t.name->toOne() + '_bool_exp',
+            ^__Type(
+              kind = __TypeKind.INPUT_OBJECT,
+              name = $t->cast(@Class<Any>).name->toOne() + '_bool_exp',
+              description = $t->cast(@Class<Any>)->cast(@AnnotatedElement)->getDocs()->joinStrings('\n')
+            )
+          ),
+        | []
+      ) 
+    )
+  )->concatenate(
     [
       pair('String',^__Type(kind = __TypeKind.SCALAR,name = 'String')),
       pair('Float',^__Type(kind = __TypeKind.SCALAR,name = 'Float')),
@@ -100,6 +115,10 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
                                                                       name=$parameter.name,
                                                                       type=buildType($parameter,$res)
                                                                     );
+                                                                  )->concatenate(
+                                                                    if($c->cast(@AnnotatedElement).stereotypes.value->contains('Query'),
+                                                                    | ^__InputValue(type=$res->get($p->functionReturnType().rawType.name->toOne() + '_bool_exp')->toOne(),name='where'),
+                                                                    | [])
                                                                   ),
                                                     |[]
                                                )
@@ -120,7 +139,41 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
     $type;
   );
 
-  $res->values()->meta::pure::functions::collection::sortBy(t|$t.name->toOne());
+  // THIRD PASS
+  $res->values()->map(
+    t| if($t.kind == __TypeKind.OBJECT,
+          | let newName = $t.name->toOne() + '_bool_exp';
+            let newFields = $t.fields->map(f | 
+              ^__InputValue(
+                name = $f.name,
+                type = ^__Type(kind=__TypeKind.INPUT_OBJECT, name=if(unWrap($f.type).kind->in([__TypeKind.SCALAR, __TypeKind.ENUM]), | unWrap($f.type).name->toOne() + '_comparison_exp', | unWrap($f.type).name->toOne() + '_bool_exp'))
+              )
+            );
+            $newFields->println();
+            let type = $res->get($newName);
+            if($type->isNotEmpty(), | $type->toOne()->mutateAdd('inputFields',$newFields) , |[]);
+            $type;,
+          | [])
+  );
+
+  let constant_bool_exp_fields = [
+    ^__Type(
+      name = 'Int_comparison_exp',
+      kind = __TypeKind.INPUT_OBJECT
+    )
+  ];
+
+  $constant_bool_exp_fields->map(v|
+    let fields = [
+      ^__InputValue(
+        type = ^__Type(kind=__TypeKind.SCALAR, name = 'Int'),
+        name = '_eq'
+      )
+    ];
+    $v->mutateAdd('inputFields',$fields);
+  );
+
+  $res->values()->concatenate($constant_bool_exp_fields)->meta::pure::functions::collection::sortBy(t|$t.name->toOne());
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::introspection::buildType(parameter:VariableExpression[1], map:Map<String,__Type>[1]):__Type[1]
@@ -157,3 +210,13 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
     ofType = $type
   )
 }
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::introspection::unWrap(type:__Type[1]):__Type[1]
+{
+  if($type.kind == __TypeKind.NON_NULL || $type.kind == __TypeKind.LIST,
+    |$type.ofType,
+    |$type;
+  )->toOne()
+}
+
+

@@ -105,7 +105,7 @@ public class GraphQLExecutionHelper
             @Override
             public Object visit(ObjectValue val)
             {
-                throw new UnsupportedOperationException("Unsupported value specification type");
+                return val;
             }
 
             @Override

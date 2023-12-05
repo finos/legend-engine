@@ -1,3 +1,33 @@
 type Address {
   street: String!
 }
+input Address_bool_exp {
+  street: String_comparison_exp!
+  _and: [Address_bool_exp!]
+  _or: [Address_bool_exp!]
+  _not: Address_bool_exp
+}
+input BigDecimal_comparison_exp {
+  _eq: BigDecimal!
+}
+input Boolean_comparison_exp {
+  _eq: Boolean!
+}
+input DateTime_comparison_exp {
+  _eq: DateTime!
+}
+input Date_comparison_exp {
+  _eq: Date!
+}
+input Float_comparison_exp {
+  _eq: Float!
+}
+input Int_comparison_exp {
+  _eq: Int!
+}
+input StrictDate_comparison_exp {
+  _eq: StrictDate!
+}
+input String_comparison_exp {
+  _eq: String!
+}

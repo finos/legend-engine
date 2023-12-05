@@ -100,9 +100,25 @@ function <<access.private>> meta::external::query::graphQL::transformation::quer
 
 
 ###Pure
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
 import meta::external::query::graphQL::metamodel::sdl::*;
 import meta::pure::graphFetch::*;
 import meta::external::query::graphQL::transformation::queryToPure::*;
+
+function meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(
+                                                                          cl:Class<Any>[1],
+                                                                          query:meta::external::query::graphQL::metamodel::sdl::Document[1]
+                                                                      ): meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[*]
+{
+  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
+  $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true)->map(
+    r | ^meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters(
+      propertyName = $r.propertyName,
+      functionDef = $r.functionDef->addDynamicFilter($cl,$query)
+    )
+  );
+}
+
 function meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(
                                                                           cl:Class<Any>[1],
                                                                           mapping:meta::pure::mapping::Mapping[1],
@@ -111,9 +127,7 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlansFr
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):Pair<String, meta::pure::executionPlan::ExecutionPlan>[*]
 {
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
-  $res->map(r|
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query)->map(r|
               pair(
                 $r.propertyName,
                 meta::pure::executionPlan::executionPlan(
@@ -134,11 +148,7 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
 {
-  let pureWithParam =  meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
-
-  let res = $pureWithParam->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
-
-  $res->map(r|
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query)->map(r|
               ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
                name = $r.propertyName,
                plan =  meta::pure::executionPlan::executionPlan(
@@ -149,6 +159,79 @@ function meta::external::query::graphQL::transformation::queryToPure::graphQLExe
                 )
               )
         );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::addDynamicFilter(
+                                                                          f: LambdaFunction<Any>[1],
+                                                                          cl: Class<Any>[1],
+                                                                          query: meta::external::query::graphQL::metamodel::sdl::Document[1]
+                                                                      ): LambdaFunction<Any>[1]
+{
+  let property = $cl->allProperties()->filter(p | $p.name == $query
+                                                              ->cast(@ExecutableDocument).executableDefinitions()->at(0)
+                                                              ->cast(@OperationDefinition).selectionSet->at(0)
+                                                              ->cast(@Field).name
+                                              )->evaluateAndDeactivate();
+  let whereObject = $query
+    ->cast(@ExecutableDocument).executableDefinitions()->at(0)
+    ->cast(@OperationDefinition).selectionSet->at(0)
+    ->cast(@Field).arguments->filter(x|$x.name == 'where');
+  if (
+    $whereObject->isEmpty(),
+    | $f,
+    | let whereObjectValue = $whereObject->toOne().value;
+      let fe = meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
+                $whereObjectValue,
+                ^DebugContext(debug=false,space='')
+              )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(
+                '',
+                $property.genericType.rawType->cast(@Class<Any>)->toOne()
+              );
+      let expressionSequence = $f.expressionSequence;
+      let getAll = $expressionSequence->last()->toOne()->cast(@SimpleFunctionExpression);
+      let serializeParam = $expressionSequence->last()->toOne()
+                              ->cast(@SimpleFunctionExpression);
+      let graphFetchParam = $expressionSequence->last()->toOne()
+                    ->cast(@SimpleFunctionExpression).parametersValues->at(0)
+                    ->cast(@SimpleFunctionExpression);
+      let funcWithoutGraphFetchSerialize = $expressionSequence->last()->toOne()
+                                            ->cast(@SimpleFunctionExpression).parametersValues->at(0)
+                                            ->cast(@SimpleFunctionExpression).parametersValues->at(0);
+      
+      let expressionSequenceLengthLess1 = $expressionSequence->size() - 1;
+      let returnType = $funcWithoutGraphFetchSerialize->evaluateAndDeactivate();
+      let classGenericType = $returnType.genericType->cast(@GenericType);
+      let filterLambda = newLambdaFunction(
+        ^FunctionType(
+          returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='p')])
+      );
+      ^LambdaFunction<{->Any[*]}>(
+        expressionSequence = $expressionSequence->slice(0,$expressionSequenceLengthLess1)->concatenate(
+          ^$serializeParam(
+            parametersValues = [
+              ^$graphFetchParam(
+                parametersValues = [
+                  ^SimpleFunctionExpression(
+                    importGroup=system::imports::coreImport,
+                    func=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_,
+                    multiplicity=ZeroMany,
+                    genericType=$classGenericType,
+                    parametersValues = [
+                      $funcWithoutGraphFetchSerialize,
+                      ^InstanceValue(
+                        multiplicity=PureOne,
+                        genericType=^GenericType(rawType = LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnMultiplicity=PureOne,returnType=^GenericType(rawType=Boolean)))]),
+                        values= ^$filterLambda(expressionSequence = $fe->evaluateAndDeactivate()->toOneMany())
+                      )
+                    ]
+                  )
+                ]->concatenate($graphFetchParam.parametersValues->at(1))
+              )
+            ]->concatenate($serializeParam.parametersValues->at(1))
+          )
+        )->toOneMany()
+      );
+  );
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::getPlanForTotalCountDirective(

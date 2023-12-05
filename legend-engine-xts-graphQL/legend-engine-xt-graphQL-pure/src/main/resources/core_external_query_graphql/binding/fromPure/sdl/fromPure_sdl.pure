@@ -105,13 +105,18 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
               buildInputObjectTypeDefinition($c)->concatenate(
                 if ($classReturnTypes->contains($c),
                   // Used as both -> needs both input and output types
-                  | buildObjectTypeDefinition($c, $extendedClasses->contains($c)), 
+                  | buildObjectTypeDefinition($c, $extendedClasses->contains($c)),
                   // Used as input -> needs input
                   | []
                 )
               ),
               // Not used as input --> needs output (unused types will result in output types)
             | buildObjectTypeDefinition($c, $extendedClasses->contains($c))
+            )->concatenate(
+              if($c->cast(@AnnotatedElement).stereotypes.value->fold({a,b | $a->in(['Query','Mutation','Subscription']) || $b}, false),
+                | [],
+                | buildBoolExpObject($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride)
+              )
           ),
         e:Enumeration<Any>[1] |
           ^EnumTypeDefinition(
@@ -135,11 +140,14 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
 
   let interfaces = $extendedClasses->map(c | $c->buildInterfaceTypeDefinition());
 
+  let primitive_bool_expressions = getPrimitiveComparisonExpSDL($partitioned.first.values->cast(@ScalarTypeDefinition)->removeDuplicatesBy(s | $s.name->toOne()),$pureTypeToGraphQLScalarOverride);
+
   $partitioned.second.values
     // Remove duplicated scalar definitions
     ->concatenate($partitioned.first.values->cast(@ScalarTypeDefinition)->removeDuplicatesBy(s | $s.name->toOne()))
     ->concatenate($processingDirectives)
     ->concatenate($interfaces)
+    ->concatenate($primitive_bool_expressions)
     ->concatenate(if($interfaces->isNotEmpty(), | hierarchyDirective(), | []))
     ->meta::pure::functions::collection::sortBy(t | 
       $t->match(
@@ -171,6 +179,23 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
     ->map(t | $t.stereotypes)
     ->filter(s | $s.profile == meta::pure::profiles::temporal)
     ->map(s | $s.value)
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::getPrimitiveComparisonExpSDL(s: ScalarTypeDefinition[*], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): InputObjectTypeDefinition[*]
+{
+  let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)->map(p|$p.second);
+  $primitiveTypes->fold(
+    { a,b |
+      $a->map(
+          x | ^InputObjectTypeDefinition(
+            name=$x + '_comparison_exp',
+              fields = [
+                ^InputValueDefinition(name='_eq',type=^NamedTypeReference(nullable=false, name=$x))
+            ]
+          )
+        )->concatenate($b)},
+      []
+  );
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::isValidPropertyForGraphQL(p: AbstractProperty<Any>[1]): Boolean[1]
@@ -212,11 +237,54 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
       ));            
 }
 
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::changeTypeReferenceName(t: TypeReference[1]): TypeReference[1]
+{
+  if($t->instanceOf(NamedTypeReference),
+    |
+      let t1 = $t->cast(@NamedTypeReference);
+      // TODO we don't handle enums correctly
+      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes()->map(p|$p.second);
+      ^$t1(name = if($t1.name->in($primitiveTypes), | $t1.name + '_comparison_exp', | $t1.name + '_bool_exp'));,
+    | let t1 = $t->cast(@ListTypeReference);
+      ^$t1(itemType = $t1.itemType->changeTypeReferenceName());
+  )
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildBoolExpObject(c: Class<Any>[1], isExtended: Boolean[1]): TypeSystemDefinition[*]
+{
+  let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
+  ^InputObjectTypeDefinition(
+    name = $c.name->toOne() + '_bool_exp',
+    directives = [],
+    fields =
+              $props
+                ->map(p |
+                  let reference = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity());
+
+                  ^InputValueDefinition
+                  (
+                    name = $p.name->toOne(),
+                    type = changeTypeReferenceName($reference, $pureTypeToGraphQLScalarOverride)
+                  );
+
+                )
+                ->concatenate(
+                  [
+                    ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_and'),
+                    ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_or'),
+                    ^InputValueDefinition(type=^NamedTypeReference(nullable=true,name=$c.name->toOne() + '_bool_exp'),name='_not')
+
+                  ]
+                )
+  );
+}
+
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1], isExtended: Boolean[1]): TypeSystemDefinition[*]
 {
   let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars();
-
+  let isQueryClass = $c->cast(@AnnotatedElement).stereotypes.value->contains('Query');
+  let extraProps = [];
   let temporalStereotypes = $c->getTemporalStereotypes();
   $nonBuiltInScalars
     ->concatenate(
@@ -242,10 +310,23 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                                 ),
                             | 
                               []
+                          )->concatenate(
+                            if(
+                              $isQueryClass,
+                              |generatedArgumentDefinitons($p),
+                              |[]
+                            )
                           )
                       )
                     )
       ));
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::generatedArgumentDefinitons(c: AbstractProperty<Any>[1]): InputValueDefinition[*]
+{
+  [
+    ^InputValueDefinition(name='where',type= ^NamedTypeReference(nullable=true,name=$c->functionReturnType().rawType.name->toOne() + '_bool_exp'))
+  ]
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildInterfaceTypeDefinition(c: Class<Any>[1]): TypeSystemDefinition[*]
@@ -279,19 +360,22 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
   buildTypeReference($type, $mul, true)
 }
 
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildTypeName(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1], forInput: Boolean[1]): String[1]
+{
+  if ($type.rawType->toOne()->instanceOf(Class) && $forInput,
+    |
+      // Must create reference to input type
+      toInputTypeName($type.rawType.name->toOne()),
+    |
+      let primitives = purePrimitivesToAllGraphQLScalarTypes()->newMap();
+      let foundPrimitiveName = $primitives->get($type.rawType->toOne());
+      let fName = if($foundPrimitiveName->isEmpty(), | $type.rawType.name,| $foundPrimitiveName->toOne());
+  )->toOne();
+}
+
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildTypeReference(type:meta::pure::metamodel::type::generics::GenericType[1], mul:Multiplicity[1], forInput: Boolean[1]): TypeReference[1]
 {
-  let typeName = 
-    if ($type.rawType->toOne()->instanceOf(Class) && $forInput, 
-      | 
-        // Must create reference to input type
-        toInputTypeName($type.rawType.name->toOne()),
-      | 
-        let primitives = purePrimitivesToGraphQLScalarTypes()->concatenate(purePrimitivesToCustomGraphQLScalarTypes())->newMap();
-        let foundPrimitiveName = $primitives->get($type.rawType->toOne());
-        let fName = if($foundPrimitiveName->isEmpty(), | $type.rawType.name,| $foundPrimitiveName->toOne());
-    )->toOne();
-
+  let typeName = buildTypeName($type, $mul, $forInput);
   if ($mul == ZeroOne,
     | ^NamedTypeReference(name = $typeName, nullable = true),
     | if ($mul == PureOne,

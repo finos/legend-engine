@@ -90,15 +90,48 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([Query, Firm, Person, IncType]->cast(@PackageableElement));
 
   assertEquals(
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
     'type Firm {\n' +
     '  legalName: String!\n' +
     '  employees: [Person!]!\n' +
     '  incType: IncType!\n' +
     '}\n' +
     '\n' +
+    'input Firm_bool_exp {\n' +
+    '  legalName: String_comparison_exp!\n' +
+    '  employees: [Person_bool_exp!]!\n' +
+    '  incType: IncType_bool_exp!\n' +
+    '  _and: [Firm_bool_exp!]\n' +
+    '  _or: [Firm_bool_exp!]\n' +
+    '  _not: Firm_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
     'enum IncType {\n' +
     '  LLC\n' +
     '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
     '}\n' +
     '\n' +
     'type Person {\n' +
@@ -107,8 +140,25 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int!\n' +
     '}\n' +
     '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '  _not: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'type Query {\n' +
-    '  firmByName(n: String!): Firm\n' +
+    '  firmByName(n: String!, where: Firm_bool_exp): Firm\n' +
+    '}\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
     '}\n' +
     '\n' +
     'schema {\n' +
@@ -121,6 +171,22 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([Query, Mutation, Firm, Person, IncType]->cast(@PackageableElement));
 
   assertEquals(
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
     'type Firm {\n' +
     '  legalName: String!\n' +
     '  employees: [Person!]!\n' +
@@ -133,9 +199,26 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  incType: IncType!\n' +
     '}\n' +
     '\n' +
+    'input Firm_bool_exp {\n' +
+    '  legalName: String_comparison_exp!\n' +
+    '  employees: [Person_bool_exp!]!\n' +
+    '  incType: IncType_bool_exp!\n' +
+    '  _and: [Firm_bool_exp!]\n' +
+    '  _or: [Firm_bool_exp!]\n' +
+    '  _not: Firm_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
     'enum IncType {\n' +
     '  LLC\n' +
     '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
     '}\n' +
     '\n' +
     'type Mutation {\n' +
@@ -154,14 +237,32 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int!\n' +
     '}\n' +
     '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '  _not: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'type Query {\n' +
-    '  firmByName(n: String!): Firm\n' +
+    '  firmByName(n: String!, where: Firm_bool_exp): Firm\n' +
+    '}\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
     '}\n' +
     '\n' +
     'schema {\n' +
     '  query : Query\n' +
     '  mutation : Mutation\n' +
-    '}', $res);
+    '}',
+    $res);
 }
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypes():Boolean[1]
@@ -170,6 +271,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
 
   assertEquals(
     'scalar BigDecimal\n' +
+    '\n' +
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
     '\n' +
     'type ClassWithPrimitiveTypes {\n' +
     '  string: String!\n' +
@@ -182,11 +291,49 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  strictDate: StrictDate!\n' +
     '}\n' +
     '\n' +
+    'input ClassWithPrimitiveTypes_bool_exp {\n' +
+    '  string: String_comparison_exp!\n' +
+    '  integer: Int_comparison_exp!\n' +
+    '  float: Float_comparison_exp!\n' +
+    '  boolean: Boolean_comparison_exp!\n' +
+    '  date: Date_comparison_exp!\n' +
+    '  datetime: DateTime_comparison_exp!\n' +
+    '  decimal: BigDecimal_comparison_exp!\n' +
+    '  strictDate: StrictDate_comparison_exp!\n' +
+    '  _and: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '  _or: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '  _not: ClassWithPrimitiveTypes_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'scalar Date\n' +
     '\n' +
     'scalar DateTime\n' +
     '\n' +
-    'scalar StrictDate', $res);
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
+    '}\n' +
+    '\n' +
+    'scalar StrictDate\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
+    '}', $res);
 }
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypesAreNotDuplicated():Boolean[1]
@@ -195,6 +342,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
 
   assertEquals(
     'scalar BigDecimal\n' +
+    '\n' +
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
     '\n' +
     'type ClassWithPrimitiveTypes {\n' +
     '  string: String!\n' +
@@ -218,9 +373,39 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  strictDate: StrictDate!\n' +
     '}\n' +
     '\n' +
+    'input ClassWithPrimitiveTypes_bool_exp {\n' +
+    '  string: String_comparison_exp!\n' +
+    '  integer: Int_comparison_exp!\n' +
+    '  float: Float_comparison_exp!\n' +
+    '  boolean: Boolean_comparison_exp!\n' +
+    '  date: Date_comparison_exp!\n' +
+    '  datetime: DateTime_comparison_exp!\n' +
+    '  decimal: BigDecimal_comparison_exp!\n' +
+    '  strictDate: StrictDate_comparison_exp!\n' +
+    '  _and: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '  _or: [ClassWithPrimitiveTypes_bool_exp!]\n' +
+    '  _not: ClassWithPrimitiveTypes_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'scalar Date\n' +
     '\n' +
     'scalar DateTime\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
+    '}\n' +
     '\n' +
     'type MutationPrimitive {\n' +
     '  upsertClass(class: ClassWithPrimitiveTypesInput!): ClassWithPrimitiveTypes\n' +
@@ -228,9 +413,18 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'scalar StrictDate\n' +
     '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
+    '}\n' +
+    '\n' +
     'schema {\n' +
     '  mutation : MutationPrimitive\n' +
-    '}', $res);
+    '}',
+    $res);
 }
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testTemporalClass():Boolean[1]
@@ -238,8 +432,47 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([BitemporalClass]);
 
   assertEquals(
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
     'type BitemporalClass @bitemporal {\n' +
     '  string: String!\n' +
+    '}\n' +
+    '\n' +
+    'input BitemporalClass_bool_exp {\n' +
+    '  string: String_comparison_exp!\n' +
+    '  _and: [BitemporalClass_bool_exp!]\n' +
+    '  _or: [BitemporalClass_bool_exp!]\n' +
+    '  _not: BitemporalClass_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
     '}\n' +
     '\n' +
     'directive @bitemporal on OBJECT | INPUT_OBJECT',
@@ -251,12 +484,47 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([Employee, Person]);
 
   assertEquals(
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
     'type Employee implements PersonInterface @extends(class: "Person") {\n' +
     '  title: String!\n' +
     '  startDate: StrictDate!\n' +
     '  firstName: String\n' +
     '  lastName: String!\n' +
     '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp!\n' +
+    '  startDate: StrictDate_comparison_exp!\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '  _not: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
     '}\n' +
     '\n' +
     'type Person implements PersonInterface {\n' +
@@ -271,7 +539,24 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int!\n' +
     '}\n' +
     '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '  _not: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'scalar StrictDate\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
+    '}\n' +
     '\n' +
     'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
@@ -282,6 +567,22 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([GSEmployee, Employee, Person]);
 
   assertEquals(
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
     'type Employee implements EmployeeInterface @extends(class: "Person") {\n' +
     '  title: String!\n' +
     '  startDate: StrictDate!\n' +
@@ -298,6 +599,21 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int!\n' +
     '}\n' +
     '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp!\n' +
+    '  startDate: StrictDate_comparison_exp!\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '  _not: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
     'type GSEmployee implements EmployeeInterface @extends(class: "Employee") {\n' +
     '  division: String!\n' +
     '  title: String!\n' +
@@ -305,6 +621,22 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  firstName: String\n' +
     '  lastName: String!\n' +
     '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input GSEmployee_bool_exp {\n' +
+    '  division: String_comparison_exp!\n' +
+    '  title: String_comparison_exp!\n' +
+    '  startDate: StrictDate_comparison_exp!\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [GSEmployee_bool_exp!]\n' +
+    '  _or: [GSEmployee_bool_exp!]\n' +
+    '  _not: GSEmployee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
     '}\n' +
     '\n' +
     'type Person implements PersonInterface {\n' +
@@ -319,7 +651,24 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int!\n' +
     '}\n' +
     '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '  _not: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'scalar StrictDate\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
+    '}\n' +
     '\n' +
     'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
@@ -330,12 +679,47 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([Team, Employee, Person]);
 
   assertEquals(
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
     'type Employee implements PersonInterface @extends(class: "Person") {\n' +
     '  title: String!\n' +
     '  startDate: StrictDate!\n' +
     '  firstName: String\n' +
     '  lastName: String!\n' +
     '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp!\n' +
+    '  startDate: StrictDate_comparison_exp!\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '  _not: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
     '}\n' +
     '\n' +
     'type Person implements PersonInterface {\n' +
@@ -350,11 +734,36 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int!\n' +
     '}\n' +
     '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '  _not: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'scalar StrictDate\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
+    '}\n' +
     '\n' +
     'type Team {\n' +
     '  name: String!\n' +
     '  members: [Employee!]!\n' +
+    '}\n' +
+    '\n' +
+    'input Team_bool_exp {\n' +
+    '  name: String_comparison_exp!\n' +
+    '  members: [Employee_bool_exp!]!\n' +
+    '  _and: [Team_bool_exp!]\n' +
+    '  _or: [Team_bool_exp!]\n' +
+    '  _not: Team_bool_exp\n' +
     '}\n' +
     '\n' +
     'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
@@ -366,6 +775,22 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
   let res = typesToGraphQLString([QueryHierarchy, MutationHierarchy, Team, Employee, Person]);
 
   assertEquals(
+    'input BigDecimal_comparison_exp {\n' +
+    '  _eq: BigDecimal!\n' +
+    '}\n' +
+    '\n' +
+    'input Boolean_comparison_exp {\n' +
+    '  _eq: Boolean!\n' +
+    '}\n' +
+    '\n' +
+    'input DateTime_comparison_exp {\n' +
+    '  _eq: DateTime!\n' +
+    '}\n' +
+    '\n' +
+    'input Date_comparison_exp {\n' +
+    '  _eq: Date!\n' +
+    '}\n' +
+    '\n' +
     'type Employee implements PersonInterface @extends(class: "Person") {\n' +
     '  title: String!\n' +
     '  startDate: StrictDate!\n' +
@@ -380,6 +805,25 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  firstName: String\n' +
     '  lastName: String!\n' +
     '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'input Employee_bool_exp {\n' +
+    '  title: String_comparison_exp!\n' +
+    '  startDate: StrictDate_comparison_exp!\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Employee_bool_exp!]\n' +
+    '  _or: [Employee_bool_exp!]\n' +
+    '  _not: Employee_bool_exp\n' +
+    '}\n' +
+    '\n' +
+    'input Float_comparison_exp {\n' +
+    '  _eq: Float!\n' +
+    '}\n' +
+    '\n' +
+    'input Int_comparison_exp {\n' +
+    '  _eq: Int!\n' +
     '}\n' +
     '\n' +
     'type MutationHierarchy {\n' +
@@ -405,12 +849,29 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int!\n' +
     '}\n' +
     '\n' +
+    'input Person_bool_exp {\n' +
+    '  firstName: String_comparison_exp\n' +
+    '  lastName: String_comparison_exp!\n' +
+    '  age: Int_comparison_exp!\n' +
+    '  _and: [Person_bool_exp!]\n' +
+    '  _or: [Person_bool_exp!]\n' +
+    '  _not: Person_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'type QueryHierarchy {\n' +
-    '  teamByName(n: String!): Team\n' +
-    '  employeeByFirstName(n: String!): Employee\n' +
+    '  teamByName(n: String!, where: Team_bool_exp): Team\n' +
+    '  employeeByFirstName(n: String!, where: Employee_bool_exp): Employee\n' +
     '}\n' +
     '\n' +
     'scalar StrictDate\n' +
+    '\n' +
+    'input StrictDate_comparison_exp {\n' +
+    '  _eq: StrictDate!\n' +
+    '}\n' +
+    '\n' +
+    'input String_comparison_exp {\n' +
+    '  _eq: String!\n' +
+    '}\n' +
     '\n' +
     'type Team {\n' +
     '  name: String!\n' +
@@ -422,6 +883,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  members: [EmployeeInput!]!\n' +
     '}\n' +
     '\n' +
+    'input Team_bool_exp {\n' +
+    '  name: String_comparison_exp!\n' +
+    '  members: [Employee_bool_exp!]!\n' +
+    '  _and: [Team_bool_exp!]\n' +
+    '  _or: [Team_bool_exp!]\n' +
+    '  _not: Team_bool_exp\n' +
+    '}\n' +
+    '\n' +
     'directive @extends(class: String!) on OBJECT | INPUT_OBJECT\n' +
     '\n' +
     'schema {\n' +
@@ -431,7 +900,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     $res);
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*]): String[1]
+function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*]): String[1]
 {
   meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($types)
     ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())

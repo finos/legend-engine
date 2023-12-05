@@ -165,6 +165,24 @@ public class TestGraphQLRoundtrip
     }
 
     @Test
+    public void testQueryWithInputObjectRoundtrip()
+    {
+        check("query getUserWithProjects($a: INT = 1) @cool {\n" +
+                "  user(where: { firstName: { _eq: \"Abhishoya\" } }) {\n" +
+                "    firstname\n" +
+                "    lastname\n" +
+                "  }\n" +
+                "}");
+
+        check("query getUserWithProjects($a: INT = 1) @cool {\n" +
+                "  user(where: { _or: { _eq: \"Abhishoya\" } }) {\n" +
+                "    firstname\n" +
+                "    lastname\n" +
+                "  }\n" +
+                "}");
+    }
+
+    @Test
     public void testDirectiveParsingError()
     {
         try

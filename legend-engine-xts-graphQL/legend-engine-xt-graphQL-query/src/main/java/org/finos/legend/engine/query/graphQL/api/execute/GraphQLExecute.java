@@ -240,7 +240,7 @@ public class GraphQLExecute extends GraphQL
                 "}").type(MediaType.TEXT_HTML_TYPE).build();
     }
 
-    private Response executeGraphQLQuery(Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
+    private Response executeGraphQLQuery(Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader) throws Exception
     {
         List<SerializedNamedPlans> planWithSerialized;
         OperationDefinition graphQLQuery = GraphQLExecutionHelper.findQuery(document);
@@ -278,7 +278,7 @@ public class GraphQLExecute extends GraphQL
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            throw e;
         }
         return execute(profiles, planWithSerialized, graphQLQuery);
     }
