@@ -25,7 +25,8 @@ import org.junit.Test;
 
 public class TestCompatibilityAndMigration
 {
-    private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
+    private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
     @Test
     public void testStringValueSpecification() throws Exception
@@ -1206,7 +1207,7 @@ public class TestCompatibilityAndMigration
     public void testPackageableElementPointerCompatibility() throws Exception
     {
         String asString = "\"abc::myPath::MyName\"";
-        String expected = "{\"type\":null,\"path\":\"abc::myPath::MyName\",\"sourceInformation\":null}";
+        String expected = "{\"path\":\"abc::myPath::MyName\"}";
         PackageableElementPointer pointerFromStringConstructor = objectMapper.readValue(asString, PackageableElementPointer.class);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(pointerFromStringConstructor);
         JsonAssert.assertJsonEquals(expected, json);
@@ -1217,7 +1218,6 @@ public class TestCompatibilityAndMigration
     private void check(String input, String output) throws Exception
     {
         PureModelContextData context = objectMapper.readValue(input, PureModelContextData.class);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
         JsonAssert.assertJsonEquals(output, json);
     }
