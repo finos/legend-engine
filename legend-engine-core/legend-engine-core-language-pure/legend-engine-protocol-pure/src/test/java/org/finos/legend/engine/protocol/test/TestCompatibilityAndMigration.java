@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.junit.Assert;
 import org.junit.Test;
@@ -1199,6 +1200,18 @@ public class TestCompatibilityAndMigration
                 "    }\n" +
                 "  ]\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testPackageableElementPointerCompatibility() throws Exception
+    {
+        String asString = "\"abc::myPath::MyName\"";
+        String expected = "{\"type\":null,\"path\":\"abc::myPath::MyName\",\"sourceInformation\":null}";
+        PackageableElementPointer pointerFromStringConstructor = objectMapper.readValue(asString, PackageableElementPointer.class);
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(pointerFromStringConstructor);
+        JsonAssert.assertJsonEquals(expected, json);
+        PackageableElementPointer expectedPointerFromObjectConstructor = objectMapper.readValue(expected, PackageableElementPointer.class);
+        Assert.assertEquals(expectedPointerFromObjectConstructor, pointerFromStringConstructor);
     }
 
     private void check(String input, String output) throws Exception
