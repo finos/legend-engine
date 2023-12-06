@@ -1051,7 +1051,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNullCasts():Boolean[1]
 {
   test('SELECT CAST(NULL AS VARCHAR) AS "string", CAST(NULL AS TEXT) AS "text", CAST(NULL AS DATE) AS "date", ' +
-       'CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE PRECISION) AS "double", CAST(NULL AS NUMERIC) AS "numeric", CAST(NULL AS TIMESTAMP) AS "timestamp" FROM service."/service/service1"',
+       'CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE PRECISION) AS "double", ' + 
+       'CAST(NULL AS NUMERIC) AS "numeric", CAST(NULL AS TIMESTAMP) AS "timestamp", CAST(floor(NULL) AS TEXT) AS "exp" ' + 
+       'FROM service."/service/service1"',
 
       {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -1064,7 +1066,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           col(row:TDSRow[1] | cast([], @Boolean), 'boolean'),
           col(row:TDSRow[1] | cast([], @Float), 'double'),
           col(row:TDSRow[1] | cast([], @Decimal), 'numeric'),
-          col(row:TDSRow[1] | cast([], @DateTime), 'timestamp')
+          col(row:TDSRow[1] | cast([], @DateTime), 'timestamp'),
+          col(row:TDSRow[1] | cast([], @String), 'exp')
         ])
       })
 }

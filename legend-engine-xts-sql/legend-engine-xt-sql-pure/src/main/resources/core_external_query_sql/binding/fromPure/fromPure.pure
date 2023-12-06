@@ -1585,9 +1585,10 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
   let expression = processExpression($c.expression, $expContext, $context);
 
-  $c.expression->match([
-    n:NullLiteral[1] | processCastAsCast($c, $expression, $expContext, $context),
-    e:meta::external::query::sql::metamodel::Expression[1] |
+  if ($expression->evaluateAndDeactivate().multiplicity == PureZero,
+    | 
+      processCastAsCast($c, $expression, $expContext, $context),
+    | 
       let type = $expression.genericType.rawType->toOne();
       let castName = $c.type.name->toUpper();
 
@@ -1598,7 +1599,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
         pair($type == String || $castName == 'TEXT', | processCastAsParse($c, $expression, $expContext, $context)),
         pair(true, | processCastAsCast($c, $expression, $expContext, $context))
       ]->getValues(true)->first()->toOne()->eval()->evaluateAndDeactivate();
-  ]);
+    );
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processDoublePrecisionCast(c:Cast[1], v:ValueSpecification[1], expContext:SqlTransformExpressionContext[1], context:SqlTransformContext[1]):ValueSpecification[1]
