@@ -30,6 +30,8 @@ limitations under the License.
 	<properties>
 		<junit.version>4.13.2</junit.version>
 		<maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
 
 	<build>

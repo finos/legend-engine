@@ -22,46 +22,54 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class BigQueryConnectionTest {
-
+public class BigQueryConnectionTest
+{
     private BigQueryConnection connection;
 
     @BeforeEach
-    public void setup() throws SQLException {
+    public void setup() throws SQLException
+    {
         // Read project ID and dataset ID from environment variables
         String projectId = System.getenv("BIGQUERY_PROJECT_ID");
         String datasetId = System.getenv("BIGQUERY_DATASET_ID");
 
         // Check if environment variables are set
-        if (projectId == null || datasetId == null) {
+        if (projectId == null || datasetId == null)
+        {
             throw new IllegalStateException("Environment variables BIGQUERY_PROJECT_ID and BIGQUERY_DATASET_ID must be set.");
         }
         connection = new BigQueryConnection(projectId, datasetId);
     }
 
     @AfterEach
-    public void teardown() throws SQLException {
+    public void teardown() throws SQLException
+    {
         // Close the connection after each test
-        if (connection != null) {
+        if (connection != null)
+        {
             connection.close();
         }
     }
 
     @Test
-    public void testCreateStatement() throws SQLException {
-        try (Statement statement = connection.createStatement()) {
+    public void testCreateStatement() throws SQLException
+    {
+        try (Statement statement = connection.createStatement())
+        {
             assertNotNull(statement);
             assertTrue(statement instanceof BigQueryStatement);
         }
     }
 
     @Test
-    public void testExecuteQuery() throws SQLException {
-        try (Statement statement = connection.createStatement()) {
+    public void testExecuteQuery() throws SQLException
+    {
+        try (Statement statement = connection.createStatement())
+        {
             assertNotNull(statement, "Statement should not be null");
-
             String sql = "SELECT 1";
-            try (ResultSet resultSet = statement.executeQuery(sql)) {
+            try (ResultSet resultSet = statement.executeQuery(sql))
+            {
                 assertNotNull(resultSet);
             }
         }
