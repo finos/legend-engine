@@ -18,6 +18,8 @@ package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.result;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.Calendar;
 import java.util.List;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.tuple.Pair;
@@ -140,7 +142,17 @@ public final class ElasticsearchTDSResultHelper
             case "Date":
             case "DateTime":
             case "StrictDate":
-                return Functions.chain(JsonNode::asText, PureDate::parsePureDate);
+                return x ->
+                {
+                    if (x.isLong())
+                    {
+                        return PureDate.fromTemporal(Instant.ofEpochMilli(x.asLong()), Calendar.MILLISECOND);
+                    }
+                    else
+                    {
+                       return PureDate.parsePureDate(x.asText());
+                    }
+                };
             default:
                 throw new UnsupportedOperationException("TDS type not supported: " + column.type);
         }
