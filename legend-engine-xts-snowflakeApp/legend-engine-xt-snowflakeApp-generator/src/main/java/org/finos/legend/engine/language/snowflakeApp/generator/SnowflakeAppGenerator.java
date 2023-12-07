@@ -58,7 +58,7 @@ public class SnowflakeAppGenerator
                 sdlc = (AlloySDLC) sdlcInfo;
             }
         }
-        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), functionColumns, activator._type()._name(), Lists.mutable.with(activator._owner()), sdlc);
+        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), functionColumns, Lists.mutable.with(activator._owner()), sdlc);
         if (activator._activationConfiguration() != null)
         {
             //identify connection
