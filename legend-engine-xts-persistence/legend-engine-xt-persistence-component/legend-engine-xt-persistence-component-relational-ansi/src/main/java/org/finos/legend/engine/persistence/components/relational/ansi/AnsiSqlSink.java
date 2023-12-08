@@ -38,6 +38,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetReferenceImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Join;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
@@ -108,6 +109,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.ExistsConditionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FilteredDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.FunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.GreaterThanEqualToVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.GreaterThanVisitor;
@@ -185,6 +187,7 @@ public class AnsiSqlSink extends RelationalSink
         logicalPlanVisitorByClass.put(DatasetReferenceImpl.class, new DatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(DatasetDefinition.class, new DatasetDefinitionVisitor());
         logicalPlanVisitorByClass.put(DerivedDataset.class, new DerivedDatasetVisitor());
+        logicalPlanVisitorByClass.put(FilteredDataset.class, new FilteredDatasetVisitor());
         logicalPlanVisitorByClass.put(JsonExternalDatasetReference.class, new DatasetReferenceVisitor());
         logicalPlanVisitorByClass.put(DatasetAdditionalProperties.class, new DatasetAdditionalPropertiesVisitor());
 

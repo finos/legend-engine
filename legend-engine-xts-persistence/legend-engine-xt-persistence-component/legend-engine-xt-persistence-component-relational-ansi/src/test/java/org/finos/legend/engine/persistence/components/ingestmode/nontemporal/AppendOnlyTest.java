@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.relational.api.DataSplitRa
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.testcases.ingestmode.nontemporal.AppendOnlyTestCases;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -252,6 +253,31 @@ public class AppendOnlyTest extends AppendOnlyTestCases
         Assertions.assertEquals(rowsDeleted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsInserted, operations.postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
         Assertions.assertEquals(rowsTerminated, operations.postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+    }
+
+
+    @Override
+    @Test
+    public void testAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration()
+    {
+        // Digest UDF Generation not available for ANSI sink
+    }
+
+    @Override
+    public void verifyAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration(GeneratorResult operations)
+    {
+    }
+
+    @Override
+    @Test
+    public void testAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration()
+    {
+        // Digest UDF Generation not available for ANSI sink
+    }
+
+    @Override
+    public void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges)
+    {
     }
 
     public RelationalSink getRelationalSink()

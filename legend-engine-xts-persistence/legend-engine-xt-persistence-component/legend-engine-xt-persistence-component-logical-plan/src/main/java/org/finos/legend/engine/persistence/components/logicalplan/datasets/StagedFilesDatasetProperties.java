@@ -14,9 +14,26 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.datasets;
 
+import org.immutables.value.Value;
+
 import java.util.List;
 
 public interface StagedFilesDatasetProperties
 {
-    List<String> files();
+    List<String> filePaths();
+
+    List<String> filePatterns();
+
+    @Value.Check
+    default void validate()
+    {
+        if (filePatterns().size() > 0 && filePaths().size() > 0)
+        {
+            throw new IllegalArgumentException("Cannot build StagedFilesDatasetProperties, Only one out of filePatterns and filePaths should be provided");
+        }
+        if (filePatterns().size() == 0 && filePaths().size() == 0)
+        {
+            throw new IllegalArgumentException("Cannot build StagedFilesDatasetProperties, Either one of filePatterns and filePaths must be provided");
+        }
+    }
 }

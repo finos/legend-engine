@@ -54,55 +54,54 @@ Class meta::external::store::elasticsearch::v7::specification::utils::property::
 {
   propertyType: Class<PropertyBase>[1];
   pureType: Type[1];
-  // canAggregate: Boolean[0..1];
-  // canSort: Boolean[0..1];
-  // canScript: Boolean[0..1];  
+  defaultIfMissingAsString: String[0..1]; 
 }
 
 function <<access.private>> meta::external::store::elasticsearch::v7::specification::utils::property::newPropertySupport(
     propertyType: Class<PropertyBase>[1],
-    pureType: Type[1]
+    pureType: Type[1],
+    defaultIfMissingAsString: String[0..1]
   ): PropertySupport[1]
 {
-  ^PropertySupport(propertyType = $propertyType, pureType = $pureType);
+  ^PropertySupport(propertyType = $propertyType, pureType = $pureType, defaultIfMissingAsString = $defaultIfMissingAsString);
 }
 
 function meta::external::store::elasticsearch::v7::specification::utils::property::propertySupports(): Function<{Nil[1] -> PropertySupport[1]}>[1..*]
 {
   [
     // structured
-    p:ObjectProperty[1] | newPropertySupport(ObjectProperty, Map),
-    p:NestedProperty[1] | newPropertySupport(NestedProperty, Map),
+    p:ObjectProperty[1] | newPropertySupport(ObjectProperty, Map, []),
+    p:NestedProperty[1] | newPropertySupport(NestedProperty, Map, []),
 
     // string    
-    p:TextProperty[1]     | newPropertySupport(TextProperty,     String), // todo this is special for searches, and not good on terms
-    p:KeywordProperty[1]  | newPropertySupport(KeywordProperty,  String),
-    p:WildcardProperty[1] | newPropertySupport(WildcardProperty, String),
+    p:TextProperty[1]     | newPropertySupport(TextProperty,     String, '~'->repeatString(20)), // todo this is special for searches, and not good on terms
+    p:KeywordProperty[1]  | newPropertySupport(KeywordProperty,  String, '~'->repeatString(20)),
+    p:WildcardProperty[1] | newPropertySupport(WildcardProperty, String, '~'->repeatString(20)),
 
     // boolean
-    p:BooleanProperty[1] | newPropertySupport(BooleanProperty,  Boolean),
+    p:BooleanProperty[1] | newPropertySupport(BooleanProperty,  Boolean, 'false'),
 
     // date
-    p:DateNanosProperty[1] | newPropertySupport(DateNanosProperty, Date),
-    p:DateProperty[1]      | newPropertySupport(DateProperty,      Date),
+    p:DateNanosProperty[1] | newPropertySupport(DateNanosProperty, Date, []),
+    p:DateProperty[1]      | newPropertySupport(DateProperty,      Date, '9999-12-31T23:59:59.999Z'),
 
     // integer
-    p:ShortNumberProperty[1]   | newPropertySupport(ShortNumberProperty,   Integer),
-    p:ByteNumberProperty[1]    | newPropertySupport(ByteNumberProperty,    Integer),
-    p:IntegerNumberProperty[1] | newPropertySupport(IntegerNumberProperty, Integer),
-    p:LongNumberProperty[1]    | newPropertySupport(LongNumberProperty,    Integer),
+    p:ShortNumberProperty[1]   | newPropertySupport(ShortNumberProperty,   Integer, '32767'),
+    p:ByteNumberProperty[1]    | newPropertySupport(ByteNumberProperty,    Integer, '127'),
+    p:IntegerNumberProperty[1] | newPropertySupport(IntegerNumberProperty, Integer, '2147483647'),
+    p:LongNumberProperty[1]    | newPropertySupport(LongNumberProperty,    Integer, '9223372036854775807'),
     
     //float
-    p:FloatNumberProperty[1]     | newPropertySupport(FloatNumberProperty,     Float),
-    p:HalfFloatNumberProperty[1] | newPropertySupport(HalfFloatNumberProperty, Float),
-    p:DoubleNumberProperty[1]    | newPropertySupport(DoubleNumberProperty,    Float),
+    p:FloatNumberProperty[1]     | newPropertySupport(FloatNumberProperty,     Float, []),
+    p:HalfFloatNumberProperty[1] | newPropertySupport(HalfFloatNumberProperty, Float, []),
+    p:DoubleNumberProperty[1]    | newPropertySupport(DoubleNumberProperty,    Float, []),
     
     //decimal (?)
-    p:ScaledFloatNumberProperty[1]  | newPropertySupport(ScaledFloatNumberProperty,  Decimal),
-    p:UnsignedLongNumberProperty[1] | newPropertySupport(UnsignedLongNumberProperty, Decimal), // big integer equivalent?
+    p:ScaledFloatNumberProperty[1]  | newPropertySupport(ScaledFloatNumberProperty,  Decimal, []),
+    p:UnsignedLongNumberProperty[1] | newPropertySupport(UnsignedLongNumberProperty, Decimal, []), // big integer equivalent?
 
     // catch all - not supported
-    {p:PropertyBase[1] | fail('Type not supported: ' + $p->type()->elementToPath()); newPropertySupport(ObjectProperty, Map);}
+    {p:PropertyBase[1] | fail('Type not supported: ' + $p->type()->elementToPath()); newPropertySupport(ObjectProperty, Map, []);}
   ]
 }
 

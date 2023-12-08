@@ -15,8 +15,7 @@
 package org.finos.legend.engine.persistence.components.e2e;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.FileFormat;
-import org.finos.legend.engine.persistence.components.common.LoadOptions;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
@@ -40,10 +39,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_WITH_ERRORS;
@@ -89,8 +85,8 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(FILE_LIST).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(FILE_LIST).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 
@@ -116,7 +112,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .build();
 
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
@@ -144,12 +140,14 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .build();
 
+        Map<String, Object> loadOptions = new HashMap<>();
+        loadOptions.put("max_bad_records", 10L);
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .loadOptions(LoadOptions.builder().maxBadRecords(10L).build())
-                    .addAllFiles(BAD_FILE_LIST).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .putAllLoadOptions(loadOptions)
+                    .addAllFilePaths(BAD_FILE_LIST).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 

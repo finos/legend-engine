@@ -140,7 +140,7 @@ public abstract class RelationalIngestorAbstract
 
     public abstract RelationalSink relationalSink();
 
-    public abstract Optional<String> bulkLoadTaskIdValue();
+    public abstract Optional<String> bulkLoadEventIdValue();
 
     @Derived
     protected PlannerOptions plannerOptions()
@@ -151,7 +151,7 @@ public abstract class RelationalIngestorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
-            .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
+            .bulkLoadEventIdValue(bulkLoadEventIdValue())
             .build();
     }
 
@@ -512,7 +512,7 @@ public abstract class RelationalIngestorAbstract
                 .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
                 .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
                 .batchIdPattern(BATCH_ID_PATTERN)
-                .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
+                .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());

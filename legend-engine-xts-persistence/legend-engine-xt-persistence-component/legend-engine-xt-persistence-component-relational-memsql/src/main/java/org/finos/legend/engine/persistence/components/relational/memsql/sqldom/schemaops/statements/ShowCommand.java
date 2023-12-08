@@ -20,41 +20,45 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.common.C
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.ShowType;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 
+import java.util.Optional;
+
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
 public class ShowCommand implements SqlGen
 {
     private final ShowType operation;
-    private String databaseName;
-    private String schemaName;
+    private Optional<String> databaseName;
+    private Optional<String> schemaName;
     private String tableName;
+    private final String quoteIdentifier;
 
-    public ShowCommand(ShowType operation, String databaseName, String schemaName, String tableName)
+    public ShowCommand(ShowType operation, Optional<String> databaseName, Optional<String> schemaName, String tableName, String quoteIdentifier)
     {
         this.operation = operation;
         this.databaseName = databaseName;
         this.schemaName = schemaName;
         this.tableName = tableName;
+        this.quoteIdentifier = quoteIdentifier;
     }
 
-    public String getDatabaseName()
+    public Optional<String> getDatabaseName()
     {
         return databaseName;
     }
 
     public void setDatabaseName(String databaseName)
     {
-        this.databaseName = databaseName;
+        this.databaseName = Optional.of(databaseName);
     }
 
-    public String getSchemaName()
+    public Optional<String> getSchemaName()
     {
         return schemaName;
     }
 
     public void setSchemaName(String schemaName)
     {
-        this.schemaName = schemaName;
+        this.schemaName = Optional.of(schemaName);
     }
 
     public String getTableName()
@@ -75,7 +79,7 @@ public class ShowCommand implements SqlGen
 
     SHOW [FULL] [TEMPORARY] TABLES
     [{FROM | IN} db_name]
-    [[EXTENDED] LIKE pattern | WHERE TABLE_TYPE {= | !=} {'VIEW' | 'BASE TABLE'}]
+    [[EXTENDED] LIKE 'pattern' | WHERE TABLE_TYPE {= | !=} {'VIEW' | 'BASE TABLE'}]
 
     SHOW SCHEMAS
     [LIKE 'pattern']
@@ -91,33 +95,33 @@ public class ShowCommand implements SqlGen
         if (operation == ShowType.COLUMNS)
         {
             builder.append(WHITE_SPACE + Clause.FROM.get());
-            builder.append(WHITE_SPACE + tableName);
-            if ((databaseName != null && !databaseName.isEmpty()) && (schemaName != null && !schemaName.isEmpty()))
+            builder.append(WHITE_SPACE + SqlGenUtils.getQuotedField(tableName, quoteIdentifier));
+            if ((databaseName.isPresent() && !databaseName.get().isEmpty()) && (schemaName.isPresent() && !schemaName.get().isEmpty()))
             {
                 builder.append(WHITE_SPACE);
                 builder.append(Clause.IN.get() + WHITE_SPACE);
-                builder.append(databaseName + SqlGenUtils.DOT + schemaName);
+                builder.append(SqlGenUtils.getQuotedField(databaseName.get(), quoteIdentifier) + SqlGenUtils.DOT + SqlGenUtils.getQuotedField(schemaName.get(), quoteIdentifier));
             }
-            else if (schemaName != null && !schemaName.isEmpty())
+            else if (schemaName.isPresent() && !schemaName.get().isEmpty())
             {
                 builder.append(WHITE_SPACE);
                 builder.append(Clause.IN.get() + WHITE_SPACE);
-                builder.append(schemaName);
+                builder.append(SqlGenUtils.getQuotedField(schemaName.get(), quoteIdentifier));
             }
         }
         else if (operation == ShowType.TABLES)
         {
-            if ((databaseName != null && !databaseName.isEmpty()) && (schemaName != null && !schemaName.isEmpty()))
+            if ((databaseName.isPresent() && !databaseName.get().isEmpty()) && (schemaName.isPresent() && !schemaName.get().isEmpty()))
             {
                 builder.append(WHITE_SPACE);
                 builder.append(Clause.FROM.get() + WHITE_SPACE);
-                builder.append(databaseName + SqlGenUtils.DOT + schemaName);
+                builder.append(SqlGenUtils.getQuotedField(databaseName.get(), quoteIdentifier) + SqlGenUtils.DOT + SqlGenUtils.getQuotedField(schemaName.get(), quoteIdentifier));
             }
-            else if (schemaName != null && !schemaName.isEmpty())
+            else if (schemaName.isPresent() && !schemaName.get().isEmpty())
             {
                 builder.append(WHITE_SPACE);
                 builder.append(Clause.FROM.get() + WHITE_SPACE);
-                builder.append(schemaName);
+                builder.append(SqlGenUtils.getQuotedField(schemaName.get(), quoteIdentifier));
             }
             builder.append(WHITE_SPACE + Clause.LIKE.get());
             builder.append(WHITE_SPACE);

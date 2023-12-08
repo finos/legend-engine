@@ -19,4 +19,6 @@ public interface DigestGenStrategyVisitor<T>
     T visitNoDigestGenStrategy(NoDigestGenStrategyAbstract noDigestGenStrategy);
 
     T visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy);
+
+    T visitUserProvidedDigestGenStrategy(UserProvidedDigestGenStrategyAbstract userProvidedDigestGenStrategy);
 }

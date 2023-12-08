@@ -20,6 +20,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitor;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategyAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.*;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategyAbstract;
@@ -75,7 +77,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
     {
         return AppendOnly
                 .builder()
-                .digestField(applyCase(appendOnly.digestField()))
+                .digestGenStrategy(appendOnly.digestGenStrategy().accept(new DigestGenStrategyCaseConverter()))
                 .auditing(appendOnly.auditing().accept(new AuditingCaseConverter()))
                 .deduplicationStrategy(appendOnly.deduplicationStrategy())
                 .versioningStrategy(appendOnly.versioningStrategy().accept(new VersionStrategyCaseConverter()))
@@ -243,6 +245,14 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
                     .digestUdfName(udfBasedDigestGenStrategy.digestUdfName())
                     .digestField(applyCase(udfBasedDigestGenStrategy.digestField()))
                     .build();
+        }
+
+        @Override
+        public DigestGenStrategy visitUserProvidedDigestGenStrategy(UserProvidedDigestGenStrategyAbstract userProvidedDigestGenStrategy)
+        {
+            return UserProvidedDigestGenStrategy.builder()
+                .digestField(applyCase(userProvidedDigestGenStrategy.digestField()))
+                .build();
         }
     }
 

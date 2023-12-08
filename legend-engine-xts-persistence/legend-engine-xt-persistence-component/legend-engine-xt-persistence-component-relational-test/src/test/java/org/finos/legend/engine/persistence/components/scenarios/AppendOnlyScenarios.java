@@ -21,6 +21,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
@@ -30,7 +32,7 @@ public class AppendOnlyScenarios extends BaseTest
 {
 
     /*
-    Test Scenarios for Non-temporal Delta
+    Test Scenarios for Append Only
     Variables:
     1) Auditing: No Auditing, With Auditing
     2) Versioning: NoVersion, MaxVersion, AllVersion
@@ -91,7 +93,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .versioningStrategy(NoVersioningStrategy.builder().build())
                 .auditing(NoAuditing.builder().build())
@@ -110,7 +112,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario WITH_AUDITING__FILTER_DUPS__NO_VERSIONING__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
@@ -122,7 +124,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
@@ -140,7 +142,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario NO_AUDITING__FILTER_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
@@ -157,7 +159,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario WITH_AUDITING__FILTER_DUPS__ALL_VERSION__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder()
                     .versioningField(bizDateField)
@@ -174,7 +176,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario WITH_AUDITING__FAIL_ON_DUPS__MAX_VERSION__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
             .deduplicationStrategy(FailOnDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(bizDateField)
@@ -190,7 +192,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario WITH_AUDITING__FILTER_DUPS__MAX_VERSION__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .versioningStrategy(MaxVersionStrategy.builder()
                 .versioningField(bizDateField)
@@ -207,7 +209,7 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario NO_AUDITING__NO_DEDUP__NO_VERSIONING__WITH_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(NoAuditing.builder().build())
@@ -219,12 +221,41 @@ public class AppendOnlyScenarios extends BaseTest
     public TestScenario WITH_AUDITING__ALLOW_DUPLICATES__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS()
     {
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestField)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
             .deduplicationStrategy(AllowDuplicates.builder().build())
             .versioningStrategy(NoVersioningStrategy.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .filterExistingRecords(false)
             .build();
         return new TestScenario(mainTableWithNoPrimaryKeysHavingAuditField, stagingTableWithNoPrimaryKeys, ingestMode);
+    }
+
+    public TestScenario NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION()
+    {
+        AppendOnly ingestMode = AppendOnly.builder()
+            .deduplicationStrategy(AllowDuplicates.builder().build())
+            .versioningStrategy(NoVersioningStrategy.builder().build())
+            .auditing(NoAuditing.builder().build())
+            .filterExistingRecords(false)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).build())
+            .build();
+        return new TestScenario(mainTableWithNoPrimaryKeys, stagingTableWithNoPrimaryKeysAndNoDigest, ingestMode);
+    }
+
+    public TestScenario WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION()
+    {
+        AppendOnly ingestMode = AppendOnly.builder()
+            .deduplicationStrategy(FailOnDuplicates.builder().build())
+            .versioningStrategy(AllVersionsStrategy.builder()
+                .versioningField(bizDateField)
+                .dataSplitFieldName(dataSplitField)
+                .mergeDataVersionResolver(DigestBasedResolver.INSTANCE)
+                .performStageVersioning(true)
+                .build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+            .filterExistingRecords(false)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).build())
+            .build();
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchema, ingestMode);
     }
 }
