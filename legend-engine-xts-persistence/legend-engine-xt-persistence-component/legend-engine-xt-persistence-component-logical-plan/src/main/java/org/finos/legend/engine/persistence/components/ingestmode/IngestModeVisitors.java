@@ -209,57 +209,6 @@ public class IngestModeVisitors
         }
     };
 
-    public static final IngestModeVisitor<Boolean> IS_INGEST_MODE_TEMPORAL = new IngestModeVisitor<Boolean>()
-    {
-        @Override
-        public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
-        {
-            return false;
-        }
-    };
-
     public static final IngestModeVisitor<Boolean> NEED_TO_CHECK_STAGING_EMPTY = new IngestModeVisitor<Boolean>()
     {
         @Override
