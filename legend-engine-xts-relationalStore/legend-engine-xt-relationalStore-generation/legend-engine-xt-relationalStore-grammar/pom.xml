@@ -244,6 +244,11 @@
             <artifactId>legend-engine-testable</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest-core</artifactId>
+            <scope>test</scope>
+        </dependency>
         <!-- TEST -->
 
         <!-- TEST - For TC build only - Remove for OSS - investigate why we need this dependency -->

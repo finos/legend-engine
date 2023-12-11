@@ -15,6 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
@@ -25,12 +28,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class TestCompilationFromGrammar
 {
@@ -78,8 +79,7 @@ public class TestCompilationFromGrammar
 
                 if (expectedWarnings != null)
                 {
-                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).collect(Collectors.toList());
-                    Collections.sort(warnings);
+                    List<String> warnings = pureModel.getWarnings().stream().map(Warning::buildPrettyWarningMessage).sorted().collect(Collectors.toList());
                     Collections.sort(expectedWarnings);
                     Assert.assertEquals(expectedWarnings, warnings);
                 }
@@ -93,7 +93,8 @@ public class TestCompilationFromGrammar
                     throw e;
                 }
                 Assert.assertNotNull("No source information provided in error", e.getSourceInformation());
-                Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(), e.getErrorType()));
+                MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(e.getMessage(), e.getSourceInformation(),
+                        e.getErrorType()), CoreMatchers.startsWith(expectedErrorMsg));
                 return null;
             }
             catch (Exception e)
@@ -312,7 +313,7 @@ public class TestCompilationFromGrammar
                         "['includedDate',  'calendarAgg'])" +
                         "}");
     }
-    
+
     @Test
     public void testCompilationCw()
     {

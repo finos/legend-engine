@@ -57,7 +57,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
                 "{\n" +
                 "   pattern : " + PureGrammarComposerUtility.convertString(app.pattern,true) + ";\n" +
                 "   ownership : " + renderServiceOwner(app.ownership) +
-                "   function : " + app.function + ";\n" +
+                "   function : " + app.function.path + ";\n" +
                 (app.documentation == null ? "" : "   documentation : '" + app.documentation + "';\n") +
                 "   autoActivateUpdates : " + app.autoActivateUpdates + ";\n" +
                 "}";

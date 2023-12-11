@@ -18,13 +18,15 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.javacrumbs.jsonunit.JsonAssert;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class TestCompatibilityAndMigration
 {
-    private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper();
+    private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper()
+            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
 
     @Test
     public void testStringValueSpecification() throws Exception
@@ -1201,10 +1203,21 @@ public class TestCompatibilityAndMigration
                 "}\n");
     }
 
+    @Test
+    public void testPackageableElementPointerCompatibility() throws Exception
+    {
+        String asString = "\"abc::myPath::MyName\"";
+        String expected = "{\"path\":\"abc::myPath::MyName\"}";
+        PackageableElementPointer pointerFromStringConstructor = objectMapper.readValue(asString, PackageableElementPointer.class);
+        String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(pointerFromStringConstructor);
+        JsonAssert.assertJsonEquals(expected, json);
+        PackageableElementPointer expectedPointerFromObjectConstructor = objectMapper.readValue(expected, PackageableElementPointer.class);
+        Assert.assertEquals(expectedPointerFromObjectConstructor, pointerFromStringConstructor);
+    }
+
     private void check(String input, String output) throws Exception
     {
         PureModelContextData context = objectMapper.readValue(input, PureModelContextData.class);
-        objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(context);
         JsonAssert.assertJsonEquals(output, json);
     }
