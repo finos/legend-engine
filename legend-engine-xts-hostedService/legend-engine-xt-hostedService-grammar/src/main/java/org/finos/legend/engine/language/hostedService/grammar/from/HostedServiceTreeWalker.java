@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.language.hostedService.grammar.from;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.function.Consumer;
 import org.antlr.v4.runtime.CharStream;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -21,30 +24,25 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.HostedServiceParserGrammar;
-import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.RuntimeParser;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentStage;
+import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.Deployment;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ExecutionEnvironmentInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.MultiExecutionParameters;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.SingleExecutionParameters;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class HostedServiceTreeWalker
 {
@@ -92,7 +90,11 @@ public class HostedServiceTreeWalker
         HostedServiceParserGrammar.ServicePatternContext patternContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.servicePattern(), "pattern", hostedService.sourceInformation);
         hostedService.pattern = PureGrammarParserUtility.fromGrammarString(patternContext.STRING().getText(), true);
         HostedServiceParserGrammar.ServiceFuncContext functionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.serviceFunc(), "function", hostedService.sourceInformation);
-        hostedService.function = functionContext.functionIdentifier().getText();
+        hostedService.function = new PackageableElementPointer(
+            PackageableElementType.FUNCTION,
+            functionContext.functionIdentifier().getText(),
+            walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier())
+        );
         HostedServiceParserGrammar.ServiceOwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceOwnership(), "owners", hostedService.sourceInformation);
         if (ownerContext != null)
         {

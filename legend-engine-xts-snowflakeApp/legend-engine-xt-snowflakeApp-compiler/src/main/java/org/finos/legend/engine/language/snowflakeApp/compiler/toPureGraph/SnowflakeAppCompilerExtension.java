@@ -53,7 +53,7 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
     {
         try
         {
-            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(app.function), app.sourceInformation);
+            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(app.function.path), app.sourceInformation);
             return new Root_meta_external_function_activator_snowflakeApp_SnowflakeApp_Impl(
                         app.name,
                         null,
