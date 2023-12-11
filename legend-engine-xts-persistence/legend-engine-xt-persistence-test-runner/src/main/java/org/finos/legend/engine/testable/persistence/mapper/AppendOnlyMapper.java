@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.NoAuditing;
 import org.finos.legend.engine.testable.persistence.mapper.v1.MappingVisitors;
 
+import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.BATCH_ID_FIELD_DEFAULT;
 import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class AppendOnlyMapper
@@ -35,6 +36,7 @@ public class AppendOnlyMapper
                 .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(DIGEST_FIELD_DEFAULT).build())
                 .filterExistingRecords(appendOnly.filterDuplicates)
                 .auditing(appendOnly.auditing.accept(MappingVisitors.MAP_TO_COMPONENT_AUDITING))
+                .batchIdField(BATCH_ID_FIELD_DEFAULT)
                 .build();
     }
 
@@ -56,6 +58,7 @@ public class AppendOnlyMapper
                 .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(DIGEST_FIELD_DEFAULT).build())
                 .filterExistingRecords(filterExistingRecords)
                 .auditing(temporality.auditing.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_NONTEMPORAL_AUDITING))
+                .batchIdField(BATCH_ID_FIELD_DEFAULT)
                 .build();
     }
 }
