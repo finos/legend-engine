@@ -67,7 +67,7 @@ import static org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapp
 public class IngestModeMapper
 {
     public static final String DIGEST_FIELD_DEFAULT = "DIGEST";
-    public static final String BATCH_ID_FIELD_DEFAULT = "batch_id";
+    public static final String BATCH_ID_FIELD_DEFAULT = "BATCH_ID";
 
     /*
     Mapper from Persistence model to IngestMode object
