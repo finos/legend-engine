@@ -171,9 +171,6 @@ public class AnsiTestArtifacts
         return String.format("DROP TABLE IF EXISTS %s CASCADE", tableName);
     }
 
-    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
-            "(\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR,\"batch_update_time\" DATETIME)";
-
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
             "\"ID\" INTEGER NOT NULL," +
             "\"NAME\" VARCHAR NOT NULL," +
@@ -407,18 +404,6 @@ public class AnsiTestArtifacts
             "\"VALIDITY_FROM_TARGET\" DATETIME NOT NULL," +
             "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
             "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"VALIDITY_FROM_TARGET\"))";
-
-    public static String expectedBitemporalFromOnlyMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-            "(\"ID\" INTEGER NOT NULL," +
-            "\"NAME\" VARCHAR NOT NULL," +
-            "\"AMOUNT\" DOUBLE," +
-            "\"VALIDITY_FROM_REFERENCE\" DATETIME NOT NULL," +
-            "\"DIGEST\" VARCHAR," +
-            "\"BATCH_ID_IN\" INTEGER NOT NULL," +
-            "\"BATCH_ID_OUT\" INTEGER," +
-            "\"VALIDITY_FROM_TARGET\" DATETIME NOT NULL," +
-            "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
-            "PRIMARY KEY (\"ID\", \"NAME\", \"VALIDITY_FROM_REFERENCE\", \"BATCH_ID_IN\", \"VALIDITY_FROM_TARGET\"))";
 
     public static String expectedBitemporalFromOnlyTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"" +
             "(\"id\" INTEGER NOT NULL," +

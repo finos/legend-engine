@@ -141,9 +141,6 @@ public class BigQueryTestArtifacts
             "`biz_date` DATE," +
             "`digest` STRING)";
 
-    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
-            "(`id` INT64,`name` STRING,`amount` FLOAT64,`biz_date` DATE,`digest` STRING,`batch_update_time` DATETIME)";
-
     public static String expectedMainTableBatchIdAndVersionBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE,`digest` STRING,`version` INT64," +
             "`batch_id_in` INT64 NOT NULL,`batch_id_out` INT64,PRIMARY KEY (`id`, `name`, `batch_id_in`) NOT ENFORCED)";
