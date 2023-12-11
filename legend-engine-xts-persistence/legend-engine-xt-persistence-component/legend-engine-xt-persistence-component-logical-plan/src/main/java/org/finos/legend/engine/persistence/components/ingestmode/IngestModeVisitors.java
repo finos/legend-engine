@@ -158,6 +158,7 @@ public class IngestModeVisitors
             Set<String> metaFields = new HashSet<>();
 
             metaFields.add(nontemporalDelta.digestField());
+            nontemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
             nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
             return metaFields;
