@@ -6,7 +6,6 @@ Class meta::external::function::activator::snowflakeApp::SnowflakeApp extends Fu
   applicationName : String[1];
   description : String[0..1];
   owner : String[0..1];
-  type: SnowflakeDeploymentType[0..1] ;//default to full
 }
 
  Class meta::external::function::activator::snowflakeApp::SnowflakeDeploymentConfiguration extends DeploymentConfiguration
@@ -19,10 +18,6 @@ Class meta::external::function::activator::snowflakeApp::SnowflakeApp extends Fu
 
  }
 
-Enum meta::external::function::activator::snowflakeApp::SnowflakeDeploymentType
-{
-  STAGE, FULL
-}
 
 // This section needs to be code generated from the section above
 Class meta::protocols::pure::vX_X_X::metamodel::function::activator::snowflakeApp::SnowflakeApp extends meta::protocols::pure::vX_X_X::metamodel::function::activator::FunctionActivator

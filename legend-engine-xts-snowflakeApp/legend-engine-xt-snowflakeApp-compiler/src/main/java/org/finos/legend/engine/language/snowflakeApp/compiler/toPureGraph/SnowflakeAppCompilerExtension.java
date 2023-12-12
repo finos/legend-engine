@@ -63,7 +63,6 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
                         ._function(func)
                         ._description(app.description)
                         ._owner(app.owner)
-                        ._type(app.type != null ? context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakeDeploymentType", app.type.toString()) : context.pureModel.getEnumValue("meta::external::function::activator::snowflakeApp::SnowflakeDeploymentType", "FULL"))
                         ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeAppDeploymentConfiguration) app.activationConfiguration, context) : null);
         }
         catch (Exception e)
