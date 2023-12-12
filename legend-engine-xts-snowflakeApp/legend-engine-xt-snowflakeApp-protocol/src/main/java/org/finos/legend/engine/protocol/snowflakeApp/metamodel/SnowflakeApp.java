@@ -14,21 +14,17 @@
 
 package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.FunctionActivator;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 
-import java.util.Collections;
-import java.util.List;
 
 //------------------------------------------------------------
 // Should be generated out of the Pure protocol specification
 //------------------------------------------------------------
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SnowflakeApp extends FunctionActivator
 {
     public String applicationName;
     public String description;
     public String owner;
-    public SnowflakeAppType type;
 }
