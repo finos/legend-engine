@@ -30,6 +30,7 @@ public class PureIDELight extends PureIDEServer
 {
     public static void main(String[] args) throws Exception
     {
+        System.setProperty("legend.test.h2.port", "1975");
         new PureIDELight().run(args.length == 0 ? new String[]{"server", "legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light/src/main/resources/ideLightConfig.json"} : args);
     }
 
@@ -102,13 +103,13 @@ public class PureIDELight extends PureIDEServer
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-pure-specification-metamodel", "elasticsearch_specification_metamodel"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-executionPlan-test", "elasticsearch_execution_test"))
                 .with(this.buildCore("legend-engine-xts-elasticsearch/legend-engine-xt-elasticsearch-V7-pure-metamodel", "elasticsearch_seven_metamodel"))
-                .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-pure","nonrelational-mongodb"))
-                .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure","nonrelational-mongodb-java-platform-binding"))
-                .with(this.buildCore("legend-engine-xts-service/legend-engine-language-pure-dsl-service-pure","service"))
-                .with(this.buildCore("legend-engine-xts-iceberg/legend-engine-xt-iceberg-pure","external-tableformat-iceberg"))
+                .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-pure", "nonrelational-mongodb"))
+                .with(this.buildCore("legend-engine-xts-mongodb/legend-engine-xt-nonrelationalStore-mongodb-javaPlatformBinding-pure", "nonrelational-mongodb-java-platform-binding"))
+                .with(this.buildCore("legend-engine-xts-service/legend-engine-language-pure-dsl-service-pure", "service"))
+                .with(this.buildCore("legend-engine-xts-iceberg/legend-engine-xt-iceberg-pure", "external-tableformat-iceberg"))
                 .with(this.buildCore("legend-engine-xts-arrow/legend-engine-xt-arrow-pure", "external-format-arrow"))
                 .with(this.buildCore("legend-engine-xts-relationalai/legend-engine-xt-relationalai-pure", "external-query-relationalai"))
-               ;
+                ;
     }
 
     @Override

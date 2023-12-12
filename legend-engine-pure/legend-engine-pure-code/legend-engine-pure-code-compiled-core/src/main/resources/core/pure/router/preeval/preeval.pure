@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
 import meta::pure::router::preeval::*;
 import meta::pure::extension::*;
 import meta::pure::metamodel::path::*;
@@ -82,18 +83,11 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefin
   if(!$r->anyModified(),
      |
        $state->printDebug(|'No changes made for: ');
-       $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($extensions));,
+       $state->printDebug(|$f->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));,
      |
        let res = $r.value->toOne();
-
-      //  $state->printDebug('Transformed From:');
-      //  $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::json::toJSON(50000));
-      //  $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::toPureGrammar::toPure($extensions));
-
        $state->printDebug('Transformed To:');
-       $state->printDebug(|$res->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::json::toJSON(50000));
-       $state->printDebug(|$res->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($extensions));
-
+       $state->printDebug(|$res->meta::pure::metamodel::serialization::grammar::printFunctionDefinition(''));
        $state->printDebug($res);
   );
 
@@ -270,6 +264,7 @@ function <<access.private>> meta::pure::router::preeval::prevalInternal(item : A
                         {r: meta::pure::graphFetch::RootGraphFetchTree<Any>[1] | ^PrevalWrapper<Any>(value = $r, canPreval = true, modified = false);},
                         {b: meta::external::format::shared::binding::Binding[1] | ^PrevalWrapper<Any>(value = $b, canPreval = true, modified = false);},
                         {s: meta::pure::store::Store[1] | ^PrevalWrapper<Any>(value = $s, canPreval = true, modified = false);},
+                        {s: meta::pure::metamodel::relation::RelationStoreAccessor<Any>[1] | ^PrevalWrapper<Any>(value = $s, canPreval = false, modified = false);},
                         {a : Any[1]|
                             assert($state.stopPreeval->eval($a), | 'Unsupported type: ' + $a->type()->match([pe:PackageableElement[1]|$pe->elementToPath(), t:Type[1]|$t->makeString()]));
                             ^PrevalWrapper<Any>(value = $a, canPreval = true, modified = false);
@@ -312,7 +307,6 @@ function <<access.private>> meta::pure::router::preeval::prevalFunctionDefinitio
                                 | pair($state, list(if($p.second.values->isEmpty(), | $r, | $p.second.values->concatenate($r)))),
                                 |
                                   let fe       = $r.value->cast(@FunctionExpression);
-
                                   let varName  = $fe.parametersValues->at(0)->reactivate($state.inScopeVars)->cast(@String)->toOne();
                                   let varValue = $fe.parametersValues->at(1)
                                                                      ->match([
@@ -414,7 +408,11 @@ function <<access.private>> meta::pure::router::preeval::prevalGenericSimpleFunc
 {
   let newParamWrappers = if($sfe.parametersValues->isEmpty(),
                             | [],
-                            | $sfe.func->match([p:Property<Any,Any|*>[1]|'this', f:Function<Any>[1]|$f->functionType().parameters.name])
+                            | $sfe.func->match([
+                                                p:Property<Nil,Any|*>[1]|'this',
+                                                c:Column<Nil,Any|*>[1]|'this',
+                                                f:Function<Any>[1]|$f->functionType().parameters.name
+                                               ])
                                        ->zip($sfe.parametersValues)
                                        ->evaluateAndDeactivate()
                                        ->map(p| $state->printDebugWithDepth(|'Processing parameter: ' + $p.first);
@@ -885,18 +883,31 @@ function <<access.private>> meta::pure::router::preeval::resolveGenericType(in :
 {
   if($in.typeParameter->isEmpty(),
     |
-      let newTypeArgsWrappers = $in.typeArguments->map(ta|$ta->resolveGenericType($state));
-      if(!$newTypeArgsWrappers->anyModified(),
-          | ^PrevalWrapper<GenericType>(value = $in, canPreval=true, modified = false),
-          |  let value = ^$in(typeArguments = $newTypeArgsWrappers.value);
-            ^PrevalWrapper<GenericType>(value = $value, canPreval=$newTypeArgsWrappers->canPreval(), modified = $newTypeArgsWrappers->anyModified());
-      );,
+      if($in.rawType->isNotEmpty() && $in.rawType->toOne()->instanceOf(FunctionType),
+          |^PrevalWrapper<GenericType>(value = ^$in(rawType=$in.rawType->cast(@FunctionType)->toOne()->resolveFunctionType($state)), canPreval=false, modified = true);,
+          |let newTypeArgsWrappers = $in.typeArguments->map(ta|$ta->resolveGenericType($state));
+           if(!$newTypeArgsWrappers->anyModified(),
+            | ^PrevalWrapper<GenericType>(value = $in, canPreval=true, modified = false),
+            | let value = ^$in(typeArguments = $newTypeArgsWrappers.value);
+              ^PrevalWrapper<GenericType>(value = $value, canPreval=$newTypeArgsWrappers->canPreval(), modified = $newTypeArgsWrappers->anyModified());
+           );  
+      );
+      ,
     |
       let value = $state.inScopeTypeParams->get($in.typeParameter->toOne().name);
       if($value->isEmpty(),
         | ^PrevalWrapper<GenericType>(value = $in, canPreval=true, modified = false),
         | ^PrevalWrapper<GenericType>(value = $value->toOne(), canPreval=true, modified = true)
       );
+  );
+}
+
+function <<access.private>> meta::pure::router::preeval::resolveFunctionType(in : FunctionType[1], state : meta::pure::router::preeval::State[1]):FunctionType[1]
+{
+  ^$in
+  (
+    parameters = $in.parameters->map(x|^$x(genericType = $x.genericType->resolveGenericType($state).value)),
+    returnType = $in.returnType->resolveGenericType($state).value
   );
 }
 
