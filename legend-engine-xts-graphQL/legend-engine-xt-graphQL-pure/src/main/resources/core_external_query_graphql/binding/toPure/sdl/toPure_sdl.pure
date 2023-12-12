@@ -8,6 +8,11 @@ import meta::external::query::graphQL::binding::toPure::sdl::*;
 
 function meta::external::query::graphQL::binding::toPure::sdl::graphQLTypeSystemtoPure(doc:Document[1], package:String[1]) : meta::pure::metamodel::type::Type[*]
 {
+  graphQLTypeSystemtoPure($doc, $package, []);
+}
+
+function meta::external::query::graphQL::binding::toPure::sdl::graphQLTypeSystemtoPure(doc:Document[1], package:String[1], pureTypeToGraphQLScalarOverride:PureTypeToGraphQLScalarOverride[0..1]) : meta::pure::metamodel::type::Type[*]
+{
   let pack = buildTransientPackageFromString($package);
 
   let operationTypes = $doc.definitions->map(def | if($def->instanceOf(SchemaDefinition), | $def->cast(@SchemaDefinition).rootOperationTypeDefinitions.type, | []));
@@ -33,7 +38,7 @@ function meta::external::query::graphQL::binding::toPure::sdl::graphQLTypeSystem
         i : InterfaceTypeDefinition[1] | []
       ]
     )
-  )->concatenate(graphQLScalarTypesToPurePrimitives())->newMap();
+  )->concatenate(graphQLScalarTypesToPurePrimitives($pureTypeToGraphQLScalarOverride))->newMap();
 
   // Pass 1b -- add hierarchy
   $doc.definitions->map(def|
@@ -86,7 +91,7 @@ function meta::external::query::graphQL::binding::toPure::sdl::graphQLTypeSystem
   )->map(t | pair($t.name->toOne(), $t))->newMap();
 
   // Pass 3 -- deduplicate redundant type definitions and replace corresponding properties
-  let existingTypesByName = $builtObjectTypesByName->putAll(purePrimitivesToGraphQLScalarTypes()->map(p | pair($p.second, $p.first))->newMap());
+  let existingTypesByName = $builtObjectTypesByName->putAll(graphQLScalarTypesToPurePrimitives($pureTypeToGraphQLScalarOverride)->newMap());
   let allTypesByName = $existingTypesByName->putAll($builtInputAndOperationTypesByName);
   let inputAndOperationTypesToAdd = $builtInputAndOperationTypesByName->values()
     ->cast(@Class<Any>)

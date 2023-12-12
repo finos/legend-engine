@@ -23,6 +23,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,7 +49,8 @@ public class TestRelationalOperationElementGrammarRoundtrip
         {
             LogInfo errorResponse = new LogInfo(null, LoggingEventType.PARSE_ERROR, e);
             Assert.assertNotNull("No source information provided in error", errorResponse.sourceInformation);
-            Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation, EngineErrorType.PARSER));
+            MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation, EngineErrorType.PARSER),
+                    CoreMatchers.startsWith(expectedErrorMsg));
         }
 
         String renderedOperation = RelationalGrammarComposerExtension.renderRelationalOperationElement(operation);

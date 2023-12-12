@@ -18,4 +18,5 @@ public class DeploymentResult
 {
     public String activatorIdentifier;
     public boolean successful;
+    public String deploymentLocation;
 }
