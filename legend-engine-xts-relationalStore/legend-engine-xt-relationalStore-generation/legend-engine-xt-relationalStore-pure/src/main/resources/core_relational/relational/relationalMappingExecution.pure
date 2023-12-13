@@ -626,7 +626,7 @@ function meta::relational::mapping::generatePropertySql(setImplementation: Relat
 
    let innerJoinFilterExists = $srcSetImplementation->getFilter().joinTreeNode.joinType == JoinType.INNER;
    let updatedMainTable = if ($innerJoinFilterExists,
-                              | getRelationalElementWithInnerJoin($srcSetImplementation, $mainTable, [], '', $state, $context, $extensions),
+                              | getRelationalElementWithInnerJoin($srcSetImplementation, $mainTable, '', $state, $context, $extensions),
                               | $mainTable
                            );
 
