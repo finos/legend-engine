@@ -1409,7 +1409,7 @@ function meta::relational::functions::pureToSqlQuery::replaceTreeNodeRelationalE
 function meta::relational::functions::pureToSqlQuery::processClassMappingInnerJoinFilter(queryWithJoin:SelectWithCursor[1], setImplementation:RootRelationalInstanceSetImplementation[1], c:Class<Any>[1], base:SelectWithCursor[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    let ctn                = $queryWithJoin.currentTreeNode->toOne()->cast(@JoinTreeNode);
-   let filteredClassQuery = getRelationalElementWithInnerJoin($setImplementation, $ctn.alias.relationalElement, $c, $nodeId, $state, $context, $extensions);
+   let filteredClassQuery = getRelationalElementWithInnerJoin($setImplementation, $ctn.alias.relationalElement, $nodeId, $state, $context, $extensions);
    let newCtn             = $ctn->replaceTreeNodeRelationalElement($filteredClassQuery, true, $extensions);
    let updatedQuery       = $queryWithJoin->replaceTreeNodeAndUpdatePointersInSwc($ctn, $newCtn);
 
@@ -3452,7 +3452,7 @@ function meta::relational::functions::pureToSqlQuery::removeQuotes(s:String[1]):
    if ($s->startsWith('"'),|$s->substring(1,$s->length()-1),|$s);
 }
 
-function meta::relational::functions::pureToSqlQuery::getRelationalElementWithInnerJoin(viewSpecification:RelationalMappingSpecification[1], mainTable: RelationalOperationElement[1], c:Class<Any>[0..1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
+function meta::relational::functions::pureToSqlQuery::getRelationalElementWithInnerJoin(viewSpecification:RelationalMappingSpecification[1], mainTable: RelationalOperationElement[1], nodeId:String[1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    let innerQueryRoot = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $mainTable));
    let innerQueryBase = ^SelectWithCursor(select = ^SelectSQLQuery(data = $innerQueryRoot), currentTreeNode = $innerQueryRoot);
@@ -3479,7 +3479,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalMappingSp
 
    let innerJoinFilterExists = $viewSpecification->getFilter().joinTreeNode.joinType == JoinType.INNER;
    let currentRelationalElement = if ($innerJoinFilterExists,
-                                      | getRelationalElementWithInnerJoin($viewSpecification, $mainTable, $c, $nodeId, $state, $context, $extensions),
+                                      | getRelationalElementWithInnerJoin($viewSpecification, $mainTable, $nodeId, $state, $context, $extensions),
                                       | $mainTable
                                   );
 
