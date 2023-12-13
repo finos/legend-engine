@@ -33,16 +33,10 @@ function meta::analytics::store::entitlements::getGeneralRelationalTablesFromMap
 
 function meta::analytics::store::entitlements::getGeneralRelationalTablesFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1]):TableWithType[*]
 {
-
   let propertyTree = $query.expressionSequence->at(0)->evaluateAndDeactivate()->meta::pure::lineage::scanProperties::scanProperties(^List<meta::pure::lineage::scanProperties::PropertyPathNode>(), [], [])
   .result->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree();
   let columns = $propertyTree->meta::pure::lineage::scanColumns::scanColumns($mapping).column->removeDuplicates();
-
-  let tablesFromQuery = $columns->filter(c | $c.owner->isNotEmpty() && $c.owner->toOne()->instanceOf(Table))->fold({column, tableList |
-                                let table = $column.owner->toOne()->cast(@Table);
-                                $tableList->add($table);
-       }, []);
-
+  let tablesFromQuery = $columns->filter(c | $c.owner->isNotEmpty() && $c.owner->toOne()->instanceOf(Table))->map(c | $c.owner->toOne()->cast(@Table));
   $tablesFromQuery->removeDuplicates()->removeDuplicatesBy(t | $t.schema.name + '.' + $t.name);
   let relationalDatabaseConnections = getRelationalDatabaseConnection($runtime);
   let tablesWithTypeFromRuntime = $relationalDatabaseConnections->map(c| let tables = getTablesFromDatabase($c.element->cast(@Database));
