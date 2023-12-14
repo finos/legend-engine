@@ -36,12 +36,14 @@ Class meta::analytics::store::entitlements::TableWithType
 
 function meta::analytics::store::entitlements::getTablesFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1], extensions: meta::pure::extension::Extension[*], executionContext:ExecutionContext[0..1]):Table[*]
 {
-   let sql = meta::relational::functions::sqlstring::toSQL($query, $mapping, $runtime, $extensions).sqlQueries;
-   let ec = if ($executionContext->isEmpty(), | ^ExecutionContext(), | $executionContext->toOne());
-   let processedSql = $sql->map(s | meta::relational::mapping::postProcessSQLQuery($s, ^meta::relational::metamodel::Database(), [], [], $runtime, $ec, $extensions).query);
-   $processedSql->map(q | $q->meta::relational::validation::functions::getTables())
-      ->removeDuplicates()
-      ->removeDuplicatesBy(t | $t.schema.name + '.' + $t.name);
+  let propertyTree = $query.expressionSequence->at(0)->evaluateAndDeactivate()->meta::pure::lineage::scanProperties::scanProperties(^List<meta::pure::lineage::scanProperties::PropertyPathNode>(), [], [])
+  .result->meta::pure::lineage::scanProperties::propertyTree::buildPropertyTree();
+  let columns = $propertyTree->meta::pure::lineage::scanColumns::scanColumns($mapping).column->removeDuplicates();
+  let tablesFromQuery = $columns->filter(c | $c.owner->isNotEmpty() && $c.owner->toOne()->instanceOf(Table))->map(c | $c.owner->toOne()->cast(@Table));
+  $tablesFromQuery->removeDuplicates()->removeDuplicatesBy(t | $t.schema.name + '.' + $t.name);
+  let relationalDatabaseConnections = getRelationalDatabaseConnection($runtime);
+  let tablesFromRuntime = $relationalDatabaseConnections->map(c|getTablesFromDatabase($c.element->cast(@Database)));                                                                      
+  $tablesFromRuntime->filter(tb|$tb->in($tablesFromQuery))->map(ltb| runMappersOnTables($ltb, $runtime)->toOne());
 }
 
 function meta::analytics::store::entitlements::getTablesFromDatabase(database: Database[1]): Table[*]
