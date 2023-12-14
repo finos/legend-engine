@@ -683,7 +683,7 @@ public abstract class RelationalIngestorAbstract
                                                             Optional<DataSplitRange> dataSplitRange)
     {
         Map<String, String> placeHolderKeyValues = new HashMap<>();
-        Optional<Long> nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer, ingestMode);
+        Optional<Long> nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer);
         Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
         if (nextBatchId.isPresent())
         {

@@ -33,7 +33,7 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalI
 import org.finos.legend.engine.persistence.components.relational.bigquery.BigQuerySink;
 import org.finos.legend.engine.persistence.components.relational.bigquery.executor.BigQueryConnection;
 import org.finos.legend.engine.persistence.components.relational.bigquery.logicalplan.datasets.BigQueryStagedFilesDatasetProperties;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -95,16 +95,15 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .schema(SchemaDefinition.builder().build())
             .build();
 
-        BulkLoadMetadataDataset bulkLoadMetadataDataset = BulkLoadMetadataDataset.builder().group("demo").name("bulk_load_batch_metadata").build();
+        MetadataDataset metadataDataset = MetadataDataset.builder().metadataDatasetGroupName("demo").metadataDatasetName("batch_metadata").build();
 
-        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagedFilesDataset).bulkLoadMetadataDataset(bulkLoadMetadataDataset).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagedFilesDataset).metadataDataset(metadataDataset).build();
 
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
         delete("demo", "batch_metadata");
         delete("demo", "append_log");
-        delete("demo", "bulk_load_batch_metadata");
 
 
         RelationalIngestor ingestor = RelationalIngestor.builder()
@@ -156,16 +155,15 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .schema(SchemaDefinition.builder().build())
             .build();
 
-        BulkLoadMetadataDataset bulkLoadMetadataDataset = BulkLoadMetadataDataset.builder().group("demo").name("bulk_load_batch_metadata").build();
+        MetadataDataset metadataDataset = MetadataDataset.builder().metadataDatasetGroupName("demo").metadataDatasetName("batch_metadata").build();
 
-        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagedFilesDataset).bulkLoadMetadataDataset(bulkLoadMetadataDataset).build();
+        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagedFilesDataset).metadataDataset(metadataDataset).build();
 
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
         delete("demo", "batch_metadata");
         delete("demo", "append_log");
-        delete("demo", "bulk_load_batch_metadata");
 
 
         RelationalIngestor ingestor = RelationalIngestor.builder()

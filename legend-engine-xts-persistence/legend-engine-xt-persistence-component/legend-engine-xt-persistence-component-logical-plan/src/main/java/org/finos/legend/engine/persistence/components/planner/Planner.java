@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
@@ -47,7 +46,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
@@ -233,11 +231,6 @@ public abstract class Planner
         return datasets.metadataDataset();
     }
 
-    protected Optional<BulkLoadMetadataDataset> bulkLoadMetadataDataset()
-    {
-        return datasets.bulkLoadMetadataDataset();
-    }
-
     protected Optional<LockInfoDataset> lockInfoDataset()
     {
         return datasets.lockInfoDataset();
@@ -257,8 +250,9 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(originalStagingDataset());
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
+        StringValue status = StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()); // todo: may be a good chance to unify the status now
+        Optional<StringValue> stagingFilters = LogicalPlanUtils.getDatasetFiltersStringValue(originalStagingDataset());
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, stagingFilters)));
     }
 
     public LogicalPlan buildLogicalPlanForInitializeLock(Resources resources)

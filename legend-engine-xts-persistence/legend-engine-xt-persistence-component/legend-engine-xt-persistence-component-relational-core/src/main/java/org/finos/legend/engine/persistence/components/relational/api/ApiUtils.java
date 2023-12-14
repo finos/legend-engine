@@ -37,7 +37,6 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -65,12 +64,10 @@ public class ApiUtils
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
         MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
-        BulkLoadMetadataDataset bulkLoadMetadataDataset = datasets.bulkLoadMetadataDataset().orElse(BulkLoadMetadataDataset.builder().build());
         LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
         Datasets enrichedDatasets = datasets
                 .withMetadataDataset(metadataDataset)
-                .withLockInfoDataset(lockInfoDataset)
-                .withBulkLoadMetadataDataset(bulkLoadMetadataDataset);
+                .withLockInfoDataset(lockInfoDataset);
         if (caseConversion == CaseConversion.TO_UPPER)
         {
             return converter.applyCase(enrichedDatasets, String::toUpperCase);
@@ -117,9 +114,9 @@ public class ApiUtils
     }
 
     public static Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                          Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+                                          Transformer<SqlGen, SqlPlan> transformer)
     {
-        LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets, ingestMode);
+        LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets);
         List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
         Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
         if (nextBatchId.isPresent())

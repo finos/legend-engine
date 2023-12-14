@@ -136,8 +136,8 @@ public class BulkLoadTest
             "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
-        String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT {NEXT_BATCH_ID},'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `staging_filters`) " +
+            "(SELECT 'my_name',{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
@@ -206,11 +206,11 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
-        String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT (SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
+        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `staging_filters`) " +
+            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
             "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -269,7 +269,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -327,7 +327,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `digest`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -386,7 +386,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `MY_DB`.`MY_NAME` " +
             "(`COL_INT`, `COL_STRING`, `COL_DECIMAL`, `COL_DATETIME`, `COL_VARIANT`, `DIGEST`, `BATCH_ID`, `APPEND_TIME`) " +
-            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.`BATCH_ID`),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
+            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));

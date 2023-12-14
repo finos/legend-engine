@@ -32,12 +32,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Numeric
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SumBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
-import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class MetadataUtils
 {
@@ -86,9 +86,9 @@ public class MetadataUtils
             .build());
     }
 
-    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp)
+    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatus)
     {
-        return insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, null);
+        return insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, batchStatus, Optional.empty());
     }
 
     /*
@@ -99,13 +99,8 @@ public class MetadataUtils
     '{BATCH_END_TIMESTAMP_PLACEHOLDER}',
     'DONE');
      */
-    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, List<DatasetFilter> datasetFilters)
+    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatusValue, Optional<StringValue> jsonStringValue)
     {
-        boolean datasetFiltersPresent = false;
-        if (datasetFilters != null && !datasetFilters.isEmpty())
-        {
-            datasetFiltersPresent = true;
-        }
         DatasetReference metaTableRef = this.metaDataset.datasetReference();
         FieldValue tableName = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.tableNameField()).build();
         FieldValue batchId = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.tableBatchIdField()).build();
@@ -119,24 +114,21 @@ public class MetadataUtils
         metaInsertFields.add(startTs);
         metaInsertFields.add(endTs);
         metaInsertFields.add(batchStatus);
-        if (datasetFiltersPresent)
+        if (jsonStringValue.isPresent())
         {
             FieldValue stagingFilters = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.stagingFiltersField()).build();
             metaInsertFields.add(stagingFilters);
         }
 
-        StringValue status = StringValue.of(MetaTableStatus.DONE.toString());
         List<Value> metaSelectFields = new ArrayList<>();
         metaSelectFields.add(mainTableName);
         metaSelectFields.add(getBatchId(mainTableName));
         metaSelectFields.add(batchStartTimestamp);
         metaSelectFields.add(batchEndTimestamp);
-        metaSelectFields.add(status);
-        if (datasetFiltersPresent)
+        metaSelectFields.add(batchStatusValue);
+        if (jsonStringValue.isPresent())
         {
-            String stagingFiltersStr = LogicalPlanUtils.jsonifyDatasetFilters(datasetFilters);
-            StringValue stagingFilters = StringValue.of(stagingFiltersStr);
-            ParseJsonFunction jsonFunction = ParseJsonFunction.builder().jsonString(stagingFilters).build();
+            ParseJsonFunction jsonFunction = ParseJsonFunction.builder().jsonString(jsonStringValue.get()).build();
             metaSelectFields.add(jsonFunction);
         }
         return Insert.of(metaDataset, Selection.builder().addAllFields(metaSelectFields).build(), metaInsertFields);

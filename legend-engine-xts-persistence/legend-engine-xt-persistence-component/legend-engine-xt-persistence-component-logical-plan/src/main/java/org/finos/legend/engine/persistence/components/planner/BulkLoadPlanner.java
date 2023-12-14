@@ -29,6 +29,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -43,8 +44,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Ope
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataUtils;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
@@ -61,7 +60,6 @@ class BulkLoadPlanner extends Planner
     private boolean transformWhileCopy;
     private Dataset tempDataset;
     private StagedFilesDataset stagedFilesDataset;
-    private BulkLoadMetadataDataset bulkLoadMetadataDataset;
     private Optional<String> bulkLoadEventIdValue;
 
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
@@ -77,7 +75,6 @@ class BulkLoadPlanner extends Planner
 
         bulkLoadEventIdValue = plannerOptions.bulkLoadEventIdValue();
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
-        bulkLoadMetadataDataset = bulkLoadMetadataDataset().orElseThrow(IllegalStateException::new);
 
         transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
         if (!transformWhileCopy)
@@ -130,7 +127,7 @@ class BulkLoadPlanner extends Planner
 
         // Add batch_id field
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
-        fieldsToSelect.add(new BulkLoadMetadataUtils(bulkLoadMetadataDataset).getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
+        fieldsToSelect.add(metadataUtils.getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
 
         // Add auditing
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
@@ -162,7 +159,7 @@ class BulkLoadPlanner extends Planner
 
         // Add batch_id field
         fieldsToInsertIntoMain.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
-        fieldsToSelect.add(new BulkLoadMetadataUtils(bulkLoadMetadataDataset).getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
+        fieldsToSelect.add(metadataUtils.getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
 
         // Add auditing
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
@@ -189,7 +186,7 @@ class BulkLoadPlanner extends Planner
     {
         List<Operation> operations = new ArrayList<>();
         operations.add(Create.of(true, mainDataset()));
-        operations.add(Create.of(true, bulkLoadMetadataDataset.get()));
+        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         if (!transformWhileCopy)
         {
             operations.add(Create.of(true, tempDataset));
@@ -225,11 +222,8 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        BulkLoadMetadataUtils bulkLoadMetadataUtils = new BulkLoadMetadataUtils(bulkLoadMetadataDataset);
-        String batchSourceInfo = jsonifyBatchSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties());
-        StringValue datasetName = StringValue.of(mainDataset().datasetReference().name());
-        Insert insertMetaData = bulkLoadMetadataUtils.insertMetaData(datasetName, StringValue.of(batchSourceInfo));
-        return LogicalPlan.of(Arrays.asList(insertMetaData));
+        StringValue batchSourceInfo = StringValue.of(jsonifyBatchSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties()));
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchSourceInfo))));
     }
 
     @Override

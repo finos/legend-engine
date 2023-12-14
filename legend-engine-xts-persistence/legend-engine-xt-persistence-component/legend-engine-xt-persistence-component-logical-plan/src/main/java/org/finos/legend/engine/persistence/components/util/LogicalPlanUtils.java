@@ -77,8 +77,6 @@ public class LogicalPlanUtils
 {
     public static final String INFINITE_BATCH_TIME = "9999-12-31 23:59:59";
     public static final String DEFAULT_META_TABLE = "batch_metadata";
-    public static final String DEFAULT_BULK_LOAD_META_TABLE = "bulk_load_batch_metadata";
-
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";
@@ -266,15 +264,15 @@ public class LogicalPlanUtils
         return And.of(conditions);
     }
 
-    public static List<DatasetFilter> getDatasetFilters(Dataset dataSet)
+    public static Optional<StringValue> getDatasetFiltersStringValue(Dataset dataset)
     {
-        List<DatasetFilter> datasetFilters = new ArrayList();
-        if (dataSet instanceof DerivedDataset)
+        if (dataset instanceof DerivedDataset)
         {
-            DerivedDataset derivedDataset = (DerivedDataset) dataSet;
-            datasetFilters = derivedDataset.datasetFilters();
+            DerivedDataset derivedDataset = (DerivedDataset) dataset;
+            List<DatasetFilter> datasetFilters = derivedDataset.datasetFilters();
+            return Optional.of(StringValue.of(LogicalPlanUtils.jsonifyDatasetFilters(datasetFilters)));
         }
-        return datasetFilters;
+        return Optional.empty();
     }
 
     public static String jsonifyDatasetFilters(List<DatasetFilter> filters)
