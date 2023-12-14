@@ -81,9 +81,9 @@ public interface MetadataDatasetAbstract
     }
 
     @Default
-    default String stagingFiltersField()
+    default String batchSourceInfoField()
     {
-        return "staging_filters";
+        return "batch_source_info";
     }
 
     @Derived
@@ -99,7 +99,7 @@ public interface MetadataDatasetAbstract
                 .addFields(Field.builder().name(batchEndTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(batchStatusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
                 .addFields(Field.builder().name(tableBatchIdField()).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build())
-                .addFields(Field.builder().name(stagingFiltersField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(batchSourceInfoField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
                 .build())
             .build();
     }

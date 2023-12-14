@@ -173,7 +173,7 @@ public abstract class MetadataUtilsTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withOptimizers(new UpperCaseOptimizer()));
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "SELECT " + lowerCaseTableName() + ".\"STAGING_FILTERS\" FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " " +
+        String expectedSql = "SELECT " + lowerCaseTableName() + ".\"BATCH_SOURCE_INFO\" FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " " +
                 "WHERE (UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'MAIN') AND " +
                 "(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\" = (SELECT MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\") " +
                 "FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE " +
@@ -195,7 +195,7 @@ public abstract class MetadataUtilsTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "INSERT INTO " + lowerCaseTableName() +
-            " (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"staging_filters\")" +
+            " (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\")" +
             " (SELECT 'appeng_log_table_name',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"table_batch_id\"),0)+1 FROM " + lowerCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"table_name\") = 'APPENG_LOG_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";;
         Assertions.assertEquals(expectedSql, list.get(0));
     }
@@ -213,7 +213,7 @@ public abstract class MetadataUtilsTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "INSERT INTO " + upperCaseTableName() +
-            " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"STAGING_FILTERS\")" +
+            " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\")" +
             " (SELECT 'BULK_LOAD_TABLE_NAME',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'BULK_LOAD_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
         Assertions.assertEquals(expectedSql, list.get(0));
     }

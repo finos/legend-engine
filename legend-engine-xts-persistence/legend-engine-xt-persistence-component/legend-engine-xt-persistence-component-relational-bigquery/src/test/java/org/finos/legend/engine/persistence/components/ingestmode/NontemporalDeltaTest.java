@@ -475,7 +475,7 @@ public class NontemporalDeltaTest extends org.finos.legend.engine.persistence.co
     protected String getExpectedMetadataTableIngestQueryWithStagingFilters(String stagingFilters)
     {
         return "INSERT INTO batch_metadata " +
-            "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `staging_filters`) " +
+            "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
             "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
             "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
             "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE'," +

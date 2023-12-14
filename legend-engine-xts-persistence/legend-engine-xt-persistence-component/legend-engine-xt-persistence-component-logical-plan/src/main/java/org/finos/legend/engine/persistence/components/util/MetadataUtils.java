@@ -99,7 +99,7 @@ public class MetadataUtils
     '{BATCH_END_TIMESTAMP_PLACEHOLDER}',
     'DONE');
      */
-    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatusValue, Optional<StringValue> jsonStringValue)
+    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatusValue, Optional<StringValue> batchSourceInfoValue)
     {
         DatasetReference metaTableRef = this.metaDataset.datasetReference();
         FieldValue tableName = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.tableNameField()).build();
@@ -114,10 +114,10 @@ public class MetadataUtils
         metaInsertFields.add(startTs);
         metaInsertFields.add(endTs);
         metaInsertFields.add(batchStatus);
-        if (jsonStringValue.isPresent())
+        if (batchSourceInfoValue.isPresent())
         {
-            FieldValue stagingFilters = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.stagingFiltersField()).build();
-            metaInsertFields.add(stagingFilters);
+            FieldValue batchSourceInfo = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.batchSourceInfoField()).build();
+            metaInsertFields.add(batchSourceInfo);
         }
 
         List<Value> metaSelectFields = new ArrayList<>();
@@ -126,9 +126,9 @@ public class MetadataUtils
         metaSelectFields.add(batchStartTimestamp);
         metaSelectFields.add(batchEndTimestamp);
         metaSelectFields.add(batchStatusValue);
-        if (jsonStringValue.isPresent())
+        if (batchSourceInfoValue.isPresent())
         {
-            ParseJsonFunction jsonFunction = ParseJsonFunction.builder().jsonString(jsonStringValue.get()).build();
+            ParseJsonFunction jsonFunction = ParseJsonFunction.builder().jsonString(batchSourceInfoValue.get()).build();
             metaSelectFields.add(jsonFunction);
         }
         return Insert.of(metaDataset, Selection.builder().addAllFields(metaSelectFields).build(), metaInsertFields);
@@ -143,7 +143,7 @@ public class MetadataUtils
     */
     public Selection getLatestStagingFilters(StringValue mainTableName)
     {
-        FieldValue stagingFiltersField = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.stagingFiltersField()).build();
+        FieldValue stagingFiltersField = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.batchSourceInfoField()).build();
         FieldValue tableNameField = FieldValue.builder().datasetRef(metaDataset.datasetReference()).fieldName(dataset.tableNameField()).build();
         FunctionImpl tableNameInUpperCase = FunctionImpl.builder().functionName(FunctionName.UPPER).addValue(tableNameField).build();
         StringValue mainTableNameInUpperCase = StringValue.builder().value(mainTableName.value().map(field -> field.toUpperCase()))

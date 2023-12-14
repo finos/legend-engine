@@ -668,14 +668,14 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals("main", appendMetadata.get("table_name"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_start_ts_utc").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_end_ts_utc").toString());
-        Assertions.assertTrue(appendMetadata.get("staging_filters").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
+        Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
         if (taskId.isPresent())
         {
-            Assertions.assertTrue(appendMetadata.get("staging_filters").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
+            Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
         }
         else
         {
-            Assertions.assertFalse(appendMetadata.get("staging_filters").toString().contains("\"event_id\""));
+            Assertions.assertFalse(appendMetadata.get("batch_source_info").toString().contains("\"event_id\""));
         }
     }
 
@@ -686,14 +686,14 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals("MAIN", appendMetadata.get("TABLE_NAME"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_START_TS_UTC").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_END_TS_UTC").toString());
-        Assertions.assertTrue(appendMetadata.get("STAGING_FILTERS").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
+        Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
         if (taskId.isPresent())
         {
-            Assertions.assertTrue(appendMetadata.get("STAGING_FILTERS").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
+            Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
         }
         else
         {
-            Assertions.assertFalse(appendMetadata.get("STAGING_FILTERS").toString().contains("\"event_id\""));
+            Assertions.assertFalse(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains("\"event_id\""));
         }
     }
 

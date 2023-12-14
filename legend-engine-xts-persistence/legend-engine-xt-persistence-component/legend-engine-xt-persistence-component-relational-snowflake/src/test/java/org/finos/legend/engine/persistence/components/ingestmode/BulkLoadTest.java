@@ -128,7 +128,7 @@ public class BulkLoadTest
                 "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV')" +
                 " ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"staging_filters\") " +
+        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
                 "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"task123\",\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -247,7 +247,7 @@ public class BulkLoadTest
                 "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
                 "ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedMetadataIngestSql = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"STAGING_FILTERS\") " +
+        String expectedMetadataIngestSql = "INSERT INTO BATCH_METADATA (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\") " +
             "(SELECT 'MY_NAME',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
             "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
