@@ -17,19 +17,18 @@ import meta::relational::metamodel::relation::*;
 
 Class meta::relational::metamodel::relation::SelectSQLQueryWithCommonTableExpressions extends SelectSQLQuery
 {
-  commonTableExpressions: SelectCommonTableExpression[*];
+  commonTableExpressions: CommonTableExpression[*];
 }
 
-Class meta::relational::metamodel::relation::CommonTableExpression
+Class meta::relational::metamodel::relation::CommonTableExpression extends RelationalOperationElement
 {
   name: String[1];
-  coulmns: RelationalOperationElement[*];
   sqlQuery: SQLQuery[1];
 }
 
-Class meta::relational::metamodel::relation::SelectCommonTableExpression extends NamedRelation, CommonTableExpression
+Class meta::relational::metamodel::relation::SelectCommonTableExpression extends Relation, CommonTableExpression
 [
-  shouldBeSelectQuery: $this.sqlQuery->instanceOf(SelectSQLQuery)  //constraint on complex property
+  shouldBeSelectQuery: $this.sqlQuery->instanceOf(SelectSQLQuery)
 ]
 {
   materialized: Boolean[0..1];
