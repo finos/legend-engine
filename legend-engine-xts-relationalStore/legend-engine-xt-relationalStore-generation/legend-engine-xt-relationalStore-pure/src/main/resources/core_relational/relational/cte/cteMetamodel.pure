@@ -37,7 +37,7 @@ Class meta::relational::metamodel::relation::SelectCommonTableExpression extends
    }:SelectSQLQuery[1];
 }
 
-Class meta::relational::metamodel::relation::SelectCommonTableExpressionReference extends RelationalOperationElement
+Class meta::relational::metamodel::relation::CommonTableExpressionReference extends RelationalOperationElement
 {
   name: String[1];
 }
