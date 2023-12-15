@@ -994,6 +994,11 @@
             <artifactId>legend-engine-test-runner-mapping</artifactId>
             <scope>runtime</scope>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-runner-function</artifactId>
+            <scope>runtime</scope>
+        </dependency>
         <!-- RUNTIME -->
 
         <dependency>

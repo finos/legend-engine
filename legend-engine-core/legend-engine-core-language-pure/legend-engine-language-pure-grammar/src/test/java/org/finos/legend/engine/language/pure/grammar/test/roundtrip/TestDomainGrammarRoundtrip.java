@@ -488,6 +488,136 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testFunctionTest()
+    {
+        test("function model::Simple(): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + ' World!'\n" +
+                "}\n" +
+                "[\n" +
+                "  testSuite_1:\n" +
+                "  {\n" +
+                "    tests:\n" +
+                "    [\n" +
+                "      test_1:\n" +
+                "      {\n" +
+                "        asserts:\n" +
+                "        [\n" +
+                "          assertion_1:\n" +
+                "            EqualToJson\n" +
+                "            #{\n" +
+                "              expected:\n" +
+                "                ExternalFormat\n" +
+                "                #{\n" +
+                "                  contentType: 'application/json';\n" +
+                "                  data: '{}';\n" +
+                "                }#;\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "]\n\n" +
+                "function model::Simple2(): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + ' World!'\n" +
+                "}\n" +
+                "[\n" +
+                "  testSuite_1:\n" +
+                "  {\n" +
+                "    tests:\n" +
+                "    [\n" +
+                "      test_1:\n" +
+                "      {\n" +
+                "        asserts:\n" +
+                "        [\n" +
+                "          assertion_1:\n" +
+                "            EqualToJson\n" +
+                "            #{\n" +
+                "              expected:\n" +
+                "                ExternalFormat\n" +
+                "                #{\n" +
+                "                  contentType: 'application/json';\n" +
+                "                  data: '{}';\n" +
+                "                }#;\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "]\n");
+        test("function model::P(): String[1]\n" +
+                "{\n" +
+                "  'x'\n" +
+                "}\n" +
+                "[\n" +
+                "  testSuite_1:\n" +
+                "  {\n" +
+                "    data:\n" +
+                "    [\n" +
+                "      {\n" +
+                "        store: store::TestDB;\n" +
+                "        data:\n" +
+                "          Reference\n" +
+                "          #{\n" +
+                "            testServiceStoreTestSuites::TestData\n" +
+                "          }#;\n" +
+                "      }\n" +
+                "    ];\n" +
+                "    tests:\n" +
+                "    [\n" +
+                "      test_1:\n" +
+                "      {\n" +
+                "        asserts:\n" +
+                "        [\n" +
+                "          assertion_1:\n" +
+                "            EqualToJson\n" +
+                "            #{\n" +
+                "              expected:\n" +
+                "                ExternalFormat\n" +
+                "                #{\n" +
+                "                  contentType: 'application/json';\n" +
+                "                  data: '[]';\n" +
+                "                }#;\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "]\n"
+                );
+
+        test("function model::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello! My name is ' + $name + '.'\n" +
+                "}\n" +
+                "[\n" +
+                "  testSuite_1:\n" +
+                "  {\n" +
+                "    tests:\n" +
+                "    [\n" +
+                "      testFail:\n" +
+                "      {\n" +
+                "        parameters:\n" +
+                "        [\n" +
+                "          name = 'John'\n" +
+                "        ]\n" +
+                "        asserts:\n" +
+                "        [\n" +
+                "          assertion_1:\n" +
+                "            EqualTo\n" +
+                "            #{\n" +
+                "              expected:\n" +
+                "                'Hello! My name is John.';\n" +
+                "            }#\n" +
+                "        ]\n" +
+                "      }\n" +
+                "    ]\n" +
+                "  }\n" +
+                "]\n");
+    }
+
+    @Test
     public void testDecimalWithScale()
     {
         test("function withPath::f(d1: Decimal[1], d2: Decimal[1]): Decimal[1]\n" +
