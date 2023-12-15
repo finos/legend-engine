@@ -2250,7 +2250,7 @@ public class TestMappingCompilationFromGrammar extends TestCompilationFromGramma
                 "  ]\n" +
                 ")\n" +
                 "\n",
-                "COMPILATION error at [30:5-35:5]: Mapping TestSuites should have at least 1 test");
+                "COMPILATION error at [30:5-35:5]: TestSuites should have at least 1 test");
         test("###Pure\n" +
                 "Class test::model\n" +
                 "{\n" +
