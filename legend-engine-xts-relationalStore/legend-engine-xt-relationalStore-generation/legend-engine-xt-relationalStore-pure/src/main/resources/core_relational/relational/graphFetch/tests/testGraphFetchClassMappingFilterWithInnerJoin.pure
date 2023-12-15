@@ -1,0 +1,137 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::tests::model::simple::*;
+import meta::pure::executionPlan::profiles::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::alloy::connections::*;
+import meta::external::store::relational::runtime::*;
+
+function <<test.BeforePackage>> meta::relational::graphFetch::tests::classMappingFilterWithInnerJoin::setup(): Boolean[1]
+{
+   meta::relational::tests::mapping::classMappingFilterWithInnerJoin::setUp();
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::classMappingFilterWithInnerJoin::testFlatGraphFetch(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::baseMappingWithInnerJoinInFilter;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter"},{"firstName":"John"},{"firstName":"John"},{"firstName":"Anthony"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::classMappingFilterWithInnerJoin::testFlatGraphFetchWithJoin(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         age
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::mappingWithInnerJoinInFilter;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Firm X","age":23},{"firstName":"John","lastName":"Firm X","age":22},' +
+      '{"firstName":"John","lastName":"Firm X","age":12},{"firstName":"Anthony","lastName":"Firm X","age":22}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::classMappingFilterWithInnerJoin::testNestedGraphFetch(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         firm {
+            legalName
+         }
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::classOwnedMappingWithInnerJoinInFilter;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Firm X","firm":{"legalName": "Firm X"}},{"firstName":"John","lastName":"Firm X","firm":{"legalName": "Firm X"}},' +
+      '{"firstName":"John","lastName":"Firm X","firm":{"legalName": "Firm X"}},{"firstName":"Anthony","lastName":"Firm X","firm":{"legalName": "Firm X"}}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::classMappingFilterWithInnerJoin::testGraphFetchWithPrimitiveQualifier(): Boolean[1]
+{
+   let tree = #{
+      Person {
+         firstName,
+         lastName,
+         'nameWithTitle': nameWithTitle('Mr')
+      }
+   }#;
+   let query = {|Person.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::classOwnedMappingWithInnerJoinInFilter;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"firstName":"Peter","lastName":"Firm X","nameWithTitle":"Mr Peter Firm X"},' +
+      '{"firstName":"John","lastName":"Firm X","nameWithTitle":"Mr John Firm X"},' +
+      '{"firstName":"John","lastName":"Firm X","nameWithTitle":"Mr John Firm X"},' +
+      '{"firstName":"Anthony","lastName":"Firm X","nameWithTitle":"Mr Anthony Firm X"}]',
+      $result
+   );
+}
+
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::classMappingFilterWithInnerJoin::testInnerJoinFilterClassMappingAsTarget(): Boolean[1]
+{
+   let tree = #{
+      Firm {
+         legalName,
+         employees {
+            firstName,
+            lastName
+         }
+      }
+   }#;
+   let query = {|Firm.all()->graphFetch($tree)->serialize($tree)};
+   let mapping = meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::classOwnedMappingWithInnerJoinInFilter;
+   let runtime = meta::external::store::relational::tests::testRuntime();
+
+   let result = execute($query, $mapping, $runtime, meta::relational::extension::relationalExtensions()).values;
+
+   assertJsonStringsEqual(
+      '[{"legalName":"Firm X","employees":[{"firstName":"Peter","lastName":"Firm X"},{"firstName":"John","lastName":"Firm X"},{"firstName":"John","lastName":"Firm X"},{"firstName":"Anthony","lastName":"Firm X"}]},' +
+      '{"legalName":"Firm A","employees":[]},{"legalName":"Firm B","employees":[]},{"legalName":"Firm C","employees":[]}]',
+      $result
+   );
+}

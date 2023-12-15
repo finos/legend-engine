@@ -749,19 +749,38 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
    });
 }
 
-function <<access.private>> meta::relational::graphFetch::executionPlan::generatePrimitivePropertyQuery(setImpls: RelationalInstanceSetImplementation[*], propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], mapping:Mapping[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], debug: DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
+function <<access.private>> meta::relational::graphFetch::executionPlan::buildBaseQueryForChild(setImpls: RelationalInstanceSetImplementation[*], pureToSqlState: State[1], mc: TemporalMilestoningContext[0..1], extensions: Extension[*], debug: DebugContext[1]):SelectWithCursor[1]
 {
-   let isQualified    = $propTree.property->instanceOf(QualifiedProperty);
-   let pureToSqlState = defaultState($mapping, $inScopeVars);
-   let srcSetImpl     = $setImpls->match([
+   let srcSetImpl = $setImpls->match([
       s:RootRelationalInstanceSetImplementation[1]     | $s,
       s:EmbeddedRelationalInstanceSetImplementation[1] | $s.setMappingOwner;
    ])->cast(@RootRelationalInstanceSetImplementation);
 
-   let mainTable     = $srcSetImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
-   let currentNode   = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $mainTable));
-   let basePreFilter = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode, milestoningContext = $mc)->applyTypeFilter($srcSetImpl, '_gftm', $pureToSqlState, $debug, $extensions);
-   let base          = ^$basePreFilter(select = $basePreFilter.select->pushFilters($extensions));
+   let mainTable         = $srcSetImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
+   let innerFilterExists = $srcSetImpl->getFilter().joinTreeNode.joinType == JoinType.INNER;
+   let rootRelElement    = if ($innerFilterExists,
+                               | // Create subquery with inner join filter
+                                 getRelationalElementWithInnerJoin($srcSetImpl, $mainTable, '_gftm', $pureToSqlState, $debug, $extensions),
+                               | $mainTable
+                           );
+   let currentNode       = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $rootRelElement));
+   let base              = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode, milestoningContext = $mc);
+   let baseWithFilter    = if ($innerFilterExists,
+                               | // Subquery with filter would have been generated before
+                                 $base,
+                               | $base->applyTypeFilter($srcSetImpl, '_gftm', $pureToSqlState, $debug, $extensions)
+                           );
+
+   ^$baseWithFilter(
+      select = $baseWithFilter.select->pushFilters($extensions)
+   );
+}
+
+function <<access.private>> meta::relational::graphFetch::executionPlan::generatePrimitivePropertyQuery(setImpls: RelationalInstanceSetImplementation[*], propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], mapping:Mapping[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], debug: DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
+{
+   let isQualified    = $propTree.property->instanceOf(QualifiedProperty);
+   let pureToSqlState = defaultState($mapping, $inScopeVars);
+   let base           = $setImpls->buildBaseQueryForChild($pureToSqlState, $mc, $extensions, $debug);
 
    let res = if ($isQualified,
                 {|
@@ -781,15 +800,7 @@ function meta::relational::graphFetch::executionPlan::generateNonPrimitiveProper
 {
    let isQualified    = $propTree.property->instanceOf(QualifiedProperty);
    let pureToSqlState = ^State(inScopeVars = $inScopeVars, mapping=$mapping, supportedFunctions=getSupportedFunctions(), inProject=false, inFilter=false, filterChainDepth=0, inProjectFunctions=false,  processingProjectionThread=false, shouldIsolate=false, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
-   let srcSetImpl     = $setImpls->match([
-      s:RootRelationalInstanceSetImplementation[1]     | $s,
-      s:EmbeddedRelationalInstanceSetImplementation[1] | $s.setMappingOwner;
-   ])->cast(@RootRelationalInstanceSetImplementation);
-
-   let mainTable     = $srcSetImpl->mainRelation()->processRelation([], '', false, 0, false, [], $pureToSqlState, $debug, $extensions);
-   let currentNode   = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $mainTable));
-   let basePreFilter = ^SelectWithCursor(select = ^SelectSQLQuery(data = $currentNode), currentTreeNode = $currentNode, milestoningContext = $mc)->applyTypeFilter($srcSetImpl, '_gftm', $pureToSqlState, $debug, $extensions);
-   let base          = ^$basePreFilter(select = $basePreFilter.select->pushFilters($extensions));
+   let base           = $setImpls->buildBaseQueryForChild($pureToSqlState, $mc, $extensions, $debug);
 
    let res = if ($isQualified,
                 {|
