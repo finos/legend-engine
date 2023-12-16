@@ -1899,6 +1899,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-framework</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-data-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -2337,6 +2342,11 @@
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-dsl-tds</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>

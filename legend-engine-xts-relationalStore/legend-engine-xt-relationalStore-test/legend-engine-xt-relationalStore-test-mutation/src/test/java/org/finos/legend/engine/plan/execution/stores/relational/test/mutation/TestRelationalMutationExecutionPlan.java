@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 
-package org.finos.legend.engine.plan.execution.stores.relational.mutation.test;
+package org.finos.legend.engine.plan.execution.stores.relational.test.mutation;
 
 import junit.framework.TestSuite;
 import org.finos.legend.pure.m3.execution.test.PureTestBuilder;
