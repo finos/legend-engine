@@ -228,7 +228,7 @@ public class BigQueryTestArtifacts
             "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
             "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
             "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
-            "CURRENT_DATETIME(),'DONE',PARSE_JSON('{\"batch_id_in\":{\"GT\":5}}'))";
+            "CURRENT_DATETIME(),'DONE',PARSE_JSON('{\"staging_filters\":{\"batch_id_in\":{\"GT\":5}}}'))";
 
     public static String expectedMetadataTableIngestQueryWithUpperCase = "INSERT INTO BATCH_METADATA (`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`)" +
             " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE')";

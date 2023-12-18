@@ -371,7 +371,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"biz_date\":{\"LT\":\"2020-01-03\",\"GT\":\"2020-01-01\"}}"), metaIngestSqlList.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"staging_filters\":{\"biz_date\":{\"LT\":\"2020-01-03\",\"GT\":\"2020-01-01\"}}}"), metaIngestSqlList.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE (stage.`biz_date` > '2020-01-01') AND (stage.`biz_date` < '2020-01-03')";
         // Stats
@@ -440,7 +440,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"snapshot_id\":{\"GT\":18972}}"), metaIngestSqlList.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"staging_filters\":{\"snapshot_id\":{\"GT\":18972}}}"), metaIngestSqlList.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972";
         // Stats
@@ -475,7 +475,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"snapshot_id\":{\"GT\":18972}}"), metaIngestSqlList.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"staging_filters\":{\"snapshot_id\":{\"GT\":18972}}}"), metaIngestSqlList.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging` as stage WHERE stage.`snapshot_id` > 18972";
         // Stats

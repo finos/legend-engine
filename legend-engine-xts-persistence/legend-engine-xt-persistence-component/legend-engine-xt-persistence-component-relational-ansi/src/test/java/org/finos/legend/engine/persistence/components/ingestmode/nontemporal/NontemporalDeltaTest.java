@@ -463,7 +463,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTableWithVersionAndCount, preActionsSqlList.get(2));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"snapshot_id\":{\"GT\":18972}}"), operations.metadataIngestSql().get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"staging_filters\":{\"snapshot_id\":{\"GT\":18972}}}"), operations.metadataIngestSql().get(0));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));

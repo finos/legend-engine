@@ -250,9 +250,12 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
+        // Create the additional info map - to be implemented in the future - can contain things like watermark
+        Map<String, Object> additionalInfoMap = new HashMap<>();
+
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getBatchSourceInfoStringValue(originalStagingDataset(), additionalInfoMap);
         StringValue status = StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()); // todo: may be a good chance to unify the status now
-        Optional<StringValue> stagingFilters = LogicalPlanUtils.getDatasetFiltersStringValue(originalStagingDataset());
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, stagingFilters)));
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, batchSourceInfo)));
     }
 
     public LogicalPlan buildLogicalPlanForInitializeLock(Resources resources)

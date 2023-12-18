@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -37,7 +35,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StringV
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
@@ -51,6 +48,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.BATCH_SOURCE_INFO_EVENT_ID;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_DATASET_BASE_NAME;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.UNDERSCORE;
 
@@ -222,8 +220,12 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        StringValue batchSourceInfo = StringValue.of(jsonifyBatchSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties()));
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchSourceInfo))));
+        // Create the additional info map
+        Map<String, Object> additionalInfoMap = new HashMap<>();
+        bulkLoadEventIdValue.ifPresent(eventId -> additionalInfoMap.put(BATCH_SOURCE_INFO_EVENT_ID, eventId));
+
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getBatchSourceInfoStringValue(stagedFilesDataset, additionalInfoMap);
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, batchSourceInfo)));
     }
 
     @Override
@@ -252,31 +254,5 @@ class BulkLoadPlanner extends Planner
         Equals condition = Equals.of(fieldValue, BatchStartTimestamp.INSTANCE);
         FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
         return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
-    }
-
-    private String jsonifyBatchSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties)
-    {
-        Map<String, Object> batchSourceMap = new HashMap();
-        List<String> filePaths = stagedFilesDatasetProperties.filePaths();
-        List<String> filePatterns = stagedFilesDatasetProperties.filePatterns();
-
-        if (filePaths != null && !filePaths.isEmpty())
-        {
-            batchSourceMap.put("file_paths", filePaths);
-        }
-        if (filePatterns != null && !filePatterns.isEmpty())
-        {
-            batchSourceMap.put("file_patterns", filePatterns);
-        }
-        bulkLoadEventIdValue.ifPresent(eventId -> batchSourceMap.put("event_id", eventId));
-        ObjectMapper objectMapper = new ObjectMapper();
-        try
-        {
-            return objectMapper.writeValueAsString(batchSourceMap);
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 }

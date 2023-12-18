@@ -44,6 +44,7 @@ import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
+import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
 public class ApiUtils
 {
@@ -164,8 +165,8 @@ public class ApiUtils
         // Convert map of Filters to List of Filters
         if (stagingFilters.isPresent())
         {
-            Map<String, Map<String, Object>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Object>>>() {});
-            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.entrySet())
+            Map<String, Map<String, Map<String, Object>>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
+            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.get(BATCH_SOURCE_INFO_STAGING_FILTERS).entrySet())
             {
                 for (Map.Entry<String, Object> filterEntry : filtersMapEntry.getValue().entrySet())
                 {

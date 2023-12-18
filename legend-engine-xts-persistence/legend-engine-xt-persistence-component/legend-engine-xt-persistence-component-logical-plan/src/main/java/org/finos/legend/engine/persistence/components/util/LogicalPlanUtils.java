@@ -40,6 +40,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
@@ -83,6 +85,11 @@ public class LogicalPlanUtils
     public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
     public static final String TEMP_STAGING_DATASET_BASE_NAME = "legend_persistence_temp_staging";
     public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
+    public static final String BATCH_SOURCE_INFO_ADDITIONAL_INFO = "additional_info";
+    public static final String BATCH_SOURCE_INFO_STAGING_FILTERS = "staging_filters";
+    public static final String BATCH_SOURCE_INFO_FILE_PATHS = "file_paths";
+    public static final String BATCH_SOURCE_INFO_FILE_PATTERNS = "file_patterns";
+    public static final String BATCH_SOURCE_INFO_EVENT_ID = "event_id";
 
     private LogicalPlanUtils()
     {
@@ -264,37 +271,75 @@ public class LogicalPlanUtils
         return And.of(conditions);
     }
 
-    public static Optional<StringValue> getDatasetFiltersStringValue(Dataset dataset)
+    public static Optional<StringValue> getBatchSourceInfoStringValue(Dataset dataset, Map<String, Object> additionalInfo)
     {
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
+
+        // Save additional info
+        if (!additionalInfo.isEmpty())
+        {
+            batchSourceInfoMap.put(BATCH_SOURCE_INFO_ADDITIONAL_INFO, additionalInfo);
+        }
+
         if (dataset instanceof DerivedDataset)
         {
             DerivedDataset derivedDataset = (DerivedDataset) dataset;
             List<DatasetFilter> datasetFilters = derivedDataset.datasetFilters();
-            return Optional.of(StringValue.of(LogicalPlanUtils.jsonifyDatasetFilters(datasetFilters)));
+            LogicalPlanUtils.jsonifyStagingFilters(datasetFilters, batchSourceInfoMap);
         }
-        return Optional.empty();
+        else if (dataset instanceof StagedFilesDataset)
+        {
+            StagedFilesDataset stagedFilesDataset = (StagedFilesDataset) dataset;
+            StagedFilesDatasetProperties stagedFilesDatasetProperties = stagedFilesDataset.stagedFilesDatasetProperties();
+            LogicalPlanUtils.jsonifyFilesInfo(stagedFilesDatasetProperties, batchSourceInfoMap);
+        }
+
+        if (batchSourceInfoMap.isEmpty())
+        {
+            return Optional.empty();
+        }
+        else
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try
+            {
+                return Optional.of(StringValue.of(objectMapper.writeValueAsString(batchSourceInfoMap)));
+            }
+            catch (JsonProcessingException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
-    public static String jsonifyDatasetFilters(List<DatasetFilter> filters)
+    // For all ingest modes except for bulk load
+    public static void jsonifyStagingFilters(List<DatasetFilter> filters, Map<String, Object> batchSourceInfoMap)
     {
-        Map<String, Map<String, Object>> map = new HashMap<>();
+        Map<String, Map<String, Object>> stagingFiltersMap = new HashMap<>();
         for (DatasetFilter filter : filters)
         {
             String key = filter.fieldName();
             Object value = filter.getValue();
             String filterType = filter.filterType().getType();
-            Map<String, Object> mapValue = map.getOrDefault(key, new HashMap<>());
+            Map<String, Object> mapValue = stagingFiltersMap.getOrDefault(key, new HashMap<>());
             mapValue.put(filterType, value);
-            map.put(key, mapValue);
+            stagingFiltersMap.put(key, mapValue);
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        try
+        batchSourceInfoMap.put(BATCH_SOURCE_INFO_STAGING_FILTERS, stagingFiltersMap);
+    }
+
+    // For bulk load
+    public static void jsonifyFilesInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties, Map<String, Object> batchSourceInfoMap)
+    {
+        List<String> filePaths = stagedFilesDatasetProperties.filePaths();
+        List<String> filePatterns = stagedFilesDatasetProperties.filePatterns();
+        if (filePaths != null && !filePaths.isEmpty())
         {
-            return objectMapper.writeValueAsString(map);
+            batchSourceInfoMap.put(BATCH_SOURCE_INFO_FILE_PATHS, filePaths);
         }
-        catch (JsonProcessingException e)
+        if (filePatterns != null && !filePatterns.isEmpty())
         {
-            throw new RuntimeException(e);
+            batchSourceInfoMap.put(BATCH_SOURCE_INFO_FILE_PATTERNS, filePatterns);
         }
     }
 
