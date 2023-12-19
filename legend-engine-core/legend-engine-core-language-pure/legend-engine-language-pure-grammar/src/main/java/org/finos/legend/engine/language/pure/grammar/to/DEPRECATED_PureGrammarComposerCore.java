@@ -106,6 +106,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderFunctionTestSuites;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabSize;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
@@ -395,7 +396,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
                 LazyIterate.collect(function.body, b -> "  " + b.accept(Builder.newInstance(this).withIndentation(getTabSize(1)).build())).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
-                "\n}";
+                "\n}"  +
+                renderFunctionTestSuites(function, toContext());
     }
 
 

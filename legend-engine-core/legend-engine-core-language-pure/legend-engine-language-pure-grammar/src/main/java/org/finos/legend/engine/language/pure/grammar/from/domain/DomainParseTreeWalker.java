@@ -19,7 +19,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.PredictionMode;
+import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import org.checkerframework.dataflow.qual.Pure;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -35,7 +37,9 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.graphFetchTree.GraphFetchTreeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
+import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -45,10 +49,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Domain;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
@@ -56,7 +62,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
@@ -416,6 +424,10 @@ public class DomainParseTreeWalker
             variable.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
         });
+        if (ctx.functionTestSuites() != null)
+        {
+            func.tests = ListIterate.collect(ctx.functionTestSuites().functionTestSuite(), this::visitFunctionSuite);
+        }
         func.returnType = ctx.functionTypeSignature().type().getText();
         func.returnMultiplicity = this.buildMultiplicity(ctx.functionTypeSignature().multiplicity().multiplicityArgument());
         func.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
@@ -423,6 +435,76 @@ public class DomainParseTreeWalker
         return func;
     }
 
+    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite visitFunctionSuite(DomainParserGrammar.FunctionTestSuiteContext functionTestSuiteContext)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite suite = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite();
+        suite.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionTestSuiteContext);
+        suite.id = PureGrammarParserUtility.fromIdentifier(functionTestSuiteContext.identifier());
+        // data
+        DomainParserGrammar.TestDataContext testDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(functionTestSuiteContext.testData(), "data", suite.sourceInformation);
+        if (testDataContext != null)
+        {
+            suite.testData = ListIterate.collect(testDataContext.storeTestData(), this::visitStoreTestData);
+        }
+        // Tests
+        DomainParserGrammar.FunctionTestSuiteTestsContext testSuiteTestsContext = PureGrammarParserUtility.validateAndExtractRequiredField(functionTestSuiteContext.functionTestSuiteTests(), "tests", suite.sourceInformation);
+        suite.tests = ListIterate.collect(testSuiteTestsContext.functionTestBlock(), this::visitFunctionTest);
+        return suite;
+    }
+
+    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData visitStoreTestData(DomainParserGrammar.StoreTestDataContext storeDataContext)
+    {
+        StoreTestData storeTestData = new StoreTestData();
+        DomainParserGrammar.StorePointerContext storePointerContext =  PureGrammarParserUtility.validateAndExtractRequiredField(storeDataContext.storePointer(), "store", storeTestData.sourceInformation);
+        storeTestData.store = PureGrammarParserUtility.fromQualifiedName(storePointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : storePointerContext.qualifiedName().packagePath().identifier(), storePointerContext.qualifiedName().identifier());
+        DomainParserGrammar.StoreDataContext dataContext  =  PureGrammarParserUtility.validateAndExtractRequiredField(storeDataContext.storeData(), "data", storeTestData.sourceInformation);
+        storeTestData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(dataContext.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        return storeTestData;
+    }
+
+    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest visitFunctionTest(DomainParserGrammar.FunctionTestBlockContext ctx)
+    {
+        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest functionTest = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest();
+        functionTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+        functionTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+
+        // parameters value
+        DomainParserGrammar.FunctionTestParametersContext testParameterContext =  PureGrammarParserUtility.validateAndExtractOptionalField(ctx.functionTestParameters(), "parameters", functionTest.sourceInformation);
+        if (testParameterContext != null)
+        {
+            functionTest.parameters = ListIterate.collect(testParameterContext.functionTestParameter(), this::visitFunctionTestParameter);
+        }
+        DomainParserGrammar.FunctionTestAssertsContext testAssertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.functionTestAsserts(), "asserts", functionTest.sourceInformation);
+        functionTest.assertions = ListIterate.collect(testAssertsContext.functionTestAssert(), this::visitFunctionTestAsserts);
+        return functionTest;
+    }
+
+    private TestAssertion visitFunctionTestAsserts(DomainParserGrammar.FunctionTestAssertContext ctx)
+    {
+        TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+        testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        return testAssertion;
+    }
+
+    private ParameterValue visitFunctionTestParameter(DomainParserGrammar.FunctionTestParameterContext ctx)
+    {
+        ParameterValue parameterValue = new ParameterValue();
+        parameterValue.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
+        parameterValue.value = this.visitTestParameter(ctx.primitiveValue());
+        return parameterValue;
+    }
+
+    private ValueSpecification visitTestParameter(DomainParserGrammar.PrimitiveValueContext primitiveValueContext)
+    {
+        DomainParser parser = new DomainParser();
+        int startLine = primitiveValueContext.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + primitiveValueContext.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+        String expectedValue = primitiveValueContext.start.getInputStream().getText(Interval.of(primitiveValueContext.start.getStartIndex(), primitiveValueContext.stop.getStopIndex()));
+        ValueSpecification valueSpecification = parser.parsePrimitiveValue(expectedValue, serviceParamSourceInformation, null);
+        return valueSpecification;
+    }
 
     // ----------------------------------------------- MEASURE -----------------------------------------------
 
