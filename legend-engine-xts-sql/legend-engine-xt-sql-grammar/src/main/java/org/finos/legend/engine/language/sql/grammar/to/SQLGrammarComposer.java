@@ -212,6 +212,12 @@ public class SQLGrammarComposer
             }
 
             @Override
+            public String visit(ParameterExpression val)
+            {
+                return "$" + val.index;
+            }
+
+            @Override
             public String visit(NegativeExpression val)
             {
                 String value = val.value.accept(this);

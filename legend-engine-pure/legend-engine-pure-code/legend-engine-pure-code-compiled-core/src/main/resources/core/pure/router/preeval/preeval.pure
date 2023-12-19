@@ -77,38 +77,42 @@ function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefin
 
 function <<access.public>> meta::pure::router::preeval::preval(f : FunctionDefinition<Any>[1], state:State[1], extensions:Extension[*]):PrevalWrapper<FunctionDefinition<Any>>[1]
 {
-  let r = prevalInternal($f->evaluateAndDeactivate(), $state, $extensions)->toOne()->cast(@PrevalWrapper<FunctionDefinition<Any>>);
+  meta::pure::functions::tracing::traceSpan({|
+    let r = prevalInternal($f->evaluateAndDeactivate(), $state, $extensions)->toOne()->cast(@PrevalWrapper<FunctionDefinition<Any>>);
 
-  if(!$r->anyModified(),
-     |
-       $state->printDebug(|'No changes made for: ');
-       $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($extensions));,
-     |
-       let res = $r.value->toOne();
+    if(!$r->anyModified(),
+      |
+        $state->printDebug(|'No changes made for: ');
+        $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($extensions));,
+      |
+        let res = $r.value->toOne();
 
-      //  $state->printDebug('Transformed From:');
-      //  $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::json::toJSON(50000));
-      //  $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::toPureGrammar::toPure($extensions));
+        //  $state->printDebug('Transformed From:');
+        //  $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::json::toJSON(50000));
+        //  $state->printDebug(|$f->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::toPureGrammar::toPure($extensions));
 
-       $state->printDebug('Transformed To:');
-       $state->printDebug(|$res->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::json::toJSON(50000));
-       $state->printDebug(|$res->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($extensions));
+        $state->printDebug('Transformed To:');
+        $state->printDebug(|$res->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::json::toJSON(50000));
+        $state->printDebug(|$res->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformFunctionBody($extensions)->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::toPureGrammar::toPure($extensions));
 
-       $state->printDebug($res);
-  );
+        $state->printDebug($res);
+    );
 
-  $r;
+    $r;  
+  }, 'preval');
 }
 
 function <<access.public>> meta::pure::router::preeval::preval(f : FunctionExpression[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
-  let state = ^meta::pure::router::preeval::State(inScopeVars        = $inScopeVars,
-                                                  shouldInlineFxn    = defaultFunctionInlineStrategy($extensions),
-                                                  stopPreeval        = defaultPreevalStopStrategy($extensions),
-                                                  rollingInScopeVars = $inScopeVars,
-                                                  debug              = $debug,
-                                                  inScopeTypeParams  = ^Map<String, GenericType>());
-  prevalInternal($f, $state, $extensions).value->cast(@ValueSpecification);
+  meta::pure::functions::tracing::traceSpan({|
+    let state = ^meta::pure::router::preeval::State(inScopeVars        = $inScopeVars,
+                                                    shouldInlineFxn    = defaultFunctionInlineStrategy($extensions),
+                                                    stopPreeval        = defaultPreevalStopStrategy($extensions),
+                                                    rollingInScopeVars = $inScopeVars,
+                                                    debug              = $debug,
+                                                    inScopeTypeParams  = ^Map<String, GenericType>());
+    prevalInternal($f, $state, $extensions).value->cast(@ValueSpecification);  
+  }, 'preval')
 }
 
 // ====================================================================================================================================================================

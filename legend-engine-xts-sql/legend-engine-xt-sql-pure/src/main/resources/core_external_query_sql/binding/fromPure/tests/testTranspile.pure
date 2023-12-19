@@ -883,6 +883,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByExpression():Boolean[1]
+{
+  //NOTE: group by complex expressions, cannot reference projected columns, only source columns
+  test(
+    'SELECT sum(Integer) AS "sum", String FROM service."/service/service1" GROUP BY String, (case when "String" = \'N/A\' then \'\' else "String" end)',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )
+        ->extend([
+          col(row:TDSRow[1] | if ($row.getString('String') == 'N/A', | '', | $row.getString('String')), 'CASE WHEN String = N/A THEN  ELSE String END')
+        ])
+        ->groupBy(['String', 'CASE WHEN String = N/A THEN  ELSE String END'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+        ->restrict(['sum', 'String'])
+      }, false)
+}
+
 //HAVING
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testHaving():Boolean[1]
 {
