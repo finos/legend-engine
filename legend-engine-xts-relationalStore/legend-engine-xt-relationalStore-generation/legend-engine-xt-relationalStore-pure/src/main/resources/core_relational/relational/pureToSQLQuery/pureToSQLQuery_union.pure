@@ -199,7 +199,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildUnion(setImpls
    //    1. buildUnion is called as part of building the target of an association (in which case the 'source' flag is false)
    //    2. Used in the 'importDataFlow' use case on the source (getAll on the type itself)
    let avoidModeledProperties = $relationalPropertyMappings->exists(rpm | $rpm->isNullJoinPropertyMapping());
-   let targetCols = findFkListForEachSet($propertyMappingsInScope, $state.importDataFlow==true, $state.mapping, $avoidModeledProperties);
+   let targetCols = findFkListForEachSet($propertyMappingsInScope, $state.importDataFlow==true, $state.mapping->toOne(), $avoidModeledProperties);
    let missingFks = $targetCols->map(c|list($c.second.values->map(z|pair($z.name+'_'+$targetCols->indexOf($c)->toString(), $z))));
    let mappedFkPropertyNames = $targetCols.first.values.first->removeDuplicates();
 
@@ -359,9 +359,9 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
    print(if(!$context.debug, |'', | $context.space+'*>Build SQL query out many set implementations (and join) (propertyMappings:'+$relationalPropertyMappings->size()->toString()+'):\n'));
 
    let avoidModeledProperties = $relationalPropertyMappings->exists(rpm | $rpm->isNullJoinPropertyMapping());
-   let sourceCols = findFkListForEachSet($relationalPropertyMappings, true, $state.mapping, $avoidModeledProperties);
+   let sourceCols = findFkListForEachSet($relationalPropertyMappings, true, $state.mapping->toOne(), $avoidModeledProperties);
    let srcMap = $sourceCols->buildColumnToNameMapForMappedFks();
-   let targetCols = findFkListForEachSet($relationalPropertyMappings, false, $state.mapping, $avoidModeledProperties);
+   let targetCols = findFkListForEachSet($relationalPropertyMappings, false, $state.mapping->toOne(), $avoidModeledProperties);
    let targetMap = $targetCols->buildColumnToNameMapForMappedFks();
 
    let sourceAlias = $srcOperation.currentTreeNode.alias;
@@ -420,7 +420,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
 
    // New Queries
    let targetSetImplementationIds = $relationalPropertyMappings.targetSetImplementationId->removeDuplicates();
-   let targetSetImplementations = $targetSetImplementationIds->map(t|$state.mapping->classMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
+   let targetSetImplementations = $targetSetImplementationIds->map(t|$state.mapping->toOne()->classMappingById($t)->cast(@RootRelationalInstanceSetImplementation)->toOne());
 
    print(if(!$context.debug, |'', | $context.space+'  - sourceSetImplIds: ['+$sourceSetImplementationIds->joinStrings(',')+']\n'+$context.space+'  - targetSetImplIds: ['+$targetSetImplementationIds->joinStrings(',')+']\n'));
 
@@ -436,7 +436,7 @@ function meta::relational::functions::pureToSqlQuery::union::buildSQLQueryOutMan
 
    let unionTargetAlias = ^TableAlias(name='unionAlias', relationalElement=$newTargetOperation);
 
-   let unionJoin = buildUnionJoin($relationalPropertyMappings, $state.mapping, $srcMap, $targetMap, $sourceNode.alias, $unionTargetAlias, $newSourceOperation, $nodeId, $state, $context, $extensions);
+   let unionJoin = buildUnionJoin($relationalPropertyMappings, $state.mapping->toOne(), $srcMap, $targetMap, $sourceNode.alias, $unionTargetAlias, $newSourceOperation, $nodeId, $state, $context, $extensions);
 
    print(if(!$context.debug, |'', | $context.space+'     [Merged]: '+$unionJoin.second->printRelationalTreeNode($extensions)+'\n'));
 

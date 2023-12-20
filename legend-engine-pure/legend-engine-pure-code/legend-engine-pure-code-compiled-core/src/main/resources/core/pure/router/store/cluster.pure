@@ -71,7 +71,7 @@ Class  meta::pure::router::clustering::ClusterResponse
    executableSetOperations: Pair<SetImplementation, StoreMappingClusteredValueSpecification>[*];
 }
 
-function meta::pure::router::doCluster(enrichedExpression:StoreMappingRoutedValueSpecification[1], mapping:Mapping[1], runtime: Runtime[1], openVariables:Map<String, List<Any>>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusteredValueSpecification[*]
+function meta::pure::router::doCluster(enrichedExpression:StoreRoutedValueSpecification[1], mapping:Mapping[0..1], runtime: Runtime[1], openVariables:Map<String, List<Any>>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusteredValueSpecification[*]
 {
    let clusterResult = $enrichedExpression->cluster($mapping, $runtime, $openVariables, $exeCtx, $extensions, $debug);
    if($clusterResult.cluster->instanceOf(ClusteredValueSpecification),
@@ -86,10 +86,11 @@ function meta::pure::router::doCluster(enrichedExpression:StoreMappingRoutedValu
         ));
 }
 
-function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[1], runtime: Runtime[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusterResponse[1]
+function meta::pure::router::clustering::cluster(v:ValueSpecification[1], _mapping:Mapping[0..1], runtime: Runtime[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusterResponse[1]
 {
    if($exeCtx->instanceOf(AnalyticsExecutionContext) && ($exeCtx->cast(@AnalyticsExecutionContext).useAnalytics == true),
-      |  let allPropertyAccesses = meta::pure::router::analytics::getAllPropertyAccesses($v, $mapping, $extensions);
+      |  let mapping = $_mapping->toOne();
+         let allPropertyAccesses = meta::pure::router::analytics::getAllPropertyAccesses($v, $mapping, $extensions);
          let crossPropertyAccesses = $allPropertyAccesses->meta::pure::router::analytics::filterCrossPropertyAccesses();
          if($crossPropertyAccesses->size() == 0,
             | cluster($v, $mapping, $openVariables, $exeCtx,  $debug, [], $extensions),
@@ -200,7 +201,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
               );
               ^$finalCluster(letFunctions = $createdLetFns->concatenate($finalCluster.letFunctions));
          );,
-      |  cluster($v, $mapping, $openVariables, $exeCtx,  $debug, [], $extensions);
+      |  cluster($v, $_mapping, $openVariables, $exeCtx,  $debug, [], $extensions);
    );
 }
 
@@ -239,14 +240,14 @@ function meta::pure::router::clustering::specializedFunctionExpressionClustering
 }
 
 
-function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*]):ClusterResponse[1]
+function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*]):ClusterResponse[1]
 {
-  cluster($v, $mapping, $openVariables, $exeCtx, '',  $debug, $analyticsDecision, $extensions)
+  cluster($v, $mapping, $openVariables, $exeCtx, '',  $debug, $analyticsDecision, $extensions);
 }
 
-function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], paramSuffix: String[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*]):ClusterResponse[1]
+function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mapping:Mapping[0..1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], paramSuffix: String[1],  debug:DebugContext[1], analyticsDecision: AnalyticsDecision[0..1], extensions:meta::pure::extension::Extension[*]):ClusterResponse[1]
 {
-   $v->match([f:FunctionExpression[1]|
+   $v->match([f:FunctionExpression[1]|   
                                       let specializedFunctionProcessor = specializedFunctionExpressionClustering()->filter(spec | $spec.first->eval($f->evaluateAndDeactivate())).second;
                                       if($specializedFunctionProcessor->isNotEmpty(),
                                        | assert($specializedFunctionProcessor->size() == 1, | 'Only one match is authorized for specializedFunctionProcessor');
@@ -254,7 +255,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                        | let childClustersResponse = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($mapping, $openVariables, $exeCtx, $paramSuffix + '_' + indexOf($f.parametersValues,$v)->toString(),  $debug, $analyticsDecision, $extensions));
                                          let pre_params = $childClustersResponse.cluster->evaluateAndDeactivate();
                                          let paramsExecutablePairs = if($analyticsDecision->isNotEmpty(),
-                                            | let crossPropertyAccesses = meta::pure::router::analytics::getAllCrossPropertyAccesses($f, $mapping, $extensions);
+                                            | let crossPropertyAccesses = meta::pure::router::analytics::getAllCrossPropertyAccesses($f, $mapping->toOne(), $extensions);
                                               if($crossPropertyAccesses->isNotEmpty(),
                                                  | let newExecutables = $pre_params->map(p | $p->match([
                                                       c:StoreMappingClusteredValueSpecification[1] | if($c.executable && $c.val->instanceOf(StoreMappingRoutedValueSpecification) && $c.val->cast(@StoreMappingRoutedValueSpecification).sets->size() == 1 && $analyticsDecision.replacedSets.first.id->contains($c.val->cast(@StoreMappingRoutedValueSpecification).sets.id->toOne()),
@@ -274,16 +275,15 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                          let childExecutables = $childClustersResponse.executableSetOperations;
 
                                          let unique = getDistinctClusterVSByStore($params, $extensions);
-                                         if ($unique->size() == 1 && $unique->toOne()->instanceOf(StoreMappingClusteredValueSpecification) && ($f.func->instanceOf(Property) || $f.func->instanceOf(QualifiedProperty) || $unique->at(0)->cast(@StoreMappingClusteredValueSpecification).s.supports->toOne()->eval($f->evaluateAndDeactivate())),
+                                         if ($unique->size() == 1 && $unique->toOne()->instanceOf(StoreClusteredValueSpecification) && ($f.func->instanceOf(Property) || $f.func->instanceOf(QualifiedProperty) || $unique->at(0)->cast(@StoreClusteredValueSpecification).s.supports->toOne()->eval($f->evaluateAndDeactivate())),
                                           | let one = $unique->toOne();
                                             print(if($debug.debug,|$f->evaluateAndDeactivate()->asString()->debug($debug.space+'Func Expression(merge): '),|''));
                                             let res =^$one(
                                                       genericType  = $f.genericType,
                                                       multiplicity = $f.multiplicity,
-                                                      val = ^$f(parametersValues = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreMappingClusteredValueSpecification[1]|$c.val;, a:ValueSpecification[1]|$a]))),
-                                                      executable = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreMappingClusteredValueSpecification[1]|$c.executable;, a:ValueSpecification[1]|[]]))->concatenate(false)->toOneMany()->or() || $f.functionName == 'getAll'
+                                                      val = ^$f(parametersValues = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreClusteredValueSpecification[1]|$c.val;, a:ValueSpecification[1]|$a]))),
+                                                      executable = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreClusteredValueSpecification[1]|$c.executable;, a:ValueSpecification[1]|[]]))->concatenate(false)->toOneMany()->or() || $f.functionName == 'getAll'
                                             );
-                                            print(if($debug.debug,|$res->evaluateAndDeactivate()->asString()->debug($debug.space+'~> '),|''));
                                             ^ClusterResponse(cluster=$res,letFunctions=$letFunctions,executableSetOperations=$executables->concatenate($childExecutables));,
                                           |  print(if($debug.debug,|$f->evaluateAndDeactivate()->asString()->debug($debug.space+'Func Expression(non unique: '+$unique->size()->toString()+'): '),|''));
                                              let k = if ($unique->size() == 0,
@@ -350,8 +350,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                              print(if($debug.debug,|$k.cluster->last()->evaluateAndDeactivate()->cast(@ValueSpecification)->toOne()->asString()->debug($debug.space+'~> '),|''));
                                              $k;
                                        ););,
-
-               r:StoreMappingRoutedValueSpecification[1]|
+               r:StoreMappingRoutedValueSpecification[1]|  
                                               print(if($debug.debug,|$r->evaluateAndDeactivate()->asString()->debug($debug.space+'Routed: '),|''));
                                               let crossPropertyAccesses = $analyticsDecision->isEmpty()->if(|[], |meta::pure::router::analytics::getAllCrossPropertyAccesses($r, $r.mapping, $extensions));
                                               let clusterResponse       = $r.value->cluster($r.mapping, $openVariables, $r.executionContext, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions);
@@ -360,7 +359,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                            c: ClusteredValueSpecification[1]|^$c(val = ^$r(value = $c.val)),
                                                                            a: Any[1]| if($r.sets->isEmpty(),                                           // This check is needed for expressions (like : let x = 1->from($mapping, $runtime)) where there are no sets found
                                                                                          | $clusterResponse.cluster,
-                                                                                         | $r->meta::pure::router::clustering::getClusterVSFromSets($r.sets, $openVariables, $mapping, $extensions));
+                                                                                         | $r->meta::pure::router::clustering::getClusterVSFromSets($r.sets, $openVariables, $mapping->toOne(), $extensions));
                                                                          ]
                                                                     );
                                               let y = if($crossPropertyAccesses->isNotEmpty(),
@@ -402,9 +401,9 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                             );,
                                         | print(if($debug.debug,|$i->asString()->debug($debug.space+'Constant: '),|''));
                                           let potentialClusterResponses = $i.values->evaluateAndDeactivate()->map(m|if($m->instanceOf(ValueSpecification),
-                                                                                                                       | $m->cast(@ValueSpecification)->cluster($mapping, $openVariables, $exeCtx,  ^$debug(space = $debug.space+'  '), $analyticsDecision, $extensions),
+                                                                                                                       | $m->cast(@ValueSpecification)->cluster($mapping, $openVariables, $exeCtx, ^$debug(space = $debug.space+'  '), $analyticsDecision, $extensions),
                                                                                                                        | $m->match([
-                                                                                                                            g : meta::pure::graphFetch::routing::RoutedGraphFetchTree[1] | $g->meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree([], $mapping, [], $openVariables, $exeCtx, $extensions, $debug),
+                                                                                                                            g : meta::pure::graphFetch::routing::RoutedGraphFetchTree[1] | $g->meta::pure::graphFetch::routing::clusterRoutedGraphFetchTree([], $mapping->toOne(), [], $openVariables, $exeCtx, $extensions, $debug),
                                                                                                                             a : Any[1] | $a
                                                                                                                          ])));
                                           let values       = $potentialClusterResponses->map(r|if($r->instanceOf(ClusterResponse),| $r->cast(@ClusterResponse).cluster,|$r));
@@ -421,7 +420,7 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                   );,
                                                                 | ^$i(values = $values);
                                                              );
-                                          print(if($debug.debug,|$res->asString()->debug($debug.space+'~> '),|''));
+                                          print(if($debug.debug,|$res->asString()->debug($debug.space+'  ~> '),|''));
                                           ^ClusterResponse(cluster=$res, letFunctions = $letFunctions, executableSetOperations=$executables);
                                   );,
                r:FunctionRoutedValueSpecification[1]|let clusterResponse = $r.value->cluster($mapping, $openVariables, $exeCtx,^$debug(space = $debug.space+'  '), $analyticsDecision, $extensions);
@@ -443,6 +442,20 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                 exeCtx = $t.executionContext,
                                                                                 executable = true
                                                                               )),
+               s:StoreRoutedValueSpecification[1]|
+                      ^ClusterResponse( cluster = ^StoreClusteredValueSpecification(
+                                                      genericType  = $s.genericType,
+                                                      multiplicity = $s.multiplicity,
+                                                      s = meta::pure::extension::storeContractFromStore($extensions, $s.store->toOne()),
+                                                      store = $s.store->toOne(),
+                                                      runtime = $s.runtime,
+                                                      openVars = $openVariables,
+                                                      val = $s.value->cluster([], $openVariables, $s.executionContext, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions).cluster,
+                                                      exeCtx = $s.executionContext,
+                                                      executable = true
+                                                  )
+                      )
+               ,
                e:ExtendedRoutedValueSpecification[1] | ^ClusterResponse(cluster=$e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug)->toOne())
 
       ]
@@ -499,12 +512,12 @@ function meta::pure::router::clustering::getDistinctClusterVSByStore(params:Valu
                         | []);
 
    let p_unique = $allClusters->concatenate($params)->filter(p|$p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | ($x->instanceOf(PlatformClusteredValueSpecification) && $y->instanceOf(PlatformClusteredValueSpecification))
-                                                                                                                                                                       || ($x->instanceOf(StoreMappingClusteredValueSpecification) && $y->instanceOf(StoreMappingClusteredValueSpecification) && areStoreMappingClustersCompatible($x->cast(@StoreMappingClusteredValueSpecification), $y->cast(@StoreMappingClusteredValueSpecification), $extensions))});
+                                                                                                                                                                       || ($x->instanceOf(StoreClusteredValueSpecification) && $y->instanceOf(StoreClusteredValueSpecification) && areStoreMappingClustersCompatible($x->cast(@StoreClusteredValueSpecification), $y->cast(@StoreClusteredValueSpecification), $extensions))});
    let n_unique = if ($p_unique->size() > 1,|$p_unique->filter(p|!$p.val->isOneFunction()),|$p_unique);
    $n_unique;
 }
 
-function meta::pure::router::store::clustering::areStoreMappingClustersCompatible(cluster1:StoreMappingClusteredValueSpecification[1], cluster2:StoreMappingClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
+function meta::pure::router::store::clustering::areStoreMappingClustersCompatible(cluster1:StoreClusteredValueSpecification[1], cluster2:StoreClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
 {
    ($cluster1.store->elementToPath() == $cluster2.store->elementToPath()) && meta::core::runtime::runtimeEquality($cluster1.runtime, $cluster2.runtime, $extensions) && ($cluster1.exeCtx == $cluster2.exeCtx);
 }

@@ -212,33 +212,34 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
 {
    let store = $sq.store->cast(@Database);
    let fe = $sq.fe->evaluateAndDeactivate();
-   if($fe.func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
-      |
-        // Graph Fetch Flow
-        $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
+   if([
+        pair(
+          |$fe.func->in([meta::pure::graphFetch::execution::graphFetchFunctions()]),
+          | // Graph Fetch Flow
+            $sq->meta::pure::graphFetch::executionPlan::planGraphFetchExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
+        ),
+        pair(
+          |$fe.func->in(meta::pure::mutation::mutationFunctions()),
+          | // Write Flow
+            $sq->meta::relational::mutation::executionPlan::planMutationExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);
+        )
+      ]
+      ,|
+          // Normal Flow
+        let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(DatabaseConnection));
+        let storeRuntime = if($connections->size() <= 1,
+                            | $runtime->toOne(),
+                            | let oldRuntime = $runtime->toOne();
+                              let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
+                              let dbConnectionStore = $oldRuntime.connectionStores->filter(c|$c.connection==$dbConn);
+                              ^$oldRuntime(connectionStores = $dbConnectionStore);
+                        );
 
-      |
-        if($fe.func->in(meta::pure::mutation::mutationFunctions()),
-           |
-             // Write Flow
-            $sq->meta::relational::mutation::executionPlan::planMutationExecution($ext, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug);,
-           |
-             // Normal Flow
-            let connections = $runtime.connectionStores->filter(c | $c.connection->instanceOf(DatabaseConnection));
-            let storeRuntime = if($connections->size() <= 1,
-                               | $runtime->toOne(),
-                               | let oldRuntime = $runtime->toOne();
-                                 let dbConn = $oldRuntime->connectionByElement($store)->cast(@DatabaseConnection);
-                                 let dbConnectionStore = $oldRuntime.connectionStores->filter(c|$c.connection==$dbConn);
-                                 ^$oldRuntime(connectionStores = $dbConnectionStore);
-                            );
-
-            let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
-            let originalQuery = $sq.fe->toSQLQuery($m->toOne(), $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
-            $originalQuery->postProcessSQLQuery($store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $extensions)
-                          ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $debug, $extensions);
-      );
-   );
+        let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
+        let originalQuery = $sq.fe->toSQLQuery($m, $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
+        $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
+                      ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
+   );    
 }
 
 function meta::relational::contract::postProcessorsMatch(postProcessors1: meta::pure::alloy::connections::PostProcessor[*], postProcessors2: meta::pure::alloy::connections::PostProcessor[*]): Boolean[1]

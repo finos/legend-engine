@@ -147,6 +147,16 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-test-framework</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.finos.legend.pure</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <!-- ENGINE -->
 
         <!-- ALLOY -->
