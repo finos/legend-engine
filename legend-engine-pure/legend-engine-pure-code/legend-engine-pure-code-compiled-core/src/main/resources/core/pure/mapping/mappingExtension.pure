@@ -258,6 +258,11 @@ function <<access.private>> meta::pure::router::operations::getMappedLeafClasses
     if($specs->isEmpty(), | $mappedClass, | $specs->map(s | $s->getMappedLeafClasses_recursive($mappedClass, $mapping, $state)));
 }
 
+function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], runtime:Runtime[1]):T[m]
+{
+   $t
+}
+
 function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], m:meta::pure::mapping::Mapping[1], runtime:Runtime[1]):T[m]
 {
    $t

@@ -45,6 +45,7 @@ Class meta::pure::router::store::metamodel::PermutationSet
 
 Class meta::pure::router::store::metamodel::StoreRoutingStrategy extends RoutingStrategy
 {
+   store       : Store[0..1];
    runtime     : Runtime[1];
 }
 
