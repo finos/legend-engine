@@ -47,11 +47,11 @@ public class MyCompleter implements Completer
         if (inScope.endsWith("#>"))
         {
             PureModelContextData d = Client.replInterface.parse(buildState().makeString("\n"));
-            list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> c instanceof Store), c -> buildCandidate("#>{" + PureGrammarComposerUtility.convertPath(c.getPath()) + ".")));
+            list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> c instanceof Store), c -> buildCandidate(inScope.substring(inScope.lastIndexOf(" ") + 1) + "{" + PureGrammarComposerUtility.convertPath(c.getPath()) + ".")));
         }
-        if (inScope.startsWith("#>") && inScope.endsWith("."))
+        if (inScope.lastIndexOf("#>") != -1 && !inScope.substring(inScope.lastIndexOf("#>")).contains("}#") && inScope.endsWith("."))
         {
-            String store = inScope.substring(3, inScope.length() - 1);
+            String store = inScope.substring(inScope.lastIndexOf("#>") + 3, inScope.length() - 1);
             Database s = (Database) ListIterate.select(Client.replInterface.parse(buildState().makeString("\n")).getElements(), c -> c.getPath().equals(store)).getFirst();
             list.addAll(ListIterate.collect(s.schemas.get(0).tables, c -> buildCandidate(inScope + c.name + "}#")));
         }

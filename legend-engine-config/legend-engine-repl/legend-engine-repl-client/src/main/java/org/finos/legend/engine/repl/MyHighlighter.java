@@ -31,17 +31,10 @@ public class MyHighlighter implements Highlighter
     @Override
     public AttributedString highlight(LineReader lineReader, String s)
     {
-        MutableList<String> split = Lists.mutable.with(s.split(" "));
-
-        if (split.size() == 1)
+        if (s.startsWith("show"))
         {
-            AttributedStringBuilder ab = new AttributedStringBuilder();
-            drawCommand(ab, s);
-            return ab.toAttributedString();
-        }
-        else if (split.size() > 1)
-        {
-            if ("show".equals(split.get(0)))
+            MutableList<String> split = Lists.mutable.with(s.split(" "));
+            if (split.size() > 1)
             {
                 AttributedStringBuilder ab = new AttributedStringBuilder();
                 drawCommand(ab, "show");
@@ -50,7 +43,10 @@ public class MyHighlighter implements Highlighter
                 return ab.toAttributedString();
             }
         }
-        return new AttributedStringBuilder().append(s).toAttributedString();
+
+        AttributedStringBuilder ab = new AttributedStringBuilder();
+        drawCommand(ab, s);
+        return ab.toAttributedString();
     }
 
     @Override

@@ -15,6 +15,8 @@
 package org.finos.legend.engine.repl;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.block.function.primitive.IntObjectToIntFunction;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.factory.Predicates;
@@ -27,17 +29,16 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
-import org.finos.legend.engine.plan.execution.result.serialization.Serializer;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.repl.local.LocalREPL;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.jline.reader.LineReader;
@@ -169,12 +170,28 @@ public class Client
                     terminal.writer().println(execute(line));
                 }
             }
-            catch (Exception e)
+            catch (EngineException e)
             {
+                int e_start = e.getSourceInformation().startColumn;
+                int e_end = e.getSourceInformation().endColumn;
+                String beg = line.substring(0, e_start - 1);
+                String mid = line.substring(e_start - 1, e_end);
+                String end = line.substring(e_end, line.length());
+                AttributedStringBuilder ab = new AttributedStringBuilder();
+                ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                ab.append(beg);
+                ab.style(new AttributedStyle().underline().bold().foreground(200, 0, 0));
+                ab.append(mid);
+                ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                ab.append(end);
+                terminal.writer().println("");
+                terminal.writer().println(ab.toAnsi());
                 terminal.writer().println(e.getMessage());
-                e.printStackTrace();
             }
-
+            catch (Exception ee)
+            {
+                throw new RuntimeException(ee);
+            }
         }
     }
 
@@ -295,7 +312,7 @@ public class Client
     public static String execute(String txt)
     {
         String code = "###Pure\n" +
-                "function a::b::c::d():Any[*]{" + txt + ";\n}";
+                "function a::b::c::d():Any[*]\n{\n" + txt + ";\n}";
 
         PureModelContextData d = replInterface.parse(buildState().makeString("\n") + code);
         // System.out.println(objectMapper.writeValueAsString(d));
@@ -314,8 +331,9 @@ public class Client
         Result res = planExecutor.execute(planStr);
         if (res instanceof RelationalResult)
         {
-            Serializer s = new RelationalResultToCSVSerializer((RelationalResult) res);
-            return s.flush().toString();
+            return prettyGridPrint((RelationalResult) res);
+//            Serializer s = new RelationalResultToCSVSerializer((RelationalResult) res);
+//            return s.flush().toString();
         }
         else if (res instanceof ConstantResult)
         {
@@ -323,4 +341,93 @@ public class Client
         }
         throw new RuntimeException(res.getClass() + " not supported!");
     }
+
+    private static String prettyGridPrint(RelationalResult res)
+    {
+        MutableList<String> columns = Lists.mutable.empty();
+        MutableList<Integer> size = Lists.mutable.empty();
+        MutableList<MutableList<String>> values = Lists.mutable.empty();
+        try (ResultSet rs = res.resultSet)
+        {
+            ResultSetMetaData md = rs.getMetaData();
+            int count = md.getColumnCount();
+            for (int i = 1; i <= count; i++)
+            {
+                columns.add(md.getColumnName(i));
+                values.add(Lists.mutable.empty());
+            }
+            while (rs.next())
+            {
+                for (int i = 1; i <= count; i++)
+                {
+                    values.get(i - 1).add(rs.getObject(i) == null ? "" : rs.getObject(i).toString());
+                }
+            }
+            for (int i = 1; i <= count; i++)
+            {
+                int maxSize = columns.get(i - 1).length();
+                size.add(values.get(i - 1).injectInto(maxSize, (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
+            }
+            size = Lists.mutable.withAll(size.collect(s -> s + 2));
+
+            StringBuilder builder = new StringBuilder();
+
+            drawSeparation(builder, count, size);
+            drawRow(builder, count, size, columns::get);
+            drawSeparation(builder, count, size);
+
+            int rows = values.get(0).size();
+            for (int k = 0; k < rows; k++)
+            {
+                final int fk = k;
+                drawRow(builder, count, size, i -> values.get(i).get(fk));
+            }
+
+            drawSeparation(builder, count, size);
+
+
+            return builder.toString();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void drawSeparation(StringBuilder builder, int count, MutableList<Integer> size)
+    {
+        builder.append("+");
+        for (int i = 0; i < count; i++)
+        {
+            repeat('-', size.get(i), builder);
+            builder.append("+");
+        }
+        builder.append("\n");
+    }
+
+    private static void repeat(char value, int length, StringBuilder builder)
+    {
+        for (int k = 0; k < length; k++)
+        {
+            builder.append(value);
+        }
+    }
+
+    private static void drawRow(StringBuilder builder, int count, MutableList<Integer> size, Function<Integer, String> getter)
+    {
+        builder.append("|");
+        for (int i = 0; i < count; i++)
+        {
+            String val = getter.apply(i);
+            int space = (size.get(i) - val.length()) / 2;
+            repeat(' ', space, builder);
+            builder.append(val);
+            repeat(' ', size.get(i) - val.length() - space, builder);
+            builder.append("|");
+        }
+
+        builder.append("\n");
+    }
+
+
 }
