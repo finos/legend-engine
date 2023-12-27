@@ -562,12 +562,9 @@ public abstract class RelationalIngestorAbstract
         statisticsResultMap.putAll(
             executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues));
         // Execute metadata ingest SqlPlan
-        if (generatorResult.metadataIngestSqlPlan().isPresent())
-        {
-            // add batchEndTimestamp
-            placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
-            executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
-        }
+        // add batchEndTimestamp
+        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+        executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
         return statisticsResultMap;
     }
 
@@ -580,13 +577,10 @@ public abstract class RelationalIngestorAbstract
         // Execute ingest SqlPlan
         IngestorResult result = relationalSink().performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues);
         // Execute metadata ingest SqlPlan
-        if (generatorResult.metadataIngestSqlPlan().isPresent())
-        {
-            // add batchEndTimestamp
-            placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
-            placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, result.status().name());
-            executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan().get(), placeHolderKeyValues);
-        }
+        // add batchEndTimestamp
+        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+        placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, result.status().name());
+        executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
         results.add(result);
         // Clean up
         executor.executePhysicalPlan(generatorResult.postActionsSqlPlan());

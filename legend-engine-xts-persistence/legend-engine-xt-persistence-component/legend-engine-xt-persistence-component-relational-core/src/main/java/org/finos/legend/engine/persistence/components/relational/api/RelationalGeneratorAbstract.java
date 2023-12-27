@@ -261,13 +261,10 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
 
-        // metadata-ingest
+        // metadata ingest
         LogicalPlan metaDataIngestLogicalPlan = planner.buildLogicalPlanForMetadataIngest(resources);
-        Optional<SqlPlan> metaDataIngestSqlPlan = Optional.empty();
-        if (metaDataIngestLogicalPlan != null)
-        {
-            metaDataIngestSqlPlan = Optional.of(transformer.generatePhysicalPlan(metaDataIngestLogicalPlan));
-        }
+        SqlPlan metaDataIngestSqlPlan = transformer.generatePhysicalPlan(metaDataIngestLogicalPlan);
+
         // post-actions
         LogicalPlan postActionsLogicalPlan = planner.buildLogicalPlanForPostActions(resources);
         SqlPlan postActionsSqlPlan = transformer.generatePhysicalPlan(postActionsLogicalPlan);
