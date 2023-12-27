@@ -286,6 +286,8 @@ public class PureModel implements IPureModel
             LOGGER.info("{}", new LogInfo(pm, "GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES", nanosDurationToMillis(loadOtherElementsPostConnectionsAndRuntimesStart, loadOtherElementsPostConnectionsAndRuntimesEnd)));
             span.log("GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES");
 
+            pureModelContextDataIndex.functions.forEach(this::processFifthPass);
+
             // Post Validation
             long postValidationStart = System.nanoTime();
             new ProfileValidator().validate(this, pureModelContextData);

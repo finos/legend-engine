@@ -17,10 +17,12 @@ package org.finos.legend.engine.plan.execution.stores.relational;
 import org.finos.legend.engine.plan.execution.result.StreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.config.RelationalExecutionConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommandsVisitor;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 
 import java.sql.Connection;
 
-public interface RelationalStoreExecutorExtension
+public interface RelationalStoreExecutorExtension extends LegendModuleSpecificExtension
 {
     Function5<RelationalExecutionConfiguration, Connection, StreamingResult, String, String, RelationalDatabaseCommandsVisitor<Boolean>> getStreamResultToTempTableVisitor();
 }

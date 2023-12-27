@@ -17,8 +17,9 @@ package org.finos.legend.engine.plan.generation.extension;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
+import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
 
-public interface PlanGeneratorExtension
+public interface PlanGeneratorExtension extends LegendPlanExtension
 {
     default MutableList<PlanTransformer> getExtraPlanTransformers()
     {

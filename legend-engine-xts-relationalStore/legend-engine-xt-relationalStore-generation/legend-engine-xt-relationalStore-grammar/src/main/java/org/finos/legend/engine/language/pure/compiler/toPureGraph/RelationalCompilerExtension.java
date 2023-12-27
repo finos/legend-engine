@@ -42,6 +42,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handl
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validation.RelationalValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidatorContext;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -52,11 +53,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.DefaultH2AuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.MapperPostProcessor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.postprocessor.PostProcessor;
@@ -70,47 +67,35 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.DatabaseInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.executionContext.RelationalExecutionContext;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
+import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_MapperPostProcessor;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_PostProcessor;
-import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection;
-import org.finos.legend.pure.generated.Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_functions_collection_List_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
-import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_GroupByMapping_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_RelationalAssociationImplementation_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_Database_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_TableAlias_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_runtime_PostProcessorWithParameter;
-import org.finos.legend.pure.generated.Root_meta_relational_runtime_RelationalExecutionContext_Impl;
-import org.finos.legend.pure.generated.core_relational_relational_runtime_connection_postprocessor;
+import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.m2.dsl.store.M2StorePaths;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.AssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.EmbeddedSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwareSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.AliasAccessor;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.RelationalOperationElement;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.*;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation._package._Package;
+import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
+import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.support.map.PureMap;
 
 import java.util.Collection;
@@ -520,7 +505,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__HashType_1__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 4)),
-                                        handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"),  ps -> ps.size() == 2)))
+                                        handlers.m(handlers.h("meta::pure::tds::extensions::extendWithDigestOnColumns_TabularDataSet_1__String_1__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 2)))
                         ),
                         new FunctionExpressionBuilderRegistrationInfo(null,
                                 handlers.m(handlers.m(handlers.h("meta::pure::tds::extensions::rowValueDifference_TabularDataSet_1__TabularDataSet_1__String_$1_MANY$__String_$1_MANY$__String_$1_MANY$__TabularDataSet_1_", false, ps -> handlers.res("meta::pure::tds::TabularDataSet", "one"), ps -> ps.size() == 5)),
@@ -654,5 +639,58 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 DatabaseAuthenticationFlowKey.newKey(DatabaseType.Postgres, StaticDatasourceSpecification.class, MiddleTierUserNamePasswordAuthenticationStrategy.class),
                 DatabaseAuthenticationFlowKey.newKey(DatabaseType.MemSQL, StaticDatasourceSpecification.class, UserNamePasswordAuthenticationStrategy.class)
         );
+    }
+
+    @Override
+    public List<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, ValueSpecification>> getExtraRelationStoreAccessorProcessors()
+    {
+        return Lists.mutable.with((accessor, store, context, processingContext) ->
+        {
+            if (store instanceof org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database)
+            {
+                Assert.assertTrue(accessor.path.size() > 1, () -> "Please provide a table");
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database ds = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) store;
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema = ds._schemas().getFirst();
+                if (schema == null)
+                {
+                    throw new EngineException("The database " + store._name() + " has not schemas", accessor.sourceInformation, EngineErrorType.COMPILATION);
+                }
+                Table table = schema._tables().select(c -> c.getName().equals(accessor.path.get(1))).getFirst();
+                if (table == null)
+                {
+                    throw new EngineException("The table " + accessor.path.get(1) + " can't be found in the store " + store._name(), accessor.sourceInformation, EngineErrorType.COMPILATION);
+                }
+
+                ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
+
+                org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = null;
+
+                RelationType<?> type = _RelationType.build(table._columns().collect(c -> (CoreInstance) _Column.getColumnInstance(c.getValueForMetaPropertyToOne("name").getName(), false, null, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath("String", processorSupport)), sourceInformation, processorSupport)).toList(), sourceInformation, processorSupport);
+
+                GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                        ._rawType(context.pureModel.getType(M2StorePaths.RelationStoreAccessor))
+                        ._typeArguments(FastList.newListWith(
+                                        new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(type)
+                                )
+                        );
+
+                return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))
+                        ._genericType(genericType)
+                        ._multiplicity(context.pureModel.getMultiplicity("one"))
+                        ._values(
+                                FastList.newListWith(
+                                        new Root_meta_pure_store_RelationStoreAccessor_Impl<>("", new org.finos.legend.pure.m4.coreinstance.SourceInformation("X", 0, 0, 0, 0), null)
+                                                ._store(ds)
+                                                ._sourceElement(table)
+                                                ._classifierGenericType(genericType)
+                                )
+                        );
+
+
+            }
+
+
+            return (ValueSpecification) null;
+        });
     }
 }

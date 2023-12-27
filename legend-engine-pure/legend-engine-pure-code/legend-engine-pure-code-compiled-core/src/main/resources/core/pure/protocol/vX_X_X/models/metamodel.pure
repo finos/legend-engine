@@ -526,6 +526,10 @@ Class meta::protocols::pure::vX_X_X::metamodel::objectReference::AlloyObjectRefe
    operationResolvedSetsId : String[*];
 }
 
+Class meta::protocols::pure::vX_X_X::metamodel::store::RelationStoreAccessor
+{
+   path:String[*];
+}
 
 Class meta::protocols::pure::vX_X_X::metamodel::store::Store extends meta::protocols::pure::vX_X_X::metamodel::PackageableElement
 {

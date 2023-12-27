@@ -34,7 +34,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
         </dependency>
         <!-- PURE -->
         <!-- ENGINE -->

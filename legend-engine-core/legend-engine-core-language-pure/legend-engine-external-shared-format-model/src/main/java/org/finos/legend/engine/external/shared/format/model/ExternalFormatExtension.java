@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.extension.LegendExternalFormatExtension;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
@@ -35,7 +36,7 @@ import java.util.List;
  * will represent the semantically checked and canonicalized data model (for example inclusions maybe
  * inlined and references reconciled).
  */
-public interface ExternalFormatExtension<Metamodel>
+public interface ExternalFormatExtension<Metamodel> extends LegendExternalFormatExtension
 {
     /**
      * Returns the contract for this external format written in PURE

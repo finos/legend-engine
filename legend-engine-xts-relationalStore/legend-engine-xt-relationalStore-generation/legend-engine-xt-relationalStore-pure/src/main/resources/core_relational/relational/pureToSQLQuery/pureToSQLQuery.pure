@@ -530,18 +530,19 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                   v:PlanVarPlaceHolder[1] |^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.type, multiplicity = $v.multiplicity))),|^$select(columns = ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.type,  multiplicity = $v.multiplicity)))));,
                                   v:ValueSpecification[1] | processValueSpecification($v, $currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
                                   l:LambdaFunction<Any>[1] | $l.expressionSequence->at(0)->processValueSpecification($currentPropertyMapping, $operation, $vars, $state, $joinType, buildNodeId($nodeId,'_i'+$vals->indexOf($v)->toString()), $aggFromMap, $context, $extensions),
-                                  x:RelationDatabaseAccessor<Any>[1] |
-                                      let tableAlias = ^TableAlias(name='dbAccessor', relationalElement=$x.relation);
+                                  x:meta::pure::store::RelationStoreAccessor<Any>[1] |
+                                      let relation = $x.sourceElement->cast(@Table);
+                                      let tableAlias = ^TableAlias(name='dbAccessor', relationalElement=$relation);
                                       let res = ^$operation
                                                 (
                                                   select = ^TdsSelectSqlQuery
                                                            (
-                                                              columns = $x.relation.columns->map(c|^Alias(name='"'+$c->cast(@Column).name->toOne()+'"', relationalElement=^TableAliasColumn(alias=$tableAlias, column=$c->cast(@Column)))),
+                                                              columns = $relation.columns->map(c|^Alias(name='"'+$c->cast(@Column).name->toOne()+'"', relationalElement=^TableAliasColumn(alias=$tableAlias, column=$c->cast(@Column)))),
                                                               data = ^RootJoinTreeNode(alias = $tableAlias)
                                                            )
                                                 );
                                       print(if(!$context.debug, |'', | $context.space+'>Processing Relation Database Accessor: '+$res.select->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.H2, $extensions) + '\n'));
-                                      // let node = ^RootJoinTreeNode(alias = ^TableAlias(name='dbAccessor', relationalElement=$x.relation));
+                                      // let node = ^RootJoinTreeNode(alias = ^TableAlias(name='dbAccessor', relationalElement=$relation));
                                       // ^$operation(select = ^TdsSelectSqlQuery(data = $node), currentTreeNode = $node);
                                       $res;,
                                   a:Any[1] | ^ClassInstanceHolder(value=$a);

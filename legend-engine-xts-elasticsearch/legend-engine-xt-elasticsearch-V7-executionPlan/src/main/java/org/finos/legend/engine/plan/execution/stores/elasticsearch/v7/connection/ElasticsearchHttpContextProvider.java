@@ -15,15 +15,17 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.connection;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.ServiceLoader;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 import org.finos.legend.engine.shared.core.identity.Credential;
 
-public interface ElasticsearchHttpContextProvider
+import java.util.List;
+import java.util.Optional;
+import java.util.ServiceLoader;
+
+public interface ElasticsearchHttpContextProvider extends LegendModuleSpecificExtension
 {
     static List<ElasticsearchHttpContextProvider> providers()
     {

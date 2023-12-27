@@ -357,18 +357,19 @@ public class TestLambdaRoundtrip
         testLambda("|%9999-12-30T19:00:00.0000->someDateFn()", "|someDateFn(%9999-12-30T19:00:00.0000)");
     }
 
-    private static void testLambda(String text)
+    static void testLambda(String text)
     {
         testLambda(text, text);
     }
 
-    private static void testLambda(String text, String formattedText)
+    static void testLambda(String text, String formattedText)
     {
         Lambda postJSON_lambda;
         try
         {
             Lambda lambda = new DomainParser().parseLambda(text, "", 0, 0, true);
             String json = objectMapper.writeValueAsString(lambda);
+            System.out.println(json);
             postJSON_lambda = objectMapper.readValue(json, Lambda.class);
         }
         catch (Exception e)

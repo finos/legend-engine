@@ -19,12 +19,13 @@ import org.finos.legend.engine.external.shared.format.imports.description.Import
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.shared.core.extension.LegendGenerationExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 
 import java.util.List;
 
-public interface GenerationExtension
+public interface GenerationExtension extends LegendGenerationExtension
 {
     String getLabel();
 

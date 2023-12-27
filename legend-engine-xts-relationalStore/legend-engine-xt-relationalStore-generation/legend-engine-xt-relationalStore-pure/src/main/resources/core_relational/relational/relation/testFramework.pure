@@ -20,6 +20,7 @@ import meta::external::store::relational::runtime::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::*;
 import meta::pure::mapping::*;
+import meta::pure::store::*;
 import meta::pure::metamodel::relation::*;
 import meta::relational::relation::testUtils::*;
 
@@ -164,6 +165,7 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::metamodel::relation::*;
 import  meta::relational::relation::testUtils::*;
+import meta::pure::store::*;
 
 function meta::relational::relation::testUtils::reprocess(a:Any[1], state:ProcessingState[1]):ProcessingState[1]
 {
@@ -289,17 +291,16 @@ function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], stat
 
   $state.schema->mutateAdd('tables', $table);
 
-  let relAccessor = ^RelationDatabaseAccessor<Any>
+  let relAccessor = ^RelationStoreAccessor<Any>
   (
     store = $state.database,
-    database = $state.database,
-    relation = $table
+    sourceElement = $table
   );
 
   // Create CSV out of TDS data
   let cols = $tds->columns();
   let csv = $state.schema.name+'\n' + 
-            $relAccessor.relation.name + '\n' +
+            $relAccessor.sourceElement->cast(@Table).name + '\n' +
             $cols->map(x|$x.name)->joinStrings(',' ) + '\n' +
             $tds->map(x|$cols->map(c|$c->eval($x)->toOne()->toString())->joinStrings(','))
             ->joinStrings('\n');
