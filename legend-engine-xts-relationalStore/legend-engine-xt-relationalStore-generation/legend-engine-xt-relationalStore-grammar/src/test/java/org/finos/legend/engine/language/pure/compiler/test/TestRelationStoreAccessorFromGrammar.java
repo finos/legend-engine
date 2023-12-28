@@ -19,23 +19,6 @@ import org.junit.Test;
 
 public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
-    @Override
-    public String getDuplicatedElementTestCode()
-    {
-        return "Class anything::class {}\n" +
-                "###Mapping\n" +
-                "Mapping anything::somethingelse ()\n" +
-                "###Relational\n" +
-                "Database anything::somethingelse\n" +
-                "(\n" +
-                ")";
-    }
-
-    @Override
-    public String getDuplicatedElementTestExpectedErrorMessage()
-    {
-        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
-    }
 
     @Test
     public void testCompilationOfRelationStoreAccessor()
@@ -111,4 +94,23 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
     }
 
 
+
+
+    @Override
+    public String getDuplicatedElementTestCode()
+    {
+        return "Class anything::class {}\n" +
+                "###Mapping\n" +
+                "Mapping anything::somethingelse ()\n" +
+                "###Relational\n" +
+                "Database anything::somethingelse\n" +
+                "(\n" +
+                ")";
+    }
+
+    @Override
+    public String getDuplicatedElementTestExpectedErrorMessage()
+    {
+        return "COMPILATION error at [5:1-7:1]: Duplicated element 'anything::somethingelse'";
+    }
 }

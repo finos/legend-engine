@@ -233,6 +233,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                 return processClassInstance((RootGraphFetchTree) iv.value);
             case ">":
                 return processRelationStoreAccessor((RelationStoreAccessor) iv.value);
+            case "column":
+                throw new RuntimeException("Column builder of form ~col:... should be used as a parameter of a supported function.");
             case "propertyGraphFetchTree":
                 return processClassInstance((PropertyGraphFetchTree) iv.value);
             case "keyExpression":
@@ -520,6 +522,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
             ve._multiplicity(vs.get(1)._multiplicity());
             processingContext.addInferredVariables(letName, ve);
         }
+
         org.eclipse.collections.api.tuple.Pair<SimpleFunctionExpression, List<ValueSpecification>> func = this.context.buildFunctionExpression(this.context.pureModel.buildNameForAppliedFunction(appliedFunction.function), appliedFunction.fControl, appliedFunction.parameters, openVariables, appliedFunction.sourceInformation, processingContext);
         processingContext.pop();
         Assert.assertTrue(func != null, () -> "Can't find a match for function '" + appliedFunction.function + "(?)'", appliedFunction.sourceInformation, EngineErrorType.COMPILATION);

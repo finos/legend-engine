@@ -31,4 +31,30 @@ public class TestRelation
     {
         testLambda("|#>{path::Store.table}#->filter(c|$c.x)");
     }
+
+    @Test
+    public void testColumn()
+    {
+        testLambda("|#>{path::Store.table}#->rename(~a, ~b)");
+    }
+
+    @Test
+    public void testColumnWithType()
+    {
+        testLambda("|#>{path::Store.table}#->rename(~a:Integer, ~b:String)");
+    }
+
+    @Test
+    public void testColumnWithFunction()
+    {
+        testLambda("|#>{path::Store.table}#->extend(~a:c|'ok')");
+    }
+
+    @Test
+    public void testColumnWithTwoFunctions()
+    {
+        testLambda("|#>{path::Store.table}#->extend(~a:c|'ok':x|'YO')");
+    }
+
+
 }

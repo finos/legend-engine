@@ -83,8 +83,6 @@ public class Client
 
     public static void main(String[] args) throws IOException
     {
-        System.out.println(Lists.mutable.with("a::A::".split("::")).makeString("|"));
-
         terminal = TerminalBuilder.terminal();
 
         terminal.writer().println(Logos.logos.get((int) (Logos.logos.size() * Math.random())));
