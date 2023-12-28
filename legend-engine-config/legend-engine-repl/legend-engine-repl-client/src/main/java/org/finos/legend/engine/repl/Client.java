@@ -61,6 +61,8 @@ public class Client
 
     public static MutableList<String> state = Lists.mutable.empty();
 
+    public static int count;
+
     public static List<PureGrammarComposerExtension> loader = PureGrammarComposerExtensionLoader.extensions();
 
     public static PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
@@ -73,6 +75,8 @@ public class Client
         System.setProperty("legend.test.h2.port", "1975");
 
         planExecutor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
+
+        count = getTables(getConnection()).size();
 
     }
 
@@ -114,7 +118,7 @@ public class Client
                 {
                     String path = line.substring("load ".length()).trim();
 
-                    String tableName = "test";
+                    String tableName = "test" + count++;
 
                     try (Connection connection = getConnection())
                     {
@@ -261,7 +265,7 @@ public class Client
                                 String columnName = columns.getString("COLUMN_NAME");
                                 int size = columns.getInt("COLUMN_SIZE");
                                 int datatype = columns.getInt("DATA_TYPE");
-                                cols.add(new Column(columnName.toLowerCase(), JDBCType.valueOf(datatype).getName() + "(" + size + ")"));
+                                cols.add(new Column(columnName, JDBCType.valueOf(datatype).getName() + "(" + size + ")"));
                             }
                         }
                         tables.add(new Table(res.getString("TABLE_SCHEM"), res.getString("TABLE_NAME"), cols));
@@ -283,7 +287,7 @@ public class Client
         res.add("###Relational\n" +
                 "Database test::TestDatabase" +
                 "(" +
-                getTables(getConnection()).collect(table -> "Table " + table.name + "(" + table.columns.collect(c -> c.name + " " + c.type).makeString(",") + ")").makeString("\n") +
+                getTables(getConnection()).collect(table -> "Table " + table.name + "(" + table.columns.collect(c -> (c.name.contains(" ") ? "\"" + c.name + "\"" : c.name) + " " + c.type).makeString(",") + ")").makeString("\n") +
                 ")\n");
 
         res.add("###Connection\n" +
@@ -323,7 +327,7 @@ public class Client
         // System.out.println(">> "+extensions.collect(c -> c._type()).makeString(", "));
 
         // Plan
-        Root_meta_pure_executionPlan_ExecutionPlan plan = replInterface.generatePlan(pureModel, false);
+        Root_meta_pure_executionPlan_ExecutionPlan plan = replInterface.generatePlan(pureModel, true);
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
         // System.out.println(planStr);
 

@@ -665,7 +665,15 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                 org.finos.legend.pure.m4.coreinstance.SourceInformation sourceInformation = null;
 
-                RelationType<?> type = _RelationType.build(table._columns().collect(c -> (CoreInstance) _Column.getColumnInstance(c.getValueForMetaPropertyToOne("name").getName(), false, null, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath("String", processorSupport)), sourceInformation, processorSupport)).toList(), sourceInformation, processorSupport);
+                RelationType<?> type = _RelationType.build(table._columns().collect(c ->
+                {
+                    String name = c.getValueForMetaPropertyToOne("name").getName();
+                    if (name.startsWith("\""))
+                    {
+                        name = name.substring(1, name.length() - 1);
+                    }
+                    return (CoreInstance) _Column.getColumnInstance(name, false, null, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath("String", processorSupport)), sourceInformation, processorSupport);
+                }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                         ._rawType(context.pureModel.getType(M2StorePaths.RelationStoreAccessor))

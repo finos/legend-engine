@@ -15,6 +15,7 @@
 package org.finos.legend.engine.repl.local;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -81,7 +82,12 @@ public class LocalREPL implements REPLInterface
     public Root_meta_pure_executionPlan_ExecutionPlan generatePlan(PureModel pureModel, boolean debug)
     {
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions =  PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        return PlanGenerator.generateExecutionPlanAsPure(pureModel.getConcreteFunctionDefinition_safe("a::b::c::d__Any_MANY_"), null, pureModel, PlanPlatform.JAVA, "", debug, extensions);
+        Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> res = PlanGenerator.generateExecutionPlanAsPure(pureModel.getConcreteFunctionDefinition_safe("a::b::c::d__Any_MANY_"), null, pureModel, PlanPlatform.JAVA, "", debug, extensions);
+        if (debug)
+        {
+            System.out.println(res.getTwo());
+        }
+        return res.getOne();
     }
 
     @Override

@@ -91,9 +91,9 @@ public class PlanGenerator
         return generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, planId, false, extensions).getOne();
     }
 
-    public static Root_meta_pure_executionPlan_ExecutionPlan generateExecutionPlanAsPure(FunctionDefinition<?> l, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
+    public static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanAsPure(FunctionDefinition<?> l, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
-        return generateExecutionPlanAsPure(l, null, null, context, pureModel, platform, planId, debug, extensions).getOne();
+        return generateExecutionPlanAsPure(l, null, null, context, pureModel, platform, planId, debug, extensions);
     }
 
     private static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanAsPure(FunctionDefinition<?> l, Mapping mapping, Root_meta_core_runtime_Runtime pureRuntime, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)

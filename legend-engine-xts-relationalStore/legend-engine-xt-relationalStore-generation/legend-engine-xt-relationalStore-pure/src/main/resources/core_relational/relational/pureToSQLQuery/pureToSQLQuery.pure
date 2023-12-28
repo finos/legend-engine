@@ -567,7 +567,10 @@ function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpre
 {
   let leftSide = processValueSpecificationReturnPropertyMapping($fe.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
   let leftSelect = $leftSide.element->cast(@SelectWithCursor).select;
-  let colAlias = ^TableAliasColumn(alias = $leftSelect.data->toOne().alias, column = ^Column(name =$fe.func.name->toOne(), type =^meta::relational::metamodel::datatype::Integer()));
+  let colFuncName = $fe.func.name->toOne();
+  let tableAlias = $leftSelect.data->toOne().alias;  
+  let foundColumn = $tableAlias.relation().columns->cast(@Column)->filter(c | $c.name == $colFuncName || $c.name == '"'+$colFuncName+'"')->toOne();
+  let colAlias = ^TableAliasColumn(alias = $tableAlias, column = $foundColumn);
   let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
   ^$leftSide(element = ^$operation(select=$newSelect));
 }

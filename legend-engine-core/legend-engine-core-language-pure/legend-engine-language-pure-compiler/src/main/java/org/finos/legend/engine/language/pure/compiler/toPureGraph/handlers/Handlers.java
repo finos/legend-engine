@@ -186,16 +186,6 @@ public class Handlers
         }
     }
 
-    public static final ParametersInference RelationFilterInference = (parameters, ov, cc, pc) ->
-    {
-        ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
-        GenericType gt = firstProcessedParameter._genericType();
-
-        updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
-
-        return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
-    };
-
     public static final ParametersInference ExtendInference = (parameters, ov, cc, pc) ->
     {
         toCollection(parameters.get(1)).values.forEach(l -> updateLambdaWithCol(cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), l));
@@ -273,6 +263,11 @@ public class Handlers
             updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
             return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
         }
+        else if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
+        {
+            updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+            return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
+        }
         else
         {
             List<ValueSpecification> firstPassProcessed = parameters.stream().skip(1).map(p -> p instanceof Lambda ? null : p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
@@ -280,6 +275,7 @@ public class Handlers
             return ListIterate.zip(LazyIterate.concatenate(FastList.newListWith(firstProcessedParameter), firstPassProcessed).toList(), parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc)));
         }
     };
+
 
     public static final ParametersInference JoinInference = (parameters, ov, cc, pc) ->
     {
@@ -382,7 +378,7 @@ public class Handlers
 
         register(m(
                         // meta::pure::functions::relation::filter<T>(rel:Relation<T>[1], f:Function<{T[1]->Boolean[1]}>[1]):Relation<T>[1]
-                        grp(RelationFilterInference, h("meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> typeOne(ps.get(0), Sets.immutable.with("Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor")))),
+                        grp(TDSFilterInference, h("meta::pure::functions::relation::filter_Relation_1__Function_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> typeOne(ps.get(0), Sets.immutable.with("Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor")))),
                         // meta::pure::tds::filter(tds:TabularDataSet[1], f:Function<{TDSRow[1]->Boolean[1]}>[1]):TabularDataSet[1]
                         grp(TDSFilterInference, h("meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> typeOne(ps.get(0), "TabularDataSet"))),
                         // meta::pure::functions::collection::filter<T>(value:T[*], func:Function<{T[1]->Boolean[1]}>[1]):T[*];
