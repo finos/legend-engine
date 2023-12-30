@@ -2267,7 +2267,13 @@ function meta::relational::functions::pureToSqlQuery::processSplitPart(f:Functio
 function meta::relational::functions::pureToSqlQuery::zeroToOneBasedIndex(v:ValueSpecification[1]):ValueSpecification[1]
 {
   $v->match([
-      i:InstanceValue[1] | ^$i(values = $i.values->toOne()->cast(@Integer) + 1)
+      i:InstanceValue[1] | ^$i(values = $i.values->toOne()->cast(@Integer) + 1),
+      v:ValueSpecification[1] | ^SimpleFunctionExpression(multiplicity = PureOne, func = plus_Integer_MANY__Integer_1_, functionName = 'plus', 
+                                                          genericType = ^GenericType(rawType = Integer), importGroup = system::imports::coreImport,
+                                                          parametersValues = ^InstanceValue(multiplicity = ZeroMany, genericType = ^GenericType(rawType = Integer), values = [
+                                                            $v,
+                                                            ^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType = Integer), values = 1)
+                                                          ]))->evaluateAndDeactivate()
   ]);
 }
 
@@ -5337,6 +5343,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                           e:Enum[1] | ^Literal(value=$e),
                                                           e:Enumeration<Any>[1] | ^Literal(value=$e),
                                                           f:SimpleFunctionExpression[1]|$f->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context),
+                                                          v:VariableExpression[1] | $v->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context),
                                                           i:InstanceValue[1]|$i->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context),
                                                           f:FunctionDefinition<Any>[1]|$f.expressionSequence->at(0)->processTdsLambda($a, $returnColumnName,$vars, $state, $currentPropertyMapping, $context),
                                                           v:PlanVarPlaceHolder[1]| ^Literal(value=^VarPlaceHolder(name=$v.name,type = $v.type, multiplicity = $v.multiplicity))

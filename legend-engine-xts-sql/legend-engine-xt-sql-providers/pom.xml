@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xt-sql-providers</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - SQL - Providers</name>
+    <name>Legend Engine - XT - SQL - Providers</name>
 
     <modules>
         <module>legend-engine-xt-sql-providers-core</module>
