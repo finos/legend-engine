@@ -16,7 +16,6 @@ package org.finos.legend.engine.server.test.pureClient.executionPlan;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -25,6 +24,8 @@ import org.finos.legend.pure.runtime.java.compiled.testHelper.PureTestBuilderCom
 import org.junit.Ignore;
 
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
+import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.buildJavaPureTestSuite;
+import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.getClassLoaderExecutionSupport;
 
 @Ignore
 public class Test_ExecutionPlan_JavaPlatform_CodeGeneration_UsingPureClient extends TestSuite
@@ -35,14 +36,16 @@ public class Test_ExecutionPlan_JavaPlatform_CodeGeneration_UsingPureClient exte
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
                 () ->
                 {
-                    CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
+                    CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
                     String func = "meta::pure::executionPlan::platformBinding::legendJava::tests::utils::javaPureTestWrapper_FunctionDefinition_1__Boolean_1_";
                     CoreInstance runner = executionSupport.getProcessorSupport().package_getByUserPath(func);
                     TestSuite suite = new TestSuite();
                     TestCollection testCollection = TestCollection.collectTests("meta::pure::executionPlan::platformBinding::legendJava::library::tests", executionSupport.getProcessorSupport(), fn -> PureTestBuilderCompiled.generatePureTestCollection(fn, executionSupport), null);
-                    suite.addTest(PureTestHelper.buildJavaPureTestSuite(testCollection, executionSupport, runner));
+                    suite.addTest(buildJavaPureTestSuite(testCollection, executionSupport, runner));
                     return suite;
-                });
+                },
+                PureWithEngineHelper::cleanUp
+        );
     }
 }
 

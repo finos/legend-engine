@@ -28,7 +28,7 @@ import java.util.Optional;
 
 public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
 {
-    private static final int DEFAULT_PORT = -1;
+    private static final int DEFAULT_PORT = Integer.parseInt(System.getProperty("legend.test.h2.port", "-1"));
     public static final String DEFAULT_TEMP_PATH = "/tmp/";
 
     @Override

@@ -135,7 +135,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
    let enrichedExpressionsAfterStrategyBasedEnrichment = $enrichedExpressions->map(exp | $exp->enrichExpressionWithStrategyBasedEnrichment($exeCtx, $extensions, $debug));
 
    // Clustering Function Expressions into clusters
-   print(if($debug.debug,|'\n'+$debug.space+'Clustering Function Expressions:\n',|''));
+   print(if($debug.debug,|'\n'+$debug.space+'Clustering Function Expressions:',|''));
    let clusters = $enrichedExpressionsAfterStrategyBasedEnrichment->map(exp| $exp->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space + '  ')));
 
    // Wrapping Clustered Function Expressions into original function structure
@@ -149,6 +149,7 @@ function meta::pure::router::enrichExpressionWithStrategyBasedEnrichment(vs: Ext
 {
    $vs->match([
      sm: StoreMappingRoutedValueSpecification[1]   | $sm->enrichStoreMappingRoutedValueSpecification($exeCtx, $extensions, $debug),
+     s: StoreRoutedValueSpecification[1]           | $s,
      ef: ExternalFormatRoutedValueSpecification[1] | ^$ef(value = $ef.value->enrichExternalFormatRoutedValueSpecification($exeCtx, $extensions, $debug)),
      pl: PlatformRoutedValueSpecification[1]       | ^$pl(value = $pl.value->enrichPlatformRoutedValueSpecification($exeCtx, $extensions, $debug)),
      er: ExtendedRoutedValueSpecification[1]       | fail('Unexpected ExtendedRoutedValueSpecification encountered. Please raise the issue with dev team!'); @ExtendedRoutedValueSpecification;
@@ -161,6 +162,7 @@ function meta::pure::router::clusterFunctionExpressions(vs:ExtendedRoutedValueSp
 
    $vs->match([
      sm: StoreMappingRoutedValueSpecification[1]   | $sm->doCluster($sm.mapping, $sm.runtime, $openVariables, $exeCtx, $extensions, $debug),
+     s : StoreRoutedValueSpecification[1] | $s->doCluster([], $s.runtime, $openVariables, $exeCtx, $extensions, $debug),
      ef: ExternalFormatRoutedValueSpecification[1] | let clusteredVal = $ef.value->meta::pure::router::externalFormat::clustering::cluster($ef.binding, $openVariables, $exeCtx, $extensions, $debug)->toOne();
                                                      if($clusteredVal->instanceOf(ClusteredValueSpecification),
                                                         |let cluster = $clusteredVal->cast(@ClusteredValueSpecification);
