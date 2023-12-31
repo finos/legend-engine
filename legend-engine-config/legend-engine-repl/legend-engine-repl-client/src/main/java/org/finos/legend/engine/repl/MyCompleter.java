@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
 import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
@@ -53,7 +54,8 @@ public class MyCompleter implements Completer
         {
             String store = inScope.substring(inScope.lastIndexOf("#>") + 3, inScope.length() - 1);
             Database s = (Database) ListIterate.select(Client.replInterface.parse(buildState().makeString("\n")).getElements(), c -> c.getPath().equals(store)).getFirst();
-            list.addAll(ListIterate.collect(s.schemas.get(0).tables, c -> buildCandidate(inScope + c.name + "}#")));
+            List<Table> tables = s.schemas.isEmpty() ? Lists.mutable.empty() : s.schemas.get(0).tables;
+            list.addAll(ListIterate.collect(tables, c -> buildCandidate(inScope + c.name + "}#")));
         }
         if (inScope.endsWith("from("))
         {

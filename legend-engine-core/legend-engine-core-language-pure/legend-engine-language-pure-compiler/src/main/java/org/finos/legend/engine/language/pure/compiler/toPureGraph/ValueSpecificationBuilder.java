@@ -38,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -45,11 +46,15 @@ import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.M3Paths;
+import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.relation._Column;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.DateFormat;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.LatestDate;
@@ -60,6 +65,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.Handlers.*;
 import static org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_functionReturnType_Function_1__GenericType_1_;
 
 public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>
@@ -233,8 +239,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                 return processClassInstance((RootGraphFetchTree) iv.value);
             case ">":
                 return processRelationStoreAccessor((RelationStoreAccessor) iv.value);
-            case "column":
-                throw new RuntimeException("Column builder of form ~col:... should be used as a parameter of a supported function.");
+            case "colSpec":
+                return proccessColSpec((ColSpec) iv.value);
             case "propertyGraphFetchTree":
                 return processClassInstance((PropertyGraphFetchTree) iv.value);
             case "keyExpression":
@@ -265,6 +271,49 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                 return processClassInstance((TdsOlapAggregation) iv.value);
             default:
                 throw new RuntimeException("/* Unsupported instance value " + iv.type + " */");
+        }
+    }
+
+    private ValueSpecification proccessColSpec(ColSpec colSpec)
+    {
+        ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
+        if (colSpec.function1 == null)
+        {
+            return wrapInstanceValue(buildColSpec(colSpec.name, colSpec.type == null ? null : context.pureModel.getGenericType(colSpec.type), context.pureModel, context.pureModel.getExecutionSupport().getProcessorSupport()), context.pureModel);
+        }
+        else if (colSpec.function2 == null)
+        {
+            InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> func = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) funcVS._values().getFirst();
+
+            GenericType colSpecGT = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                    ._rawType(context.pureModel.getClass("meta::pure::metamodel::relation::FuncColSpec"))
+                    ._typeArguments(
+                            Lists.mutable.with(func._classifierGenericType()._typeArguments().getFirst(),
+                                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                                            ._rawType(
+                                                    _RelationType.build(
+                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, null, funcReturnType(funcVS, context.pureModel), null, processorSupport)),
+                                                            null,
+                                                            processorSupport
+                                                    )
+                                            )
+                            )
+                    );
+
+            FuncColSpec funcColSpec = new Root_meta_pure_metamodel_relation_FuncColSpec_Impl<>("")
+                    ._classifierGenericType(colSpecGT)
+                    ._name(colSpec.name)
+                    ._function(func);
+
+            return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+                    ._multiplicity(context.pureModel.getMultiplicity("one"))
+                    ._genericType(colSpecGT)
+                    ._values(Lists.mutable.with(funcColSpec));
+        }
+        else
+        {
+            throw new RuntimeException("");
         }
     }
 

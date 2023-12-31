@@ -53,6 +53,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.List;
 
+import static org.finos.legend.engine.repl.Grid.prettyGridPrint;
+
 public class Client
 {
     private static final PlanExecutor planExecutor;
@@ -68,6 +70,8 @@ public class Client
     public static PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
 
     public static Terminal terminal;
+
+    public static boolean debug = false;
 
 
     static
@@ -85,13 +89,13 @@ public class Client
     {
         terminal = TerminalBuilder.terminal();
 
-        terminal.writer().println(Logos.logos.get((int) (Logos.logos.size() * Math.random())));
+        terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .highlighter(new MyHighlighter())
                 .parser(new DefaultParser().quoteChars(new char[]{'"'}))
-                .completer(new MyCompleter()) //new Completers.FilesCompleter(new File("/")))
+                .completer(new MyCompleter())
                 .build();
 
         while (true)
@@ -111,6 +115,19 @@ public class Client
                     terminal.writer().println("Commands:");
                     terminal.writer().println("  load <path> [<destination>]");
                     terminal.writer().println("  list");
+                }
+                else if (line.startsWith("debug"))
+                {
+                    String[] cmd = line.split(" ");
+                    if (cmd.length == 1)
+                    {
+                        debug = !debug;
+                    }
+                    else
+                    {
+                        debug = Boolean.parseBoolean(cmd[1]);
+                    }
+                    terminal.writer().println("debug: " + debug);
                 }
                 else if (line.startsWith("load "))
                 {
@@ -176,19 +193,22 @@ public class Client
             {
                 int e_start = e.getSourceInformation().startColumn;
                 int e_end = e.getSourceInformation().endColumn;
-                String beg = line.substring(0, e_start - 1);
-                String mid = line.substring(e_start - 1, e_end);
-                String end = line.substring(e_end, line.length());
-                AttributedStringBuilder ab = new AttributedStringBuilder();
-                ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-                ab.append(beg);
-                ab.style(new AttributedStyle().underline().bold().foreground(200, 0, 0));
-                ab.append(mid);
-                ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-                ab.append(end);
-                terminal.writer().println("");
-                terminal.writer().println(ab.toAnsi());
-                terminal.writer().println(e.getMessage());
+                if (e_start < line.length())
+                {
+                    String beg = line.substring(0, e_start - 1);
+                    String mid = line.substring(e_start - 1, e_end);
+                    String end = line.substring(e_end, line.length());
+                    AttributedStringBuilder ab = new AttributedStringBuilder();
+                    ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                    ab.append(beg);
+                    ab.style(new AttributedStyle().underline().bold().foreground(200, 0, 0));
+                    ab.append(mid);
+                    ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                    ab.append(end);
+                    terminal.writer().println("");
+                    terminal.writer().println(ab.toAnsi());
+                    terminal.writer().println(e.getMessage());
+                }
             }
             catch (Exception ee)
             {
@@ -325,7 +345,7 @@ public class Client
         // System.out.println(">> "+extensions.collect(c -> c._type()).makeString(", "));
 
         // Plan
-        Root_meta_pure_executionPlan_ExecutionPlan plan = replInterface.generatePlan(pureModel, true);
+        Root_meta_pure_executionPlan_ExecutionPlan plan = replInterface.generatePlan(pureModel, debug);
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
         // System.out.println(planStr);
 
@@ -342,93 +362,6 @@ public class Client
             return ((ConstantResult) res).getValue().toString();
         }
         throw new RuntimeException(res.getClass() + " not supported!");
-    }
-
-    private static String prettyGridPrint(RelationalResult res)
-    {
-        MutableList<String> columns = Lists.mutable.empty();
-        MutableList<Integer> size = Lists.mutable.empty();
-        MutableList<MutableList<String>> values = Lists.mutable.empty();
-        try (ResultSet rs = res.resultSet)
-        {
-            ResultSetMetaData md = rs.getMetaData();
-            int count = md.getColumnCount();
-            for (int i = 1; i <= count; i++)
-            {
-                columns.add(md.getColumnName(i));
-                values.add(Lists.mutable.empty());
-            }
-            while (rs.next())
-            {
-                for (int i = 1; i <= count; i++)
-                {
-                    values.get(i - 1).add(rs.getObject(i) == null ? "" : rs.getObject(i).toString());
-                }
-            }
-            for (int i = 1; i <= count; i++)
-            {
-                int maxSize = columns.get(i - 1).length();
-                size.add(values.get(i - 1).injectInto(maxSize, (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
-            }
-            size = Lists.mutable.withAll(size.collect(s -> s + 2));
-
-            StringBuilder builder = new StringBuilder();
-
-            drawSeparation(builder, count, size);
-            drawRow(builder, count, size, columns::get);
-            drawSeparation(builder, count, size);
-
-            int rows = values.get(0).size();
-            for (int k = 0; k < rows; k++)
-            {
-                final int fk = k;
-                drawRow(builder, count, size, i -> values.get(i).get(fk));
-            }
-
-            drawSeparation(builder, count, size);
-
-
-            return builder.toString();
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static void drawSeparation(StringBuilder builder, int count, MutableList<Integer> size)
-    {
-        builder.append("+");
-        for (int i = 0; i < count; i++)
-        {
-            repeat('-', size.get(i), builder);
-            builder.append("+");
-        }
-        builder.append("\n");
-    }
-
-    private static void repeat(char value, int length, StringBuilder builder)
-    {
-        for (int k = 0; k < length; k++)
-        {
-            builder.append(value);
-        }
-    }
-
-    private static void drawRow(StringBuilder builder, int count, MutableList<Integer> size, Function<Integer, String> getter)
-    {
-        builder.append("|");
-        for (int i = 0; i < count; i++)
-        {
-            String val = getter.apply(i);
-            int space = (size.get(i) - val.length()) / 2;
-            repeat(' ', space, builder);
-            builder.append(val);
-            repeat(' ', size.get(i) - val.length() - space, builder);
-            builder.append("|");
-        }
-
-        builder.append("\n");
     }
 
 

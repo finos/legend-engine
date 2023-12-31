@@ -44,7 +44,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->filter(i|$i.ide == 'ok')\n" +
-                        "}","COMPILATION error at [7:30-32]: The column 'ide' can't be found in the relation (id:String)"
+                        "}", "COMPILATION error at [7:30-32]: The column 'ide' can't be found in the relation (id:String)"
         );
     }
 
@@ -75,7 +75,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->concatenate(#>{a::B.tb}#)\n" +
-                        "}","COMPILATION error at [8:18-28]: The two relations are incompatible and can't be concatenated (id:String) and (otherCol:String"
+                        "}", "COMPILATION error at [8:18-28]: The two relations are incompatible and can't be concatenated (id:String) and (otherCol:String"
         );
     }
 
@@ -84,13 +84,13 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     {
         test(
                 "###Relational\n" +
-                    "Database a::A (Table tb(id Integer))\n" +
-                    "\n" +
-                    "###Pure\n" +
-                    "function test::f():Any[*]\n" +
-                    "{\n" +
-                    "   #>{a::A.tb}#->rename(~id,~id2)\n" +
-                    "}"
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->rename(~id,~id2)\n" +
+                        "}"
         );
     }
 
@@ -99,13 +99,13 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     {
         test(
                 "###Relational\n" +
-                    "Database a::A (Table tb(id Integer))\n" +
-                    "\n" +
-                    "###Pure\n" +
-                    "function test::f():Any[*]\n" +
-                    "{\n" +
-                    "   #>{a::A.tb}#->rename(~idw,~id2)\n" +
-                    "}","COMPILATION error at [7:26-28]: The column 'idw' can't be found in the relation (id:String)"
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->rename(~idw,~id2)\n" +
+                        "}", "COMPILATION error at [7:26-28]: The column 'idw' can't be found in the relation (id:String)"
         );
     }
 
@@ -219,15 +219,140 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
     }
 
 
+    @Test
+    public void testSort()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->sort(ascending(~id))\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testSortErrorWrongColumn()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->sort(ascending(~id2))\n" +
+                        "}",
+                "COMPILATION error at [7:34-36]: The column 'id2' can't be found in the relation (id:String)"
+        );
+    }
+
+    @Test
+    public void testSortErrorWrongParameter()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->sort(~id2)\n" +
+                        "}",
+                "COMPILATION error at [7:18-21]: Can't find a match for function 'sort(RelationStoreAccessor[1],ColSpec[1])"
+        );
+    }
+
+    @Test
+    public void testSortErrorWrongParameterUnknownFunc()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->sort(~id->desc())\n" +
+                        "}",
+                "COMPILATION error at [7:28-31]: Can't find a match for function 'desc(ColSpec[1])'"
+        );
+    }
+
+    @Test
+    public void testSortArray()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (Table tb(id Integer, other VARCHAR(200)))\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->sort([ascending(~id), descending(~other)])\n" +
+                        "}"
+        );
+    }
 
 
+    @Test
+    public void testJoin()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.id == $b.id2})\n" +
+                        "}"
+        );
+    }
 
+    @Test
+    public void testJoinErrorWrongCols()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.xid == $b.id2})\n" +
+                        "}",
+                "COMPILATION error at [7:95-97]: The column 'xid' can't be found in the relation (id:String, other:String)"
+        );
+    }
 
-
-
-
-
-
+    @Test
+    public void testJoinErrorWrongCols2()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        "   Table tb2(id2 Integer, errr VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.id == $b.eid2})\n" +
+                        "}",
+                "COMPILATION error at [7:104-107]: The column 'eid2' can't be found in the relation (id2:String, errr:String)"
+        );
+    }
 
 
     @Override

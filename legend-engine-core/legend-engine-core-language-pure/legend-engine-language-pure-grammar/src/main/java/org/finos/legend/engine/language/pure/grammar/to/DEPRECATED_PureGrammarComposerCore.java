@@ -96,7 +96,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.Column;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
@@ -711,8 +711,8 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 return processGraphFetchTree(rootGraphFetchTree);
             case ">":
                 return "#>{" + Lists.mutable.withAll(((RelationStoreAccessor) iv.value).path).makeString(".") + "}#";
-            case "column":
-                Column col = (Column) iv.value;
+            case "colSpec":
+                ColSpec col = (ColSpec) iv.value;
                 return "~" + col.name + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + col.function1.accept(this) : "") + (col.function2 != null ? ":" + col.function2.accept(this) : "");
             case "keyExpression":
                 KeyExpression keyExpression = (KeyExpression) iv.value;

@@ -84,7 +84,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Gen
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.Column;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.nio.charset.StandardCharsets;
@@ -1326,9 +1326,9 @@ public class DomainParseTreeWalker
         }
         else if (ctx.columnBuilders() != null)
         {
-            Column column = ListIterate.collect(ctx.columnBuilders().oneColSpec(), oneColSpec ->
+            ColSpec colSpec = ListIterate.collect(ctx.columnBuilders().oneColSpec(), oneColSpec ->
             {
-                Column col = new Column();
+                ColSpec col = new ColSpec();
 
                 col.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
 
@@ -1348,7 +1348,7 @@ public class DomainParseTreeWalker
                 return col;
             }).getFirst();
 
-            result = DomainParseTreeWalker.wrapWithClassInstance(column, "column");
+            result = DomainParseTreeWalker.wrapWithClassInstance(colSpec, colSpec.sourceInformation, "colSpec");
         }
         else
         {
@@ -1861,11 +1861,12 @@ public class DomainParseTreeWalker
         return m;
     }
 
-    public static ClassInstance wrapWithClassInstance(Object obj, String val)
+    public static ClassInstance wrapWithClassInstance(Object obj, SourceInformation sourceInformation, String val)
     {
         ClassInstance value = new ClassInstance();
         value.type = val;
         value.value = obj;
+        value.sourceInformation = sourceInformation;
         return value;
     }
 

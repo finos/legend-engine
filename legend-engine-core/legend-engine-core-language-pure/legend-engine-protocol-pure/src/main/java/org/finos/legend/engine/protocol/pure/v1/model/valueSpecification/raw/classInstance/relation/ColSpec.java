@@ -17,7 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cl
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
-public class Column
+public class ColSpec
 {
     public SourceInformation sourceInformation;
     public String name;
