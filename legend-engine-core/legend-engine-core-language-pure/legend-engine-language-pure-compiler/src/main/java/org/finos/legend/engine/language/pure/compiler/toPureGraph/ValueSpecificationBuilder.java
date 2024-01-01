@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.PropertyPathElement;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -46,7 +47,10 @@ import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.*;
@@ -241,6 +245,8 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                 return processRelationStoreAccessor((RelationStoreAccessor) iv.value);
             case "colSpec":
                 return proccessColSpec((ColSpec) iv.value);
+            case "colSpecArray":
+                return proccessColSpecArray((ColSpecArray) iv.value);
             case "propertyGraphFetchTree":
                 return processClassInstance((PropertyGraphFetchTree) iv.value);
             case "keyExpression":
@@ -274,6 +280,58 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         }
     }
 
+    private ValueSpecification proccessColSpecArray(ColSpecArray value)
+    {
+        ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
+
+        MutableList<ValueSpecification> cols = ListIterate.collect(value.colSpecs, this::proccessColSpec);
+
+        GenericType colSpecGT = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                ._rawType(context.pureModel.getClass("meta::pure::metamodel::relation::ColSpecArray"))
+                ._typeArguments(
+                        Lists.mutable.with(
+                                new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                                        ._rawType(
+                                                _RelationType.build(
+                                                        cols.collect(c ->
+                                                        {
+                                                            Column<?, ?> theCol = ((RelationType<?>) c._genericType()._typeArguments().getFirst()._rawType())._columns().getFirst();
+                                                            return _Column.getColumnInstance(theCol._name(), false, null, _Column.getColumnType(theCol), null, processorSupport);
+                                                        }),
+                                                        null,
+                                                        processorSupport
+                                                )
+                                        )
+                        )
+                );
+
+        RichIterable<?> processedValues = cols.flatCollect(v -> ((InstanceValue) v)._values());
+        Object resO = processedValues.getFirst();
+        Object valueToInsert = null;
+        if (resO instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec)
+        {
+            valueToInsert = new Root_meta_pure_metamodel_relation_ColSpecArray_Impl<>("")
+                    ._classifierGenericType(colSpecGT)
+                    ._names(processedValues.collect(c -> ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec<?>) c)._name()));
+        }
+        else if (resO instanceof FuncColSpec)
+        {
+            throw new RuntimeException("TO CODE");
+        }
+        else
+        {
+            throw new RuntimeException("Not Possible: " + resO.getClass());
+        }
+
+        return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+                ._multiplicity(context.pureModel.getMultiplicity("one"))
+                ._genericType(colSpecGT)
+                ._values(Lists.mutable.with(
+                                valueToInsert
+                        )
+                );
+    }
+
     private ValueSpecification proccessColSpec(ColSpec colSpec)
     {
         ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
@@ -301,19 +359,57 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                             )
                     );
 
-            FuncColSpec funcColSpec = new Root_meta_pure_metamodel_relation_FuncColSpec_Impl<>("")
-                    ._classifierGenericType(colSpecGT)
-                    ._name(colSpec.name)
-                    ._function(func);
-
             return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
                     ._multiplicity(context.pureModel.getMultiplicity("one"))
                     ._genericType(colSpecGT)
-                    ._values(Lists.mutable.with(funcColSpec));
+                    ._values(Lists.mutable.with(
+                                    new Root_meta_pure_metamodel_relation_FuncColSpec_Impl<>("")
+                                            ._classifierGenericType(colSpecGT)
+                                            ._name(colSpec.name)
+                                            ._function(func)
+                            )
+                    );
         }
         else
         {
-            throw new RuntimeException("");
+            InstanceValue funcVS = (InstanceValue) colSpec.function1.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> func1 = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) funcVS._values().getFirst();
+
+            InstanceValue func2VS = (InstanceValue) colSpec.function2.accept(new ValueSpecificationBuilder(context, openVariables, processingContext));
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> func2 = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?>) func2VS._values().getFirst();
+
+            FunctionType func1Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func1, context.pureModel.getExecutionSupport().getProcessorSupport());
+            FunctionType func2Type = (FunctionType) org.finos.legend.pure.m3.navigation.function.Function.computeFunctionType(func2, context.pureModel.getExecutionSupport().getProcessorSupport());
+
+            GenericType aggColSpecGT = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                    ._rawType(context.pureModel.getClass("meta::pure::metamodel::relation::AggColSpec"))
+                    ._typeArguments(
+                            Lists.mutable.with(
+                                    func1Type._parameters().getFirst()._genericType(),
+                                    func1Type._returnType(),
+                                    func2Type._returnType(),
+                                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
+                                            ._rawType(
+                                                    _RelationType.build(
+                                                            Lists.mutable.with(_Column.getColumnInstance(colSpec.name, false, null, funcReturnType(func2VS, context.pureModel), null, processorSupport)),
+                                                            null,
+                                                            processorSupport
+                                                    )
+                                            )
+                            )
+                    );
+
+            return new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("")
+                    ._multiplicity(context.pureModel.getMultiplicity("one"))
+                    ._genericType(aggColSpecGT)
+                    ._values(Lists.mutable.with(
+                                    new Root_meta_pure_metamodel_relation_AggColSpec_Impl<>("")
+                                            ._classifierGenericType(aggColSpecGT)
+                                            ._name(colSpec.name)
+                                            ._map(func1)
+                                            ._reduce(func2)
+                            )
+                    );
         }
     }
 

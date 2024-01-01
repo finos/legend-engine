@@ -369,7 +369,6 @@ public class TestLambdaRoundtrip
         {
             Lambda lambda = new DomainParser().parseLambda(text, "", 0, 0, true);
             String json = objectMapper.writeValueAsString(lambda);
-            System.out.println(json);
             postJSON_lambda = objectMapper.readValue(json, Lambda.class);
         }
         catch (Exception e)

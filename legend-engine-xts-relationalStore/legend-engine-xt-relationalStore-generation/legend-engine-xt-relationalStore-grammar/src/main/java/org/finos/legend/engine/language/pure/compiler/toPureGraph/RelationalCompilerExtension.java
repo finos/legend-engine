@@ -88,6 +88,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRel
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalAssociationImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.*;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.DataType;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Integer;
+import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.datatype.Varchar;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.NamedRelation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Relation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table;
@@ -667,12 +670,13 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
                 RelationType<?> type = _RelationType.build(table._columns().collect(c ->
                 {
-                    String name = c.getValueForMetaPropertyToOne("name").getName();
+                    Column col = (Column) c;
+                    String name = col._name();
                     if (name.startsWith("\""))
                     {
                         name = name.substring(1, name.length() - 1);
                     }
-                    return (CoreInstance) _Column.getColumnInstance(name, false, null, (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath("String", processorSupport)), sourceInformation, processorSupport);
+                    return (CoreInstance) _Column.getColumnInstance(name, false, null, convertTypes(col._type(), processorSupport), sourceInformation, processorSupport);
                 }).toList(), sourceInformation, processorSupport);
 
                 GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
@@ -700,5 +704,23 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
 
             return (ValueSpecification) null;
         });
+    }
+
+    private GenericType convertTypes(DataType c, ProcessorSupport processorSupport)
+    {
+        String primitiveType;
+        if (c instanceof Varchar)
+        {
+            primitiveType = "String";
+        }
+        else if (c instanceof Integer)
+        {
+            primitiveType = "Integer";
+        }
+        else
+        {
+            throw new RuntimeException("Implement support for '" + c.getClass().getName() + "'");
+        }
+        return (GenericType) processorSupport.type_wrapGenericType(_Package.getByUserPath(primitiveType, processorSupport));
     }
 }

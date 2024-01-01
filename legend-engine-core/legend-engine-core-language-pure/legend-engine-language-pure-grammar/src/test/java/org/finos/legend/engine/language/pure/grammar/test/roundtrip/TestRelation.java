@@ -56,5 +56,10 @@ public class TestRelation
         testLambda("|#>{path::Store.table}#->extend(~a:c|'ok':x|'YO')");
     }
 
+    @Test
+    public void testColumnArray()
+    {
+        testLambda("|#>{path::Store.table}#->extend(~[a, b])");
+    }
 
 }

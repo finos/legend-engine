@@ -97,6 +97,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
@@ -713,7 +714,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 return "#>{" + Lists.mutable.withAll(((RelationStoreAccessor) iv.value).path).makeString(".") + "}#";
             case "colSpec":
                 ColSpec col = (ColSpec) iv.value;
-                return "~" + col.name + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + col.function1.accept(this) : "") + (col.function2 != null ? ":" + col.function2.accept(this) : "");
+                return "~" + printColSpec(col);
+            case "colSpecArray":
+                ColSpecArray colArray = (ColSpecArray) iv.value;
+                return "~[" + LazyIterate.collect(colArray.colSpecs, this::printColSpec).makeString(", ") + "]";
             case "keyExpression":
                 KeyExpression keyExpression = (KeyExpression) iv.value;
                 return PureGrammarParserUtility.removeQuotes(keyExpression.key.accept(this)) + "=" + keyExpression.expression.accept(this);
@@ -741,6 +745,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 }
                 throw new RuntimeException("/* Unsupported instance value " + iv.type + " */");
         }
+    }
+
+    private String printColSpec(ColSpec col)
+    {
+        return col.name + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + col.function1.accept(this) : "") + (col.function2 != null ? ":" + col.function2.accept(this) : "");
     }
 
     @Override

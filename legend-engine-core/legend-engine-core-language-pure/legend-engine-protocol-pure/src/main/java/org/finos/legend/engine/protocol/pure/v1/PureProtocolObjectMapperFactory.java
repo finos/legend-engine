@@ -38,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 
 import java.util.Collection;
@@ -85,6 +86,7 @@ public class PureProtocolObjectMapperFactory
         result.put("rootGraphFetchTree", RootGraphFetchTree.class);
         result.put(">", RelationStoreAccessor.class);
         result.put("colSpec", ColSpec.class);
+        result.put("colSpecArray", ColSpecArray.class);
         // Below Not supported by the grammar
         // Move to functions and deprecate
         result.put("listInstance", PureList.class);

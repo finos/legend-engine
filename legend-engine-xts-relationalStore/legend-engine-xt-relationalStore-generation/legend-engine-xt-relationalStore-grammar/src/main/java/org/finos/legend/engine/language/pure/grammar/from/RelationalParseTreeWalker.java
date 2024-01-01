@@ -188,10 +188,19 @@ public class RelationalParseTreeWalker
         }
         column.nullable = nullable;
         String dataType = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        switch (dataType.toUpperCase())
+        RelationalDataType val;
+        try
+        {
+            val = RelationalDataType.valueOf(dataType.toUpperCase());
+        }
+        catch (Exception e)
+        {
+            val = RelationalDataType.UNKNOWN;
+        }
+        switch (val)
         {
             // String
-            case "CHAR":
+            case CHAR:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -205,7 +214,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "VARCHAR":
+            case VARCHAR:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -220,7 +229,7 @@ public class RelationalParseTreeWalker
                 break;
             }
             // Binary
-            case "BINARY":
+            case BINARY:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -234,7 +243,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "VARBINARY":
+            case VARBINARY:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -248,7 +257,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "BIT":
+            case BIT:
             {
                 column.type = new Bit();
                 if (!ctx.INTEGER().isEmpty())
@@ -258,8 +267,8 @@ public class RelationalParseTreeWalker
                 break;
             }
             // Integer
-            case "INT":
-            case "INTEGER":
+            case INT:
+            case INTEGER:
             {
                 column.type = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Integer();
                 if (!ctx.INTEGER().isEmpty())
@@ -268,7 +277,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "BIGINT":
+            case BIGINT:
             {
                 column.type = new BigInt();
                 if (!ctx.INTEGER().isEmpty())
@@ -277,7 +286,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "SMALLINT":
+            case SMALLINT:
             {
                 column.type = new SmallInt();
                 if (!ctx.INTEGER().isEmpty())
@@ -286,7 +295,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "TINYINT":
+            case TINYINT:
             {
                 column.type = new TinyInt();
                 if (!ctx.INTEGER().isEmpty())
@@ -296,7 +305,7 @@ public class RelationalParseTreeWalker
                 break;
             }
             // Timestamp
-            case "TIMESTAMP":
+            case TIMESTAMP:
             {
                 column.type = new Timestamp();
                 if (!ctx.INTEGER().isEmpty())
@@ -305,7 +314,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "DATE":
+            case DATE:
             {
                 column.type = new Date();
                 if (!ctx.INTEGER().isEmpty())
@@ -315,7 +324,7 @@ public class RelationalParseTreeWalker
                 break;
             }
             // Numeric
-            case "NUMERIC":
+            case NUMERIC:
             {
                 if (ctx.INTEGER().size() == 2)
                 {
@@ -330,7 +339,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "DECIMAL":
+            case DECIMAL:
             {
                 if (ctx.INTEGER().size() == 2)
                 {
@@ -345,7 +354,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "FLOAT":
+            case FLOAT:
             {
                 column.type = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Float();
                 if (!ctx.INTEGER().isEmpty())
@@ -354,7 +363,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "DOUBLE":
+            case DOUBLE:
             {
                 column.type = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Double();
                 if (!ctx.INTEGER().isEmpty())
@@ -363,7 +372,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "REAL":
+            case REAL:
             {
                 column.type = new Real();
                 if (!ctx.INTEGER().isEmpty())
@@ -373,7 +382,7 @@ public class RelationalParseTreeWalker
                 break;
             }
             // Other
-            case "ARRAY":
+            case ARRAY:
             {
                 column.type = new Other();
                 if (!ctx.INTEGER().isEmpty())
@@ -382,7 +391,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "OTHER":
+            case OTHER:
             {
                 column.type = new Other();
                 if (!ctx.INTEGER().isEmpty())
@@ -391,7 +400,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "SEMISTRUCTURED":
+            case SEMISTRUCTURED:
             {
                 column.type = new SemiStructured();
                 if (!ctx.INTEGER().isEmpty())
@@ -400,7 +409,7 @@ public class RelationalParseTreeWalker
                 }
                 break;
             }
-            case "JSON":
+            case JSON:
             {
                 column.type = new Json();
                 if (!ctx.INTEGER().isEmpty())

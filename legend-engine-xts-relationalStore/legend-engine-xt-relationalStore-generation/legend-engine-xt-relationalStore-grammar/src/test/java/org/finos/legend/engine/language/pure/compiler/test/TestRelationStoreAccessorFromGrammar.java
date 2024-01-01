@@ -89,7 +89,7 @@ public class TestRelationStoreAccessorFromGrammar extends TestCompilationFromGra
         }
         catch (Exception e)
         {
-            Assert.assertEquals("The column 'naeme' can't be found in the relation (id:String, name:String)", e.getMessage());
+            Assert.assertEquals("The column 'naeme' can't be found in the relation (id:Integer, name:String)", e.getMessage());
         }
     }
 

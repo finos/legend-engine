@@ -44,7 +44,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->filter(i|$i.ide == 'ok')\n" +
-                        "}", "COMPILATION error at [7:30-32]: The column 'ide' can't be found in the relation (id:String)"
+                        "}", "COMPILATION error at [7:30-32]: The column 'ide' can't be found in the relation (id:Integer)"
         );
     }
 
@@ -75,7 +75,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->concatenate(#>{a::B.tb}#)\n" +
-                        "}", "COMPILATION error at [8:18-28]: The two relations are incompatible and can't be concatenated (id:String) and (otherCol:String"
+                        "}", "COMPILATION error at [8:18-28]: The two relations are incompatible and can't be concatenated (id:Integer) and (otherCol:Integer)"
         );
     }
 
@@ -105,7 +105,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "function test::f():Any[*]\n" +
                         "{\n" +
                         "   #>{a::A.tb}#->rename(~idw,~id2)\n" +
-                        "}", "COMPILATION error at [7:26-28]: The column 'idw' can't be found in the relation (id:String)"
+                        "}", "COMPILATION error at [7:26-28]: The column 'idw' can't be found in the relation (id:Integer)"
         );
     }
 
@@ -136,7 +136,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->rename(~id, ~newId)->filter(i|$i.id == 'ok')\n" +
                         "}",
-                "COMPILATION error at [7:51-52]: The column 'id' can't be found in the relation (newId:String)"
+                "COMPILATION error at [7:51-52]: The column 'id' can't be found in the relation (newId:Integer)"
         );
     }
 
@@ -150,7 +150,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + '1')\n" +
+                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + 1)\n" +
                         "}"
         );
     }
@@ -165,7 +165,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   #>{a::A.tb}#->extend(~id:x|$x.id->toOne() + '1')\n" +
+                        "   #>{a::A.tb}#->extend(~id:x|$x.id->toOne() + 1)\n" +
                         "}",
                 "COMPILATION error at [7:18-23]: The relation contains duplicates: [id]"
         );
@@ -181,9 +181,9 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   #>{a::A.tb}#->extend(~id:x|$x.ide->toOne() + '1')\n" +
+                        "   #>{a::A.tb}#->extend(~id:x|$x.ide->toOne() + 1)\n" +
                         "}",
-                "COMPILATION error at [7:34-36]: The column 'ide' can't be found in the relation (id:String)"
+                "COMPILATION error at [7:34-36]: The column 'ide' can't be found in the relation (id:Integer)"
         );
     }
 
@@ -197,7 +197,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + '1')->filter(i|$i.nid == 'ok')\n" +
+                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + 1)->filter(i|$i.nid < 3)\n" +
                         "}"
         );
     }
@@ -212,9 +212,9 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "###Pure\n" +
                         "function test::f():Any[*]\n" +
                         "{\n" +
-                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + '1')->filter(i|$i.neid == 'ok')\n" +
+                        "   #>{a::A.tb}#->extend(~nid:x|$x.id->toOne() + 1)->filter(i|$i.neid == 'ok')\n" +
                         "}",
-                "COMPILATION error at [7:67-70]: The column 'neid' can't be found in the relation (id:String, nid:String)"
+                "COMPILATION error at [7:65-68]: The column 'neid' can't be found in the relation (id:Integer, nid:Integer)"
         );
     }
 
@@ -246,7 +246,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->sort(ascending(~id2))\n" +
                         "}",
-                "COMPILATION error at [7:34-36]: The column 'id2' can't be found in the relation (id:String)"
+                "COMPILATION error at [7:34-36]: The column 'id2' can't be found in the relation (id:Integer)"
         );
     }
 
@@ -331,7 +331,7 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.xid == $b.id2})\n" +
                         "}",
-                "COMPILATION error at [7:95-97]: The column 'xid' can't be found in the relation (id:String, other:String)"
+                "COMPILATION error at [7:95-97]: The column 'xid' can't be found in the relation (id:Integer, other:String)"
         );
     }
 
@@ -350,7 +350,116 @@ public class TestRelationFunctions extends TestCompilationFromGrammar.TestCompil
                         "{\n" +
                         "   #>{a::A.tb}#->join(#>{a::A.tb2}#, meta::pure::functions::relation::JoinKind.INNER, {a,b|$a.id == $b.eid2})\n" +
                         "}",
-                "COMPILATION error at [7:104-107]: The column 'eid2' can't be found in the relation (id2:String, errr:String)"
+                "COMPILATION error at [7:104-107]: The column 'eid2' can't be found in the relation (id2:Integer, errr:String)"
+        );
+    }
+
+
+
+
+    @Test
+    public void testGroupBy()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.id : y|$y->sum())\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testGroupByErrorCol()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~[oteher], ~new : x|$x.id : y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:28-33]: The column 'oteher' can't be found in the relation (id:Integer, other:String)"
+        );
+    }
+
+    @Test
+    public void testGroupByErrorAggMap()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.ied : y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:48-50]: The column 'ied' can't be found in the relation (id:Integer, other:String)"
+        );
+    }
+
+    @Test
+    public void testGroupByErrorAggReduce()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.other : y|$y->sum())\n" +
+                        "}",
+                "COMPILATION error at [7:62-64]: Can't find a match for function 'sum(String[*])"
+        );
+    }
+
+    @Test
+    public void testGroupByCompose()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.id : y|$y->sum())->filter(x|$x.new > 1)\n" +
+                        "}"
+        );
+    }
+
+    @Test
+    public void testGroupByComposeError()
+    {
+        test(
+                "###Relational\n" +
+                        "Database a::A (" +
+                        "   Table tb(id Integer, other VARCHAR(200))" +
+                        ")\n" +
+                        "\n" +
+                        "###Pure\n" +
+                        "function test::f():Any[*]\n" +
+                        "{\n" +
+                        "   #>{a::A.tb}#->groupBy(~[other], ~new : x|$x.id : y|$y->sum())->filter(x|$x.newE > 1)\n" +
+                        "}",
+                "COMPILATION error at [7:79-82]: The column 'newE' can't be found in the relation (other:String, new:Integer)"
         );
     }
 

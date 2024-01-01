@@ -212,7 +212,7 @@ public class Client
             }
             catch (Exception ee)
             {
-                throw new RuntimeException(ee);
+                terminal.writer().println(ee.getMessage());
             }
         }
     }
