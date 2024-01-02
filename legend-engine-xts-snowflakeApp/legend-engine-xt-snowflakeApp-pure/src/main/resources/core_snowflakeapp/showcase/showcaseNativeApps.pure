@@ -1,0 +1,31 @@
+import meta::external::function::activator::snowflakeApp::generation::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::mapping::*;
+import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
+import meta::external::function::activator::snowflakeApp::tests::*;
+import meta::external::function::activator::snowflakeApp::*;
+
+function meta::external::function::activator::snowflakeApp::tests::defaultConfig():SnowflakeDeploymentConfiguration[1]
+{
+  ^SnowflakeDeploymentConfiguration(target = testRelationalConnection().connection->cast(@RelationalDatabaseConnection) );
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleApp():Any[*]
+{
+  let app =  ^SnowflakeApp
+   (
+      applicationName = 'App1',
+      owner = 'owner1',
+      description = 'bla bla',
+      activationConfiguration = defaultConfig() ,
+      function = meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction__TabularDataSet_1_
+   );
+   let generatedQuery = $app->generateArtifact();
+   //isMulti
+}
+
+function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction():TabularDataSet[1]
+{
+    PersonX.all()->filter(p|$p.firstName == 'haha')->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    ->from(simpleRelationalMapping, testRuntime(dbInc))
+}
