@@ -50,7 +50,7 @@ function meta::pure::router::store::routing::getRoutingStrategyFromMappingAndRun
                processClass = processClass_Class_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
                processRelationStoreAccessor = processRelationStoreAccessor_RelationStoreAccessor_1__InstanceValue_1__RoutingState_1__ExecutionContext_1__DebugContext_1__RoutingState_1_,
                processProperty = routeFunctionExpressionProperty_Property_1__FunctionExpression_1__RoutingState_1__ExecutionContext_1__Map_1__Map_1__Extension_MANY__DebugContext_1__RoutingState_1_,
-               wrapValueSpec = wrapValueSpecification_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
+               wrapValueSpec = wrapValueSpecificationStoreMapping_ValueSpecification_1__RoutingStrategy_1__String_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExtendedRoutedValueSpecification_1_,
                toString = {strategy:RoutingStrategy[1] | $strategy->cast(@StoreMappingRoutingStrategy).sets->size()->toString()}
         );,
         | let newStoreMappingRoutingStrategy = $currentStoreMappingRoutingStrategy->toOne();
