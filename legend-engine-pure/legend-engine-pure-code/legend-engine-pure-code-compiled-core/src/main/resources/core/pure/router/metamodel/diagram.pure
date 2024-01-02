@@ -78,8 +78,8 @@ Diagram meta::pure::router::metamodel::RouterMetaModelDiagram(width=0.0, height=
     TypeView cview_4(
         type=meta::pure::router::metamodel::RoutingStrategy,
         position=(-623.81836, -111.50000),
-        width=203.98145,
-        height=142.00000,
+        width=313.31667,
+        height=184.00000,
         stereotypesVisible=true,
         attributesVisible=true,
         attributeStereotypesVisible=true,
@@ -228,7 +228,7 @@ Diagram meta::pure::router::metamodel::RouterMetaModelDiagram(width=0.0, height=
     GeneralizationView gview_2(
         source=cview_6,
         target=cview_4,
-        points=[(-720.13867,168.50000),(-521.82764,-40.50000)],
+        points=[(-720.13867,168.50000),(-467.16003,-19.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -255,7 +255,7 @@ Diagram meta::pure::router::metamodel::RouterMetaModelDiagram(width=0.0, height=
     GeneralizationView gview_5(
         source=cview_9,
         target=cview_4,
-        points=[(-519.81445,247.50000),(-521.82764,-40.50000)],
+        points=[(-519.81445,247.50000),(-467.16003,-19.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -291,7 +291,7 @@ Diagram meta::pure::router::metamodel::RouterMetaModelDiagram(width=0.0, height=
     GeneralizationView gview_9(
         source=cview_13,
         target=cview_4,
-        points=[(-331.81445,174.50000),(-521.82764,-40.50000)],
+        points=[(-331.81445,174.50000),(-467.16003,-19.50000)],
         label='',
         color=#000000,
         lineWidth=-1.0,
@@ -324,11 +324,11 @@ Diagram meta::pure::router::metamodel::RouterMetaModelDiagram(width=0.0, height=
         lineWidth=-1.0,
         lineStyle=SIMPLE)
 
-    PropertyView pview_1(
+    PropertyView pview_0(
         property=meta::pure::router::metamodel::ExtendedRoutedValueSpecification.routingStrategy,
         source=cview_2,
-        target=cview_4
-,        points=[(160.08545,-41.50000),(-521.82764,-40.50000)],
+        target=cview_4,
+        points=[(160.08545,-41.50000),(-467.16003,-19.50000)],
         label='',
         propertyPosition=(0.0,0.0),
         multiplicityPosition=(0.0,0.0),

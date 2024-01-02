@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::pure::metamodel::path::*;
 import meta::pure::router::clustering::*;
@@ -47,6 +48,7 @@ function meta::pure::router::printer::asString(f:Function<Any>[1]):String[1]
 function meta::pure::router::printer::asString(f:Function<Any>[1], pref:Pref[1]):String[1]
 {
    $f->match([
+               c:Column<Nil,Any|*>[1]|$c.name->toOne(),
                q:AbstractProperty<Any>[1] | $q.name->toOne(),
                f:LambdaFunction<Any>[1]| let start = $f->functionType().parameters->evaluateAndDeactivate()->map(v|$v.name+':'+$v.genericType->printGenericType()+'['+$v.multiplicity->printMultiplicity()+']')->makeString(',')+' | ';
                                          $start + $f.expressionSequence->evaluateAndDeactivate()->map(e|$e->asString($pref)->replace('\n','\n'+space($start->length())))->makeString(';\n'+space($start->length()))+';';,
@@ -98,6 +100,7 @@ function meta::pure::router::printer::asString(f:FunctionExpression[1], pref:Pre
    $f.func->match(
       [
         p:Property<Nil,Any|*>[1] | $f.parametersValues->at(0)->asString($pref)+'.'+$p->id(),
+        c:Column<Nil,Any|*>[1]| $f.parametersValues->at(0)->asString($pref)+'.'+$c.name->toOne(),
         fd:Function<Any>[1]      | let dispatch = [
                                                     pair('getAll', f:FunctionExpression[1]|$f.parametersValues->at(0)->asString($pref)+'.all('+$f.parametersValues->tail()->map(v|$v->asString($pref))->joinStrings(', ')+')'),
                                                     pair('equal', f:FunctionExpression[1]|$f.parametersValues->at(0)->asString($pref)+' == '+$f.parametersValues->at(1)->asString($pref)),
