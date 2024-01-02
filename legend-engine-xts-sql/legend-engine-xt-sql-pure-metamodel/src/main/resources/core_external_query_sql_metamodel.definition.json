@@ -2,6 +2,7 @@
   "name": "core_external_query_sql_metamodel",
   "pattern": "(meta::external::query::sql)(::.*)?",
   "dependencies": [
-    "platform"
+    "platform",
+    "platform_functions"
   ]
 }
