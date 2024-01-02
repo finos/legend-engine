@@ -1,0 +1,34 @@
+import meta::external::function::activator::snowflakeApp::generation::*;
+import meta::relational::mapping::*;
+import meta::pure::executionPlan::*;
+
+
+function meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1]):Any[*]
+{
+  let extensions = meta::external::format::shared::externalFormatExtension()->concatenate(meta::relational::extension::relationalExtensions());
+  meta::external::function::activator::snowflakeApp::generation::generateArtifact($s, $extensions);
+}
+
+function  meta::external::function::activator::snowflakeApp::generation::generateArtifact(s: meta::external::function::activator::snowflakeApp::SnowflakeApp[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+   let plan =  meta::pure::executionPlan::executionPlan($s.function->cast(@ConcreteFunctionDefinition<Any>),$extensions );
+  let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
+  let generatedQuery = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->last()->cast(@SQLExecutionNode).sqlQuery->toOne('candidate query not found');
+  'CREATE OR REPLACE SECURE FUNCTION '+ $s.applicationName->toUpper()+ ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS \''+ $generatedQuery +'\';';
+
+}
+
+function  meta::external::function::activator::snowflakeApp::generation::generateResultTypeStub(r: TDSResultType[1], extensions:meta::pure::extension::Extension[*]):String[1]
+{
+  let tdsTypeToRelationalTypeMap = TdsTypeToRelationalTypeMap();
+  $r.tdsColumns->map(c|'"'+ $c.name->toUpper() + '" '+ $tdsTypeToRelationalTypeMap->get($c.type->toOne('Column type missing for column: '+$c.name))->toOne('Relational type missing for type: '+ $c.type->toOne()->toString()))->joinStrings(',');
+}
+
+function  meta::external::function::activator::snowflakeApp::generation::TdsTypeToRelationalTypeMap():Map<PrimitiveType, String>[1]
+{
+  [pair(String, 'VARCHAR(16777216)'),
+  pair(Boolean, 'boolean'),
+  pair(Integer, 'number'),
+  pair(Float, 'number')
+  ]->newMap()
+}
