@@ -14,9 +14,8 @@
 
 package org.finos.legend.engine.repl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.block.function.primitive.IntObjectToIntFunction;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.factory.Predicates;
@@ -72,6 +71,8 @@ public class Client
     public static Terminal terminal;
 
     public static boolean debug = false;
+
+    public static ObjectMapper objectMapper = new ObjectMapper();
 
 
     static
@@ -207,12 +208,20 @@ public class Client
                     ab.append(end);
                     terminal.writer().println("");
                     terminal.writer().println(ab.toAnsi());
-                    terminal.writer().println(e.getMessage());
+                }
+                terminal.writer().println(e.getMessage());
+                if (debug)
+                {
+                    e.printStackTrace();
                 }
             }
             catch (Exception ee)
             {
                 terminal.writer().println(ee.getMessage());
+                if (debug)
+                {
+                    ee.printStackTrace();
+                }
             }
         }
     }
@@ -337,17 +346,33 @@ public class Client
                 "function a::b::c::d():Any[*]\n{\n" + txt + ";\n}";
 
         PureModelContextData d = replInterface.parse(buildState().makeString("\n") + code);
-        // System.out.println(objectMapper.writeValueAsString(d));
+        if (debug)
+        {
+            try
+            {
+                terminal.writer().println((objectMapper.writeValueAsString(d)));
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
 
         // Compile
         PureModel pureModel = replInterface.compile(d);
         RichIterable<? extends Root_meta_pure_extension_Extension> extensions = PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(pureModel.getExecutionSupport()));
-        // System.out.println(">> "+extensions.collect(c -> c._type()).makeString(", "));
+        if (debug)
+        {
+            terminal.writer().println(">> " + extensions.collect(Root_meta_pure_extension_Extension::_type).makeString(", "));
+        }
 
         // Plan
         Root_meta_pure_executionPlan_ExecutionPlan plan = replInterface.generatePlan(pureModel, debug);
         String planStr = PlanGenerator.serializeToJSON(plan, "vX_X_X", pureModel, extensions, LegendPlanTransformers.transformers);
-        // System.out.println(planStr);
+        if (debug)
+        {
+            terminal.writer().println(planStr);
+        }
 
         // Execute
         Result res = planExecutor.execute(planStr);

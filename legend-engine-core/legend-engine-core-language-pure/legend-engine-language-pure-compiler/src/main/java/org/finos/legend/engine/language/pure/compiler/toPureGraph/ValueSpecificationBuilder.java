@@ -47,6 +47,7 @@ import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.AggColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
@@ -285,9 +286,17 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
 
         MutableList<ValueSpecification> cols = ListIterate.collect(value.colSpecs, this::proccessColSpec);
+        RichIterable<?> processedValues = cols.flatCollect(v -> ((InstanceValue) v)._values());
+        Object resO = processedValues.getFirst();
+
+        String className = resO instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec ?
+                "meta::pure::metamodel::relation::ColSpecArray" :
+                resO instanceof AggColSpec ?
+                        "meta::pure::metamodel::relation::AggColSpecArray" :
+                        "meta::pure::metamodel::relation::FuncColSpecArray";
 
         GenericType colSpecGT = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
-                ._rawType(context.pureModel.getClass("meta::pure::metamodel::relation::ColSpecArray"))
+                ._rawType(context.pureModel.getClass(className))
                 ._typeArguments(
                         Lists.mutable.with(
                                 new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
@@ -295,7 +304,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                                                 _RelationType.build(
                                                         cols.collect(c ->
                                                         {
-                                                            Column<?, ?> theCol = ((RelationType<?>) c._genericType()._typeArguments().getFirst()._rawType())._columns().getFirst();
+                                                            Column<?, ?> theCol = ((RelationType<?>) c._genericType()._typeArguments().getLast()._rawType())._columns().getFirst();
                                                             return _Column.getColumnInstance(theCol._name(), false, null, _Column.getColumnType(theCol), null, processorSupport);
                                                         }),
                                                         null,
@@ -305,8 +314,6 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
                         )
                 );
 
-        RichIterable<?> processedValues = cols.flatCollect(v -> ((InstanceValue) v)._values());
-        Object resO = processedValues.getFirst();
         Object valueToInsert = null;
         if (resO instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.ColSpec)
         {
@@ -316,7 +323,16 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         }
         else if (resO instanceof FuncColSpec)
         {
-            throw new RuntimeException("TO CODE");
+            valueToInsert = new Root_meta_pure_metamodel_relation_FuncColSpecArray_Impl<>("")
+                    ._classifierGenericType(colSpecGT)
+                    ._names(processedValues.collect(c -> ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<?,?>) c)._name()))
+                    ._functions(processedValues.collect(c -> ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<?,?>) c)._function()));
+        }
+        else if (resO instanceof AggColSpec)
+        {
+            valueToInsert = new Root_meta_pure_metamodel_relation_AggColSpecArray_Impl<>("")
+                    ._classifierGenericType(colSpecGT)
+                    ._aggSpecs(cols.flatCollect(c -> ((InstanceValue)c)._values().collect(x -> (AggColSpec<?, ?, ?>) x)));
         }
         else
         {
