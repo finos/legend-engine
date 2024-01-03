@@ -563,16 +563,42 @@ function meta::relational::functions::pureToSqlQuery::processFunctionExpression(
   $res;
 }
 
+Class meta::relational::metamodel::TableAliasColumnName extends meta::relational::metamodel::RelationalOperationElement
+{
+   alias : TableAlias[1];
+   columnName : String[1];
+}
+
 function meta::relational::functions::pureToSqlQuery::processColumnFunctionExpression(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
 {
   let leftSide = processValueSpecificationReturnPropertyMapping($fe.parametersValues->at(0), $currentPropertyMapping, $operation, $vars, $state, $joinType, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne();
-  let leftSelect = $leftSide.element->cast(@SelectWithCursor).select;
+  let leftSelect = $leftSide.element->cast(@SelectWithCursor).select->cast(@TdsSelectSqlQuery);
   let colFuncName = $fe.func.name->toOne();
   let tableAlias = $leftSelect.data->toOne().alias;  
-  let foundColumn = $tableAlias.relation().columns->cast(@Column)->filter(c | $c.name == $colFuncName || $c.name == '"'+$colFuncName+'"')->toOne();
-  let colAlias = ^TableAliasColumn(alias = $tableAlias, column = $foundColumn);
-  let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
-  ^$leftSide(element = ^$operation(select=$newSelect));
+  let foundColumn = $tableAlias.relation()->findColumn($colFuncName);
+  if ($foundColumn->isEmpty(),
+    | let nestedSelect = meta::relational::functions::pureToSqlQuery::isolateTdsSelect($leftSelect, $extensions);
+      let tAlias = $nestedSelect.data.alias->toOne();
+      let fColumn = $tAlias.relation()->findColumn($colFuncName);
+      let colAlias = ^meta::relational::metamodel::TableAliasColumnName(columnName = $fColumn->cast(@Alias).name->toOne(), alias=$tAlias);
+      let newSelect = $state.inFilter->if(|^$nestedSelect(filteringOperation=$colAlias),|^$nestedSelect(columns=$colAlias));
+      ^$leftSide(element = ^$operation(select=$newSelect));,
+    | let colAlias = ^TableAliasColumn(alias = $tableAlias, column = $foundColumn->toOne()->cast(@Column));
+      let newSelect = $state.inFilter->if(|^$leftSelect(filteringOperation=$colAlias),|^$leftSelect(columns=$colAlias));
+      ^$leftSide(element = ^$operation(select=$newSelect));
+  );
+  
+}
+
+function meta::relational::functions::pureToSqlQuery::findColumn(relation:Relation[1], name:String[1]):RelationalOperationElement[0..1]
+{
+  $relation.columns->filter(c | let colName = $c->match([
+                                                    col:Column[1]|$col.name,
+                                                    a:Alias[1]|$a.name
+                                                  ]
+                                                );
+                                $colName == $name || $colName == '"'+$name+'"';
+                     )->first();
 }
 
 function meta::relational::functions::pureToSqlQuery::processPropertyFunctionExpression(fe:FunctionExpression[1], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):OperationWithParentPropertyMapping[1]
@@ -2506,7 +2532,8 @@ function meta::relational::functions::pureToSqlQuery::findAliasOrFail(f:Function
 {
    $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match([
     s:String[*]|$s,
-    x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names
+    x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names,
+    v:meta::pure::metamodel::relation::ColSpec<Any>[1]|$v.name
    ])->map(s| $s->findAliasOrFail($select));
 }
 
@@ -4528,7 +4555,8 @@ function meta::relational::functions::pureToSqlQuery::processGroupBy(expression:
    let pathInfos = $expression->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->match(
                                                                                           [
                                                                                             s:String[*]|$s,
-                                                                                            x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names
+                                                                                            x:meta::pure::metamodel::relation::ColSpecArray<Any>[1]|$x.names,
+                                                                                            z:meta::pure::metamodel::relation::ColSpec<Any>[1]|$z.name
                                                                                           ]
                                                                                         )->map(n|$existingPaths->filter(p|$p.first == $n))
                    ->concatenate($aggVS->map(a|  let pureType = $a.reduce->functionReturnType().rawType->toOne();
@@ -4647,7 +4675,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
           b:BasicColumnSpecification<Any>[1] | processBasicColumnSpecification($b, $mainQuery, $currentPropertyMapping, $vars, $updatedState, $context),
           s:SimpleFunctionExpression[1] | processBasicColumnSpecification($s->reactivate()->cast(@BasicColumnSpecification<Any>)->toOne(), $mainQuery, $currentPropertyMapping, $vars, $updatedState, $context),
           col : meta::pure::metamodel::relation::FuncColSpec<Any,Any>[1] | processColSpec($col.function, $col.name, $currentPropertyMapping, $mainQuery, $vars, $updatedState, $context),
-          cols : meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1] |  $cols.functions->zip($cols.names)->map(col|processColSpec($col.first, $col.second, $currentPropertyMapping, $mainQuery, $vars, $updatedState, $context))
+          cols : meta::pure::metamodel::relation::FuncColSpecArray<Any,Any>[1] |  $cols.funcSpecs->map(col|processColSpec($col.function, $col.name, $currentPropertyMapping, $mainQuery, $vars, $updatedState, $context))
         ])
    );
 
@@ -5310,11 +5338,8 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
 
                             if($func->isNotEmpty(),
                                     |$func->toOne().second->cast(@meta::pure::metamodel::function::Function<{->RelationalOperationElement[*]}>)->eval(),
-                                    |
-                                        let supportedFunction = findSupportedFunction($f, $state.supportedFunctions, $state.contextBasedSupportedFunctions);
-
-
-                                    if($supportedFunction->isNotEmpty(),
+                                    |let supportedFunction = findSupportedFunction($f, $state.supportedFunctions, $state.contextBasedSupportedFunctions);
+                                     if($supportedFunction->isNotEmpty(),
                                        |
                                           let overrides = [
                                             ^PureFunctionTDSToRelationalFunctionPair(first = extractEnumValue_Enumeration_1__String_1__T_1_, second = {|
@@ -5572,7 +5597,7 @@ function meta::relational::functions::pureToSqlQuery::processProjectColumns(f:Fu
    let colSpecArray = $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)
                           ->filter(c|$c->instanceOf(meta::pure::metamodel::relation::FuncColSpecArray))->cast(@meta::pure::metamodel::relation::FuncColSpecArray<{Nil[1]->Any[*]},Any>);
 
-   let _columns = $columns->concatenate($colSpecArray.names->zip($colSpecArray.functions)->map(c|^IntermediateColumn(name=$c.first, func = $c.second, documentation = '')));
+   let _columns = $columns->concatenate($colSpecArray.funcSpecs->map(c|^IntermediateColumn(name=$c.name, func = $c.function, documentation = '')));
 
 
    let windowColumns =  $f->instanceValuesAtParameter(1, $vars, $state.inScopeVars)->filter(c|$c->instanceOf(WindowColumnSpecification))->cast(@WindowColumnSpecification<Any>);
@@ -6213,6 +6238,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          c:ColumnName[1]|$c.name,
          n:NamedRelation[1]|$n.name,
          u:Union[1]|$u.queries->map(q|$q->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
+         c:TableAliasColumnName[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.columnName;,
          c:TableAliasColumn[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.column.name;,
          l:Literal[1]|if($l.value->instanceOf(VarPlaceHolder),|$l.value->cast(@VarPlaceHolder).name,|$l.value->toString()),
          l:LiteralList[1]|  $l.values->map(l|$l->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
@@ -8084,6 +8110,8 @@ function meta::relational::functions::pureToSqlQuery::getSupportedFunctions():Ma
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::extend_Relation_1__FuncColSpecArray_1__Relation_1_,second=meta::relational::functions::pureToSqlQuery::processTdsExtend_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),        
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processGroupBy_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processGroupBy_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),        
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processGroupBy_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),        
+        ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processGroupBy_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),                
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_,second=meta::relational::functions::pureToSqlQuery::processTdsJoin_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::limit_Relation_1__Integer_1__Relation_1_, second=meta::relational::functions::pureToSqlQuery::processTake_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),
         ^PureFunctionToRelationalFunctionPair(first=meta::pure::functions::relation::rename_Relation_1__ColSpec_1__ColSpec_1__Relation_1_,second=meta::relational::functions::pureToSqlQuery::processTdsRenameColumns_FunctionExpression_1__PropertyMapping_MANY__SelectWithCursor_1__Map_1__State_1__JoinType_1__String_1__List_1__DebugContext_1__Extension_MANY__RelationalOperationElement_1_),

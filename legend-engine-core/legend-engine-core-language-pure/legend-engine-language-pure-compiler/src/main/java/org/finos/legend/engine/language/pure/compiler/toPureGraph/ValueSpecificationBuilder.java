@@ -325,14 +325,13 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         {
             valueToInsert = new Root_meta_pure_metamodel_relation_FuncColSpecArray_Impl<>("")
                     ._classifierGenericType(colSpecGT)
-                    ._names(processedValues.collect(c -> ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<?,?>) c)._name()))
-                    ._functions(processedValues.collect(c -> ((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.FuncColSpec<?,?>) c)._function()));
+                    ._funcSpecs(processedValues.collect(x -> (FuncColSpec<?, ?>) x));
         }
         else if (resO instanceof AggColSpec)
         {
             valueToInsert = new Root_meta_pure_metamodel_relation_AggColSpecArray_Impl<>("")
                     ._classifierGenericType(colSpecGT)
-                    ._aggSpecs(cols.flatCollect(c -> ((InstanceValue)c)._values().collect(x -> (AggColSpec<?, ?, ?>) x)));
+                    ._aggSpecs(processedValues.collect(x -> (AggColSpec<?, ?, ?>) x));
         }
         else
         {

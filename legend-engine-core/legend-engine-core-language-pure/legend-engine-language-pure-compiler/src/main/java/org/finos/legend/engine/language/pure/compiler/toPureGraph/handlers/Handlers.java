@@ -208,8 +208,19 @@ public class Handlers
         GenericType gt = firstProcessedParameter._genericType();
         if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
         {
-            ColSpec col = (ColSpec) ((ClassInstance) parameters.get(1)).value;
-            updateSimpleLambda(col.function1, gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+            Object funcCol = ((ClassInstance) parameters.get(1)).value;
+            if (funcCol instanceof ColSpecArray)
+            {
+                ((ColSpecArray) funcCol).colSpecs.forEach(col -> updateSimpleLambda(col.function1, gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1)));
+            }
+            else if (funcCol instanceof ColSpec)
+            {
+                updateSimpleLambda(((ColSpec) funcCol).function1, gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
+            }
+            else
+            {
+                throw new RuntimeException("Not supported " + funcCol.getClass());
+            }
             return Lists.mutable.with(firstProcessedParameter, parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc)));
         }
         else

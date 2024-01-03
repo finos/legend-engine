@@ -292,7 +292,7 @@ public class Client
                                 String columnName = columns.getString("COLUMN_NAME");
                                 int size = columns.getInt("COLUMN_SIZE");
                                 int datatype = columns.getInt("DATA_TYPE");
-                                cols.add(new Column(columnName, JDBCType.valueOf(datatype).getName() + "(" + size + ")"));
+                                cols.add(new Column(columnName, JDBCType.valueOf(datatype).getName() + (datatype == 12 ? "(" + size + ")" : "")));
                             }
                         }
                         tables.add(new Table(res.getString("TABLE_SCHEM"), res.getString("TABLE_NAME"), cols));
