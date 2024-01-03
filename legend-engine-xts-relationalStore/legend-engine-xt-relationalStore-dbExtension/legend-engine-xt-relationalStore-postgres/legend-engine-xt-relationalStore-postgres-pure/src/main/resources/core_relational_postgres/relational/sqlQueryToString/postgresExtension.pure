@@ -30,7 +30,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
       selectSQLQueryProcessor = processSelectSQLQueryForPostgres_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
-      ddlCommandsTranslator = getDDLCommandsTranslatorDefault()
+      ddlCommandsTranslator = getDDLCommandsTranslatorForPostgres()
    );
 }
 
@@ -162,7 +162,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='(%s + (INTERVAL \'1 %s\' * %s))', transform={p:String[3] | [$p->at(0), $p->at(2)->replace('Text', '')->removeQuotesIfExist(), $p->at(1)]})), //https://www.postgresql.org/message-id/2B704E31-B533-4159-B6F0-EC284CFE824C%40skype.net,
-    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForPostgres($p)})),
@@ -171,6 +170,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'FMDay\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='date_part(\'dow\', %s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='date_part(\'doy\', %s)')),
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='convert_from(decode(%s, \'base64\'), \'utf8\')')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='encode(%s, \'base64\')')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', CURRENT_DATE)%s', transform={p:String[*] | ''})),
@@ -185,10 +186,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(\'hour\', %s)')),
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
-    dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='date_part(\'minute\', %s)')),
-    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
@@ -198,8 +198,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
-    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
-    dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s, %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='date_part(\'second\', %s)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -282,4 +280,29 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
 function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::processSliceOrDropForPostgres(s:SelectSQLQuery[1], format:Format[1],dbConfig : DbConfig[1], extensions:Extension[*], size:Any[1]):String[1]
 {
    '%s offset %s'->format([$format.separator, $s.fromRow->toOne()->getValueForTake($format, $dbConfig, $extensions)]) + if ($size == -1, | '', | ' limit %s'->format($size));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::getDDLCommandsTranslatorForPostgres(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForPostgres_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                dropSchema =  translateDropSchemaStatementForPostgres_DropSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                createTable =  translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::translateCreateSchemaStatementForPostgres(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   if ($createSchemaSQL.schema.name == 'default', 
+    | [], 
+    | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::translateDropSchemaStatementForPostgres(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+  if ($dropSchemaSQL.schema.name == 'default', 
+    |  [], 
+    | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
 }
