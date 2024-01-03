@@ -75,8 +75,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
 
   [
     dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
+    dynaFnToSql('ascii',                  $allStates,            ^ToSql(format='array_first(to_code_points(%s))')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='logical_and(%s)')),
-    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='logical_or(%s)')),        
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='logical_or(%s)')), 
+    dynaFnToSql('char',                   $allStates,            ^ToSql(format='code_points_to_string(%s)')),
     dynaFnToSql('coalesce',               $allStates,            ^ToSql(format='coalesce%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('contains',               $allStates,            ^ToSql(format=likePattern('%%%s%%'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
@@ -92,6 +94,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('endsWith',               $allStates,            ^ToSql(format=likePattern('%%%s'), transform={p:String[2]|$p->transformLikeParamsDefault()})),
     dynaFnToSql('exp',                    $allStates,            ^ToSql(format='exp(%s::float)')),
     dynaFnToSql('in',                     $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, \'month\'))')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, \'quarter\'))')),
     dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date(timestamp_trunc(timestamp %s, \'month\', current_date))%s', transform={p:String[*] | ''})),
