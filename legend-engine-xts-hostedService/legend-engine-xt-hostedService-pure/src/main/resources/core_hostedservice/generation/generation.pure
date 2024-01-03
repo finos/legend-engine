@@ -120,12 +120,18 @@ function meta::external::function::activator::hostedService::generation::getTree
           ->cast(@GraphFetchTree)->toOne()
 }
 
-function meta::external::function::activator::hostedService::generation::isMultiEenvironmentService(h:HostedService[1]):Boolean[1]
+function meta::external::function::activator::hostedService::generation::isMultiExecService(h:HostedService[1]):Boolean[1]
 {
   let execParam = $h.function->meta::external::function::activator::hostedService::generation::getExecutionParam();
-   $execParam->forAll(ep | $ep->instanceOf(ExecutionEnvironmentInstance)) &&  $execParam->isNotEmpty();
+  if($execParam->isNotEmpty(),
+    | $execParam->match([
+        e   : ExecutionEnvironmentInstance[1] | $e.executionParameters->size() > 1,
+        d   : DataSpace[1]                    | $d.executionContexts->size() > 1,
+        a   : Any[1]| false;
+      ]),
+    | false
+  );
 }
-
 
 function meta::external::function::activator::hostedService::generation::getEnvironmentkey(h:HostedService[1] ):String[1]
 {
