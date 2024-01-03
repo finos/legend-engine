@@ -142,7 +142,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::sqlSe
 {
    if ($createSchemaSQL.schema.name == 'default', 
     | [], 
-    | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
+    | 'Create Schema ' + $createSchemaSQL.schema.name + ';';);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::sqlServer::translateDropSchemaStatementForSqlServer(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
