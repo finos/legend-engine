@@ -85,7 +85,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::spann
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
     dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='extract(day from %s)')),
-    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='format_datetime("%A", DATETIME(%s))')),
+    dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='format_datetime("%%A", DATETIME(%s))')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='extract(dayofweek from %s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='extract(dayofyear from %s)')),
     dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='safe_convert_bytes_to_string(from_base64(%s))')),
