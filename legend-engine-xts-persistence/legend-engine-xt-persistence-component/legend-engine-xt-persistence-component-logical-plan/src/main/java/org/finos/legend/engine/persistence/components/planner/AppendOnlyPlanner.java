@@ -186,13 +186,11 @@ class AppendOnlyPlanner extends Planner
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
         // Rows inserted = rows in main with batch_id column equals latest batch id value
-        List<Value> fields = Collections.singletonList(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).build());
+        List<Value> fields = Collections.singletonList(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(ROWS_INSERTED.get()).build());
         Condition condition = LogicalPlanUtils.getBatchIdEqualityCondition(mainDataset(), metadataUtils.getBatchId(mainTableName), ingestMode().batchIdField());
         Selection selection = Selection.builder().source(mainDataset().datasetReference()).condition(condition).addAllFields(fields).build();
 
-        postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
-            .addOps(selection)
-            .build());
+        postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder().addOps(selection).build());
     }
 
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()
