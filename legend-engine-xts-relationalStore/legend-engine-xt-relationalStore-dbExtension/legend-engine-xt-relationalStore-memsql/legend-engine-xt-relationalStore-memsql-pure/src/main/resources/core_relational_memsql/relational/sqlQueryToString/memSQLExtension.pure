@@ -124,7 +124,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('quarter',                   $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',             $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('rem',                       $allStates,            ^ToSql(format='mod(%s, %s)')), 
-    dynaFnToSql('repeatString',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | 'lpad(\'\', length(' + $p->at(0) + ') * ' + $p->at(1) + ', ' +  $p->at(0) + ')'})),
+    dynaFnToSql('repeatString',              $allStates,            ^ToSql(format='%s', transform={p:String[2] | 'rpad(\'\', char_length(' + $p->at(0) + ') * ' + $p->at(1) + ', ' +  $p->at(0) + ')'})),
     dynaFnToSql('right',                     $allStates,            ^ToSql(format='right(%s, %s)')),
     dynaFnToSql('round',                     $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('rpad',                      $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
