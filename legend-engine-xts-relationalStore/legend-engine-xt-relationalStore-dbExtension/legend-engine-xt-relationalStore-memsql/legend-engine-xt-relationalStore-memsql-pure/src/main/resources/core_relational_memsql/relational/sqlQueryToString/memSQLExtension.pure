@@ -112,7 +112,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('lpad',                      $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
     dynaFnToSql('matches',                   $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                    $allStates,            ^ToSql(format='minute(%s)')),
-    dynaFnToSql('mod',                       $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                     $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthName',                 $allStates,            ^ToSql(format='monthname(%s)')),
     dynaFnToSql('monthNumber',               $allStates,            ^ToSql(format='month(%s)')),
