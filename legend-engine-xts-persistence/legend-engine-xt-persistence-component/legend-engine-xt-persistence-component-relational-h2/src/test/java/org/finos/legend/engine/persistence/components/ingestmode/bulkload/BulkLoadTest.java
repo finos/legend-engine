@@ -142,7 +142,7 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -214,7 +214,7 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertNull(statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -224,6 +224,7 @@ public class BulkLoadTest extends BaseTest
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
         expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table2.csv";
 
@@ -288,7 +289,7 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -365,7 +366,7 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"BATCH_ID\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -419,6 +420,7 @@ public class BulkLoadTest extends BaseTest
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
         expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table2.csv";
 

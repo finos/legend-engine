@@ -41,6 +41,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.*;
 
+import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_TERMINATED;
@@ -144,10 +145,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
 
-        Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
-        Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
-        Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_DELETED));
+        Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
+        Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`batch_id` = {NEXT_BATCH_ID}", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -218,10 +220,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
 
-        Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
-        Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
-        Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_DELETED));
+        Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
+        Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -276,10 +279,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
 
-        Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
-        Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
-        Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertNull(statsSql.get(ROWS_INSERTED));
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_DELETED));
+        Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
+        Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -334,10 +338,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
 
-        Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
-        Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
-        Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_DELETED));
+        Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
+        Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -393,10 +398,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
 
-        Assertions.assertEquals("SELECT 0 as `ROWSDELETED`", statsSql.get(ROWS_DELETED));
-        Assertions.assertEquals("SELECT 0 as `ROWSTERMINATED`", statsSql.get(ROWS_TERMINATED));
-        Assertions.assertEquals("SELECT 0 as `ROWSUPDATED`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `ROWSINSERTED` FROM `MY_DB`.`MY_NAME` as my_alias WHERE my_alias.`APPEND_TIME` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_DELETED));
+        Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
+        Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `ROWSINSERTED` FROM `MY_DB`.`MY_NAME` as my_alias WHERE my_alias.`BATCH_ID` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test

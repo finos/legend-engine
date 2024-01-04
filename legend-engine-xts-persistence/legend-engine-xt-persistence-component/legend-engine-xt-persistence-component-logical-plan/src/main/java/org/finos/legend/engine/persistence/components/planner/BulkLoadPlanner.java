@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -231,15 +232,12 @@ class BulkLoadPlanner extends Planner
     @Override
     public void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        // Only supported if Audit enabled
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            // Rows inserted = rows in main with audit column equals latest timestamp
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
-                    .addOps(getRowsBasedOnAppendTimestamp(mainDataset(), auditField, ROWS_INSERTED.get()))
-                    .build());
-        }
+        // Rows inserted = rows in main with batch_id column equals latest batch id value
+        List<Value> fields = Collections.singletonList(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(ROWS_INSERTED.get()).build());
+        Condition condition = LogicalPlanUtils.getBatchIdEqualityCondition(mainDataset(), metadataUtils.getBatchId(mainTableName), ingestMode().batchIdField());
+        Selection selection = Selection.builder().source(mainDataset().datasetReference()).condition(condition).addAllFields(fields).build();
+
+        postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder().addOps(selection).build());
     }
 
     @Override
@@ -248,11 +246,21 @@ class BulkLoadPlanner extends Planner
         // Not supported at the moment
     }
 
-    private Selection getRowsBasedOnAppendTimestamp(Dataset dataset, String field, String alias)
+    @Override
+    protected void addPostRunStatsForRowsUpdated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        FieldValue fieldValue = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(field).build();
-        Equals condition = Equals.of(fieldValue, BatchStartTimestamp.INSTANCE);
-        FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
-        return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
+        // Not supported at the moment
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsTerminated(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // Not supported at the moment
+    }
+
+    @Override
+    protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
+    {
+        // Not supported at the moment
     }
 }
