@@ -218,7 +218,7 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
    let rootGetAllExpression = createGetAllApplicationForRootGraphFetchTree($root, $set);
 
    let dummyLambda = {|'ok'};
-   let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction(getRoutingStrategyFromMappingAndRuntime($mapping, ^Runtime()), ^ExecutionContext(), [], true, $extensions, noDebug())->evaluateAndDeactivate()->toOne(); 
+   let routedFunction = ^$dummyLambda(expressionSequence = $rootGetAllExpression)->routeFunction(getRoutingStrategyFromMappingAndRuntime($mapping, ^Runtime(), $extensions), ^ExecutionContext(), [], true, $extensions, noDebug())->evaluateAndDeactivate()->toOne();
    let ext = $routedFunction.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingClusteredValueSpecification).val->cast(@StoreMappingRoutedValueSpecification);
 
    let extended = if($exeCtx.enableConstraints->isEmpty() || $exeCtx.enableConstraints->toOne(),
@@ -462,7 +462,7 @@ function meta::pure::graphFetch::routing::routePropertyGraphFetchTree(prop: Prop
    let cls = $functionExpression.genericType.rawType->toOne()->cast(@Class<Any>);
    // TODO Only allow no mapping routing for expanded (sub)trees
 
-   let routedFunctions = ^$dummyLambda(expressionSequence = $propertyApplicationExporession)->routeFunction(getRoutingStrategyFromMappingAndRuntime($mapping, ^Runtime()), ^ExecutionContext(), [], true, $extensions, noDebug())->evaluateAndDeactivate();
+   let routedFunctions = ^$dummyLambda(expressionSequence = $propertyApplicationExporession)->routeFunction(getRoutingStrategyFromMappingAndRuntime($mapping, ^Runtime(), $extensions), ^ExecutionContext(), [], true, $extensions, noDebug())->evaluateAndDeactivate();
 
    if($routedFunctions->isNotEmpty(),
       |  let routedFunction = $routedFunctions->toOne();
