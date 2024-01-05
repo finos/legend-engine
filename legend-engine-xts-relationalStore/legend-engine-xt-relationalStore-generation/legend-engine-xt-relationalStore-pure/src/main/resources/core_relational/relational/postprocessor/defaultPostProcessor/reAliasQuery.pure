@@ -49,6 +49,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
                                      u:Union[1]               | pair('unionAlias', $alias.name)->concatenate($u->traverse());,
                                      v:ViewSelectSQLQuery[1]  | pair($relElement->cast(@Table).name, $alias.name)->concatenate($v.selectSQLQuery->traverse());,
                                      t:Table[1]               | pair($relElement->cast(@Table).name, $alias.name);,
+                                     c:CommonTableExpressionReference[1] | pair($relElement->cast(@CommonTableExpressionReference).name, $alias.name);,
                                      s:SelectSQLQuery[1]      | let childPairs = $s->traverse();
                                                                 if($childPairs->isNotEmpty(),
                                                                    |pair($childPairs->first()->toOne().first, $alias.name)->concatenate($childPairs),
@@ -65,13 +66,18 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
    $q->map(r| $r->match([
                      v:VarSetPlaceHolder[1]  | pair($v.varName,$v.varName),
                      v:ViewSelectSQLQuery[1] | $v.selectSQLQuery->traverse(),
+                     sc:SelectCommonTableExpression[1] | $sc.selectSQLQuery->traverse(),
                      s:SelectSQLQuery[1]     | let dataProcessed = $s.data->toOne()->traverse();
                                                let cols          = $s.columns;
-                                               $dataProcessed->concatenate($cols->traverse())->concatenate($s.filteringOperation->traverse());,
+                                               let sPairs = $dataProcessed->concatenate($cols->traverse())->concatenate($s.filteringOperation->traverse());
+                                               if(($s->instanceOf(SelectSQLQueryWithCommonTableExpressions)&&$s->cast(@SelectSQLQueryWithCommonTableExpressions).commonTableExpressions->isNotEmpty()),
+                                               | $sPairs->concatenate($s->cast(@SelectSQLQueryWithCommonTableExpressions).commonTableExpressions->traverse()),
+                                               | $sPairs);,
                      ta:TableAlias[1]        | let name = $ta.name; 
                                                let relElement = $ta.relationalElement;
                                                $relElement->match([
                                                                     t:Table[1]                  | pair($t.name,$name);,
+                                                                    c:CommonTableExpressionReference[1] | pair($c.name,$name);,
                                                                     u:Union[1]                  | pair('unionAlias', $name)->concatenate($u->traverse());,
                                                                     s:SelectSQLQuery[1]         | let children = $s->traverse();
                                                                                                   if($children->isNotEmpty(),
@@ -145,9 +151,19 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                                     orderBy = $transformedOb,
                                                     filteringOperation= $transformedFilteringOp);
       
-                                    if(!$newS.leftSideOfFilter->isEmpty()
-                                       ,| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne()));
-                                       ,| $newS);,
+                                    let transformedSqlQuery = 
+                                    if($s->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+                                    |
+                                     let transformedCommonTableExpressions = $s->cast(@SelectSQLQueryWithCommonTableExpressions).commonTableExpressions->map(cte | ^$cte(sqlQuery = $cte->cast(@SelectCommonTableExpression).selectSQLQuery->transformAliasName($m)->cast(@SelectSQLQueryWithCommonTableExpressions)));
+                                     let newNewS = $newS->cast(@SelectSQLQueryWithCommonTableExpressions);
+                                     ^$newNewS(commonTableExpressions = $transformedCommonTableExpressions);,
+                                    |
+                                     $newS;
+                                    );      
+                                    if(!$transformedSqlQuery.leftSideOfFilter->isEmpty(),
+                                    | ^$transformedSqlQuery(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $transformedSqlQuery.data->toOne())),
+                                    | $transformedSqlQuery
+                                    );,
 
                 v:ViewSelectSQLQuery[1] | $v.selectSQLQuery->transformAliasName($m);,
                                           
@@ -159,6 +175,8 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                    ^$ta(name = $new->toOne(),relationalElement = $transformedRelElement);,
       
                 t:Table[1] | $t,
+
+                t:CommonTableExpressionReference[1] | $t,
       
                 tac: TableAliasColumn[1]| let new = $m->get($tac.alias.name); 
                                           assertNotEmpty($new); 

@@ -95,6 +95,12 @@ Class meta::relational::functions::sqlQueryToString::DbConfig
      $this.dbExtension.selectSQLQueryProcessor->eval($s, $sgc, $isSubSelect);
    }: String[1];
 
+   selectSQLQueryWithCTEsProcessor(s:SelectSQLQueryWithCommonTableExpressions[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1])
+   {
+     assert($this.dbExtension.selectSQLQueryWithCTEsProcessor->isNotEmpty(), '[unsupported-api] Common Table Expressions are not supported for Database Type: ' + $this.dbType->toString());
+     $this.dbExtension.selectSQLQueryWithCTEsProcessor->toOne()->eval($s, $sgc, $isSubSelect);
+   }: String[1];
+
    upsertSQLQueryProcessor(u:UpsertSQLQuery[1], sgc:SqlGenerationContext[1])
    {
      $this.dbExtension.upsertSQLQueryProcessor->toOne('[unsupported-api] Upsert operation not supported for Database Type: ' + $this.dbType->toString())->eval($u, $sgc);
@@ -214,6 +220,7 @@ Class meta::relational::functions::sqlQueryToString::DbExtension
    lateralJoinProcessor : meta::pure::metamodel::function::Function<{JoinTreeNode[1], DbConfig[1], Format[1], Extension[*] -> String[1]}>[0..1];
    joinStringsProcessor: meta::pure::metamodel::function::Function<{JoinStrings[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    selectSQLQueryProcessor: meta::pure::metamodel::function::Function<{SelectSQLQuery[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[1];
+   selectSQLQueryWithCTEsProcessor: meta::pure::metamodel::function::Function<{SelectSQLQueryWithCommonTableExpressions[1], SqlGenerationContext[1], Boolean[1] -> String[1]}>[0..1];
    upsertSQLQueryProcessor: meta::pure::metamodel::function::Function<{UpsertSQLQuery[1], SqlGenerationContext[1] -> String[1]}>[0..1];
    schemaNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
    tableNameToIdentifier: meta::pure::metamodel::function::Function<{String[1], DbConfig[1] -> String[1]}>[0..1];
@@ -376,6 +383,7 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                           js:JoinStrings[1] | $dbConfig.joinStringsProcessor($js, ^$sgc(config=^Config())),
                                           alias:Alias[1]|
                                                 let innerTerm = $alias.relationalElement->match([
+                                                   c : CommonTableExpressionReference[1]| $c->cast(@CommonTableExpressionReference).name->toString(),
                                                    r : VarSetPlaceHolder[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions),
                                                    s : SelectSQLQuery[1]|$s->processSelectSQLQuery($sgc, true),
                                                    r : RelationalOperationElement[1]|$r->processOperation($dbConfig, $format, $generationState, $config, $extensions)
@@ -439,10 +447,13 @@ function meta::relational::functions::sqlQueryToString::indent(d:Format[1]):Form
 
 function meta::relational::functions::sqlQueryToString::processSelectSQLQuery(s:SelectSQLQuery[1], sgc:SqlGenerationContext[1], isSubSelect:Boolean[1]):String[1]
 {
-   if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
-      | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
-      | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
-   );
+   if($s->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+   | $sgc.dbConfig.selectSQLQueryWithCTEsProcessor($s->cast(@SelectSQLQueryWithCommonTableExpressions), $sgc, $isSubSelect),
+   | if ($s.columns->isEmpty() && !$s.data->isEmpty() && $s.data.alias.relationalElement->toOne()->instanceOf(Union) && $s.data->map(x|$x->children())->isEmpty(),
+     | $s.data.alias.relationalElement->toOne()->processOperation($sgc.dbConfig, $sgc.format->indent(), $sgc.config, $sgc.extensions),
+     | $sgc.dbConfig.selectSQLQueryProcessor($s, $sgc, $isSubSelect)
+     )
+   )
 }
 
 function meta::relational::functions::sqlQueryToString::processUpsertSQLQuery(u:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]

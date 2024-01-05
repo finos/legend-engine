@@ -15,6 +15,10 @@
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::relation::*;
 
+Class meta::relational::metamodel::relation::TdsSelectSQLQueryWithCommonTableExpressions extends TdsSelectSqlQuery, SelectSQLQueryWithCommonTableExpressions
+{
+}
+
 Class meta::relational::metamodel::relation::SelectSQLQueryWithCommonTableExpressions extends SelectSQLQuery
 {
   commonTableExpressions: CommonTableExpression[*];
