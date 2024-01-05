@@ -27,6 +27,16 @@ function meta::external::function::activator::hostedService::tests::testRuntime(
     testRuntime(testDatabaseConnection($db,[]->cast(@String)));
 }
 
+function meta::external::function::activator::hostedService::tests::testPackageableRuntime(db:Database[1], name: String[1]):PackageableRuntime[1]
+{
+  ^PackageableRuntime(
+    name = $name,
+    runtimeValue = ^meta::core::runtime::EngineRuntime(
+      connectionStores = testDatabaseConnection(dbInc,[]->cast(@String))
+    )
+  )
+}
+
 function <<access.private>> meta::external::function::activator::hostedService::tests::testRuntime(testConnection:ConnectionStore[1]):Runtime[1]
 {
    ^Runtime(connectionStores = $testConnection)
