@@ -34,7 +34,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
    );
    //isMulti
 print('isMultiExecService:');
-$service-> meta::external::function::activator::hostedService::generation::isMultiExecService()->println();
+$service-> meta::external::function::activator::hostedService::generation::isMultiEenvironmentService()->println();
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
@@ -117,7 +117,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
    );
   //isMulti
   print('isMultiExecService:');
-  $service-> meta::external::function::activator::hostedService::generation::isMultiExecService()->println();
+  $service-> meta::external::function::activator::hostedService::generation::isMultiEenvironmentService()->println();
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
@@ -191,7 +191,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
    );
 //isMulti
 print('isMultiExecService:');
-$service-> meta::external::function::activator::hostedService::generation::isMultiExecService()->println();
+$service-> meta::external::function::activator::hostedService::generation::isMultiEenvironmentService()->println();
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
@@ -239,7 +239,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
    );
   //isMulti
   print('isMultiExecService:');
-  $service-> meta::external::function::activator::hostedService::generation::isMultiExecService()->println();
+  $service-> meta::external::function::activator::hostedService::generation::isMultiEenvironmentService()->println();
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
   //printlnPlan
