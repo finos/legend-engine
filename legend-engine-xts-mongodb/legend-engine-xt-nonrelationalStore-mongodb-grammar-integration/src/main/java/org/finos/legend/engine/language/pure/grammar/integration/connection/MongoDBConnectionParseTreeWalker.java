@@ -47,9 +47,9 @@ public class MongoDBConnectionParseTreeWalker
         {
             connectionValue.element = PureGrammarParserUtility.fromQualifiedName(connectionStoreContext.qualifiedName().packagePath() == null ? Collections.emptyList() : connectionStoreContext.qualifiedName().packagePath().identifier(), connectionStoreContext.qualifiedName().identifier());
             connectionValue.elementSourceInformation = this.walkerSourceInformation.getSourceInformation(connectionStoreContext.qualifiedName());
-            connectionValue.type = DatabaseType.MongoDb;
         }
         // database type
+        connectionValue.type = DatabaseType.MongoDb;
         MongoDBDatasourceSpecification dsSpecification = getMongoDBDatasourceSpecification(ctx, connectionValue);
         connectionValue.dataSourceSpecification = dsSpecification;
 
