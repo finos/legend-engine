@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl;
+package org.finos.legend.engine.repl.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
@@ -21,7 +21,6 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.factory.Predicates;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtensionLoader;
@@ -36,13 +35,17 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.repl.MyCompleter;
+import org.finos.legend.engine.repl.MyHighlighter;
+import org.finos.legend.engine.repl.REPLInterface;
+import org.finos.legend.engine.repl.client.Logos;
+import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
 import org.finos.legend.engine.repl.local.LocalREPL;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.impl.DefaultParser;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedStringBuilder;
@@ -52,7 +55,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.List;
 
-import static org.finos.legend.engine.repl.Grid.prettyGridPrint;
+import static org.finos.legend.engine.repl.database.MetadataReader.getTables;
+import static org.finos.legend.engine.repl.grid.Grid.prettyGridPrint;
 
 public class Client
 {
@@ -65,8 +69,6 @@ public class Client
     public static int count;
 
     public static List<PureGrammarComposerExtension> loader = PureGrammarComposerExtensionLoader.extensions();
-
-    public static PureGrammarComposer composer = PureGrammarComposer.newInstance(PureGrammarComposerContext.Builder.newInstance().build());
 
     public static Terminal terminal;
 
@@ -95,9 +97,14 @@ public class Client
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .highlighter(new MyHighlighter())
-                .parser(new DefaultParser().quoteChars(new char[]{'"'}))
+                .parser(new JLine3Parser())//new DefaultParser().quoteChars(new char[]{'"'}))
                 .completer(new MyCompleter())
                 .build();
+
+        terminal.writer().println("Warming up...");
+        terminal.flush();
+//        execute("1+1");
+        terminal.writer().println("Ready!\n");
 
         while (true)
         {
@@ -263,49 +270,9 @@ public class Client
         ab.append(command);
     }
 
-    public static void printSchema(ResultSet res) throws Exception
-    {
-        ResultSetMetaData m = res.getMetaData();
-        for (int i = 1; i <= m.getColumnCount(); i++)
-        {
-            System.out.println("-" + m.getColumnName(i));
-        }
-    }
 
-    public static MutableList<Table> getTables(Connection connection)
-    {
-        try
-        {
-            MutableList<Table> tables = Lists.mutable.empty();
-            DatabaseMetaData metaData = connection.getMetaData();
-            try (ResultSet res = metaData.getTables(null, null, null, new String[]{"TABLE"}))
-            {
-                while (res.next())
-                {
-                    if (!"INFORMATION_SCHEMA".equals(res.getString("TABLE_SCHEM")))
-                    {
-                        MutableList<Column> cols = Lists.mutable.empty();
-                        try (ResultSet columns = metaData.getColumns(null, null, res.getString("TABLE_NAME"), null))
-                        {
-                            while (columns.next())
-                            {
-                                String columnName = columns.getString("COLUMN_NAME");
-                                int size = columns.getInt("COLUMN_SIZE");
-                                int datatype = columns.getInt("DATA_TYPE");
-                                cols.add(new Column(columnName, JDBCType.valueOf(datatype).getName() + (datatype == 12 ? "(" + size + ")" : "")));
-                            }
-                        }
-                        tables.add(new Table(res.getString("TABLE_SCHEM"), res.getString("TABLE_NAME"), cols));
-                    }
-                }
-            }
-            return tables;
-        }
-        catch (Exception e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
+
+
 
     public static MutableList<String> buildState()
     {

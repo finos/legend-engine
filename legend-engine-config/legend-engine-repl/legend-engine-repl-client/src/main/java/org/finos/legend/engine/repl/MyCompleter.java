@@ -19,10 +19,10 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
+import org.finos.legend.engine.repl.client.Client;
 import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
@@ -32,7 +32,7 @@ import org.jline.reader.ParsedLine;
 import java.io.File;
 import java.util.List;
 
-import static org.finos.legend.engine.repl.Client.buildState;
+import static org.finos.legend.engine.repl.client.Client.buildState;
 
 public class MyCompleter implements Completer
 {
@@ -45,22 +45,10 @@ public class MyCompleter implements Completer
     {
         String inScope = parsedLine.line().substring(0, parsedLine.cursor());
 
-        if (inScope.endsWith("#>"))
+       if (inScope.endsWith("from("))
         {
             PureModelContextData d = Client.replInterface.parse(buildState().makeString("\n"));
-            list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> c instanceof Store), c -> buildCandidate(inScope.substring(inScope.lastIndexOf(" ") + 1) + "{" + PureGrammarComposerUtility.convertPath(c.getPath()) + ".")));
-        }
-        if (inScope.lastIndexOf("#>") != -1 && !inScope.substring(inScope.lastIndexOf("#>")).contains("}#") && inScope.endsWith("."))
-        {
-            String store = inScope.substring(inScope.lastIndexOf("#>") + 3, inScope.length() - 1);
-            Database s = (Database) ListIterate.select(Client.replInterface.parse(buildState().makeString("\n")).getElements(), c -> c.getPath().equals(store)).getFirst();
-            List<Table> tables = s.schemas.isEmpty() ? Lists.mutable.empty() : s.schemas.get(0).tables;
-            list.addAll(ListIterate.collect(tables, c -> buildCandidate(inScope + c.name + "}#")));
-        }
-        if (inScope.endsWith("from("))
-        {
-            PureModelContextData d = Client.replInterface.parse(buildState().makeString("\n"));
-            list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> c instanceof PackageableRuntime), c -> new Candidate(inScope.substring(inScope.lastIndexOf(" ") + 1) + PureGrammarComposerUtility.convertPath(c.getPath()) + ")")));
+            list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> c instanceof PackageableRuntime), c -> new Candidate("from(" + PureGrammarComposerUtility.convertPath(c.getPath()) + ")")));
         }
         else if (inScope.startsWith("show"))
         {
@@ -71,9 +59,20 @@ public class MyCompleter implements Completer
         {
             completer.complete(lineReader, parsedLine, list);
         }
-        else if (!inScope.contains(" "))
+//        else if (!inScope.contains(" "))
+//        {
+//            list.addAll(candidates);
+//        }
+        else
         {
-            list.addAll(candidates);
+            try
+            {
+                list.addAll(new org.finos.legend.engine.repl.autocomplete.Completer(buildState().makeString("\n")).complete(inScope).getCompletion().collect(c -> buildCandidate(c)));
+            }
+            catch (Exception e)
+            {
+                e.printStackTrace();
+            }
         }
     }
 

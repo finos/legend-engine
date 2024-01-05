@@ -12,21 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl;
+package org.finos.legend.engine.repl.database;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-
-public class Table
+public class Column
 {
-    public String schema;
     public String name;
-    public MutableList<Column> columns = Lists.mutable.empty();
+    public String type;
 
-    public Table(String schema, String name, MutableList<Column> columns)
+    public Column(String name, String type)
     {
-        this.schema = schema;
         this.name = name;
-        this.columns = columns;
+        this.type = type;
     }
 }

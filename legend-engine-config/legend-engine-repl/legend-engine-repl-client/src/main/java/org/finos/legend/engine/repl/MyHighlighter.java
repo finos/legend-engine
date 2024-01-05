@@ -23,8 +23,8 @@ import org.jline.utils.AttributedStringBuilder;
 
 import java.util.regex.Pattern;
 
-import static org.finos.legend.engine.repl.Client.drawCommand;
-import static org.finos.legend.engine.repl.Client.drawPath;
+import static org.finos.legend.engine.repl.client.Client.drawCommand;
+import static org.finos.legend.engine.repl.client.Client.drawPath;
 
 public class MyHighlighter implements Highlighter
 {
