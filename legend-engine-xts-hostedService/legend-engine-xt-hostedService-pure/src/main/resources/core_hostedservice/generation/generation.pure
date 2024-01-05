@@ -11,6 +11,7 @@ import meta::pure::graphFetch::*;
 import meta::external::function::activator::hostedService::generation::*;
 import meta::pure::extension::*;
 import meta::external::function::activator::hostedService::*;
+import meta::pure::metamodel::dataSpace::*;
 
 
 function meta::external::function::activator::hostedService::generation::printPlan(h:HostedService[1]): Any[*]
@@ -119,11 +120,18 @@ function meta::external::function::activator::hostedService::generation::getTree
           ->cast(@GraphFetchTree)->toOne()
 }
 
-function meta::external::function::activator::hostedService::generation::isMultiEenvironmentService(h:HostedService[1] ):Boolean[1]
+function meta::external::function::activator::hostedService::generation::isMultiExecService(h:HostedService[1]):Boolean[1]
 {
-  $h.function->meta::external::function::activator::hostedService::generation::getExecutionEnvInstance()->size()>0;
+  let execParam = $h.function->meta::external::function::activator::hostedService::generation::getExecutionParam();
+  if($execParam->isNotEmpty(),
+    | $execParam->match([
+        e   : ExecutionEnvironmentInstance[1] | $e.executionParameters->size() > 1,
+        d   : DataSpace[1]                    | $d.executionContexts->size() > 1,
+        a   : Any[1]| false;
+      ]),
+    | false
+  );
 }
-
 
 function meta::external::function::activator::hostedService::generation::getEnvironmentkey(h:HostedService[1] ):String[1]
 {
@@ -142,11 +150,10 @@ function meta::external::function::activator::hostedService::generation::getEnvi
 
 }
 
-
-function meta::external::function::activator::hostedService::generation::getExecutionEnvInstance(func: PackageableFunction<Any>[1]):ExecutionEnvironmentInstance[*]
+function meta::external::function::activator::hostedService::generation::getExecutionParam(func: PackageableFunction<Any>[1]):PackageableElement[*]
 {
   let valueSpecification = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues
-                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters]));
+                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters, DataSpace]));
                             //today we'll get a function cos we're in the pure IDE. from syudio we should be getting a packageable element so the need for the inner match will be eliminated
   if($valueSpecification->isNotEmpty(),
     |$valueSpecification->match([
@@ -157,26 +164,36 @@ function meta::external::function::activator::hostedService::generation::getExec
                                              e: ExecutionEnvironmentInstance[1]| $e
                                           ]));,
                                         |$s->reactivate()->toOne()
-                                          ); ,
+                                    );,
     e: ExecutionEnvironmentInstance[1]| $e,
+    d: DataSpace[1] | $d,
     a:Any[1]| fail('unexpected type'); $a;
     ]),
-    |[])->cast(@ExecutionEnvironmentInstance);
+    |[])->cast(@PackageableElement);
 }
 
 function meta::external::function::activator::hostedService::generation::rebuildServiceUsingSingleExecutionParams(h:HostedService[1] ):Pair<String,HostedService>[*]
 {
-    let execEnv = getExecutionEnvInstance($h.function);
-    assert($execEnv->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $execEnv->size()->toString());
-    $execEnv.executionParameters->map(
-      p| assert($p->instanceOf(SingleExecutionParameters),'Only handles singleExecutionParams');
-      let newFunc = rebuildFromExpression($h.function, $p->cast(@SingleExecutionParameters));
-      let newHostedService = ^$h(function=$newFunc);
-      pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
-    );
+    let execParam = getExecutionParam($h.function);
+    $execParam->match([
+                       e : ExecutionEnvironmentInstance[*] | assert($e->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $e->size()->toString());
+                                                             $e.executionParameters->map(
+                                                                p | assert($p->instanceOf(SingleExecutionParameters),'Only handles singleExecutionParams');
+                                                                    let newFunc = rebuildFromExpression($h.function, $p->cast(@SingleExecutionParameters).mapping, $p->cast(@SingleExecutionParameters).runtime);
+                                                                    let newHostedService = ^$h(function=$newFunc);
+                                                                    pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
+                                                             );,
+                       d : DataSpace[*]                    | assert($d->size() == 1, 'Found too many/ not enough dataSpaces, Size =' + $d->size()->toString());
+                                                              $d.executionContexts->map(
+                                                                ec | let newFunc = rebuildFromExpression($h.function, $ec.mapping, $ec.defaultRuntime.runtimeValue);
+                                                                let newHostedService = ^$h(function = $newFunc);
+                                                                pair($ec.name, $newHostedService);
+                                                              );,
+                       a : Any[1]                          | fail('unexpected type'); [];
+    ]);
 }
 
-function meta::external::function::activator::hostedService::generation::rebuildFromExpression(func: PackageableFunction<Any>[1], executionParam:SingleExecutionParameters[1]): PackageableFunction<Any>[1]
+function meta::external::function::activator::hostedService::generation::rebuildFromExpression(func: PackageableFunction<Any>[1], mapping: Mapping[1], runtime: Runtime[1]): PackageableFunction<Any>[1]
 {
   let fromExpression = ^SimpleFunctionExpression(
                               importGroup = system::imports::coreImport,
@@ -185,8 +202,8 @@ function meta::external::function::activator::hostedService::generation::rebuild
                               genericType = $func->functionReturnType(),
                               multiplicity = PureOne,
                               parametersValues = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues->at(0)
-                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Mapping), multiplicity = PureOne, values = $executionParam.mapping))
-                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Runtime), multiplicity = PureOne, values = $executionParam.runtime))
+                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Mapping), multiplicity = PureOne, values = $mapping))
+                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Runtime), multiplicity = PureOne, values = $runtime))
                              )->evaluateAndDeactivate();
     let serviceFunc = $func->cast(@ConcreteFunctionDefinition<Any>);
     let newServiceFunc = ^$serviceFunc(expressionSequence =$fromExpression->evaluateAndDeactivate());
@@ -247,4 +264,3 @@ function meta::external::function::activator::hostedService::validator::allowedR
     Byte
   ]
 }
-
