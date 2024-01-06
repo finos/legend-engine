@@ -14,34 +14,35 @@
 
 package org.finos.legend.engine.repl.autocomplete;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-
-public class CompletionResult
+public class CompletionItem
 {
-    private final EngineException engineException;
-    private final MutableList<CompletionItem> completion;
+    private final String display;
+    private final String completion;
 
-    public CompletionResult(EngineException e)
+    public CompletionItem(String completion)
     {
-        this.engineException = e;
-        this.completion = Lists.mutable.empty();
+        this(completion, completion);
     }
 
-    public CompletionResult(MutableList<CompletionItem> completion)
+    public CompletionItem(String display, String completion)
     {
-        this.engineException = null;
+        this.display = display;
         this.completion = completion;
     }
 
-    public EngineException getEngineException()
+    public String getDisplay()
     {
-        return engineException;
+        return display;
     }
 
-    public MutableList<CompletionItem> getCompletion()
+    public String getCompletion()
     {
         return completion;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "[" + display + " , " + completion + "]";
     }
 }

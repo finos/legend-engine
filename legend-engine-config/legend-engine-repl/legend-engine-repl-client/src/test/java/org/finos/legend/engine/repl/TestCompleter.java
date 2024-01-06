@@ -23,15 +23,15 @@ public class TestCompleter
     @Test
     public void testNonFunction()
     {
-        Assert.assertEquals(">{a::A.", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>").getCompletion().makeString(", "));
-        Assert.assertEquals(">{a::ABC., >{a::other.", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a").getCompletion().makeString(", "));
-        Assert.assertEquals(">{a::ABC.", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a::A").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::A , >{a::A.]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::ABC , >{a::ABC.], [a::other , >{a::other.]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::ABC , >{a::ABC.]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a::A").getCompletion().makeString(", "));
     }
 
     @Test
     public void testRelationAccessor()
     {
-        Assert.assertEquals("tab}#", new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))").complete("#>{a::A.t").getCompletion().makeString(", "));
+        Assert.assertEquals("[tab , tab}#]", new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))").complete("#>{a::A.t").getCompletion().makeString(", "));
         Assert.assertEquals("", new Completer("###Relational\nDatabase a::A(Table tab(col VARCHAR(200)))").complete("#>{a::A.x").getCompletion().makeString(", "));
         Assert.assertEquals("", new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))").complete("#>{a::A.tab}#").getCompletion().makeString(", "));
     }
@@ -39,40 +39,53 @@ public class TestCompleter
     @Test
     public void testDotInFilter()
     {
-        Assert.assertEquals("name, other", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->filter(x|$x.").getCompletion().makeString(", "));
+        Assert.assertEquals("[name , name], [other , other]", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->filter(x|$x.").getCompletion().makeString(", "));
+    }
+
+    @Test
+    public void testAutocompleteFunctionParameter()
+    {
+        Assert.assertEquals("[test::test , test::test)]", new Completer(db + connection + runtime).complete("#>{test::TestDatabase.tb}#->filter(x|$x.col == 's')->from(").getCompletion().makeString(", "));
+        Assert.assertEquals("[test::test , test::test)]", new Completer(db + connection + runtime).complete("#>{test::TestDatabase.tb}#->filter(x|$x.col == 's')->from(te").getCompletion().makeString(", "));
+        Assert.assertEquals("", new Completer(db + connection + runtime).complete("#>{test::TestDatabase.tb}#->filter(x|$x.col == 's')->from(zte").getCompletion().makeString(", "));
     }
 
     @Test
     public void testDotInFilterDeep()
     {
-        Assert.assertEquals("name, other", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->filter(x|'x'+[1,2]->map(z|$z+$x.").getCompletion().makeString(", "));
+        Assert.assertEquals("[name , name], [other , other]", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->filter(x|'x'+[1,2]->map(z|$z+$x.").getCompletion().makeString(", "));
     }
 
     @Test
     public void testArrowRelation()
     {
-//        Assert.assertEquals("func", new Completer("Class x::A{name:String[1];other:Integer[1];}").parse("x::A.all()->").makeString(", "));
-//        Assert.assertEquals("nc", new Completer("Class x::A{name:String[1];other:Integer[1];}").parse("x::A.all()->fu").makeString(", "));
-        Assert.assertEquals("distinct, drop, extend, filter, from, groupBy, join, limit, rename, size, slice, sort", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->").getCompletion().makeString(", "));
-        Assert.assertEquals("size, slice, sort", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->s").getCompletion().makeString(", "));
+        Assert.assertEquals("[distinct , distinct(], [drop , drop(], [extend , extend(], [filter , filter(], [from , from(], [groupBy , groupBy(], [join , join(], [limit , limit(], [rename , rename(], [size , size(], [slice , slice(], [sort , sort(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->").getCompletion().makeString(", "));
+        Assert.assertEquals("[size , size(], [slice , slice(], [sort , sort(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->s").getCompletion().makeString(", "));
+    }
+
+    @Test
+    public void testArrowOnType()
+    {
+        Assert.assertEquals("[project , project(]", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->").getCompletion().makeString(", "));
+        Assert.assertEquals("", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->fu").getCompletion().makeString(", "));
     }
 
     @Test
     public void testArrowDeep()
     {
-        Assert.assertEquals("contains, startsWith, endsWith, toLower, toUpper, lpad, rpad", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(f|$f.col->").getCompletion().makeString(", "));
+        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(f|$f.col->").getCompletion().makeString(", "));
     }
 
     @Test
     public void testDotInFilterDeepRelation()
     {
-        Assert.assertEquals("col", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.").getCompletion().makeString(", "));
+        Assert.assertEquals("[col , col]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.").getCompletion().makeString(", "));
     }
 
     @Test
     public void testDotInFilterDeepRelationTypeAhead()
     {
-        Assert.assertEquals("col", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.co").getCompletion().makeString(", "));
+        Assert.assertEquals("[col , col]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.co").getCompletion().makeString(", "));
         Assert.assertEquals("", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(x|'x'+[1,2]->map(z|$z+$x.z").getCompletion().makeString(", "));
     }
 
@@ -81,4 +94,27 @@ public class TestCompleter
     {
         Assert.assertEquals("COMPILATION error at [5:26-49]: Can't find a match for function 'plus(Any[2])'", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(x|'p'+$x.col->startsWith('x'))->fr").getEngineException().toPretty());
     }
+
+
+    private static String db = "###Relational\n" +
+            "Database test::TestDatabase(Table tb(col VARCHAR(200)))\n";
+
+    private static String connection = "###Connection\n" +
+            "RelationalDatabaseConnection test::testConnection\n" +
+            "{\n" +
+            "   store: test::TestDatabase;" +
+            "   specification: LocalH2{};" +
+            "   type: H2;" +
+            "   auth: DefaultH2;\n" +
+            "}\n";
+
+    private static String runtime = "###Runtime\n" +
+            "Runtime test::test\n" +
+            "{\n" +
+            "   mappings : [];\n" +
+            "   connections:\n" +
+            "   [\n" +
+            "       test::TestDatabase : [connection: test::testConnection]\n" +
+            "   ];\n" +
+            "}\n";
 }

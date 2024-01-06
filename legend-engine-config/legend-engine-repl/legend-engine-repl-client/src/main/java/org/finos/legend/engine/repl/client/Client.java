@@ -103,7 +103,7 @@ public class Client
 
         terminal.writer().println("Warming up...");
         terminal.flush();
-//        execute("1+1");
+        execute("1+1");
         terminal.writer().println("Ready!\n");
 
         while (true)
@@ -122,7 +122,9 @@ public class Client
                 {
                     terminal.writer().println("Commands:");
                     terminal.writer().println("  load <path> [<destination>]");
-                    terminal.writer().println("  list");
+                    terminal.writer().println("  db");
+                    terminal.writer().println("  graph [<packagePath>]");
+                    terminal.writer().println("  debug");
                 }
                 else if (line.startsWith("debug"))
                 {
@@ -151,7 +153,7 @@ public class Client
                         }
                     }
                 }
-                else if (line.startsWith("show"))
+                else if (line.startsWith("graph"))
                 {
                     MutableList<String> all = Lists.mutable.with(line.split(" "));
                     MutableList<String> showArgs = all.subList(1, all.size());
@@ -179,7 +181,7 @@ public class Client
                         terminal.writer().println(result);
                     }
                 }
-                else if (line.startsWith("list"))
+                else if (line.startsWith("db"))
                 {
                     try (Connection connection = getConnection())
                     {
@@ -187,10 +189,6 @@ public class Client
                                 getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> col.name + " " + col.type).makeString(", ") + ")").makeString("\n")
                         );
                     }
-                }
-                else if ("test".equals(line))
-                {
-                    terminal.writer().println(execute("#>{test::TestDatabase.TEST}#->filter(t|$t.name->startsWith('Dr'))->meta::pure::mapping::from(test::test)"));
                 }
                 else
                 {

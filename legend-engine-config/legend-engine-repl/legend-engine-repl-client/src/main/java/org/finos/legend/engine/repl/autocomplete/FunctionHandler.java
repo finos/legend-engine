@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.repl.autocomplete;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -24,9 +26,12 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 
 public abstract class FunctionHandler
 {
-    public abstract void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel);
-
     public abstract String functionName();
+
+    public void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
+    {
+    }
+
 
     protected VariableExpression buildTypedVariable(Variable variable, GenericType type, PureModel pureModel)
     {
@@ -34,5 +39,10 @@ public abstract class FunctionHandler
                 ._name(variable.name)
                 ._genericType(type)
                 ._multiplicity(pureModel.getMultiplicity("one"));
+    }
+
+    public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel)
+    {
+        return Lists.mutable.empty();
     }
 }

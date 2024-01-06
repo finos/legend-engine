@@ -14,14 +14,10 @@
 
 package org.finos.legend.engine.repl;
 
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
+import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.client.Client;
 import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
@@ -38,19 +34,12 @@ public class MyCompleter implements Completer
 {
     Completers.FilesCompleter completer = new Completers.FilesCompleter(new File("/"));
 
-    List<Candidate> candidates = Lists.mutable.with(new Candidate("show"), new Candidate("list"), new Candidate("load"));
-
     @Override
     public void complete(LineReader lineReader, ParsedLine parsedLine, List<Candidate> list)
     {
         String inScope = parsedLine.line().substring(0, parsedLine.cursor());
 
-       if (inScope.endsWith("from("))
-        {
-            PureModelContextData d = Client.replInterface.parse(buildState().makeString("\n"));
-            list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> c instanceof PackageableRuntime), c -> new Candidate("from(" + PureGrammarComposerUtility.convertPath(c.getPath()) + ")")));
-        }
-        else if (inScope.startsWith("show"))
+        if (inScope.startsWith("graph"))
         {
             PureModelContextData d = Client.replInterface.parse(buildState().makeString("\n"));
             list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")), c -> new Candidate(PureGrammarComposerUtility.convertPath(c.getPath()))));
@@ -67,7 +56,7 @@ public class MyCompleter implements Completer
         {
             try
             {
-                list.addAll(new org.finos.legend.engine.repl.autocomplete.Completer(buildState().makeString("\n")).complete(inScope).getCompletion().collect(c -> buildCandidate(c)));
+                list.addAll(new org.finos.legend.engine.repl.autocomplete.Completer(buildState().makeString("\n")).complete(inScope).getCompletion().collect(this::buildCandidate));
             }
             catch (Exception e)
             {
@@ -76,8 +65,8 @@ public class MyCompleter implements Completer
         }
     }
 
-    private Candidate buildCandidate(String s)
+    private Candidate buildCandidate(CompletionItem s)
     {
-        return new Candidate(s, s, (String) null, (String) null, (String) null, (String) null, false, 0);
+        return new Candidate(s.getCompletion(), s.getDisplay(), (String) null, (String) null, (String) null, (String) null, false, 0);
     }
 }

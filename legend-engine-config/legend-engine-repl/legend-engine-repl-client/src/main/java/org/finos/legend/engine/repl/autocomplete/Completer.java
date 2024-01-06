@@ -41,6 +41,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.repl.autocomplete.handlers.FilterHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.FromHandler;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -70,7 +71,7 @@ public class Completer
                         "\n###Pure\n" +
                         "function _pierre::func():Any[*]{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
-        this.handlers = Lists.mutable.with(new FilterHandler()).toMap(FilterHandler::functionName, x -> x);
+        this.handlers = Lists.mutable.with(new FilterHandler(), new FromHandler()).toMap(FunctionHandler::functionName, x -> x);
     }
 
     public CompletionResult complete(String value)
@@ -104,10 +105,10 @@ public class Completer
                         }
                         else
                         {
-                            return new CompletionResult(foundTables.collect(c -> c.name + "}#"));
+                            return new CompletionResult(foundTables.collect(c -> new CompletionItem(c.name, c.name + "}#")));
                         }
                     }
-                    return new CompletionResult(ListIterate.collect(elements, c -> ">{" + PureGrammarComposerUtility.convertPath(c.getPath()) + ".").toList());
+                    return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(PureGrammarComposerUtility.convertPath(c.getPath()), ">{" + PureGrammarComposerUtility.convertPath(c.getPath()) + ".")).toList());
                 }
             }
             else if (topExpression instanceof AppliedFunction)
@@ -122,15 +123,21 @@ public class Completer
                 {
                     // The user is currently typing the function name try to autocomplete (considering the left type)
                     String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
-                    return new CompletionResult(getFunctionCandidates(leftType, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)));
+                    return new CompletionResult(getFunctionCandidates(leftType, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c + "(")));
                 }
 
                 // The user is currently typing applied parameters within the function
                 ProcessingContext processingContext = new ProcessingContext("");
 
                 FunctionHandler handler = handlers.get(currentFunc.function);
+
                 if (handler != null)
                 {
+                    MutableList<CompletionItem> proposed = handler.proposedParameters(currentFunc, leftType, pureModel);
+                    if (!proposed.isEmpty())
+                    {
+                        return new CompletionResult(proposed);
+                    }
                     handler.handleFunctionAppliedParameters(currentFunc, leftType, processingContext, pureModel);
                 }
 
@@ -139,13 +146,13 @@ public class Completer
                     AppliedProperty appliedProperty = (AppliedProperty) currentExpression;
                     GenericType subLeftGenericType = compileCodePartWithinLambdaWithOneParameter(appliedProperty.parameters.get(0), processingContext, pureModel)._genericType();
                     String typedProperty = appliedProperty.property.replace(ParserFixer.magicToken, "");
-                    return new CompletionResult(extractPropertiesOrColumnsFromType(subLeftGenericType).select(c -> c.startsWith(typedProperty)).collect(c -> c.contains(" ") ? "'" + c + "'" : c));
+                    return new CompletionResult(extractPropertiesOrColumnsFromType(subLeftGenericType).select(c -> c.startsWith(typedProperty)).collect(c -> new CompletionItem(c.contains(" ") ? "'" + c + "'" : c)));
                 }
                 else if (currentExpression instanceof AppliedFunction)
                 {
                     AppliedFunction appliedFunction = (AppliedFunction) currentExpression;
                     GenericType subLeftGenericType = compileCodePartWithinLambdaWithOneParameter(appliedFunction.parameters.get(0), processingContext, pureModel)._genericType();
-                    return new CompletionResult(getFunctionCandidates(subLeftGenericType, pureModel, currentFunc.function));
+                    return new CompletionResult(getFunctionCandidates(subLeftGenericType, pureModel, currentFunc.function).collect(c -> new CompletionItem(c, c + "(")));
                 }
             }
 
@@ -177,14 +184,14 @@ public class Completer
 
     private ValueSpecification parseValueSpecification(String value)
     {
-        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(
-                header +
-                        value + "\n" +
-                        "\n}");
+        String code = header +
+                value + "\n" +
+                "\n}";
+
+        PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(code);
 
         Function func = (Function) ListIterate.select(pureModelContextData.getElements(), s -> s.getPath().equals("_pierre::func__Any_MANY_")).getFirst();
-        ValueSpecification vs = func.body.get(0);
-        return vs;
+        return func.body.get(0);
     }
 
     private MutableList<String> getFunctionCandidates(GenericType leftType, PureModel pureModel, String functionContext)
@@ -197,7 +204,10 @@ public class Completer
         {
             return Lists.mutable.with("contains", "startsWith", "endsWith", "toLower", "toUpper", "lpad", "rpad");
         }
-        return Lists.mutable.empty();
+        else
+        {
+            return Lists.mutable.with("project");
+        }
     }
 
     private Pair<GenericType, PureModel> compileLeftSideAndExtractType(AppliedFunction currentFunc)

@@ -980,6 +980,10 @@ public class PureModel implements IPureModel
         return this.mappingsIndex.get(packagePrefix(fullPath));
     }
 
+    public RichIterable<Root_meta_pure_runtime_PackageableRuntime> getAllRuntimes()
+    {
+        return this.packageableRuntimesIndex.valuesView();
+    }
 
     public Root_meta_core_runtime_Runtime getRuntime(String fullPath)
     {
