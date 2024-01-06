@@ -985,6 +985,11 @@ public class PureModel implements IPureModel
         return this.packageableRuntimesIndex.valuesView();
     }
 
+    public RichIterable<Store> getAllStores()
+    {
+        return this.storesIndex.valuesView();
+    }
+
     public Root_meta_core_runtime_Runtime getRuntime(String fullPath)
     {
         return getRuntime(fullPath, SourceInformation.getUnknownSourceInformation());

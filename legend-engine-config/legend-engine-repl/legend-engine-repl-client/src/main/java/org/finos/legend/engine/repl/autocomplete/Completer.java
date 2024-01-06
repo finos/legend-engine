@@ -27,29 +27,27 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingCont
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
-import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.*;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
-import org.finos.legend.engine.repl.autocomplete.handlers.FilterHandler;
-import org.finos.legend.engine.repl.autocomplete.handlers.FromHandler;
+import org.finos.legend.engine.repl.autocomplete.handlers.*;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
-import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
@@ -69,9 +67,18 @@ public class Completer
         this.header =
                 buildCodeContext +
                         "\n###Pure\n" +
+                        "import meta::pure::functions::relation::*;\n" +
                         "function _pierre::func():Any[*]{\n";
         this.lineOffset = StringUtils.countMatches(header, "\n") + 1;
-        this.handlers = Lists.mutable.with(new FilterHandler(), new FromHandler()).toMap(FunctionHandler::functionName, x -> x);
+        this.handlers = Lists.mutable.with(
+                new FilterHandler(),
+                new FromHandler(),
+                new RenameHandler(),
+                new ExtendHandler(),
+                new GroupByHandler(),
+                new SortHandler(),
+                new JoinHandler()
+        ).toMap(FunctionHandler::functionName, x -> x);
     }
 
     public CompletionResult complete(String value)
@@ -86,29 +93,10 @@ public class Completer
 
             if (topExpression instanceof ClassInstance)
             {
-                Object islandExpr = ((ClassInstance) topExpression).value;
-                if (islandExpr instanceof RelationStoreAccessor)
+                CompletionResult mutable = processClassInstance((ClassInstance) topExpression, compile());
+                if (mutable != null)
                 {
-                    MutableList<String> path = Lists.mutable.withAll(((RelationStoreAccessor) islandExpr).path);
-                    String writtenPath = path.makeString("::").replace(ParserFixer.magicToken, "");
-                    PureModelContextData d = Client.replInterface.parse(buildCodeContext);
-                    MutableList<PackageableElement> elements = ListIterate.select(d.getElements(), c -> c instanceof Store && nameMatch(c, writtenPath));
-                    if (elements.size() == 1 && writtenPath.startsWith(elements.get(0).getPath()))
-                    {
-                        Database db = (Database) elements.get(0);
-                        String writtenTableName = writtenPath.replace(db.getPath(), "").replace("::", "");
-                        List<Table> tables = db.schemas.isEmpty() ? Lists.mutable.empty() : db.schemas.get(0).tables;
-                        MutableList<Table> foundTables = ListIterate.select(tables, c -> c.name.startsWith(writtenTableName));
-                        if ((foundTables.size() == 1 && foundTables.get(0).name.equals(path.getLast())))
-                        {
-                            return new CompletionResult(Lists.mutable.empty());
-                        }
-                        else
-                        {
-                            return new CompletionResult(foundTables.collect(c -> new CompletionItem(c.name, c.name + "}#")));
-                        }
-                    }
-                    return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(PureGrammarComposerUtility.convertPath(c.getPath()), ">{" + PureGrammarComposerUtility.convertPath(c.getPath()) + ".")).toList());
+                    return mutable;
                 }
             }
             else if (topExpression instanceof AppliedFunction)
@@ -156,24 +144,53 @@ public class Completer
                 }
             }
 
-
             return new CompletionResult(Lists.mutable.empty());
         }
         catch (EngineException e)
         {
+            e.printStackTrace();
             return new CompletionResult(e);
         }
     }
 
+    public static CompletionResult processClassInstance(ClassInstance topExpression, PureModel pureModel)
+    {
+        Object islandExpr = topExpression.value;
+        if (islandExpr instanceof RelationStoreAccessor)
+        {
+            MutableList<String> path = Lists.mutable.withAll(((RelationStoreAccessor) islandExpr).path);
+            String writtenPath = path.makeString("::").replace(ParserFixer.magicToken, "");
+            MutableList<Store> elements = pureModel.getAllStores().select(c -> nameMatch(c, writtenPath)).toList();
+            if (elements.size() == 1 && writtenPath.startsWith(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0))))
+            {
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database db = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) elements.get(0);
+                String writtenTableName = writtenPath.replace(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(db), "").replace("::", "");
+                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> tables = db._schemas().isEmpty() ? Lists.mutable.empty() : db._schemas().getFirst()._tables().toList();
+                MutableList<? extends org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Table> foundTables = tables.select(c -> c._name().startsWith(writtenTableName));
+                if ((foundTables.size() == 1 && foundTables.get(0)._name().equals(path.getLast())))
+                {
+                    return new CompletionResult(Lists.mutable.empty());
+                }
+                else
+                {
+                    return new CompletionResult(foundTables.collect(c -> new CompletionItem(c._name(), c._name() + "}#")));
+                }
+            }
+            return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c), ">{" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c) + ".")).toList());
+        }
+        return null;
+    }
+
     private static boolean nameMatch(PackageableElement c, String writtenPath)
     {
-        if (c.getPath().length() > writtenPath.length())
+        String path = org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c);
+        if (path.length() > writtenPath.length())
         {
-            return c.getPath().startsWith(writtenPath);
+            return path.startsWith(writtenPath);
         }
         else
         {
-            return writtenPath.startsWith(c.getPath());
+            return writtenPath.startsWith(path);
         }
     }
 
@@ -187,9 +204,7 @@ public class Completer
         String code = header +
                 value + "\n" +
                 "\n}";
-
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(code);
-
         Function func = (Function) ListIterate.select(pureModelContextData.getElements(), s -> s.getPath().equals("_pierre::func__Any_MANY_")).getFirst();
         return func.body.get(0);
     }
@@ -204,10 +219,20 @@ public class Completer
         {
             return Lists.mutable.with("contains", "startsWith", "endsWith", "toLower", "toUpper", "lpad", "rpad");
         }
+        else if (leftType._rawType().getName().equals("ColSpec"))
+        {
+            return Lists.mutable.with("ascending", "descending");
+        }
         else
         {
             return Lists.mutable.with("project");
         }
+    }
+
+    private PureModel compile()
+    {
+        PureModelContextData newPureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
+        return Compiler.compile(newPureModelContextData, null, null);
     }
 
     private Pair<GenericType, PureModel> compileLeftSideAndExtractType(AppliedFunction currentFunc)
@@ -215,6 +240,7 @@ public class Completer
         ValueSpecification leftSide = currentFunc.parameters.get(0);
         PureModelContextData newPureModelContextData = PureGrammarParser.newInstance().parseModel(
                 buildCodeContext + "\n###Pure\n" +
+                        "import meta::pure::functions::relation::*;" +
                         "function _pierre::helper():Any[*]{\n" +
                         "'a'\n" +
                         "\n}");
@@ -246,6 +272,10 @@ public class Completer
         else if (type instanceof RelationType)
         {
             return ((RelationType<?>) type)._columns().collect(FunctionAccessor::_name).toList();
+        }
+        else if (type instanceof Enumeration)
+        {
+            return (((Enumeration<?>) type)._values().collect(Object::toString).toList());
         }
         return Lists.mutable.empty();
     }
@@ -294,6 +324,22 @@ public class Completer
                 if (checkIfCurrent(appliedProperty.sourceInformation, _line, _column))
                 {
                     return appliedProperty;
+                }
+                return null;
+            }
+
+            @Override
+            public ValueSpecification visit(ClassInstance ci)
+            {
+                if (ci.value instanceof ColSpec)
+                {
+                    ColSpec co = (ColSpec) ci.value;
+                    return Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this)).select(Objects::nonNull).getFirst();
+                }
+                else if (ci.value instanceof ColSpecArray)
+                {
+                    ColSpecArray coA = (ColSpecArray) ci.value;
+                    return ListIterate.flatCollect(coA.colSpecs, co -> Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this))).select(Objects::nonNull).getFirst();
                 }
                 return null;
             }

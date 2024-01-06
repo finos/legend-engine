@@ -30,13 +30,13 @@ public class Grid
         MutableList<String> columns = Lists.mutable.empty();
         MutableList<Integer> size = Lists.mutable.empty();
         MutableList<MutableList<String>> values = Lists.mutable.empty();
+
         try (ResultSet rs = res.resultSet)
         {
-            ResultSetMetaData md = rs.getMetaData();
-            int count = md.getColumnCount();
-            for (int i = 1; i <= count; i++)
+            int count = res.sqlColumns.size();
+            for (int i = 0; i < count; i++)
             {
-                columns.add(md.getColumnName(i));
+                columns.add(res.sqlColumns.get(i));
                 values.add(Lists.mutable.empty());
             }
             while (rs.next())
@@ -46,10 +46,10 @@ public class Grid
                     values.get(i - 1).add(rs.getObject(i) == null ? "" : rs.getObject(i).toString());
                 }
             }
-            for (int i = 1; i <= count; i++)
+            for (int i = 0; i < count; i++)
             {
-                int maxSize = columns.get(i - 1).length();
-                size.add(values.get(i - 1).injectInto(maxSize, (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
+                int maxSize = columns.get(i).length();
+                size.add(values.get(i).injectInto(maxSize, (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
             }
             size = Lists.mutable.withAll(size.collect(s -> s + 2));
 

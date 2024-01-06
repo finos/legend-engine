@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl;
+package org.finos.legend.engine.repl.client.jline3;
 
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -30,7 +31,7 @@ import java.util.List;
 
 import static org.finos.legend.engine.repl.client.Client.buildState;
 
-public class MyCompleter implements Completer
+public class JLine3Completer implements Completer
 {
     Completers.FilesCompleter completer = new Completers.FilesCompleter(new File("/"));
 
@@ -46,12 +47,16 @@ public class MyCompleter implements Completer
         }
         else if (inScope.startsWith("load"))
         {
-            completer.complete(lineReader, parsedLine, list);
+            String compressed = Lists.mutable.withAll(parsedLine.words()).drop(2).makeString("");
+            completer.complete(lineReader, new JLine3Parser.MyParsedLine(Lists.mutable.with("load", " ", compressed), parsedLine.line()), list);
+            List<Candidate> ca = ListIterate.collect(list, c ->
+            {
+                String val = compressed.length() == 1 ? c.value() : c.value().substring(1);
+                return new Candidate(val, val, (String) null, (String) null, (String) null, (String) null, false, 0);
+            });
+            list.clear();
+            list.addAll(ca);
         }
-//        else if (!inScope.contains(" "))
-//        {
-//            list.addAll(candidates);
-//        }
         else
         {
             try

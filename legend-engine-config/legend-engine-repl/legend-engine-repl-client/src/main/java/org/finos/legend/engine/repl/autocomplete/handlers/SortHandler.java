@@ -12,36 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.autocomplete;
+package org.finos.legend.engine.repl.autocomplete.handlers;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
-import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.repl.autocomplete.CompletionItem;
+import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
-public abstract class FunctionHandler
+import static org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler.useColSpecToProposeColumn;
+
+public class SortHandler extends FunctionHandler
 {
-    public abstract String functionName();
-
-    public void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
+    @Override
+    public String functionName()
     {
+        return "sort";
     }
 
-    protected static VariableExpression buildTypedVariable(Variable variable, GenericType type, PureModel pureModel)
-    {
-        return new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null,pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
-                ._name(variable.name)
-                ._genericType(type)
-                ._multiplicity(pureModel.getMultiplicity("one"));
-    }
-
+    @Override
     public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel)
     {
+        if (currentFunc.parameters.size() == 2)
+        {
+            ValueSpecification v = currentFunc.parameters.get(1);
+            if (v instanceof ClassInstance)
+            {
+                return useColSpecToProposeColumn((ColSpec) ((ClassInstance)v).value, leftType);
+            }
+        }
         return Lists.mutable.empty();
     }
 }

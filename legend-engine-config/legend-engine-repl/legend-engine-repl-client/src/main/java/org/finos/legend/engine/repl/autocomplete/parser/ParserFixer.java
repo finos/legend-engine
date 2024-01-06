@@ -25,16 +25,16 @@ public class ParserFixer
     public static String fixCode(String value)
     {
         value = fixComma(value);
+        value = fixTilde(value);
         value = fixPlus(value);
         value = fixMinus(value);
         value = fixMul(value);
         value = fixDiv(value);
-        value = fixArrays(value);
+        value = fixColon(value);
         value = fixDot(value);
         value = fixPipe(value);
-        value = fixArrow(value);
-        value = fixBlocks(value);
         value = fixIsland(value);
+        value = fixArrow(value);
         value = fixParenthesis(value);
         return value;
     }
@@ -42,12 +42,22 @@ public class ParserFixer
 
     public static String fixIncomplete(String value, String token)
     {
+        return fixIncomplete(value, token, magicToken);
+    }
+
+    public static String fixIncomplete(String value, String token, String add)
+    {
         String tail = value.substring(value.lastIndexOf(token) + 1).trim();
         if (tail.isEmpty())
         {
-            value = value + magicToken;
+            value = value + add;
         }
         return value;
+    }
+
+    public static String fixColon(String value)
+    {
+        return fixIncomplete(value, ":", "x|" + magicToken);
     }
 
     public static String fixComma(String value)
@@ -80,6 +90,15 @@ public class ParserFixer
         return fixIncomplete(value, "/");
     }
 
+    public static String fixTilde(String value)
+    {
+        return fixIncomplete(value, "~");
+    }
+
+    public static String fixPipe(String value)
+    {
+        return fixIncomplete(value, "|");
+    }
 
     public static String fixArrow(String value)
     {
@@ -97,18 +116,8 @@ public class ParserFixer
                     value = value + "()";
                 }
             }
-            else if (tail.lastIndexOf(")") == -1)
-            {
-                value = value + ")";
-            }
         }
         return value;
-    }
-
-    public static String fixPipe(String value)
-    {
-        return fixIncomplete(value, "|");
-
     }
 
     public static String fixParenthesis(String value)
@@ -118,51 +127,17 @@ public class ParserFixer
         {
             switch (c)
             {
+                case '{':
+                    stack.push('}');
+                    break;
                 case '(':
                     stack.push(')');
                     break;
-                case ')':
-                    if (!stack.isEmpty())
-                    {
-                        stack.pop();
-                    }
-                    break;
-            }
-        });
-        return value + stack.makeString("");
-    }
-
-    public static String fixArrays(String value)
-    {
-        MutableStack<Character> stack = Stacks.mutable.empty();
-        StringIterate.forEachChar(value, c ->
-        {
-            switch (c)
-            {
                 case '[':
                     stack.push(']');
                     break;
                 case ']':
-                    if (!stack.isEmpty())
-                    {
-                        stack.pop();
-                    }
-                    break;
-            }
-        });
-        return value + stack.makeString("");
-    }
-
-    public static String fixBlocks(String value)
-    {
-        MutableStack<Character> stack = Stacks.mutable.empty();
-        StringIterate.forEachChar(value, c ->
-        {
-            switch (c)
-            {
-                case '{':
-                    stack.push('}');
-                    break;
+                case ')':
                 case '}':
                     if (!stack.isEmpty())
                     {
@@ -206,11 +181,11 @@ public class ParserFixer
             {
                 return value + magicToken + "{}#";
             }
-            if (content.endsWith("{"))
+            if (content.contains("{") && !content.contains("}"))
             {
                 return value + "}#";
             }
-            if (content.endsWith("}"))
+            if (content.contains("{") && content.contains("}"))
             {
                 return value + "#";
             }

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.repl;
 
+import org.checkerframework.checker.units.qual.A;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,7 +40,9 @@ public class TestParserFixer
         Assert.assertEquals("#>{}#", fixCode("#>"));
         Assert.assertEquals("#>{}#", fixCode("#>{"));
         Assert.assertEquals("#>{}#", fixCode("#>{}"));
-        Assert.assertEquals("#>{a::A.t}#->fil", "#>{a::A.t}#->fil");
+        Assert.assertEquals("#>{a::A.t}#->fil()", fixCode("#>{a::A.t}#->fil"));
+        Assert.assertEquals("#>{a::A.t}#->x(#>{}#)", fixCode("#>{a::A.t}#->x(#>"));
+        Assert.assertEquals("#>{a::A.t}#->x(#>{a::A.MaGiCToKeN}#)", fixCode("#>{a::A.t}#->x(#>{a::A."));
     }
 
     @Test
@@ -66,6 +69,15 @@ public class TestParserFixer
         Assert.assertEquals("$a->map(x|$x.MaGiCToKeN)", fixCode("$a->map(x|$x."));
         Assert.assertEquals("$a->map(x| 1 + ($x.MaGiCToKeN))", fixCode("$a->map(x| 1 + ($x."));
         Assert.assertEquals("$a->map(x|$x->filter(|$x.MaGiCToKeN))", fixCode("$a->map(x|$x->filter(|$x."));
+        Assert.assertEquals("#>{test::TestDatabase.TEST0}#->join(#>{test::TestDatabase.TEST0}#,JoinKind.INNER,{a,b|$a.MaGiCToKeN})", fixCode("#>{test::TestDatabase.TEST0}#->join(#>{test::TestDatabase.TEST0}#,JoinKind.INNER,{a,b|$a.MaGiCToKeN})"));
+    }
+
+    @Test
+    public void testTilde()
+    {
+        Assert.assertEquals("$a->rename(~MaGiCToKeN)", fixCode("$a->rename(~"));
+        Assert.assertEquals("$a->rename(~xd:x|MaGiCToKeN)", fixCode("$a->rename(~xd:"));
+        Assert.assertEquals("$a->extend(~[x:y|$y.MaGiCToKeN])", fixCode("$a->extend(~[x:y|$y."));
     }
 
     @Test

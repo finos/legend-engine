@@ -35,10 +35,9 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.engine.repl.MyCompleter;
-import org.finos.legend.engine.repl.MyHighlighter;
+import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
+import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
 import org.finos.legend.engine.repl.REPLInterface;
-import org.finos.legend.engine.repl.client.Logos;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
 import org.finos.legend.engine.repl.local.LocalREPL;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -96,9 +95,9 @@ public class Client
 
         LineReader reader = LineReaderBuilder.builder()
                 .terminal(terminal)
-                .highlighter(new MyHighlighter())
+                .highlighter(new JLine3Highlighter())
                 .parser(new JLine3Parser())//new DefaultParser().quoteChars(new char[]{'"'}))
-                .completer(new MyCompleter())
+                .completer(new JLine3Completer())
                 .build();
 
         terminal.writer().println("Warming up...");

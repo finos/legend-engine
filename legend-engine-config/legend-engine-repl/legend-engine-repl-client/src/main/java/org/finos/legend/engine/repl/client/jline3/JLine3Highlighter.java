@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl;
+package org.finos.legend.engine.repl.client.jline3;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 import static org.finos.legend.engine.repl.client.Client.drawCommand;
 import static org.finos.legend.engine.repl.client.Client.drawPath;
 
-public class MyHighlighter implements Highlighter
+public class JLine3Highlighter implements Highlighter
 {
     @Override
     public AttributedString highlight(LineReader lineReader, String s)

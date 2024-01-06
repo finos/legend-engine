@@ -14,37 +14,53 @@
 
 package org.finos.legend.engine.repl.autocomplete.handlers;
 
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.navigation.M3Paths;
 
-public class FilterHandler extends FunctionHandler
+public class ExtendHandler extends FunctionHandler
 {
     @Override
     public String functionName()
     {
-        return "filter";
+        return "extend";
     }
 
     @Override
     public void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
     {
-        // Specific inference for filter
-        Lambda lambda = (Lambda) currentFunc.parameters.get(1);
-        Variable variable = lambda.parameters.get(0);
+        updateColSpecs(((ClassInstance) currentFunc.parameters.get(1)).value, leftType, processingContext, pureModel);
+    }
 
-        // Filter for 'Relation' has a different type propagation to parameter
-        GenericType propertyType = leftType;
-        if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
+    public static void updateColSpecs(Object o, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
+    {
+        GenericType propertyType = leftType._typeArguments().getFirst();
+
+        if (o instanceof ColSpec)
         {
-            propertyType = leftType._typeArguments().getFirst();
+            processColSpec((ColSpec) o, propertyType, processingContext, pureModel);
         }
+        if (o instanceof ColSpecArray)
+        {
+            ListIterate.forEach(((ColSpecArray) o).colSpecs, x -> processColSpec(x, propertyType, processingContext, pureModel));
+        }
+    }
 
-        processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel));
+    private static void processColSpec(ColSpec o, GenericType propertyType, ProcessingContext processingContext, PureModel pureModel)
+    {
+        Lambda lambda = o.function1;
+        if (lambda != null)
+        {
+            Variable variable = lambda.parameters.get(0);
+            processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel));
+        }
     }
 }

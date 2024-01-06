@@ -30,45 +30,55 @@ public class JLine3Parser implements Parser
     public ParsedLine parse(String value, int i, ParseContext parseContext) throws SyntaxError
     {
         MutableList<String> words = split(value);
+        return new MyParsedLine(words, value);
+    }
 
-        return new ParsedLine()
+    public static class MyParsedLine implements ParsedLine
+    {
+        private MutableList<String> words;
+        private String value;
+
+        public MyParsedLine(MutableList<String> words, String value)
         {
-            @Override
-            public String word()
-            {
-                return words.get(wordIndex());
-            }
+            this.words = words;
+            this.value = value;
+        }
 
-            @Override
-            public int wordCursor()
-            {
-                return word().length();
-            }
+        @Override
+        public String word()
+        {
+            return words.get(wordIndex());
+        }
 
-            @Override
-            public int wordIndex()
-            {
-                return words.size() - 1;
-            }
+        @Override
+        public int wordCursor()
+        {
+            return word().length();
+        }
 
-            @Override
-            public List<String> words()
-            {
-                return words;
-            }
+        @Override
+        public int wordIndex()
+        {
+            return words.size() - 1;
+        }
 
-            @Override
-            public String line()
-            {
-                return value;
-            }
+        @Override
+        public List<String> words()
+        {
+            return words;
+        }
 
-            @Override
-            public int cursor()
-            {
-                return value.length();
-            }
-        };
+        @Override
+        public String line()
+        {
+            return value;
+        }
+
+        @Override
+        public int cursor()
+        {
+            return value.length();
+        }
     }
 
     @Override
@@ -148,7 +158,7 @@ public class JLine3Parser implements Parser
         }
     }
 
-    private static MutableCharSet block = CharSets.mutable.with('(', ')', ' ', '#', '.', ' ');
+    private static MutableCharSet block = CharSets.mutable.with('(', ')', ' ', '#', '.', ' ', '~', ',');
 
     public static String shouldBreak(String content, char c, int i)
     {
