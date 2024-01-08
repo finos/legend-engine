@@ -272,7 +272,6 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureProtocolExtension>>empty()
                 .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
-                .with(org.finos.legend.engine.protocol.pure.v1.ConnectionProtocolExtension.class)
                 .with(SnowflakeAppProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
