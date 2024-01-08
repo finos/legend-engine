@@ -60,7 +60,6 @@ import org.finos.legend.engine.language.pure.grammar.from.ServiceStoreGrammarPar
 import org.finos.legend.engine.language.pure.grammar.from.TextParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.BigQueryGrammarComposerExtension;
-import org.finos.legend.engine.language.pure.grammar.to.ConnectionGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.CorePureGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.DataSpaceGrammarComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.DiagramGrammarComposerExtension;
@@ -342,7 +341,6 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends PureGrammarComposerExtension>>empty()
                 .with(CorePureGrammarComposer.class)
                 .with(DataSpaceGrammarComposerExtension.class)
-                .with(ConnectionGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)
