@@ -73,9 +73,9 @@ public class JoinHandler extends FunctionHandler
         if (lambda != null)
         {
             Variable f_variable = lambda.parameters.get(0);
-            processingContext.addInferredVariables(f_variable.name, buildTypedVariable(f_variable, first, pureModel));
+            processingContext.addInferredVariables(f_variable.name, buildTypedVariable(f_variable, first, pureModel.getMultiplicity("one"), pureModel));
             Variable s_variable = lambda.parameters.get(1);
-            processingContext.addInferredVariables(s_variable.name, buildTypedVariable(s_variable, second, pureModel));
+            processingContext.addInferredVariables(s_variable.name, buildTypedVariable(s_variable, second, pureModel.getMultiplicity("one"), pureModel));
         }
     }
 }

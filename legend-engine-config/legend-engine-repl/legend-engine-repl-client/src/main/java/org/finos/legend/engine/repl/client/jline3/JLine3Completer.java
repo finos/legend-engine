@@ -19,17 +19,20 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
+import org.finos.legend.engine.repl.autocomplete.CompletionResult;
 import org.finos.legend.engine.repl.client.Client;
 import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
+import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 
 import java.io.File;
 import java.util.List;
 
-import static org.finos.legend.engine.repl.client.Client.buildState;
+import static org.finos.legend.engine.repl.client.Client.*;
 
 public class JLine3Completer implements Completer
 {
@@ -61,7 +64,20 @@ public class JLine3Completer implements Completer
         {
             try
             {
-                list.addAll(new org.finos.legend.engine.repl.autocomplete.Completer(buildState().makeString("\n")).complete(inScope).getCompletion().collect(this::buildCandidate));
+                CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(buildState().makeString("\n")).complete(inScope);
+                if (result.getEngineException() == null)
+                {
+                    list.addAll(result.getCompletion().collect(this::buildCandidate));
+                }
+                else
+                {
+                    printError(result.getEngineException(), parsedLine.line());
+                    AttributedStringBuilder ab = new AttributedStringBuilder();
+                    ab.append("> ");
+                    ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+                    ab.append(parsedLine.line());
+                    terminal.writer().print(ab.toAnsi());
+                }
             }
             catch (Exception e)
             {

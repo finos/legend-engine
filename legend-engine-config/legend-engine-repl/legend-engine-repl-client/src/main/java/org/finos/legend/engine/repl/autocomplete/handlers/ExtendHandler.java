@@ -60,7 +60,7 @@ public class ExtendHandler extends FunctionHandler
         if (lambda != null)
         {
             Variable variable = lambda.parameters.get(0);
-            processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel));
+            processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel.getMultiplicity("one"), pureModel));
         }
     }
 }

@@ -25,7 +25,7 @@ import java.sql.ResultSetMetaData;
 
 public class Grid
 {
-    public static String prettyGridPrint(RelationalResult res)
+    public static String prettyGridPrint(RelationalResult res, int maxColSize)
     {
         MutableList<String> columns = Lists.mutable.empty();
         MutableList<Integer> size = Lists.mutable.empty();
@@ -48,22 +48,21 @@ public class Grid
             }
             for (int i = 0; i < count; i++)
             {
-                int maxSize = columns.get(i).length();
-                size.add(values.get(i).injectInto(maxSize, (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
+                size.add(values.get(i).injectInto(columns.get(i).length(), (IntObjectToIntFunction<? super String>) (a, b) -> Math.max(b.length(), a)));
             }
-            size = Lists.mutable.withAll(size.collect(s -> s + 2));
+            size = Lists.mutable.withAll(size.collect(s -> Math.min(maxColSize, s + 2)));
 
             StringBuilder builder = new StringBuilder();
 
             drawSeparation(builder, count, size);
-            drawRow(builder, count, size, columns::get);
+            drawRow(builder, count, size, columns::get, maxColSize);
             drawSeparation(builder, count, size);
 
             int rows = values.get(0).size();
             for (int k = 0; k < rows; k++)
             {
                 final int fk = k;
-                drawRow(builder, count, size, i -> values.get(i).get(fk));
+                drawRow(builder, count, size, i -> values.get(i).get(fk), maxColSize);
             }
 
             drawSeparation(builder, count, size);
@@ -96,12 +95,12 @@ public class Grid
         }
     }
 
-    private static void drawRow(StringBuilder builder, int count, MutableList<Integer> size, Function<Integer, String> getter)
+    private static void drawRow(StringBuilder builder, int count, MutableList<Integer> size, Function<Integer, String> getter, int maxColSize)
     {
         builder.append("|");
         for (int i = 0; i < count; i++)
         {
-            String val = getter.apply(i);
+            String val = printValue(getter.apply(i), maxColSize);
             int space = (size.get(i) - val.length()) / 2;
             repeat(' ', space, builder);
             builder.append(val);
@@ -110,5 +109,10 @@ public class Grid
         }
 
         builder.append("\n");
+    }
+
+    private static String printValue(String str, int max)
+    {
+        return str.length() >= max ? str.substring(0, max - 3 - 2) + "..." : str;
     }
 }

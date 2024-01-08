@@ -45,6 +45,6 @@ public class FilterHandler extends FunctionHandler
             propertyType = leftType._typeArguments().getFirst();
         }
 
-        processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel));
+        processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel.getMultiplicity("one"), pureModel));
     }
 }

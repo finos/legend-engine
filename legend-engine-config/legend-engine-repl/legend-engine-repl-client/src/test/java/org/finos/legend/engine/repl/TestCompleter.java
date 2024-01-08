@@ -61,7 +61,7 @@ public class TestCompleter
     @Test
     public void testArrowDeep()
     {
-        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(f|$f.col->").getCompletion().makeString(", "));
+        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(], [parseInteger , parseInteger(], [parseFloat , parseFloat(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(f|$f.col->").getCompletion().makeString(", "));
     }
 
     @Test
@@ -134,6 +134,7 @@ public class TestCompleter
         Assert.assertEquals("[col , col], [val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~").getCompletion().makeString(", "));
         Assert.assertEquals("[col , col], [val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~col, ~z:x|$x.").getCompletion().makeString(", "));
         Assert.assertEquals("[val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.v").getCompletion().makeString(", "));
+        Assert.assertEquals("[sum , sum(], [count , count(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.val:y|$y->").getCompletion().makeString(", "));
     }
 
 

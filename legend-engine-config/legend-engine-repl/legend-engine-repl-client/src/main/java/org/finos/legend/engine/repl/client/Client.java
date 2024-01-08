@@ -196,28 +196,7 @@ public class Client
             }
             catch (EngineException e)
             {
-                int e_start = e.getSourceInformation().startColumn;
-                int e_end = e.getSourceInformation().endColumn;
-                if (e_start < line.length())
-                {
-                    String beg = line.substring(0, e_start - 1);
-                    String mid = line.substring(e_start - 1, e_end);
-                    String end = line.substring(e_end, line.length());
-                    AttributedStringBuilder ab = new AttributedStringBuilder();
-                    ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-                    ab.append(beg);
-                    ab.style(new AttributedStyle().underline().bold().foreground(200, 0, 0));
-                    ab.append(mid);
-                    ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
-                    ab.append(end);
-                    terminal.writer().println("");
-                    terminal.writer().println(ab.toAnsi());
-                }
-                terminal.writer().println(e.getMessage());
-                if (debug)
-                {
-                    e.printStackTrace();
-                }
+                printError(e, line);
             }
             catch (Exception ee)
             {
@@ -227,6 +206,32 @@ public class Client
                     ee.printStackTrace();
                 }
             }
+        }
+    }
+
+    public static void printError(EngineException e, String line)
+    {
+        int e_start = e.getSourceInformation().startColumn;
+        int e_end = e.getSourceInformation().endColumn;
+        if (e_start < line.length())
+        {
+            String beg = line.substring(0, e_start - 1);
+            String mid = line.substring(e_start - 1, e_end);
+            String end = line.substring(e_end, line.length());
+            AttributedStringBuilder ab = new AttributedStringBuilder();
+            ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+            ab.append(beg);
+            ab.style(new AttributedStyle().underline().bold().foreground(200, 0, 0));
+            ab.append(mid);
+            ab.style(new AttributedStyle().underlineOff().boldOff().foreground(0, 200, 0));
+            ab.append(end);
+            terminal.writer().println("");
+            terminal.writer().println(ab.toAnsi());
+        }
+        terminal.writer().println(e.getMessage());
+        if (debug)
+        {
+            e.printStackTrace();
         }
     }
 
@@ -342,7 +347,7 @@ public class Client
         Result res = planExecutor.execute(planStr);
         if (res instanceof RelationalResult)
         {
-            return prettyGridPrint((RelationalResult) res);
+            return prettyGridPrint((RelationalResult) res, 60);
 //            Serializer s = new RelationalResultToCSVSerializer((RelationalResult) res);
 //            return s.flush().toString();
         }

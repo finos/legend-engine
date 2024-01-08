@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
@@ -32,12 +33,12 @@ public abstract class FunctionHandler
     {
     }
 
-    protected static VariableExpression buildTypedVariable(Variable variable, GenericType type, PureModel pureModel)
+    protected static VariableExpression buildTypedVariable(Variable variable, GenericType type, Multiplicity multiplicity, PureModel pureModel)
     {
         return new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null,pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))
                 ._name(variable.name)
                 ._genericType(type)
-                ._multiplicity(pureModel.getMultiplicity("one"));
+                ._multiplicity(multiplicity);
     }
 
     public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel)
