@@ -23,6 +23,7 @@ function meta::external::function::activator::hostedService::generation::printPl
 
 function meta::external::function::activator::hostedService::validator::validateService(s:HostedService[1]):Boolean[1]
 {
+  $s->validateFunctionParamsInPattern();
   $s.function->validateFunction();
   $s->validateReturnType();
 }
@@ -33,6 +34,31 @@ function meta::external::function::activator::hostedService::validator::validate
     | true;,
     | assert($s.binding->isNotEmpty() || $s.contentType->isNotEmpty(), 'Service must return a serializable:  '+ allowedReturnTypes().name->joinStrings('[',',',']')+ ', or must use binding/contentType to externalize')
   );
+}
+
+function meta::external::function::activator::hostedService::validator::validateFunctionParamsInPattern(h:HostedService[1]): Boolean[1]
+{
+  let pattern = $h.pattern;
+  assert($pattern->startsWith('/'),'Pattern must start with backslash');
+  let params  = $h.function->functionType().parameters->evaluateAndDeactivate();
+  let oneParams  = $params->filter(p|$p->deactivate().multiplicity == PureOne);
+  let nonOneParams  = $params->filter(p|!$p->deactivate().multiplicity == PureOne);
+  //all [1] params in pattern
+  $oneParams->map(p| assert($pattern->contains('{'+$p.name+'}'), 'Parameter '+$p.name+' with multiplicty [1] must be in service pattern.'));
+  //all non [1] params not in pattern
+  $nonOneParams->map(p| assert($pattern->contains('{'+$p.name+'}'), 'Parameter '+$p.name+' with multiplicty not [1] cannot be in service pattern.'));
+  //Service has a base pattern
+  let firstParamIndex = $pattern->indexOf('{');
+
+  assert(if($firstParamIndex != -1,| $firstParamIndex != 1,| true), 'Service must have a base pattern. Cannot start with a parameter');
+  //no param in pattern that doesnt exist in function
+  if($firstParamIndex!=-1,
+  |
+    let withoutBase = $pattern->substring($firstParamIndex, $pattern->length());
+    let leftOver = $oneParams.name->fold({b, a| $a->replace('{'+$b+'}','')}, $withoutBase->replace('/',''));
+    assert($leftOver->length()==0, 'Found unexpected params in pattern: '+$leftOver->replace('{','')->replace('}',' ')->trim()->replace(' ',','));,
+  | true);
+  true;
 }
 
 function meta::external::function::activator::hostedService::validator::validateFunction(func:Function<Any>[1]): Boolean[1]
@@ -70,7 +96,7 @@ function meta::external::function::activator::hostedService::generation::needsSe
 function meta::external::function::activator::hostedService::generation::recomposeServiceFunction(service:HostedService[1]):HostedService[1]
 {
   let result = if($service.function->functionReturnType()->needsSerialization(),
-                  |let tree = getTree($service.function); println($service.function->functionReturnType().rawType);
+                  |let tree = getTree($service.function); //println($service.function->functionReturnType().rawType);
                     assert($service.binding->isNotEmpty() || $service.contentType->isNotEmpty() , 'Service needs serialization but no binding/contentType provides');
                     let binding = if($service.binding->isNotEmpty(),
                                     |$service.binding,

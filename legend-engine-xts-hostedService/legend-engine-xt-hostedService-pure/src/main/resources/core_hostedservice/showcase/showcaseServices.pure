@@ -25,7 +25,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       autoActivateUpdates = true,
@@ -54,7 +54,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       autoActivateUpdates = true,
@@ -84,7 +84,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       autoActivateUpdates = true,
@@ -109,7 +109,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       autoActivateUpdates = true,
@@ -136,7 +136,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       autoActivateUpdates = true,
@@ -163,7 +163,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       binding = ^Binding(name='serviceBinding', contentType = 'application/json',modelUnit = meta::pure::model::unit::newModelUnit()->include(PersonX)),
       documentation = 'bla bla',
@@ -182,7 +182,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       contentType =  'application/json',
       documentation = 'bla bla',
@@ -230,7 +230,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       contentType =  'application/json',
       documentation = 'bla bla',
@@ -291,7 +291,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       binding = ^Binding(name='serviceBinding', contentType = 'application/json',modelUnit = meta::pure::model::unit::newModelUnit()->include(PersonX)),
@@ -322,11 +322,11 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service/{name}/{length}',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       autoActivateUpdates = true,
-      function= meta::external::function::activator::hostedService::tests::simpleRelationalfunction_String_1__TabularDataSet_1_
+      function= meta::external::function::activator::hostedService::tests::simpleRelationalfunction_String_1__Integer_1__TabularDataSet_1_
    );
   //validate
   $service->meta::external::function::activator::hostedService::validator::validateService();
@@ -334,9 +334,9 @@ function meta::external::function::activator::hostedService::tests::simpleServic
    $service->meta::external::function::activator::hostedService::generation::printPlan();
 }
 
-function meta::external::function::activator::hostedService::tests::simpleRelationalfunction(name:String[1]):TabularDataSet[1]
+function meta::external::function::activator::hostedService::tests::simpleRelationalfunction(name:String[1], length:Integer[1]):TabularDataSet[1]
 {
-    PersonX.all()->filter(p|$p.firstName == $name)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    PersonX.all()->filter(p|$p.firstName == $name || $p.lastName->length()==$length) ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
     ->from(simpleRelationalMapping, testRuntime(dbInc))
 }
 
@@ -346,7 +346,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service/{tree}',
       ownership = ^UserList(users = ['debelp', 'harted']),
       documentation = 'bla bla',
       binding = ^Binding(name='serviceBinding', contentType = 'application/json',modelUnit = meta::pure::model::unit::newModelUnit()->include(PersonX)),
