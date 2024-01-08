@@ -230,7 +230,7 @@ function meta::external::function::activator::hostedService::tests::simpleServic
 {
   let service =  ^HostedService
    (
-      pattern = '/service/{var}',
+      pattern = '/service',
       ownership = ^UserList(users = ['debelp', 'harted']),
       contentType =  'application/json',
       documentation = 'bla bla',

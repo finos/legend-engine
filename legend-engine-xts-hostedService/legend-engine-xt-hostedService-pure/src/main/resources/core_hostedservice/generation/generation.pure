@@ -70,7 +70,7 @@ function meta::external::function::activator::hostedService::generation::needsSe
 function meta::external::function::activator::hostedService::generation::recomposeServiceFunction(service:HostedService[1]):HostedService[1]
 {
   let result = if($service.function->functionReturnType()->needsSerialization(),
-                  |let tree = getTree($service.function); println($service.function->functionReturnType().rawType);
+                  |let tree = getTree($service.function); //println($service.function->functionReturnType().rawType);
                     assert($service.binding->isNotEmpty() || $service.contentType->isNotEmpty() , 'Service needs serialization but no binding/contentType provides');
                     let binding = if($service.binding->isNotEmpty(),
                                     |$service.binding,
