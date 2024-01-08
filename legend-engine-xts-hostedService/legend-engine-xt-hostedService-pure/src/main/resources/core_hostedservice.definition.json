@@ -12,6 +12,7 @@
     "core_function_activator",
     "core_functions",
     "core_service",
-    "core"
+    "core",
+    "core_data_space_metamodel"
   ]
 }

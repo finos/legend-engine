@@ -34,10 +34,7 @@ function meta::legend::service::serviceExtension() : Extension[1]
                                                      let fromRuntime                    = $fromSingleExecParams.runtime;
 
                                                      let currentRoutingStrategy = $state.routingStrategy;
-                                                     let newRoutingStrategy     = if($currentRoutingStrategy->instanceOf(StoreMappingRoutingStrategy),
-                                                                                    | let storeMapStrategy = $currentRoutingStrategy->cast(@StoreMappingRoutingStrategy);
-                                                                                      ^$storeMapStrategy(mapping = $fromMapping, runtime = $fromRuntime, classMappingsByClass = $fromMapping->buildClassMappingsByClassMap(), setsByDepth = ^Map<String, PermutationSet>());,
-                                                                                    | getRoutingStrategyFromMappingAndRuntime($fromMapping, $fromRuntime));
+                                                     let newRoutingStrategy     = getRoutingStrategyFromMappingAndRuntime($currentRoutingStrategy, $fromMapping, $fromRuntime, $extensions);
                                                      let newState               = ^$state(routingStrategy = $newRoutingStrategy);
 
                                                      let processedFunction      = routeFunctionExpressionFunctionDefinition($f, $fe, $newState, $executionContext, $vars, $inScopeVars, $extensions, $debug);

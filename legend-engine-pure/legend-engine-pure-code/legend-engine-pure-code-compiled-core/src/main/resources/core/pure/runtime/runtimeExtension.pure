@@ -94,6 +94,14 @@ function meta::core::runtime::connectionByElement(runtime:Runtime[1], store:Stor
    );
 }
 
+function meta::core::runtime::connectionByElementFailSafe(runtime:Runtime[1], store:Store[1]):Connection[*]
+{
+  if ($store->instanceOf(ModelStore),
+       |let connections = $runtime.connectionStores->filter(c|$c.element->instanceOf(ModelStore)).connection;,
+       |let connections = $runtime.connectionStores->filter(c|$c.element == $store).connection;
+   );
+}
+
 function meta::core::runtime::getMappingsFromRuntime(runtime:Runtime[0..1]):Mapping[*]
 {
    if($runtime->isNotEmpty(),|$runtime.connectionStores->filter(c | $c.connection->instanceOf(ModelChainConnection)).connection->cast(@ModelChainConnection).mappings,|[]);
