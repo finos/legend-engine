@@ -85,11 +85,10 @@ public class LogicalPlanUtils
     public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
     public static final String TEMP_STAGING_DATASET_BASE_NAME = "legend_persistence_temp_staging";
     public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
-    public static final String BATCH_SOURCE_INFO_ADDITIONAL_INFO = "additional_info";
+    public static final String BATCH_SOURCE_INFO_ADDITIONAL_METADATA = "additional_metadata";
     public static final String BATCH_SOURCE_INFO_STAGING_FILTERS = "staging_filters";
     public static final String BATCH_SOURCE_INFO_FILE_PATHS = "file_paths";
     public static final String BATCH_SOURCE_INFO_FILE_PATTERNS = "file_patterns";
-    public static final String BATCH_SOURCE_INFO_EVENT_ID = "event_id";
 
     private LogicalPlanUtils()
     {
@@ -271,14 +270,14 @@ public class LogicalPlanUtils
         return And.of(conditions);
     }
 
-    public static Optional<StringValue> getBatchSourceInfoStringValue(Dataset dataset, Map<String, Object> additionalInfo)
+    public static Optional<StringValue> getBatchSourceInfoStringValue(Dataset dataset, Map<String, Object> additionalMetadata)
     {
         Map<String, Object> batchSourceInfoMap = new HashMap<>();
 
-        // Save additional info
-        if (!additionalInfo.isEmpty())
+        // Save additional metadata
+        if (!additionalMetadata.isEmpty())
         {
-            batchSourceInfoMap.put(BATCH_SOURCE_INFO_ADDITIONAL_INFO, additionalInfo);
+            batchSourceInfoMap.put(BATCH_SOURCE_INFO_ADDITIONAL_METADATA, additionalMetadata);
         }
 
         if (dataset instanceof DerivedDataset)

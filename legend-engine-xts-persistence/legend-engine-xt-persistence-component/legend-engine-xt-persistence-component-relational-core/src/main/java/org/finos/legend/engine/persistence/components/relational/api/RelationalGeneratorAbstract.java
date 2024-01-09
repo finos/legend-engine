@@ -114,7 +114,7 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
-    public abstract Optional<String> bulkLoadEventIdValue();
+    public abstract Map<String, Object> additionalMetadata();
 
     @Default
     public String bulkLoadBatchStatusPattern()
@@ -137,7 +137,7 @@ public abstract class RelationalGeneratorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
-            .bulkLoadEventIdValue(bulkLoadEventIdValue())
+            .putAllAdditionalMetadata(additionalMetadata())
             .build();
     }
 

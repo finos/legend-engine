@@ -37,6 +37,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -46,7 +47,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
 {
     private static final String APPEND_TIME = "append_time";
     private static final String BATCH_ID = "batch_id";
-    private static final String TASK_ID_VALUE = "xyz123";
+    private static final Map<String, Object> ADDITIONAL_METADATA = Collections.singletonMap("event_id", "xyz123");
     private static final String COL_INT = "col_int";
     private static final String COL_STRING = "col_string";
     private static final String COL_DECIMAL = "col_decimal";
@@ -107,7 +108,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(TASK_ID_VALUE)
+            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
             .bulkLoadBatchStatusPattern("{STATUS}")
             .build();
 

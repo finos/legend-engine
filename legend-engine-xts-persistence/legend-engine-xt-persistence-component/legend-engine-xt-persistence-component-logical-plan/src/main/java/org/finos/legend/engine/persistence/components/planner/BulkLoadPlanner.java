@@ -22,7 +22,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingV
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
@@ -49,7 +48,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.BATCH_SOURCE_INFO_EVENT_ID;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_DATASET_BASE_NAME;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.UNDERSCORE;
 
@@ -59,7 +57,6 @@ class BulkLoadPlanner extends Planner
     private boolean transformWhileCopy;
     private Dataset tempDataset;
     private StagedFilesDataset stagedFilesDataset;
-    private Optional<String> bulkLoadEventIdValue;
 
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
@@ -72,7 +69,6 @@ class BulkLoadPlanner extends Planner
             throw new IllegalArgumentException("Only StagedFilesDataset are allowed under Bulk Load");
         }
 
-        bulkLoadEventIdValue = plannerOptions.bulkLoadEventIdValue();
         stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
 
         transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
@@ -221,11 +217,7 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        // Create the additional info map
-        Map<String, Object> additionalInfoMap = new HashMap<>();
-        bulkLoadEventIdValue.ifPresent(eventId -> additionalInfoMap.put(BATCH_SOURCE_INFO_EVENT_ID, eventId));
-
-        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getBatchSourceInfoStringValue(stagedFilesDataset, additionalInfoMap);
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getBatchSourceInfoStringValue(stagedFilesDataset, options().additionalMetadata());
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, batchSourceInfo)));
     }
 
