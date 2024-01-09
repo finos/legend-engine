@@ -31,6 +31,7 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -413,10 +414,10 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
             {
                 Database db = (Database) element;
                 stats.put("type", "Database");
-                stats.put("tables", "" + ListIterate.injectInto(0, db.schemas, (IntObjectToIntFunction<Schema>) (a, b) -> a + b.tables.size()));
-                stats.put("views", "" + ListIterate.injectInto(0, db.schemas, (IntObjectToIntFunction<Schema>) (a, b) -> a + b.views.size()));
-                stats.put("joins", "" + db.joins.size());
-                stats.put("filters", "" + db.filters.size());
+                stats.put("tables", Long.toString(Iterate.sumOfInt(db.schemas, s -> s.tables.size())));
+                stats.put("views", Long.toString(Iterate.sumOfInt(db.schemas, s -> s.views.size())));
+                stats.put("joins", Integer.toString(db.joins.size()));
+                stats.put("filters", Integer.toString(db.filters.size()));
             }
         });
     }
