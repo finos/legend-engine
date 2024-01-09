@@ -1367,6 +1367,42 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           ])}, false)
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiJoinSelectStarFromLimited():Boolean[1]
+{
+  test(
+    'select * from ( SELECT table1.String as T1String , table2.String as T2String FROM service."/service/service1" AS table1 LEFT OUTER JOIN service."/service/service1" AS table2 ON table1.String = table2.String )',
+
+      {|FlatInput.all()
+          ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+          ->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
+          ->join(FlatInput.all()
+                  ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+                  ->renameColumns([
+                    pair('Boolean', 'Boolean_table2'),
+                    pair('Integer', 'Integer_table2'),
+                    pair('Float', 'Float_table2'),
+                    pair('Decimal', 'Decimal_table2'),
+                    pair('StrictDate', 'StrictDate_table2'),
+                    pair('DateTime', 'DateTime_table2'),
+                    pair('String', 'String_table2')
+                  ]),
+            meta::relational::metamodel::join::JoinType.LEFT_OUTER,
+            {row1, row2|$row1.getString('String_table1') == $row2.getString('String_table2')})
+          ->project([
+            col(row:TDSRow[1] | $row.getString('String_table1'), 'T1String'),
+            col(row:TDSRow[1] | $row.getString('String_table2'), 'T2String')
+          ])
+        }, false)
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithAliasRenamingInSubQueries():Boolean[1]
 {
   test(

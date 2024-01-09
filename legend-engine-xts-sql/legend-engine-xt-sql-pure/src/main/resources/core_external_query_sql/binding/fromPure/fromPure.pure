@@ -393,7 +393,11 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 
         pair($s, if ($si != $eis, | ^$alias(realias = $ealias.actual), | $alias));,
       a:AllColumns[1] |
-        let contexts = if ($a.prefix->isEmpty(), | $context.contexts->concatenate($context), | $context.context($a.prefix));
+        let contexts = if ($a.prefix->isEmpty(), 
+          | if ($context.aliases->isEmpty(), //if there are no aliases that means we have a select * from a select *
+            | $context.contexts->concatenate($context), 
+            | $context), 
+          | $context.context($a.prefix));
         $contexts.aliases->map(a | pair(^SingleColumn(expression = ^QualifiedNameReference(name=^QualifiedName(parts = $a.expected))), $a));
     ]);
   );
@@ -1147,7 +1151,7 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
       f:FunctionExpression[1] |
         if ($f.func == letFunction_String_1__T_m__T_m_,
           | let name = $f.parametersValues->at(0)->cast(@InstanceValue).values->at(0)->cast(@String);
-            ^$f(parametersValues = [iv($name + if (!$ignore->contains($name), | '_' + $suffix, | '')), $f.parametersValues->at(1)]);,
+            ^$f(parametersValues = [iv($name + if (!$ignore->contains($name), | '_' + $suffix, | '')), $f.parametersValues->at(1)->realias($suffix, $ignore)]);,
           | ^$f(parametersValues = $f->evaluateAndDeactivate().parametersValues->map(pv | $pv->realias($suffix, $ignore))));
   ]);
 }
