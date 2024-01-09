@@ -628,7 +628,7 @@ public class Handlers
         register(m(h("meta::pure::mutation::save_T_MANY__RootGraphFetchTree_1__Mapping_1__Runtime_1__T_MANY_", false, ps -> res(ps.get(0)._genericType(), "zeroMany"), ps -> true)));
 
         register("meta::pure::tds::extensions::firstNotNull_T_MANY__T_$0_1$_", false, ps -> res(ps.get(0)._genericType(), "zeroOne"));
-        
+
         register("meta::pure::functions::hash::hash_String_1__HashType_1__String_1_", true, ps -> res("String","one"));
 
         // Extensions
