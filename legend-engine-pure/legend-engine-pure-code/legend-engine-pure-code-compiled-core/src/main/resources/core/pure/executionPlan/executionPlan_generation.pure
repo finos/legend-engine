@@ -67,7 +67,50 @@ Class meta::pure::executionPlan::ExecutionOption
 {
 }
 
-Class meta::pure::executionPlan::ExecutionOptionContext extends ExecutionContext
+Class meta::pure::executionPlan::MultiExecutionContext extends ExecutionContext
+{
+    childExecutionContext:ExecutionContext[*];
+    allContexts()  {$this.childExecutionContext->map(e |if($e->instanceOf(MultiExecutionContext),
+                                                              | $e->concatenate($e->cast(@MultiExecutionContext)->collectionMultiExecutionContexts([])),
+                                                              |$e)
+                                                        );  
+                       }:ExecutionContext[*];
+}
+function meta::pure::executionPlan::getContexts(context:ExecutionContext[1]):ExecutionContext[*]
+{
+      if($context->instanceOf(MultiExecutionContext),
+          | $context->concatenate($context->cast(@MultiExecutionContext).allContexts()),
+          |$context);
+}
+
+function meta::pure::executionPlan::allContextsOfType<T>(context:ExecutionContext[1],contextFilter:Class<T>[1]):T[*]
+{
+      $context->getContexts()->filter(c|$c->instanceOf($contextFilter))->cast(@T);
+}
+
+
+function meta::pure::executionPlan::mergeContext(rootContext:ExecutionContext[1],childContext:ExecutionContext[1]):MultiExecutionContext[1]
+  {
+      if($rootContext->instanceOf(MultiExecutionContext),
+              | let mult = $rootContext->cast(@MultiExecutionContext);
+                 ^$mult(childExecutionContext+=$childContext );,
+               |^MultiExecutionContext(childExecutionContext =$rootContext ->concatenate($childContext) );
+
+      );      
+              
+  }
+
+
+
+function <<access.private>> meta::pure::executionPlan::collectionMultiExecutionContexts(context:MultiExecutionContext[1], visited : ExecutionContext[*]):ExecutionContext[*]
+{
+       $context.childExecutionContext->map(e |if($e->instanceOf(MultiExecutionContext) && !$e->in($visited),
+                                                              |$e->concatenate( $e->cast(@MultiExecutionContext)->collectionMultiExecutionContexts( $visited->concatenate($e) )),
+                                                              |$e)
+                                                        )  
+}
+
+Class meta::pure::executionPlan::ExecutionOptionContext extends MultiExecutionContext
 {
    executionOptions : ExecutionOption[*];
 }
@@ -163,6 +206,7 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], platformId:String[1], config:meta::pure::executionPlan::platformBinding::PlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
 {
    let platformBinding = $extensions->meta::pure::executionPlan::platformBinding::extractPlatformBindingById($platformId);
+
    $platformBinding.bindPlanToPlatform->eval($plan, $config, $extensions, $debug);
 }
 
@@ -225,14 +269,14 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
 
 function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):Boolean[1]
 {
-   let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
+   let executionOptionsList = $execCtx->allContextsOfType(ExecutionOptionContext).executionOptions->filter(f| $f->instanceOf($execOption)); 
    assert($executionOptionsList->size() <= 1, |'Execution Option :' + $execOption.name->toOne() + 'has more than one instance specified in the context');
    $executionOptionsList->isNotEmpty();
 }
 
 function meta::pure::executionPlan::validateAndReturnExecutionOptionOfType(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):ExecutionOption[1]
 {
-   let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
+   let executionOptionsList =   $execCtx->allContextsOfType(ExecutionOptionContext).executionOptions->filter(f| $f->instanceOf($execOption));  
    assert($executionOptionsList->size() == 1, |'Execution Option:' + $execOption.name->toOne() + 'not mentioned or mentioned more than once as part of the context');
    $executionOptionsList->head()->toOne();
 }
