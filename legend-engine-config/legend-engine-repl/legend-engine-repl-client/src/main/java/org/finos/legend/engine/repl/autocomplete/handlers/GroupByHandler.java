@@ -49,6 +49,11 @@ public class GroupByHandler extends FunctionHandler
     @Override
     public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel)
     {
+        return updateColSpecToProposedColumn(currentFunc, leftType);
+    }
+
+    public static MutableList<CompletionItem> updateColSpecToProposedColumn(AppliedFunction currentFunc, GenericType leftType)
+    {
         if (currentFunc.parameters.size() == 2)
         {
             Object pivot = ((ClassInstance) currentFunc.parameters.get(1)).value;

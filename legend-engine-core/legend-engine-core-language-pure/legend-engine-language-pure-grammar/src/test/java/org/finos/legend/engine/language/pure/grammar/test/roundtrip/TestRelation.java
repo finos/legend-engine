@@ -39,6 +39,12 @@ public class TestRelation
     }
 
     @Test
+    public void testColumnSpace()
+    {
+        testLambda("|#>{path::Store.table}#->rename(~'a space', ~b)");
+    }
+
+    @Test
     public void testColumnWithType()
     {
         testLambda("|#>{path::Store.table}#->rename(~a:Integer, ~b:String)");

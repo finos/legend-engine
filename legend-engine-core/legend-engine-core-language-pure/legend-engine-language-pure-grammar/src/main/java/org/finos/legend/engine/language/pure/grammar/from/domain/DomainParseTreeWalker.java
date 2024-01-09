@@ -1338,7 +1338,8 @@ public class DomainParseTreeWalker
             {
                 ColSpecArray colSpecArr = new ColSpecArray();
                 colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions));
-                result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");;
+                result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
+                ;
             }
             else
             {
@@ -1360,7 +1361,8 @@ public class DomainParseTreeWalker
 
         colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
 
-        colSpec.name = oneColSpec.identifier().getText();
+        colSpec.name = oneColSpec.identifier().getText().trim();
+        colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
         colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
         if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
         {

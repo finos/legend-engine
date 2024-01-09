@@ -51,6 +51,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Functi
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationTypeAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
@@ -232,23 +233,25 @@ public class Handlers
     public static TypeAndMultiplicity GroupByReturnInference(List<ValueSpecification> ps, PureModel pureModel)
     {
         return getTypeAndMultiplicity(
-                (RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType(),
-                (RelationType<?>) ps.get(2)._genericType()._typeArguments().getLast()._rawType(),
+                Lists.mutable.with(
+                        (RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType(),
+                        (RelationType<?>) ps.get(2)._genericType()._typeArguments().getLast()._rawType()
+                ),
                 pureModel);
     }
 
-    private static TypeAndMultiplicity getTypeAndMultiplicity(RelationType<?> r1, RelationType<?> r2, PureModel pureModel)
+    private static TypeAndMultiplicity getTypeAndMultiplicity(MutableList<RelationType<?>> types, PureModel pureModel)
     {
         ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
 
-        RelationType<?> relType = _RelationType.build(
-                Lists.mutable
-                        .withAll((RichIterable<Column<?, ?>>) r1._columns())
-                        .withAll((RichIterable<Column<?, ?>>) r2._columns())
-                        .collect(c -> _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport)),
-                null,
-                processorSupport
-        );
+        RelationType<?> relType =
+                _RelationType.build(
+                        types.flatCollect(RelationTypeAccessor::_columns)
+                                .collect(c -> _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport)),
+                        null,
+                        processorSupport
+                );
+
         return res(
                 new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
                         ._rawType(pureModel.getType(M3Paths.Relation))
@@ -261,9 +264,12 @@ public class Handlers
     public static TypeAndMultiplicity JoinReturnInference(List<ValueSpecification> ps, PureModel pureModel)
     {
         return getTypeAndMultiplicity(
-                (RelationType<?>) ps.get(0)._genericType()._typeArguments().getLast()._rawType(),
-                (RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType(),
-                pureModel);
+                Lists.mutable.with(
+                        (RelationType<?>) ps.get(0)._genericType()._typeArguments().getLast()._rawType(),
+                        (RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()
+                ),
+                pureModel
+        );
     }
 
     public static TypeAndMultiplicity ExtendReturnInference(List<ValueSpecification> ps, PureModel pureModel)
@@ -334,6 +340,26 @@ public class Handlers
                 wrapInstanceValue(buildColSpec(foundColumn, cc.pureModel, ps), cc.pureModel),
                 wrapInstanceValue(buildColSpec(secondCol.name, _Column.getColumnType(foundColumn), cc.pureModel, ps), cc.pureModel)
         );
+    };
+
+    public static final ParametersInference SelectColInference = (parameters, ov, cc, pc) ->
+    {
+        ValueSpecification vs = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        RelationType<?> type = (RelationType<?>) vs._genericType()._typeArguments().getFirst()._rawType();
+
+        Object obj = ((ClassInstance) parameters.get(1)).value;
+        MutableList<ColSpec> specs = obj instanceof ColSpec ? Lists.mutable.with((ColSpec) obj) : Lists.mutable.withAll(((ColSpecArray) obj).colSpecs);
+
+        specs.forEach(c ->
+        {
+            Column<?, ?> found = findColumn(type, c, cc.pureModel.getExecutionSupport().getProcessorSupport());
+            c.type = _Column.getColumnType(found)._rawType()._name();
+        });
+
+        return Lists.mutable.with(
+                    vs,
+                    parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc))
+                );
     };
 
     public static InstanceValue wrapInstanceValue(Any val, PureModel pureModel)
@@ -1062,6 +1088,12 @@ public class Handlers
             );
         }, ps -> true)));
 
+        register(grp(SelectColInference,
+                    h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true),
+                    h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true)
+                )
+        );
+
         register(h("meta::pure::tds::renameColumns_TabularDataSet_1__Pair_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> true));
 
         register(m(grp(LambdaColCollectionInference, h("meta::pure::tds::projectWithColumnSubset_T_MANY__ColumnSpecification_MANY__String_MANY__TabularDataSet_1_", false, ps -> res("meta::pure::tds::TabularDataSet", "one"), ps -> "ColumnSpecification".equals(ps.get(1)._genericType()._rawType()._name()))),
@@ -1091,6 +1123,7 @@ public class Handlers
                         )
                 )
         );
+
 
         register(
                 m(
@@ -2560,6 +2593,8 @@ public class Handlers
         map.put("meta::pure::functions::relation::groupBy_Relation_1__ColSpecArray_1__AggColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "AggColSpecArray".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpec".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "AggColSpecArray".equals(ps.get(2)._genericType()._rawType()._name())));
         map.put("meta::pure::functions::relation::groupBy_Relation_1__ColSpec_1__AggColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 3 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpec".equals(ps.get(1)._genericType()._rawType()._name())) && isOne(ps.get(2)._multiplicity()) && ("Nil".equals(ps.get(2)._genericType()._rawType()._name()) || "AggColSpec".equals(ps.get(2)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpec".equals(ps.get(1)._genericType()._rawType()._name())));
+        map.put("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", (List<ValueSpecification> ps) -> ps.size() == 2 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()) && isOne(ps.get(1)._multiplicity()) && ("Nil".equals(ps.get(1)._genericType()._rawType()._name()) || "ColSpecArray".equals(ps.get(1)._genericType()._rawType()._name())));
 
         map.put("meta::pure::functions::relation::size_Relation_1__Integer_1_", (List<ValueSpecification> ps) -> ps.size() == 1 && isOne(ps.get(0)._multiplicity()) && Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(ps.get(0)._genericType()._rawType()._name()));
 

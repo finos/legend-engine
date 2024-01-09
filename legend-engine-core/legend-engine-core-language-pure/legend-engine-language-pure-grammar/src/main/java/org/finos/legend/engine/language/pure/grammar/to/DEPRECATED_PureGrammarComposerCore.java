@@ -749,7 +749,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
 
     private String printColSpec(ColSpec col)
     {
-        return col.name + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + col.function1.accept(this) : "") + (col.function2 != null ? ":" + col.function2.accept(this) : "");
+        return (col.name.contains(" ") ? "'" + col.name + "'" : col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + col.function1.accept(this) : "") + (col.function2 != null ? ":" + col.function2.accept(this) : "");
     }
 
     @Override

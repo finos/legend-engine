@@ -76,7 +76,8 @@ public class Completer
                 new ExtendHandler(),
                 new GroupByHandler(),
                 new SortHandler(),
-                new JoinHandler()
+                new JoinHandler(),
+                new SelectHandler()
         ).toMap(FunctionHandler::functionName, x -> x);
     }
 
@@ -90,6 +91,8 @@ public class Completer
 
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
+            PureModel pureModel = compile();
+
             if (topExpression instanceof ClassInstance)
             {
                 CompletionResult mutable = processClassInstance((ClassInstance) topExpression, compile());
@@ -102,15 +105,14 @@ public class Completer
             {
                 AppliedFunction currentFunc = (AppliedFunction) topExpression;
 
-                CompilationResult compilationResult = compileLeftSideAndExtractType(currentFunc);
+                CompilationResult compilationResult = compileLeftSideAndExtractType(currentFunc, pureModel);
                 GenericType leftType = compilationResult.getGenericType();
-                PureModel pureModel = compilationResult.getPureModel();
 
                 if (currentFunc == currentExpression)
                 {
                     // The user is currently typing the function name try to autocomplete (considering the left type)
                     String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
-                    return new CompletionResult(getFunctionCandidates(compilationResult, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
+                    return new CompletionResult(getFunctionCandidates(compilationResult, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
                 }
 
                 // The user is currently typing applied parameters within the function
@@ -139,7 +141,7 @@ public class Completer
                 {
                     AppliedFunction appliedFunction = (AppliedFunction) currentExpression;
                     CompilationResult compilationResult1 = compileCodePartWithinLambdaWithOneParameter(appliedFunction.parameters.get(0), processingContext, pureModel);
-                    return new CompletionResult(getFunctionCandidates(compilationResult1, currentFunc.function).collect(c -> new CompletionItem(c, c)));
+                    return new CompletionResult(getFunctionCandidates(compilationResult1, pureModel, currentFunc.function).collect(c -> new CompletionItem(c, c)));
                 }
             }
             return new CompletionResult(Lists.mutable.empty());
@@ -197,7 +199,7 @@ public class Completer
     private static CompilationResult compileCodePartWithinLambdaWithOneParameter(ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification vs = valueSpecification.accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
-        return new CompilationResult(pureModel, vs._genericType(), vs._multiplicity());
+        return new CompilationResult(vs._genericType(), vs._multiplicity());
     }
 
     private ValueSpecification parseValueSpecification(String value)
@@ -210,14 +212,14 @@ public class Completer
         return func.body.get(0);
     }
 
-    private MutableList<String> getFunctionCandidates(CompilationResult compilationResult, String functionContext)
+    private MutableList<String> getFunctionCandidates(CompilationResult compilationResult, PureModel pureModel, String functionContext)
     {
         GenericType leftType = compilationResult.getGenericType();
-        PureModel pureModel = compilationResult.getPureModel();
+        //PureModel pureModel = compilationResult.getPureModel();
         if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             // May want to assert the mul to 1
-            return Lists.mutable.with("distinct", "drop", "extend", "filter", "from", "groupBy", "join", "limit", "rename", "size", "slice", "sort");
+            return Lists.mutable.with("distinct", "drop", "select", "extend", "filter", "from", "groupBy", "join", "limit", "rename", "size", "slice", "sort");
         }
         else if (leftType._rawType().getName().equals("String"))
         {
@@ -258,21 +260,11 @@ public class Completer
         return Compiler.compile(newPureModelContextData, null, null);
     }
 
-    private CompilationResult compileLeftSideAndExtractType(AppliedFunction currentFunc)
+    private CompilationResult compileLeftSideAndExtractType(AppliedFunction currentFunc, PureModel pureModel)
     {
-        ValueSpecification leftSide = currentFunc.parameters.get(0);
-        PureModelContextData newPureModelContextData = PureGrammarParser.newInstance().parseModel(
-                buildCodeContext + "\n###Pure\n" +
-                        "import meta::pure::functions::relation::*;" +
-                        "function _pierre::helper():Any[*]{\n" +
-                        "'a'\n" +
-                        "\n}");
-        Function newFunc = (Function) ListIterate.select(newPureModelContextData.getElements(), s -> s.getPath().equals("_pierre::helper__Any_MANY_")).getFirst();
-        newFunc.body = Lists.mutable.with(leftSide);
-        PureModel pureModel = Compiler.compile(newPureModelContextData, null, null);
-        ConcreteFunctionDefinition<?> cf = pureModel.getConcreteFunctionDefinition("_pierre::helper__Any_MANY_", null);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification vs = cf._expressionSequence().getFirst();
-        return new CompilationResult(pureModel, vs._genericType(), vs._multiplicity());
+        ProcessingContext processingContext = new ProcessingContext("");
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification vs = currentFunc.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
+        return new CompilationResult(vs._genericType(), vs._multiplicity());
     }
 
     private MutableList<String> extractPropertiesOrColumnsFromType(CompilationResult compilationResult)

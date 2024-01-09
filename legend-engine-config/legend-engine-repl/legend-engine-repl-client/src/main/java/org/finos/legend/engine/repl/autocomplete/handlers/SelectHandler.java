@@ -12,30 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.repl.autocomplete;
+package org.finos.legend.engine.repl.autocomplete.handlers;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.application.AppliedFunction;
+import org.finos.legend.engine.repl.autocomplete.CompletionItem;
+import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 
-public class CompilationResult
+public class SelectHandler extends FunctionHandler
 {
-    private GenericType genericType;
-    private Multiplicity multiplicity;
-
-    public CompilationResult(GenericType genericType, Multiplicity multiplicity)
+    @Override
+    public String functionName()
     {
-        this.genericType = genericType;
-        this.multiplicity = multiplicity;
+        return "select";
     }
 
-    public GenericType getGenericType()
+    @Override
+    public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel)
     {
-        return this.genericType;
-    }
-
-    public Multiplicity getMultiplicity()
-    {
-        return this.multiplicity;
+        return GroupByHandler.updateColSpecToProposedColumn(currentFunc, leftType);
     }
 }
