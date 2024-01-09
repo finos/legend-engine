@@ -18,417 +18,81 @@ import meta::external::query::graphQL::metamodel::sdl::value::*;
 import meta::external::query::graphQL::metamodel::sdl::executable::*;
 import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
 import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::*;
 import meta::pure::graphFetch::*;
 import meta::pure::functions::lang::*;
 
-function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testAndOverEq(): Any[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::runTest(
+                                                                                                        whereValue: String[1],
+                                                                                                        expected: String[1]
+                                                                                                      ): Boolean[1]
 {
+  let doc = meta::legend::compileVS(
+    '#GQL { query { firms (where: ' + $whereValue + ') { id } } }#'
+  )->cast(@meta::external::query::graphQL::metamodel::sdl::Document).definitions->at(0)->cast(@OperationDefinition).selectionSet->at(0)->cast(@Field).arguments->at(0).value;
+  let res = meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
+    $doc,
+    'where',
+    ^DebugContext(space='',debug=false)
+  )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('');
   assertEquals(
-    'and(equals(id,1),equals(id,2))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = ^ObjectField(
-                value=^ObjectValue(
-                  values = [
-                    ^ObjectField(
-                      value=^IntValue(value=1),
-                      name='_eq'
-                    ),
-                    ^ObjectField(
-                      value=^IntValue(value=2),
-                      name='_eq'
-                    )
-                  ]
-                ),
-                name='_and'
-              )
-            )    ,
-            name='id'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+    $expected,
+    $res
   );
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testAndOverCol(): Any[*]
 {
-  assertEquals(
-    'and(equals(id,1),equals(id,2))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = 
-                [^ObjectField(
-                  value=^ObjectValue(
-                    values = [
-                      ^ObjectField(
-                        value=^IntValue(value=1),
-                        name='_eq'
-                      )
-                    ]
-                  ),
-                  name='id'
-                ),
-                ^ObjectField(
-                  value=^ObjectValue(
-                    values = [
-                      ^ObjectField(
-                        value=^IntValue(value=2),
-                        name='_eq'
-                      )
-                    ]
-                  ),
-                  name='id'
-                )]
-            ),
-            name='_and'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
-  );
-}
-
-function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testOrOverEq(): Any[*]
-{
-  assertEquals(
-    'or(equals(id,1),equals(id,2))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = ^ObjectField(
-                value=^ObjectValue(
-                  values = [
-                    ^ObjectField(
-                      value=^IntValue(value=1),
-                      name='_eq'
-                    ),
-                    ^ObjectField(
-                      value=^IntValue(value=2),
-                      name='_eq'
-                    )
-                  ]
-                ),
-                name='_or'
-              )
-            )    ,
-            name='id'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+  runTest(
+    '{ _and: [{id: {_eq: 1}}, {id: {_eq: 2}}] }',
+    'and(equals(id,where__and0_id__eq),equals(id,where__and1_id__eq))'
   );
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testOrOverCol(): Any[*]
 {
-  assertEquals(
-    'or(equals(id,1),equals(id,2))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = 
-                [^ObjectField(
-                  value=^ObjectValue(
-                    values = [
-                      ^ObjectField(
-                        value=^IntValue(value=1),
-                        name='_eq'
-                      )
-                    ]
-                  ),
-                  name='id'
-                ),
-                ^ObjectField(
-                  value=^ObjectValue(
-                    values = [
-                      ^ObjectField(
-                        value=^IntValue(value=2),
-                        name='_eq'
-                      )
-                    ]
-                  ),
-                  name='id'
-                )]
-            ),
-            name='_or'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+  runTest(
+    '{ _or: [{id: {_eq: 1}}, {id: {_eq: 2}}] }',
+    'or(equals(id,where__or0_id__eq),equals(id,where__or1_id__eq))'    
   );
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testOrOverAnd(): Any[*]
 {
-  assertEquals(
-    'or(equals(id,1),and(equals(id,1),equals(id,2)))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = 
-                [^ObjectField(
-                  value=^ObjectValue(
-                    values = [
-                      ^ObjectField(
-                        value=^IntValue(value=1),
-                        name='_eq'
-                      )
-                    ]
-                  ),
-                  name='id'
-                ),
-                ^ObjectField(
-                  value=^ObjectValue(
-                    values = 
-                      [^ObjectField(
-                        value=^ObjectValue(
-                          values = [
-                            ^ObjectField(
-                              value=^IntValue(value=1),
-                              name='_eq'
-                            )
-                          ]
-                        ),
-                        name='id'
-                      ),
-                      ^ObjectField(
-                        value=^ObjectValue(
-                          values = [
-                            ^ObjectField(
-                              value=^IntValue(value=2),
-                              name='_eq'
-                            )
-                          ]
-                        ),
-                        name='id'
-                      )]
-                  ),
-                  name='_and'
-                )]
-            ),
-            name='_or'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+  runTest(
+    '{ _or: [ { id: {_eq: 1}}, { _and: [ { id: { _eq: 1 } }, { id: { _eq: 2 } } ] } ] }',
+    'or(equals(id,where__or0_id__eq),and(equals(id,where__or1__and0_id__eq),equals(id,where__or1__and1_id__eq)))'
   );
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testNestedProp(): Any[*]
 {
-  assertEquals(
-    'or(equals(id,1),equals(firm.id,1))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = 
-                [^ObjectField(
-                  value=^ObjectValue(
-                    values = [
-                      ^ObjectField(
-                        value=^IntValue(value=1),
-                        name='_eq'
-                      )
-                    ]
-                  ),
-                  name='id'
-                ),
-                ^ObjectField(
-                  value=^ObjectValue(
-                    values = 
-                      ^ObjectField(
-                        value=^ObjectValue(
-                          values = [
-                            ^ObjectField(
-                              value=^IntValue(value=1),
-                              name='_eq'
-                            )
-                          ]
-                        ),
-                        name='id'
-                      )
-                  ),
-                  name='firm'
-                )]
-            ),
-            name='_or'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+  runTest(
+    '{ _or: [ { id: { _eq: 1 } }, { firm: { id: { _eq: 1 } } } ] }',
+    'or(equals(id,where__or0_id__eq),equals(firm.id,where__or1_firm_id__eq))'
   );
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testAndOverOr(): Any[*]
 {
-  assertEquals(
-    'and(equals(id,1),or(equals(firm.id,1),equals(firm.id,2)))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = 
-                [^ObjectField(
-                  value=^ObjectValue(
-                    values = [
-                      ^ObjectField(
-                        value=^IntValue(value=1),
-                        name='_eq'
-                      )
-                    ]
-                  ),
-                  name='id'
-                ),
-                ^ObjectField(
-                  value=^ObjectValue(
-                    values = 
-                      ^ObjectField(
-                        value=^ObjectValue(
-                          values = [
-                            ^ObjectField(
-                              value=^ObjectValue(
-                                values = [
-                                  ^ObjectField(
-                                    value=^IntValue(value=1),
-                                    name='_eq'
-                                  )
-                                ]
-                              ),
-                              name='id'
-                            ),
-                            ^ObjectField(
-                              value=^ObjectValue(
-                                values = [
-                                  ^ObjectField(
-                                    value=^IntValue(value=2),
-                                    name='_eq'
-                                  )
-                                ]
-                              ),
-                              name='id'
-                            )
-                          ]
-                        ),
-                        name='_or'
-                      )
-                  ),
-                  name='firm'
-                )]
-            ),
-            name='_and'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+  runTest(
+    '{ _and: [ { id: { _eq: 1 } }, { _or: [{ firm: { id: { _eq: 1 } } }, { firm: { id: { _eq: 2 } } }]} ] }',
+    'and(equals(id,where__and0_id__eq),or(equals(firm.id,where__and1__or0_firm_id__eq),equals(firm.id,where__and1__or1_firm_id__eq)))'
   );
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testAndOverMultipleExpression(): Any[*]
 {
-  assertEquals(
-    'and(and(equals(id,1),equals(id,2)),equals(id,3))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = ^ObjectField(
-                value=^ObjectValue(
-                  values = [
-                    ^ObjectField(
-                      value=^IntValue(value=1),
-                      name='_eq'
-                    ),
-                    ^ObjectField(
-                      value=^IntValue(value=2),
-                      name='_eq'
-                    ),
-                    ^ObjectField(
-                      value=^IntValue(value=3),
-                      name='_eq'
-                    )
-                  ]
-                ),
-                name='_and'
-              )
-            )    ,
-            name='id'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+  runTest(
+    '{ _and: [ { id: { _eq: 1 } }, { id: { _eq: 2 } }, { id: { _eq: 3 } } ] }',
+    'and(and(equals(id,where__and0_id__eq),equals(id,where__and1_id__eq)),equals(id,where__and2_id__eq))'
   );
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::objectValueToExpression::testAndOverMultipleOr(): Any[*]
 {
-  assertEquals(
-    'and(and(or(equals(id,1),equals(id,2)),equals(id,3)),equals(id,4))',
-    meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
-      ^ObjectValue(
-        values = [
-          ^ObjectField(
-            value=^ObjectValue(
-              values = ^ObjectField(
-                value=^ObjectValue(
-                  values = [
-                    ^ObjectField(
-                      value=^ObjectValue(
-                        values = [
-                          ^ObjectField(
-                            value=^IntValue(value=1),
-                            name='_eq'
-                          ),
-                          ^ObjectField(
-                            value=^IntValue(value=2),
-                            name='_eq'
-                          )
-                        ]
-                      ),
-                      name='_or'
-                    ),
-                    ^ObjectField(
-                      value=^IntValue(value=3),
-                      name='_eq'
-                    ),
-                    ^ObjectField(
-                      value=^IntValue(value=4),
-                      name='_eq'
-                    )
-                  ]
-                ),
-                name='_and'
-              )
-            )    ,
-            name='id'
-          )
-        ]
-      ),
-      ^DebugContext(space='',debug=false)
-    )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('')
+  runTest(
+    '{ _and: [ { _or: [ { id: { _eq: 1 } }, { id: { _eq: 2 } } ] }, { id: { _eq: 3 } }, { id: { _eq: 4 } } ] }',
+    'and(and(or(equals(id,where__and0__or0_id__eq),equals(id,where__and0__or1_id__eq)),equals(id,where__and1_id__eq)),equals(id,where__and2_id__eq))'
   );
 }

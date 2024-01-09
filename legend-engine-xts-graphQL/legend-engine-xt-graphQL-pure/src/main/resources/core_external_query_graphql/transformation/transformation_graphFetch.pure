@@ -180,13 +180,17 @@ function meta::external::query::graphQL::transformation::queryToPure::addDynamic
     $whereObject->isEmpty(),
     | $f,
     | let whereObjectValue = $whereObject->toOne().value;
-      let fe = meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
+      let ic = meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
                 $whereObjectValue,
+                'where',
                 ^DebugContext(debug=false,space='')
               )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(
                 '',
-                $property.genericType.rawType->cast(@Class<Any>)->toOne()
+                $property.genericType.rawType->cast(@Class<Any>)->toOne(),
+                []
               );
+      let fe = $ic.valueSpecifications->toOne();
+      let vars = $ic.vars;
       let expressionSequence = $f.expressionSequence;
       let getAll = $expressionSequence->last()->toOne()->cast(@SimpleFunctionExpression);
       let serializeParam = $expressionSequence->last()->toOne()
@@ -205,7 +209,14 @@ function meta::external::query::graphQL::transformation::queryToPure::addDynamic
         ^FunctionType(
           returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='p')])
       );
-      ^LambdaFunction<{->Any[*]}>(
+      let finalLambda = newLambdaFunction(
+        ^FunctionType(
+          returnType=$classGenericType,
+          returnMultiplicity=ZeroMany,
+          parameters = $vars
+        )
+      );
+      ^$finalLambda(
         expressionSequence = $expressionSequence->slice(0,$expressionSequenceLengthLess1)->concatenate(
           ^$serializeParam(
             parametersValues = [

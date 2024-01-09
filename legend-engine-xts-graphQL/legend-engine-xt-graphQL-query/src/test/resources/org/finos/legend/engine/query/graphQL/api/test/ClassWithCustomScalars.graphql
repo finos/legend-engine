@@ -1,21 +1,24 @@
+type ClassWithCustomScalars {
+  date: Date!
+  datetime: DateTime!
+  decimal: BigDecimal!
+}
+input ClassWithCustomScalars_bool_exp {
+  date: Date_comparison_exp
+  datetime: DateTime_comparison_exp
+  decimal: BigDecimal_comparison_exp
+  _and: [ClassWithCustomScalars_bool_exp!]
+  _or: [ClassWithCustomScalars_bool_exp!]
+  _not: ClassWithCustomScalars_bool_exp
+}
+input ClassWithCustomScalars_exists_exp {
+  _exists: ClassWithCustomScalars_bool_exp
+}
 input BigDecimal_comparison_exp {
   _eq: BigDecimal!
 }
 input Boolean_comparison_exp {
   _eq: Boolean!
-}
-type ClassWithCustomScalars {
-  date: Date!
-  datetime: DateTime!
-  decimal: [BigDecimal!]!
-}
-input ClassWithCustomScalars_bool_exp {
-  date: Date_comparison_exp!
-  datetime: DateTime_comparison_exp!
-  decimal: [BigDecimal_comparison_exp!]!
-  _and: [ClassWithCustomScalars_bool_exp!]
-  _or: [ClassWithCustomScalars_bool_exp!]
-  _not: ClassWithCustomScalars_bool_exp
 }
 input DateTime_comparison_exp {
   _eq: DateTime!

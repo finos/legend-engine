@@ -1,3 +1,21 @@
+type Firm {
+  legalName: String!
+  employees: [Person!]!
+  addresses: [Address!]!
+  count: Int!
+}
+input Firm_bool_exp {
+  legalName: String_comparison_exp
+  employees: [Person_exists_exp!]
+  addresses: [Address_exists_exp!]
+  count: Int_comparison_exp
+  _and: [Firm_bool_exp!]
+  _or: [Firm_bool_exp!]
+  _not: Firm_bool_exp
+}
+input Firm_exists_exp {
+  _exists: Firm_bool_exp
+}
 input BigDecimal_comparison_exp {
   _eq: BigDecimal!
 }
@@ -9,21 +27,6 @@ input DateTime_comparison_exp {
 }
 input Date_comparison_exp {
   _eq: Date!
-}
-type Firm {
-  legalName: String!
-  employees: [Person!]!
-  addresses: [Address!]!
-  count: Int!
-}
-input Firm_bool_exp {
-  legalName: String_comparison_exp!
-  employees: [Person_bool_exp!]!
-  addresses: [Address_bool_exp!]!
-  count: Int_comparison_exp!
-  _and: [Firm_bool_exp!]
-  _or: [Firm_bool_exp!]
-  _not: Firm_bool_exp
 }
 input Float_comparison_exp {
   _eq: Float!

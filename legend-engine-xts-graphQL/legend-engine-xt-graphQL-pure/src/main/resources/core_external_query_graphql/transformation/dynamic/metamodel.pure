@@ -27,7 +27,7 @@ Class meta::external::query::graphQL::transformation::queryToPure::dynamic::meta
 
 Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Literal extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Node
 {
-  value: Any[1];
+  name: String[1];
   type: Type[1];
 }
 

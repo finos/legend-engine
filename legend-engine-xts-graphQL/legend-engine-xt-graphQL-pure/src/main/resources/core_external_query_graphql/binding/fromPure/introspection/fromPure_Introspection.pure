@@ -78,6 +78,29 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
               description = $t->cast(@Class<Any>)->cast(@AnnotatedElement)->getDocs()->joinStrings('\n')
             )
           ),
+        | if($t->instanceOf(Enumeration),
+            | pair(
+                $t.name->toOne() + '_comparison_exp',
+                ^__Type(
+                  kind = __TypeKind.INPUT_OBJECT,
+                  name = $t.name->toOne() + '_comparison_exp'
+                )
+              ),
+            | []
+          )
+      ) 
+    )
+  )->concatenate(
+    $types->map(t|
+      if($t->instanceOf(Class) && !$t->cast(@Class<Any>)->cast(@AnnotatedElement).stereotypes.value->contains('Query'),
+        | pair(
+            $t.name->toOne() + '_exists_exp',
+            ^__Type(
+              kind = __TypeKind.INPUT_OBJECT,
+              name = $t->cast(@Class<Any>).name->toOne() + '_exists_exp',
+              description = $t->cast(@Class<Any>)->cast(@AnnotatedElement)->getDocs()->joinStrings('\n')
+            )
+          ),
         | []
       ) 
     )
@@ -146,27 +169,76 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
             let newFields = $t.fields->map(f | 
               ^__InputValue(
                 name = $f.name,
-                type = ^__Type(kind=__TypeKind.INPUT_OBJECT, name=if(unWrap($f.type).kind->in([__TypeKind.SCALAR, __TypeKind.ENUM]), | unWrap($f.type).name->toOne() + '_comparison_exp', | unWrap($f.type).name->toOne() + '_bool_exp'))
+                type = ^__Type(
+                  kind= __TypeKind.INPUT_OBJECT, 
+                  name= if(unWrap($f.type).kind->in([__TypeKind.SCALAR, __TypeKind.ENUM]), 
+                          | unWrap($f.type).name->toOne() + '_comparison_exp', 
+                          | if($f.type.kind == __TypeKind.LIST,
+                              | unWrap($f.type).name->toOne() + '_exists_exp',
+                              | unWrap($f.type).name->toOne() + '_bool_exp'
+                            )
+                        )
+                )
+              )
+            )->concatenate(
+              ['_or', '_and']->map(s|
+                ^__InputValue(
+                  name=$s,
+                  type=wrap(^__Type(kind=__TypeKind.INPUT_OBJECT, name = $t.name->toOne() + '_bool_exp'), __TypeKind.LIST)
+                )
               )
             );
-            $newFields->println();
             let type = $res->get($newName);
             if($type->isNotEmpty(), | $type->toOne()->mutateAdd('inputFields',$newFields) , |[]);
+            
+            let existsName = $t.name->toOne() + '_exists_exp';
+            let existsFields = ['_exists']->map(s|
+                ^__InputValue(
+                  name=$s,
+                  type=wrap(^__Type(kind=__TypeKind.INPUT_OBJECT, name = $t.name->toOne() + '_bool_exp'), __TypeKind.NON_NULL)
+                )
+              );
+            let existsType = $res->get($existsName);
+            if($existsType->isNotEmpty(), | $existsType->toOne()->mutateAdd('inputFields',$existsFields) , |[]);
+            
             $type;,
-          | [])
+          | if($t.kind == __TypeKind.ENUM,
+              | let newName = $t.name->toOne() + '_comparison_exp';
+                let newFields = ['_eq']->map(s|
+                    ^__InputValue(
+                      name=$s,
+                      type=^__Type(kind=__TypeKind.ENUM, name = $t.name->toOne())
+                    )
+                );
+                let type = $res->get($newName);
+                if($type->isNotEmpty(), | $type->toOne()->mutateAdd('inputFields',$newFields) , |[]);
+                $type;,
+              | []
+            )
+        )
   );
 
   let constant_bool_exp_fields = [
+    'String',
+    'Float',
+    'Int',
+    'Boolean',
+    'Date',
+    'DateTime',
+    'BigDecimal',
+    'StrictDate',
+    'Number'
+  ]->map(s|
     ^__Type(
-      name = 'Int_comparison_exp',
+      name = $s + '_comparison_exp',
       kind = __TypeKind.INPUT_OBJECT
     )
-  ];
+  );
 
   $constant_bool_exp_fields->map(v|
     let fields = [
       ^__InputValue(
-        type = ^__Type(kind=__TypeKind.SCALAR, name = 'Int'),
+        type = ^__Type(kind=__TypeKind.SCALAR, name = $v.name->toOne()->split('_')->at(0)),
         name = '_eq'
       )
     ];

@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.query.graphQL.api.test;
 
+import org.finos.legend.engine.query.graphQL.api.cache.GraphQLPlanCache;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runners.Suite;
 import org.mockito.Mockito;
 
 import javax.servlet.http.Cookie;
@@ -28,7 +30,12 @@ public class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
 {
     private void runTest(String queryString, String expectedResponse) throws Exception
     {
-        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        runTest(queryString, expectedResponse, null);
+    }
+
+    private void runTest(String queryString, String expectedResponse, GraphQLPlanCache planCache) throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(planCache);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
         Query query = new Query();
@@ -113,7 +120,7 @@ public class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
     }
 
     @Test
-    public void testGraphQLExecuteDevAPI_DynamicFilter_Simple_Exceptions() throws Exception
+    public void testGraphQLExecuteDevAPI_DynamicFilter_Exceptions() throws Exception
     {
         String query = "query Query {\n" +
                 "  allEmployees(where: { _or : [ { firstName: { _eq: \"John\" } } ] }) {\n" +
@@ -130,5 +137,122 @@ public class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
                 "  }";
         expected = "{\"errors\":[{\"location\":[],\"message\":\"Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \\\"_and should contain atleast two expressions\\\"\",\"path\":[]}]}";
         runTest(query, expected);
+
+        query = "query Query {\n" +
+                "  allEmployees(where: { _and : [ { firstName: { _eq: \"John\" } }, { lastName: { _eq: 1 } } ] }) {\n" +
+                "      fullName" +
+                "    }\n" +
+                "  }";
+        expected = "{\"errors\":[{\"location\":[],\"message\":\"Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \\\"Incorrect type of value provided for \\\"lastName\\\".Expected: String, Actual: Integer\\\"\",\"path\":[]}]}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testCache() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { firstName: { _eq: \"%s\" } }) {\n" +
+                "      fullName" +
+                "    }\n" +
+                "  }";
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"John Johnson\"},{\"fullName()\":\"John Hill\"}]}}";
+        runTest(String.format(query, "John"), expected, cache);
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        String expected2 = "{\"data\":{\"allEmployees\":{\"fullName()\":\"David Harris\"}}}";
+        runTest(String.format(query, "David"), expected2, cache);
+        Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        runTest(String.format(query, "John"), expected, cache);
+        Assert.assertEquals(2, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        runTest(String.format(query, "David"), expected2, cache);
+        Assert.assertEquals(3, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+    }
+
+    @Test
+    public void testCacheInComplexQuery() throws Exception
+    {
+        String query =
+                "query Query {\n" +
+                "   allEmployees(where: {" +
+                "      _or: [" +
+                "               { firstName: { _eq: \"%s\" } }," +
+                "               { " +
+                "                   _and: [" +
+                "                       {firstName: { _eq: \"John\"}}," +
+                "                       {isAFullTimeEmployee: { _eq: %s }}" +
+            "                       ] " +
+                "               }," +
+                "               { age: { _eq: %s }}" +
+                "           ]" +
+                "   }) " +
+                "   {\n" +
+                "       fullName\n" +
+                "       age\n" +
+                "   }\n" +
+                "}";
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"Peter Smith\",\"age\":25},{\"fullName()\":\"John Johnson\",\"age\":35},{\"fullName()\":\"David Harris\",\"age\":55}]}}";
+        runTest(String.format(query, "David", false, 25), expected, cache);
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        String expected2 = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"John Hill\",\"age\":30},{\"fullName()\":\"Anthony Allen\",\"age\":40},{\"fullName()\":\"David Harris\",\"age\":55}]}}";
+        runTest(String.format(query, "David", true, 40), expected2, cache);
+        Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        runTest(String.format(query, "David", false, 25), expected, cache);
+        Assert.assertEquals(2, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        runTest(String.format(query, "David", true, 40), expected2, cache);
+        Assert.assertEquals(3, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+    }
+
+    @Test
+    public void testCacheWithOrderChange() throws Exception
+    {
+        String query =
+                "query Query {\n" +
+                        "   allEmployees(where: {" +
+                        "      _or: [" +
+                        "               %s," +
+                        "               %s" +
+                        "           ]" +
+                        "   }) " +
+                        "   {\n" +
+                        "       fullName\n" +
+                        "       age\n" +
+                        "   }\n" +
+                        "}";
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"Peter Smith\",\"age\":25},{\"fullName()\":\"David Harris\",\"age\":55}]}}";
+        runTest(String.format(query, "{ firstName: { _eq: \"David\" } }", "{ age: { _eq: 25 }}"), expected, cache);
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        runTest(String.format(query, "{ age: { _eq: 25 }}", "{ firstName: { _eq: \"David\" } }"), expected, cache);
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(2, cache.getCache().stats().missCount(), 0);
+
+        runTest(String.format(query, "{ firstName: { _eq: \"David\" } }", "{ age: { _eq: 25 }}"), expected, cache);
+        Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(2, cache.getCache().stats().missCount(), 0);
+
+        runTest(String.format(query, "{ age: { _eq: 25 }}", "{ firstName: { _eq: \"David\" } }"), expected, cache);
+        Assert.assertEquals(2, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(2, cache.getCache().stats().missCount(), 0);
+
     }
 }

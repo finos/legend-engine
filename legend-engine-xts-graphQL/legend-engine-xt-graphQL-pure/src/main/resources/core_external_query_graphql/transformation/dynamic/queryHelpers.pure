@@ -20,41 +20,47 @@ import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
 import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
 import meta::pure::graphFetch::*;
 import meta::pure::functions::lang::*;
+import meta::pure::functions::multiplicity::*;
 
 /*
   FINAL STATE HELPER FUNCTIONS
 */
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(v: Value[1], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(v: Value[1], prefix: String[1], debug: DebugContext[1]): Node[*]
 {
   $v->match([
-    o : ObjectValue[1] | $o.values->traverseObjectFields(^$debug(space=$debug.space + ' ')),
-    i : IntValue[1] | ^Literal(value = $i.value, type = Integer),
-    s : StringValue[1] | ^Literal(value = $s.value, type = String),
-    b : BooleanValue[1] | ^Literal(value = $b.value, type = Boolean),
-    f : FloatValue[1] | ^Literal(value = $f.value,type = Float),
-    l : ListValue[1] | $l.values->fold({a,b | $b->concatenate($a->traverseValue(^$debug(space = $debug.space + ' ')))}, []);
+    o : ObjectValue[1]  |   $o.values->traverseObjectFields($prefix, ^$debug(space=$debug.space + ' ')),
+    i : IntValue[1]     |   ^Literal(name = $prefix, type = Integer),
+    s : StringValue[1]  |   ^Literal(name = $prefix, type = String),
+    b : BooleanValue[1] |   ^Literal(name = $prefix, type = Boolean),
+    f : FloatValue[1]   |   ^Literal(name = $prefix, type = Float),
+    l : ListValue[1]    |   $l.values->fold({a,b | $b->concatenate($a->traverseValue($prefix + $b->size()->toString(), ^$debug(space = $debug.space + ' ')))}, []);
   ]);
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseObjectFields(obj: ObjectField[*], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseObjectFields(obj: ObjectField[*], prefix: String[1], debug: DebugContext[1]): Node[*]
 {
   let m = newMap(
     [
-      ^Pair<String,Function<{ObjectField[1], DebugContext[1]->Node[*]}>>(first='_and',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::processAnd_ObjectField_1__DebugContext_1__Node_MANY_),
-      ^Pair<String,Function<{ObjectField[1], DebugContext[1]->Node[*]}>>(first='_or',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::processOr_ObjectField_1__DebugContext_1__Node_MANY_),
-      ^Pair<String,Function<{ObjectField[1], DebugContext[1]->Node[*]}>>(first='_eq',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::processEq_ObjectField_1__DebugContext_1__Node_MANY_)
+      ^Pair<String,Function<{ObjectField[1], String[1], DebugContext[1]->Node[*]}>>(first='_and',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::processAnd_ObjectField_1__String_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], DebugContext[1]->Node[*]}>>(first='_or',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::processOr_ObjectField_1__String_1__DebugContext_1__Node_MANY_),
+      ^Pair<String,Function<{ObjectField[1], String[1], DebugContext[1]->Node[*]}>>(first='_eq',second=meta::external::query::graphQL::transformation::queryToPure::dynamic::processEq_ObjectField_1__String_1__DebugContext_1__Node_MANY_)
     ]
   );
-  $obj->map(o | $m->get($o.name)
-      ->orElse(meta::external::query::graphQL::transformation::queryToPure::dynamic::processField_ObjectField_1__DebugContext_1__Node_MANY_)
-      ->eval($o, $debug));
+  $obj->fold({a,b | 
+    $b->concatenate(
+      $m->get($a.name)
+        ->orElse(meta::external::query::graphQL::transformation::queryToPure::dynamic::processField_ObjectField_1__String_1__DebugContext_1__Node_MANY_)
+        ->eval($a, $prefix, $debug)
+    )}, []
+  );
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::processAnd(o: ObjectField[1], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::processAnd(o: ObjectField[1], prefix: String[1], debug: DebugContext[1]): Node[*]
 {
   if($debug.debug, | println($debug.space+ 'AndExpression'), |[]);
-  let value = $o.value->traverseValue(^$debug(space=$debug.space + ' '));
+  assert($o.value->instanceOf(ListValue), | '_and should have a list value');
+  let value = $o.value->traverseValue($prefix + '__and',^$debug(space=$debug.space + ' '));
   
   assert($value->size() > 1, '_and should contain atleast two expressions');
   assert($value->filter(v | !$v->instanceOf(BooleanExpression))->size() == 0, 'One of the processed expressions in _and is not a valid boolean expression');
@@ -68,10 +74,11 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::p
   );
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::processOr(o: ObjectField[1], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::processOr(o: ObjectField[1], prefix: String[1], debug: DebugContext[1]): Node[*]
 {
   if($debug.debug, | println($debug.space + 'OrExpression'), |[]);
-  let value = $o.value->traverseValue(^$debug(space=$debug.space + ' '));
+  assert($o.value->instanceOf(ListValue), | '_or should have a list value');
+  let value = $o.value->traverseValue($prefix + '__or', ^$debug(space=$debug.space + ' '));
   
   assert($value->size() > 1, '_or should contain atleast two expressions');
   assert($value->filter(v | !$v->instanceOf(BooleanExpression))->size() == 0, 'One of the processed expressions in _or is not a valid boolean expression');
@@ -85,21 +92,21 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::p
   );
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::processField(o: ObjectField[1], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::processField(o: ObjectField[1], prefix: String[1], debug: DebugContext[1]): Node[*]
 {
   if($debug.debug, | println($debug.space + 'Field'), |[]);
-  ^ColumnExpression(fieldName=$o.name, values = $o.value->traverseValue(^$debug(space=$debug.space + ' ')));
+  ^ColumnExpression(fieldName=$o.name, values = $o.value->traverseValue($prefix + '_' + $o.name, ^$debug(space=$debug.space + ' ')));
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::processEq(o: ObjectField[1], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::processEq(o: ObjectField[1], prefix: String[1], debug: DebugContext[1]): Node[*]
 {
   if($debug.debug, | println($debug.space + 'EqOperator'), |[]);
-  let value = $o.value->traverseValue(^$debug(space=$debug.space + ' '));
+  let value = $o.value->traverseValue($prefix + '__eq', ^$debug(space=$debug.space + ' '));
   
   assert($value->size() == 1, '_eq should contain only one value');
   assert($value->toOne()->instanceOf(Literal), '_eq value should be a literal');
   
-  ^EqOperator(value=$o.value->traverseValue($debug)->toOne()->cast(@Literal));
+  ^EqOperator(value=$o.value->traverseValue($prefix + '__eq', $debug)->toOne()->cast(@Literal));
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString(node: Node[*], fieldName: String[1]): String[1]
@@ -109,7 +116,7 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::n
   a: AndExpression[1] | 'and(' + $a.first->nodesToString($fieldName) + ',' + $a.second->nodesToString($fieldName) + ')',
   o: OrExpression[1] | 'or(' + $o.first->nodesToString($fieldName) + ',' + $o.second->nodesToString($fieldName) + ')',
   e: EqOperator[1] | 'equals(' + $fieldName + ',' + $e.value->nodesToString('') + ')',
-  l: Literal[1] | $l.value->toString();
+  l: Literal[1] | $l.name->toString();
  ])
 }
 
@@ -117,69 +124,74 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::n
   FINAL STATE HELPER FUNCTIONS
 */
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(nodes: Node[*], fieldName: String[1], cl: Class<Any>[1]): ValueSpecification[*]
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::IntermediateClass
+{
+  vars: VariableExpression[*];
+  valueSpecifications: ValueSpecification[*];
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(nodes: Node[*], fieldName: String[1], cl: Class<Any>[1], vars: VariableExpression[*]): IntermediateClass[*]
 {
   $nodes->map(node |
     $node->match([
-      c: ColumnExpression[1] | let newFieldName = if($fieldName != '', |$fieldName + '.' + $c.fieldName, |$c.fieldName); 
-                              $c.values->nodesToValueSpecification($newFieldName,$cl)->evaluateAndDeactivate();,
-      a: AndExpression[1] | createAnd(
-                              $a.first->nodesToValueSpecification($fieldName,$cl)->toOne()->evaluateAndDeactivate(), 
-                              $a.second->nodesToValueSpecification($fieldName,$cl)->toOne()->evaluateAndDeactivate()
-                            ),
-      o: OrExpression[1] | createOr(
-                              $o.first->nodesToValueSpecification($fieldName,$cl)->toOne()->evaluateAndDeactivate(), 
-                              $o.second->nodesToValueSpecification($fieldName,$cl)->toOne()->evaluateAndDeactivate()
-                            ),
-      e: EqOperator[1] | createEqual(
-                            createProperty($cl->allProperties()->filter(p | $p.name == $fieldName)->toOne()->evaluateAndDeactivate(), $cl), 
-                            $e.value->nodesToValueSpecification('', $cl)->toOne()->evaluateAndDeactivate()
-                          );,
-      l: Literal[1] | ^InstanceValue(multiplicity = PureOne, genericType = ^GenericType(rawType = $l.type), values = $l.value)->evaluateAndDeactivate();
+      c: ColumnExpression[1]  |   let newFieldName = if($fieldName != '', |$fieldName + '.' + $c.fieldName, |$c.fieldName); 
+                                  let ic2 = $c.values->nodesToValueSpecification($newFieldName,$cl,$vars); 
+                                  ^IntermediateClass(vars=$ic2.vars,valueSpecifications=$ic2.valueSpecifications->toOne()->evaluateAndDeactivate());,
+                                  
+      a: AndExpression[1]     |   let ic1 = $a.first->nodesToValueSpecification($fieldName, $cl, $vars);
+                                  let ic2 = $a.second->nodesToValueSpecification($fieldName,$cl, $ic1.vars);
+                                  ^IntermediateClass(
+                                    vars=$ic2.vars,
+                                    valueSpecifications=createAnd(
+                                      $ic1.valueSpecifications->toOne()->evaluateAndDeactivate(), 
+                                      $ic2.valueSpecifications->toOne()->evaluateAndDeactivate()
+                                    )
+                                  );,
+      
+      o: OrExpression[1]      |   let ic1 = $o.first->nodesToValueSpecification($fieldName, $cl, $vars);
+                                  let ic2 = $o.second->nodesToValueSpecification($fieldName,$cl, $ic1.vars);
+                                  ^IntermediateClass(
+                                    vars=$ic2.vars,
+                                    valueSpecifications=createOr(
+                                      $ic1.valueSpecifications->toOne()->evaluateAndDeactivate(), 
+                                      $ic2.valueSpecifications->toOne()->evaluateAndDeactivate()
+                                    )
+                                  );,
+      
+      e: EqOperator[1]        |   let ic2 = $e.value->nodesToValueSpecification('', $cl, $vars);
+                                  ^IntermediateClass(
+                                    vars=$ic2.vars,
+                                    valueSpecifications=createEqual(
+                                      createProperty($cl->allProperties()->filter(p | $p.name == $fieldName)->toOne()->evaluateAndDeactivate(), $cl), 
+                                      $ic2.valueSpecifications->toOne()->evaluateAndDeactivate()
+                                    )
+                                  );,
+      
+      l: Literal[1]           |   let var = ^VariableExpression(multiplicity = PureOne, genericType = ^GenericType(rawType = $l.type), name = $l.name)->evaluateAndDeactivate();
+                                  ^IntermediateClass(vars = $vars->concatenate($var), valueSpecifications = $var);
     ])
   );
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::createAnd(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
 {
-  ^SimpleFunctionExpression(
-    importGroup=system::imports::coreImport,
-    func=meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_,
-    multiplicity=PureOne,
-    parametersValues = [
-      $left,
-      $right
-    ],
-    genericType=^GenericType(rawType=Boolean)
-  )->evaluateAndDeactivate();
+  sfe(meta::pure::functions::boolean::and_Boolean_1__Boolean_1__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $right]);
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::createOr(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
 {
-  ^SimpleFunctionExpression(
-    importGroup=system::imports::coreImport,
-    func=meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_,  
-    multiplicity=PureOne,
-    parametersValues = [
-      $left,
-      $right
-    ],
-    genericType=^GenericType(rawType=Boolean)
-  )->evaluateAndDeactivate();
+  sfe(meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $right]);
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::createEqual(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
 {
-  ^SimpleFunctionExpression(
-    importGroup=system::imports::coreImport,
-    func=meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_,
-    multiplicity=PureOne,
-    parametersValues = [
-      $left,
-      $right
-    ],
-    genericType=^GenericType(rawType=Boolean)
-  )->evaluateAndDeactivate();
+  assertEquals(
+    $left.genericType.rawType, 
+    $right.genericType.rawType, 
+    'Incorrect type of value provided for "' + $left->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>).name->toOne() + '".' + 
+    'Expected: ' + $left.genericType.rawType->toOne()->toString() + ', Actual: ' + $right.genericType.rawType->toOne()->toString()
+  );
+  sfe(meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $right]);
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::createProperty(p: AbstractProperty<Any>[1], cl: Class<Any>[1]): SimpleFunctionExpression[1]
@@ -187,10 +199,59 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::c
   ^SimpleFunctionExpression(
     importGroup=system::imports::coreImport,
     func=$p,
-    multiplicity=PureOne,
+    multiplicity=$p.multiplicity,
     parametersValues = [
       ^VariableExpression(multiplicity=PureOne, genericType=^GenericType(rawType=$cl), name='p')
     ],
     genericType=$p.genericType
   )->evaluateAndDeactivate();
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::sfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], multiplicity: Multiplicity[1], pvs:ValueSpecification[*]): SimpleFunctionExpression[1]
+{
+  let zipped = $func->getParameters()->evaluateAndDeactivate()->zip($pvs);
+  let parameters = $zipped->map(p | 
+
+    [
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), | fail(); sfe(toOne_T_MANY__T_1_, $p.second->evaluateAndDeactivate().genericType, [], PureOne, $p.second->evaluateAndDeactivate());),
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroMany(), | sfe(toOneMany_T_MANY__T_$1_MANY$_, $p.second->evaluateAndDeactivate().genericType, [], OneMany, $p.second->evaluateAndDeactivate()))
+    ]->getValue(true, | $p.second->evaluateAndDeactivate())->eval();
+  );
+  ^SimpleFunctionExpression(
+    func = $func,
+    genericType = $genericType,
+    resolvedTypeParameters = $resolvedTypeParameters,
+    importGroup = system::imports::coreImport,
+    multiplicity = $multiplicity,
+    parametersValues = $parameters
+  )->evaluateAndDeactivate();
+}
+
+// TODO Similar functions are present in sql layer, can these be moved higher up to common query layer
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::getValue<X, Y>(pairs : Pair<X, Y>[*], key : X[1], defaultValue : Y[1]) : Y[1]
+{
+  let r = newMap($pairs)->get($key);
+  if ($r->isEmpty(),
+    | $defaultValue,
+    | $r->toOne();
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::getParameters(f:Function<Any>[1]):VariableExpression[*]
+{
+   $f.classifierGenericType.typeArguments.rawType->match([
+      f:FunctionType[1] | $f.parameters,
+      a:Any[*] | []
+   ]);
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::isZeroOne(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroOne;
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::isZeroMany(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroMany;
 }

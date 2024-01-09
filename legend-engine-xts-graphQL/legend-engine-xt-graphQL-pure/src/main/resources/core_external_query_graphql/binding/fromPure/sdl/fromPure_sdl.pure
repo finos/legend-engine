@@ -122,6 +122,16 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
           ^EnumTypeDefinition(
             name = $c.name->toOne(),
             values = $e->enumValues()->map(z | ^EnumValueDefinition(value = $z->id()))
+          )->concatenate(
+            ^InputObjectTypeDefinition(
+              name = $c.name->toOne() + '_comparison_exp',
+              fields =
+                    ^InputValueDefinition
+                    (
+                      name = '_eq',
+                      type = ^NamedTypeReference(name=$c.name->toOne(),nullable=true)
+                    )
+            )
           )
       ]
     );
@@ -147,7 +157,6 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
     ->concatenate($partitioned.first.values->cast(@ScalarTypeDefinition)->removeDuplicatesBy(s | $s.name->toOne()))
     ->concatenate($processingDirectives)
     ->concatenate($interfaces)
-    ->concatenate($primitive_bool_expressions)
     ->concatenate(if($interfaces->isNotEmpty(), | hierarchyDirective(), | []))
     ->meta::pure::functions::collection::sortBy(t | 
       $t->match(
@@ -170,7 +179,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
         |
           []
       )
-    );
+    )->concatenate($primitive_bool_expressions->sortBy(p|$p.name));
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::getTemporalStereotypes(t: meta::pure::metamodel::type::Type[1]): String[*]
@@ -237,46 +246,57 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
       ));            
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::changeTypeReferenceName(t: TypeReference[1]): TypeReference[1]
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::changeTypeReferenceName(t: TypeReference[1], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1], isListType: Boolean[1], isEnumType: Boolean[1]): TypeReference[1]
 {
   if($t->instanceOf(NamedTypeReference),
     |
       let t1 = $t->cast(@NamedTypeReference);
-      // TODO we don't handle enums correctly
-      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes()->map(p|$p.second);
-      ^$t1(name = if($t1.name->in($primitiveTypes), | $t1.name + '_comparison_exp', | $t1.name + '_bool_exp'));,
+      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)->map(p|$p.second);
+      ^$t1(name = if($isListType,
+                    | $t1.name + '_exists_exp',
+                    | if($t1.name->in($primitiveTypes) || $isEnumType,
+                        | $t1.name + '_comparison_exp',
+                        | $t1.name + '_bool_exp'
+                      )
+                    )
+          );,
     | let t1 = $t->cast(@ListTypeReference);
-      ^$t1(itemType = $t1.itemType->changeTypeReferenceName());
+      ^$t1(itemType = $t1.itemType->changeTypeReferenceName($pureTypeToGraphQLScalarOverride,true,$isEnumType));
   )
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildBoolExpObject(c: Class<Any>[1], isExtended: Boolean[1]): TypeSystemDefinition[*]
 {
   let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
-  ^InputObjectTypeDefinition(
-    name = $c.name->toOne() + '_bool_exp',
-    directives = [],
-    fields =
-              $props
-                ->map(p |
-                  let reference = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity());
+  [
+    ^InputObjectTypeDefinition(
+      name = $c.name->toOne() + '_bool_exp',
+      directives = [],
+      fields =
+                $props
+                  ->map(p |
+                    let reference = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity(), $pureTypeToGraphQLScalarOverride);
+                    ^InputValueDefinition
+                    (
+                      name = $p.name->toOne(),
+                      type = changeTypeReferenceName(^$reference(nullable = true), $pureTypeToGraphQLScalarOverride,false,$p.genericType.rawType->toOne()->instanceOf(Enumeration))
+                    );
+                  )
+                  ->concatenate(
+                    [
+                      ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_and'),
+                      ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_or'),
+                      ^InputValueDefinition(type=^NamedTypeReference(nullable=true,name=$c.name->toOne() + '_bool_exp'),name='_not')
 
-                  ^InputValueDefinition
-                  (
-                    name = $p.name->toOne(),
-                    type = changeTypeReferenceName($reference, $pureTypeToGraphQLScalarOverride)
-                  );
-
-                )
-                ->concatenate(
-                  [
-                    ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_and'),
-                    ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_or'),
-                    ^InputValueDefinition(type=^NamedTypeReference(nullable=true,name=$c.name->toOne() + '_bool_exp'),name='_not')
-
-                  ]
-                )
-  );
+                    ]
+                  )
+    ),
+    ^InputObjectTypeDefinition(
+      name = $c.name->toOne() + '_exists_exp',
+      directives = [],
+      fields = ^InputValueDefinition(type=^NamedTypeReference(nullable=true,name=$c.name->toOne() + '_bool_exp'), name='_exists')
+    )
+  ];
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1], isExtended: Boolean[1]): TypeSystemDefinition[*]
