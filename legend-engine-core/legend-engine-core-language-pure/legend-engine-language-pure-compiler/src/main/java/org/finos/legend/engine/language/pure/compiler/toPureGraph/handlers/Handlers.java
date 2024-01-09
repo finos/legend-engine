@@ -231,12 +231,20 @@ public class Handlers
 
     public static TypeAndMultiplicity GroupByReturnInference(List<ValueSpecification> ps, PureModel pureModel)
     {
+        return getTypeAndMultiplicity(
+                (RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType(),
+                (RelationType<?>) ps.get(2)._genericType()._typeArguments().getLast()._rawType(),
+                pureModel);
+    }
+
+    private static TypeAndMultiplicity getTypeAndMultiplicity(RelationType<?> r1, RelationType<?> r2, PureModel pureModel)
+    {
         ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
 
         RelationType<?> relType = _RelationType.build(
                 Lists.mutable
-                        .withAll((RichIterable<Column<?, ?>>) ((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType())._columns())
-                        .withAll((RichIterable<Column<?, ?>>) ((RelationType<?>) ps.get(2)._genericType()._typeArguments().getLast()._rawType())._columns())
+                        .withAll((RichIterable<Column<?, ?>>) r1._columns())
+                        .withAll((RichIterable<Column<?, ?>>) r2._columns())
                         .collect(c -> _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport)),
                 null,
                 processorSupport
@@ -248,6 +256,14 @@ public class Handlers
                 "one",
                 pureModel
         );
+    }
+
+    public static TypeAndMultiplicity JoinReturnInference(List<ValueSpecification> ps, PureModel pureModel)
+    {
+        return getTypeAndMultiplicity(
+                (RelationType<?>) ps.get(0)._genericType()._typeArguments().getLast()._rawType(),
+                (RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType(),
+                pureModel);
     }
 
     public static TypeAndMultiplicity ExtendReturnInference(List<ValueSpecification> ps, PureModel pureModel)
@@ -1060,7 +1076,7 @@ public class Handlers
         register(h("meta::pure::functions::relation::ascending_ColSpec_1__SortInfo_1_", false, ps -> res("meta::pure::functions::relation::SortInfo", "one")));
         register(h("meta::pure::functions::relation::descending_ColSpec_1__SortInfo_1_", false, ps -> res("meta::pure::functions::relation::SortInfo", "one")));
 
-        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> true)));
+        register(grp(JoinInference, h("meta::pure::functions::relation::join_Relation_1__Relation_1__JoinKind_1__Function_1__Relation_1_", true, ps -> JoinReturnInference(ps, this.pureModel), ps -> true)));
 
         register(
                 m(

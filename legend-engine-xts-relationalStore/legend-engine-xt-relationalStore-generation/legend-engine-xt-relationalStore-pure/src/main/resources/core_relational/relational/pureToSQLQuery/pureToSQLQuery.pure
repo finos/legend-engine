@@ -537,7 +537,7 @@ function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], 
                                                 (
                                                   select = ^TdsSelectSqlQuery
                                                            (
-                                                              columns = $relation.columns->map(c|^Alias(name='"'+$c->cast(@Column).name->toOne()+'"', relationalElement=^TableAliasColumn(alias=$tableAlias, column=$c->cast(@Column)))),
+                                                              columns = $relation.columns->map(c|^Alias(name=$c->cast(@Column).name->toOne()->addQuotesIfNecessary(), relationalElement=^TableAliasColumn(alias=$tableAlias, column=$c->cast(@Column)))),
                                                               data = ^RootJoinTreeNode(alias = $tableAlias)
                                                            )
                                                 );
@@ -4658,7 +4658,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsProject(f:Functi
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processColSpec(f:meta::pure::metamodel::function::Function<Any>[1], name:String[1], currentPropertyMapping:PropertyMapping[*], mainQuery:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], context:DebugContext[1]):Pair<Alias,Pair<String,PathInformation>>[1]
 {
   let newElement = processTdsLambda($f->cast(@FunctionDefinition<Any>).expressionSequence->at(0), $mainQuery.select.columns->cast(@Alias), false, $vars, $state, $currentPropertyMapping, $context)->at(0);
-  let alias = ^Alias(name='"'+$name+'"', relationalElement=$newElement);
+  let alias = ^Alias(name=$name->addQuotesIfNecessary(), relationalElement=$newElement);
   let path = pair($name, ^PathInformation(type=$f->functionReturnType().rawType->toOne(),
                                             relationalType = $newElement->getRelationalTypeFromRelationalPropertyMapping()));
   pair($alias,$path);
@@ -5308,10 +5308,12 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                      r:FunctionRoutedValueSpecification[1]|$r.value->processTdsLambda($a,$returnColumnName, $vars, $state, $currentPropertyMapping, $context),
                      f:FunctionExpression[1]|
                         if ($f.func->instanceOf(meta::pure::metamodel::relation::Column),
-                          | let foundColumn = $a->filter(alias|
+                          | println($f.func.name->toOne()->toOne()->addQuotesIfNecessary());
+                           println('ok');
+                            let foundColumn = $a->filter(alias|
                                                             $alias->match(
                                                                 [
-                                                                  al:Alias[1]|$al.name->addQuotesIfNecessary(),
+                                                                  al:Alias[1]| println($al.name);$al.name->addQuotesIfNecessary();,
                                                                   t:TableAliasColumn[1]| $t.column.name->addQuotesIfNecessary(),
                                                                   w:WindowColumn[1]| $w.columnName->addQuotesIfNecessary()
                                                                 ]
