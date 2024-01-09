@@ -39,7 +39,6 @@ import org.finos.legend.engine.repl.autocomplete.handlers.*;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
@@ -86,63 +85,17 @@ public class Completer
         try
         {
             ValueSpecification vs = parseValueSpecification(ParserFixer.fixCode(value));
-
             ValueSpecification topExpression = findTopExpression(vs);
-
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
             PureModel pureModel = compile();
+            ProcessingContext processingContext = new ProcessingContext("");
 
-            if (topExpression instanceof ClassInstance)
+            CompletionResult mutable = processVS(topExpression, processingContext, currentExpression, pureModel);
+
+            if (mutable != null)
             {
-                CompletionResult mutable = processClassInstance((ClassInstance) topExpression, compile());
-                if (mutable != null)
-                {
-                    return mutable;
-                }
-            }
-            else if (topExpression instanceof AppliedFunction)
-            {
-                AppliedFunction currentFunc = (AppliedFunction) topExpression;
-
-                CompilationResult compilationResult = compileLeftSideAndExtractType(currentFunc, pureModel);
-                GenericType leftType = compilationResult.getGenericType();
-
-                if (currentFunc == currentExpression)
-                {
-                    // The user is currently typing the function name try to autocomplete (considering the left type)
-                    String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
-                    return new CompletionResult(getFunctionCandidates(compilationResult, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
-                }
-
-                // The user is currently typing applied parameters within the function
-                ProcessingContext processingContext = new ProcessingContext("");
-
-                FunctionHandler handler = handlers.get(currentFunc.function);
-
-                if (handler != null)
-                {
-                    MutableList<CompletionItem> proposed = handler.proposedParameters(currentFunc, leftType, pureModel);
-                    if (!proposed.isEmpty())
-                    {
-                        return new CompletionResult(proposed);
-                    }
-                    handler.handleFunctionAppliedParameters(currentFunc, leftType, processingContext, pureModel);
-                }
-
-                if (currentExpression instanceof AppliedProperty)
-                {
-                    AppliedProperty appliedProperty = (AppliedProperty) currentExpression;
-                    CompilationResult compilationResult1 = compileCodePartWithinLambdaWithOneParameter(appliedProperty.parameters.get(0), processingContext, pureModel);
-                    String typedProperty = appliedProperty.property.replace(ParserFixer.magicToken, "");
-                    return new CompletionResult(extractPropertiesOrColumnsFromType(compilationResult1).select(c -> c.startsWith(typedProperty)).collect(c -> new CompletionItem(c.contains(" ") ? "'" + c + "'" : c)));
-                }
-                else if (currentExpression instanceof AppliedFunction)
-                {
-                    AppliedFunction appliedFunction = (AppliedFunction) currentExpression;
-                    CompilationResult compilationResult1 = compileCodePartWithinLambdaWithOneParameter(appliedFunction.parameters.get(0), processingContext, pureModel);
-                    return new CompletionResult(getFunctionCandidates(compilationResult1, pureModel, currentFunc.function).collect(c -> new CompletionItem(c, c)));
-                }
+                return mutable;
             }
             return new CompletionResult(Lists.mutable.empty());
         }
@@ -150,6 +103,57 @@ public class Completer
         {
             return new CompletionResult(e);
         }
+    }
+
+    public CompletionResult processVS(ValueSpecification topExpression, ProcessingContext processingContext, ValueSpecification currentExpression, PureModel pureModel)
+    {
+        if (topExpression instanceof ClassInstance)
+        {
+            CompletionResult mutable = processClassInstance((ClassInstance) topExpression, compile());
+            if (mutable != null)
+            {
+                return mutable;
+            }
+        }
+        else if (topExpression instanceof AppliedFunction)
+        {
+            AppliedFunction currentFunc = (AppliedFunction) topExpression;
+
+            CompilationResult compilationResult = compileLeftSideAndExtractType(currentFunc, processingContext, pureModel);
+            GenericType leftType = compilationResult.getGenericType();
+            String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
+            FunctionHandler handler = handlers.get(currentFunc.function);
+            if (handler == null)
+            {
+                return new CompletionResult(getFunctionCandidates(compilationResult, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
+            }
+            else
+            {
+                MutableList<CompletionItem> proposed = handler.proposedParameters(currentFunc, leftType, pureModel, this, processingContext, currentExpression);
+                if (!proposed.isEmpty())
+                {
+                    return new CompletionResult(proposed);
+                }
+                handler.handleFunctionAppliedParameters(currentFunc, leftType, processingContext, pureModel);
+            }
+
+            if (currentExpression != null)
+            {
+                return processVS(currentExpression, processingContext, null, pureModel);
+            }
+            else
+            {
+                return new CompletionResult(Lists.mutable.empty());
+            }
+        }
+        else if (topExpression instanceof AppliedProperty)
+        {
+            AppliedProperty appliedProperty = (AppliedProperty) topExpression;
+            CompilationResult compilationResult1 = compileCodePartWithinLambdaWithOneParameter(appliedProperty.parameters.get(0), processingContext, pureModel);
+            String typedProperty = appliedProperty.property.replace(ParserFixer.magicToken, "");
+            return new CompletionResult(extractPropertiesOrColumnsFromType(compilationResult1).select(c -> c.startsWith(typedProperty)).collect(c -> new CompletionItem(c.contains(" ") ? "'" + c + "'" : c)));
+        }
+        return null;
     }
 
     public static CompletionResult processClassInstance(ClassInstance topExpression, PureModel pureModel)
@@ -260,9 +264,8 @@ public class Completer
         return Compiler.compile(newPureModelContextData, null, null);
     }
 
-    private CompilationResult compileLeftSideAndExtractType(AppliedFunction currentFunc, PureModel pureModel)
+    private CompilationResult compileLeftSideAndExtractType(AppliedFunction currentFunc, ProcessingContext processingContext, PureModel pureModel)
     {
-        ProcessingContext processingContext = new ProcessingContext("");
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification vs = currentFunc.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
         return new CompilationResult(vs._genericType(), vs._multiplicity());
     }
@@ -364,9 +367,14 @@ public class Completer
 
     private static boolean checkIfCurrent(SourceInformation sourceInformation, int _line, int _column)
     {
+        //_column = _column - 1;
         // SourceInformation column -1 so that we can account for -> or .
 //        System.out.println(sourceInformation.startLine + " <= " + _line + " <= " + sourceInformation.endLine);
 //        System.out.println((sourceInformation.startColumn - 1) + " <= " + _column + " <= " + sourceInformation.endColumn);
+//        System.out.println(sourceInformation.startLine <= _line &&
+//                _line <= sourceInformation.endLine &&
+//                (sourceInformation.startColumn - 1) <= _column &&
+//                _column <= sourceInformation.endColumn);
         return sourceInformation.startLine <= _line &&
                 _line <= sourceInformation.endLine &&
                 (sourceInformation.startColumn - 1) <= _column &&

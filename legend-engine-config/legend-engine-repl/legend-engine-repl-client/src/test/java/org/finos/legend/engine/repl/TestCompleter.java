@@ -78,15 +78,12 @@ public class TestCompleter
         Assert.assertEquals("[ascending , ascending],[descending , descending]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->sort(~col->").getCompletion().makeString(","));
     }
 
-    // TODO!!!!!
-//    @Test
-//    public void testMultiLevelFunction()
-//    {
-//        Assert.assertEquals("[select , select]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->select(~[col])->join(#>{a::A.t}#->selec").getCompletion().makeString(","));
-//        Assert.assertEquals("[col , col]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->select(~[col])->join(#>{a::A.t}#->select(").getCompletion().makeString(","));
-//    }
-
-
+    @Test
+    public void testMultiLevelFunction()
+    {
+        Assert.assertEquals("[select , select]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->select(~[col])->join(#>{a::A.t}#->selec").getCompletion().makeString(","));
+        Assert.assertEquals("[col , col]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->select(~[col])->join(#>{a::A.t}#->select(~").getCompletion().makeString(","));
+    }
 
     //--------
     // Filter
