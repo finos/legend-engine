@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.repl;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
+import org.jline.reader.ParsedLine;
 import org.jline.reader.Parser;
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,19 +26,23 @@ public class TestJLine3Parser
     @Test
     public void testParser()
     {
-        Assert.assertEquals("#,>{},#,", parse("#>{}#").makeString(","));
-        Assert.assertEquals("#,>{},#,->,", parse("#>{}#->").makeString(","));
-        Assert.assertEquals("#,>{},#,->,f", parse("#>{}#->f").makeString(","));
-        Assert.assertEquals("#,>{},#, ,->,", parse("#>{}# ->").makeString(","));
-        Assert.assertEquals("#,>{},#,.,", parse("#>{}#.").makeString(","));
-        Assert.assertEquals("#,>{},#,.,gh", parse("#>{}#.gh").makeString(","));
-        Assert.assertEquals("#,>{},#,.,gh,(,ok,),", parse("#>{}#.gh(ok)").makeString(","));
-        Assert.assertEquals("#,>{},#,.,gh,(,ok,),->,", parse("#>{}#.gh(ok)->").makeString(","));
+        Assert.assertEquals("''  *  0  *  #,>{},#,", parse("#>{}#"));
+        Assert.assertEquals("''  *  0  *  #,>{aaa,.,aaa},#,", parse("#>{aaa.aaa}#"));
+        Assert.assertEquals("''  *  0  *  #,>{},#,->,", parse("#>{}#->"));
+        Assert.assertEquals("'f'  *  1  *  #,>{},#,->,f", parse("#>{}#->f"));
+        Assert.assertEquals("''  *  0  *  #,>{},#, ,->,", parse("#>{}# ->"));
+        Assert.assertEquals("''  *  0  *  #,>{},#,.,", parse("#>{}#."));
+        Assert.assertEquals("'gh'  *  2  *  #,>{},#,.,gh", parse("#>{}#.gh"));
+        Assert.assertEquals("''  *  0  *  #,>{},#,.,gh,(,", parse("#>{}#.gh("));
+        Assert.assertEquals("''  *  0  *  #,>{},#,.,gh,(,ok,),", parse("#>{}#.gh(ok)"));
+        Assert.assertEquals("''  *  0  *  #,>{},#,.,gh,(,ok,),->,", parse("#>{}#.gh(ok)->"));
+        Assert.assertEquals("''  *  0  *  #,>{test::TestDatabase,.,TEST0},#,->,groupBy,(,~,[,", parse("#>{test::TestDatabase.TEST0}#->groupBy(~["));
     }
 
-    public MutableList<String> parse(String content)
+    public String parse(String content)
     {
-        return Lists.mutable.withAll(new JLine3Parser().parse(content, content.length(), Parser.ParseContext.COMPLETE).words());
+        ParsedLine line = new JLine3Parser().parse(content, content.length(), Parser.ParseContext.COMPLETE);
+        return "'" + line.word() + "'  *  " + line.wordCursor() + "  *  " + Lists.mutable.withAll(line.words()).makeString(",");
     }
 
 }

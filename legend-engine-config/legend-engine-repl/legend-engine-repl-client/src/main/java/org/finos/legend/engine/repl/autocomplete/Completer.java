@@ -110,7 +110,7 @@ public class Completer
                 {
                     // The user is currently typing the function name try to autocomplete (considering the left type)
                     String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
-                    return new CompletionResult(getFunctionCandidates(compilationResult, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c + "(")));
+                    return new CompletionResult(getFunctionCandidates(compilationResult, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
                 }
 
                 // The user is currently typing applied parameters within the function
@@ -139,10 +139,9 @@ public class Completer
                 {
                     AppliedFunction appliedFunction = (AppliedFunction) currentExpression;
                     CompilationResult compilationResult1 = compileCodePartWithinLambdaWithOneParameter(appliedFunction.parameters.get(0), processingContext, pureModel);
-                    return new CompletionResult(getFunctionCandidates(compilationResult1, currentFunc.function).collect(c -> new CompletionItem(c, c + "(")));
+                    return new CompletionResult(getFunctionCandidates(compilationResult1, currentFunc.function).collect(c -> new CompletionItem(c, c)));
                 }
             }
-
             return new CompletionResult(Lists.mutable.empty());
         }
         catch (EngineException e)
@@ -159,7 +158,10 @@ public class Completer
             MutableList<String> path = Lists.mutable.withAll(((RelationStoreAccessor) islandExpr).path);
             String writtenPath = path.makeString("::").replace(ParserFixer.magicToken, "");
             MutableList<Store> elements = pureModel.getAllStores().select(c -> nameMatch(c, writtenPath)).toList();
-            if (elements.size() == 1 && writtenPath.startsWith(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0))))
+            if (elements.size() == 1 &&
+                    writtenPath.startsWith(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0))) &&
+                    !writtenPath.equals(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(elements.get(0)))
+            )
             {
                 org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database db = (org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database) elements.get(0);
                 String writtenTableName = writtenPath.replace(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(db), "").replace("::", "");
@@ -171,10 +173,10 @@ public class Completer
                 }
                 else
                 {
-                    return new CompletionResult(foundTables.collect(c -> new CompletionItem(c._name(), c._name() + "}#")));
+                    return new CompletionResult(foundTables.collect(c -> new CompletionItem(c._name(), c._name() + "}")));
                 }
             }
-            return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c), ">{" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c) + ".")).toList());
+            return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c), ">{" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c))).toList());
         }
         return null;
     }

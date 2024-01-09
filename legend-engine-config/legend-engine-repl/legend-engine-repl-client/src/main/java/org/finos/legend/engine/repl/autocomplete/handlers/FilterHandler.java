@@ -34,17 +34,20 @@ public class FilterHandler extends FunctionHandler
     @Override
     public void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
     {
-        // Specific inference for filter
-        Lambda lambda = (Lambda) currentFunc.parameters.get(1);
-        Variable variable = lambda.parameters.get(0);
-
-        // Filter for 'Relation' has a different type propagation to parameter
-        GenericType propertyType = leftType;
-        if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
+        if (currentFunc.parameters.size() > 1)
         {
-            propertyType = leftType._typeArguments().getFirst();
-        }
+            // Specific inference for filter
+            Lambda lambda = (Lambda) currentFunc.parameters.get(1);
+            Variable variable = lambda.parameters.get(0);
 
-        processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel.getMultiplicity("one"), pureModel));
+            // Filter for 'Relation' has a different type propagation to parameter
+            GenericType propertyType = leftType;
+            if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
+            {
+                propertyType = leftType._typeArguments().getFirst();
+            }
+
+            processingContext.addInferredVariables(variable.name, buildTypedVariable(variable, propertyType, pureModel.getMultiplicity("one"), pureModel));
+        }
     }
 }

@@ -27,57 +27,54 @@ import java.util.List;
 public class JLine3Parser implements Parser
 {
     @Override
-    public ParsedLine parse(String value, int i, ParseContext parseContext) throws SyntaxError
+    public ParsedLine parse(String value, int cursor, ParseContext parseContext) throws SyntaxError
     {
-        MutableList<String> words = split(value);
-        return new MyParsedLine(words, value);
+        return new MyParsedLine(split(value, cursor));
     }
 
     public static class MyParsedLine implements ParsedLine
     {
-        private MutableList<String> words;
-        private String value;
+        private ParserResult result;
 
-        public MyParsedLine(MutableList<String> words, String value)
+        public MyParsedLine(ParserResult result)
         {
-            this.words = words;
-            this.value = value;
+            this.result = result;
         }
 
         @Override
         public String word()
         {
-            return words.get(wordIndex());
+            return result.words.get(wordIndex());
         }
 
         @Override
         public int wordCursor()
         {
-            return word().length();
+            return result.wordCursor;
         }
 
         @Override
         public int wordIndex()
         {
-            return words.size() - 1;
+            return result.currentWordIndex;
         }
 
         @Override
         public List<String> words()
         {
-            return words;
+            return result.words;
         }
 
         @Override
         public String line()
         {
-            return value;
+            return result.line;
         }
 
         @Override
         public int cursor()
         {
-            return value.length();
+            return result.cursor;
         }
     }
 
@@ -118,11 +115,14 @@ public class JLine3Parser implements Parser
     }
 
 
-    public static MutableList<String> split(String content)
+    public static ParserResult split(String content, int cursor)
     {
         StringBuilder buffer = new StringBuilder();
         MutableList<String> result = Lists.mutable.empty();
         boolean lastCharactersIsToken = false;
+        int currentWordIndex = -1;
+        int currentWordCursor = -1;
+        int wordCursor = -1;
         for (int i = 0; i < content.length(); i++)
         {
             char c = content.charAt(i);
@@ -131,6 +131,7 @@ public class JLine3Parser implements Parser
             {
                 flush(buffer, result);
                 result.add(token);
+                wordCursor = 0;
                 lastCharactersIsToken = true;
                 buffer = new StringBuilder();
                 i = i + token.length() - 1;
@@ -139,6 +140,12 @@ public class JLine3Parser implements Parser
             {
                 lastCharactersIsToken = false;
                 buffer.append(c);
+                wordCursor++;
+            }
+            if (cursor == i + 1)
+            {
+                currentWordIndex = result.size();
+                currentWordCursor = wordCursor;
             }
         }
         flush(buffer, result);
@@ -146,7 +153,8 @@ public class JLine3Parser implements Parser
         {
             result.add("");
         }
-        return result;
+
+        return new ParserResult(content, cursor, result, currentWordIndex, currentWordCursor);
     }
 
     public static void flush(StringBuilder buffer, MutableList<String> result)
@@ -158,7 +166,7 @@ public class JLine3Parser implements Parser
         }
     }
 
-    private static MutableCharSet block = CharSets.mutable.with('(', ')', ' ', '#', '.', ' ', '~', ',');
+    private static MutableCharSet block = CharSets.mutable.with('(', ')', ' ', '#', '.', ' ', '~', ',', '[', ']');
 
     public static String shouldBreak(String content, char c, int i)
     {
@@ -171,5 +179,32 @@ public class JLine3Parser implements Parser
             return "->";
         }
         return null;
+    }
+
+    public static class ParserResult
+    {
+        MutableList<String> words;
+        int currentWordIndex;
+        int wordCursor;
+        String line;
+        int cursor;
+
+        public ParserResult(String line, int cursor, MutableList<String> words, int currentWordIndex, int wordCursor)
+        {
+            this.line = line;
+            this.cursor = cursor;
+            this.words = words;
+            this.currentWordIndex = currentWordIndex;
+            this.wordCursor = wordCursor;
+        }
+
+        public ParserResult(String line, MutableList<String> words)
+        {
+            this.line = line;
+            this.cursor = line.length();
+            this.words = words;
+            this.currentWordIndex = words.size() - 1;
+            this.wordCursor = words.get(this.currentWordIndex).length();
+        }
     }
 }

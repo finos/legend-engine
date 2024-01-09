@@ -51,7 +51,7 @@ public class JLine3Completer implements Completer
         else if (inScope.startsWith("load"))
         {
             String compressed = Lists.mutable.withAll(parsedLine.words()).drop(2).makeString("");
-            completer.complete(lineReader, new JLine3Parser.MyParsedLine(Lists.mutable.with("load", " ", compressed), parsedLine.line()), list);
+            completer.complete(lineReader, new JLine3Parser.MyParsedLine(new JLine3Parser.ParserResult(parsedLine.line(), Lists.mutable.with("load", " ", compressed))), list);
             List<Candidate> ca = ListIterate.collect(list, c ->
             {
                 String val = compressed.length() == 1 ? c.value() : c.value().substring(1);

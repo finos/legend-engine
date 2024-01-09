@@ -75,6 +75,8 @@ public class TestParserFixer
     @Test
     public void testTilde()
     {
+        Assert.assertEquals("$a->rename(~[MaGiCToKeN])", fixCode("$a->rename(~["));
+        Assert.assertEquals("$a->rename(~[test,MaGiCToKeN])", fixCode("$a->rename(~[test,"));
         Assert.assertEquals("$a->rename(~MaGiCToKeN)", fixCode("$a->rename(~"));
         Assert.assertEquals("$a->rename(~xd:x|MaGiCToKeN)", fixCode("$a->rename(~xd:"));
         Assert.assertEquals("$a->extend(~[x:y|$y.MaGiCToKeN])", fixCode("$a->extend(~[x:y|$y."));

@@ -23,15 +23,17 @@ public class TestCompleter
     @Test
     public void testNonFunction()
     {
-        Assert.assertEquals("[a::A , >{a::A.]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>").getCompletion().makeString(", "));
-        Assert.assertEquals("[a::other , >{a::other.], [a::ABC , >{a::ABC.]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a").getCompletion().makeString(", "));
-        Assert.assertEquals("[a::ABC , >{a::ABC.]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a::A").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::A , >{a::A]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::other , >{a::other], [a::ABC , >{a::ABC]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::ABC , >{a::ABC]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a::A").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::ABC , >{a::ABC]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a::ABC").getCompletion().makeString(", "));
+        Assert.assertEquals("[t , t}]", new Completer("###Relational\nDatabase a::ABC(Table t(col VARCHAR(200)))\nDatabase a::other(Table t(col VARCHAR(200)))").complete("#>{a::ABC.").getCompletion().makeString(", "));
     }
 
     @Test
     public void testRelationAccessor()
     {
-        Assert.assertEquals("[tab , tab}#]", new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))").complete("#>{a::A.t").getCompletion().makeString(", "));
+        Assert.assertEquals("[tab , tab}]", new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))").complete("#>{a::A.t").getCompletion().makeString(", "));
         Assert.assertEquals("", new Completer("###Relational\nDatabase a::A(Table tab(col VARCHAR(200)))").complete("#>{a::A.x").getCompletion().makeString(", "));
         Assert.assertEquals("", new Completer("###Relational\nDatabase a::A(Table co(val INTEGER) Table tab(col VARCHAR(200)))").complete("#>{a::A.tab}#").getCompletion().makeString(", "));
     }
@@ -47,21 +49,21 @@ public class TestCompleter
     @Test
     public void testArrowRelation()
     {
-        Assert.assertEquals("[distinct , distinct(], [drop , drop(], [extend , extend(], [filter , filter(], [from , from(], [groupBy , groupBy(], [join , join(], [limit , limit(], [rename , rename(], [size , size(], [slice , slice(], [sort , sort(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->").getCompletion().makeString(", "));
-        Assert.assertEquals("[size , size(], [slice , slice(], [sort , sort(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->s").getCompletion().makeString(", "));
+        Assert.assertEquals("[distinct , distinct], [drop , drop], [extend , extend], [filter , filter], [from , from], [groupBy , groupBy], [join , join], [limit , limit], [rename , rename], [size , size], [slice , slice], [sort , sort]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->").getCompletion().makeString(", "));
+        Assert.assertEquals("[size , size], [slice , slice], [sort , sort]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->s").getCompletion().makeString(", "));
     }
 
     @Test
     public void testArrowOnType()
     {
-        Assert.assertEquals("[project , project(]", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->").getCompletion().makeString(", "));
+        Assert.assertEquals("[project , project]", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->").getCompletion().makeString(", "));
         Assert.assertEquals("", new Completer("Class x::A{name:String[1];other:Integer[1];}").complete("x::A.all()->fu").getCompletion().makeString(", "));
     }
 
     @Test
     public void testArrowDeep()
     {
-        Assert.assertEquals("[contains , contains(], [startsWith , startsWith(], [endsWith , endsWith(], [toLower , toLower(], [toUpper , toUpper(], [lpad , lpad(], [rpad , rpad(], [parseInteger , parseInteger(], [parseFloat , parseFloat(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(f|$f.col->").getCompletion().makeString(", "));
+        Assert.assertEquals("[contains , contains], [startsWith , startsWith], [endsWith , endsWith], [toLower , toLower], [toUpper , toUpper], [lpad , lpad], [rpad , rpad], [parseInteger , parseInteger], [parseFloat , parseFloat]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->filter(f|$f.col->").getCompletion().makeString(", "));
     }
 
     @Test
@@ -73,7 +75,7 @@ public class TestCompleter
     @Test
     public void testArrowPostCol()
     {
-        Assert.assertEquals("[ascending , ascending(],[descending , descending(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->sort(~col->").getCompletion().makeString(","));
+        Assert.assertEquals("[ascending , ascending],[descending , descending]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200)))").complete("#>{a::A.t}#->sort(~col->").getCompletion().makeString(","));
     }
 
 
@@ -132,9 +134,11 @@ public class TestCompleter
     public void testGroupBy()
     {
         Assert.assertEquals("[col , col], [val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~").getCompletion().makeString(", "));
+        Assert.assertEquals("[col , col], [val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~[").getCompletion().makeString(", "));
+        Assert.assertEquals("[col , col], [val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~[col,").getCompletion().makeString(", "));
         Assert.assertEquals("[col , col], [val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~col, ~z:x|$x.").getCompletion().makeString(", "));
         Assert.assertEquals("[val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.v").getCompletion().makeString(", "));
-        Assert.assertEquals("[sum , sum(], [count , count(]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.val:y|$y->").getCompletion().makeString(", "));
+        Assert.assertEquals("[sum , sum], [count , count]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->groupBy(~col, ~[z:x|$x.val:y|$y->").getCompletion().makeString(", "));
     }
 
 
@@ -144,8 +148,8 @@ public class TestCompleter
     @Test
     public void testJoin()
     {
-        Assert.assertEquals("[a::A , >{a::A.]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->join(#>").getCompletion().makeString(", "));
-        Assert.assertEquals("[t , t}#]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->join(#>{a::A.").getCompletion().makeString(", "));
+        Assert.assertEquals("[a::A , >{a::A]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->join(#>").getCompletion().makeString(", "));
+        Assert.assertEquals("[t , t}]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->join(#>{a::A.").getCompletion().makeString(", "));
         Assert.assertEquals("[JoinKind , JoinKind.]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->join(#>{a::A.t}#, ").getCompletion().makeString(", "));
         Assert.assertEquals("[LEFT , LEFT], [INNER , INNER]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.").getCompletion().makeString(", "));
         Assert.assertEquals("[col , col], [val , val]", new Completer("###Relational\nDatabase a::A(Table t(col VARCHAR(200), val INT))").complete("#>{a::A.t}#->join(#>{a::A.t}#, JoinKind.INNER, {a,b|$a.").getCompletion().makeString(", "));

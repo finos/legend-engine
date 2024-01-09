@@ -92,7 +92,12 @@ public class ParserFixer
 
     public static String fixTilde(String value)
     {
-        return fixIncomplete(value, "~");
+        String tail = value.substring(value.lastIndexOf("~") + 1).trim();
+        if (tail.isEmpty() || tail.equals("["))
+        {
+            value = value + magicToken;
+        }
+        return value;
     }
 
     public static String fixPipe(String value)

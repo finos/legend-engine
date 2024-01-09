@@ -33,6 +33,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionTy
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 
+import java.util.List;
+
 import static org.finos.legend.engine.repl.autocomplete.handlers.ExtendHandler.updateColSpecs;
 import static org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler.useColSpecToProposeColumn;
 
@@ -49,7 +51,16 @@ public class GroupByHandler extends FunctionHandler
     {
         if (currentFunc.parameters.size() == 2)
         {
-            return useColSpecToProposeColumn((ColSpec) ((ClassInstance) currentFunc.parameters.get(1)).value, leftType);
+            Object pivot = ((ClassInstance) currentFunc.parameters.get(1)).value;
+            if (pivot instanceof ColSpec)
+            {
+                return useColSpecToProposeColumn((ColSpec) pivot, leftType);
+            }
+            else if (pivot instanceof ColSpecArray)
+            {
+                List<ColSpec> colSpecList = ((ColSpecArray) pivot).colSpecs;
+                return useColSpecToProposeColumn(colSpecList.get(colSpecList.size() - 1), leftType);
+            }
         }
         return Lists.mutable.empty();
     }
