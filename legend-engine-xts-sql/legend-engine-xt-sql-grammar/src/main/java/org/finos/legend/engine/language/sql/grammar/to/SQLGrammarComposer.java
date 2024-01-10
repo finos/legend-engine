@@ -93,7 +93,7 @@ public class SQLGrammarComposer
             @Override
             public String visit(AllColumns val)
             {
-                return "*";
+                return val.prefix != null ? val.prefix + ".*" : "*";
             }
 
             @Override
