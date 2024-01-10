@@ -71,17 +71,12 @@ function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SelectSQLQ
 
 function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SQLQuery[1],m:Mapping[0..1], runtime:Runtime[1],store:Database[0..1],exeCtx:meta::pure::runtime::ExecutionContext[1],params:	meta::relational::runtime::PostProcessorParameter[*]):PostProcessorResult[1]
 {
-   if($sql->instanceOf(SelectSQLQueryWithCommonTableExpressions),
-   |
-    tableMapperPostProcessor($sql->cast(@SelectSQLQueryWithCommonTableExpressions), $m, $runtime, $store, $exeCtx, $params),
-   |
-    let tableMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);
-    let schemaMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
+   let tableMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::TableNameMapper))->cast(@meta::pure::alloy::connections::TableNameMapper);
+   let schemaMappers = $params->filter(p | $p->instanceOf(meta::pure::alloy::connections::SchemaNameMapper))->cast(@meta::pure::alloy::connections::SchemaNameMapper);
 
-    let processedMappers = meta::pure::alloy::connections::postProcessTablesFn($tableMappers, $schemaMappers);
-    let result = meta::relational::postProcessor::transform($sql, $processedMappers);
-    ^meta::relational::mapping::PostProcessorResult(query = $result->cast(@SQLQuery));
-   )
+   let processedMappers = meta::pure::alloy::connections::postProcessTablesFn($tableMappers, $schemaMappers);
+   let result = meta::relational::postProcessor::transform($sql, $processedMappers);
+   ^meta::relational::mapping::PostProcessorResult(query = $result->cast(@SQLQuery));
 }
 
 function meta::pure::alloy::connections::postProcessTablesFn(tableNameMappers: meta::pure::alloy::connections::TableNameMapper[*], schemaNameMappers: meta::pure::alloy::connections::SchemaNameMapper[*]):meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>[1] {

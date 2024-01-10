@@ -66,7 +66,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::traverse(q
    $q->map(r| $r->match([
                      v:VarSetPlaceHolder[1]  | pair($v.varName,$v.varName),
                      v:ViewSelectSQLQuery[1] | $v.selectSQLQuery->traverse(),
-                     sc:SelectCommonTableExpression[1] | $sc.selectSQLQuery->traverse(),
+                     c:CommonTableExpression[1] | $c.sqlQuery->traverse(),
                      s:SelectSQLQuery[1]     | let dataProcessed = $s.data->toOne()->traverse();
                                                let cols          = $s.columns;
                                                let sPairs = $dataProcessed->concatenate($cols->traverse())->concatenate($s.filteringOperation->traverse());

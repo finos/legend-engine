@@ -126,6 +126,9 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
                      |$f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1], Integer[1]->RelationalOperationElement[1]}>)->eval($r, $transformed->keyValues()->size()));
          let toReturn = $tR->match([
                       v:VarSetPlaceHolder[1] | pair($v, $transformed),
+                      
+                      c:CommonTableExpression[1] | let transformedSql= $c.sqlQuery->transform($f, $transformed);
+                                                   pair(^$c(sqlQuery=$transformedSql.first->cast(@SQLQuery)), $transformedSql.second);,
 
                       s:SelectSQLQuery[1] | let transformedData = $s.data->toOne()->transform($f, $transformed);
                                             let transformedColumns = $s.columns->fold({c, agg |
@@ -156,7 +159,18 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
                                                             orderBy=$transformedOrderBy.first.values
                                                           );
                                             let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
-                                            pair($newSWithLeftSideModified, $transformedOrderBy.second);,
+                                            if($newSWithLeftSideModified->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+                                            |
+                                             let selectWithCte = $newSWithLeftSideModified->cast(@SelectSQLQueryWithCommonTableExpressions);
+                                             let transformedCommonTableExpressions = $selectWithCte.commonTableExpressions->fold({cte, agg |
+                                               let cteTransform = $cte->transform($f, $agg.second);
+                                               pair(list($agg.first.values->add($cteTransform.first->cast(@CommonTableExpression))), $cteTransform.second);
+                                             }, pair(^List<CommonTableExpression>(), $transformedOrderBy.second));
+                                             let newSelectWithCte = ^$selectWithCte(commonTableExpressions = $transformedCommonTableExpressions.first.values);
+                                             pair($newSelectWithCte, $transformedCommonTableExpressions.second);,
+                                            |
+                                             pair($newSWithLeftSideModified, $transformedOrderBy.second);
+                                            );,
 
                       v:ViewSelectSQLQuery[1] | let transformedSql = $v.selectSQLQuery->transform($f, $transformed);
                                                 pair(^$v(selectSQLQuery=$transformedSql.first->cast(@SelectSQLQuery)), $transformedSql.second);,
@@ -276,6 +290,8 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
 {
    let tR = $f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1]->RelationalOperationElement[1]}>)->eval($r);
    let toReturn = $tR->match([
+                      c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->transformNonCached($f)->cast(@SQLQuery)),
+
                       s:SelectSQLQuery[1] |
                                             let newS = ^$s( data= if($s.data->isEmpty(), | [], |$s.data->toOne()->transformNonCached([], $f)->cast(@RootJoinTreeNode)),
                                                             columns=$s.columns->map(c|$c->transformNonCached($f)),
@@ -285,7 +301,13 @@ function meta::relational::postProcessor::transformNonCached(r:RelationalOperati
                                                             orderBy=$s.orderBy->map(o|^$o(column=$o.column->transformNonCached($f)))
                                                           );
                                             let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
-                                            $newSWithLeftSideModified;,
+                                            if($newSWithLeftSideModified->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+                                            |
+                                             let selectWithCte = $newSWithLeftSideModified->cast(@SelectSQLQueryWithCommonTableExpressions);
+                                             ^$selectWithCte(commonTableExpressions = $selectWithCte.commonTableExpressions->map(cte | $cte->transformNonCached($f)->cast(@CommonTableExpression)));,
+                                            |
+                                             $newSWithLeftSideModified;
+                                            );,                                           
 
                       v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->transformNonCached($f)->cast(@SelectSQLQuery)),
 
@@ -325,6 +347,7 @@ function meta::relational::postProcessor::fixTables(relationalOperationElement:R
 {
    $relationalOperationElement->match([
                     u:Union[1] | ^$u(queries = $u.queries->map(q|$q->fixTables($oldToNewPairs))->cast(@SelectSQLQuery)),
+                    c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->fixTables($oldToNewPairs)->cast(@SQLQuery)),
                     s:SelectSQLQuery[1] | let newS = ^$s(
                                                          data=$s.data->map(x | $x->replaceTablesInJoin($oldToNewPairs)->cast(@RootJoinTreeNode)),
                                                          columns = $s.columns->map(c|$c->match([a:Alias[1] | $a.relationalElement->match([
@@ -335,7 +358,15 @@ function meta::relational::postProcessor::fixTables(relationalOperationElement:R
                                                                               ),
                                                          filteringOperation= $s.filteringOperation->map(f | $f->fixTables($oldToNewPairs))
                                                       );
-                                          if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);,
+                                          let newSWithLeftSideModified = if(!$newS.leftSideOfFilter->isEmpty(),| ^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),|$newS);
+                                          if($newSWithLeftSideModified->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+                                            |
+                                             let selectWithCte = $newSWithLeftSideModified->cast(@SelectSQLQueryWithCommonTableExpressions);
+                                             ^$selectWithCte(commonTableExpressions = $selectWithCte.commonTableExpressions->map(cte | $cte->fixTables($oldToNewPairs)->cast(@CommonTableExpression)));,
+                                            |
+                                             $newSWithLeftSideModified;
+                                            );,
+
                     v:ViewSelectSQLQuery[1] | ^$v(selectSQLQuery=$v.selectSQLQuery->fixTables($oldToNewPairs)->cast(@SelectSQLQuery)),
                     a:Alias[1] | ^$a(relationalElement=$a.relationalElement->fixTables($oldToNewPairs)),
                     t:Table[1] | let found = $oldToNewPairs->filter(o|$o.first.name == $t.name && $o.first.schema == $t.schema);
