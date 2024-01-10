@@ -751,8 +751,6 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::generat
 
 function <<access.private>> meta::relational::graphFetch::executionPlan::buildBaseQueryForChild(setImpls: RelationalInstanceSetImplementation[*], pureToSqlState: State[1], mc: TemporalMilestoningContext[0..1], extensions: Extension[*], debug: DebugContext[1]):SelectWithCursor[1]
 {
-   let isQualified    = $propTree.property->instanceOf(QualifiedProperty);
-   let pureToSqlState = defaultState($mapping, $inScopeVars, $exeCtx, $extensions);
    let srcSetImpl = $setImpls->match([
       s:RootRelationalInstanceSetImplementation[1]     | $s,
       s:EmbeddedRelationalInstanceSetImplementation[1] | $s.setMappingOwner;
@@ -778,7 +776,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::buildBa
    );
 }
 
-function <<access.private>> meta::relational::graphFetch::executionPlan::generatePrimitivePropertyQuery(setImpls: RelationalInstanceSetImplementation[*], propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], mapping:Mapping[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], debug: DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
+function <<access.private>> meta::relational::graphFetch::executionPlan::generatePrimitivePropertyQuery(setImpls: RelationalInstanceSetImplementation[*], propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], mapping:Mapping[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], debug: DebugContext[1], exeCtx : ExecutionContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    let isQualified    = $propTree.property->instanceOf(QualifiedProperty);
    let pureToSqlState = defaultState($mapping, $inScopeVars);

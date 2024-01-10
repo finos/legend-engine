@@ -284,7 +284,11 @@ function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mappi
    ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$mapping, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
 }
 
-
+function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
+{
+  let map = if ($mapping->isEmpty(),|^Mapping(),|$mapping->toOne());
+  meta::relational::functions::pureToSqlQuery::defaultState($map,$inScopeVars, $exeCtx, $extensions);
+}
 
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
 {
