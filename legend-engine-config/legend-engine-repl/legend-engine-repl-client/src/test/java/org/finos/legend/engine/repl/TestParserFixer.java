@@ -83,6 +83,12 @@ public class TestParserFixer
     }
 
     @Test
+    public void testQuote()
+    {
+        Assert.assertEquals("$a->filter(a|$a.'w')", fixCode("$a->filter(a|$a.'w"));
+    }
+
+    @Test
     public void testSilentInCaseOfError()
     {
         // Too many closing )

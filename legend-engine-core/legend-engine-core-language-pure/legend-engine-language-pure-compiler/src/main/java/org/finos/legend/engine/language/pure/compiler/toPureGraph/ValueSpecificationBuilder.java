@@ -352,7 +352,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
         ProcessorSupport processorSupport = context.pureModel.getExecutionSupport().getProcessorSupport();
         if (colSpec.function1 == null)
         {
-            return wrapInstanceValue(buildColSpec(colSpec.name, colSpec.type == null ? null : context.pureModel.getGenericType(colSpec.type), context.pureModel, context.pureModel.getExecutionSupport().getProcessorSupport()), context.pureModel);
+            return wrapInstanceValue(buildColSpec(colSpec.name, colSpec.type == null ? null : context.pureModel.getGenericType(colSpec.type, colSpec.sourceInformation), context.pureModel, context.pureModel.getExecutionSupport().getProcessorSupport()), context.pureModel);
         }
         else if (colSpec.function2 == null)
         {

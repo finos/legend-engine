@@ -36,6 +36,8 @@ public class TestJLine3Parser
         Assert.assertEquals("''  *  0  *  #,>{},#,.,gh,(,", parse("#>{}#.gh("));
         Assert.assertEquals("''  *  0  *  #,>{},#,.,gh,(,ok,),", parse("#>{}#.gh(ok)"));
         Assert.assertEquals("''  *  0  *  #,>{},#,.,gh,(,ok,),->,", parse("#>{}#.gh(ok)->"));
+        Assert.assertEquals("''aaa a'  *  6  *  #,>{},#,.,'aaa a", parse("#>{}#.'aaa a"));
+        Assert.assertEquals("'f'  *  1  *  #,>{},#,.,'aaa a',->,f", parse("#>{}#.'aaa a'->f"));
         Assert.assertEquals("''  *  0  *  #,>{test::TestDatabase,.,TEST0},#,->,groupBy,(,~,[,", parse("#>{test::TestDatabase.TEST0}#->groupBy(~["));
     }
 

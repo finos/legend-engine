@@ -128,10 +128,23 @@ public class ParserFixer
     public static String fixParenthesis(String value)
     {
         MutableStack<Character> stack = Stacks.mutable.empty();
+        MutableStack<Boolean> quoteState = Stacks.mutable.empty();
         StringIterate.forEachChar(value, c ->
         {
             switch (c)
             {
+                case '\'':
+                    if (quoteState.isEmpty())
+                    {
+                        stack.push('\'');
+                        quoteState.push(true);
+                    }
+                    else
+                    {
+                        stack.pop();
+                        quoteState.pop();
+                    }
+                    break;
                 case '{':
                     stack.push('}');
                     break;

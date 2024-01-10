@@ -25,9 +25,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.repl.autocomplete.Completer;
 import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
-import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+
+import static org.finos.legend.engine.repl.autocomplete.Completer.proposeColumnNamesForEditColSpec;
 
 public class RenameHandler extends FunctionHandler
 {
@@ -40,17 +40,10 @@ public class RenameHandler extends FunctionHandler
     @Override
     public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel, Completer completer, ProcessingContext processingContext, ValueSpecification currentVS)
     {
-        if (currentFunc.parameters.size() == 2)
+        if (currentFunc.parameters.size() == 2 && currentFunc.parameters.get(1) instanceof ClassInstance)
         {
-            return useColSpecToProposeColumn((ColSpec) ((ClassInstance) currentFunc.parameters.get(1)).value, leftType);
+            return proposeColumnNamesForEditColSpec((ColSpec) ((ClassInstance) currentFunc.parameters.get(1)).value, leftType);
         }
         return Lists.mutable.empty();
-    }
-
-    public static MutableList<CompletionItem> useColSpecToProposeColumn(ColSpec colSpec, GenericType leftType)
-    {
-        RelationType<?> r = (RelationType<?>) leftType._typeArguments().getFirst()._rawType();
-        String typedColName = colSpec.name.replace(ParserFixer.magicToken, "");
-        return r._columns().select(c -> c._name().startsWith(typedColName)).collect(c -> c._name().contains(" ") ? "'" + c._name() + "'" : c._name()).collect(CompletionItem::new).toList();
     }
 }

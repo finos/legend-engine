@@ -243,22 +243,29 @@ public class Handlers
     private static TypeAndMultiplicity getTypeAndMultiplicity(MutableList<RelationType<?>> types, PureModel pureModel)
     {
         ProcessorSupport processorSupport = pureModel.getExecutionSupport().getProcessorSupport();
+        try
+        {
+            RelationType<?> relType =
+                    _RelationType.build(
+                            types.flatCollect(RelationTypeAccessor::_columns)
+                                    .collect(c -> _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport)),
+                            null,
+                            processorSupport
+                    );
 
-        RelationType<?> relType =
-                _RelationType.build(
-                        types.flatCollect(RelationTypeAccessor::_columns)
-                                .collect(c -> _Column.getColumnInstance(c._name(), false, null, _Column.getColumnType(c), null, processorSupport)),
-                        null,
-                        processorSupport
-                );
 
-        return res(
-                new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
-                        ._rawType(pureModel.getType(M3Paths.Relation))
-                        ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))._rawType(relType))),
-                "one",
-                pureModel
-        );
+            return res(
+                    new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))
+                            ._rawType(pureModel.getType(M3Paths.Relation))
+                            ._typeArguments(Lists.fixedSize.of(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, pureModel.getClass(M3Paths.GenericType))._rawType(relType))),
+                    "one",
+                    pureModel
+            );
+        }
+        catch (PureCompilationException e)
+        {
+            throw new EngineException(e.getMessage().replace("Compilation error at ??, ", ""), null, EngineErrorType.COMPILATION);
+        }
     }
 
     public static TypeAndMultiplicity JoinReturnInference(List<ValueSpecification> ps, PureModel pureModel)
@@ -357,9 +364,9 @@ public class Handlers
         });
 
         return Lists.mutable.with(
-                    vs,
-                    parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc))
-                );
+                vs,
+                parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc))
+        );
     };
 
     public static InstanceValue wrapInstanceValue(Any val, PureModel pureModel)
@@ -1089,8 +1096,8 @@ public class Handlers
         }, ps -> true)));
 
         register(grp(SelectColInference,
-                    h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true),
-                    h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true)
+                        h("meta::pure::functions::relation::select_Relation_1__ColSpec_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true),
+                        h("meta::pure::functions::relation::select_Relation_1__ColSpecArray_1__Relation_1_", true, ps -> getTypeAndMultiplicity(Lists.mutable.with((RelationType<?>) ps.get(1)._genericType()._typeArguments().getLast()._rawType()), pureModel), ps -> true)
                 )
         );
 

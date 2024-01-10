@@ -37,7 +37,10 @@ public class ExtendHandler extends FunctionHandler
     @Override
     public void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
     {
-        updateColSpecs(((ClassInstance) currentFunc.parameters.get(1)).value, leftType, processingContext, pureModel);
+        if (currentFunc.parameters.size() > 1 && currentFunc.parameters.get(1) instanceof ClassInstance)
+        {
+            updateColSpecs(((ClassInstance) currentFunc.parameters.get(1)).value, leftType, processingContext, pureModel);
+        }
     }
 
     public static void updateColSpecs(Object o, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)

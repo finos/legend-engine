@@ -40,17 +40,17 @@ import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
+import java.util.List;
 import java.util.Objects;
-
 
 public class Completer
 {
@@ -82,22 +82,34 @@ public class Completer
 
     public CompletionResult complete(String value)
     {
+        // We assume that the code we are editing is the:
+        //      - topExpression
+        //              (edit an Accessor, or find a functionName that would apply to a left parameter)
+        //              Examples:
+        //                  1->p[...]
+        //                  #>[...]
+        //      - a parameter of the topExpression if the topExpression is a function application
+        //              (We can propose parameters like the 2nd parameter is a JoinType, or propose a column name for a ColSpec parameter)
+        //              Examples:
+        //                  ->groupBy(~c[...]
+        //                  ->groupBy(~col,Joi[...]
+        //                  ->rename(~c[...]
+        //      - an element within a lambda, parameter (deep or not) of topExpression
+        //              The deep parameter need to have a Lambda processingContext resolved (variable bound to a type)
+        //              Examples:
+        //                  ->filter(x|$x.c[...]
+
         try
         {
             ValueSpecification vs = parseValueSpecification(ParserFixer.fixCode(value));
             ValueSpecification topExpression = findTopExpression(vs);
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
-            PureModel pureModel = compile();
+            PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
+            PureModel pureModel = Compiler.compile(pureModelContextData, null, null);;
             ProcessingContext processingContext = new ProcessingContext("");
 
-            CompletionResult mutable = processVS(topExpression, processingContext, currentExpression, pureModel);
-
-            if (mutable != null)
-            {
-                return mutable;
-            }
-            return new CompletionResult(Lists.mutable.empty());
+            return processValueSpecification(topExpression, currentExpression, pureModel, processingContext);
         }
         catch (EngineException e)
         {
@@ -105,58 +117,61 @@ public class Completer
         }
     }
 
-    public CompletionResult processVS(ValueSpecification topExpression, ProcessingContext processingContext, ValueSpecification currentExpression, PureModel pureModel)
+    public CompletionResult processValueSpecification(ValueSpecification topExpression, ValueSpecification currentExpression, PureModel pureModel, ProcessingContext processingContext)
     {
         if (topExpression instanceof ClassInstance)
         {
-            CompletionResult mutable = processClassInstance((ClassInstance) topExpression, compile());
-            if (mutable != null)
+            if (topExpression == currentExpression)
             {
-                return mutable;
+                return processClassInstance((ClassInstance) topExpression, pureModel);
             }
         }
         else if (topExpression instanceof AppliedFunction)
         {
             AppliedFunction currentFunc = (AppliedFunction) topExpression;
 
-            CompilationResult compilationResult = compileLeftSideAndExtractType(currentFunc, processingContext, pureModel);
-            GenericType leftType = compilationResult.getGenericType();
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification leftCompiledVS = currentFunc.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
+            GenericType leftType = leftCompiledVS._genericType();
             String currentlyTypeFunctionName = currentFunc.function.replace(ParserFixer.magicToken, "");
             FunctionHandler handler = handlers.get(currentFunc.function);
-            if (handler == null)
+            if (currentExpression == topExpression)
             {
-                return new CompletionResult(getFunctionCandidates(compilationResult, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
+                // The top function name is being written, propose candidates
+                return new CompletionResult(getFunctionCandidates(leftCompiledVS, pureModel, null).select(c -> c.startsWith(currentlyTypeFunctionName)).collect(c -> new CompletionItem(c, c)));
             }
-            else
+            else if (handler != null)
             {
+                // The function has been written, let's try to propose some parameters
                 MutableList<CompletionItem> proposed = handler.proposedParameters(currentFunc, leftType, pureModel, this, processingContext, currentExpression);
                 if (!proposed.isEmpty())
                 {
                     return new CompletionResult(proposed);
                 }
+                // No parameters are proposed, let's populate the processingContext to attempt to process the currentExpression with proper variable sets
+                // The current expression is deep within the parameters of the function (probably within a Lambda)
+                // The expression could be an AppliedProperty within an AppliedFunction, or an AppliedProperty etc...
                 handler.handleFunctionAppliedParameters(currentFunc, leftType, processingContext, pureModel);
+                if (currentExpression != topExpression)
+                {
+                    return processValueSpecification(currentExpression, currentExpression, pureModel, processingContext);
+                }
             }
-
-            if (currentExpression != null)
-            {
-                return processVS(currentExpression, processingContext, null, pureModel);
-            }
-            else
-            {
-                return new CompletionResult(Lists.mutable.empty());
-            }
+            return new CompletionResult(Lists.mutable.empty());
         }
         else if (topExpression instanceof AppliedProperty)
         {
-            AppliedProperty appliedProperty = (AppliedProperty) topExpression;
-            CompilationResult compilationResult1 = compileCodePartWithinLambdaWithOneParameter(appliedProperty.parameters.get(0), processingContext, pureModel);
-            String typedProperty = appliedProperty.property.replace(ParserFixer.magicToken, "");
-            return new CompletionResult(extractPropertiesOrColumnsFromType(compilationResult1).select(c -> c.startsWith(typedProperty)).collect(c -> new CompletionItem(c.contains(" ") ? "'" + c + "'" : c)));
+            if (topExpression == currentExpression)
+            {
+                AppliedProperty appliedProperty = (AppliedProperty) topExpression;
+                org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification leftCompiledVS = appliedProperty.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
+                String typedProperty = appliedProperty.property.replace(ParserFixer.magicToken, "");
+                return new CompletionResult(extractPropertiesOrColumnsFromType(leftCompiledVS).select(c -> c.startsWith(typedProperty)).collect(c -> new CompletionItem(c.contains(" ") ? "'" + c + "'" : c)));
+            }
         }
-        return null;
+        return new CompletionResult(Lists.mutable.empty());
     }
 
-    public static CompletionResult processClassInstance(ClassInstance topExpression, PureModel pureModel)
+    private CompletionResult processClassInstance(ClassInstance topExpression, PureModel pureModel)
     {
         Object islandExpr = topExpression.value;
         if (islandExpr instanceof RelationStoreAccessor)
@@ -184,8 +199,39 @@ public class Completer
             }
             return new CompletionResult(ListIterate.collect(elements, c -> new CompletionItem(org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c), ">{" + org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement.getUserPathForPackageableElement(c))).toList());
         }
-        return null;
+        return new CompletionResult(Lists.mutable.empty());
     }
+
+
+    //--------------------------------------------------------------------
+    // Helpers to propose Column names (used in propose parameters code)
+    //--------------------------------------------------------------------
+    public static MutableList<CompletionItem> proposeColumnNamesForEditColSpec(AppliedFunction currentFunc, GenericType leftType)
+    {
+        if (currentFunc.parameters.size() == 2 && currentFunc.parameters.get(1) instanceof ClassInstance)
+        {
+            Object pivot = ((ClassInstance) currentFunc.parameters.get(1)).value;
+            if (pivot instanceof ColSpec)
+            {
+                return proposeColumnNamesForEditColSpec((ColSpec) pivot, leftType);
+            }
+            else if (pivot instanceof ColSpecArray)
+            {
+                List<ColSpec> colSpecList = ((ColSpecArray) pivot).colSpecs;
+                return proposeColumnNamesForEditColSpec(colSpecList.get(colSpecList.size() - 1), leftType);
+            }
+        }
+        return Lists.mutable.empty();
+    }
+
+    public static MutableList<CompletionItem> proposeColumnNamesForEditColSpec(ColSpec colSpec, GenericType leftType)
+    {
+        RelationType<?> r = (RelationType<?>) leftType._typeArguments().getFirst()._rawType();
+        String typedColName = colSpec.name.replace(ParserFixer.magicToken, "");
+        return r._columns().select(c -> c._name().startsWith(typedColName)).collect(c -> c._name().contains(" ") ? "'" + c._name() + "'" : c._name()).collect(CompletionItem::new).toList();
+    }
+    //--------------------------------------------------------------------
+
 
     private static boolean nameMatch(PackageableElement c, String writtenPath)
     {
@@ -200,25 +246,18 @@ public class Completer
         }
     }
 
-    private static CompilationResult compileCodePartWithinLambdaWithOneParameter(ValueSpecification valueSpecification, ProcessingContext processingContext, PureModel pureModel)
-    {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification vs = valueSpecification.accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
-        return new CompilationResult(vs._genericType(), vs._multiplicity());
-    }
-
     private ValueSpecification parseValueSpecification(String value)
     {
-        String code = header +
-                value + "\n" +
-                "\n}";
+        String code = header + value + "\n" + "\n}";
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(code);
         Function func = (Function) ListIterate.select(pureModelContextData.getElements(), s -> s.getPath().equals("_pierre::func__Any_MANY_")).getFirst();
         return func.body.get(0);
     }
 
-    private MutableList<String> getFunctionCandidates(CompilationResult compilationResult, PureModel pureModel, String functionContext)
+    private MutableList<String> getFunctionCandidates(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification leftValueSpecification, PureModel pureModel, String functionContext)
     {
-        GenericType leftType = compilationResult.getGenericType();
+        GenericType leftType = leftValueSpecification._genericType();
+        Multiplicity multiplicity = leftValueSpecification._multiplicity();
         //PureModel pureModel = compilationResult.getPureModel();
         if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Relation), pureModel.getExecutionSupport().getProcessorSupport()))
         {
@@ -227,7 +266,7 @@ public class Completer
         }
         else if (leftType._rawType().getName().equals("String"))
         {
-            if (Multiplicity.isToOne(compilationResult.getMultiplicity()))
+            if (org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(multiplicity))
             {
                 return Lists.mutable.with("contains", "startsWith", "endsWith", "toLower", "toUpper", "lpad", "rpad", "parseInteger", "parseFloat");
             }
@@ -238,7 +277,7 @@ public class Completer
         }
         else if (leftType._rawType().getName().equals("Integer"))
         {
-            if (Multiplicity.isToOne(compilationResult.getMultiplicity()))
+            if (org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(multiplicity))
             {
                 return Lists.mutable.with("sqrt", "pow", "exp");
             }
@@ -258,21 +297,9 @@ public class Completer
         }
     }
 
-    private PureModel compile()
+    private MutableList<String> extractPropertiesOrColumnsFromType(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification leftValueSpecification)
     {
-        PureModelContextData newPureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-        return Compiler.compile(newPureModelContextData, null, null);
-    }
-
-    private CompilationResult compileLeftSideAndExtractType(AppliedFunction currentFunc, ProcessingContext processingContext, PureModel pureModel)
-    {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification vs = currentFunc.parameters.get(0).accept(new ValueSpecificationBuilder(new CompileContext.Builder(pureModel).build(), Lists.mutable.empty(), processingContext));
-        return new CompilationResult(vs._genericType(), vs._multiplicity());
-    }
-
-    private MutableList<String> extractPropertiesOrColumnsFromType(CompilationResult compilationResult)
-    {
-        GenericType leftType = compilationResult.getGenericType();
+        GenericType leftType = leftValueSpecification._genericType();
         GenericType genericType = leftType._typeArguments().getFirst();
         Type type;
         if (genericType != null)
@@ -350,15 +377,19 @@ public class Completer
             @Override
             public ValueSpecification visit(ClassInstance ci)
             {
-                if (ci.value instanceof ColSpec)
+                if (checkIfCurrent(ci.sourceInformation, _line, _column))
                 {
-                    ColSpec co = (ColSpec) ci.value;
-                    return Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this)).select(Objects::nonNull).getFirst();
-                }
-                else if (ci.value instanceof ColSpecArray)
-                {
-                    ColSpecArray coA = (ColSpecArray) ci.value;
-                    return ListIterate.flatCollect(coA.colSpecs, co -> Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this))).select(Objects::nonNull).getFirst();
+                    if (ci.value instanceof ColSpec)
+                    {
+                        ColSpec co = (ColSpec) ci.value;
+                        return Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this)).select(Objects::nonNull).getFirst();
+                    }
+                    else if (ci.value instanceof ColSpecArray)
+                    {
+                        ColSpecArray coA = (ColSpecArray) ci.value;
+                        return ListIterate.flatCollect(coA.colSpecs, co -> Lists.mutable.with(co.function1, co.function2).select(Objects::nonNull).collect(c -> c.accept(this))).select(Objects::nonNull).getFirst();
+                    }
+                    return ci;
                 }
                 return null;
             }

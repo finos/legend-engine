@@ -35,10 +35,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionTy
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 
-import java.util.List;
-
+import static org.finos.legend.engine.repl.autocomplete.Completer.proposeColumnNamesForEditColSpec;
 import static org.finos.legend.engine.repl.autocomplete.handlers.ExtendHandler.updateColSpecs;
-import static org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler.useColSpecToProposeColumn;
 
 public class GroupByHandler extends FunctionHandler
 {
@@ -51,31 +49,13 @@ public class GroupByHandler extends FunctionHandler
     @Override
     public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel, Completer completer, ProcessingContext processingContext, ValueSpecification currentVS)
     {
-        return updateColSpecToProposedColumn(currentFunc, leftType);
-    }
-
-    public static MutableList<CompletionItem> updateColSpecToProposedColumn(AppliedFunction currentFunc, GenericType leftType)
-    {
-        if (currentFunc.parameters.size() == 2)
-        {
-            Object pivot = ((ClassInstance) currentFunc.parameters.get(1)).value;
-            if (pivot instanceof ColSpec)
-            {
-                return useColSpecToProposeColumn((ColSpec) pivot, leftType);
-            }
-            else if (pivot instanceof ColSpecArray)
-            {
-                List<ColSpec> colSpecList = ((ColSpecArray) pivot).colSpecs;
-                return useColSpecToProposeColumn(colSpecList.get(colSpecList.size() - 1), leftType);
-            }
-        }
-        return Lists.mutable.empty();
+        return proposeColumnNamesForEditColSpec(currentFunc, leftType);
     }
 
     @Override
     public void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
     {
-        if (currentFunc.parameters.size() > 1)
+        if (currentFunc.parameters.size() > 2 && currentFunc.parameters.get(2) instanceof ClassInstance)
         {
             Object aggExpressions = ((ClassInstance) currentFunc.parameters.get(2)).value;
             updateColSpecs(aggExpressions, leftType, processingContext, pureModel);

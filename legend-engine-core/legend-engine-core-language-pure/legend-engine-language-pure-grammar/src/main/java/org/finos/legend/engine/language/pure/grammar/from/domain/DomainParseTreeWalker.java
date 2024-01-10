@@ -1402,7 +1402,7 @@ public class DomainParseTreeWalker
                     throw new EngineException("Can't find an embedded Pure parser for the type '" + openTag + "' available ones: [" + this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParsers().collect(p -> p.getType()).makeString(",") + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
                 }
                 String content = ListIterate.collect(ctx.dslExtension().dslExtensionContent(), RuleContext::getText).makeString("").trim();
-                return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions())));
+                return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions()), sourceInformation));
             }
         }
         else if (ctx.dslNavigationPath() != null)

@@ -43,7 +43,7 @@ public class JoinHandler extends FunctionHandler
     {
         if (currentFunc.parameters.size() == 2)
         {
-            return completer.processVS(currentFunc.parameters.get(1), processingContext, currentVS, pureModel).getCompletion();
+            return completer.processValueSpecification(currentFunc.parameters.get(1), currentVS, pureModel, processingContext).getCompletion();
         }
         if (currentFunc.parameters.size() == 3)
         {

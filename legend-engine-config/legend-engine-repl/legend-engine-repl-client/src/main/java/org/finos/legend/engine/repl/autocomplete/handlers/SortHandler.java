@@ -27,7 +27,7 @@ import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 
-import static org.finos.legend.engine.repl.autocomplete.handlers.RenameHandler.useColSpecToProposeColumn;
+import static org.finos.legend.engine.repl.autocomplete.Completer.proposeColumnNamesForEditColSpec;
 
 public class SortHandler extends FunctionHandler
 {
@@ -45,7 +45,7 @@ public class SortHandler extends FunctionHandler
             ValueSpecification v = currentFunc.parameters.get(1);
             if (v instanceof ClassInstance)
             {
-                return useColSpecToProposeColumn((ColSpec) ((ClassInstance)v).value, leftType);
+                return proposeColumnNamesForEditColSpec((ColSpec) ((ClassInstance)v).value, leftType);
             }
         }
         return Lists.mutable.empty();

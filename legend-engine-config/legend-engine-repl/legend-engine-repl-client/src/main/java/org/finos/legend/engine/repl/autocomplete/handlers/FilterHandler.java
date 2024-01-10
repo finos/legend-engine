@@ -34,7 +34,7 @@ public class FilterHandler extends FunctionHandler
     @Override
     public void handleFunctionAppliedParameters(AppliedFunction currentFunc, GenericType leftType, ProcessingContext processingContext, PureModel pureModel)
     {
-        if (currentFunc.parameters.size() > 1)
+        if (currentFunc.parameters.size() == 2 && currentFunc.parameters.get(1) instanceof Lambda)
         {
             // Specific inference for filter
             Lambda lambda = (Lambda) currentFunc.parameters.get(1);

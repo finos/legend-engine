@@ -24,6 +24,8 @@ import org.finos.legend.engine.repl.autocomplete.CompletionItem;
 import org.finos.legend.engine.repl.autocomplete.FunctionHandler;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
 
+import static org.finos.legend.engine.repl.autocomplete.Completer.proposeColumnNamesForEditColSpec;
+
 public class SelectHandler extends FunctionHandler
 {
     @Override
@@ -35,6 +37,6 @@ public class SelectHandler extends FunctionHandler
     @Override
     public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel, Completer completer, ProcessingContext processingContext, ValueSpecification currentVS)
     {
-        return GroupByHandler.updateColSpecToProposedColumn(currentFunc, leftType);
+        return proposeColumnNamesForEditColSpec(currentFunc, leftType);
     }
 }

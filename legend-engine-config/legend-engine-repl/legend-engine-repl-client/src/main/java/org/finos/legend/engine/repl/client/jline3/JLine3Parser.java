@@ -123,10 +123,16 @@ public class JLine3Parser implements Parser
         int currentWordIndex = -1;
         int currentWordCursor = -1;
         int wordCursor = -1;
+        boolean inQuote = false;
         for (int i = 0; i < content.length(); i++)
         {
             char c = content.charAt(i);
-            String token = shouldBreak(content, c, i);
+            inQuote = (c == '\'') != inQuote;
+            String token = null;
+            if (!inQuote)
+            {
+                token = shouldBreak(content, c, i);
+            }
             if (token != null)
             {
                 flush(buffer, result);
@@ -174,7 +180,7 @@ public class JLine3Parser implements Parser
         {
             return String.valueOf(c);
         }
-        if (i < content.length() + 1 && c == '-' && content.charAt(i + 1) == '>')
+        if (i < (content.length() - 1)  && c == '-' && content.charAt(i + 1) == '>')
         {
             return "->";
         }
