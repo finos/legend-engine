@@ -805,7 +805,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
   test(
-    'SELECT Integer, sum(1) AS "sum", count(*) AS "count", sum(Integer + Float) AS "exp", EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", MAX("StrictDate") + INTERVAL \'1 WEEK\' AS "dateAggMath" FROM service."/service/service1" GROUP BY Integer',
+    'SELECT ' + 
+    'Integer, ' + 
+    'sum(1) AS "sum", ' + 
+    'count(*) AS "count", ' + 
+    'sum(Integer + Float) AS "exp", ' + 
+    'EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", ' + 
+    'MAX("StrictDate") + INTERVAL \'1 WEEK\' AS "dateAggMath" ' +
+    'FROM service."/service/service1" GROUP BY Integer',
 
     {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -815,8 +822,35 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('count', row | $row, y | $y->count()),
           agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum()),
           agg('aggFunctionCall', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->year()),
-          agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))
+          agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateMixedExpressions():Boolean[1]
+{
+  test(
+    'SELECT ' + 
+    'Integer, ' + 
+    'sum(Integer) AS "sum", ' + 
+    'count(*) AS "count", ' +
+    'CASE WHEN sum(Integer) > sum(Float) THEN 1 ELSE 0 END AS "multiArg", ' + 
+    'CASE WHEN sum(Integer) < count(Float) THEN 1 ELSE 0 END AS "multiArg2" ' + 
+    'FROM service."/service/service1" GROUP BY Integer',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy(['Integer'], [
+          agg('sum', row | $row.getInteger('Integer'), y | $y->sum()),
+          agg('count', row | $row, y | $y->count()),
+          agg('sum(Integer)', row | $row.getInteger('Integer'), y | $y->sum()),
+          agg('sum(Float)', row | $row.getFloat('Float'), y | $y->sum()),
+          agg('count(Float)', row | $row.getFloat('Float'), y | $y->count())
+        ])->extend([
+          col(row:TDSRow[1] | if ($row.getInteger('sum(Integer)') > $row.getFloat('sum(Float)'), | 1, | 0), 'multiArg'),
+          col(row:TDSRow[1] | if ($row.getInteger('sum(Integer)') < $row.getInteger('count(Float)'), | 1, | 0), 'multiArg2')
         ])
+        ->restrict(['Integer', 'sum', 'count', 'multiArg', 'multiArg2'])
       }, false)
 }
 
