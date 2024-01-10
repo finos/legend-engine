@@ -240,12 +240,13 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
                               let dbConnectionStore = $oldRuntime.connectionStores->filter(c|$c.connection==$dbConn);
                               ^$oldRuntime(connectionStores = $dbConnectionStore);
                         );
-
         let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
-        let originalQuery = $sq.fe->toSQLQuery($m, $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
-        $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
-                      ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
-   );    
+            let originalQuery = $sq.fe->toSQLQuery($m->toOne(), $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m->toOne(), $sq.inScopeVars, $exeCtx, $extensions)),  $extensions);
+            $originalQuery->postProcessSQLQuery($store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $extensions)
+                          ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m->toOne(), $storeRuntime, $exeCtx, $debug, $extensions);
+      );
+
+ 
 }
 
 function meta::relational::contract::postProcessorsMatch(postProcessors1: meta::pure::alloy::connections::PostProcessor[*], postProcessors2: meta::pure::alloy::connections::PostProcessor[*]): Boolean[1]
