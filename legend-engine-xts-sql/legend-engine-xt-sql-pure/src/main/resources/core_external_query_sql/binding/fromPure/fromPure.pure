@@ -311,13 +311,13 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
   ^$final(aliases = $aliases);
 }
 
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAggregatesFromExpression(expression:meta::external::query::sql::metamodel::Expression[0..1]):meta::external::query::sql::metamodel::Expression[*]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractAggregatesFromExpression(expression:meta::external::query::sql::metamodel::Expression[0..1]):FunctionCall[*]
 {
 
   walk($expression,
     t | $t,
     f:FunctionCall[1] | if (isExpressionAggregate($f, false), | $f, | $f.arguments->map(a | $a->extractAggregatesFromExpression()))
-  )
+  )->cast(@FunctionCall);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::extractUsedColumnNames(expression:meta::external::query::sql::metamodel::Expression[*]):String[*]
@@ -493,48 +493,36 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     !extractNameFromExpression($h.expression, $context)->in($aggregateExpressionNames);
   ))->removeDuplicatesBy(c | $c->extractNameFromSingleColumn($context));
 
-  let aggregations = $allAggregateColumns->map(column |
-                                let name = extractNameFromSingleColumn($column, $context);
+  //for any aggregate where there is multiple aggregations used with different arguments, we split the aggregates to individual columns and then extend
+  let aggregateColumnExpresions = $allAggregateColumns->map(column |
+    let aggregateExpressions = extractAggregatesFromExpression($column.expression)->removeDuplicates();
+    pair($column, list($aggregateExpressions));
+  )->groupBy(x | $x.second.values->map(a | $a.arguments->first())->removeDuplicates()->size() > 1);
 
-                                let aggregateExpression = extractAggregatesFromExpression($column.expression);
+  let standardAggregations = $aggregateColumnExpresions->get(false).values->map(p | 
+    let column = $p.first;
+    let name = extractNameFromSingleColumn($column, $context);  
+    createAggregation($column, $name, $p.second.values->cast(@FunctionCall)->at(0), $context);
+  );
 
-                                let functionCalls = $aggregateExpression->match([
-                                  f:FunctionCall[1] | ensureAggregateFunction($f),
-                                  f:FunctionCall[1..*] |
-                                    // we can only support multiple aggs being used within a single expression if they use the case arguments
-                                    //e.g. case when sum(col) > 10 then max(col) else min(col) end
-                                    //to support more complex cases we need to extract the aggregates into separate columns
-                                    assertEquals(1, $f.arguments->removeDuplicates()->size(), 'unsupported aggregation');
+  let extractedAggregations = $aggregateColumnExpresions->get(true).values.second.values->removeDuplicates()->map(agg | 
+    createAggregation(^SingleColumn(expression = $agg), extractNameFromExpression($agg, $context), $agg, $context);
+  );
 
-                                    $f->map(fc | ensureAggregateFunction($fc));,
-                                  e:meta::external::query::sql::metamodel::Expression[*] | fail('invalid aggregate expression');
-                                ])->cast(@FunctionCall);
+  let aggExtensions = $aggregateColumnExpresions->get(true).values->map(p | 
+    let aggregateExpressions = $p.second.values;
+    let column = $p.first;
+    ^$column(expression = $p.first.expression->walk([
+      f:FunctionCall[1] |
+        if ($f->in($aggregateExpressions), | ^QualifiedNameReference(name = ^QualifiedName(parts = $f->extractNameFromExpression($context))), | $f);
+    ])->toOne());    
+  );  
 
-                                // we take the first as the map only cares about the argument and we ensure they are the same above
-                                let aggregationFunctionCall = $functionCalls->at(0);
-                                let processor = aggregateProcessor($aggregationFunctionCall.name);
-                                let adjusted = $processor.preProcess($column.expression, $aggregationFunctionCall);
+  let aggregations = $standardAggregations->concatenate($extractedAggregations);
 
-                                let mapExpression = processMapFunctionArgument($adjusted.map, $context);
-                                let mapReturnType = $mapExpression.genericType.rawType->toOne();
-                                let mapFunctionType = functionType('row', TDSRow, PureOne, $mapReturnType, ZeroOne);
-                                let mapLambda = lambda($mapFunctionType, $mapExpression);
+  let aggregationInstanceValues = iv($aggregations, ^GenericType(rawType = meta::pure::tds::AggregateValue, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Any)]));
 
-                                let aggLambda = processAggregationLambda($adjusted.aggregate, $mapReturnType, $context);
-                                let aggReturnType = $aggLambda->functionReturnType();
-
-                                let typeParameters = [^GenericType(rawType = $mapReturnType), $aggReturnType];
-
-                                let genericType = ^GenericType(rawType = meta::pure::tds::AggregateValue, typeArguments = $typeParameters);
-
-                                sfe(agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_, $genericType, $typeParameters, [
-                                  iv($name), iv($mapLambda), iv($aggLambda)
-                                ]);
-                              );
-
-                              let aggregationInstanceValues = iv($aggregations, ^GenericType(rawType = meta::pure::tds::AggregateValue, typeArguments = [^GenericType(rawType = Any), ^GenericType(rawType = Any)]));
-
-  if ($allGroupByColumns->isEmpty() && $aggregations->isEmpty(),
+  let groupByExpression = if ($allGroupByColumns->isEmpty() && $aggregations->isEmpty(),
                             | $rename,
                             | if ($allGroupByColumns->isNotEmpty() && $aggregations->isEmpty(),
                                 |
@@ -542,6 +530,30 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
                                   let restrict = processRestrict($allGroupByColumns, ^$context(expression = $rename));
                                   appendTdsFunc($restrict, distinct_TabularDataSet_1__TabularDataSet_1_, []);,
                                 | appendTdsFunc($rename, groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_, [list($allGroupByColumns), list($aggregationInstanceValues)])));
+
+  if ($aggExtensions->isNotEmpty(), | processExtend($aggExtensions, [], ^$context(expression = $groupByExpression)), | $groupByExpression);
+}
+
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::createAggregation(column:SingleColumn[1], name:String[1], aggregationFunctionCall:FunctionCall[1], context:SqlTransformContext[1]):SimpleFunctionExpression[1]
+{
+  let processor = aggregateProcessor($aggregationFunctionCall.name);
+  let adjusted = $processor.preProcess($column.expression, $aggregationFunctionCall);
+
+  let mapExpression = processMapFunctionArgument($adjusted.map, $context);
+  let mapReturnType = $mapExpression.genericType.rawType->toOne();
+  let mapFunctionType = functionType('row', TDSRow, PureOne, $mapReturnType, ZeroOne);
+  let mapLambda = lambda($mapFunctionType, $mapExpression);
+
+  let aggLambda = processAggregationLambda($adjusted.aggregate, $mapReturnType, $context);
+  let aggReturnType = $aggLambda->functionReturnType();
+
+  let typeParameters = [^GenericType(rawType = $mapReturnType), $aggReturnType];
+
+  let genericType = ^GenericType(rawType = meta::pure::tds::AggregateValue, typeArguments = $typeParameters);
+
+  sfe(agg_String_1__FunctionDefinition_1__FunctionDefinition_1__AggregateValue_1_, $genericType, $typeParameters, [
+    iv($name), iv($mapLambda), iv($aggLambda)
+  ]);  
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processAggregateFunctionCall(functionCall:FunctionCall[1]):FunctionCall[1]
@@ -640,11 +652,12 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
 }
 
 //We currently need to ensure that all the functions used in group by are in fact aggregate functions. e.g. select count(*), pi() would not currently translate well to Pure.
-function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(functionCall:FunctionCall[1]):FunctionCall[1]
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::ensureAggregateFunction(e:meta::external::query::sql::metamodel::Expression[1]):Boolean[1]
 {
+  assert($e->instanceOf(FunctionCall), 'unsupported aggregation');
+  let functionCall = $e->cast(@FunctionCall);
   let processor = functionProcessor($functionCall.name);
   assert($processor.isAggregate, | 'function ' + extractNameFromQualifiedName($functionCall.name, []) + ' is not currently supported as aggregate function');
-  $functionCall;
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processExtend(items: SelectItem[*], columnsToRealias:String[*], context: SqlTransformContext[1]):FunctionExpression[1]
