@@ -190,6 +190,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='string_agg(%s, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='char_length(%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpMatchPostgres('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='date_part(\'minute\', %s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
@@ -203,6 +204,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='date_part(\'second\', %s)')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='encode(digest(%s, \'sha1\'), \'hex\')')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='encode(digest(%s, \'sha256\'), \'hex\')')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
@@ -308,4 +311,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
   if ($dropSchemaSQL.schema.name == 'default', 
     |  [], 
     | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
+}
+
+function meta::relational::functions::sqlQueryToString::postgres::regexpMatchPostgres(query: String[1]): String[1]
+{
+   '%s ~ \'^' + $query + '$\''
 }
