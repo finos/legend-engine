@@ -213,7 +213,7 @@ public class Client
     {
         int e_start = e.getSourceInformation().startColumn;
         int e_end = e.getSourceInformation().endColumn;
-        if (e_start < line.length())
+        if (e_start <= line.length())
         {
             String beg = line.substring(0, e_start - 1);
             String mid = line.substring(e_start - 1, e_end);

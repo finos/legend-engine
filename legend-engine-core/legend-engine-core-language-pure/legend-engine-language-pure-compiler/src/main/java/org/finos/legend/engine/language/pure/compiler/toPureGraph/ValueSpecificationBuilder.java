@@ -431,7 +431,7 @@ public class ValueSpecificationBuilder implements ValueSpecificationVisitor<org.
     private ValueSpecification processRelationStoreAccessor(RelationStoreAccessor value)
     {
         String element = value.path.get(0);
-        Store store = context.pureModel.getStore(element);
+        Store store = context.pureModel.getStore(element, value.sourceInformation);
         return this.context.getCompilerExtensions().getExtraRelationStoreAccessorProcessors().stream()
                 .map(processor -> processor.value(value, store, this.context, this.processingContext))
                 .filter(Objects::nonNull)

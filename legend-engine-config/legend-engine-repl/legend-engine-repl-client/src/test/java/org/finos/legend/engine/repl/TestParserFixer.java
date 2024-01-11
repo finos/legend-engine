@@ -31,6 +31,7 @@ public class TestParserFixer
         Assert.assertEquals("1/3*MaGiCToKeN", fixCode("1/3*"));
         Assert.assertEquals("1+3/MaGiCToKeN", fixCode("1+3/"));
         Assert.assertEquals("1+(3/MaGiCToKeN)", fixCode("1+(3/"));
+        Assert.assertEquals("!MaGiCToKeN", fixCode("!"));
     }
 
     @Test

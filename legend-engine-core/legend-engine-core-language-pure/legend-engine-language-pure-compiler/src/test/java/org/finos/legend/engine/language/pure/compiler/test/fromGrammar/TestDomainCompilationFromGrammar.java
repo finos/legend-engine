@@ -2842,7 +2842,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
         }
         catch (Exception e)
         {
-            Assert.assertEquals("Error in 'my::func__Any_MANY_': Can't find store 'my::Store'", e.getMessage());
+            Assert.assertEquals("The store 'my::Store' can't be found.", e.getMessage());
         }
     }
 

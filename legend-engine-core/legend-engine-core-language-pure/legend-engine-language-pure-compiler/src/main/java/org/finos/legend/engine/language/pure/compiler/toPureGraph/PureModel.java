@@ -939,7 +939,7 @@ public class PureModel implements IPureModel
     public Store getStore(String fullPath, SourceInformation sourceInformation)
     {
         Store store = getStore_safe(fullPath);
-        Assert.assertTrue(store != null, () -> "Can't find store '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        Assert.assertTrue(store != null, () -> "The store '" + fullPath + "' can't be found.", sourceInformation, EngineErrorType.COMPILATION);
         return store;
     }
 

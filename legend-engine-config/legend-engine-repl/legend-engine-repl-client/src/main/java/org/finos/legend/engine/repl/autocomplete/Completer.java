@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -106,14 +107,19 @@ public class Completer
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
             PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = Compiler.compile(pureModelContextData, null, null);;
+            PureModel pureModel = Compiler.compile(pureModelContextData, null, null);
+
             ProcessingContext processingContext = new ProcessingContext("");
 
             return processValueSpecification(topExpression, currentExpression, pureModel, processingContext);
         }
         catch (EngineException e)
         {
-            return new CompletionResult(e);
+            if (!e.getMessage().contains(ParserFixer.magicToken))
+            {
+                return new CompletionResult(e);
+            }
+            return new CompletionResult(new EngineException("parsing error", new SourceInformation("", 6, 1, 6, value.length()), EngineErrorType.PARSER));
         }
     }
 
@@ -275,7 +281,7 @@ public class Completer
                 return Lists.mutable.with("count");
             }
         }
-        else if (leftType._rawType().getName().equals("Integer"))
+        else if (org.finos.legend.pure.m3.navigation.type.Type.subTypeOf(leftType._rawType(), pureModel.getType(M3Paths.Number), pureModel.getExecutionSupport().getProcessorSupport()))
         {
             if (org.finos.legend.pure.m3.navigation.multiplicity.Multiplicity.isToOne(multiplicity))
             {
@@ -283,7 +289,7 @@ public class Completer
             }
             else
             {
-                return Lists.mutable.with("sum", "count");
+                return Lists.mutable.with("sum", "mean", "average", "min", "max", "count", "percentile", "variancePopulation", "varianceSample", "stdDevPopulation", "stdDevSample");
             }
         }
         else if (leftType._rawType().getName().equals("ColSpec"))

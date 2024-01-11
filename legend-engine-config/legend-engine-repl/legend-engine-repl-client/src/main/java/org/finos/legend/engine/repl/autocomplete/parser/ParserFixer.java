@@ -30,6 +30,7 @@ public class ParserFixer
         value = fixMinus(value);
         value = fixMul(value);
         value = fixDiv(value);
+        value = fixExclamation(value);
         value = fixColon(value);
         value = fixDot(value);
         value = fixPipe(value);
@@ -88,6 +89,11 @@ public class ParserFixer
     public static String fixDiv(String value)
     {
         return fixIncomplete(value, "/");
+    }
+
+    public static String fixExclamation(String value)
+    {
+        return fixIncomplete(value, "!");
     }
 
     public static String fixTilde(String value)
