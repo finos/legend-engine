@@ -495,9 +495,10 @@ public class DomainParseTreeWalker
     {
         DomainParserGrammar.IdentifierContext functionTestNameCtx = simpleFunctionTestContext.identifier(1);
         String functionName = PureGrammarParserUtility.fromIdentifier(functionTestNameCtx);
-        if (!PureGrammarParserUtility.fromIdentifier(functionCtx.qualifiedName().identifier()).equals(functionName))
+        String userTestFunctionName = PureGrammarParserUtility.fromIdentifier(functionCtx.qualifiedName().identifier());
+        if (!userTestFunctionName.equals(functionName))
         {
-            throw new EngineException("Function name in test '" + functionName + "' does not match function name 'functionName'", walkerSourceInformation.getSourceInformation(simpleFunctionTestContext.identifier(1)), EngineErrorType.PARSER);
+            throw new EngineException("Function name in test '" + functionName + "' does not match function name '" + userTestFunctionName + "'", walkerSourceInformation.getSourceInformation(simpleFunctionTestContext.identifier(1)), EngineErrorType.PARSER);
         }
         FunctionTest functionTest = new FunctionTest();
         functionTest.id = PureGrammarParserUtility.fromIdentifier(simpleFunctionTestContext.identifier(0));

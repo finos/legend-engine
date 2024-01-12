@@ -175,7 +175,7 @@ public class TestGrammarParser
                 "{\n" +
                 "  myTest | SimpleFunctionMisMatch() => 'Hello World!';\n" +
                 "}",
-                "PARSER error at [6:12-33]: Function name in test 'SimpleFunctionMisMatch' does not match function name 'functionName'"
+                "PARSER error at [6:12-33]: Function name in test 'SimpleFunctionMisMatch' does not match function name 'SimpleFunction'"
                 );
     }
 
