@@ -58,6 +58,7 @@ function meta::relational::postProcessor::processRelationalOperationForNonExecut
                     ta : TableAliasColumn[1] | $ta,
                     va : VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->processRelationalOperationForNonExecutable($extensions))),
                     d : DynaFunction[1] | ^$d(parameters=$d.parameters->map(p | $p->processRelationalOperationForNonExecutable($extensions))),
+                    c : CommonTableExpressionReference[1] | $c,
                     l : Literal[1] | $l,
                     ll : LiteralList[1] | $ll,
                     rel: RelationalOperationElement[1] | $rel

@@ -299,7 +299,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::defau
 ): String[1]
 {
    $ctes->map(cte |
-     $cte.name + ' (' + $sgc.dbConfig.selectSQLQueryProcessor($cte->cast(@SelectCommonTableExpression).selectSQLQuery->cast(@SelectSQLQuery), $sgc, $isSubSelect) + ')'
+     $cte.name + ' AS (' + $sgc.dbConfig.selectSQLQueryProcessor($cte->cast(@SelectCommonTableExpression).selectSQLQuery->cast(@SelectSQLQuery), $sgc, $isSubSelect) + ')'
    )->joinStrings(',\n') + '\n';
 }
 

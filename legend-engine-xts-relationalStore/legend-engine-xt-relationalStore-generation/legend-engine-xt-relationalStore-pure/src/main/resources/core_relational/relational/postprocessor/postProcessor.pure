@@ -126,6 +126,8 @@ function meta::relational::postProcessor::transform(r:RelationalOperationElement
                      |$f->cast(@meta::pure::metamodel::function::Function<{RelationalOperationElement[1], Integer[1]->RelationalOperationElement[1]}>)->eval($r, $transformed->keyValues()->size()));
          let toReturn = $tR->match([
                       v:VarSetPlaceHolder[1] | pair($v, $transformed),
+
+                      c:CommonTableExpressionReference[1] | pair($c, $transformed),
                       
                       c:CommonTableExpression[1] | let transformedSql= $c.sqlQuery->transform($f, $transformed);
                                                    pair(^$c(sqlQuery=$transformedSql.first->cast(@SQLQuery)), $transformedSql.second);,
@@ -347,6 +349,7 @@ function meta::relational::postProcessor::fixTables(relationalOperationElement:R
 {
    $relationalOperationElement->match([
                     u:Union[1] | ^$u(queries = $u.queries->map(q|$q->fixTables($oldToNewPairs))->cast(@SelectSQLQuery)),
+                    c:CommonTableExpressionReference[1] | $c,
                     c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->fixTables($oldToNewPairs)->cast(@SQLQuery)),
                     s:SelectSQLQuery[1] | let newS = ^$s(
                                                          data=$s.data->map(x | $x->replaceTablesInJoin($oldToNewPairs)->cast(@RootJoinTreeNode)),

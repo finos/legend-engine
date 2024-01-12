@@ -106,6 +106,7 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
 {
     $e->match([     v:VarSetPlaceHolder[1] | $v,
                     pl:VarPlaceHolder[1]|$pl,
+                    c:CommonTableExpressionReference[1] | $c,
                     c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SQLQuery)),
                     s:SelectSQLQuery[1] | let rootTable = $s.data.alias;
                                           let sourceFilterOp = $s.filteringOperation->map(f|$f->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions));
