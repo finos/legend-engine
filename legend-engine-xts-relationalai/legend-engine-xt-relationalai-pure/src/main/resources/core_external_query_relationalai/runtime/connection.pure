@@ -1,3 +1,4 @@
+import meta::pure::mapping::*;
 import meta::rel::runtime::*;
 import meta::core::runtime::*;
 
@@ -16,7 +17,7 @@ function meta::rel::runtime::TestConnection(element: Any[1]): ConnectionStore[1]
   TestConnection($element, []);
 }
 
-function meta::rel::runtime::query(connection: ConnectionStore[1], query: FunctionDefinition<{->Any[*]}>[1]): Any[*] {
+function meta::rel::runtime::query(connection: ConnectionStore[1], query: FunctionDefinition<{->Any[*]}>[1]): Activity[*] {
   let schema = $connection.element->cast(@meta::rel::mapping::frontend::RAISchema);
 
   let runtime = ^meta::core::runtime::Runtime(connectionStores=$connection);
@@ -28,5 +29,6 @@ function meta::rel::runtime::query(connection: ConnectionStore[1], query: Functi
     meta::rel::extension::defaultRAIExtension()
   );
 
-  $result.values;
+  // Function `execute()` does not populate `values` so just return the activity. 
+  $result.activities;
 }

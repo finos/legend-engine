@@ -1,6 +1,6 @@
-import meta::rel::metamodel::*;
 import meta::rel::lib::*;
-import meta::rel::metamodel::render::*;
+import meta::rel::metamodel::*;
+import meta::rel::metamodel::render::expr::*;
 import meta::rel::utils::*;
 
 function meta::rel::lib::booleanTrue(): Expr[1] {
@@ -41,19 +41,19 @@ function meta::rel::lib::plus(left: Expr[1], right: Expr[1]): Expr[1] {
 
 function meta::rel::lib::plus(exprs: Expr[*]): Expr[1] {
   $exprs
-    ->stringify(elem | $elem->render(), ' + ')
+    ->stringify(elem | $elem->renderExpr(), ' + ')
     ->fragment();
 }
 
 function meta::rel::lib::times(exprs: Expr[*]): Expr[1] {
   $exprs
-    ->stringify(elem | $elem->render(), ' * ')
+    ->stringify(elem | $elem->renderExpr(), ' * ')
     ->fragment();
 }
 
 function meta::rel::lib::minus(exprs: Expr[*]): Expr[1] {
   $exprs
-    ->stringify(elem | $elem->render(), ' - ')
+    ->stringify(elem | $elem->renderExpr(), ' - ')
     ->fragment();
 }
 
@@ -67,29 +67,29 @@ function meta::rel::lib::concat(exprs: Expr[*]): Expr[1] {
         ->fold({expr, accum | 
           rel('concat')->appl([$accum, $expr]);
         }, $init)
-        ->group();
+        ->parenthesise();
     }
   )  
 }
 
 function meta::rel::lib::divide(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s / %s', [$left->render(), $right->render()]));
+  fragment(format('%s / %s', [$left->renderExpr(), $right->renderExpr()]));
 }
 
 function meta::rel::lib::greaterThan(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s > %s', [$left->render(), $right->render()]))
+  fragment(format('%s > %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
 function meta::rel::lib::greaterThanEqual(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s >= %s', [$left->render(), $right->render()]))
+  fragment(format('%s >= %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
 function meta::rel::lib::lessThan(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s < %s', [$left->render(), $right->render()]))
+  fragment(format('%s < %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
 function meta::rel::lib::lessThanEqual(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s <= %s', [$left->render(), $right->render()]))
+  fragment(format('%s <= %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
 function meta::rel::lib::string(expr: Expr[1]): Expr[1] {
