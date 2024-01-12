@@ -70,10 +70,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     {
         boolean isAuditingFieldPK = doesDatasetContainsAnyPK(mainSchemaFields);
         appendOnly.auditing().accept(new EnrichSchemaWithAuditing(mainSchemaFields, isAuditingFieldPK));
-        if (appendOnly.digestField().isPresent())
-        {
-            addDigestField(mainSchemaFields, appendOnly.digestField().get());
-        }
+        appendOnly.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         removeDataSplitField(appendOnly.dataSplitField());
         return mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.addAllFields(mainSchemaFields).build()).build();
     }
@@ -138,11 +135,7 @@ public class DeriveMainDatasetSchemaFromStaging implements IngestModeVisitor<Dat
     @Override
     public Dataset visitBulkLoad(BulkLoadAbstract bulkLoad)
     {
-        Optional<String> digestField = bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
-        if (digestField.isPresent())
-        {
-            addDigestField(mainSchemaFields, digestField.get());
-        }
+        bulkLoad.digestGenStrategy().accept(IngestModeVisitors.EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(digest -> addDigestField(mainSchemaFields, digest));
         Field batchIdField = Field.builder()
                 .name(bulkLoad.batchIdField())
                 .type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty()))

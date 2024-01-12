@@ -28,7 +28,6 @@ public class TestMongoDBConnectionCompiler extends TestCompilationFromGrammar.Te
                 "MongoDBConnection test::mongodb::connection" +
                 "{\n" +
                 "  database: legend_db;\n" +
-                "  store: mongo::test::db;\n" +
                 "  serverURLs: [localhost:27071];\n" +
                 "  authentication: # UserPassword {\n" +
                 "    username: 'mongo_ro';\n" +
@@ -47,7 +46,7 @@ public class TestMongoDBConnectionCompiler extends TestCompilationFromGrammar.Te
     @Override
     protected String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [16:1-18:1]: Duplicated element 'test::mongodb::connection'";
+        return "COMPILATION error at [15:1-17:1]: Duplicated element 'test::mongodb::connection'";
     }
 
     @Test
@@ -60,7 +59,6 @@ public class TestMongoDBConnectionCompiler extends TestCompilationFromGrammar.Te
                 "MongoDBConnection test::testConnection\n" +
                 "{\n" +
                 "  database: legend_db;\n" +
-                "  store: meta::external::store::mongodb::showcase::store::PersonDatabase;\n" +
                 "  serverURLs: [localhost:27071];\n" +
                 "  authentication: # UserPassword {\n" +
                 "    username: 'mongo_ro';\n" +

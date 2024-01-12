@@ -29,6 +29,7 @@ Class <<typemodifiers.abstract>> meta::pure::router::metamodel::ExtendedRoutedVa
 // =========================================================================================
 
 ###Pure
+import meta::pure::metamodel::relation::*;
 import meta::pure::extension::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
@@ -42,6 +43,12 @@ Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
    processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1])
    {
      $this.processClass->eval($c, $i, $state, $executionContext, $debug)
+   }: RoutingState[1];
+
+   processRelationStoreAccessor : Function<{RelationStoreAccessor<Any>[1], InstanceValue[1], RoutingState[1], ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[0..1];
+   processRelationStoreAccessor(c:RelationStoreAccessor<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1])
+   {
+     $this.processRelationStoreAccessor->toOne()->eval($c, $i, $state, $executionContext, $debug)
    }: RoutingState[1];
 
    // Process Property
@@ -81,6 +88,7 @@ function meta::pure::router::routing::toString(evs:ExtendedRoutedValueSpecificat
 {
   $evs->match([
       sc:StoreMappingRoutedValueSpecification[1]  | '['+$sc.id+' '+if($sc.propertyMapping->isEmpty(),|'',|'@'+$sc.propertyMapping->map(p|$p.property.name->toOne()+'('+$p.sourceSetImplementationId+'->'+$p.targetSetImplementationId+')')->joinStrings(',')+'@ ')+$sc.sets.id->joinStrings(', ')+'/'+$sc.value->asString($pref)+']',
+      s:StoreRoutedValueSpecification[1]         | '['+$s.id+' '+$s.value->asString($pref)+']',
       p:PlatformRoutedValueSpecification[1]       | '['+$p.id+' /'+$p.value->asString($pref)+']',
       e:ExternalFormatRoutedValueSpecification[1] | '['+$e.id+' /'+$e.value->asString($pref)+']'
   ]);

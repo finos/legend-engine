@@ -60,7 +60,7 @@ public class TestRelationalConnectionGrammarParser extends TestGrammarParser.Tes
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
                 "{\n" +
-                "}\n\n", "PARSER error at [2:1-4:1]: Field 'store' is required");
+                "}\n\n", "PARSER error at [2:1-4:1]: Field 'type' is required");
         test("###Connection\n" +
                 "RelationalDatabaseConnection meta::mySimpleConnection\n" +
                 "{\n" +

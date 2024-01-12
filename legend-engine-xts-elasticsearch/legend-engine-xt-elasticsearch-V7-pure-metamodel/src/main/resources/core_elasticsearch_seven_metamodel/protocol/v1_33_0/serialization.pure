@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import meta::external::store::elasticsearch::v7::metamodel::tds::*;
+import meta::external::store::elasticsearch::v7::metamodel::tds::*;
 import meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::*;
 import meta::json::*;
 import meta::pure::functions::io::http::*;
@@ -109,6 +110,11 @@ function meta::external::store::elasticsearch::v7::protocol::v1_33_0::executionP
     ),
     agg: AggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::AggregateResultPath(
       _type = 'aggregateResultPath',
+      fieldPath = $agg.fieldPath,
+      fieldToAggregate = $agg.fieldToAggregate->map(x | $x->meta::external::store::elasticsearch::v7::protocol::v1_33_0::executionPlan::tds::transformResultPath($extensions))
+    ),
+    agg: DocCountAggregateResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::DocCountAggregateResultPath(
+      _type = 'docCountAggregateResultPath',
       fieldPath = $agg.fieldPath
     ),
     id: _IDResultPath[1] | ^meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::_IDResultPath(
@@ -180,6 +186,11 @@ Class meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::DocValue
 }
 
 Class meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::ResultPath
+{
+  fieldToAggregate: meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::ResultPath[1];
+}
+
+Class meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::DocCountAggregateResultPath extends meta::external::store::elasticsearch::v7::protocol::v1_33_0::tds::ResultPath
 {
 
 }

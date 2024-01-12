@@ -20,7 +20,9 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.h2.tools.SimpleResultSet;
 import org.h2.value.Value;
+import org.h2.value.ValueArray;
 import org.h2.value.ValueBoolean;
 import org.h2.value.ValueDouble;
 import org.h2.value.ValueFloat;
@@ -29,9 +31,15 @@ import org.h2.value.ValueLong;
 import org.h2.value.ValueNull;
 import org.h2.value.ValueString;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -157,5 +165,160 @@ public class LegendH2Extensions_1_4_200
         int readjustedPart = part - 1;
 
         return parts.length > readjustedPart ? parts[readjustedPart] : null;
+    }
+
+
+    private static HashSet<Object> extractProperty(HashSet<Object> resultSet, Object pathToExtract)
+    {
+        HashSet<Object> res = new HashSet<>();
+        if (pathToExtract instanceof String)
+        {
+            String property = (String) pathToExtract;
+            if (property.equals("*"))
+            {
+                for (Object r: resultSet)
+                {
+                    if (!(r instanceof Iterable))
+                    {
+                        continue;
+                    }
+                    for (Object o : (Iterable<?>) r)
+                    {
+                        res.add(o);
+                    }
+                }
+            }
+            else
+            {
+                for (Object r: resultSet)
+                {
+                    try
+                    {
+                        Object o = ((HashMap)(r)).get(property);
+                        if (o != null)
+                        {
+                            res.add(o);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        e.printStackTrace(); // don't stop execution
+                    }
+                }
+            }
+        }
+        else
+        {
+            int index = (int) pathToExtract;
+            for (Object r: resultSet)
+            {
+                try
+                {
+                    res.add(((ArrayList)(r)).get(index));
+                }
+                catch (Exception e)
+                {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        return res;
+    }
+
+    public static ResultSet legend_h2_extension_flatten_array(Connection conn, String tableName, String toFlattenColumnName, ValueArray jsonPaths)
+    {
+        try
+        {
+            String sql = String.format("select distinct %s as flat from %s", toFlattenColumnName, tableName);
+            ResultSet resultSet = conn.createStatement().executeQuery(sql);
+            HashSet<Object> toFlatten = new HashSet<>();
+            while (resultSet.next())
+            {
+                String json = resultSet.getString("flat");
+                toFlatten.add(OBJECT_MAPPER.readValue(json, HashMap.class));
+            }
+
+            ArrayList<Object> pathsToExtract = OBJECT_MAPPER.readValue(jsonPaths.getString(), ArrayList.class);
+
+            for (Object path: pathsToExtract)
+            {
+                toFlatten = extractProperty(toFlatten, path);
+            }
+
+            SimpleResultSet flattenedResultSet = new SimpleResultSet();
+
+            flattenedResultSet.addColumn("__INPUT__", Types.VARCHAR, 1000, 0); // using the original array as joinKey
+
+            // use first non-null object to infer the type of value
+            boolean resolvedFlattenedType = false;
+
+            for (Object o: toFlatten)
+            {
+                if (!(o instanceof Iterable))
+                {
+                    continue;
+                }
+                for (Object value : (Iterable<?>) o)
+                {
+                    if (value instanceof Map || value instanceof List || value instanceof String)
+                    {
+                        flattenedResultSet.addColumn("VALUE", Types.VARCHAR, 1000, 0);
+                    }
+                    else if (value instanceof Boolean)
+                    {
+                        flattenedResultSet.addColumn("VALUE", Types.BOOLEAN, 0, 0);
+                    }
+                    else if (value instanceof Double || value instanceof Float || value instanceof BigDecimal)
+                    {
+                        flattenedResultSet.addColumn("VALUE", Types.DOUBLE, 20, 20);
+                    }
+                    else if (value instanceof Integer || value instanceof Long)
+                    {
+                        flattenedResultSet.addColumn("VALUE", Types.BIGINT, 0, 0);
+                    }
+                    else
+                    {
+                        throw new RuntimeException("unsupported data type in h2 extension");
+                    }
+                    resolvedFlattenedType = true;
+                    break;
+                }
+                if (resolvedFlattenedType)
+                {
+                    break;
+                }
+            }
+
+            if (!resolvedFlattenedType)
+            {
+                flattenedResultSet.addColumn("VALUE", Types.VARCHAR, 1000, 0);
+                return flattenedResultSet;
+            }
+
+            for (Object o: toFlatten)
+            {
+                if (!(o instanceof Iterable))
+                {
+                    continue;
+                }
+                for (Object value : (Iterable<?>) o)
+                {
+                    if (value instanceof Map || value instanceof List)
+                    {
+                        flattenedResultSet.addRow(Arrays.asList(OBJECT_MAPPER.writeValueAsString(o), OBJECT_MAPPER.writeValueAsString(value)).toArray());
+                    }
+                    else
+                    {
+                        flattenedResultSet.addRow(Arrays.asList(OBJECT_MAPPER.writeValueAsString(o), value).toArray());
+                    }
+                }
+            }
+            return flattenedResultSet;
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException(e);
+        }
     }
 }

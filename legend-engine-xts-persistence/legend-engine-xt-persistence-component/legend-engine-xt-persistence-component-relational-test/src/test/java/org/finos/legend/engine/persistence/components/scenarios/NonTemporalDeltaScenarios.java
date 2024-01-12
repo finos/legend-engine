@@ -117,6 +117,15 @@ public class NonTemporalDeltaScenarios extends BaseTest
         return new TestScenario(mainTableWithBaseSchemaAndDigest, stagingTableWithFilters, ingestMode);
     }
 
+    public TestScenario NO_VERSIONING__WITH_FILTERED_DATASET()
+    {
+        NontemporalDelta ingestMode = NontemporalDelta.builder()
+            .digestField(digestField)
+            .auditing(NoAuditing.builder().build())
+            .build();
+        return new TestScenario(mainTableWithBaseSchemaAndDigest, filteredStagingTableWithComplexFilter, ingestMode);
+    }
+
     public TestScenario FILTER_DUPS__MAX_VERSION__WITH_STAGING_FILTER()
     {
         NontemporalDelta ingestMode = NontemporalDelta.builder()

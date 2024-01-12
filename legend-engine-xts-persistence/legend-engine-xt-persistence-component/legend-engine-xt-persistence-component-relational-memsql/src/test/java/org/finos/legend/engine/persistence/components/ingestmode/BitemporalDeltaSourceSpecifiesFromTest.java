@@ -310,10 +310,10 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     @Override
     public void verifyBitemporalDeltaBatchIdBasedWithDeleteIndWithDataSplits(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
-        String tempName = operations.get(0).preActionsSql().get(2).split("CREATE REFERENCE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
-        String tempWithDeleteIndicatorName = operations.get(0).preActionsSql().get(3).split("CREATE REFERENCE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
+        String tempName = operations.get(0).preActionsSql().get(2).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
+        String tempWithDeleteIndicatorName = operations.get(0).preActionsSql().get(3).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
 
-        String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS " + tempName +
+        String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempName +
                 "(`id` INTEGER NOT NULL," +
                 "`name` VARCHAR(256) NOT NULL," +
                 "`amount` DOUBLE," +
@@ -325,7 +325,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`validity_through_target` DATETIME," +
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
-        String expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS " + tempWithDeleteIndicatorName +
+        String expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempWithDeleteIndicatorName +
                 "(`id` INTEGER NOT NULL," +
                 "`name` VARCHAR(256) NOT NULL," +
                 "`amount` DOUBLE," +
@@ -766,11 +766,11 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
     @Override
     public void verifyBitemporalDeltaBatchIdBasedWithDeleteIndWithDataSplitsFilterDuplicates(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
-        String tempName = operations.get(0).preActionsSql().get(2).split("CREATE REFERENCE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
-        String tempWithDeleteIndicatorName = operations.get(0).preActionsSql().get(3).split("CREATE REFERENCE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
-        String stageWithoutDuplicatesName = operations.get(0).preActionsSql().get(4).split("CREATE REFERENCE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
+        String tempName = operations.get(0).preActionsSql().get(2).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
+        String tempWithDeleteIndicatorName = operations.get(0).preActionsSql().get(3).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
+        String stageWithoutDuplicatesName = operations.get(0).preActionsSql().get(4).split("CREATE TABLE IF NOT EXISTS ")[1].split("\\(")[0];
 
-        String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS " + tempName +
+        String expectedBitemporalFromOnlyDefaultTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempName +
                 "(`id` INTEGER NOT NULL," +
                 "`name` VARCHAR(256) NOT NULL," +
                 "`amount` DOUBLE," +
@@ -782,7 +782,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`validity_through_target` DATETIME," +
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
-        String expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS " + tempWithDeleteIndicatorName +
+        String expectedBitemporalFromOnlyDefaultTempTableWithDeleteIndicatorCreateQuery = "CREATE TABLE IF NOT EXISTS " + tempWithDeleteIndicatorName +
                 "(`id` INTEGER NOT NULL," +
                 "`name` VARCHAR(256) NOT NULL," +
                 "`amount` DOUBLE," +
@@ -795,7 +795,7 @@ public class BitemporalDeltaSourceSpecifiesFromTest extends BitemporalDeltaSourc
                 "`delete_indicator` TINYINT(1)," +
                 "PRIMARY KEY (`id`, `name`, `batch_id_in`, `validity_from_target`))";
 
-        String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE REFERENCE TABLE IF NOT EXISTS " + stageWithoutDuplicatesName +
+        String expectedBitemporalFromOnlyStageWithDeleteIndicatorWithDataSplitWithoutDuplicatesTableCreateQuery = "CREATE TABLE IF NOT EXISTS " + stageWithoutDuplicatesName +
                 "(`id` INTEGER NOT NULL," +
                 "`name` VARCHAR(256) NOT NULL," +
                 "`amount` DOUBLE," +

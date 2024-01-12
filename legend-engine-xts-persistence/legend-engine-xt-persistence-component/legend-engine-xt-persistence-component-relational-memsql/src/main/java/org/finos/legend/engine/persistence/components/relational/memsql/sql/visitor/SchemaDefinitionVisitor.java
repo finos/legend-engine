@@ -85,18 +85,18 @@ public class SchemaDefinitionVisitor implements LogicalPlanVisitor<SchemaDefinit
             prev.push(constraint);
         }
 
-        boolean isShard = current.shardSpecification().isPresent() && current.shardSpecification().get().shardKeys().size() > 0;
+        boolean hasShardKeys = current.shardSpecification().isPresent() && current.shardSpecification().get().shardKeys().size() > 0;
         // if table is sharded and primary keys are present
         if (isTableColumnStore)
         {
-            if (pkNum >= 1 && isShard)
+            if (pkNum >= 1 && hasShardKeys)
             {
                 TableConstraint constraint = new UnenforcedUniqueIndexConstraint(pkFields.stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
                 prev.push(constraint);
             }
         }
 
-        if (isShard)
+        if (hasShardKeys)
         {
             TableConstraint constraint = new ShardKeyConstraint(current.shardSpecification().get().shardKeys().stream().map(Field::name).collect(Collectors.toList()), context.quoteIdentifier());
             prev.push(constraint);

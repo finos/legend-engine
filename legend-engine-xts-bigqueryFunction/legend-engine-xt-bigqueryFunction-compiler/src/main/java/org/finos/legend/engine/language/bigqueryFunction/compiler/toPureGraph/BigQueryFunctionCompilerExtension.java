@@ -58,7 +58,7 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
     {
         try
         {
-            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(bigQueryFunction.function), bigQueryFunction.sourceInformation);
+            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(bigQueryFunction.function.path), bigQueryFunction.sourceInformation);
             return new Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction_Impl(
                     bigQueryFunction.name,
                     null,

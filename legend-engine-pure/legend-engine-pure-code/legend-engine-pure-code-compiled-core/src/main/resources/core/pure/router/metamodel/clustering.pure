@@ -50,17 +50,11 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
       sc:StoreMappingClusteredValueSpecification[1] |
           //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
           //the only place where sql is generated for this case.
-          let rt = $sc.runtime->match([
-            r:Runtime[1] | ^$r(connectionStores = $r.connectionStores->map(c | if ($sc.s.reprocessConnection->isEmpty(),|$c,|^$c(connection=$sc.s.reprocessConnection->toOne()->eval($c))))),
-            r:Runtime[0..1] | $r
-          ]);
-
-
-
-
-          let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, fe=$fe, inScopeVars=$inScopeVars);
-          let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $sc.mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, $debugContext);
-          ^$res(fromCluster=$cluster);,
+          $sc->buildExecutionNodeForStoreClusteredVS($fe, $sc.mapping, $inScopeVars, $context, $extensions, $debugContext),
+      sc:StoreClusteredValueSpecification[1] |
+          //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
+          //the only place where sql is generated for this case.
+          $sc->buildExecutionNodeForStoreClusteredVS($fe, [], $inScopeVars, $context, $extensions, $debugContext),
       ef:ExternalFormatClusteredValueSpecification[1] |
           let state = ^meta::external::format::shared::executionPlan::ExternalFormatPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $ef.exeCtx->toOne(), binding = $ef.binding);
           $fe->meta::external::format::shared::executionPlan::processValueSpecification($state, $extensions, $debugContext)->toOne();,
@@ -68,6 +62,19 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
           let state = ^meta::pure::platform::executionPlan::generation::PlatformPlanGenerationState(inScopeVars = $inScopeVars, exeCtx = $pl.exeCtx->toOne());
           $fe->meta::pure::platform::executionPlan::generation::processValueSpecification($state, $extensions, $debugContext)->toOne();
   ]);
+}
+
+function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], fe:FunctionExpression[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+{
+    //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
+    //the only place where sql is generated for this case.
+    let rt = $sc.runtime->match([
+      r:Runtime[1] | ^$r(connectionStores = $r.connectionStores->map(c | if ($sc.s.reprocessConnection->isEmpty(),|$c,|^$c(connection=$sc.s.reprocessConnection->toOne()->eval($c))))),
+      r:Runtime[0..1] | $r
+    ]);
+    let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, fe=$fe, inScopeVars=$inScopeVars);
+    let res = $sc.s.planExecution->toOne()->eval($query, $sc.val->match([r:RoutedValueSpecification[1]|$r, a:Any[*]|[]])->cast(@RoutedValueSpecification), $mapping, $rt, if ($sc.exeCtx->isEmpty(), | $context, | $sc.exeCtx->toOne()), $extensions, $debugContext);
+    ^$res(fromCluster=$sc);
 }
 
 function meta::pure::router::clustering::areClustersCompatible(cluster1:ClusteredValueSpecification[1], cluster2:ClusteredValueSpecification[1], extensions:meta::pure::extension::Extension[*]):Boolean[1]
@@ -99,6 +106,8 @@ function meta::pure::router::clustering::streamSupportedFunctionEvaluator(cluste
   $cluster->match([
       sc:StoreMappingClusteredValueSpecification[1] |
           $sc.s.supportsStream,
+      sc:StoreClusteredValueSpecification[1] |
+          $sc.s.supportsStream,
       ef:ExternalFormatClusteredValueSpecification[1] |
           {fxn:FunctionExpression[1] | false},
       pl:PlatformClusteredValueSpecification[1] |
@@ -111,6 +120,8 @@ function meta::pure::router::clustering::elementPathForCluster(cluster:Clustered
   $cluster->match([
       sc:StoreMappingClusteredValueSpecification[1] |
           $sc.store->elementToPath(),
+      sc:StoreClusteredValueSpecification[1] |
+          $sc.store->elementToPath(),
       ef:ExternalFormatClusteredValueSpecification[1] |
           $ef.binding->elementToPath(),
       pl:PlatformClusteredValueSpecification[1] |
@@ -122,6 +133,11 @@ function meta::pure::router::clustering::toString(cluster:ClusteredValueSpecific
 {
   $cluster->match([
       sc:StoreMappingClusteredValueSpecification[1]  | if($pref.useClusterIndex,
+                                                         | '[Node Index:'+$pref.clusterIndex->indexOf($sc)->toString()+']',
+                                                         | let start = '{'+$sc.store->toOne()->elementToPath()+'> ';
+                                                           $start + $sc.val->asString($pref)->replace('\n','\n'+space($start->length()))+'}';
+                                                       );,
+      sc:StoreClusteredValueSpecification[1]  | if($pref.useClusterIndex,
                                                          | '[Node Index:'+$pref.clusterIndex->indexOf($sc)->toString()+']',
                                                          | let start = '{'+$sc.store->toOne()->elementToPath()+'> ';
                                                            $start + $sc.val->asString($pref)->replace('\n','\n'+space($start->length()))+'}';

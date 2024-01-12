@@ -27,17 +27,10 @@ public class ShowVisitor implements LogicalPlanVisitor<Show>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Show current, VisitorContext context)
     {
-        ShowCommand command;
-        if (current.dataset().datasetReference().group().isPresent())
-        {
-            command = new ShowCommand(
-                ShowType.valueOf(current.operation().name()),
-                current.dataset().datasetReference().group().orElse(null));
-        }
-        else
-        {
-            command = new ShowCommand(ShowType.valueOf(current.operation().name()));
-        }
+        ShowCommand command = new ShowCommand(
+            ShowType.valueOf(current.operation().name()),
+            current.dataset().datasetReference().group(),
+            context.quoteIdentifier());
         prev.push(command);
         return new VisitorResult(null);
     }

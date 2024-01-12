@@ -20,6 +20,15 @@ import meta::external::store::elasticsearch::executionTest::utils::*;
 
 function 
   <<paramTest.Test>>
+  {doc.doc = 'Test restrict on Elasticsearch Text property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::text::testRestrictText(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict('Description'));
+}
+
+
+function 
+  <<paramTest.Test>>
   {doc.doc = 'Test projection on Elasticsearch Text property mapping'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::project::text::testProjectText(config:TestConfig[1]):Boolean[1]
 {

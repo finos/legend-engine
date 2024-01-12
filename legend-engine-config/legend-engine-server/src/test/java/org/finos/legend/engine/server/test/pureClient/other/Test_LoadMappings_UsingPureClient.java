@@ -18,6 +18,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
+import org.finos.legend.engine.test.shared.framework.PureTestHelperFramework;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
 public class Test_LoadMappings_UsingPureClient extends TestSuite
@@ -28,12 +29,13 @@ public class Test_LoadMappings_UsingPureClient extends TestSuite
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
                 () ->
                 {
-                    CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
+                    CompiledExecutionSupport executionSupport = PureTestHelperFramework.getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
                     // NOTE: temporarily ignore these tests until we bring extensions back into Legend
                     // suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::alloy::test::mapping", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
-                }
+                },
+                PureWithEngineHelper::cleanUp
         );
     }
 }

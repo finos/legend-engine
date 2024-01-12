@@ -139,3 +139,41 @@ function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTe
   let equalityComparator =  floatEqualityComparatorGenerator([0.01]);
   runSqlQueryTest($sqlQuery, $expected,$equalityComparator, $config);
 }
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::booland::testTrue(config:DbTestConfig[1]):Boolean[1]
+{
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::bool::boolTest('booland', 10, true, $config)
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::booland::testFalse(config:DbTestConfig[1]):Boolean[1]
+{
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::bool::boolTest('booland', 20, false, $config)
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::boolor::testTrue(config:DbTestConfig[1]):Boolean[1]
+{
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::bool::boolTest('boolor', 20, true, $config)
+}
+
+function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::boolor::testFalse(config:DbTestConfig[1]):Boolean[1]
+{
+  meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::bool::boolTest('boolor', 40, false, $config)
+}
+
+function meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::aggregationDynaFns::bool::boolTest(func:String[1], value:Integer[1], expectedValue:Boolean[1], config:DbTestConfig[1]): Boolean[1]
+{
+  let table= meta::relational::tests::db->cast(@Database)->schema('default')->map(x|$x->table('personTable'))->toOne();
+  let column = $table.columns->cast(@Column)->filter(c | $c.name->toLower() == 'age')->toOne();
+
+  let dynaFunc = ^DynaFunction(name = $func , parameters=[
+    ^DynaFunction(name = 'greaterThan', parameters = [
+        ^TableAliasColumn(column = $column,alias = ^TableAlias(name = 'myTable', relationalElement = $table)), 
+        ^Literal(value = $value)])]);
+
+  let sqlQuery = ^SelectSQLQuery(columns=[$dynaFunc],
+                                 data= ^meta::relational::metamodel::join::RootJoinTreeNode(
+                                     alias=^TableAlias(name= 'myTable' , relationalElement=$table)));
+
+  let expected = ^Literal(value=$expectedValue);
+  runSqlQueryTest($sqlQuery, $expected,[], $config);
+}

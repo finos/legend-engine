@@ -29,10 +29,11 @@ public class SnowflakeAppArtifact extends FunctionActivatorArtifact
         this.content = content;
     }
 
-    public SnowflakeAppArtifact(SnowflakeAppContent content, SnowflakeAppDeploymentConfiguration config)
+    public SnowflakeAppArtifact(SnowflakeAppContent content, SnowflakeAppDeploymentConfiguration config, String deployedLocation)
     {
         this(content);
         this.deploymentConfiguration = config;
+        this.deployedLocation = deployedLocation;
     }
 
 }

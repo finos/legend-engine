@@ -18,7 +18,7 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.logi
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
 
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Value.Immutable
@@ -33,5 +33,7 @@ public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFil
 {
     String location();
 
-    Optional<String> fileFormat();
+    Optional<FileFormat> fileFormat();
+
+    Map<String, Object> copyOptions();
 }

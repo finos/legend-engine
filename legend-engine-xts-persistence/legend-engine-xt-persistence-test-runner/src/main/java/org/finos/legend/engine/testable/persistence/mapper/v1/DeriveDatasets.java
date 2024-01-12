@@ -78,10 +78,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
     public Datasets visit(AppendOnly appendOnly)
     {
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
-        if (appendOnly.filterDuplicates)
-        {
-            enrichMainSchemaWithDigest();
-        }
+        enrichMainSchemaWithDigest();
         boolean baseSchemaHasPks = baseSchema.fields().stream().anyMatch(field -> field.primaryKey());
         appendOnly.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema, baseSchemaHasPks));
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();

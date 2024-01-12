@@ -16,12 +16,12 @@ package org.finos.legend.engine.server.test.pureClient.other;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
 import static org.finos.legend.engine.server.test.shared.PureTestHelper.wrapSuite;
+import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
 
 public class Test_Engine_UsingPureClient extends TestSuite
 {
@@ -31,11 +31,13 @@ public class Test_Engine_UsingPureClient extends TestSuite
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
                 () ->
                 {
-                    CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
+                    CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::handlers", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::legend::test::model", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::legend::test::handlers", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::legend::test::model", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
-                });
+                },
+                PureWithEngineHelper::cleanUp
+        );
     }
 }

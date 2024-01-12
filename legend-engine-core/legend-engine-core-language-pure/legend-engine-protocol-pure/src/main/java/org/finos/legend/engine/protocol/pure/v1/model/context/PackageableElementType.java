@@ -21,6 +21,7 @@ public enum PackageableElementType
     CLASS,
     ASSOCIATION,
     ENUMERATION,
+    FUNCTION,
     STORE,
     RUNTIME,
     MAPPING,

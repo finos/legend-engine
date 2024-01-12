@@ -21,6 +21,8 @@ import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.pure.m3.execution.test.TestCollection;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 
+import static org.finos.legend.engine.test.shared.framework.PureTestHelperFramework.*;
+
 public class Test_ExternalFormat_UsingPureClientTestSuite
 {
     public static Test suite()
@@ -29,20 +31,21 @@ public class Test_ExternalFormat_UsingPureClientTestSuite
                 () -> PureWithEngineHelper.initClientVersionIfNotAlreadySet("vX_X_X"),
                 () ->
                 {
-                    CompiledExecutionSupport executionSupport = PureTestHelper.getClassLoaderExecutionSupport();
+                    CompiledExecutionSupport executionSupport = getClassLoaderExecutionSupport();
                     TestSuite suite = new TestSuite();
                     // NOTE: temporarily ignore these tests until we bring extensions back into Legend
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::avro", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::protobuf", executionSupport.getProcessorSupport(), ci -> !ci.getName().equals("transform_testClassWithMapToProtoBuf__Boolean_1_") && PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::rosetta", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::xml", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::yaml", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::format::avro", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::format::protobuf", executionSupport.getProcessorSupport(), ci -> !ci.getName().equals("transform_testClassWithMapToProtoBuf__Boolean_1_") && satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::format::rosetta", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::format::xml", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::format::yaml", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
 
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::language", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::format::shared", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
-                    suite.addTest(PureTestHelper.buildSuite(TestCollection.collectTests("meta::external::store", executionSupport.getProcessorSupport(), ci -> PureTestHelper.satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::language", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::format::shared", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
+                    suite.addTest(buildSuite(TestCollection.collectTests("meta::external::store", executionSupport.getProcessorSupport(), ci -> satisfiesConditions(ci, executionSupport.getProcessorSupport())), executionSupport));
                     return suite;
-                }
+                },
+                PureWithEngineHelper::cleanUp
         );
     }
 }

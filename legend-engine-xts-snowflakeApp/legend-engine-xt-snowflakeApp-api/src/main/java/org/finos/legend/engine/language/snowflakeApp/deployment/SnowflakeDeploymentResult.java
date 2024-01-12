@@ -22,10 +22,11 @@ public class SnowflakeDeploymentResult extends DeploymentResult
 
     public MutableList<String> errors;
 
-    public SnowflakeDeploymentResult(String activatorIdentifier, boolean result)
+    public SnowflakeDeploymentResult(String activatorIdentifier, boolean result, String deploymentLocation)
     {
       this.successful = result;
       this.activatorIdentifier = activatorIdentifier;
+      this.deploymentLocation = deploymentLocation;
     }
 
     public SnowflakeDeploymentResult(MutableList<String> errors)

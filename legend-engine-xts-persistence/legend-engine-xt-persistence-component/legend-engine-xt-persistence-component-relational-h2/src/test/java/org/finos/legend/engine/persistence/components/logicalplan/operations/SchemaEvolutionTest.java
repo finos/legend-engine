@@ -17,11 +17,10 @@ package org.finos.legend.engine.persistence.components.logicalplan.operations;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.TestUtils;
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
-import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
@@ -31,7 +30,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +55,7 @@ class SchemaEvolutionTest extends BaseTest
         createTempTable(mainTable);
 
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -109,7 +107,7 @@ class SchemaEvolutionTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -162,7 +160,7 @@ class SchemaEvolutionTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -217,7 +215,7 @@ class SchemaEvolutionTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -270,7 +268,7 @@ class SchemaEvolutionTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -325,7 +323,7 @@ class SchemaEvolutionTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -380,7 +378,7 @@ class SchemaEvolutionTest extends BaseTest
         createTempTable(mainTable);
 
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();
@@ -433,7 +431,7 @@ class SchemaEvolutionTest extends BaseTest
 
         // Generate the milestoning object
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestField(digestName)
+            .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestName).build())
             .deduplicationStrategy(FilterDuplicates.builder().build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .build();

@@ -45,6 +45,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTestSuite;
@@ -73,6 +75,7 @@ import java.util.Map;
 public class CorePureProtocolExtension implements PureProtocolExtension
 {
     public static final String MAPPING_CLASSIFIER_PATH = "meta::pure::mapping::Mapping";
+    public static final String FUNCTION_CLASSIFIER_PATH = "meta::pure::metamodel::function::ConcreteFunctionDefinition";
 
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
@@ -136,9 +139,11 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(TestSuite.class)
                         .withSubtype(MappingTestSuite.class, "mappingTestSuite")
+                        .withSubtype(FunctionTestSuite.class, "functionTestSuite")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Test.class)
                         .withSubtype(MappingTest.class, "mappingTest")
+                        .withSubtype(FunctionTest.class, "functionTest")
                         .build()
         ));
     }
@@ -151,7 +156,7 @@ public class CorePureProtocolExtension implements PureProtocolExtension
                 .withKeyValue(Class.class, "meta::pure::metamodel::type::Class")
                 .withKeyValue(Enumeration.class, "meta::pure::metamodel::type::Enumeration")
                 .withKeyValue(Mapping.class, MAPPING_CLASSIFIER_PATH)
-                .withKeyValue(Function.class, "meta::pure::metamodel::function::ConcreteFunctionDefinition")
+                .withKeyValue(Function.class, FUNCTION_CLASSIFIER_PATH)
                 .withKeyValue(Measure.class, "meta::pure::metamodel::type::Measure")
                 .withKeyValue(PackageableConnection.class, "meta::pure::runtime::PackageableConnection")
                 .withKeyValue(PackageableRuntime.class, "meta::pure::runtime::PackageableRuntime")

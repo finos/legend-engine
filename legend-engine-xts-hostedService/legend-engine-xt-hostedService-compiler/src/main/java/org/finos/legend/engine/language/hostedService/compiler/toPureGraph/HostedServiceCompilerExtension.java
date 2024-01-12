@@ -88,7 +88,7 @@ public class HostedServiceCompilerExtension implements CompilerExtension
     {
         try
         {
-            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(app.function), app.sourceInformation);
+            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(app.function.path), app.sourceInformation);
             return new Root_meta_external_function_activator_hostedService_HostedService_Impl(
                         app.name,
                         null,

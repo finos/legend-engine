@@ -1,0 +1,146 @@
+import apps::pure::quality::*;
+import meta::analytics::quality::*;
+
+function <<test.Test>>  meta::analytics::quality::model::domain::tests::entityNameShouldNotStartWithPackageNameTest():Boolean[1]
+{
+   assertEquals(false, meta::analytics::quality::model::domain::entityNameShouldNotStartWithPackageName(meta::analytics::quality::model::domain::tests::Tests).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::entityNameShouldNotStartWithPackageName(meta::analytics::quality::model::domain::tests::TestsInProgress).isValid);
+   assertEquals(true, meta::analytics::quality::model::domain::entityNameShouldNotStartWithPackageName(meta::analytics::quality::model::domain::tests::NoMatchForTest).isValid);
+   assertEquals(true, meta::analytics::quality::model::domain::entityNameShouldNotStartWithPackageName(meta::analytics::quality::model::domain::tests::NoMatchForTestAgain).isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::classNameShouldStartWithUpperCaseTest():Boolean[1]
+{
+  assertEquals(true, meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::Test).isValid);
+  assertEquals(false, meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::lowerCaseTest).isValid);
+  assertEquals(false, meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::lowerCaseTestWith_Underscore).isValid);
+  assertEquals(false, meta::analytics::quality::model::domain::classNameShouldStartWithUpperCase(meta::analytics::quality::model::domain::tests::UpperCaseTestWith_Underscore).isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::classHasAtLeastOneMandatoryPropertyTest():Boolean[1]
+{
+  assertEquals(true, meta::analytics::quality::model::domain::classHasAtLeastOneMandatoryProperty(meta::analytics::quality::model::domain::tests::Test).isValid);
+  assertEquals(false, meta::analytics::quality::model::domain::classHasAtLeastOneMandatoryProperty(meta::analytics::quality::model::domain::tests::EmptyClass).isValid);
+}
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::allEntitiesAndPropertiesShouldHaveALongDescriptionTest():Boolean[1]
+{
+  assertEquals(false, meta::analytics::quality::model::domain::allEntitiesAndPropertiesShouldHaveALongDescription(meta::analytics::quality::model::domain::tests::Test).isValid);
+  assertEquals(true, meta::analytics::quality::model::domain::allEntitiesAndPropertiesShouldHaveALongDescription(meta::analytics::quality::model::domain::tests::TestClassWithDoc).isValid);
+}
+
+
+Class {doc.doc = 'test class'}
+meta::analytics::quality::model::domain::tests::Tests
+{
+   {doc.doc = 'test name'}
+   testName : String[1];
+
+   {doc.doc = 'test Description'}
+   testDescription : String[1];
+}
+
+Class {doc.doc = 'test in progress class'}
+meta::analytics::quality::model::domain::tests::TestsInProgress
+{
+   {doc.doc = 'test name'}
+   testName : String[1];
+
+   testDescription : String[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::NoMatchForTest
+{
+   testName : String[1];
+   testMatch : Boolean[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::NoMatchForTestAgain
+{
+   testName : String[1];
+   testMatch : Boolean[1];
+}
+
+Class {doc.doc = 'test class'}
+meta::analytics::quality::model::domain::tests::TestClassWithDoc
+{
+   {doc.doc = 'test name'}
+   testName : String[1];
+
+   {doc.doc = 'test Description'}
+   testDescription : String[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::TestClassWithoutDoc
+{
+   {doc.doc = 'test name'}
+   testName : String[1];
+
+   {doc.doc = 'test Description'}
+   testDescription : String[1];
+}
+
+Class {doc.doc = 'test in progress class'}
+meta::analytics::quality::model::domain::tests::TestClassWithPropertiesMissingDoc
+{
+   {doc.doc = 'test name'}
+   testName : String[1];
+
+   testDescription : String[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::TestClassWithAllDocsMissing
+{
+   testName : String[1];
+   testMatch : Boolean[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::Test
+{
+   testName : String[1];
+   testMatch : Boolean[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::lowerCaseTest
+{
+   testName : String[1];
+   testMatch : Boolean[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::lowerCaseTestWith_Underscore
+{
+   testName : String[1];
+   testMatch : Boolean[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::UpperCaseTestWith_Underscore
+{
+   testName : String[1];
+   testMatch : Boolean[1];
+}
+
+Class meta::analytics::quality::model::domain::tests::EmptyClass
+{
+
+}
+
+
+
+
+###Relational
+Database meta::analytics::quality::model::domain::tests::TestTable
+(
+   Table testName( name VARCHAR(10) PRIMARY KEY)
+)
+
+###Mapping
+
+import meta::analytics::quality::model::domain::tests::*;
+
+Mapping meta::analytics::quality::model::domain::tests::TestTableMapping
+(
+   Tests : Relational
+   {
+      testName: [TestTable]testName.name
+   }
+)

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.protocol.functionActivator.metamodel;
 
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
@@ -28,6 +29,6 @@ public abstract class FunctionActivator extends PackageableElement
 {
     public List<StereotypePtr> stereotypes = Collections.emptyList();
     public List<TaggedValue> taggedValues = Collections.emptyList();
-    public String function;
+    public PackageableElementPointer function;
     public DeploymentConfiguration activationConfiguration;
 }

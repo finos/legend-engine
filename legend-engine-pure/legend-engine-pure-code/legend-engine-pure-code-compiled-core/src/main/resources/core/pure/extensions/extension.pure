@@ -161,7 +161,7 @@ function meta::pure::extension::print::printExtensions(extensions: Extension[*])
   $extensions->sortBy(x | $x.type->toLower())->map(ext | $ext->printExtension(1))->joinStrings('[\n', ',\n\n', '\n]')
 }
 
-function <<access.private>> meta::pure::extension::print::printExtension(extension: Extension[1], depth: Integer[1]): String[1]
+function meta::pure::extension::print::printExtension(extension: Extension[1], depth: Integer[1]): String[1]
 {
   let indent = indent($depth);
 

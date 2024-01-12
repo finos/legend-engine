@@ -26,6 +26,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxV
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.versioning.TestDedupAndVersioning;
 import org.junit.jupiter.api.Assertions;
@@ -92,6 +93,48 @@ class NontemporalSnapshotTest extends BaseTest
         // 2. Execute plans and verify results
         expectedStats.clear();
         expectedStats = createExpectedStatsMap(6, 5, 6, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
+    }
+
+    /*
+    Scenario: Test Nontemporal Snapshot with no auditing
+     */
+    @Test
+    void testNontemporalSnapshotNoAuditingWithFilteredDataset() throws Exception
+    {
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        FilteredDataset stagingTable = TestUtils.getFilteredStagingTable();
+
+        // Create staging table
+        DatasetDefinition stagingTableForDB = TestUtils.getStagingTableWithFilterForDB();
+        createStagingTable(stagingTableForDB);
+
+        // Generate the milestoning object
+        NontemporalSnapshot ingestMode = NontemporalSnapshot.builder().auditing(NoAuditing.builder().build()).build();
+        PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
+        Datasets datasets = Datasets.of(mainTable, stagingTable);
+
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+
+        // ------------ Perform snapshot milestoning Pass1 ------------------------
+        String dataPass1 = basePath + "input/with_staging_filter/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/with_staging_filter/expected_pass1.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass1);
+        // 2. Execute plans and verify results
+        Map<String, Object> expectedStats = createExpectedStatsMap(5, 0, 5, 0, 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass1, expectedStats);
+
+        // ------------ Perform snapshot milestoning Pass2 ------------------------
+        // 0. Create new filter
+        datasets = Datasets.of(mainTable, TestUtils.getFilteredStagingTableSecondPass());
+        String dataPass2 = basePath + "input/with_staging_filter/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/with_staging_filter/expected_pass2.csv";
+        // 1. Load staging table
+        loadStagingDataWithFilter(dataPass2);
+        // 2. Execute plans and verify results
+        expectedStats.clear();
+        expectedStats = createExpectedStatsMap(3, 5, 3, 0, 0);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
     }
 
@@ -352,6 +395,4 @@ class NontemporalSnapshotTest extends BaseTest
             Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
         }
     }
-
-
 }

@@ -2170,7 +2170,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "###Connection\n" +
                 "RelationalDatabaseConnection relational::graphFetch::RelationalConnection\n" +
                 "{\n" +
-                "  store: relational::graphFetch::dbInc;\n" +
                 "  type: H2;\n" +
                 "  specification: Static\n" +
                 "  {\n" +
@@ -2225,7 +2224,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      connection_1: relational::graphFetch::OneMappingConnection\n" +
                 "    ]\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [90:1-108:1]: Found 2 connections against store [dbInc] under a single runtime.");
+                "}\n", "COMPILATION error at [89:1-107:1]: Found 2 connections against store [dbInc] under a single runtime.");
     }
 
     @Test

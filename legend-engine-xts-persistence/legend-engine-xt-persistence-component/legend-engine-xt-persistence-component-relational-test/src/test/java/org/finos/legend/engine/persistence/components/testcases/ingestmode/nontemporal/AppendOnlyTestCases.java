@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.ingestmode.AppendOnly;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -216,7 +217,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
         try
         {
             AppendOnly ingestMode = AppendOnly.builder()
-                .digestField(digestField)
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField(digestField).build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .auditing(DateTimeAuditing.builder().build())
                 .build();
@@ -246,6 +247,40 @@ public abstract class AppendOnlyTestCases extends BaseTest
             Assertions.assertEquals("Primary keys and digest are mandatory for filterExistingRecords", e.getMessage());
         }
     }
+
+    @Test
+    public void testAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration()
+    {
+        TestScenario scenario = scenarios.NO_AUDITING__NO_DEDUP__NO_VERSIONING__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
+        verifyAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration(operations);
+    }
+
+    public abstract void verifyAppendOnlyNoAuditingAllowDuplicatesNoVersioningNoFilterExistingRecordsUdfDigestGeneration(GeneratorResult operations);
+
+    @Test
+    public void testAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration()
+    {
+        TestScenario scenario = scenarios.WITH_AUDITING__FAIL_ON_DUPS__ALL_VERSION__NO_FILTER_EXISTING_RECORDS__UDF_DIGEST_GENERATION();
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(scenario.getIngestMode())
+            .relationalSink(getRelationalSink())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
+        verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration(operations, dataSplitRangesOneToTwo);
+    }
+
+    public abstract void verifyAppendOnlyWithAuditingFailOnDuplicatesAllVersionNoFilterExistingRecordsUdfDigestGeneration(List<GeneratorResult> generatorResults, List<DataSplitRange> dataSplitRanges);
 
     public abstract RelationalSink getRelationalSink();
 }

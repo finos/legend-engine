@@ -1,0 +1,63 @@
+import meta::analytics::quality::tests::*;
+import meta::analytics::quality::*;
+
+function <<test.Test>> meta::analytics::quality::model::domain::tests::enumerationCaseSensitivity():Boolean[1]
+{
+   assertEquals(true, meta::analytics::quality::model::domain::enumerationName(meta::analytics::quality::model::domain::tests::Valid).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::enumerationName(meta::analytics::quality::model::domain::tests::invalid1).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::enumerationName(meta::analytics::quality::model::domain::tests::Invalid_3).isValid);
+   assertEquals(true, meta::analytics::quality::model::domain::enumerationValue(meta::analytics::quality::model::domain::tests::Valid).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::enumerationValue(meta::analytics::quality::model::domain::tests::Invalid2).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::enumerationValue(meta::analytics::quality::model::domain::tests::Invalid).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::enumerationValue(meta::analytics::quality::model::domain::tests::Invalid1).isValid);
+   assertEquals(false, meta::analytics::quality::model::domain::enumerationValue(meta::analytics::quality::model::domain::tests::INVALID).isValid);
+}
+
+Enum meta::analytics::quality::model::domain::tests::Valid
+{
+   AValidValue,
+   AnotherValidValue
+}
+
+Enum {doc.doc='Enum name starts with lower case'}
+meta::analytics::quality::model::domain::tests::invalid1
+{
+   AValidValue,
+   AnotherValidValue
+}
+
+Enum {doc.doc='Enum name contains underscore'}
+meta::analytics::quality::model::domain::tests::Invalid_3
+{
+   AValidValue,
+   AnotherValidValue
+}
+
+Enum {doc.doc='Enum name all upper case'}
+meta::analytics::quality::model::domain::tests::INVALID
+{
+   AValidValue,
+   AnotherValidValue
+}
+
+Enum {doc.doc='Enum all upper case'}
+meta::analytics::quality::model::domain::tests::Invalid
+{
+   AVV,
+   AnotherValidValue
+}
+
+Enum {doc.doc='Enum contains underscore'}
+meta::analytics::quality::model::domain::tests::Invalid1
+{
+   A_Valid_Value,
+   AnotherValidValue
+}
+
+Enum {doc.doc='Enum starts with lower case'}
+meta::analytics::quality::model::domain::tests::Invalid2
+{
+   AValidValue,
+   anotherValidValue
+}
+

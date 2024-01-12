@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 import java.util.Objects;
@@ -36,9 +38,18 @@ public class PackageableElementPointer
         this.path = path;
     }
 
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
     public PackageableElementPointer(String path)
     {
         this.path = path;
+    }
+
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public PackageableElementPointer(@JsonProperty("type") PackageableElementType type, @JsonProperty("path") String path, @JsonProperty("sourceInformation") SourceInformation sourceInformation)
+    {
+        this.type = type;
+        this.path = path;
+        this.sourceInformation = sourceInformation;
     }
 
     @Override
