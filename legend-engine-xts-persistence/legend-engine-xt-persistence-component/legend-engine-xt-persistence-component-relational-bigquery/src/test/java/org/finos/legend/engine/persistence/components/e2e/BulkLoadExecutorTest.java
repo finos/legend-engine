@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
@@ -47,6 +48,7 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 @Disabled
 public class BulkLoadExecutorTest extends BigQueryEndToEndTest
 {
+    private static final String DIGEST = "digest";
     private static final String APPEND_TIME = "append_time";
     private static final String BATCH_ID = "batch_id";
     private static final Map<String, Object> ADDITIONAL_METADATA = Collections.singletonMap("event_id", "xyz123");
@@ -187,5 +189,76 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
         Assertions.assertEquals(4, rowsInserted);
         Assertions.assertEquals(2, rowsWithErrors);
         Assertions.assertEquals(IngestStatus.FAILED, ingestorResult.status());
+    }
+
+    @Test
+    public void testMilestoningWithUdfBasedDigestGenerationWithFieldsToExclude() throws IOException, InterruptedException
+    {
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName("demo.LAKEHOUSE_MD5").digestField(digestName).addAllFieldsToExcludeFromDigest(Arrays.asList(col1.name(), col4.name())).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                BigQueryStagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(FILE_LIST).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .group("demo").name("append_log")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        MetadataDataset metadataDataset = MetadataDataset.builder().metadataDatasetGroupName("demo").metadataDatasetName("batch_metadata").build();
+
+        Datasets datasets = Datasets.builder().mainDataset(mainDataset).stagingDataset(stagedFilesDataset).metadataDataset(metadataDataset).build();
+
+        // Clean up
+        delete("demo", "main");
+        delete("demo", "staging");
+        delete("demo", "batch_metadata");
+        delete("demo", "append_log");
+
+        // Register UDF
+        runQuery("DROP FUNCTION IF EXISTS demo.stringifyJson;");
+        runQuery("DROP FUNCTION IF EXISTS demo.LAKEHOUSE_MD5;");
+        runQuery("CREATE FUNCTION demo.stringifyJson(json_data JSON)\n" +
+            "            RETURNS STRING\n" +
+            "            LANGUAGE js AS \"\"\"\n" +
+            "            let output = \"\"; \n" +
+            "            Object.keys(json_data).sort().filter(field => json_data[field] != null).forEach(field => { output += field; output += json_data[field];})\n" +
+            "            return output;\n" +
+            "            \"\"\"; \n");
+        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(json_data JSON)\n" +
+            "AS (\n" +
+            "  TO_HEX(MD5(demo.stringifyJson(json_data)))\n" +
+            ");\n");
+
+        RelationalIngestor ingestor = RelationalIngestor.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(BigQuerySink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .build();
+
+        RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
+        IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets).get(0);
+
+        // Verify
+        List<Map<String, Object>> tableData = runQuery("select * from `demo`.`append_log` order by col_int asc");
+        String expectedPath = "src/test/resources/expected/bulk_load/expected_table3.csv";
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, DIGEST, BATCH_ID, APPEND_TIME};
+        assertFileAndTableDataEquals(schema, expectedPath, tableData);
+
+        long rowsInserted = (long) ingestorResult.statisticByName().get(ROWS_INSERTED);
+        long rowsWithErrors = (long) ingestorResult.statisticByName().get(ROWS_WITH_ERRORS);
+        Assertions.assertEquals(7, rowsInserted);
+        Assertions.assertEquals(0, rowsWithErrors);
+        Assertions.assertEquals(IngestStatus.SUCCEEDED, ingestorResult.status());
     }
 }
