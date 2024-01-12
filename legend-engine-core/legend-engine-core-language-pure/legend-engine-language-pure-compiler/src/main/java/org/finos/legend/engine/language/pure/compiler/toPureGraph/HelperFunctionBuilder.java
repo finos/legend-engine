@@ -141,6 +141,10 @@ public class HelperFunctionBuilder
     private static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterValue(ParameterValue parameterValue, CompileContext context)
     {
         Root_meta_legend_function_metamodel_ParameterValue pureParameterValue = new Root_meta_legend_function_metamodel_ParameterValue_Impl("", null, context.pureModel.getClass("meta::legend::function::metamodel::ParameterValue"));
+        if (parameterValue.name == null || parameterValue.name.isEmpty())
+        {
+            throw new EngineException("No associated parameter found for value.", parameterValue.sourceInformation, EngineErrorType.COMPILATION);
+        }
         pureParameterValue._name(parameterValue.name);
         pureParameterValue._value(Lists.immutable.with(parameterValue.value.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))));
         return pureParameterValue;
