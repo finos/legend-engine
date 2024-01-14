@@ -164,6 +164,21 @@ public class TestGrammarParser
                 "}\n", "PARSER error at [4:4-11]: Unexpected token 'entrance'");
     }
 
+
+    @Test
+    public void testFunction()
+    {
+        test("function my::SimpleFunction(): String[1]\n" +
+                "{\n" +
+                "  'Hello World!'\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | SimpleFunctionMisMatch() => 'Hello World!';\n" +
+                "}",
+                "PARSER error at [6:12-33]: Function name in test 'SimpleFunctionMisMatch' does not match function name 'SimpleFunction'"
+                );
+    }
+
     public static void testFromJson(Class<?> _class, String path, String code)
     {
         PureModelContextData modelData = null;

@@ -195,11 +195,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='date_part(\'month\', %s)')),
+    dynaFnToSql('mostRecentDayOfWeek',    $allStates,            ^ToSql(format='cast(%s as date) + cast(case when %s - date_part(\'dow\', %s) > 0 then %s - date_part(\'dow\', %s) - 7 else %s - date_part(\'dow\', %s) end as integer)', transform={p:String[1..2] | $p->formatMostRecentPostgres('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('now',                    $allStates,            ^ToSql(format='now()')),
     dynaFnToSql('parseDecimal',           $allStates,            ^ToSql(format='cast(%s as decimal)')),
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
+    dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='cast(%s as date) + cast(case when %s - date_part(\'dow\', %s) >= 0 then %s - date_part(\'dow\', %s) - 7 else %s - date_part(\'dow\', %s) end as integer)', transform={p:String[1..2] | $p->formatMostRecentPostgres('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
@@ -210,7 +212,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
     dynaFnToSql('today',                  $allStates,            ^ToSql(format='current_date')),
+    dynaFnToSql('toDecimal',              $allStates,            ^ToSql(format='cast(%s as decimal)')),
+    dynaFnToSql('toFloat',                $allStates,            ^ToSql(format='cast(%s as double precision)')),
     dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('toTimestamp',            $allStates,            ^ToSql(format='to_timestamp(%s, %s)')),
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='date_part(\'week\', %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='date_part(\'year\', %s)'))
   ];
@@ -313,7 +318,30 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::postg
     | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
 }
 
-function meta::relational::functions::sqlQueryToString::postgres::regexpMatchPostgres(query: String[1]): String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::regexpMatchPostgres(query: String[1]): String[1]
 {
    '%s ~ \'^' + $query + '$\''
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::formatMostRecentPostgres(p: String[1..2], defaultDay: String[1]): String[*]
+{
+   let day = $p->last()->toOne()->mapToDBDayOfWeekNumberPostgres()->toString();
+   let current = if ($p->size() == 2, | $p->first()->toOne(), | $defaultDay);
+   [$current, $day, $current, $day, $current, $day, $current];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::postgres::mapToDBDayOfWeekNumberPostgres(day: String[1]): Integer[1]
+{
+   let stringProc = getLiteralProcessorsForPostgres()->get(String)->toOne();
+   let enumProc = getLiteralProcessorsForPostgres()->get(Enum)->toOne();
+
+   [
+      pair(list([$enumProc.formatValue(DayOfWeek.Monday, []), $stringProc.formatValue(DayOfWeek.Monday->toString(), [])]), 1),
+      pair(list([$enumProc.formatValue(DayOfWeek.Tuesday, []), $stringProc.formatValue(DayOfWeek.Tuesday->toString(), [])]), 2),
+      pair(list([$enumProc.formatValue(DayOfWeek.Wednesday, []), $stringProc.formatValue(DayOfWeek.Wednesday->toString(), [])]), 3),
+      pair(list([$enumProc.formatValue(DayOfWeek.Thursday, []), $stringProc.formatValue(DayOfWeek.Thursday->toString(), [])]), 4),
+      pair(list([$enumProc.formatValue(DayOfWeek.Friday, []), $stringProc.formatValue(DayOfWeek.Friday->toString(), [])]), 5),
+      pair(list([$enumProc.formatValue(DayOfWeek.Saturday, []), $stringProc.formatValue(DayOfWeek.Saturday->toString(), [])]), 6),
+      pair(list([$enumProc.formatValue(DayOfWeek.Sunday, []), $stringProc.formatValue(DayOfWeek.Sunday->toString(), [])]), 0)
+   ]->filter(p | $p.first.values->contains($day)).second->toOne();
 }
