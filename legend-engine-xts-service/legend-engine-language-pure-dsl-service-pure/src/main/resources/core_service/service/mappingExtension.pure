@@ -7,8 +7,3 @@ function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(
 {
    $t
 }
-
-function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], dataSpace: meta::pure::metamodel::dataSpace::DataSpace[1]):T[m]
-{
-   $t
-}

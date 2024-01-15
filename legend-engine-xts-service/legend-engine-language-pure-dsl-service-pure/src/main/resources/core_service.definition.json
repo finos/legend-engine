@@ -7,7 +7,6 @@
     "platform_dsl_diagram",
     "platform_dsl_mapping",
     "core_functions",
-    "core",
-    "core_data_space_metamodel"
+    "core"
   ]
 }
