@@ -22,7 +22,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingV
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
@@ -74,8 +74,8 @@ class BulkLoadPlanner extends Planner
         transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
         if (!transformWhileCopy)
         {
-            tempDataset = DatasetDefinition.builder()
-                .schema(datasets.stagingDataset().schema())
+            tempDataset = ExternalDataset.builder()
+                .stagedFilesDataset(stagedFilesDataset)
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
                 .name(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)) + UNDERSCORE + TEMP_DATASET_BASE_NAME)
@@ -136,16 +136,6 @@ class BulkLoadPlanner extends Planner
 
     private LogicalPlan buildLogicalPlanForCopyAndTransform(Resources resources)
     {
-        List<Operation> operations = new ArrayList<>();
-
-
-        // Operation 1: Copy into a temp table
-        List<Value> fieldsToSelectFromStage = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
-        Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelectFromStage).build();
-        operations.add(Copy.of(tempDataset, selectStage, fieldsToSelectFromStage, stagedFilesDataset.stagedFilesDatasetProperties()));
-
-
-        // Operation 2: Transfer from temp table into target table, adding extra columns at the same time
         List<Value> fieldsToSelect = new ArrayList<>(tempDataset.schemaReference().fieldValues());
         List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
 
@@ -162,10 +152,7 @@ class BulkLoadPlanner extends Planner
             addAuditing(fieldsToInsertIntoMain, fieldsToSelect);
         }
 
-        operations.add(Insert.of(mainDataset(), Selection.builder().source(tempDataset).addAllFields(fieldsToSelect).build(), fieldsToInsertIntoMain));
-
-
-        return LogicalPlan.of(operations);
+        return LogicalPlan.of(Collections.singletonList(Insert.of(mainDataset(), Selection.builder().source(tempDataset).addAllFields(fieldsToSelect).build(), fieldsToInsertIntoMain)));
     }
 
     private void addAuditing(List<Value> fieldsToInsert, List<Value> fieldsToSelect)
@@ -184,7 +171,7 @@ class BulkLoadPlanner extends Planner
         operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         if (!transformWhileCopy)
         {
-            operations.add(Create.of(true, tempDataset));
+            operations.add(Create.of(false, tempDataset));
         }
         return LogicalPlan.of(operations);
     }
@@ -192,7 +179,7 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForPostActions(Resources resources)
     {
-        // there is no need to delete from the temp table for big query because we always use "overwrite" when loading
+        // there is no need to delete from the temp table for big query because we always use "create or replace"
         List<Operation> operations = new ArrayList<>();
         return LogicalPlan.of(operations);
     }

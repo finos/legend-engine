@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,51 +16,38 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.sql.v
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
-import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfNotExistsTableModifier;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.statements.CreateTable;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.statements.CreateExternalTable;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
-public class SQLCreateVisitor implements LogicalPlanVisitor<Create>
+public class CreateExternalDatasetVisitor implements LogicalPlanVisitor<Create>
 {
 
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Create current, VisitorContext context)
     {
-        if (current.dataset() instanceof ExternalDataset)
-        {
-            return new CreateExternalDatasetVisitor().visit(prev, current, context);
-        }
+        ExternalDataset externalDataset = (ExternalDataset) current.dataset();
 
-        CreateTable createTable = new CreateTable();
-        prev.push(createTable);
+        CreateExternalTable createExternalTable = new CreateExternalTable();
+        prev.push(createExternalTable);
 
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
-        logicalPlanNodes.add(current.dataset().datasetReference());
-        logicalPlanNodes.add(current.dataset().schema());
+        logicalPlanNodes.add(externalDataset);
+        logicalPlanNodes.add(externalDataset.stagedFilesDataset());
 
-        if (current.ifNotExists())
-        {
-            logicalPlanNodes.add(IfNotExistsTableModifier.INSTANCE);
-        }
+        // Trim type parameters as Big Query external tables do not allow them
+        List<Field> fields = externalDataset.stagedFilesDataset().schema().fields();
+        List<Field> trimmedFields = fields.stream().map(field -> field.withType(field.type().withLength(Optional.empty()).withScale(Optional.empty()))).collect(Collectors.toList());
+        logicalPlanNodes.add(externalDataset.stagedFilesDataset().schema().withFields(trimmedFields));
 
-        // Add Partition Keys
-        if (current.dataset().schema().partitionKeys() != null && !current.dataset().schema().partitionKeys().isEmpty())
-        {
-            logicalPlanNodes.addAll(current.dataset().schema().partitionKeys());
-        }
-
-        // Add Clustering Keys
-        if (current.dataset().schema().clusterKeys() != null && !current.dataset().schema().clusterKeys().isEmpty())
-        {
-            logicalPlanNodes.addAll(current.dataset().schema().clusterKeys());
-        }
-
-        return new VisitorResult(createTable, logicalPlanNodes);
+        return new VisitorResult(createExternalTable, logicalPlanNodes);
     }
 }

@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -18,45 +18,54 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sqldom
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.Column;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
-import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.LOAD_DATA;
-import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.OVERWRITE;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.CREATE;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.EXTERNAL;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.OR;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.REPLACE;
+import static org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause.TABLE;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_PARENTHESIS;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.COMMA;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.EMPTY;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.OPEN_PARENTHESIS;
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.WHITE_SPACE;
 
-public class CopyStatement implements DDLStatement
+public class CreateExternalTable implements DDLStatement
 {
     private Table table;
     private StagedFilesTable stagedFilesTable;
-    private List<Value> columns;
+    private final List<Column> columns;
 
-    public CopyStatement()
+    public CreateExternalTable()
     {
-        columns = new ArrayList<>();
+        this.columns = new ArrayList<>();
     }
 
     /*
-     Copy GENERIC PLAN for Big Query:
-        LOAD DATA OVERWRITE table_name
+     CREATE EXTERNAL TABLE GENERIC PLAN:
+     CREATE OR REPLACE EXTERNAL TABLE table_name
         (COLUMN_LIST)
-        FROM FILES (LOAD_OPTIONS)
+        OPTIONS (LOAD_OPTIONS)
      */
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
         validate();
-        builder.append(LOAD_DATA.get());
+        builder.append(CREATE.get());
         builder.append(WHITE_SPACE);
-        builder.append(OVERWRITE.get());
+        builder.append(OR.get());
+        builder.append(WHITE_SPACE);
+        builder.append(REPLACE.get());
+        builder.append(WHITE_SPACE);
+        builder.append(EXTERNAL.get());
+        builder.append(WHITE_SPACE);
+        builder.append(TABLE.get());
         builder.append(WHITE_SPACE);
         table.genSqlWithoutAlias(builder);
         builder.append(WHITE_SPACE);
@@ -64,10 +73,13 @@ public class CopyStatement implements DDLStatement
         builder.append(OPEN_PARENTHESIS);
         SqlGen.genSqlList(builder, columns, EMPTY, COMMA);
         builder.append(CLOSING_PARENTHESIS);
+        builder.append(WHITE_SPACE);
 
-        builder.append(WHITE_SPACE + Clause.FROM.get() + WHITE_SPACE + Clause.FILES + WHITE_SPACE);
+        builder.append(Clause.OPTIONS.get());
+        builder.append(WHITE_SPACE);
         stagedFilesTable.genSql(builder);
     }
+
 
     @Override
     public void push(Object node)
@@ -80,9 +92,9 @@ public class CopyStatement implements DDLStatement
         {
             stagedFilesTable = (StagedFilesTable) node;
         }
-        else if (node instanceof Value)
+        else if (node instanceof Column)
         {
-            columns.add((Value) node);
+            columns.add((Column) node);
         }
     }
 

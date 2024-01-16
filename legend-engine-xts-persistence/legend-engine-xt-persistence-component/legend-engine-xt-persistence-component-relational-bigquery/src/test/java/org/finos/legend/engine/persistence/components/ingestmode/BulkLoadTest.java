@@ -128,9 +128,9 @@ public class BulkLoadTest
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` INT64,`append_time` DATETIME)";
 
-        String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
-            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
-            "FROM FILES (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+        String expectedCopySql = "CREATE OR REPLACE EXTERNAL TABLE `my_db`.`my_name_legend_persistence_temp` " +
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC,`col_datetime` DATETIME,`col_variant` JSON) " +
+            "OPTIONS (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +
@@ -141,8 +141,8 @@ public class BulkLoadTest
             "(SELECT 'my_name',{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"additional_metadata\":{\"event_id\":\"xyz123\"}}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
-        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
-        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+        Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
@@ -201,10 +201,9 @@ public class BulkLoadTest
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` INT64,`append_time` DATETIME)";
 
-        String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
-            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
-            "FROM FILES " +
-            "(uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], compression='GZIP', encoding='UTF8', field_delimiter=',', format='CSV', max_bad_records=100, null_marker='NULL', quote=''', skip_leading_rows=1)";
+        String expectedCopySql = "CREATE OR REPLACE EXTERNAL TABLE `my_db`.`my_name_legend_persistence_temp` " +
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC,`col_datetime` DATETIME,`col_variant` JSON) " +
+            "OPTIONS (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], compression='GZIP', encoding='UTF8', field_delimiter=',', format='CSV', max_bad_records=100, null_marker='NULL', quote=''', skip_leading_rows=1)";
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +
@@ -216,8 +215,8 @@ public class BulkLoadTest
             "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
-        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
-        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+        Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
@@ -266,9 +265,9 @@ public class BulkLoadTest
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`batch_id` INT64)";
 
-        String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
-            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
-            "FROM FILES (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+        String expectedCopySql = "CREATE OR REPLACE EXTERNAL TABLE `my_db`.`my_name_legend_persistence_temp` " +
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC,`col_datetime` DATETIME,`col_variant` JSON) " +
+            "OPTIONS (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`) " +
@@ -276,8 +275,8 @@ public class BulkLoadTest
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
-        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
-        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+        Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
@@ -325,9 +324,9 @@ public class BulkLoadTest
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON,`digest` STRING,`batch_id` INT64,`append_time` DATETIME)";
 
-        String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
-            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
-            "FROM FILES (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+        String expectedCopySql = "CREATE OR REPLACE EXTERNAL TABLE `my_db`.`my_name_legend_persistence_temp` " +
+            "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC,`col_datetime` DATETIME,`col_variant` JSON) " +
+            "OPTIONS (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `digest`, `batch_id`, `append_time`) " +
@@ -337,8 +336,8 @@ public class BulkLoadTest
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
-        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
-        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+        Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
@@ -387,9 +386,9 @@ public class BulkLoadTest
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_NAME`" +
             "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON,`DIGEST` STRING,`BATCH_ID` INT64,`APPEND_TIME` DATETIME)";
 
-        String expectedCopySql = "LOAD DATA OVERWRITE `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` " +
-            "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON) " +
-            "FROM FILES (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+        String expectedCopySql = "CREATE OR REPLACE EXTERNAL TABLE `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` " +
+            "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC,`COL_DATETIME` DATETIME,`COL_VARIANT` JSON) " +
+            "OPTIONS (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
 
         String expectedInsertSql = "INSERT INTO `MY_DB`.`MY_NAME` " +
             "(`COL_INT`, `COL_STRING`, `COL_DECIMAL`, `COL_DATETIME`, `COL_VARIANT`, `DIGEST`, `BATCH_ID`, `APPEND_TIME`) " +
@@ -397,8 +396,8 @@ public class BulkLoadTest
             "FROM `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
-        Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
-        Assertions.assertEquals(expectedInsertSql, ingestSql.get(1));
+        Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
