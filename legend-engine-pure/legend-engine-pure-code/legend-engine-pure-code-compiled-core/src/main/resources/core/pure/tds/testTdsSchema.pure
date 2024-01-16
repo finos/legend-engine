@@ -35,6 +35,11 @@ function <<access.private>> meta::pure::tds::schema::tests::addFullName(objects:
   )
 }
 
+function <<access.private>> meta::pure::tds::schema::tests::filter(objects: meta::pure::tds::TabularDataSet[1], name:String[1]): meta::pure::tds::TabularDataSet[1]
+{
+  $objects->filter(r | $r.getString('fullName') == $name);
+}
+
 function <<access.private>> meta::pure::tds::schema::tests::addFullNameAndFilter(objects: meta::pure::tds::TabularDataSet[1], name:String[1]): meta::pure::tds::TabularDataSet[1]
 {
   $objects->addFullName()->filter(r | $r.getString('fullName') == $name);
@@ -66,7 +71,7 @@ function  <<test.Test>> meta::pure::tds::schema::tests::resolveSchemaTest() : Bo
                col(p|$p.firstName,'firstName') ,
                col(p|$p.lastName,'lastName')
             ])
-         ->meta::pure::tds::schema::tests::addFullNameAndFilter('john doe')
+         ->meta::pure::tds::schema::tests::addFullNameAndFilter('john doe')->filter('john doe')
    });   
 
    assertSchemaRoundTripEquality(

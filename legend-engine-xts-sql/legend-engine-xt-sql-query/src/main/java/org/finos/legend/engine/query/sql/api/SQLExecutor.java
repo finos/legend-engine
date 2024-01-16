@@ -205,7 +205,9 @@ public class SQLExecutor
 
             PureModel pureModel = modelManager.loadModel(pureModelContext, PureClientVersions.production, profiles, "");
 
-            Root_meta_external_query_sql_metamodel_Query compiledQuery = new ProtocolToMetamodelTranslator().translate(query, pureModel);
+            Query realised = QueryRealiaser.realias(query);
+
+            Root_meta_external_query_sql_metamodel_Query compiledQuery = new ProtocolToMetamodelTranslator().translate(realised, pureModel);
 
             RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> compiledSources = new SQLSourceTranslator().translate(sources, pureModel);
             LOGGER.info("{}", new LogInfo(profiles, LoggingEventType.GENERATE_PLAN_START));

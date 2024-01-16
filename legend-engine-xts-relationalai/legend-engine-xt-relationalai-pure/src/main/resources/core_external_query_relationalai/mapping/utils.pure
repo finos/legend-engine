@@ -1,14 +1,12 @@
 import meta::pure::mapping::*;
 import meta::rel::mapping::*;
 
-function meta::rel::mapping::rel(result: Result<Any|*>[1]): String[1] {
-  let relSource = $result.activities
+function meta::rel::mapping::rel(activities: Activity[*]): String[1] {
+  let relSource = $activities
     ->filter(a | $a->instanceOf(QueryActivity))
-    ->at(0)
+    ->toOne()
     ->cast(@QueryActivity)
     .relSource;
-
-  println($relSource);
 
   $relSource;
 }

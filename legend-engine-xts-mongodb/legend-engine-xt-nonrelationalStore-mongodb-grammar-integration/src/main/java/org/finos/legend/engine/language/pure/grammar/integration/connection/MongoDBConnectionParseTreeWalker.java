@@ -42,19 +42,14 @@ public class MongoDBConnectionParseTreeWalker
     public void visitMongoDBConnectionValue(MongoDBConnectionParserGrammar.DefinitionContext ctx, MongoDBConnection connectionValue, boolean isEmbedded)
     {
         // store (optional if the store is provided by embedding context, if not provided, it is required)
-        MongoDBConnectionParserGrammar.ConnectionStoreContext connectionStoreContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.connectionStore(), "store", connectionValue.sourceInformation);
+        MongoDBConnectionParserGrammar.ConnectionStoreContext connectionStoreContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.connectionStore(), "store", connectionValue.sourceInformation);
         if (connectionStoreContext != null)
         {
             connectionValue.element = PureGrammarParserUtility.fromQualifiedName(connectionStoreContext.qualifiedName().packagePath() == null ? Collections.emptyList() : connectionStoreContext.qualifiedName().packagePath().identifier(), connectionStoreContext.qualifiedName().identifier());
             connectionValue.elementSourceInformation = this.walkerSourceInformation.getSourceInformation(connectionStoreContext.qualifiedName());
-            connectionValue.type = DatabaseType.MongoDb;
-        }
-        else if (!isEmbedded)
-        {
-            // Copied from service store, do we need this??
-            PureGrammarParserUtility.validateAndExtractRequiredField(ctx.connectionStore(), "store", connectionValue.sourceInformation);
         }
         // database type
+        connectionValue.type = DatabaseType.MongoDb;
         MongoDBDatasourceSpecification dsSpecification = getMongoDBDatasourceSpecification(ctx, connectionValue);
         connectionValue.dataSourceSpecification = dsSpecification;
 

@@ -52,6 +52,7 @@ public class PostgresTestContainers implements DynamicTestConnection
         System.out.println("Starting setup of dynamic connection for database: Postgres ");
 
         long start = System.currentTimeMillis();
+        this.postgreSQLContainer.withInitScript("postgres/init.sql");
         this.postgreSQLContainer.start();
         String containerHost = this.postgreSQLContainer.getHost();
         int containerPort = this.postgreSQLContainer.getMappedPort(PostgreSQLContainer.POSTGRESQL_PORT);
