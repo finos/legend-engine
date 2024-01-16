@@ -185,60 +185,78 @@ function meta::external::query::graphQL::transformation::queryToPure::addDynamic
                 'where',
                 ^DebugContext(debug=false,space='')
               )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(
-                '',
+                [],
                 $property.genericType.rawType->cast(@Class<Any>)->toOne(),
-                []
+                [],
+                0
               );
       let fe = $ic.valueSpecifications->toOne();
       let vars = $ic.vars;
       let expressionSequence = $f.expressionSequence;
-      let getAll = $expressionSequence->last()->toOne()->cast(@SimpleFunctionExpression);
       let serializeParam = $expressionSequence->last()->toOne()
                               ->cast(@SimpleFunctionExpression);
-      let graphFetchParam = $expressionSequence->last()->toOne()
-                    ->cast(@SimpleFunctionExpression).parametersValues->at(0)
+      let graphFetchParam = $serializeParam.parametersValues->at(0)
                     ->cast(@SimpleFunctionExpression);
-      let funcWithoutGraphFetchSerialize = $expressionSequence->last()->toOne()
-                                            ->cast(@SimpleFunctionExpression).parametersValues->at(0)
-                                            ->cast(@SimpleFunctionExpression).parametersValues->at(0);
+      let limitingFunctionParam = $graphFetchParam.parametersValues->at(0)
+                    ->cast(@SimpleFunctionExpression);
+      let sortFunctionParam = if($limitingFunctionParam.parametersValues->at(0)->instanceOf(SimpleFunctionExpression), |$limitingFunctionParam.parametersValues->at(0)->cast(@SimpleFunctionExpression), |[]);
+      if($limitingFunctionParam.func->isALimitingFunction(), |assert($sortFunctionParam.func->toOne()->isASortingFunction(),'Any limit function should be preceded by sorting function'), |[]);
+      
+      let funcWithoutGraphFetchSerializeOrLimit = if($limitingFunctionParam.func->isALimitingFunction(),
+                                              | $sortFunctionParam.parametersValues->at(0),
+                                              | $graphFetchParam.parametersValues->at(0)
+                                            );
       
       let expressionSequenceLengthLess1 = $expressionSequence->size() - 1;
-      let returnType = $funcWithoutGraphFetchSerialize->evaluateAndDeactivate();
+      let returnType = $funcWithoutGraphFetchSerializeOrLimit->evaluateAndDeactivate();
       let classGenericType = $returnType.genericType->cast(@GenericType);
       let filterLambda = newLambdaFunction(
         ^FunctionType(
-          returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='p')])
+          returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$classGenericType,name='p_0')])
       );
       let finalLambda = newLambdaFunction(
         ^FunctionType(
           returnType=$classGenericType,
           returnMultiplicity=ZeroMany,
-          parameters = $vars
+          parameters = $f->functionType().parameters->concatenate($vars)
         )
       );
-      ^$finalLambda(
-        expressionSequence = $expressionSequence->slice(0,$expressionSequenceLengthLess1)->concatenate(
-          ^$serializeParam(
-            parametersValues = [
-              ^$graphFetchParam(
-                parametersValues = [
-                  ^SimpleFunctionExpression(
+      let sfe = ^SimpleFunctionExpression(
                     importGroup=system::imports::coreImport,
                     func=meta::pure::functions::collection::filter_T_MANY__Function_1__T_MANY_,
                     multiplicity=ZeroMany,
                     genericType=$classGenericType,
                     parametersValues = [
-                      $funcWithoutGraphFetchSerialize,
+                      $funcWithoutGraphFetchSerializeOrLimit,
                       ^InstanceValue(
                         multiplicity=PureOne,
                         genericType=^GenericType(rawType = LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnMultiplicity=PureOne,returnType=^GenericType(rawType=Boolean)))]),
                         values= ^$filterLambda(expressionSequence = $fe->evaluateAndDeactivate()->toOneMany())
                       )
                     ]
+                  );
+      ^$finalLambda(
+        expressionSequence = $expressionSequence->slice(0,$expressionSequenceLengthLess1)->concatenate(
+          ^$serializeParam(
+            parametersValues = [
+              ^$graphFetchParam(
+                parametersValues = [
+                  if($limitingFunctionParam.func->isALimitingFunction(),
+                    | let sortFunctionParamToOne = $sortFunctionParam->toOne();
+                      ^$limitingFunctionParam(
+                        parametersValues = [
+                          ^$sortFunctionParamToOne(
+                            parametersValues = [
+                              $sfe
+                            ]->concatenate($sortFunctionParamToOne.parametersValues->drop(1))
+                          )
+                        ]->concatenate($limitingFunctionParam.parametersValues->drop(1))
+                      );,
+                    | $sfe
                   )
-                ]->concatenate($graphFetchParam.parametersValues->at(1))
+                ]->concatenate($graphFetchParam.parametersValues->drop(1))
               )
-            ]->concatenate($serializeParam.parametersValues->at(1))
+            ]->concatenate($serializeParam.parametersValues->drop(1))
           )
         )->toOneMany()
       );
@@ -267,6 +285,15 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlanFor
               )
   ));
 
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::isASortingFunction(func: Function<Any>[1]): Boolean[1]
+{
+  $func->in(
+    [
+      sortBy_T_m__Function_$0_1$__T_m_
+    ]
+  )
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::isALimitingFunction(func: Function<Any>[1]): Boolean[1]

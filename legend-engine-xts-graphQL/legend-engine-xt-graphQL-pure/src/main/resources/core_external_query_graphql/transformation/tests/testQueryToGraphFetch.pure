@@ -265,6 +265,7 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 Class meta::external::query::graphQL::transformation::queryToPure::tests::model::Person
 {
   firstName : String[1];
+  middleName: String[0..1];
   lastName : String[1];
   age : Integer[1];
   phone: Integer[1];
@@ -313,6 +314,8 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   personsWithDrop(offset: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->drop($offset)}: Person[*];
 
   personsWithTake(take: Integer[1]) {Person.all()->sortBy(#/Person/fullName#)->take($take)}: Person[*];
+
+  firms() {Firm.all()}: Firm[*];
 }
 
 function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::testConvertQueryWithOneParamToGraphFetch():Boolean[1]

@@ -18,6 +18,8 @@ import simple::model::*;
 Class simple::model::Query
 {
   allEmployees() {Person.all()}: Person[*];
+  firms() {Firm.all()}: Firm[*];
+  allEmployeesPaginated(pageNumber: Integer[1]) {Person.all()->sortBy(p|$p.firstName + $p.lastName)->paginated($pageNumber, 1)}: Person[*];
 }
 
 Class simple::model::Firm

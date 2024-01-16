@@ -275,7 +275,7 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(ObjectValue val)
             {
-                return "{ " + val.values.stream().map(v -> v.name + ": " + renderValue(v.value)).collect(Collectors.joining(", ")) + " }";
+                return "{ " + val.fields.stream().map(v -> v.name + ": " + renderValue(v.value)).collect(Collectors.joining(", ")) + " }";
             }
 
             @Override

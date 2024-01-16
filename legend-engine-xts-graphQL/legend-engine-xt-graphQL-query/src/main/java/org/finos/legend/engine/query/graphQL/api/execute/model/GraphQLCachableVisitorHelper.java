@@ -113,11 +113,18 @@ public class GraphQLCachableVisitorHelper
         if (value instanceof ObjectValue)
         {
             ObjectValue objectValue = new ObjectValue();
-            objectValue.values = ((ObjectValue) value).values.stream().map(v ->
+            objectValue.fields = ((ObjectValue) value).fields.stream().map(v ->
                 {
                     ObjectField objectField = new ObjectField();
                     objectField.name = v.name;
-                    objectField.value = getValueWithoutLiterals(v.value);
+                    if (v.name.equals("_in"))
+                    {
+                        objectField.value = placeholderValue;
+                    }
+                    else
+                    {
+                        objectField.value = getValueWithoutLiterals(v.value);
+                    }
                     return objectField;
                 }
             ).collect(Collectors.toList());

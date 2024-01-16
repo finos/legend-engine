@@ -48,15 +48,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { age : { _or : [ { _eq: 1 }, { _eq: 2 } ] } }) { ' +
+  '        persons (where: { _or : [ { age: { _eq: 1 } }, { age: { _eq: 2 } } ] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_age__or0__eq:Integer[1],where_age__or1__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.age == $where_age__or0__eq -> or($p.age == $where_age__or1__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+    'where__or0_age__eq:Integer[1],where__or1_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__or0_age__eq -> or($p_0.age == $where__or1_age__eq);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
   runTest($query, $expectedLambda);
 }
 
@@ -64,15 +67,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { age : { _and : [ { _eq: 3 }, { _eq: 4 } ] } }) { ' +
+  '        persons (where: { _and : [ { age: { _eq: 3 } }, { age: { _eq: 4 } } ] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_age__and0__eq:Integer[1],where_age__and1__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.age == $where_age__and0__eq -> and($p.age == $where_age__and1__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+    'where__and0_age__eq:Integer[1],where__and1_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__and0_age__eq -> and($p_0.age == $where__and1_age__eq);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
   runTest($query, $expectedLambda);
 }
 
@@ -85,10 +91,13 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_age__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.age == $where_age__eq;) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+    'where_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where_age__eq;'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
   runTest($query, $expectedLambda);
 }
 
@@ -96,15 +105,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { age : { _and : [ { _eq: 3 }, { _eq: 4 }, { _eq: 5 } ] } }) { ' +
+  '        persons (where: { _and : [{ age : { _eq: 3 } }, { age : { _eq: 4 } }, { age : { _eq: 5 } } ] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_age__and0__eq:Integer[1],where_age__and1__eq:Integer[1],where_age__and2__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.age == $where_age__and0__eq -> and($p.age == $where_age__and1__eq) -> and($p.age == $where_age__and2__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+    'where__and0_age__eq:Integer[1],where__and1_age__eq:Integer[1],where__and2_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__and0_age__eq -> and($p_0.age == $where__and1_age__eq) -> and($p_0.age == $where__and2_age__eq);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
   runTest($query, $expectedLambda);
 }
 
@@ -112,15 +124,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { age : { _and : [ { _or: [ { _eq: 1 }, { _eq: 2 } ] }, { _eq: 3 }, { _eq: 4 } ] } }) { ' +
+  '        persons (where: { _and : [ { age : { _eq: 3 } }, { _or: [ { age : { _eq: 4 } }, { age : { _eq: 2 } } ] }, { age : { _eq: 1 } } ] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_age__and0__or0__eq:Integer[1],where_age__and0__or1__eq:Integer[1],where_age__and1__eq:Integer[1],where_age__and2__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.age == $where_age__and0__or0__eq -> or($p.age == $where_age__and0__or1__eq) -> and($p.age == $where_age__and1__eq) -> and($p.age == $where_age__and2__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+    'where__and0_age__eq:Integer[1],where__and1__or0_age__eq:Integer[1],where__and1__or1_age__eq:Integer[1],where__and2_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__and0_age__eq -> and($p_0.age == $where__and1__or0_age__eq -> or($p_0.age == $where__and1__or1_age__eq)) -> and($p_0.age == $where__and2_age__eq);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
   runTest($query, $expectedLambda);
 }
 
@@ -128,16 +143,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { age : { _or : [ { _eq: 3 }, { _eq: 4 }, { _eq: 5 } ] } }) { ' +
+  '        persons (where: { _or : [{ age : { _eq: 3 } }, { age : { _eq: 4 } }, { age : { _eq: 5 } } ] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_age__or0__eq:Integer[1],where_age__or1__eq:Integer[1],where_age__or2__eq:Integer[1]' +
-          ' | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.age == $where_age__or0__eq -> or($p.age == $where_age__or1__eq) -> or($p.age == $where_age__or2__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+    'where__or0_age__eq:Integer[1],where__or1_age__eq:Integer[1],where__or2_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__or0_age__eq -> or($p_0.age == $where__or1_age__eq) -> or($p_0.age == $where__or2_age__eq);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
   runTest($query, $expectedLambda);
 }
 
@@ -145,15 +162,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { age : { _or : [ { _eq: 3 }, { _and: [ { _eq: 1 }, { _eq: 2 } ] }, { _eq: 5 } ] } }) { ' +
+  '        persons (where: { _or : [ { age : { _eq: 3 } }, { _and: [ { age : { _eq: 4 } }, { age : { _eq: 2 } } ] }, { age : { _eq: 1 } } ] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_age__or0__eq:Integer[1],where_age__or1__and0__eq:Integer[1],where_age__or1__and1__eq:Integer[1],where_age__or2__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.age == $where_age__or0__eq -> or($p.age == $where_age__or1__and0__eq -> and($p.age == $where_age__or1__and1__eq)) -> or($p.age == $where_age__or2__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+          'where__or0_age__eq:Integer[1],where__or1__and0_age__eq:Integer[1],where__or1__and1_age__eq:Integer[1],where__or2_age__eq:Integer[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__or0_age__eq -> or($p_0.age == $where__or1__and0_age__eq -> and($p_0.age == $where__or1__and1_age__eq)) -> or($p_0.age == $where__or2_age__eq);'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
   runTest($query, $expectedLambda);
 }
 
@@ -161,15 +181,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { firstName : { _eq: "Abhishoya" } }) { ' +
+  '        persons (where: { firstName : { _eq: "John" } }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_firstName__eq:String[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.firstName == $where_firstName__eq;) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+          'where_firstName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firstName == $where_firstName__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
   runTest($query, $expectedLambda);
 }
 
@@ -182,10 +205,13 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_isSeniorCitizen__eq:Boolean[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p -> isSeniorCitizen(){ $this.age -> greaterThan(60) } == $where_isSeniorCitizen__eq;) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+          'where_isSeniorCitizen__eq:Boolean[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0 -> isSeniorCitizen(){ $this.age -> greaterThan(60) } == $where_isSeniorCitizen__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
   runTest($query, $expectedLambda);
 }
 
@@ -198,10 +224,111 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where_bankBalance__eq:Float[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.bankBalance == $where_bankBalance__eq;) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+          'where_bankBalance__eq:Float[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.bankBalance == $where_bankBalance__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testSimpleIn(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { legalName: { _in: ["FINOS"]} }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_legalName__in:String[*] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.legalName -> in($where_legalName__in);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testSimpleContains(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { legalName: { _contains: "F"} }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'wherelegalNamecontains:String[1] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.legalName -> contains($wherelegalNamecontains);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testContainsWithOptionalProperty(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { middleName: { _contains: "F"} }) { ' +
+  '            middleName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'wheremiddleNamecontains:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.middleName -> contains($wheremiddleNamecontains);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {middleName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {middleName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testSimpleExists(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { employees : { _exists: { firstName: { _eq: "John" } } } }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_employees__exists_firstName__eq:String[1] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.employees -> exists('+
+              'p_1:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_1.firstName == $where_employees__exists_firstName__eq;'+
+            ');' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testSimpleNested(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { firm : { legalName: { _eq: "FINOS" } } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_firm_legalName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firm.legalName == $where_firm_legalName__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
   runTest($query, $expectedLambda);
 }
 
@@ -209,15 +336,18 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { _and : [{ firstName : { _eq: "Abhishoya" }}, { age: { _eq: 24 } }] }) { ' +
+  '        persons (where: { _and : [{ firstName : { _eq: "John" }}, { age: { _eq: 24 } }] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where__and0_firstName__eq:String[1],where__and1_age__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.firstName == $where__and0_firstName__eq -> and($p.age == $where__and1_age__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+          'where__and0_firstName__eq:String[1],where__and1_age__eq:Integer[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firstName == $where__and0_firstName__eq -> and($p_0.age == $where__and1_age__eq);'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
   runTest($query, $expectedLambda);
 }
 
@@ -225,14 +355,101 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let query = 
   '    query { ' +
-  '        persons (where: { _or : [{ firstName : { _eq: "Abhishoya" } }, { age: { _eq: 24 } }] }) { ' +
+  '        persons (where: { _or : [{ firstName : { _eq: "John" } }, { age: { _eq: 24 } }] }) { ' +
   '            age ' +
   '        } ' +
   '    } ';
   let expectedLambda = 
-          'where__or0_firstName__eq:String[1],where__or1_age__eq:Integer[1] | Class Person.all() '+
-          '-> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p.firstName == $where__or0_firstName__eq -> or($p.age == $where__or1_age__eq);) '+
-          '-> graphFetch(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#) '+
-          '-> serialize(#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#);';
+          'where__or0_firstName__eq:String[1],where__or1_age__eq:Integer[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firstName == $where__or0_firstName__eq -> or($p_0.age == $where__or1_age__eq);'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testAndWithNested(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { _and: [ { firm : { legalName: { _eq: "FINOS" } } }, { firstName: { _eq: "John" } } ]}) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where__and0_firm_legalName__eq:String[1],where__and1_firstName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firm.legalName == $where__and0_firm_legalName__eq -> and($p_0.firstName == $where__and1_firstName__eq);'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testNestedWithExists(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { firm : { employees: { _exists: { firstName: { _eq: "John" } } } } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_firm_employees__exists_firstName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firm.employees -> exists('+
+              'p_1:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_1.firstName == $where_firm_employees__exists_firstName__eq;'+
+            ');' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testOrWithExists(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { _or: [{ employees : { _exists: { firstName: { _eq: "John" } } } }, { legalName : { _eq: "FINOS" } }] }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where__or0_employees__exists_firstName__eq:String[1],where__or1_legalName__eq:String[1] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.employees -> exists('+
+              'p_1:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_1.firstName == $where__or0_employees__exists_firstName__eq;'+
+            ') -> or($p_0.legalName == $where__or1_legalName__eq);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::testPaginated(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        personsPaginated (pageNumber: 0, where: { firstName : { _eq: "John" } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'pageNumber:Integer[1],where_firstName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firstName == $where_firstName__eq;'+
+          ') -> sortBy('+
+            '#/Person/fullName#'+
+          ') -> paginated('+
+            '$pageNumber, 1'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
   runTest($query, $expectedLambda);
 }

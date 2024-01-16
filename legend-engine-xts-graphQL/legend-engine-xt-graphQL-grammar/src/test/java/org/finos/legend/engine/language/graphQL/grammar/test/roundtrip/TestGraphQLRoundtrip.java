@@ -170,14 +170,14 @@ public class TestGraphQLRoundtrip
     public void testQueryWithInputObjectRoundtrip()
     {
         check("query getUserWithProjects($a: INT = 1) @cool {\n" +
-                "  user(where: { firstName: { _eq: \"Abhishoya\" } }) {\n" +
+                "  user(where: { firstName: { _eq: \"John\" } }) {\n" +
                 "    firstname\n" +
                 "    lastname\n" +
                 "  }\n" +
                 "}");
 
         check("query getUserWithProjects($a: INT = 1) @cool {\n" +
-                "  user(where: { _or: { _eq: \"Abhishoya\" } }) {\n" +
+                "  user(where: { _or: { _eq: \"John\" } }) {\n" +
                 "    firstname\n" +
                 "    lastname\n" +
                 "  }\n" +

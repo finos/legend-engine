@@ -66,27 +66,46 @@ Class meta::external::query::graphQL::transformation::queryToPure::dynamic::meta
   OPERATORS
 */
 
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::EqOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression
+{
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::ExistsOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
+{
+  value: BooleanExpression[1];
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::InOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
+{
+  value: Literal[*];
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::ContainsOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
 {
   value: Literal[1];
 }
 
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::GtOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::EqOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
 {
   value: Literal[1];
 }
 
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::LtOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::GtOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
 {
   value: Literal[1];
 }
 
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::GteOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::LtOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
 {
   value: Literal[1];
 }
 
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::LteOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::GteOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
+{
+  value: Literal[1];
+}
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::LteOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Operator
 {
   value: Literal[1];
 }

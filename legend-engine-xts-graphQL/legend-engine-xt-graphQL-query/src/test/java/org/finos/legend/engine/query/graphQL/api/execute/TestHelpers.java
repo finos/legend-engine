@@ -51,19 +51,19 @@ public class TestHelpers
     public void testWhere()
     {
         ObjectValue obj = new ObjectValue();
-        obj.values = Lists.mutable.empty();
+        obj.fields = Lists.mutable.empty();
         ObjectField objectField = new ObjectField();
         objectField.name = "id";
         ObjectValue obj1 = new ObjectValue();
-        obj1.values = Lists.mutable.empty();
+        obj1.fields = Lists.mutable.empty();
         ObjectField objectField1 = new ObjectField();
         objectField1.name = "_eq";
         IntValue intValue = new IntValue();
         intValue.value = 1;
         objectField1.value = intValue;
-        obj1.values.add(objectField1);
+        obj1.fields.add(objectField1);
         objectField.value = obj1;
-        obj.values.add(objectField);
+        obj.fields.add(objectField);
         System.out.println(GraphQLExecutionHelper.visitWhere(
                 obj,
                 "where"

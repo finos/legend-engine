@@ -515,7 +515,7 @@ public class GraphQLGrammarParser
         if (valueContext.objectValue() != null)
         {
             ObjectValue objectValue = new ObjectValue();
-            objectValue.values = valueContext.objectValue().objectField().stream().map(objectFieldContext ->
+            objectValue.fields = valueContext.objectValue().objectField().stream().map(objectFieldContext ->
             {
                 ObjectField field = new ObjectField();
                 field.name = objectFieldContext.name().getText();

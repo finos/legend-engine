@@ -208,7 +208,7 @@ Class meta::external::query::graphQL::metamodel::sdl::typeSystem::InputObjectTyp
 
 Class meta::external::query::graphQL::metamodel::sdl::value::ObjectValue extends meta::external::query::graphQL::metamodel::sdl::value::Value
 {
-  values: meta::external::query::graphQL::metamodel::sdl::value::ObjectField[*];
+  fields: meta::external::query::graphQL::metamodel::sdl::value::ObjectField[*];
 }
 
 Class meta::external::query::graphQL::metamodel::sdl::value::ObjectField

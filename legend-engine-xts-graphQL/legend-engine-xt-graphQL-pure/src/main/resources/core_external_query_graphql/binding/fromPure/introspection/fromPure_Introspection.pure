@@ -69,7 +69,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
     )
   )->concatenate(
     $types->map(t|
-      if($t->instanceOf(Class) && !$t->cast(@Class<Any>)->cast(@AnnotatedElement).stereotypes.value->contains('Query'),
+      if($t->instanceOf(Class) && !$t->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype('Query',meta::external::query::graphQL::binding::GraphQL),
         | pair(
             $t.name->toOne() + '_bool_exp',
             ^__Type(
@@ -92,7 +92,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
     )
   )->concatenate(
     $types->map(t|
-      if($t->instanceOf(Class) && !$t->cast(@Class<Any>)->cast(@AnnotatedElement).stereotypes.value->contains('Query'),
+      if($t->instanceOf(Class) && !$t->cast(@ElementWithStereotypes)->meta::pure::functions::meta::hasStereotype('Query',meta::external::query::graphQL::binding::GraphQL),
         | pair(
             $t.name->toOne() + '_exists_exp',
             ^__Type(

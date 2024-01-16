@@ -52,12 +52,14 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.value.Value;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.ValueVisitor;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.Variable;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 public class GraphQLExecutionHelper
 {
@@ -318,12 +320,24 @@ public class GraphQLExecutionHelper
             public Map<String, Result> visit(ListValue val)
             {
                 Map<String, Result> m = new HashMap<>();
+                List<Object> l = new ArrayList<>();
                 Iterator<Value> v = val.values.stream().iterator();
                 int idx = 0;
                 while (v.hasNext())
                 {
-                    m.putAll(visitWhere(v.next(), prefix + idx));
-                    idx++;
+                    if (prefix.endsWith("__in"))
+                    {
+                        l.add(argumentValueToObject(v.next()));
+                    }
+                    else
+                    {
+                        m.putAll(visitWhere(v.next(), prefix + idx));
+                        idx++;
+                    }
+                }
+                if (prefix.endsWith("__in"))
+                {
+                    m.put(prefix, new ConstantResult(l));
                 }
                 return m;
             }
@@ -338,7 +352,17 @@ public class GraphQLExecutionHelper
             public Map<String, Result> visit(ObjectValue val)
             {
                 Map<String, Result> m = new HashMap<>();
-                val.values.stream().map(v -> visitWhere(v.value, prefix + "_" + v.name)).forEach(m::putAll);
+                val.fields.stream().map(v ->
+                {
+                    if (Objects.equals(v.name, "_contains"))
+                    {
+                        return visitWhere(v.value, prefix.replace("_","") + v.name.replace("_",""));
+                    }
+                    else
+                    {
+                        return visitWhere(v.value, prefix + "_" + v.name);
+                    }
+                }).forEach(m::putAll);
                 return m;
             }
 
