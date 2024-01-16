@@ -28,6 +28,7 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
+import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.testable.TestableRunner;
@@ -46,12 +47,11 @@ import org.pac4j.core.profile.ProfileManager;
 import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 import org.slf4j.Logger;
 
-import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
 @Api(tags = "Testing")
 @Path("pure/v1/testable")
 @Produces(MediaType.APPLICATION_JSON)
-public class Testable
+public class TestableApi
 {
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Testable.class);
 
@@ -61,8 +61,7 @@ public class Testable
 
     private final ModelManager modelManager;
 
-
-    public Testable(ModelManager modelManager)
+    public TestableApi(ModelManager modelManager)
     {
         this.modelManager = modelManager;
         this.testableRunner = new TestableRunner();
@@ -72,14 +71,14 @@ public class Testable
     @POST
     @Path("runTests")
     @ApiOperation(value = "Run tests on testables")
-    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    @Consumes({MediaType.APPLICATION_JSON, InflateInterceptor.APPLICATION_ZLIB})
     public Response doTests(RunTestsInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
         try
         {
             LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_START, "").toString());
-            Pair<PureModelContextData, PureModel> modelAndData = modelManager.loadModelAndData(input.model, input.model instanceof PureModelContextPointer ? ((PureModelContextPointer) input.model).serializer.version : null, profiles, null);
+            Pair<PureModelContextData, PureModel> modelAndData = this.modelManager.loadModelAndData(input.model, input.model instanceof PureModelContextPointer ? ((PureModelContextPointer) input.model).serializer.version : null, profiles, null);
             RunTestsResult runTestsResult = testableRunner.doTests(input.testables, modelAndData.getTwo(), modelAndData.getOne());
             LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_STOP, "").toString());
             return ManageConstantResult.manageResult(profiles, runTestsResult, objectMapper);

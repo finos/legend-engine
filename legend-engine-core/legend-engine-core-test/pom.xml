@@ -34,5 +34,6 @@
         <module>legend-engine-test-data-generation</module>
         <module>legend-engine-test-framework</module>
         <module>legend-engine-testable</module>
+        <module>legend-engine-testable-api</module>
     </modules>
 </project>
