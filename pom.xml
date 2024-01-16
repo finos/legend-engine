@@ -107,7 +107,7 @@
     <properties>
         <!-- Legend -->
         <legend.pure.version>5.0.1</legend.pure.version>
-        <legend.shared.version>0.24.1</legend.shared.version>
+        <legend.shared.version>0.25.0</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -1895,6 +1895,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-testable</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-testable-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
