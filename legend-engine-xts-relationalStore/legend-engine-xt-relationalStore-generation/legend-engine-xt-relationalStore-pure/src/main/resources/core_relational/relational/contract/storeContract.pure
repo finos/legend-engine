@@ -113,11 +113,12 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
           a: Any[*] | false
         ])
      },
-     reprocessConnection = {c:ConnectionStore[1] |
-                              $c.connection->match(
+     reprocessConnection = {c:ConnectionStore[*] |
+                              let conn = $c.connection->distinct()->toOne();
+                              let newConn = $conn->match(
                                   [
                                     t:meta::external::store::relational::runtime::TestDatabaseConnection[1] |
-                                          ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$c.element->instanceOf(meta::relational::metamodel::Database),
+                                          ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty(),
                                                             | [];,
                                                             | if ($t.testDataSetupSqls->isEmpty(),
                                                                   | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($c.element->cast(@meta::relational::metamodel::Database)),
@@ -130,7 +131,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                   (
                                                         testDataSetupSqls =
                                                             $l.testDataSetupSqls->concatenate(
-                                                                if ($l.testDataSetupCsv->isEmpty() || !$c.element->instanceOf(meta::relational::metamodel::Database),
+                                                                if ($l.testDataSetupCsv->isEmpty(),
                                                                     | [];,
                                                                     | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($c.element->cast(@meta::relational::metamodel::Database))
                                                                 )
@@ -139,8 +140,9 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                 d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] | $d
                                             ])
                                           ),
-                                    c:Connection[1] | $c
+                                    conn:Connection[1] | $conn
                                 ]);
+                              $c->map(cs| ^$cs(connection=$newConn));
                            },
 
       printPlanNodeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
