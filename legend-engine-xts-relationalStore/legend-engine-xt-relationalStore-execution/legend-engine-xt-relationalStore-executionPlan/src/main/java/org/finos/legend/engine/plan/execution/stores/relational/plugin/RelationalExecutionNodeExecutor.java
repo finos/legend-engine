@@ -936,19 +936,11 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 return "null";
             }
-            if (v instanceof Number)
+            if (v instanceof String && quoteCharacterReplacement != null)
             {
-                return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
+                return "'" + ((String) v).replace("'", quoteCharacterReplacement) + "'";
             }
-            if (v instanceof String)
-            {
-                if (quoteCharacterReplacement != null)
-                {
-                    return "'" + ((String)ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
-                }
-                return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
-            }
-            return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+            return "'" + v.toString() + "'";
         };
     }
 
