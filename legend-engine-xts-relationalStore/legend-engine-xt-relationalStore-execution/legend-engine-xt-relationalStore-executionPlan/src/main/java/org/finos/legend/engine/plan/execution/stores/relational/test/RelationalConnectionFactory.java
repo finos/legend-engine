@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.test;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -77,9 +78,10 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
     }
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data)
     {
-        if (data instanceof RelationalCSVData && sourceConnection instanceof RelationalDatabaseConnection)
+        List<RelationalCSVData> relationalCSVDataList = ListIterate.selectInstancesOf(data, RelationalCSVData.class);
+        if (data.size() == relationalCSVDataList.size() && sourceConnection instanceof RelationalDatabaseConnection && !data.isEmpty())
         {
             RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
             connection.databaseType = DatabaseType.H2;
@@ -88,7 +90,8 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
             connection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();
             LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
             // TODO generate sql with pure helper function
-            RelationalCSVData relationalData = (RelationalCSVData) data;
+            RelationalCSVData relationalData = new RelationalCSVData();
+            relationalData.tables = ListIterate.flatCollect(relationalCSVDataList, a -> a.tables);
             localH2DatasourceSpecification.testDataSetupCsv = new HelperRelationalCSVBuilder(relationalData).build();
             connection.datasourceSpecification = localH2DatasourceSpecification;
             return Optional.of(Tuples.pair(connection, Collections.emptyList()));
@@ -103,7 +106,7 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
         {
             RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
             connection.element = testStore.getPath();
-            return this.tryBuildTestConnection(connection, data);
+            return this.tryBuildTestConnection(connection, Lists.mutable.of(data));
         }
         return Optional.empty();
     }

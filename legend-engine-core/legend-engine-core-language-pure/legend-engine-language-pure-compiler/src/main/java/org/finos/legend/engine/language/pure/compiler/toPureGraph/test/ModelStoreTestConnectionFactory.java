@@ -141,12 +141,12 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     }
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData embeddedData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> embeddedData)
     {
         if (sourceConnection instanceof JsonModelConnection)
         {
             JsonModelConnection jsonModelConnection = (JsonModelConnection) sourceConnection;
-            if (!(embeddedData instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) embeddedData).contentType)))
+            if (!(embeddedData.get(0) instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) embeddedData.get(0)).contentType)))
             {
                 throw new UnsupportedOperationException("Json data should be provided for JsonModelConnection");
             }
@@ -154,13 +154,13 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             JsonModelConnection testConnection = new JsonModelConnection();
             testConnection.element = jsonModelConnection.element;
             testConnection._class = jsonModelConnection._class;
-            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData, APPLICATION_JSON);
+            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData.get(0), APPLICATION_JSON);
             return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
         }
         else if (sourceConnection instanceof XmlModelConnection)
         {
             XmlModelConnection xmlModelConnection = (XmlModelConnection) sourceConnection;
-            if (!(embeddedData instanceof ExternalFormatData && APPLICATION_XML.equals(((ExternalFormatData) embeddedData).contentType)))
+            if (!(embeddedData.get(0) instanceof ExternalFormatData && APPLICATION_XML.equals(((ExternalFormatData) embeddedData.get(0)).contentType)))
             {
                 throw new UnsupportedOperationException("Xml data should be provided for XmlModelConnection");
             }
@@ -168,7 +168,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
             XmlModelConnection testConnection = new XmlModelConnection();
             testConnection.element = xmlModelConnection.element;
             testConnection._class = xmlModelConnection._class;
-            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData, APPLICATION_XML);
+            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData.get(0), APPLICATION_XML);
 
             return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
         }
