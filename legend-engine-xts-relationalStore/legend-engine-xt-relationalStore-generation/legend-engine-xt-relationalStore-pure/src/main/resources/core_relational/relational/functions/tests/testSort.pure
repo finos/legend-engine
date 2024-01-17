@@ -69,6 +69,14 @@ function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWIt
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" where ("root".LASTNAME = \'Hill\' or "root".FIRSTNAME = \'John\') order by case when "root".LASTNAME = \'Hill\' then "root".FIRSTNAME else "root".LASTNAME end', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaWithComplexExpr():Boolean[1]
+{
+   let result = execute(|Person.all()->sortBy(p | $p.firstName->length() + $p.lastName->length()), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   assertSize($result.values, 12);
+   assertEquals(['York', 'John', 'Smith', 'Oliver', 'Johnson', 'Harris', 'Firm B', 'New York', 'Allen', 'Roberts', 'no Firm', 'Smith'], zip($result.values.firstName, $result.values.lastName)->map(pair | if($pair.second == 'Hill', | $pair.first, |$pair.second)));
+   assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" order by (char_length("root".FIRSTNAME) + char_length("root".LASTNAME))', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::query::sort::testSortByLambdaDeepOptional():Boolean[1]
 {
    let result = execute(|Person.all()->sortBy(p | $p.address->toOne().name + '|' + $p.firstName + '|' + $p.lastName), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
