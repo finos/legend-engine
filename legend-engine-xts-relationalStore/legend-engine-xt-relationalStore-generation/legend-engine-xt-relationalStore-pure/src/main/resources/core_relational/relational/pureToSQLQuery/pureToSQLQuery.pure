@@ -2574,7 +2574,9 @@ function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionEx
       let inScopeVarsWithPlaceholdersState = $lambdaFunction->addPlaceHoldersForLambdaOpenVariables($vars, $updatedState);
       let embeddedMapping = if($leftSideOp.currentPropertyMapping->isEmpty(), | $currentPropertyMapping, | $leftSideOp.currentPropertyMapping);
 
-      let rightSide = processValueSpecification($lambdaFunctionExpression, $embeddedMapping, $mainQuery, $vars, ^$inScopeVarsWithPlaceholdersState(inFilter=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
+      let mainSelect = $mainQuery.select;
+      let rightSide = processValueSpecification($lambdaFunctionExpression, $embeddedMapping, ^$mainQuery(select=^$mainSelect(columns=[])), $vars, ^$inScopeVarsWithPlaceholdersState(inFilter=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
+      
       let rightSideSelect = $rightSide.select;
       let rightSideModified = ^$rightSide(
         select = ^$rightSideSelect(
