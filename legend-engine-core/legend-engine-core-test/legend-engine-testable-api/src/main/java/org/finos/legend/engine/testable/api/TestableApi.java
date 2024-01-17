@@ -53,7 +53,7 @@ import org.slf4j.Logger;
 @Produces(MediaType.APPLICATION_JSON)
 public class TestableApi
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Testable.class);
+    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(TestableApi.class);
 
     private final TestableRunner testableRunner;
 
