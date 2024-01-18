@@ -240,7 +240,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN `mydb`.`staging` as stage " +
-                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
+                "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) AND (stage.`delete_indicator` NOT IN ('yes','1','true')) " +
                 "SET sink.`id` = stage.`id`" +
                 ",sink.`name` = stage.`name`," +
                 "sink.`amount` = stage.`amount`," +
@@ -253,8 +253,8 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
                 "FROM `mydb`.`staging` as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
-                "WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
+                "WHERE (stage.`delete_indicator` NOT IN ('yes','1','true')) AND (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
+                "WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
 
         String deleteSql = "DELETE FROM `mydb`.`main` as sink " +
                 "WHERE EXISTS (" +

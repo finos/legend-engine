@@ -161,13 +161,28 @@ class NontemporalDeltaTest extends BaseTest
         loadStagingDataWithDeleteInd(dataPass2);
         // 2. Execute plans and verify results
         expectedStats = new HashMap<>();
-        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 3);
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 4);
         expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
         expectedStats.put(StatisticName.ROWS_DELETED.name(), 1);
         executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass2, expectedStats);
         // 3. Assert that the staging table is NOT truncated
         stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
-        Assertions.assertEquals(stagingTableList.size(), 3);
+        Assertions.assertEquals(stagingTableList.size(), 4);
+
+        // ------------ Perform incremental (delta) milestoning Pass3 ------------------------
+        String dataPass3 = basePath + "input/with_delete_indicator/data_pass3.csv";
+        String expectedDataPass3 = basePath + "expected/with_delete_indicator/expected_pass3.csv";
+        // 1. Load staging table
+        loadStagingDataWithDeleteInd(dataPass3);
+        // 2. Execute plans and verify results
+        expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.INCOMING_RECORD_COUNT.name(), 1);
+        expectedStats.put(StatisticName.ROWS_TERMINATED.name(), 0);
+        expectedStats.put(StatisticName.ROWS_DELETED.name(), 0);
+        executePlansAndVerifyResults(ingestMode, options, datasets, schema, expectedDataPass3, expectedStats);
+        // 3. Assert that the staging table is NOT truncated
+        stagingTableList = h2Sink.executeQuery("select * from \"TEST\".\"staging\"");
+        Assertions.assertEquals(stagingTableList.size(), 1);
     }
 
     /*

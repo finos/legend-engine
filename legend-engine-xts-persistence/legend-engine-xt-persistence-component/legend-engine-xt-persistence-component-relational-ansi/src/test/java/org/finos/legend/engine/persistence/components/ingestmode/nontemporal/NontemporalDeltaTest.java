@@ -263,21 +263,21 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         List<String> milestoningSqlList = operations.ingestSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
-                "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+                "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
                 "sink.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
                 "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE " +
-                "((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))";
+                "((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') FROM \"mydb\".\"staging\" as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
-                "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
+                "WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
+                "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")))))";
 
         String deleteSql = "DELETE FROM \"mydb\".\"main\" as sink " +
                 "WHERE EXISTS " +

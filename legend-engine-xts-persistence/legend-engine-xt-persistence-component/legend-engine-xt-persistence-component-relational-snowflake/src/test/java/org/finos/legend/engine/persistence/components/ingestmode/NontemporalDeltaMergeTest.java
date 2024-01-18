@@ -202,7 +202,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
                 "sink.\"biz_date\" = stage.\"biz_date\"," +
                 "sink.\"digest\" = stage.\"digest\"," +
                 "sink.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
-                "WHEN NOT MATCHED THEN " +
+                "WHEN NOT MATCHED AND stage.\"delete_indicator\" NOT IN ('yes','1','true') THEN " +
                 "INSERT (\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id\") " +
                 "VALUES (stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))";
 
