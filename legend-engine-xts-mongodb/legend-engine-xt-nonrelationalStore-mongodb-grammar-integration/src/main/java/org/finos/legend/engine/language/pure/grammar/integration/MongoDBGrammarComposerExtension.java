@@ -94,7 +94,7 @@ public class MongoDBGrammarComposerExtension implements IMongoDBGrammarComposerE
 
     private String getMongoDBURLs(List<MongoDBURL> serverURLs)
     {
-        return serverURLs.stream().map(i -> i.baseUrl + ":" + i.port).collect(Collectors.joining());
+        return serverURLs.stream().map(i -> i.baseUrl + ":" + i.port).collect(Collectors.joining(", "));
     }
 
     @Override
