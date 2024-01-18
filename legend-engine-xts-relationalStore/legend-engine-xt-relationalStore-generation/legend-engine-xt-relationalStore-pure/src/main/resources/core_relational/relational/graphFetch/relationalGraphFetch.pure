@@ -615,7 +615,7 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    let dbConnectionStorePre = $runtime.connectionStores->filter(connectionStore|$connectionStore.connection==$dbConnectionPre);
 
    let dbConnectionStore =  if($clusteredTree.s.processRuntimeTestConnections->isEmpty(),|$dbConnectionStorePre,|$clusteredTree.s.processRuntimeTestConnections->toOne()->eval($dbConnectionStorePre));
-   let dbConnection = $dbConnectionStore.connection->distinct()->toOne()->cast(@DatabaseConnection);
+   let dbConnection = $dbConnectionStore.connection->distinct()->toOne('Expected 1 connection, but received ' + $dbConnectionStore.connection->distinct()->size()->toString())->cast(@DatabaseConnection);
    let oneRuntime          = ^Runtime(connectionStores = $dbConnectionStore);
    let postProcessorResult = $crossQuery->postProcessSQLQuery($store, [], $mapping, $oneRuntime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);

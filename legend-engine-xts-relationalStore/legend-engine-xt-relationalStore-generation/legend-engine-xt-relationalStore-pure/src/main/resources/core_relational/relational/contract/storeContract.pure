@@ -134,7 +134,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                             $l.testDataSetupSqls->concatenate(
                                                                 if ($l.testDataSetupCsv->isEmpty(),
                                                                     | [];,
-                                                                    | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($specificConnectionStores->cast(@meta::relational::metamodel::Database))
+                                                                    | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($specificConnectionStores.element->cast(@meta::relational::metamodel::Database))
                                                                 )
                                                             )
                                                   ),
