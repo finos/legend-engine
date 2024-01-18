@@ -92,7 +92,7 @@ Class meta::relational::functions::database::Res
 }
 
 function meta::relational::functions::database::loadCsvDataToDbTable(csvData:List<String>[*],
-                                                         db:Database[*],
+                                                         inputDb:Database[*],
                                                          dbConfig:DbConfig[1],
                                                          tablePostProcessor:Function<{Table[1]->Table[1]}>[1]
                                                          ) : String[*]
@@ -101,8 +101,9 @@ function meta::relational::functions::database::loadCsvDataToDbTable(csvData:Lis
                                 | let schemaName = $tab.p.values->at(0).values->at(0);
                                   let tableName = $tab.p.values->at(1).values->at(0);
                                   let columnNames = $tab.p.values->at(2).values;
-                                  let dbNames = $db->map(d|$d->elementToPath())->joinStrings(', ');
-                                  let schema = $db->map(d|$d->schema($schemaName))->toOne('There should be exactly 1 schema with name ' + $schemaName + ' found in the provided runtime database(s) ['+ $dbNames +'] at the given connection.');
+                                  let dbNames = $inputDb->map(d|$d->elementToPath())->joinStrings(', ');
+                                  let db = ^meta::relational::metamodel::Database(includes=$inputDb);
+                                  let schema = $db->schema($schemaName)->toOne('There should be exactly 1 schema with name ' + $schemaName + ' found in the provided runtime database(s) ['+ $dbNames +'] at the given connection.');
                                   let table = $schema->table($tableName);
                                   assertNotEmpty($table,| 'Table "' + $tableName + '" not found in Schema "' + $schemaName + '" in Database(s) ' + $dbNames);
                                   let pTable = $tablePostProcessor->eval($table)->toOne();
