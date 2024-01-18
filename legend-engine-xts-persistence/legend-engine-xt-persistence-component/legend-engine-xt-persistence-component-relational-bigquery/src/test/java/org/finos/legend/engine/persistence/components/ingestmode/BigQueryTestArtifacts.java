@@ -21,6 +21,7 @@ public class BigQueryTestArtifacts
             "`name` STRING NOT NULL," +
             "`amount` FLOAT64," +
             "`biz_date` DATE," +
+            "`batch_id` INT64," +
             "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
 
     public static String expectedStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
@@ -35,6 +36,7 @@ public class BigQueryTestArtifacts
             "`NAME` STRING NOT NULL," +
             "`AMOUNT` FLOAT64," +
             "`BIZ_DATE` DATE," +
+            "`BATCH_ID` INT64," +
             "PRIMARY KEY (`ID`, `NAME`) NOT ENFORCED)";
 
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
@@ -43,6 +45,7 @@ public class BigQueryTestArtifacts
             "`amount` FLOAT64," +
             "`biz_date` DATE," +
             "`digest` STRING," +
+            "`batch_id` INT64," +
             "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
 
     public static String expectedStagingTableWithDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
@@ -101,6 +104,7 @@ public class BigQueryTestArtifacts
         "`biz_date` DATE," +
         "`digest` STRING," +
         "`version` INT64," +
+        "`batch_id` INT64," +
         "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
 
     public static String expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
@@ -110,6 +114,7 @@ public class BigQueryTestArtifacts
         "`BIZ_DATE` DATE," +
         "`DIGEST` STRING," +
         "`VERSION` INT64," +
+        "`BATCH_ID` INT64," +
         "PRIMARY KEY (`ID`, `NAME`) NOT ENFORCED)";
 
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
@@ -118,6 +123,7 @@ public class BigQueryTestArtifacts
             "`AMOUNT` FLOAT64," +
             "`BIZ_DATE` DATE," +
             "`DIGEST` STRING," +
+            "`BATCH_ID` INT64," +
             "PRIMARY KEY (`ID`, `NAME`) NOT ENFORCED)";
 
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
@@ -125,7 +131,8 @@ public class BigQueryTestArtifacts
             "`name` STRING," +
             "`amount` FLOAT64," +
             "`biz_date` DATE," +
-            "`digest` STRING)";
+            "`digest` STRING," +
+            "`batch_id` INT64)";
 
     public static String expectedStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INT64," +
@@ -133,9 +140,6 @@ public class BigQueryTestArtifacts
             "`amount` FLOAT64," +
             "`biz_date` DATE," +
             "`digest` STRING)";
-
-    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
-            "(`id` INT64,`name` STRING,`amount` FLOAT64,`biz_date` DATE,`digest` STRING,`batch_update_time` DATETIME)";
 
     public static String expectedMainTableBatchIdAndVersionBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INT64 NOT NULL,`name` STRING NOT NULL,`amount` FLOAT64,`biz_date` DATE,`digest` STRING,`version` INT64," +
@@ -152,7 +156,18 @@ public class BigQueryTestArtifacts
             "`biz_date` DATE," +
             "`digest` STRING," +
             "`batch_update_time` DATETIME NOT NULL," +
+            "`batch_id` INT64," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`) NOT ENFORCED)";
+
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampAndBatchNumberCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+        "`id` INT64 NOT NULL," +
+        "`name` STRING NOT NULL," +
+        "`amount` FLOAT64," +
+        "`biz_date` DATE," +
+        "`digest` STRING," +
+        "`batch_update_time` DATETIME NOT NULL," +
+        "`batch_number` INT64," +
+        "PRIMARY KEY (`id`, `name`, `batch_update_time`) NOT ENFORCED)";
 
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
         "`ID` INT64 NOT NULL," +
@@ -161,16 +176,8 @@ public class BigQueryTestArtifacts
         "`BIZ_DATE` DATE," +
         "`DIGEST` STRING," +
         "`BATCH_UPDATE_TIME` DATETIME NOT NULL," +
+        "`BATCH_ID` INT64," +
         "PRIMARY KEY (`ID`, `NAME`, `BATCH_UPDATE_TIME`) NOT ENFORCED)";
-
-    public static String expectedBaseTableWithAuditNotPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
-            "`id` INT64 NOT NULL," +
-            "`name` STRING NOT NULL," +
-            "`amount` FLOAT64," +
-            "`biz_date` DATE," +
-            "`digest` STRING," +
-            "`batch_update_time` DATETIME," +
-            "PRIMARY KEY (`id`, `name`) NOT ENFORCED)";
 
     public static String expectedBaseTableWithAuditPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INT64 NOT NULL," +
@@ -178,6 +185,7 @@ public class BigQueryTestArtifacts
             "`amount` FLOAT64," +
             "`biz_date` DATE," +
             "`batch_update_time` DATETIME NOT NULL," +
+            "`batch_id` INT64," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`) NOT ENFORCED)";
 
     public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage WHERE 1 = 1";

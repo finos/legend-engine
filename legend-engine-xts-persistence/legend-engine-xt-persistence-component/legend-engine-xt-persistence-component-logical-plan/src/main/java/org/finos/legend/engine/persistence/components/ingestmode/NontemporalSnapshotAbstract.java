@@ -34,6 +34,12 @@ import static org.immutables.value.Value.Style;
 )
 public interface NontemporalSnapshotAbstract extends IngestMode
 {
+    @Value.Default
+    default String batchIdField()
+    {
+        return "batch_id";
+    }
+
     Auditing auditing();
 
     @Override

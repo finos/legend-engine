@@ -119,15 +119,12 @@ public class ApiUtils
     public static Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                           Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
     {
-        if (ingestMode.accept(IngestModeVisitors.IS_INGEST_MODE_TEMPORAL) || ingestMode instanceof BulkLoad)
+        LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets, ingestMode);
+        List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
+        Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
+        if (nextBatchId.isPresent())
         {
-            LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets, ingestMode);
-            List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
-            Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
-            if (nextBatchId.isPresent())
-            {
-                return retrieveValueAsLong(nextBatchId.get());
-            }
+            return retrieveValueAsLong(nextBatchId.get());
         }
         return Optional.empty();
     }
