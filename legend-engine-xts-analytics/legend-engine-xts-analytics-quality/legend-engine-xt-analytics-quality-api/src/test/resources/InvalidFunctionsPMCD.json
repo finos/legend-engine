@@ -1,0 +1,617 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Doc",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "targetCompanyObject",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company object"
+            }
+          ],
+          "type": "model::TargetCompany"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "targetPersonObject",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "person object"
+            }
+          ],
+          "type": "model::TargetPerson"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "docValue"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "TargetCompany",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "stereotypes": [
+            {
+              "profile": "equality",
+              "value": "Key"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company id"
+            }
+          ],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company name"
+            }
+          ],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "addressId",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company address"
+            }
+          ],
+          "type": "Integer"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "docValue"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "TargetPerson",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "legalName",
+          "stereotypes": [
+            {
+              "profile": "equality",
+              "value": "Key"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "legal name"
+            }
+          ],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "age",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "person's age"
+            }
+          ],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "addressId",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "person's address"
+            }
+          ],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "dec",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "decimal value"
+            }
+          ],
+          "type": "Decimal"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "targetPerson"
+        }
+      ]
+    },
+    {
+      "_type": "association",
+      "name": "TargetCompany_TargetPerson",
+      "originalMilestonedProperties": [],
+      "package": "AlloyDemoRefinerWithAllDataTypes",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "TargetCompany",
+          "propertyTypeSourceInformation": {
+            "endColumn": 37,
+            "endLine": 2089,
+            "sourceId": "",
+            "startColumn": 18,
+            "startLine": 2089
+          },
+          "sourceInformation": {
+            "endColumn": 41,
+            "endLine": 2089,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 2089
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "model::TargetCompany"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "TargetPerson",
+          "propertyTypeSourceInformation": {
+            "endColumn": 35,
+            "endLine": 2090,
+            "sourceId": "",
+            "startColumn": 17,
+            "startLine": 2090
+          },
+          "sourceInformation": {
+            "endColumn": 39,
+            "endLine": 2090,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 2090
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "model::TargetPerson"
+        }
+      ],
+      "qualifiedProperties": [],
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 2091,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2087
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "Enumeration",
+      "name": "TestForMyDataspace",
+      "package": "AlloyDemoRefinerWithAllDataTypes",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 1910,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1906
+      },
+      "stereotypes": [],
+      "taggedValues": [
+        {
+          "sourceInformation": {
+            "endColumn": 66,
+            "endLine": 1906,
+            "sourceId": "",
+            "startColumn": 7,
+            "startLine": 1906
+          },
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "profileSourceInformation": {
+              "endColumn": 31,
+              "endLine": 1906,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 1906
+            },
+            "sourceInformation": {
+              "endColumn": 35,
+              "endLine": 1906,
+              "sourceId": "",
+              "startColumn": 33,
+              "startLine": 1906
+            },
+            "value": "doc"
+          },
+          "value": "test enum for my dataspace"
+        }
+      ],
+      "values": [
+        {
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1908,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 1908
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "value": "Value1"
+        },
+        {
+          "sourceInformation": {
+            "endColumn": 8,
+            "endLine": 1909,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 1909
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "value": "Value2"
+        }
+      ]
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "dummyMapping",
+      "package": "model",
+      "tests": []
+    },
+    {
+      "_type": "runtime",
+      "name": "dummyRuntime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [],
+        "mappings": [
+          {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "string",
+          "sourceInformation": {
+            "endColumn": 10,
+            "endLine": 2063,
+            "sourceId": "",
+            "startColumn": 3,
+            "startLine": 2063
+          },
+          "value": "string"
+        }
+      ],
+      "name": "ThisIsMyFunction__String_1_",
+      "package": "AlloyDemoRefinerWithAllDataTypes",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "String",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 2064,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2061
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "equal",
+          "parameters": [
+            {
+              "_type": "string",
+              "sourceInformation": {
+                "endColumn": 7,
+                "endLine": 2068,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 2068
+              },
+              "value": "abc"
+            },
+            {
+              "_type": "integer",
+              "sourceInformation": {
+                "endColumn": 12,
+                "endLine": 2068,
+                "sourceId": "",
+                "startColumn": 10,
+                "startLine": 2068
+              },
+              "value": 123
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 9,
+            "endLine": 2068,
+            "sourceId": "",
+            "startColumn": 8,
+            "startLine": 2068
+          }
+        }
+      ],
+      "name": "EqualityFunction__Boolean_1_",
+      "package": "AlloyDemoRefinerWithAllDataTypes",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Boolean",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 2069,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2066
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "function",
+      "body": [
+        {
+          "_type": "func",
+          "function": "contains",
+          "parameters": [
+            {
+              "_type": "collection",
+              "multiplicity": {
+                "lowerBound": 1,
+                "upperBound": 1
+              },
+              "sourceInformation": {
+                "endColumn": 26,
+                "endLine": 2063,
+                "sourceId": "",
+                "startColumn": 3,
+                "startLine": 2063
+              },
+              "values": [
+                {
+                  "_type": "string",
+                  "sourceInformation": {
+                    "endColumn": 8,
+                    "endLine": 2063,
+                    "sourceId": "",
+                    "startColumn": 4,
+                    "startLine": 2063
+                  },
+                  "value": "abc"
+                }
+              ]
+            },
+            {
+              "_type": "string",
+              "sourceInformation": {
+                "endColumn": 25,
+                "endLine": 2063,
+                "sourceId": "",
+                "startColumn": 21,
+                "startLine": 2063
+              },
+              "value": "def"
+            }
+          ],
+          "sourceInformation": {
+            "endColumn": 19,
+            "endLine": 2063,
+            "sourceId": "",
+            "startColumn": 12,
+            "startLine": 2063
+          }
+        }
+      ],
+      "name": "ComparisonFunction__Boolean_1_",
+      "package": "AlloyDemoRefinerWithAllDataTypes",
+      "parameters": [],
+      "postConstraints": [],
+      "preConstraints": [],
+      "returnMultiplicity": {
+        "lowerBound": 1,
+        "upperBound": 1
+      },
+      "returnType": "Boolean",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 2064,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 2061
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "elements": [
+        {
+          "path": "AlloyDemoRefinerWithAllDataTypes::TargetCompany_TargetPerson",
+          "sourceInformation": {
+            "endColumn": 53,
+            "endLine": 1882,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 1882
+          }
+        },
+        {
+          "path": "AlloyDemoRefinerWithAllDataTypes::TestForMyDataspace",
+          "sourceInformation": {
+            "endColumn": 56,
+            "endLine": 1883,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 1883
+          }
+        }
+      ],
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "sourceInformation": {
+              "endColumn": 81,
+              "endLine": 1876,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 1876
+            },
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping",
+            "sourceInformation": {
+              "endColumn": 95,
+              "endLine": 1875,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 1875
+            },
+            "type": "MAPPING"
+          },
+          "name": "dummyContext",
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 1877,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 1873
+          }
+        }
+      ],
+      "name": "TestDataspace",
+      "package": "AlloyDemoRefinerWithAllDataTypes",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 1880,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1869
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    }
+  ]
+}
