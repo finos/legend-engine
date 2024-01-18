@@ -831,7 +831,7 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
    let newParameterNameValuePairs = meta::relational::testDataGeneration::generateParametersNameValuePair($func, [], $parameterNameValuePairs);
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newParameterNameValuePairs, $extensions),| scanRelations($func, $mapping, $extensions));
    let dbConnectionStore = $runtime.connectionStores->filter(c|$c.connection->instanceOf(DatabaseConnection));
-   let updatedDbConnectionStore = $extensions.executionPlanExtensions().reprocessConnection->toOne()->eval($dbConnectionStore);
+   let updatedDbConnectionStore = $extensions.executionPlanExtensions().processRuntimeTestConnections->toOne()->eval($dbConnectionStore);
    let newRuntime = ^$runtime(connectionStores=$updatedDbConnectionStore);
 
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());

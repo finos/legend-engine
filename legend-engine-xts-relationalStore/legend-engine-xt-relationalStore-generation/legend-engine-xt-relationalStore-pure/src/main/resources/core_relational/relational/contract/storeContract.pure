@@ -113,9 +113,10 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
           a: Any[*] | false
         ])
      },
-     reprocessConnection = {c:ConnectionStore[*] |
-                              let conn = $c.connection->distinct()->toOne();
-                              let newConn = $conn->match(
+     processRuntimeTestConnections = {connectionStores:ConnectionStore[*] |
+                              $connectionStores.connection->distinct()->map(connection|
+                                let specificConnectionStores = $connectionStores->filter(cs|$cs.connection==$connection);
+                                let newConnection = $connection->match(
                                   [
                                     t:meta::external::store::relational::runtime::TestDatabaseConnection[1] |
                                           ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty(),
@@ -141,8 +142,9 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                             ])
                                           ),
                                     conn:Connection[1] | $conn
-                                ]);
-                              $c->map(cs| ^$cs(connection=$newConn));
+                                  ]);
+                                $specificConnectionStores->map(cs| ^$cs(connection=$newConnection));
+                              );
                            },
 
       printPlanNodeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
