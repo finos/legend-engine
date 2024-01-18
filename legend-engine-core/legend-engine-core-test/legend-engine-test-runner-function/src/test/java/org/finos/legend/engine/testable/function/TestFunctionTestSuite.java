@@ -42,13 +42,50 @@ public class TestFunctionTestSuite
 {
 
     @Test
-    public void testFunctionTest()
+    public void testRelationalFunctionTest()
     {
         List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonQuery__TabularDataSet_1_");
         Assert.assertEquals(1, inlineServiceStoreTestResults.size());
         Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
         TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
         Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+        List<TestResult> usingSharedData = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonQuerySharedData__TabularDataSet_1_");
+        Assert.assertEquals(1, usingSharedData.size());
+        Assert.assertTrue(usingSharedData.get(0) instanceof TestExecuted);
+        TestExecuted sharedTextExecuted = (TestExecuted) usingSharedData.get(0);
+        Assert.assertEquals(TestExecutionStatus.FAIL, sharedTextExecuted.testExecutionStatus);
+        String actual = "[ {\n" +
+                "  \"First Name\" : \"John\",\n" +
+                "  \"Last Name\" : \"Doe\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Nicole\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Time\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "} ]";
+        String expected = "[ {\n" +
+                "  \"First Name\" : \"John\",\n" +
+                "  \"Last Name\" : \"Doe\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Nicole\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Time\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "} ]";
+
+        testFailingTest(findTestById(usingSharedData, "test_1"), expected, actual);
+
+    }
+
+
+    @Test
+    public void testModelJoin()
+    {
+        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-model-join.pure", "model::TradeQuery__TabularDataSet_1_");
+        String x = "";
+
     }
 
     @Test
@@ -72,8 +109,6 @@ public class TestFunctionTestSuite
     }
 
     @Test
-    @Ignore
-    // TODO: fix test
     public void testFunctionTestM2M()
     {
         List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-m2m.pure", "model::PersonQuery__String_1_");

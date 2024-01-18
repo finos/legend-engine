@@ -54,6 +54,7 @@ import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.TestableTestDataExtension;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite;
@@ -83,7 +84,8 @@ public class FunctionTestRunner implements TestRunner
     private final MutableList<PlanGeneratorExtension> extensions;
     private final PlanExecutor executor;
     private final String pureVersion;
-    private final MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+
+    private final MutableList<TestableTestDataExtension> connectionBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(TestableTestDataExtension.class));
     private List<Closeable> closeables = Lists.mutable.empty();
     private List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
 
@@ -214,7 +216,7 @@ public class FunctionTestRunner implements TestRunner
                 {
                     StoreTestData storeTestData = optionalStoreTestData.get();
                     EmbeddedData testData = EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), storeTestData.data);
-                    Pair<Connection, List<Closeable>> closeableMockedConnections = this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), storePath), testData)).select(Objects::nonNull).select(Optional::isPresent)
+                    Pair<Connection, List<Closeable>> closeableMockedConnections = this.connectionBuilders.collect(f -> f.buildConnectionTestData(context.getPureModel(), context.getPureModelContextData(), connectionStore, testData)).select(Objects::nonNull).select(Optional::isPresent)
                             .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for: '" + storePath + "' mentioned while running the function tests"));
                     Connection mockedConnection = closeableMockedConnections.getOne();
                     Root_meta_core_runtime_Connection mockedCompileConnection = mockedConnection.accept(context.getConnectionVisitor());

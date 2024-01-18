@@ -42,16 +42,7 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-protocol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -59,7 +50,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-modelManager</artifactId>
+            <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -70,18 +61,13 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-execution</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j.jax-rs</groupId>
-            <artifactId>core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
+
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
@@ -94,23 +80,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- ANNOTATIONS -->
-        <dependency>
-            <groupId>javax.ws.rs</groupId>
-            <artifactId>javax.ws.rs-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-        </dependency>
-        <!-- ANNOTATIONS -->
-
-        <!-- LOGGING -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-        </dependency>
-        <!-- LOGGING -->
 
         <!-- JACKSON -->
         <dependency>

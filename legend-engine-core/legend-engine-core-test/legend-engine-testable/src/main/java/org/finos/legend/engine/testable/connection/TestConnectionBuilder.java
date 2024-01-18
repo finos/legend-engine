@@ -22,7 +22,6 @@ import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
@@ -32,12 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
-import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 
-import javax.ws.rs.core.MediaType;
 import java.io.Closeable;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;

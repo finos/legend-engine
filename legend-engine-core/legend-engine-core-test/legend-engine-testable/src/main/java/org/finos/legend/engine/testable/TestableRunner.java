@@ -32,7 +32,6 @@ import java.util.List;
 
 public class TestableRunner
 {
-
     public RunTestsResult doTests(List<RunTestsTestableInput> runTestsTestableInputs, PureModel pureModel, PureModelContextData data)
     {
         RunTestsResult runTestsResult = new RunTestsResult();
