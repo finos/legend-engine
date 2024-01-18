@@ -828,7 +828,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let sameLengthCheckCodes  = $explodeProperties->tail()->size()->range()->map({i |
       j_if(
          $explodePropertyVars->at($i + 1)->j_invoke('size', [], javaInt())->j_ne($explodeListLength),
-         javaIllegalArgumentException()->j_new(j_string('Explode properties do not have the same size.'))->j_throw()
+         javaIllegalArgumentException()->j_new(j_string('Explode properties do not have the same size. ' + $explodeProperties->at(0).name->toOne() + ' has size '  )->j_plus($explodeListLength)->j_plus(j_string(' and property ' + $explodeProperties->at($i+1).name->toOne() +' has size '))
+                                        ->j_plus(   $explodePropertyVars->at($i + 1)->j_invoke('size', [], javaInt()) ) ->j_plus(j_string(  ' in set ' + $set.id  ))  )->j_throw()
       )
    });
 
