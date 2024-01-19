@@ -292,7 +292,7 @@ public class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
                 "      fullName" +
                 "    }\n" +
                 "  }";
-        expected = "{\"errors\":[{\"location\":[],\"message\":\"Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \\\"Value for field firstName should only be an Operator or ColumnExpression but is AndExpression\\\"\",\"path\":[]}]}";
+        expected = "{\"errors\":[{\"location\":[],\"message\":\"Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \\\"Value for field firstName should only be an BooleanOperator or ColumnExpression but is AndExpression\\\"\",\"path\":[]}]}";
         runTest(query, expected);
 
         query = "query Query {\n" +
@@ -300,7 +300,7 @@ public class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
                 "      fullName" +
                 "    }\n" +
                 "  }";
-        expected = "{\"errors\":[{\"location\":[],\"message\":\"Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \\\"Value for field firstName should only be an Operator or ColumnExpression but is OrExpression\\\"\",\"path\":[]}]}";
+        expected = "{\"errors\":[{\"location\":[],\"message\":\"Assert failure at (resource:/platform/pure/basics/tests/assert.pure line:26 column:5), \\\"Value for field firstName should only be an BooleanOperator or ColumnExpression but is OrExpression\\\"\",\"path\":[]}]}";
         runTest(query, expected);
     }
 

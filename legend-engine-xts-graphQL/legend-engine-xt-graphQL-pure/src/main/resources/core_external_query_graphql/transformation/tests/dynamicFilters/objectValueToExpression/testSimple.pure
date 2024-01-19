@@ -34,7 +34,7 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::t
     $doc,
     'where',
     ^DebugContext(space='',debug=false)
-  )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToString('');
+  )->meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::nodesToString('');
   assertEquals(
     $expected,
     $res
