@@ -324,7 +324,6 @@ public class BaseTest
 
         datasets = ingestor.create(datasets);
         datasets = ingestor.evolve(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
 
         executor.begin();
         IngestorResult result = ingestor.ingest(datasets).get(0);
