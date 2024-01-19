@@ -750,9 +750,19 @@ function meta::relational::mapping::inferSourceDataType(sourceDataType: Any[0..1
 {
   if ($sourceDataType->isEmpty(),
     | 
-      let typeName = $type->cast(@PrimitiveType).name->toOne();
-      let inferedSourceDataType = meta::relational::mapping::getSourceDataTypeFromType()->get($typeName);
-      if ($inferedSourceDataType->isEmpty(), | [], | $inferedSourceDataType->toOne());,
+      if ($type->instanceOf(PrimitiveType),
+        | 
+          let typeName = $type->cast(@PrimitiveType).name->toOne();
+          let inferedSourceDataType = meta::relational::mapping::getSourceDataTypeFromType()->get($typeName);
+          if (
+            $inferedSourceDataType->isEmpty(),
+            | [],
+            | $inferedSourceDataType->toOne());,
+        | if ($type->instanceOf(EnumerationMapping),
+          | meta::relational::mapping::getSourceDataTypeFromType()->get('String'),
+          | []
+        )
+      );,
     | $sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()
   )
 }
