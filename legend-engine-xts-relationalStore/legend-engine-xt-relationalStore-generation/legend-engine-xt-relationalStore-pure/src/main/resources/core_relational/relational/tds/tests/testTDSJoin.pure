@@ -1118,7 +1118,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::al
   assertSameElements(['Smith','Johnson','Hill','Allen','Roberts','Hill','Harris','Peter','John','John','Anthony','Fabrice','Oliver','David'], $result.values.rows->map(r|$r.values->makeString(',')));
 }
 
-function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::alloy::testTwoJoinsWithExtend():Boolean[1]
+function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::tdsJoin::alloy::testJoinWithExtendWithDigestOnColumnsOnBothQueries():Boolean[1]
 {
   let result = execute({|testJoinTDS_Person.all()
                   ->meta::pure::tds::project([p|$p.personID, p|$p.firstName, p|$p.lastName, p|$p.employerID], ['personID', 'firstName','lastName', 'eID'])

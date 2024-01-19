@@ -746,13 +746,13 @@ function meta::relational::mapping::getPropertyTargetSetImplementation(sourceSet
    ]);
 }
 
-function meta::relational::mapping::inferSourceDataType(sourceDataType: Any[0..1], type: Any[1]): meta::relational::metamodel::datatype::DataType[1]
+function meta::relational::mapping::inferSourceDataType(sourceDataType: Any[0..1], type: Any[1]): meta::relational::metamodel::datatype::DataType[0..1]
 {
   if ($sourceDataType->isEmpty(),
     | 
       let typeName = $type->cast(@PrimitiveType).name->toOne();
-      let inferedSourceDataType = meta::relational::mapping::getSourceDataTypeFromType()->get($typeName)->toOne();
-      $inferedSourceDataType;,
+      let inferedSourceDataType = meta::relational::mapping::getSourceDataTypeFromType()->get($typeName);
+      if ($inferedSourceDataType->isEmpty(), | [], | $inferedSourceDataType->toOne());,
     | $sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()
   )
 }
@@ -762,7 +762,7 @@ function meta::relational::mapping::getSourceDataTypeFromType(): Map<String, met
   newMap(
     [
       ^DomainTypeToSourceDataTypePair(first='Integer',  second=^meta::relational::metamodel::datatype::Integer()),
-      ^DomainTypeToSourceDataTypePair(first='String', second=^meta::relational::metamodel::datatype::Varchar(size=8000))
+      ^DomainTypeToSourceDataTypePair(first='String', second=^meta::relational::metamodel::datatype::Varchar(size=1000))
     ]
   )
 }
