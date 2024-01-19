@@ -81,14 +81,6 @@ public class TestFunctionTestSuite
 
 
     @Test
-    public void testModelJoin()
-    {
-        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-model-join.pure", "model::TradeQuery__TabularDataSet_1_");
-        String x = "";
-
-    }
-
-    @Test
     public void testFunctionPrimitiveValue()
     {
         List<TestResult> testResults = executeFunctionTest("legend-testable-function-test-model.pure", "model::Hello_String_1__String_1_");
