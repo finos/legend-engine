@@ -231,7 +231,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
 
                 if (serviceTestSuite.tests == null || serviceTestSuite.tests.isEmpty())
                 {
-                    throw new EngineException("Service TestSuites should have atleast 1 test", serviceTestSuite.sourceInformation, EngineErrorType.COMPILATION);
+                    throw new EngineException("Service TestSuites should have at least 1 test", serviceTestSuite.sourceInformation, EngineErrorType.COMPILATION);
                 }
 
                 List<String> testIds = ListIterate.collect(serviceTestSuite.tests, t -> t.id);
@@ -270,7 +270,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
                 pureServiceTest._keysAddAll(Lists.mutable.withAll(serviceTest.keys));
                 if (serviceTest.assertions == null || serviceTest.assertions.isEmpty())
                 {
-                    throw new EngineException("Service Tests should have atleast 1 assert", serviceTest.sourceInformation, EngineErrorType.COMPILATION);
+                    throw new EngineException("Service Tests should have at least 1 assert", serviceTest.sourceInformation, EngineErrorType.COMPILATION);
                 }
 
                 List<String> assertionIds = ListIterate.collect(serviceTest.assertions, a -> a.id);

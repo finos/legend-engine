@@ -48,7 +48,7 @@ function meta::rel::compile::step(
 ): Result<CompilationState|0..1>[1] {
   $state->andThen({inner: CompilationState[1] |
     $inner.current
-      ->okOr(| 'Expected expression in current state.')
+      ->okOr(| errorTrace('Expected expression in current state.'))
       ->andThen($logic)
       ->then({expr: Expr[1] | ^$inner(current=$expr)});
   });
@@ -59,5 +59,5 @@ function meta::rel::compile::current(state: Result<CompilationState|0..1>[1]): R
 }
 
 function meta::rel::compile::current(state: CompilationState[1]): Result<Expr|0..1>[1] {
-  $state.current->okOr(| 'Current expression empty.');
+  $state.current->okOr(| errorTrace('Current expression empty.'));
 }

@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
@@ -169,13 +170,7 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
         }
         if (mapping.testSuites != null)
         {
-            List<String> testSuiteIds = ListIterate.collect(mapping.testSuites, suite -> suite.id);
-            List<String> duplicateTestSuiteIds = testSuiteIds.stream().filter(e -> Collections.frequency(testSuiteIds, e) > 1).distinct().collect(Collectors.toList());
-
-            if (!duplicateTestSuiteIds.isEmpty())
-            {
-                throw new EngineException("Multiple testSuites found with ids : '" + String.join(",", duplicateTestSuiteIds) + "'", mapping.sourceInformation, EngineErrorType.COMPILATION);
-            }
+            TestBuilderHelper.validateTestSuiteIdsList(mapping.testSuites, mapping.sourceInformation);
             pureMapping._tests(ListIterate.collect(mapping.testSuites, suite -> HelperMappingBuilder.processMappingTestAndTestSuite(suite, pureMapping, this.context)));
         }
         return pureMapping;

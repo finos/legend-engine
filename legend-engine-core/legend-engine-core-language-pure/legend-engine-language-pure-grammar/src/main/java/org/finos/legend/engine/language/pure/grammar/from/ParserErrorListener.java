@@ -57,7 +57,7 @@ public class ParserErrorListener extends BaseErrorListener
     {
         if (e != null && e.getOffendingToken() != null && e instanceof InputMismatchException)
         {
-            List<String> expectedSymbols = dereferenceTokens(e.getExpectedTokens().toList());
+            List<String> expectedSymbols = dereferenceTokens(e.getExpectedTokens().toList(), recognizer.getVocabulary());
             if (expectedSymbols.isEmpty())
             {
                 msg = "Unexpected token '" + e.getOffendingToken().getText() + "'";
@@ -103,13 +103,11 @@ public class ParserErrorListener extends BaseErrorListener
                 charPositionInLine + 1 + (line == 1 ? this.walkerSourceInformation.getColumnOffset() : 0),
                 offendingToken.getLine() + this.walkerSourceInformation.getLineOffset(),
                 charPositionInLine + offendingToken.getText().length() + (line == 1 ? this.walkerSourceInformation.getColumnOffset() : 0));
-        throw new EngineException(msg, sourceInformation, EngineErrorType.PARSER);
+        throw new EngineException(msg, sourceInformation, EngineErrorType.PARSER, e);
     }
 
-    protected List<String> dereferenceTokens(List<Integer> expectedTokens)
+    protected List<String> dereferenceTokens(List<Integer> expectedTokens, Vocabulary vocabulary)
     {
-        return vocabulary
-                .<List<String>>map(v -> ListIterate.collect(expectedTokens, v::getLiteralName).select(Objects::nonNull))
-                .orElse(Collections.emptyList());
+        return ListIterate.collect(expectedTokens, vocabulary::getLiteralName).select(Objects::nonNull);
     }
 }

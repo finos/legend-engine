@@ -170,8 +170,34 @@ functionDefinition:                             FUNCTION stereotypes? taggedValu
                                                     BRACE_OPEN
                                                         codeBlock
                                                     BRACE_CLOSE
+                                                functionTestSuiteDef?
 ;
-
+functionTestSuiteDef:                           BRACE_OPEN
+                                                    (simpleFunctionTest | simpleFunctionSuite | functionData)*
+                                                BRACE_CLOSE
+;
+simpleFunctionSuite:                            identifier
+                                                PAREN_OPEN
+                                                    (functionData)*
+                                                    simpleFunctionTest (simpleFunctionTest)*
+                                                PAREN_CLOSE
+;
+functionData:                                   qualifiedName COLON functionDataValue SEMI_COLON
+;
+functionDataValue:                              (qualifiedName | externalFormatValue | embeddedData)
+;
+simpleFunctionTest:                             identifier PIPE identifier PAREN_OPEN functionParams PAREN_CLOSE EQUAL GREATER_THAN (externalFormatValue | primitiveValue) SEMI_COLON
+;
+externalFormatValue:                            contentType STRING
+;
+contentType:                                    PAREN_OPEN identifier PAREN_CLOSE
+;
+functionParams:                                 (primitiveValue (COMMA primitiveValue)*)?
+;
+embeddedData:                                   identifier ISLAND_OPEN (embeddedDataContent)*
+;
+embeddedDataContent:                            ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
+;
 
 // -------------------------------------- CONSTRAINT --------------------------------------
 

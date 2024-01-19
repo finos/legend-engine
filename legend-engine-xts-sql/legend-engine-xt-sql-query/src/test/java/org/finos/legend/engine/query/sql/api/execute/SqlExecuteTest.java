@@ -187,6 +187,27 @@ public class SqlExecuteTest
     }
 
     @Test
+    public void testExecuteMultiUnionNoAliases() throws JsonProcessingException
+    {
+        //this is to test the query realiasing, can be moved to testTranspile one realiser moved to pure code
+        String all = resources.target("sql/v1/execution/executeQueryString")
+                .request()
+                .post(Entity.text("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                        "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                        "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24') " +
+                        "UNION SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24')")).readEntity(String.class);
+
+        TDSExecuteResult allExpected = TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .addRow(FastList.newListWith("Alice"))
+                .addRow(FastList.newListWith("Alice"))
+                .addRow(FastList.newListWith("Alice"))
+                .build();
+
+        Assert.assertEquals(allExpected, OM.readValue(all, TDSExecuteResult.class));
+    }
+
+    @Test
     public void testExecuteWithCSVFormat()
     {
         String results = resources.target("sql/v1/execution/executeQueryString")

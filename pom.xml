@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.36.1-SNAPSHOT</version>
+    <version>4.37.7-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -106,8 +106,8 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>4.10.2</legend.pure.version>
-        <legend.shared.version>0.24.1</legend.shared.version>
+        <legend.pure.version>5.0.1</legend.pure.version>
+        <legend.shared.version>0.25.0</legend.shared.version>
 
         <!-- SONAR -->
         <sonar.projectKey>legend-engine</sonar.projectKey>
@@ -816,6 +816,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-runtime-execution</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-functions-relation-java</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -1812,6 +1817,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-runner-function</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-service-post-validation-runner</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1889,6 +1899,16 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-testable-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-test-framework</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-test-data-generation</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -1910,6 +1930,11 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-pure-platform-dsl-path-java</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-pure-platform-dsl-tds-java</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -2281,6 +2306,26 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-dsl-tds-pure</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-dsl-tds-grammar</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-m2-functions-relation-pure</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-functions-relation</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
@@ -2302,6 +2347,11 @@
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-dsl-tds</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>

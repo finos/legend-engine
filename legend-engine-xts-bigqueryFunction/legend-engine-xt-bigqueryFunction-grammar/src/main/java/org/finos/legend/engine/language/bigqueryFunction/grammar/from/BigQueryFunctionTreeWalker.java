@@ -21,7 +21,8 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.BigQueryFunctionParserGrammar;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
-import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -84,7 +85,12 @@ public class BigQueryFunctionTreeWalker
         BigQueryFunctionParserGrammar.FunctionNameContext functionNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.functionName(), "functionName", bigQueryFunction.sourceInformation);
         bigQueryFunction.functionName = PureGrammarParserUtility.fromGrammarString(functionNameContext.STRING().getText(), true);
         BigQueryFunctionParserGrammar.FunctionContext functionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.function(), "function", bigQueryFunction.sourceInformation);
-        bigQueryFunction.function = functionContext.functionIdentifier().getText();
+        bigQueryFunction.function = new PackageableElementPointer(
+            PackageableElementType.FUNCTION,
+            functionContext.functionIdentifier().getText(),
+            walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier())
+        );
+
         BigQueryFunctionParserGrammar.OwnerContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owner(), "owner", bigQueryFunction.sourceInformation);
         if (ownerContext != null)
         {

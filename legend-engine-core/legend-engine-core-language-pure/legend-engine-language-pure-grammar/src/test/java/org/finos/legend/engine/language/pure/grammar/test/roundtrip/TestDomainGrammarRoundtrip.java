@@ -488,6 +488,81 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     }
 
     @Test
+    public void testFunctionTest()
+    {
+
+        test("function my::SimpleFunction(): String[1]\n" +
+                "{\n" +
+                "  'Hello World!'\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | SimpleFunction() => 'Hello World!';\n" +
+                "}\n\n" +
+                "function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => 'Hello John!';\n" +
+                "}\n");
+
+        test("function my::Hello(name: String[1], age: Integer[1]): String[1]\n" +
+                        "{\n" +
+                        "  'Hello ' + $name\n" +
+                        "}\n" +
+                        "{\n" +
+                        "  myTest | Hello('John',20) => 'Hello John!';\n" +
+                        "  myOtherTest | Hello('Nicole',20) => 'Hello Nicole!';\n" +
+                        "}\n");
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => 'Hello John!';\n" +
+                "  myTest | Hello('Nicole') => 'Hello Nicole!';\n" +
+                "\n" +
+                "  MySuite\n" +
+                "  (\n" +
+                "    myTest | Hello('John') => 'Hello John!';\n" +
+                "    myTest | Hello('Nicole') => 'Hello Nicole!';\n" +
+                "  )\n\n" +
+                "  MySuite2\n" +
+                "  (\n" +
+                "    ModelStore: (JSON) '{}';\n" +
+                "    store::MyStore: testing::MyReference;\n" +
+                "    myTest | Hello('John') => (XML) 'Hello John!';\n" +
+                "    myTest | Hello('Nicole') => (JSON) 'Hello Nicole!';\n" +
+                "  )\n" +
+                "}\n");
+
+        test("function my::Hello(name: String[1], age: Integer[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  ModelStore: (JSON) '{}';\n" +
+                "  store::MyStore: testing::MyReference;\n" +
+                "  myTest | Hello('John',20) => 'Hello John!';\n" +
+                "  myOtherTest | Hello('Nicole',20) => 'Hello Nicole!';\n" +
+                "}\n");
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  MySuite2\n" +
+                "  (\n" +
+                "    ModelStore: (JSON) '{}';\n" +
+                "    store::MyStore: testing::MyReference;\n" +
+                "    myTest | Hello('John') => (XML) 'Hello John!';\n" +
+                "    myTest | Hello('Nicole') => (JSON) 'Hello Nicole!';\n" +
+                "  )\n" +
+                "}\n");
+
+    }
+
+    @Test
     public void testDecimalWithScale()
     {
         test("function withPath::f(d1: Decimal[1], d2: Decimal[1]): Decimal[1]\n" +

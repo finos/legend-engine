@@ -27,7 +27,6 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 {
     public MutableList<String> sqlExpressions = Lists.mutable.empty();
     public String functionArguments;
-    public String type;
     public String applicationName;
     public String description;
     public List<String> owners;
@@ -41,13 +40,12 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         //Empty constructor for Jackson
     }
 
-    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String functionArguments, String type, AlloySDLC sdlc)
+    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String functionArguments, AlloySDLC sdlc)
     {
         this.applicationName = applicationName;
         this.sqlExpressions = sqlExpressions;
         this.creationTime = convertToValidDate(new Date());
         this.functionArguments = functionArguments;
-        this.type = type;
         if (sdlc != null)
         {
             this.groupId = sdlc.groupId;
@@ -56,9 +54,9 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         }
     }
 
-    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String description, String functionArguments, String type,List<String> owners, AlloySDLC sdlc)
+    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String description, String functionArguments, List<String> owners, AlloySDLC sdlc)
     {
-        this(applicationName, sqlExpressions, functionArguments, type, sdlc);
+        this(applicationName, sqlExpressions, functionArguments, sdlc);
         this.description = description;
         this.owners = owners;
 

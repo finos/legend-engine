@@ -1,5 +1,7 @@
 import meta::rel::metamodel::*;
-import meta::rel::metamodel::render::*;
+import meta::rel::metamodel::render::constant::*;
+import meta::rel::metamodel::render::expr::*;
+import meta::rel::metamodel::render::program::*;
 import meta::rel::utils::*;
 
 
@@ -14,10 +16,6 @@ Class <<typemodifiers.abstract>> meta::rel::metamodel::Expr extends Annotated {
   variables() {
     []
   }: Variable[*];
-
-  code() {
-    $this->render();
-  }: String[1];
 }
 
 /**
@@ -43,11 +41,7 @@ Class meta::rel::metamodel::DontCare extends Expr { }
 /**
   * Abstract type representing bindings.
   */
-Class <<typemodifiers.abstract>> meta::rel::metamodel::Binding extends Annotated { 
-  code() {
-    $this->render();
-  }: String[1];
-}
+Class <<typemodifiers.abstract>> meta::rel::metamodel::Binding extends Annotated { }
 
 /**
   * Abstract type denoting constant values.
@@ -62,7 +56,7 @@ Class meta::rel::metamodel::Variable extends Expr, Binding {
   identifier: String[1];
 
   variables() {
-    [$this];
+    [$this]
   }: Variable[*];
 }
 
@@ -130,8 +124,8 @@ Class meta::rel::metamodel::Product extends Expr {
 
   variables() {
     $this.exprs->fold({e, accum |
-      $accum->concatenate($e.variables());
-    }, []);
+      $accum->concatenate($e.variables())
+    }, [])
   }: Variable[*];
 }
 
@@ -140,8 +134,8 @@ Class meta::rel::metamodel::Union extends Expr {
 
   variables() {
     $this.exprs->fold({e, accum |
-      $accum->concatenate($e.variables());
-    }, []);
+      $accum->concatenate($e.variables())
+    }, [])
   }: Variable[*];
 }
 
@@ -281,7 +275,7 @@ Class meta::rel::metamodel::For extends Expr {
   */
 Class <<typemodifiers.abstract>> meta::rel::metamodel::ProgramElement extends Annotated { 
   code() {
-    $this->render();
+    $this->render()
   }: String[1];
 }
 
@@ -298,10 +292,6 @@ Class meta::rel::metamodel::Rule extends ProgramElement {
   head: HeadExpr[1];
   body: Expr[1..*];
   inline: Boolean[1];
-}
-
-Class meta::rel::metamodel::RawRule extends ProgramElement {
-  code: String[1];
 }
 
 /**
@@ -327,7 +317,7 @@ Class meta::rel::metamodel::Program {
   elements: ProgramElement[*];
 
   code() {
-    $this->render();
+    $this->render()
   }: String[1];
 
   output() {
@@ -336,9 +326,9 @@ Class meta::rel::metamodel::Program {
         $e->match([
           r: Rule[1] | $r.head->identifier() == 'output',
           _p: ProgramElement[1] | false
-        ]);
+        ])
       )
-      ->map(e | $e->cast(@Rule));
+      ->map(e | $e->cast(@Rule))
   }: Rule[*];
 }
 
@@ -375,336 +365,331 @@ Class meta::rel::metamodel::Label extends Constant, ConstType {
   identifier: String[1];
 }
 
-
 ////////////////////////
 /// Constructor methods
 ////////////////////////
 
 function meta::rel::metamodel::const(value: Integer[1]): RelInteger[1] {
-  ^RelInteger(value=$value);
+  ^RelInteger(value=$value)
 }
 
 function meta::rel::metamodel::const(value: Float[1]): RelFloat[1] {
-  ^RelFloat(value=$value);
+  ^RelFloat(value=$value)
 }
 
 function meta::rel::metamodel::const(value: String[1]): RelString[1] {
-  ^RelString(value=$value);
+  ^RelString(value=$value)
 }
 
 function meta::rel::metamodel::const(value: StrictDate[1]): RelDate[1] {
-  ^RelDate(value=$value);
+  ^RelDate(value=$value)
 }
 
 function meta::rel::metamodel::const(value: DateTime[1]): RelDateTime[1] {
-  ^RelDateTime(value=$value);
+  ^RelDateTime(value=$value)
 }
 
 function meta::rel::metamodel::const(value: Any[1]): Constant[1] {
   $value->match([
-    v: String[1] | $v->const(),
-    v: Integer[1] | $v->const(),
-    v: Float[1] | $v->const(),
+    v: String[1]     | $v->const(),
+    v: Integer[1]    | $v->const(),
+    v: Float[1]      | $v->const(),
     v: StrictDate[1] | $v->const(),
-    v: DateTime[1] | $v->const()
-  ]);
+    v: DateTime[1]   | $v->const()
+  ])
 }
 
 function meta::rel::metamodel::label(identifier: String[1]): Label[1] {
-  ^Label(identifier=$identifier->escapeString('"'));
+  ^Label(identifier=$identifier->escapeString('"'))
 }
 
 function meta::rel::metamodel::dontCare(): DontCare[1] {
-  ^DontCare();
+  ^DontCare()
 }
 
 function meta::rel::metamodel::stringType(): StringType[1] {
-  ^StringType();
+  ^StringType()
 }
 
 function meta::rel::metamodel::hashValueType(): HashValueType[1] {
-  ^HashValueType();
+  ^HashValueType()
 }
 
 function meta::rel::metamodel::entityType(class: Class<Any>[1]): EntityType[1] {
-  ^EntityType(class=$class);
+  ^EntityType(class=$class)
 }
 
 function meta::rel::metamodel::integerType(): IntegerType[1] {
-  ^IntegerType();
+  ^IntegerType()
 }
 
 function meta::rel::metamodel::labelsType(): LabelsType[1] {
-  ^LabelsType();
+  ^LabelsType()
 }
 
 function meta::rel::metamodel::floatType(): FloatType[1] {
-  ^FloatType();
+  ^FloatType()
 }
 
 function meta::rel::metamodel::typeUnion(types: ConstType[1..*]): ConstTypeUnion[1] {
-  ^ConstTypeUnion(union=$types);
+  ^ConstTypeUnion(union=$types)
 }
 
 function meta::rel::metamodel::typeUnion(types: RelationType[1..*]): RelationTypeUnion[1] {
-  ^RelationTypeUnion(union=$types, names=^Map<Integer,String>());
+  ^RelationTypeUnion(union=$types, names=^Map<Integer,String>())
 }
 
 function meta::rel::metamodel::relationType(positions: ConstType[1..*]): RelationType[1] {
-  ^RelationType(positions=$positions, names=^Map<Integer,String>());
+  ^RelationType(positions=$positions, names=^Map<Integer,String>())
 }
 
 function meta::rel::metamodel::relationType(positions: ConstType[1..*], names: Map<Integer,String>[1]): RelationType[1] {
-  ^RelationType(positions=$positions, names=$names);
+  ^RelationType(positions=$positions, names=$names)
 }
 
 function meta::rel::metamodel::tuple(arguments: Expr[*]): Tuple[1] {
-  ^Tuple(arguments=$arguments);
+  ^Tuple(arguments=$arguments)
 }
 
 function meta::rel::metamodel::relation(tuples: Tuple[*]): RelationCons[1] {
-  ^RelationCons(arguments=$tuples);
+  ^RelationCons(arguments=$tuples)
 }
 
 function meta::rel::metamodel::reltrue(): RelationCons[1] {
-  relation(tuple([]->cast(@Expr)));
+  relation(tuple([]->cast(@Expr)))
 }
 
 function meta::rel::metamodel::relfalse(): RelationCons[1] {
-  relation([]);
+  relation([])
 }
 
 function meta::rel::metamodel::var(identifier: String[1]): Variable[1] {
-  ^Variable(identifier=$identifier);
+  ^Variable(identifier=$identifier)
 }
 
 function meta::rel::metamodel::vars(inner: Variable[1..*]): Variables[1] {
-  ^Variables(inner=$inner);
+  ^Variables(inner=$inner)
 }
 
 function meta::rel::metamodel::vars(inner: String[1..*]): Variables[1] {
-  vars($inner->map(v | var($v))->toOneMany());
+  vars($inner->map(v | var($v))->toOneMany())
 }
 
 function meta::rel::metamodel::atom(identifier: String[1], args: Expr[*]): NamedAtom[1] {
-  ^NamedAtom(head=^RelationName(identifier=$identifier), arguments=$args);
+  ^NamedAtom(head=^RelationName(identifier=$identifier), arguments=$args)
 }
 
 function meta::rel::metamodel::atom(identifier: String[1], args: String[*]): NamedAtom[1] {
-  atom($identifier, $args->map(v | var($v)));
+  atom($identifier, $args->map(v | var($v)))
 }
 
 function meta::rel::metamodel::atom(identifier: String[1]): NamedAtom[1] {
-  atom($identifier, []->cast(@Expr));
+  atom($identifier, []->cast(@Expr))
 }
 
 function meta::rel::metamodel::atom(expr: Expr[1], args: Expr[*]): Atom[1] {
-  ^Atom(head=$expr, arguments=$args);
+  ^Atom(head=$expr, arguments=$args)
 }
 
 function meta::rel::metamodel::headAtom(expr: HeadExpr[1], args: Expr[*]): NamedAtom[1] {
-  ^NamedAtom(head=$expr, arguments=$args);
+  ^NamedAtom(head=$expr, arguments=$args)
 }
 
 function meta::rel::metamodel::rel(identifier: String[1]): RelationName[1] {
-  ^RelationName(identifier=$identifier);
+  ^RelationName(identifier=$identifier)
 }
 
 function meta::rel::metamodel::appl(head: HeadExpr[1], args: Expr[*]): NamedApplication[1] {
-  ^NamedApplication(head=$head, arguments=$args);
+  ^NamedApplication(head=$head, arguments=$args)
 }
 
 function meta::rel::metamodel::appl(identifier: String[1], args: Expr[*]): NamedApplication[1] {
-  appl(rel($identifier), $args);
+  appl(rel($identifier), $args)
 }
 
 function meta::rel::metamodel::appl(expr: Expr[1], args: Expr[*]): Application[1] {
-  ^Application(head=$expr, arguments=$args);
+  ^Application(head=$expr, arguments=$args)
 }
 
 function meta::rel::metamodel::in(variable: Variable[1], expr: Expr[1]): InBinding[1] {
-  ^InBinding(variable=$variable, in=$expr);
+  ^InBinding(variable=$variable, in=$expr)
 }
 
 function meta::rel::metamodel::where(parents: Binding[1..*], where: Expr[1]): WhereBinding[1] {
-  ^WhereBinding(parents=$parents, where=$where);
+  ^WhereBinding(parents=$parents, where=$where)
 }
 
 function meta::rel::metamodel::abstract(body: Expr[1], bindings: Binding[1..*]): Abstraction[1] {
-  ^Abstraction(body=$body, bindings=$bindings);
+  ^Abstraction(body=$body, bindings=$bindings)
 }
 
 function meta::rel::metamodel::abstract(body: Expr[1], variables: String[1..*]): Abstraction[1] {
-  abstract($body, $variables->map(v | var($v)));
+  abstract($body, $variables->map(v | var($v)))
 }
 
 function meta::rel::metamodel::and(left: Expr[1], right: Expr[1]): And[1] {
-  ^And(conjuncts=[$left, $right]);
+  ^And(conjuncts=[$left, $right])
 }
 
 function meta::rel::metamodel::and(exprs: Expr[*]): Expr[1] {
   if ($exprs->size() == 0, | reltrue(), {|
     $exprs->slice(1, $exprs->size())
       ->fold({e, accum |
-        $accum->and($e);
+        $accum->and($e)
       }, $exprs->at(0))
-  });
+  })
 }
 
 function meta::rel::metamodel::or(left: Expr[1], right: Expr[1]): Or[1] {
-  ^Or(disjuncts=[$left, $right]);
+  ^Or(disjuncts=[$left, $right])
 }
 
 function meta::rel::metamodel::not(inner: Expr[1]): Not[1] {
-  ^Not(inner=$inner);
+  ^Not(inner=$inner)
 }
 
 function meta::rel::metamodel::implies(antecedence: Expr[1], consequence: Expr[1]): Implies[1] {
-  ^Implies(antecedence=$antecedence, consequence=$consequence);
+  ^Implies(antecedence=$antecedence, consequence=$consequence)
 }
 
 function meta::rel::metamodel::comma(left: Expr[1..*], right: Expr[*]): Expr[1..*] {
-  $left->concatenate($right)->toOneMany();
+  $left->concatenate($right)->toOneMany()
 }
 
 function meta::rel::metamodel::exists(expr: Expr[1]): Exists[1] {
-  ^Exists(inner=$expr);
+  ^Exists(inner=$expr)
 }
 
 function meta::rel::metamodel::forAll(bindings: Binding[1..*], expr: Expr[1]): ForAll[1] {
-  ^ForAll(bindings=$bindings, inner=$expr);
+  ^ForAll(bindings=$bindings, inner=$expr)
 }
 
 function meta::rel::metamodel::equals(left: Expr[1], right: Expr[1]): Equals[1] {
-  ^Equals(left=$left, right=$right);
+  ^Equals(left=$left, right=$right)
 }
 
 function meta::rel::metamodel::compose(from: Expr[1], to: Expr[1]): Composition[1] {
-  ^Composition(from=$from, to=$to);
+  ^Composition(from=$from, to=$to)
 }
 
 function meta::rel::metamodel::from(expr: Expr[1], bindings: Binding[1..*]): From[1] {
-  ^From(bindings=$bindings, expr=$expr);
+  ^From(bindings=$bindings, expr=$expr)
 }
 
 function meta::rel::metamodel::from(expr: Expr[1], variables: String[1..*]): From[1] {
-  from($expr, $variables->map(v | var($v)));
+  from($expr, $variables->map(v | var($v)))
 }
 
 function meta::rel::metamodel::for(expr: Expr[1], bindings: Binding[1..*]): For[1] {
-  ^For(bindings=$bindings, expr=$expr);
+  ^For(bindings=$bindings, expr=$expr)
 }
 
 function meta::rel::metamodel::for(expr: Expr[1], variables: String[1..*]): For[1] {
-  for($expr, $variables->map(v | var($v)));
+  for($expr, $variables->map(v | var($v)))
 }
 
 function meta::rel::metamodel::ifThenElse(condition: Expr[1], then: Expr[1], else: Expr[1]): IfThenElse[1] {
-  ^IfThenElse(condition=$condition, then=$then, else=$else);
+  ^IfThenElse(condition=$condition, then=$then, else=$else)
 }
 
 function meta::rel::metamodel::product(exprs: Expr[1..*]): Product[1] {
-  ^Product(exprs=$exprs);
+  ^Product(exprs=$exprs)
 }
 
 function meta::rel::metamodel::union(exprs: Expr[1..*]): Union[1] {
-  ^Union(exprs=$exprs);
+  ^Union(exprs=$exprs)
 }
 
-function meta::rel::metamodel::group(parent: Expr[1]): ExprGroup[1] {
-  ^ExprGroup(parent=$parent);
+function meta::rel::metamodel::parenthesise(parent: Expr[1]): ExprGroup[1] {
+  ^ExprGroup(parent=$parent)
 }
 
 function meta::rel::metamodel::fragment(code: String[1]): Fragment[1] {
-  ^Fragment(code=$code);
+  ^Fragment(code=$code)
 }
 
 function meta::rel::metamodel::def(head: HeadExpr[1], body: Expr[1..*], inline: Boolean[1]): Rule[1] {
-  ^Rule(head=$head, body=$body, inline=$inline);
+  ^Rule(head=$head, body=$body, inline=$inline)
 }
 
 function meta::rel::metamodel::def(head: HeadExpr[1], body: Expr[1..*]): Rule[1] {
-  def($head, $body, false);
+  def($head, $body, false)
 }
 
 function meta::rel::metamodel::def(head: String[1], body: Expr[1..*], inline: Boolean[1]): Rule[1] {
-  def(rel($head), $body, $inline);
+  def(rel($head), $body, $inline)
 }
 
 function meta::rel::metamodel::def(head: String[1], body: Expr[1..*]): Rule[1] {
-  def($head, $body, false);
-}
-
-function meta::rel::metamodel::rule(code: String[1]): RawRule[1] {
-  ^RawRule(code=$code);
+  def($head, $body, false)
 }
 
 function meta::rel::metamodel::ic(head: HeadExpr[1], body: Expr[1..*], inline: Boolean[1]): IC[1] {
-  ^IC(head=$head, body=$body, inline=$inline);
+  ^IC(head=$head, body=$body, inline=$inline)
 }
 
 function meta::rel::metamodel::ic(head: HeadExpr[1], body: Expr[1..*]): IC[1] {
-  ic($head, $body, false);
+  ic($head, $body, false)
 }
 
 function meta::rel::metamodel::ic(head: String[1], body: Expr[1..*], inline: Boolean[1]): IC[1] {
-  ic(rel($head), $body, $inline);
+  ic(rel($head), $body, $inline)
 }
 
 function meta::rel::metamodel::ic(head: String[1], body: Expr[1..*]): IC[1] {
-  ic($head, $body, false);
+  ic($head, $body, false)
 }
 
 function meta::rel::metamodel::defEntity(name: String[1], head: HeadExpr[1], body: Expr[1..*], inline: Boolean[1]): EntityDef[1] {
-  ^EntityDef(name=^RelationName(identifier=$name), head=$head, body=$body, inline=$inline);
+  ^EntityDef(name=^RelationName(identifier=$name), head=$head, body=$body, inline=$inline)
 }
 
 function meta::rel::metamodel::defEntity(name: String[1], head: HeadExpr[1], body: Expr[1..*]): EntityDef[1] {
-  defEntity($name, $head, $body, false);
+  defEntity($name, $head, $body, false)
 }
 
 function meta::rel::metamodel::defEntity(name: String[1], head: String[1], body: Expr[1..*], inline: Boolean[1]): EntityDef[1] {
-  defEntity($name, rel($head), $body, $inline);
+  defEntity($name, rel($head), $body, $inline)
 }
 
 function meta::rel::metamodel::defEntity(name: String[1], head: String[1], body: Expr[1..*]): EntityDef[1] {
-  defEntity($name, rel($head), $body, false);
+  defEntity($name, rel($head), $body, false)
 }
 
 function meta::rel::metamodel::lineComment(text: String[1]): LineComment[1] {
-  ^LineComment(text=$text);
+  ^LineComment(text=$text)
 }
 
 function meta::rel::metamodel::program(identifier: String[0..1], elements: ProgramElement[*]): Program[1] {
-  ^Program(identifier=$identifier, elements=$elements);
+  ^Program(identifier=$identifier, elements=$elements)
 }
 
 function meta::rel::metamodel::program(elements: ProgramElement[*]): Program[1] {
-  program([], $elements);
+  program([], $elements)
 }
 
 function meta::rel::metamodel::program(identifier: String[0..1]): Program[1] {
-  program($identifier, []);
+  program($identifier, [])
 }
 
 function meta::rel::metamodel::program(): Program[1] {
-  program([], []);
+  program([], [])
 }
 
 function meta::rel::metamodel::annotate(thing: Annotated[1], annotation: Any[*]): Annotated[1] {
-  ^$thing(annotation=$annotation);
+  ^$thing(annotation=$annotation)
 }
 
 function meta::rel::metamodel::annotate(var: Variable[1], annotation: Any[*]): Variable[1] {
-  ^$var(annotation=$annotation);
+  ^$var(annotation=$annotation)
 }
 
 function meta::rel::metamodel::annotate(expr: Expr[1], annotation: Any[*]): Expr[1] {
-  ^$expr(annotation=$annotation);
+  ^$expr(annotation=$annotation)
 }
 
 function meta::rel::metamodel::annotate(exprs: Product[1], annotation: Any[*]): Product[1] {
-  ^$exprs(annotation=$annotation);
+  ^$exprs(annotation=$annotation)
 }
 
 
@@ -716,7 +701,7 @@ function meta::rel::metamodel::identifier(expr: HeadExpr[1]): String[1] {
   $expr->match([
     rel: RelationName[1] | $rel.identifier,
     expr: NamedApplication[1] | $expr.head->identifier()
-  ]);
+  ])
 }
 
 /////////////////////////
@@ -724,26 +709,26 @@ function meta::rel::metamodel::identifier(expr: HeadExpr[1]): String[1] {
 /////////////////////////
 
 function meta::rel::metamodel::toString(type: IntegerType[1]): String[1] {
-  'integer';
+  'integer'
 }
 
 function meta::rel::metamodel::toString(type: StringType[1]): String[1] {
-  'string';
+  'string'
 }
 
 function meta::rel::metamodel::toString(type: FloatType[1]): String[1] {
-  'float';
+  'float'
 }
 
 function meta::rel::metamodel::toString(type: LabelsType[1]): String[1] {
-  'labels';
+  'labels'
 }
 
 function meta::rel::metamodel::toString(type: HashValueType[1]): String[1] {
   $type->match([
     e: EntityType[1] | $e.class.name->toOne(),
     other: HashValueType[1] | '#'
-  ]);
+  ])
 }
 
 function meta::rel::metamodel::toString(type: ConstType[1]): String[1] {
@@ -753,8 +738,8 @@ function meta::rel::metamodel::toString(type: ConstType[1]): String[1] {
     t: FloatType[1] | $t->toString(),
     t: LabelsType[1] | $t->toString(),
     t: HashValueType[1] | $t->toString(),
-    t: Label[1] | $t->render()
-  ]);
+    t: Label[1] | $t->toRelLiteral()
+  ])
 }
 
 function meta::rel::metamodel::toString(type: RelationType[1]): String[1] {
@@ -765,7 +750,7 @@ function meta::rel::metamodel::toString(type: RelationType[1]): String[1] {
           ->get($i)
           ->map(value: String[1] | $type.positions->at($i)->toString() + ': ' + $value)
           ->else(| $type.positions->at($i)->toString())
-      );
+      )
     }, []->cast(@String));
 
     $accum->stringify(e | $e, ', ');

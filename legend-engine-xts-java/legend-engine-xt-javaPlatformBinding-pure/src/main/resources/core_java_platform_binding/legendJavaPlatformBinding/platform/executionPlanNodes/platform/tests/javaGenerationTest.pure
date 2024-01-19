@@ -39,7 +39,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
     meta::pure::functions::asserts,
     meta::pure::functions::meta,
     meta::pure::functions::multiplicity,
-    meta::pure::functions::test
+    meta::pure::functions::test,
+    meta::pure::functions::relation
   ];
 }
 
@@ -65,7 +66,8 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
     meta::pure::functions::tests::collection::newMultiValueMap2Test__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
     meta::pure::functions::tests::collection::newMultiValueMapTest__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
     meta::pure::functions::tests::collection::toIndexed__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
-    meta::pure::functions::tests::collection::toNumbered__Boolean_1_ // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_ 
+    meta::pure::functions::tests::collection::toNumbered__Boolean_1_, // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_
+    meta::pure::functions::lang::tests::if::testMultiIf__Boolean_1_ // requires meta::pure::functions::collection::pair_U_1__V_1__Pair_1_    
   ];
 
   let translationNotSupported = [
@@ -84,7 +86,11 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
 		meta::pure::functions::lang::tests::letFn::testAssignNewInstance__Boolean_1_, // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ 
 		meta::pure::functions::lang::tests::match::testMatchWithExtraParam__Boolean_1_, // requires meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ 
 		meta::pure::functions::lang::tests::match::testMatchWithExtraParamsAndFunctionsAsParam__Boolean_1_, // requires meta::pure::functions::lang::match_Any_MANY__Function_$1_MANY$__P_o__T_m_ 
-		meta::pure::functions::lang::tests::new::testDynamicInstance__Boolean_1_ // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_ 				    
+		meta::pure::functions::lang::tests::new::testDynamicInstance__Boolean_1_, // requires meta::pure::functions::meta::genericType_Any_MANY__GenericType_1_,
+    meta::pure::functions::collection::tests::find::testFindInstance__Boolean_1_,
+    meta::pure::functions::collection::tests::find::testFindLiteralFromVar__Boolean_1_,
+    meta::pure::functions::collection::tests::find::testFindLiteral__Boolean_1_,
+    meta::pure::functions::collection::tests::find::testFindUsingVarForFunction__Boolean_1_
   ];
 
   let prohibitedFunctionAccess = [
