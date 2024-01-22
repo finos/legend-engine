@@ -95,6 +95,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (executionContext.description != null ? (getTabString(3) + "description: " + convertString(executionContext.description, true) + ";\n") : "") +
                 getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping.path) + ";\n" +
                 getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime.path) + ";\n" +
+                (executionContext.stores == null ? "" : (getTabString(3) + "stores:" + (executionContext.stores.isEmpty() ? " []" : ("\n" + getTabString(3) + "[\n" + ListIterate.collect(executionContext.stores, store -> getTabString(4) + store.path).makeString(",\n") + "\n" + getTabString(3) + "]") + ";\n"))) +
                 getTabString(2) + "}";
     }
 

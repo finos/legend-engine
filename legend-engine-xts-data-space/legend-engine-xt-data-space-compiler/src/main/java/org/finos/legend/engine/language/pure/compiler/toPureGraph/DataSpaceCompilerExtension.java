@@ -33,6 +33,7 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -70,11 +71,13 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
                         Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                        MutableList<Store> stores = executionContext.stores == null ? null : ListIterate.collect(executionContext.stores, store -> context.resolveStore(store.path, store.sourceInformation));
                         return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
                                 ._name(executionContext.name)
                                 ._title(executionContext.title)
                                 ._description(executionContext.description)
-                                ._mapping(mapping);
+                                ._mapping(mapping)
+                                ._stores(stores);
                     }));
                     Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
@@ -100,6 +103,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
                         Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                        MutableList<Store> stores = executionContext.stores == null ? null : ListIterate.collect(executionContext.stores, store -> context.resolveStore(store.path, store.sourceInformation));
                         Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
                         if (!HelperRuntimeBuilder.isRuntimeCompatibleWithMapping(runtime, mapping))
                         {
@@ -110,6 +114,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                                 ._title(executionContext.title)
                                 ._description(executionContext.description)
                                 ._mapping(mapping)
+                                ._stores(stores)
                                 ._defaultRuntime(runtime);
                     }));
                     Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
