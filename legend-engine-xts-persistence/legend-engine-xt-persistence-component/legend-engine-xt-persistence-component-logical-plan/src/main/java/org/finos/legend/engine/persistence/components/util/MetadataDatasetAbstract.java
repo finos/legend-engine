@@ -86,6 +86,12 @@ public interface MetadataDatasetAbstract
         return "batch_source_info";
     }
 
+    @Default
+    default String additionalMetadataField()
+    {
+        return "additional_metadata";
+    }
+
     @Derived
     default Dataset get()
     {
@@ -100,6 +106,7 @@ public interface MetadataDatasetAbstract
                 .addFields(Field.builder().name(batchStatusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
                 .addFields(Field.builder().name(tableBatchIdField()).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(batchSourceInfoField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(additionalMetadataField()).type(FieldType.of(DataType.JSON, Optional.empty(), Optional.empty())).build())
                 .build())
             .build();
     }

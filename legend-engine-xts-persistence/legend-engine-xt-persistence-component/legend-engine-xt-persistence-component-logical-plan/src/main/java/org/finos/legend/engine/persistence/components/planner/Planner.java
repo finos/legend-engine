@@ -116,6 +116,8 @@ public abstract class Planner
         }
 
         Map<String, Object> additionalMetadata();
+
+        Optional<String> bulkLoadEventIdValue();
     }
 
     private final Datasets datasets;
@@ -250,9 +252,30 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getBatchSourceInfoStringValue(originalStagingDataset(), options().additionalMetadata());
+        // Save staging filters into batch_source_info column
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
+        if (originalStagingDataset() instanceof DerivedDataset)
+        {
+            DerivedDataset derivedDataset = (DerivedDataset) originalStagingDataset();
+            LogicalPlanUtils.jsonifyStagingFilters(batchSourceInfoMap, derivedDataset.datasetFilters());
+        }
+        Optional<StringValue> batchSourceInfo = Optional.empty();
+        if (!batchSourceInfoMap.isEmpty())
+        {
+            batchSourceInfo = Optional.of(LogicalPlanUtils.getStringValueFromMap(batchSourceInfoMap));
+        }
+
+        // Save additional metadata into additional_metadata column
+        Optional<StringValue> additionalMetadata = Optional.empty();
+        if (!options().additionalMetadata().isEmpty())
+        {
+            additionalMetadata = Optional.of(LogicalPlanUtils.getStringValueFromMap(options().additionalMetadata()));
+        }
+
+        // Save "DONE" into status column
         StringValue status = StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()); // todo: may be a good chance to unify the status now
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, batchSourceInfo)));
+
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, batchSourceInfo, additionalMetadata)));
     }
 
     public LogicalPlan buildLogicalPlanForInitializeLock(Resources resources)

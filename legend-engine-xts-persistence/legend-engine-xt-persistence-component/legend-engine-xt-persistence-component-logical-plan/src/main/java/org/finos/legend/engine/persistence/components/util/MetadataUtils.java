@@ -47,6 +47,11 @@ public class MetadataUtils
         DONE
     }
 
+    public static final String BATCH_SOURCE_INFO_FILE_PATHS = "file_paths";
+    public static final String BATCH_SOURCE_INFO_FILE_PATTERNS = "file_patterns";
+    public static final String BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID = "event_id";
+    public static final String BATCH_SOURCE_INFO_STAGING_FILTERS = "staging_filters";
+
     private final MetadataDataset dataset;
     private final Dataset metaDataset;
 
@@ -88,7 +93,7 @@ public class MetadataUtils
 
     public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatus)
     {
-        return insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, batchStatus, Optional.empty());
+        return insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, batchStatus, Optional.empty(), Optional.empty());
     }
 
     /*
@@ -99,7 +104,7 @@ public class MetadataUtils
     '{BATCH_END_TIMESTAMP_PLACEHOLDER}',
     'DONE');
      */
-    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatusValue, Optional<StringValue> batchSourceInfoValue)
+    public Insert insertMetaData(StringValue mainTableName, BatchStartTimestamp batchStartTimestamp, BatchEndTimestamp batchEndTimestamp, Value batchStatusValue, Optional<StringValue> batchSourceInfoValue, Optional<StringValue> additionalMetadataValue)
     {
         DatasetReference metaTableRef = this.metaDataset.datasetReference();
         FieldValue tableName = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.tableNameField()).build();
@@ -119,6 +124,11 @@ public class MetadataUtils
             FieldValue batchSourceInfo = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.batchSourceInfoField()).build();
             metaInsertFields.add(batchSourceInfo);
         }
+        if (additionalMetadataValue.isPresent())
+        {
+            FieldValue additionalMetadata = FieldValue.builder().datasetRef(metaTableRef).fieldName(dataset.additionalMetadataField()).build();
+            metaInsertFields.add(additionalMetadata);
+        }
 
         List<Value> metaSelectFields = new ArrayList<>();
         metaSelectFields.add(mainTableName);
@@ -128,9 +138,15 @@ public class MetadataUtils
         metaSelectFields.add(batchStatusValue);
         if (batchSourceInfoValue.isPresent())
         {
-            ParseJsonFunction jsonFunction = ParseJsonFunction.builder().jsonString(batchSourceInfoValue.get()).build();
-            metaSelectFields.add(jsonFunction);
+            ParseJsonFunction batchSourceInfoJson = ParseJsonFunction.builder().jsonString(batchSourceInfoValue.get()).build();
+            metaSelectFields.add(batchSourceInfoJson);
         }
+        if (additionalMetadataValue.isPresent())
+        {
+            ParseJsonFunction additionalMetadataInfoJson = ParseJsonFunction.builder().jsonString(additionalMetadataValue.get()).build();
+            metaSelectFields.add(additionalMetadataInfoJson);
+        }
+
         return Insert.of(metaDataset, Selection.builder().addAllFields(metaSelectFields).build(), metaInsertFields);
     }
 

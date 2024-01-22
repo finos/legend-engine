@@ -142,6 +142,8 @@ public abstract class RelationalIngestorAbstract
 
     public abstract Map<String, Object> additionalMetadata();
 
+    public abstract Optional<String> bulkLoadEventIdValue();
+
     @Derived
     protected PlannerOptions plannerOptions()
     {
@@ -152,6 +154,7 @@ public abstract class RelationalIngestorAbstract
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
             .putAllAdditionalMetadata(additionalMetadata())
+            .bulkLoadEventIdValue(bulkLoadEventIdValue())
             .build();
     }
 
@@ -522,6 +525,7 @@ public abstract class RelationalIngestorAbstract
                 .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
                 .batchIdPattern(BATCH_ID_PATTERN)
                 .putAllAdditionalMetadata(additionalMetadata())
+                .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());

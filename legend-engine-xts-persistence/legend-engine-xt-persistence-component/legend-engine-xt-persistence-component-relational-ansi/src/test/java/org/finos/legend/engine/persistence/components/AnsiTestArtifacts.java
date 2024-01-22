@@ -23,7 +23,8 @@ public class AnsiTestArtifacts
             "\"batch_end_ts_utc\" DATETIME," +
             "\"batch_status\" VARCHAR(32)," +
             "\"table_batch_id\" INTEGER," +
-            "\"batch_source_info\" JSON)";
+            "\"batch_source_info\" JSON," +
+            "\"additional_metadata\" JSON)";
 
     public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(\"TABLE_NAME\" VARCHAR(255)," +
@@ -31,7 +32,8 @@ public class AnsiTestArtifacts
             "\"BATCH_END_TS_UTC\" DATETIME," +
             "\"BATCH_STATUS\" VARCHAR(32)," +
             "\"TABLE_BATCH_ID\" INTEGER," +
-            "\"BATCH_SOURCE_INFO\" JSON)";
+            "\"BATCH_SOURCE_INFO\" JSON," +
+            "\"ADDITIONAL_METADATA\" JSON)";
 
     public static String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +

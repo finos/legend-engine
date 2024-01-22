@@ -46,21 +46,21 @@ public class LogicalPlanUtilsTest extends IngestModeTest
         try
         {
             Map<String, Object> batchSourceInfoMap = new HashMap<>();
-            LogicalPlanUtils.jsonifyStagingFilters(Arrays.asList(filter1), batchSourceInfoMap);
+            LogicalPlanUtils.jsonifyStagingFilters(batchSourceInfoMap, Arrays.asList(filter1));
             String stagingFilters1 = objectMapper.writeValueAsString(batchSourceInfoMap);
             Assertions.assertEquals("{\"staging_filters\":{\"id\":{\"GTE\":1}}}", stagingFilters1);
 
             TypeReference<Map<String,Map<String,Map<String,Object>>>> typeRef = new TypeReference<Map<String,Map<String,Map<String,Object>>>>() {};
 
             batchSourceInfoMap = new HashMap<>();
-            LogicalPlanUtils.jsonifyStagingFilters(Arrays.asList(filter1, filter2), batchSourceInfoMap);
+            LogicalPlanUtils.jsonifyStagingFilters(batchSourceInfoMap, Arrays.asList(filter1, filter2));
             String stagingFilters2 = objectMapper.writeValueAsString(batchSourceInfoMap);
             Map<String,Map<String,Map<String,Object>>> map = objectMapper.readValue(stagingFilters2, typeRef);
             Assertions.assertEquals(1, map.get("staging_filters").get("id").get("GTE"));
             Assertions.assertEquals(2, map.get("staging_filters").get("id").get("LTE"));
 
             batchSourceInfoMap = new HashMap<>();
-            LogicalPlanUtils.jsonifyStagingFilters(Arrays.asList(filter3, filter4), batchSourceInfoMap);
+            LogicalPlanUtils.jsonifyStagingFilters(batchSourceInfoMap, Arrays.asList(filter3, filter4));
             String stagingFilters3 = objectMapper.writeValueAsString(batchSourceInfoMap);
             map = objectMapper.readValue(stagingFilters3, typeRef);
             Assertions.assertEquals(ts1, map.get("staging_filters").get("start_time").get("GTE"));

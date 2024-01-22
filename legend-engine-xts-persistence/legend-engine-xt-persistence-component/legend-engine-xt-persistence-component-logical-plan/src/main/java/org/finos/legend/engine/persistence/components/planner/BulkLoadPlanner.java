@@ -204,8 +204,23 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getBatchSourceInfoStringValue(stagedFilesDataset, options().additionalMetadata());
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, batchSourceInfo)));
+        // Save file paths/patterns and event id into batch_source_info column
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
+        LogicalPlanUtils.jsonifyBulkLoadSourceInfo(batchSourceInfoMap, stagedFilesDataset.stagedFilesDatasetProperties(), options().bulkLoadEventIdValue());
+        Optional<StringValue> batchSourceInfo = Optional.empty();
+        if (!batchSourceInfoMap.isEmpty())
+        {
+            batchSourceInfo = Optional.of(LogicalPlanUtils.getStringValueFromMap(batchSourceInfoMap));
+        }
+
+        // Save additional metadata into additional_metadata column
+        Optional<StringValue> additionalMetadata = Optional.empty();
+        if (!options().additionalMetadata().isEmpty())
+        {
+            additionalMetadata = Optional.of(LogicalPlanUtils.getStringValueFromMap(options().additionalMetadata()));
+        }
+
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, batchSourceInfo, additionalMetadata)));
     }
 
     @Override

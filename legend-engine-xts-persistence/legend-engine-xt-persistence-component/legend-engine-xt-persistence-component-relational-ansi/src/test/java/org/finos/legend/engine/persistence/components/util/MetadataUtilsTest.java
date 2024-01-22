@@ -183,38 +183,40 @@ public abstract class MetadataUtilsTest
     }
 
     @Test
-    public void testBulkLoadInsertMetadata()
+    public void testInsertMetadataWithAdditionalInfo()
     {
         MetadataUtils store = new MetadataUtils(metadataDataset());
         StringValue bulkLoadTableName = StringValue.of("appeng_log_table_name");
-        StringValue batchLineageValue = StringValue.of("my_lineage_value");
-        Insert operation = store.insertMetaData(bulkLoadTableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchLineageValue));
+        StringValue batchSourceInfoValue = StringValue.of("my_batch_source_info");
+        StringValue additionalMetadataValue = StringValue.of("my_additional_metadata");
+        Insert operation = store.insertMetaData(bulkLoadTableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchSourceInfoValue), Optional.of(additionalMetadataValue));
 
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withBulkLoadBatchStatusPattern("<BATCH_STATUS_PATTERN>"));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "INSERT INTO " + lowerCaseTableName() +
-            " (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\")" +
-            " (SELECT 'appeng_log_table_name',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"table_batch_id\"),0)+1 FROM " + lowerCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"table_name\") = 'APPENG_LOG_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";;
+            " (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\")" +
+            " (SELECT 'appeng_log_table_name',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"table_batch_id\"),0)+1 FROM " + lowerCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"table_name\") = 'APPENG_LOG_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_batch_source_info'),PARSE_JSON('my_additional_metadata'))";;
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 
     @Test
-    public void testInsertMetadataInUpperCase()
+    public void testInsertMetadataWithAdditionalInfoInUpperCase()
     {
         MetadataUtils store = new MetadataUtils(metadataDataset());
         StringValue bulkLoadTableName = StringValue.of("BULK_LOAD_TABLE_NAME");
-        StringValue batchLineageValue = StringValue.of("my_lineage_value");
-        Insert operation = store.insertMetaData(bulkLoadTableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchLineageValue));
+        StringValue batchSourceInfoValue = StringValue.of("my_batch_source_info");
+        StringValue additionalMetadataValue = StringValue.of("my_additional_metadata");
+        Insert operation = store.insertMetaData(bulkLoadTableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchSourceInfoValue), Optional.of(additionalMetadataValue));
 
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withBulkLoadBatchStatusPattern("<BATCH_STATUS_PATTERN>").withOptimizers(new UpperCaseOptimizer()));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "INSERT INTO " + upperCaseTableName() +
-            " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\")" +
-            " (SELECT 'BULK_LOAD_TABLE_NAME',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'BULK_LOAD_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_lineage_value'))";
+            " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\", \"ADDITIONAL_METADATA\")" +
+            " (SELECT 'BULK_LOAD_TABLE_NAME',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'BULK_LOAD_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_batch_source_info'),PARSE_JSON('my_additional_metadata'))";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 }

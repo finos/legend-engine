@@ -51,7 +51,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
     private static final String DIGEST = "digest";
     private static final String APPEND_TIME = "append_time";
     private static final String BATCH_ID = "batch_id";
-    private static final Map<String, Object> ADDITIONAL_METADATA = Collections.singletonMap("event_id", "xyz123");
+    private static final String EVENT_ID = "xyz123";
     private static final String COL_INT = "col_int";
     private static final String COL_STRING = "col_string";
     private static final String COL_DECIMAL = "col_decimal";
@@ -113,7 +113,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .bulkLoadEventIdValue(EVENT_ID)
             .build();
 
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
@@ -243,7 +243,7 @@ public class BulkLoadExecutorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .bulkLoadEventIdValue(EVENT_ID)
             .build();
 
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());

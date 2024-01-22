@@ -53,7 +53,7 @@ public class BulkLoadTest
     private static final String DIGEST = "digest";
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
     private static final String BATCH_ID = "batch_id";
-    private static final Map<String, Object> ADDITIONAL_METADATA = Collections.singletonMap("event_id", "xyz123");
+    private static final String EVENT_ID = "xyz123";
     private static final String COL_INT = "col_int";
     private static final String COL_STRING = "col_string";
     private static final String COL_DECIMAL = "col_decimal";
@@ -114,7 +114,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .bulkLoadEventIdValue(EVENT_ID)
             .batchIdPattern("{NEXT_BATCH_ID}")
             .build();
 
@@ -138,7 +138,7 @@ public class BulkLoadTest
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         String expectedMetadataIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT 'my_name',{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"additional_metadata\":{\"event_id\":\"xyz123\"}}'))";
+            "(SELECT 'my_name',{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
@@ -153,7 +153,7 @@ public class BulkLoadTest
     }
 
     @Test
-    public void testBulkLoadWithDigestNotGeneratedAuditEnabledAllOptionsNoAdditionalMetadata()
+    public void testBulkLoadWithDigestNotGeneratedAuditEnabledAllOptionsNoEventId()
     {
         BulkLoad bulkLoad = BulkLoad.builder()
             .batchIdField(BATCH_ID)
@@ -253,7 +253,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .bulkLoadEventIdValue(EVENT_ID)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -312,7 +312,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .bulkLoadEventIdValue(EVENT_ID)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -373,7 +373,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .bulkLoadEventIdValue(EVENT_ID)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 
@@ -466,7 +466,7 @@ public class BulkLoadTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(BigQuerySink.get())
-                .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+                .bulkLoadEventIdValue(EVENT_ID)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();

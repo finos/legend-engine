@@ -44,7 +44,7 @@ import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
 public class ApiUtils
 {

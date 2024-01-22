@@ -40,7 +40,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
@@ -73,6 +72,10 @@ import static org.finos.legend.engine.persistence.components.logicalplan.dataset
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATHS;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATTERNS;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
 
 public class LogicalPlanUtils
@@ -85,10 +88,6 @@ public class LogicalPlanUtils
     public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
     public static final String TEMP_STAGING_DATASET_BASE_NAME = "legend_persistence_temp_staging";
     public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
-    public static final String BATCH_SOURCE_INFO_ADDITIONAL_METADATA = "additional_metadata";
-    public static final String BATCH_SOURCE_INFO_STAGING_FILTERS = "staging_filters";
-    public static final String BATCH_SOURCE_INFO_FILE_PATHS = "file_paths";
-    public static final String BATCH_SOURCE_INFO_FILE_PATTERNS = "file_patterns";
 
     private LogicalPlanUtils()
     {
@@ -270,49 +269,7 @@ public class LogicalPlanUtils
         return And.of(conditions);
     }
 
-    public static Optional<StringValue> getBatchSourceInfoStringValue(Dataset dataset, Map<String, Object> additionalMetadata)
-    {
-        Map<String, Object> batchSourceInfoMap = new HashMap<>();
-
-        // Save additional metadata
-        if (!additionalMetadata.isEmpty())
-        {
-            batchSourceInfoMap.put(BATCH_SOURCE_INFO_ADDITIONAL_METADATA, additionalMetadata);
-        }
-
-        if (dataset instanceof DerivedDataset)
-        {
-            DerivedDataset derivedDataset = (DerivedDataset) dataset;
-            List<DatasetFilter> datasetFilters = derivedDataset.datasetFilters();
-            LogicalPlanUtils.jsonifyStagingFilters(datasetFilters, batchSourceInfoMap);
-        }
-        else if (dataset instanceof StagedFilesDataset)
-        {
-            StagedFilesDataset stagedFilesDataset = (StagedFilesDataset) dataset;
-            StagedFilesDatasetProperties stagedFilesDatasetProperties = stagedFilesDataset.stagedFilesDatasetProperties();
-            LogicalPlanUtils.jsonifyFilesInfo(stagedFilesDatasetProperties, batchSourceInfoMap);
-        }
-
-        if (batchSourceInfoMap.isEmpty())
-        {
-            return Optional.empty();
-        }
-        else
-        {
-            ObjectMapper objectMapper = new ObjectMapper();
-            try
-            {
-                return Optional.of(StringValue.of(objectMapper.writeValueAsString(batchSourceInfoMap)));
-            }
-            catch (JsonProcessingException e)
-            {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
-    // For all ingest modes except for bulk load
-    public static void jsonifyStagingFilters(List<DatasetFilter> filters, Map<String, Object> batchSourceInfoMap)
+    public static void jsonifyStagingFilters(Map<String, Object> batchSourceInfoMap, List<DatasetFilter> filters)
     {
         Map<String, Map<String, Object>> stagingFiltersMap = new HashMap<>();
         for (DatasetFilter filter : filters)
@@ -327,8 +284,7 @@ public class LogicalPlanUtils
         batchSourceInfoMap.put(BATCH_SOURCE_INFO_STAGING_FILTERS, stagingFiltersMap);
     }
 
-    // For bulk load
-    public static void jsonifyFilesInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties, Map<String, Object> batchSourceInfoMap)
+    public static void jsonifyBulkLoadSourceInfo(Map<String, Object> batchSourceInfoMap, StagedFilesDatasetProperties stagedFilesDatasetProperties, Optional<String> bulkLoadEventIdValue)
     {
         List<String> filePaths = stagedFilesDatasetProperties.filePaths();
         List<String> filePatterns = stagedFilesDatasetProperties.filePatterns();
@@ -339,6 +295,21 @@ public class LogicalPlanUtils
         if (filePatterns != null && !filePatterns.isEmpty())
         {
             batchSourceInfoMap.put(BATCH_SOURCE_INFO_FILE_PATTERNS, filePatterns);
+        }
+
+        bulkLoadEventIdValue.ifPresent(s -> batchSourceInfoMap.put(BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID, s));
+    }
+
+    public static StringValue getStringValueFromMap(Map<String, Object> map)
+    {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return StringValue.of(objectMapper.writeValueAsString(map));
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
         }
     }
 

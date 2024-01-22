@@ -42,7 +42,6 @@ import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -108,7 +107,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .putAllAdditionalMetadata(Collections.singletonMap("event_id", "task123"))
+                .bulkLoadEventIdValue("task123")
                 .batchIdPattern("{NEXT_BATCH_ID}")
                 .build();
 
@@ -130,7 +129,7 @@ public class BulkLoadTest
                 " ON_ERROR = 'ABORT_STATEMENT'";
 
         String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
-                "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"additional_metadata\":{\"event_id\":\"task123\"}}'))";
+                "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"task123\",\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
@@ -171,7 +170,7 @@ public class BulkLoadTest
                 .ingestMode(bulkLoad)
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
-                .putAllAdditionalMetadata(Collections.singletonMap("event_id", "task123"))
+                .bulkLoadEventIdValue("task123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -200,7 +199,7 @@ public class BulkLoadTest
     }
 
     @Test
-    public void testBulkLoadWithUpperCaseConversionAndNoAdditionalMetadata()
+    public void testBulkLoadWithUpperCaseConversionAndNoEventId()
     {
         BulkLoad bulkLoad = BulkLoad.builder()
                 .batchIdField("batch_id")
@@ -327,7 +326,7 @@ public class BulkLoadTest
                     .relationalSink(SnowflakeSink.get())
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
-                    .putAllAdditionalMetadata(Collections.singletonMap("event_id", "task123"))
+                    .bulkLoadEventIdValue("task123")
                     .build();
 
             GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
@@ -367,7 +366,7 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
-                .putAllAdditionalMetadata(Collections.singletonMap("event_id", "task123"))
+                .bulkLoadEventIdValue("task123")
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -428,7 +427,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(Collections.singletonMap("event_id", "task123"))
+            .bulkLoadEventIdValue("task123")
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -489,7 +488,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(Collections.singletonMap("event_id", "task123"))
+            .bulkLoadEventIdValue("task123")
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -553,7 +552,7 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .putAllAdditionalMetadata(Collections.singletonMap("event_id", "task123"))
+            .bulkLoadEventIdValue("task123")
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
