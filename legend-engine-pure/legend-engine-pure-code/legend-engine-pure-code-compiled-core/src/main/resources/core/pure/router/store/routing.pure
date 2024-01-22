@@ -78,7 +78,7 @@ function <<access.private>> meta::pure::router::store::routing::modifyMappingBas
             | let connection = $inScopeStores->map(s|$runtime->connectionByElementFailSafe($s))->distinct();
             if(
                 $connection->size() == 1,
-                | $inScopeStores->toOne()->match(
+                | $inScopeStores->match(
                     $extensions.availableStores.localizeXStoreAssociation
                     ->map(e|$e->eval($x, $inScopeClassMappings))
                     ->concatenate([a:Store[*] | $x;])->toOneMany()
