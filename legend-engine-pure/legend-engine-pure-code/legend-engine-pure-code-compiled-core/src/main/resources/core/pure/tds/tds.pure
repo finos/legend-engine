@@ -441,8 +441,22 @@ function <<access.private>> meta::pure::tds::multipleColumnComp(row:TDSRow[1], o
    if ($sortInfo->isEmpty(),
          | 0,
          | let s = $sortInfo->head();
-           let res = if($row.isNull($s.column->toOne()), |^TDSNull(), |$row.get($s.column->toOne()))
-                      ->compare(if($other.isNull($s.column->toOne()), |^TDSNull(), |$other.get($s.column->toOne())));
+           let rowVal = if($row.isNull($s.column->toOne()), |[], |$row.get($s.column->toOne()));
+           let otherVal = if($other.isNull($s.column->toOne()), |[], |$other.get($s.column->toOne()));
+
+            let res = $rowVal->match([
+              none: Any[0]|
+                $otherVal->match([
+                  none: Any[0] | 0,
+                  otherVal: Any[1] | 1
+                ]),
+              val: Any[1]|
+                $otherVal->match([
+                  none: Any[0] | -1,
+                  otherVal: Any[1] | $val->compare($otherVal)
+                ])
+            ]);
+
            if ($res == 0, |$row->multipleColumnComp($other, $sortInfo->tail()), |if ($s.direction == SortDirection.ASC, |$res,|-$res));
    );
 }
@@ -453,8 +467,9 @@ function
    {doc.doc = 'Remove duplicate rows from the priovded TDS'}
    meta::pure::tds::distinct(tds:TabularDataSet[1]):TabularDataSet[1]
 {
-   fail('Not implemented yet!');
-   $tds;
+   let newTds = ^$tds(rows = []);
+   let distinctRows = $tds.rows->removeDuplicates({l, r | $l.values == $r.values})->map(r | ^$r(parent = $newTds));
+   $newTds->mutateAdd('rows', $distinctRows);
 }
 
 function 

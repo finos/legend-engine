@@ -32,7 +32,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
@@ -107,7 +109,7 @@ public abstract class Planner
             return false;
         }
 
-        Optional<String> bulkLoadTaskIdValue();
+        Optional<String> bulkLoadEventIdValue();
     }
 
     private final Datasets datasets;
@@ -137,6 +139,8 @@ public abstract class Planner
         ingestMode.versioningStrategy().accept(new ValidatePrimaryKeysForVersioningStrategy(primaryKeys, this::validatePrimaryKeysNotEmpty));
         // 2. Validate if the versioningField is comparable if a versioningStrategy is present
         validateVersioningField(ingestMode().versioningStrategy(), stagingDataset());
+        // 3. cleanupStagingData must be turned off when using DerivedDataset or FilteredDataset
+        validateCleanUpStagingData(plannerOptions, originalStagingDataset());
     }
 
     private Optional<Dataset> getTempStagingDataset()
@@ -495,6 +499,14 @@ public abstract class Planner
             {
                 throw new IllegalStateException(String.format("Versioning field's data type [%s] is not supported", filterField.type().dataType()));
             }
+        }
+    }
+
+    protected void validateCleanUpStagingData(PlannerOptions plannerOptions, Dataset dataset)
+    {
+        if (plannerOptions.cleanupStagingData() && (dataset instanceof DerivedDataset || dataset instanceof FilteredDataset))
+        {
+            throw new IllegalStateException("cleanupStagingData cannot be turned on when using DerivedDataset or FilteredDataset");
         }
     }
 

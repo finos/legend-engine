@@ -20,6 +20,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
+import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseLexer;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
@@ -1407,19 +1408,24 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
     @Override
     public Node visitLeft(SqlBaseParser.LeftContext context)
     {
-        return unsupported();
+        return functionCall("left", context.strOrColName, context.len);
     }
 
     @Override
     public Node visitRight(SqlBaseParser.RightContext context)
     {
-        return unsupported();
+        return functionCall("right", context.strOrColName, context.len);
     }
 
     @Override
     public Node visitTrim(SqlBaseParser.TrimContext ctx)
     {
-        return unsupported();
+        Trim trim = new Trim();
+        trim.value = (Expression) visit(ctx.target);
+        trim.characters = visitIfPresent(ctx.charsToTrim, Expression.class).orElse(null);
+        trim.mode = getTrimMode(ctx.trimMode);
+
+        return trim;
     }
 
     @Override
@@ -1562,6 +1568,7 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         functionCall.distinct = isDistinct(context.setQuant());
         functionCall.window = visitIfPresent(context.over(), Window.class).orElse(null);
         functionCall.group = visitIfPresent(context.within(), Group.class).orElse(null);
+        functionCall.orderBy = visitCollection(context.sortItem(), SortItem.class);
 
         return functionCall;
     }
@@ -1905,6 +1912,25 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         }
     }
 
+    private TrimMode getTrimMode(Token type)
+    {
+        if (type == null)
+        {
+            return TrimMode.BOTH;
+        }
+        switch (type.getType())
+        {
+            case SqlBaseLexer.BOTH:
+                return TrimMode.BOTH;
+            case SqlBaseLexer.LEADING:
+                return TrimMode.LEADING;
+            case SqlBaseLexer.TRAILING:
+                return TrimMode.TRAILING;
+            default:
+                throw new UnsupportedOperationException("Unsupported trim mode: " + type.getText());
+        }
+    }
+
     private static SortItemNullOrdering getNullOrderingType(Token token)
     {
         if (token != null)
@@ -1945,6 +1971,20 @@ class SqlVisitor extends SqlBaseParserBaseVisitor<Node>
         qualifiedName.parts = FastList.newListWith(parts);
 
         return qualifiedName;
+    }
+
+    private FunctionCall functionCall(String name, ExprContext... contexts)
+    {
+        return functionCall(name, ArrayIterate.collect(contexts, c -> (Expression) visit(c)));
+    }
+
+    private FunctionCall functionCall(String name, List<Expression> arguments)
+    {
+        FunctionCall functionCall = new FunctionCall();
+        functionCall.name = qualifiedName(name);
+        functionCall.arguments = arguments;
+
+        return functionCall;
     }
 
     private static WindowFrameMode getFrameType(Token type)

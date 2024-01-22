@@ -37,7 +37,6 @@ public class TestMongoDBConnectionGrammarParser extends TestGrammarParser.TestGr
                 "MongoDBConnection " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
                 "  database: legend_db;\n" +
-                "  store: mongo::test::db;\n" +
                 "  serverURLs: [localhost:27071];\n" +
                 "  authentication: # UserPassword {\n" +
                 "    username: 'mongo_ro';\n" +

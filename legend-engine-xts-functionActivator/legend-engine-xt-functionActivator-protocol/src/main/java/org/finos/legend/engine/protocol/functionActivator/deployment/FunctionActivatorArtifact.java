@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.protocol.functionActivator.deployment;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class FunctionActivatorArtifact
 {
     public FunctionActivatorDeploymentContent content;
     public FunctionActivatorDeploymentConfiguration deploymentConfiguration;
+    public String deployedLocation;
 }

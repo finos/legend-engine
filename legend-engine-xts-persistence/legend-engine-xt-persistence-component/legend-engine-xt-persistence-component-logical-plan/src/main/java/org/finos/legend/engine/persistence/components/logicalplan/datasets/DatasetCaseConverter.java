@@ -119,6 +119,24 @@ public class DatasetCaseConverter
             return derivedDataset;
         }
 
+        if (dataset instanceof FilteredDataset)
+        {
+            FilteredDataset filteredDataset = FilteredDataset.builder()
+                .name(newName.orElseThrow(IllegalStateException::new))
+                .group(newSchemaName)
+                .database(newDatabaseName)
+                .schema(schemaDefinition)
+                .filter(((FilteredDataset) dataset).filter())
+                .datasetAdditionalProperties(dataset.datasetAdditionalProperties())
+                .build();
+
+            if (dataset.datasetReference().alias().isPresent())
+            {
+                filteredDataset = filteredDataset.withAlias(dataset.datasetReference().alias().get());
+            }
+            return filteredDataset;
+        }
+
         if (dataset instanceof StagedFilesDataset)
         {
             StagedFilesDataset stagedFilesDataset = StagedFilesDataset.builder()

@@ -26,6 +26,7 @@ Class meta::pure::router::extension::RouterExtension
   shouldStopPreeval : Function<{Any[*] -> Boolean[1]}>[0..1];
   routeFunctionExpressions : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*];
   connectionEquality : Function<{Connection[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
+  processModelJoinsInExecution : Function<{Mapping[1], Runtime[1] -> Function<{Nil[1]->Mapping[1]}>[*]}>[0..1];
   splitGraphFetchTreeForPropertyUnion : Boolean[1] = false;
   // Execution
   traceQueryInfoBuilder : Function<{FunctionDefinition<Any>[1], Mapping[1], meta::core::runtime::Runtime[1] -> String[1]}>[0..1];

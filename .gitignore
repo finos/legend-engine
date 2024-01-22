@@ -23,5 +23,5 @@
 /legend-engine-xt-graphQL-grammar/gen/
 /welcome.pure
 /legend-engine-xt-nonrelationalStore-mongodb-grammar/gen/
+/legend-engine-core-shared/legend-engine-shared-core/src/main/resources/legendExecutionVersion.json
 /legend-engine-core/legend-engine-core-shared/legend-engine-shared-core/src/main/resources/legendExecutionVersion.json
-temp

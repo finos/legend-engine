@@ -89,5 +89,10 @@ Class meta::external::store::elasticsearch::v7::metamodel::tds::FieldResultPath 
 
 Class meta::external::store::elasticsearch::v7::metamodel::tds::AggregateResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
 {
+  fieldToAggregate: meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath[1];
+}
+
+Class meta::external::store::elasticsearch::v7::metamodel::tds::DocCountAggregateResultPath extends meta::external::store::elasticsearch::v7::metamodel::tds::ResultPath
+{
   
 }

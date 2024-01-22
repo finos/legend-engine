@@ -76,6 +76,7 @@ public class BigQueryEndToEndTest
     protected static String digestName = "digest";
     protected Field id = Field.builder().name("id").type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field name = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).primaryKey(true).build();
+    protected Field nameNonPk = Field.builder().name("name").type(FieldType.of(DataType.VARCHAR, Optional.empty(), Optional.empty())).build();
     protected Field amount = Field.builder().name("amount").type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty())).build();
     protected Field bizDate = Field.builder().name("biz_date").type(FieldType.of(DataType.DATE, Optional.empty(), Optional.empty())).build();
     protected Field digest = Field.builder().name(digestName).type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty())).build();
@@ -134,7 +135,7 @@ public class BigQueryEndToEndTest
             .build();
 
     protected IngestorResult ingestViaExecutorAndVerifyStagingFilters(IngestMode ingestMode, SchemaDefinition stagingSchema,
-            DatasetFilter stagingFilter, String path, Clock clock, boolean VerifyStagingFilters) throws IOException, InterruptedException
+            DatasetFilter stagingFilter, String path, Clock clock, boolean needToVerifyStagingFilters) throws IOException, InterruptedException
     {
         RelationalIngestor ingestor = RelationalIngestor.builder()
                 .ingestMode(ingestMode)
@@ -158,7 +159,10 @@ public class BigQueryEndToEndTest
         RelationalConnection connection = BigQueryConnection.of(getBigQueryConnection());
         IngestorResult ingestorResult = ingestor.performFullIngestion(connection, datasets).get(0);
 
-        verifyStagingFilters(ingestor, connection, datasets);
+        if (needToVerifyStagingFilters)
+        {
+            verifyStagingFilters(ingestor, connection, datasets);
+        }
         return ingestorResult;
     }
 

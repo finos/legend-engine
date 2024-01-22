@@ -20,6 +20,15 @@ import meta::external::store::elasticsearch::executionTest::utils::*;
 
 function 
   <<paramTest.Test>>
+  {doc.doc = 'Test restrict on Elasticsearch Keyword property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::keyword::testRestrictKeyword(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict('Title'));
+}
+
+
+function 
+  <<paramTest.Test>>
   {doc.doc = 'Test projection on Elasticsearch Keyword property mapping'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::project::keyword::testProjectKeyword(config:TestConfig[1]):Boolean[1]
 {

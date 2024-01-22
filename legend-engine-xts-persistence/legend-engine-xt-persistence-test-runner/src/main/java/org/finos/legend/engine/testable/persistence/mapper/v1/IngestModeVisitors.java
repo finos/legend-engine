@@ -50,10 +50,7 @@ public class IngestModeVisitors
             {
                 fieldsToIgnore.add(auditField.get());
             }
-            if (appendOnly.filterDuplicates)
-            {
-                fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
-            }
+            fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
             return fieldsToIgnore;
         }
 

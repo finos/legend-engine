@@ -907,6 +907,8 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   asin,
   atan,
   atan2,
+  booland,
+  boolor,
   average,
   averageRank,
   case,

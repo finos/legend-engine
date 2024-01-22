@@ -54,6 +54,13 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     private static final String deploymentSchema = "LEGEND_NATIVE_APPS";
     private static final  String deploymentTable = "APP_METADATA";
 
+    private static String deployStub = "/schemas/" + deploymentSchema + "/user-function/%S()";
+
+    private String enrichDeploymentLocation(String deploymentLocation, String appName)
+    {
+        return deploymentLocation + String.format(deployStub, appName);
+    }
+
     public SnowflakeAppDeploymentManager(SnowflakeAppDeploymentTool deploymentTool)
     {
         this.snowflakeAppDeploymentTool = deploymentTool;
@@ -90,7 +97,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
             this.deployImpl(jdbcConnection, (SnowflakeAppContent)artifact.content);
             jdbcConnection.commit();
             LOGGER.info("Completed deployment successfully");
-            result = new SnowflakeDeploymentResult(appName, true);
+            result = new SnowflakeDeploymentResult(appName, true, enrichDeploymentLocation(artifact.deployedLocation, appName));
         }
         catch (Exception e)
         {
@@ -112,7 +119,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
         try
         {
             this.snowflakeAppDeploymentTool.deploy(datasourceSpecification, authenticationStrategy, applicationName);
-            return new SnowflakeDeploymentResult("",true);
+            return new SnowflakeDeploymentResult("",true, " ");
         }
         catch (Exception e)
         {
@@ -139,18 +146,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     public MutableList<String> generateStatements(String catalogName, SnowflakeAppContent content)
     {
         MutableList<String> statements = Lists.mutable.empty();
-        if (content.type.equals("STAGE"))
-        {
-            String deploymentTableName = String.format("%s.%s." + deploymentTable, catalogName, deploymentSchema);
-            statements.add(String.format("insert into %s(CREATE_DATETIME, APP_NAME, SQL_FRAGMENT, VERSION_NUMBER, OWNER, DESCRIPTION) values('%s', '%s', '%s', '%s', '%s', '%s');",
-                    deploymentTableName, content.creationTime, content.applicationName, content.sqlExpressions.getFirst(), content.getVersionInfo(), Lists.mutable.withAll(content.owners).makeString(","), content.description));
-
-        }
-        else
-        {
-            statements.add(String.format("CREATE OR REPLACE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
-            statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
-        }
+        statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
         return statements;
     }
 

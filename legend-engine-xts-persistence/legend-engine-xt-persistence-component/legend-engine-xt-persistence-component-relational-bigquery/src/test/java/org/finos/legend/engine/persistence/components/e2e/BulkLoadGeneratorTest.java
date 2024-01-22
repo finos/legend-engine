@@ -15,7 +15,7 @@
 package org.finos.legend.engine.persistence.components.e2e;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.FileFormat;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.NoDigestGenStrategy;
@@ -81,8 +81,8 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(FILE_LIST).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(FILE_LIST).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 
@@ -108,7 +108,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .bulkLoadBatchStatusPattern("{STATUS}")
             .build();
 

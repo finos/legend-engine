@@ -171,6 +171,19 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
         return new TestScenario(mainTableWithBatchIdBasedSchema, stagingTableWithFilter, ingestMode);
     }
 
+    public TestScenario BATCH_ID_BASED__NO_VERSIONING__WITH_FILTERED_DATASET()
+    {
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestField)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInField)
+                .batchIdOutName(batchIdOutField)
+                .build())
+            .versioningStrategy(NoVersioningStrategy.builder().build())
+            .build();
+        return new TestScenario(mainTableWithBatchIdBasedSchema, filteredStagingTable, ingestMode);
+    }
+
     public TestScenario BATCH_ID_BASED__FILTER_DUPS__MAX_VERSION__WITH_STAGING_FILTER()
     {
         UnitemporalDelta ingestMode = UnitemporalDelta.builder()
@@ -183,6 +196,20 @@ public class UnitemporalDeltaBatchIdBasedScenarios extends BaseTest
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .build();
         return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, stagingTableWithFilterAndVersion, ingestMode);
+    }
+
+    public TestScenario BATCH_ID_BASED__FILTER_DUPS__MAX_VERSION__WITH_FILTERED_DATASET()
+    {
+        UnitemporalDelta ingestMode = UnitemporalDelta.builder()
+            .digestField(digestField)
+            .transactionMilestoning(BatchId.builder()
+                .batchIdInName(batchIdInField)
+                .batchIdOutName(batchIdOutField)
+                .build())
+            .versioningStrategy(MaxVersionStrategy.builder().performStageVersioning(true).versioningField(version.name()).mergeDataVersionResolver(VersionColumnBasedResolver.of(VersionComparator.GREATER_THAN)).build())
+            .deduplicationStrategy(FilterDuplicates.builder().build())
+            .build();
+        return new TestScenario(mainTableWithBatchIdAndVersionBasedSchema, filteredStagingTableWithVersion, ingestMode);
     }
 
     public TestScenario BATCH_ID_BASED__NO_DEDUP__MAX_VERSION_WITHOUT_PERFORM__WITH_STAGING_FILTER()

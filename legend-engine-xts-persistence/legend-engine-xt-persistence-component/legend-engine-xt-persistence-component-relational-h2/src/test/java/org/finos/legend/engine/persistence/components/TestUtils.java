@@ -17,6 +17,13 @@ package org.finos.legend.engine.persistence.components;
 import com.opencsv.CSVReader;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThanEqualTo;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -24,9 +31,13 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.JsonExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.executor.RelationalExecutionHelper;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.NumericalValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 
@@ -85,6 +96,7 @@ public class TestUtils
 
     // Special columns
     public static String digestName = "digest";
+    public static String digestUDF = "LAKEHOUSE_MD5";
     public static String versionName = "version";
     public static String batchUpdateTimeName = "batch_update_time";
     public static String batchIdInName = "batch_id_in";
@@ -266,6 +278,18 @@ public class TestUtils
             .build();
     }
 
+    public static SchemaDefinition getStagingSchemaWithNonPkVersionWithoutDigest()
+    {
+        return SchemaDefinition.builder()
+            .addFields(id)
+            .addFields(name)
+            .addFields(income)
+            .addFields(startTime)
+            .addFields(expiryDate)
+            .addFields(version)
+            .build();
+    }
+
     public static SchemaDefinition getStagingSchemaWithFilterForDB()
     {
         return SchemaDefinition.builder()
@@ -355,6 +379,23 @@ public class TestUtils
             .build();
     }
 
+    public static FilteredDataset getFilteredStagingTableWithComplexFilter()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getSchemaWithNoPKs())
+            .alias(stagingTableName)
+            .filter(And.builder()
+                .addConditions(GreaterThan.of(FieldValue.builder().fieldName(incomeName).datasetRefAlias(stagingTableName).build(), NumericalValue.of(1000L)))
+                .addConditions(Or.builder()
+                    .addConditions(GreaterThanEqualTo.of(FieldValue.builder().fieldName(expiryDateName).datasetRefAlias(stagingTableName).build(), StringValue.of("2022-12-03")))
+                    .addConditions(LessThanEqualTo.of(FieldValue.builder().fieldName(expiryDateName).datasetRefAlias(stagingTableName).build(), StringValue.of("2022-12-01")))
+                    .build())
+                .build())
+            .build();
+    }
+
     public static DatasetDefinition getBasicStagingTableWithExpiryDatePk()
     {
         return DatasetDefinition.builder()
@@ -379,6 +420,15 @@ public class TestUtils
             .group(testSchemaName)
             .name(stagingTableName)
             .schema(getStagingSchemaWithNonPkVersion())
+            .build();
+    }
+
+    public static DatasetDefinition getStagingTableWithNonPkVersionWithoutDigest()
+    {
+        return DatasetDefinition.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithNonPkVersionWithoutDigest())
             .build();
     }
 
@@ -411,6 +461,20 @@ public class TestUtils
             .build();
     }
 
+    public static FilteredDataset getFilteredStagingTable()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchema())
+            .alias(stagingTableName)
+            .filter(Equals.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(1L)))
+            .build();
+    }
+
     public static DerivedDataset getStagingTableWithFilterSecondPass()
     {
         return DerivedDataset.builder()
@@ -420,6 +484,20 @@ public class TestUtils
             .alias(stagingTableName)
             .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3))
             .addDatasetFilters(DatasetFilter.of(batchName, FilterType.LESS_THAN_EQUAL, 5))
+            .build();
+    }
+
+    public static FilteredDataset getFilteredStagingTableSecondPass()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchema())
+            .alias(stagingTableName)
+            .filter(GreaterThan.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(1L)))
             .build();
     }
 
@@ -434,6 +512,20 @@ public class TestUtils
             .build();
     }
 
+    public static FilteredDataset getFilteredStagingTableWithVersion()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersion())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(2L)))
+            .build();
+    }
+
     public static DerivedDataset getStagingTableWithFilterWithVersionSecondPass()
     {
         return DerivedDataset.builder()
@@ -442,6 +534,20 @@ public class TestUtils
             .schema(getStagingSchemaWithVersion())
             .alias(stagingTableName)
             .addDatasetFilters(DatasetFilter.of(batchName, FilterType.GREATER_THAN_EQUAL, 3))
+            .build();
+    }
+
+    public static FilteredDataset getFilteredStagingTableWithVersionSecondPass()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(getStagingSchemaWithVersion())
+            .alias(stagingTableName)
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(batchName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(3L)))
             .build();
     }
 
@@ -719,6 +825,50 @@ public class TestUtils
             .build();
     }
 
+    public static FilteredDataset getEntityPriceWithVersionFilteredStagingTable()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .alias(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(date)
+                .addFields(entity)
+                .addFields(price)
+                .addFields(volume)
+                .addFields(digest)
+                .addFields(version)
+                .build()
+            )
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(volumeName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(100L)))
+            .build();
+    }
+
+    public static FilteredDataset getEntityPriceWithVersionFilteredStagingTableSecondPass()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .alias(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(date)
+                .addFields(entity)
+                .addFields(price)
+                .addFields(volume)
+                .addFields(digest)
+                .addFields(version)
+                .build()
+            )
+            .filter(GreaterThanEqualTo.of(FieldValue.builder()
+                .fieldName(volumeName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(500L)))
+            .build();
+    }
+
     public static DatasetDefinition getBitemporalMainTable()
     {
         return DatasetDefinition.builder()
@@ -925,6 +1075,46 @@ public class TestUtils
                 .addFields(digest)
                 .build()
             )
+            .build();
+    }
+
+    public static FilteredDataset getBitemporalFromOnlyFilteredStagingTableIdBased()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
+                .addFields(digest)
+                .build()
+            )
+            .alias(stagingTableName)
+            .filter(LessThanEqualTo.of(FieldValue.builder()
+                .fieldName(balanceName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(3L)))
+            .build();
+    }
+
+    public static FilteredDataset getBitemporalFromOnlyFilteredStagingTableIdBasedSecondPass()
+    {
+        return FilteredDataset.builder()
+            .group(testSchemaName)
+            .name(stagingTableName)
+            .schema(SchemaDefinition.builder()
+                .addFields(index)
+                .addFields(dateTime)
+                .addFields(balance)
+                .addFields(digest)
+                .build()
+            )
+            .alias(stagingTableName)
+            .filter(LessThanEqualTo.of(FieldValue.builder()
+                .fieldName(balanceName)
+                .datasetRefAlias(stagingTableName)
+                .build(), NumericalValue.of(20L)))
             .build();
     }
 

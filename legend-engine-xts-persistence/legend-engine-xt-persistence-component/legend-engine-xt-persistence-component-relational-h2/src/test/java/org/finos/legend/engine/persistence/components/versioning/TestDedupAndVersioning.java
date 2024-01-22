@@ -26,6 +26,7 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditin
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.AllowDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FailOnDuplicates;
 import org.finos.legend.engine.persistence.components.ingestmode.deduplication.FilterDuplicates;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.AllVersionsStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.DigestBasedResolver;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
@@ -188,7 +189,7 @@ public class TestDedupAndVersioning extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
         IngestMode ingestMode = AppendOnly.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
-                .digestField("digest")
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version").performStageVersioning(false).mergeDataVersionResolver(DigestBasedResolver.INSTANCE).build())
                 .build();
@@ -207,7 +208,7 @@ public class TestDedupAndVersioning extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
         IngestMode ingestMode = AppendOnly.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
-                .digestField("digest")
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .deduplicationStrategy(AllowDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
                         .mergeDataVersionResolver(DigestBasedResolver.INSTANCE).performStageVersioning(true).build())
@@ -323,7 +324,7 @@ public class TestDedupAndVersioning extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
         IngestMode ingestMode = AppendOnly.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
-                .digestField("digest")
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
                         .mergeDataVersionResolver(DigestBasedResolver.INSTANCE).performStageVersioning(false).build())
@@ -348,7 +349,7 @@ public class TestDedupAndVersioning extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
         IngestMode ingestMode = AppendOnly.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
-                .digestField("digest")
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .deduplicationStrategy(FilterDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
                         .mergeDataVersionResolver(DigestBasedResolver.INSTANCE).performStageVersioning(true).build())
@@ -489,7 +490,7 @@ public class TestDedupAndVersioning extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
         IngestMode ingestMode = AppendOnly.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
-                .digestField("digest")
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
                         .mergeDataVersionResolver(DigestBasedResolver.INSTANCE).performStageVersioning(false).build())
@@ -529,7 +530,7 @@ public class TestDedupAndVersioning extends BaseTest
         Datasets datasets = Datasets.of(mainTable, stagingTable);
         IngestMode ingestMode = AppendOnly.builder()
                 .auditing(DateTimeAuditing.builder().dateTimeField("append_time").build())
-                .digestField("digest")
+                .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .deduplicationStrategy(FailOnDuplicates.builder().build())
                 .versioningStrategy(AllVersionsStrategy.builder().versioningField("version")
                         .mergeDataVersionResolver(DigestBasedResolver.INSTANCE).performStageVersioning(true).build())
@@ -659,6 +660,4 @@ public class TestDedupAndVersioning extends BaseTest
         List<Map<String, Object>> tableData = h2Sink.executeQuery(String.format("select * from \"TEST\".\"%s\"", tempStagingTableName));
         TestUtils.assertFileAndTableDataEquals(schema, expectedDataPath, tableData);
     }
-
-
 }

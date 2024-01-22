@@ -15,15 +15,23 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.test.assertion.HelperTestAssertionGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ParameterValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -116,10 +124,10 @@ public class HelperDomainGrammarComposer
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
                 + ") {"
                 + (qualifiedProperty.body.size() <= 1
-                    ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
-                    : LazyIterate
-                        .collect(qualifiedProperty.body, b -> b.accept(transformer))
-                        .makeString("\n" + getTabString(2),";\n" + getTabString(2),";\n" + getTabString()))
+                ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
+                : LazyIterate
+                .collect(qualifiedProperty.body, b -> b.accept(transformer))
+                .makeString("\n" + getTabString(2), ";\n" + getTabString(2), ";\n" + getTabString()))
                 + "}: "
                 + qualifiedProperty.returnType + "[" + renderMultiplicity(qualifiedProperty.returnMultiplicity) + "]";
     }
@@ -162,4 +170,99 @@ public class HelperDomainGrammarComposer
             return builder.toString();
         }
     }
+
+
+    public static String renderFunctionTestSuites(Function function, PureGrammarComposerContext context)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (function.tests == null)
+        {
+            return stringBuilder.toString();
+        }
+        stringBuilder.append("\n[\n");
+        stringBuilder.append(String.join(",\n", ListIterate.collect(function.tests, suite -> renderFunctionTestSuite(suite, context)))).append("\n");
+        stringBuilder.append("]");
+        return stringBuilder.toString();
+    }
+
+    public static String renderFunctionTestSuite(FunctionTestSuite functionTestSuite, PureGrammarComposerContext context)
+    {
+        int baseIndentation = 1;
+        StringBuilder str = new StringBuilder();
+        str.append(getTabString(baseIndentation)).append(functionTestSuite.id).append(":\n");
+        str.append(getTabString(baseIndentation)).append("{\n");
+        if (functionTestSuite.testData != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("data").append(":\n");
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(functionTestSuite.testData, storeData -> renderFunctionTestData(storeData, baseIndentation + 2, context)))).append("\n");
+            str.append(getTabString(baseIndentation + 1)).append("];\n");
+        }
+        // tests
+        if (functionTestSuite.tests != null)
+        {
+            str.append(getTabString(baseIndentation + 1)).append("tests").append(":\n");
+            str.append(getTabString(baseIndentation + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(functionTestSuite.tests, test -> renderFunctionTest((FunctionTest) test, baseIndentation + 2, context)))).append("\n");
+            str.append(getTabString(baseIndentation + 1)).append("]\n");
+        }
+        str.append(getTabString(baseIndentation)).append("}");
+        return str.toString();
+    }
+
+    public static String renderFunctionTestData(StoreTestData storeTestData, int currentInt, PureGrammarComposerContext context)
+    {
+        StringBuilder dataStrBuilder = new StringBuilder();
+        dataStrBuilder.append(getTabString(currentInt)).append("{\n");
+        dataStrBuilder.append(getTabString(currentInt + 1)).append("store").append(": ").append(storeTestData.store).append(";\n");
+        dataStrBuilder.append(getTabString(currentInt + 1)).append("data").append(":\n");
+        dataStrBuilder.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(storeTestData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(currentInt + 2)).build()));
+        dataStrBuilder.append(";\n");
+        dataStrBuilder.append(getTabString(currentInt)).append("}");
+        return dataStrBuilder.toString();
+    }
+
+
+    public static String renderFunctionTest(FunctionTest functionTest, int baseInd, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        str.append(getTabString(baseInd)).append(functionTest.id).append(":\n");
+        str.append(getTabString(baseInd)).append("{\n");
+
+        if (functionTest.doc != null)
+        {
+            str.append(getTabString(baseInd + 1)).append("doc: ").append(convertString(functionTest.doc, true)  + ";\n");
+        }
+        // Parameters
+        if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
+        {
+            str.append(getTabString(baseInd + 1)).append("parameters:\n");
+            str.append(getTabString(baseInd + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(functionTest.parameters, param -> renderFunctionTestParam(param, baseInd + 2, context)))).append("\n");
+            str.append(getTabString(baseInd + 1)).append("]\n");
+        }
+        // Assertions
+        if (functionTest.assertions != null && !functionTest.assertions.isEmpty())
+        {
+            str.append(getTabString(baseInd + 1)).append("asserts:\n");
+            str.append(getTabString(baseInd + 1)).append("[\n");
+            str.append(String.join(",\n", ListIterate.collect(functionTest.assertions, testAssertion -> HelperTestAssertionGrammarComposer.composeTestAssertion(testAssertion, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseInd + 2)).build())))).append("\n");
+            str.append(getTabString(baseInd + 1)).append("]\n");
+        }
+        str.append(getTabString(baseInd)).append("}");
+        return str.toString();
+    }
+
+
+    private static String renderFunctionTestParam(ParameterValue parameterValue, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append(parameterValue.name);
+        str.append(" = ");
+        str.append(parameterValue.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build()));
+
+        return str.toString();
+    }
+
 }

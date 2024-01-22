@@ -60,6 +60,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommandsTranslator(): RelationalDDLCommandsTranslator[1]
 {
   ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForSnowflake_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                dropSchema =  translateDropSchemaStatementDefault_DropSchemaSQL_1__DbConfig_1__String_1_,
                 createTable = translateCreateTableStatementForSnowflake_CreateTableSQL_1__DbConfig_1__String_1_,
                 dropTable = translateDropTableStatementForSnowflake_DropTableSQL_1__DbConfig_1__String_1_,
                 loadTable = loadValuesToDbTableForSnowflake_LoadTableSQL_1__DbConfig_1__String_MANY_
@@ -69,6 +71,13 @@ function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommand
 function meta::relational::functions::sqlQueryToString::snowflake::processTempTableNameSnowflake(tempTableName: String[1]): String[1]
 {
   'LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.' + $tempTableName;
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::translateCreateSchemaStatementForSnowflake(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   if($createSchemaSQL.schema.name == 'default', 
+    | [], 
+    | 'Create Schema if not exists ' + $createSchemaSQL.schema.name);
 }
 
 function meta::relational::functions::sqlQueryToString::snowflake::translateCreateTableStatementForSnowflake(c:CreateTableSQL[1], dbConfig: DbConfig[1]): String[1]
@@ -102,7 +111,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='dateadd(%s)', transform={p:String[3] | $p->at(2)->mapToDBUnitType() + ', ' + $p->at(1) + ', ' + $p->at(0)})),
-    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
+    dynaFnToSql('booland',                $allStates,            ^ToSql(format='booland(%s)')),
+    dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='boolor(%s)')),    
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),
@@ -114,6 +124,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'DYDY\')')),
     dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='DAYOFWEEKISO(%s)')),
     dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='DAYOFYEAR(%s)')),
+    dynaFnToSql('decodeBase64',           $allStates,            ^ToSql(format='BASE64_DECODE_STRING(%s)')),
+    dynaFnToSql('encodeBase64',           $allStates,            ^ToSql(format='BASE64_ENCODE(%s)')),
     dynaFnToSql('extractFromSemiStructured', $allStates,         ^ToSql(format='%s', transform={p:String[3]|$p->processExtractFromSemiStructuredParamsForSnowflake()})),
     dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='DATE_TRUNC(\'MONTH\', %s)')),
     dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='DATE_TRUNC(\'QUARTER\', %s)')),
@@ -130,12 +142,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='CHARINDEX(%s)', transform={p:String[2] | $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('isAlphaNumeric',         $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[1]|$p->transformAlphaNumericParamsDefault()})),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
-    dynaFnToSql('left',                   $allStates,            ^ToSql(format='left(%s,%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(10, %s)')),
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpPattern('%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
-    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='MONTH(%s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'MMMM\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='MONTH(%s)')),
@@ -148,8 +158,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='dateadd(DAY, case when %s - DAYOFWEEK(%s) +1  >= 0 then %s  - DAYOFWEEK(%s) -1 - 7 else %s - DAYOFWEEK(%s) -1 end, %s)', transform={p:String[1..2] | $p->formatMostRecentSnowflake('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
-    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
-    dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round((%s)::numeric, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
@@ -360,7 +368,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 {
   // Based on https://docs.snowflake.com/en/sql-reference/reserved-keywords
   [
-    'account',
     'alter',
     'and',
     'any',
@@ -372,7 +379,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     'check',
     'column',
     'connect',
-    'connection',
     'constraint',
     'create',
     'cross',
@@ -394,7 +400,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     'full',
     'grant',
     'group',
-    'gscluster',
     'having',
     'ilike',
     'in',
@@ -404,7 +409,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     'intersect',
     'into',
     'is',
-    'issue',
     'join',
     'lateral',
     'left',
@@ -419,7 +423,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     'on',
     'or',
     'order',
-    'organization',
     'qualify',
     'regexp',
     'revoke',
@@ -428,7 +431,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     'row',
     'rows',
     'sample',
-    'schema',
     'select',
     'set',
     'some',
@@ -445,7 +447,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     'update',
     'using',
     'values',
-    'view',
     'when',
     'whenever',
     'where',

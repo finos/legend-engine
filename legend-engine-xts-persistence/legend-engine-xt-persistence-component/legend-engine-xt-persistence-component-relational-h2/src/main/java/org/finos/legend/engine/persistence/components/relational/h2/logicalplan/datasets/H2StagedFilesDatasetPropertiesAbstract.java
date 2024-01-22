@@ -15,7 +15,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2.logicalplan.datasets;
 
-import org.finos.legend.engine.persistence.components.common.FileFormat;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
 
@@ -30,16 +30,20 @@ import org.immutables.value.Value;
 )
 public interface H2StagedFilesDatasetPropertiesAbstract extends StagedFilesDatasetProperties
 {
-    FileFormat fileFormat();
+    FileFormatType fileFormat();
 
     @Value.Check
     default void validate()
     {
-        if (files().size() != 1)
+        if (filePatterns().size() > 0)
+        {
+            throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, filePatterns not supported");
+        }
+        if (filePaths().size() != 1)
         {
             throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, only 1 file per load supported");
         }
-        if (fileFormat() != FileFormat.CSV)
+        if (fileFormat() != FileFormatType.CSV)
         {
             throw new IllegalArgumentException("Cannot build H2StagedFilesDatasetProperties, only CSV file loading supported");
         }

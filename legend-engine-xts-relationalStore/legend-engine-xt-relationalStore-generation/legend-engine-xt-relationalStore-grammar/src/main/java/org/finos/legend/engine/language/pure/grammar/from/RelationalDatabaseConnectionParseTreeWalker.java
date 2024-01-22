@@ -50,11 +50,6 @@ public class RelationalDatabaseConnectionParseTreeWalker
             connectionValue.element = PureGrammarParserUtility.fromQualifiedName(storeContext.qualifiedName().packagePath() == null ? Collections.emptyList() : storeContext.qualifiedName().packagePath().identifier(), storeContext.qualifiedName().identifier());
             connectionValue.elementSourceInformation = this.walkerSourceInformation.getSourceInformation(storeContext.qualifiedName());
         }
-        else if (!isEmbedded)
-        {
-            // non-embedded connection requires store
-            PureGrammarParserUtility.validateAndExtractRequiredField(ctx.connectionStore(), "store", connectionValue.sourceInformation);
-        }
         // database type
         RelationalDatabaseConnectionParserGrammar.DbTypeContext dbTypeCtx = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.dbType(), "type", connectionValue.sourceInformation);
         try

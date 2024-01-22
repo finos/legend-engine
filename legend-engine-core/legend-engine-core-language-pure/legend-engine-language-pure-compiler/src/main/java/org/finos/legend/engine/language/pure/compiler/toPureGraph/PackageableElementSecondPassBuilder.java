@@ -180,7 +180,9 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
         HelperModelBuilder.checkCompatibility(this.context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
         ctx.pop();
-        return targetFunc._expressionSequence(body);
+        targetFunc._expressionSequence(body);
+        HelperFunctionBuilder.processFunctionSuites(function, targetFunc, this.context, ctx);
+        return targetFunc;
     }
 
     @Override

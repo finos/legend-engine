@@ -137,8 +137,15 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                                                                                                         let res           = if($resWithAssoc->isEmpty() && $f.func->instanceOf(Property) && $s->isPropertyAutoMapped($f.func->cast(@Property<Nil, Any|*>), $extensions),
                                                                                                                                               |$s->cast(@InstanceSetImplementation)->meta::pure::mapping::propertyMappingsByPropertyName($propertyName),
                                                                                                                                               |$resWithAssoc);
-                                                                                                                        print(if($debug.debug,|$debug.space+' -> Found: '+$res->size()->toString(),|''));
-                                                                                                                        $res;
+
+                                                                                                                        let withOtherwise = if($res->isEmpty() && $f.func->instanceOf(Property),  // for graphFetch flow, the parent set gets resolved to the otherwiseProperty mapping always.
+                                                                                                                                              | let byName = $s->cast(@InstanceSetImplementation)->meta::pure::mapping::_propertyMappingsByPropertyName($propertyName)->filter(pm|$pm->instanceOf(OtherwiseEmbeddedSetImplementation))->map(pm|$pm->cast(@OtherwiseEmbeddedSetImplementation));
+                                                                                                                                                let pms = $byName.otherwisePropertyMapping->filter(pm|$pm.targetSetImplementationId->in($targetIds));
+                                                                                                                                                $pms;,
+                                                                                                                                              | $res );
+
+                                                                                                                        print(if($debug.debug,|$debug.space+' -> Found: '+$withOtherwise->size()->toString(),|''));
+                                                                                                                        $withOtherwise;
                                                                                                                         );
                                                                                                                       );
                                                                                           let fWithBuiltExprSeq = if ($f.func->instanceOf(QualifiedProperty)

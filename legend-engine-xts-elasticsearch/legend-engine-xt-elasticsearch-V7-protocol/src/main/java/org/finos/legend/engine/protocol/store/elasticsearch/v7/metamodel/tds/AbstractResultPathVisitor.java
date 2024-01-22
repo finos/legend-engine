@@ -48,4 +48,10 @@ public abstract class AbstractResultPathVisitor<T> implements ResultPathVisitor<
     {
         return defaultValue(val);
     }
+
+    @Override
+    public T visit(DocCountAggregateResultPath val)
+    {
+        return defaultValue(val);
+    }
 }

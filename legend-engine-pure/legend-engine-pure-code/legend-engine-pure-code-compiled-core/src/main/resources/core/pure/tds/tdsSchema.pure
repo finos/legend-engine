@@ -23,7 +23,7 @@ function meta::pure::tds::schema::resolveSchema(f : FunctionDefinition<Any>[1], 
 
 function meta::pure::tds::schema::resolveSchema(vs : ValueSpecification[1], openVars : Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*]) : TDSColumn[*]
 {
-   resolveSchemaImpl($vs, $openVars, $extensions).columns;
+  resolveSchemaImpl($vs, $openVars, $extensions).columns;
 }
 
 function meta::pure::tds::schema::createSchemaState(cols : TDSColumn[*]) : SchemaState[1]
@@ -169,9 +169,9 @@ function meta::pure::tds::schema::resolveSchemaImpl(vs : ValueSpecification[1], 
             t:TabularDataSet[1]|createSchemaState($t.columns);
             ]),
       v:VariableExpression[1]| $openVars->get($v.name).values->evaluateAndDeactivate()->match([
-            t:TabularDataSet[1]|createSchemaState($t.columns),
-            vs2:ValueSpecification[1]|resolveSchemaImpl($vs2, $openVars, $extensions)
-            ]),
+            t:TabularDataSet[1]| createSchemaState($t.columns),
+            vs2:ValueSpecification[1]| resolveSchemaImpl($vs2, $openVars, $extensions)
+            ]);,
       fe:FunctionExpression[1]|resolveSchemaImpl($fe, $openVars, $extensions);
       ]);
 }
@@ -324,7 +324,13 @@ function <<access.private>> meta::pure::tds::schema::resolveSchemaImpl(fe : Func
       | //this allows us to handle calls to custom functions that return TDS.
         let zip = $fe.func.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate()->zip($fe.parametersValues);
         let vars = $zip->map(p |
-          pair($p.first.name, list($p.second));
+          let resolve = $p.second->match([
+            v:VariableExpression[1] | $openVars->get($v.name),
+            v:ValueSpecification[1] | []
+          ]);
+
+          let var = if ($resolve->isEmpty(), | list($p.second), | $resolve->toOne());
+          pair($p.first.name, $var);
         )->newMap();
 
         $fe.func->cast(@FunctionDefinition<Any>)->resolveSchemaImpl($vars, $extensions);,

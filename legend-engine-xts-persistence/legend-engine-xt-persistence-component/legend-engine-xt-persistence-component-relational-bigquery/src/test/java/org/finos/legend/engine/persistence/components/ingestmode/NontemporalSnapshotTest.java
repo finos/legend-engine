@@ -58,7 +58,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
@@ -79,7 +79,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
-                "PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') FROM " +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') FROM " +
                 "`mydb`.`staging_legend_persistence_temp_staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));

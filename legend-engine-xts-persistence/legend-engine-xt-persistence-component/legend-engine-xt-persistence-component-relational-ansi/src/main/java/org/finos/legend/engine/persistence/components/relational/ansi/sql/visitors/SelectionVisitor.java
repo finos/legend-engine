@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.And
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
@@ -58,6 +59,13 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
                 Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
                 conditions.add(filterCondition);
                 logicalPlanNodeList.add(derivedDataset.datasetReference());
+            }
+            else if (dataset instanceof FilteredDataset)
+            {
+                FilteredDataset filteredDataset = (FilteredDataset) dataset;
+                Condition filterCondition = filteredDataset.filter();
+                conditions.add(filterCondition);
+                logicalPlanNodeList.add(filteredDataset.datasetReference());
             }
             else
             {

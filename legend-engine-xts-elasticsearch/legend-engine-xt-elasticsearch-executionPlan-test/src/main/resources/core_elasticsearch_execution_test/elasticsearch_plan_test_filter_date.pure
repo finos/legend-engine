@@ -187,3 +187,19 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date
   let var = %2010-04-26T00:00:00.200+0000;
   $config->testTdsExpression(x | $x->filter(x | $var <= $x.getDate('ReleaseDate')));
 }
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testFilterUsingValueFromAdjustNowFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') >= now()->adjust(-15, DurationUnit.YEARS)));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test less than equal filter on Elasticsearch Integer property mapping with variable'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::filter::date::testFilterUsingValueFromAdjustTodayFunctions(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->filter(x | $x.getDate('ReleaseDate') >= today()->adjust(-15, DurationUnit.YEARS)));
+}

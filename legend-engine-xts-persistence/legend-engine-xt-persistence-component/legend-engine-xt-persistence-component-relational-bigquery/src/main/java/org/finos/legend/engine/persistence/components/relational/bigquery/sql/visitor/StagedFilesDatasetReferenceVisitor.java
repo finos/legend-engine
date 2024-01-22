@@ -14,8 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
-import org.finos.legend.engine.persistence.components.common.FileFormat;
-import org.finos.legend.engine.persistence.components.common.LoadOptions;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetReference;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.bigquery.logicalplan.datasets.BigQueryStagedFilesDatasetProperties;
@@ -24,6 +23,7 @@ import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVis
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -38,39 +38,13 @@ public class StagedFilesDatasetReferenceVisitor implements LogicalPlanVisitor<St
         }
         BigQueryStagedFilesDatasetProperties datasetProperties = (BigQueryStagedFilesDatasetProperties) current.properties();
 
-        Map<String, Object> loadOptionsMap = new HashMap<>();
-        FileFormat fileFormat = datasetProperties.fileFormat();
-        loadOptionsMap.put("format", fileFormat.name());
-        datasetProperties.loadOptions().ifPresent(options -> retrieveLoadOptions(fileFormat, options, loadOptionsMap));
-
-        StagedFilesTable stagedFilesTable = new StagedFilesTable(datasetProperties.files(), loadOptionsMap);
+        FileFormatType fileFormatType = datasetProperties.fileFormat();
+        Map<String, Object> loadOptionsMap = new HashMap<>(datasetProperties.loadOptions());
+        loadOptionsMap.put("format", fileFormatType.name());
+        List<String> uris = datasetProperties.filePaths().isEmpty() ? datasetProperties.filePatterns() : datasetProperties.filePaths();
+        StagedFilesTable stagedFilesTable = new StagedFilesTable(uris, loadOptionsMap);
         prev.push(stagedFilesTable);
 
         return new VisitorResult(null);
-    }
-
-    private void retrieveLoadOptions(FileFormat fileFormat, LoadOptions loadOptions, Map<String, Object> loadOptionsMap)
-    {
-        switch (fileFormat)
-        {
-            case CSV:
-                loadOptions.fieldDelimiter().ifPresent(property -> loadOptionsMap.put("field_delimiter", property));
-                loadOptions.encoding().ifPresent(property -> loadOptionsMap.put("encoding", property));
-                loadOptions.nullMarker().ifPresent(property -> loadOptionsMap.put("null_marker", property));
-                loadOptions.quote().ifPresent(property -> loadOptionsMap.put("quote", property));
-                loadOptions.skipLeadingRows().ifPresent(property -> loadOptionsMap.put("skip_leading_rows", property));
-                loadOptions.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
-                loadOptions.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
-                break;
-            case JSON:
-                loadOptions.maxBadRecords().ifPresent(property -> loadOptionsMap.put("max_bad_records", property));
-                loadOptions.compression().ifPresent(property -> loadOptionsMap.put("compression", property));
-                break;
-            case AVRO:
-            case PARQUET:
-                return;
-            default:
-                throw new IllegalStateException("Unrecognized file format: " + fileFormat);
-        }
     }
 }

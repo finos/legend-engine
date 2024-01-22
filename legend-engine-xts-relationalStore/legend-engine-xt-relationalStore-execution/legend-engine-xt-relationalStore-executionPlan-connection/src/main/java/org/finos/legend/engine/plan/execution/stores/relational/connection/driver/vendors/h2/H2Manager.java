@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
