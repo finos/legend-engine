@@ -42,36 +42,3 @@ Class meta::external::query::graphQL::transformation::queryToPure::dynamic::meta
 Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression
 {
 }
-
-/*
-  EXPRESSIONS
-*/
-
-/*
-  OPERATORS
-*/
-
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::InOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
-{
-  value: Literal[*];
-}
-
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::GtOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
-{
-  value: Literal[1];
-}
-
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::LtOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
-{
-  value: Literal[1];
-}
-
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::GteOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
-{
-  value: Literal[1];
-}
-
-Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::LteOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
-{
-  value: Literal[1];
-}

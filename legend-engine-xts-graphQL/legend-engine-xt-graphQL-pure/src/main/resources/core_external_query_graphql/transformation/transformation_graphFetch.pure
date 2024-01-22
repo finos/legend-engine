@@ -183,6 +183,7 @@ function meta::external::query::graphQL::transformation::queryToPure::addDynamic
       let ic = meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
                 $whereObjectValue,
                 'where',
+                meta::external::query::graphQL::transformation::queryToPure::dynamic::getOperatorMap(),
                 ^DebugContext(debug=false,space='')
               )->meta::external::query::graphQL::transformation::queryToPure::dynamic::nodesToValueSpecification(
                 [],

@@ -33,6 +33,7 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::t
   let res = meta::external::query::graphQL::transformation::queryToPure::dynamic::traverseValue(
     $doc,
     'where',
+    meta::external::query::graphQL::transformation::queryToPure::dynamic::getOperatorMap(),
     ^DebugContext(space='',debug=false)
   )->meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::nodesToString('');
   assertEquals(

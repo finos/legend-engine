@@ -29,7 +29,7 @@
           },
           {
             "multiplicity": {
-              "lowerBound": 1,
+              "lowerBound": 0,
               "upperBound": 1
             },
             "name": "decimal",

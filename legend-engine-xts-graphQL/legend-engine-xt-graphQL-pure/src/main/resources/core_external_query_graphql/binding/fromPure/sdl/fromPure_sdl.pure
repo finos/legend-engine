@@ -58,9 +58,9 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
 {
   let allTypes = $types->findTypes();
 
-  let queryClasses = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Query'))->cast(@Class<Any>);
-  let mutationClasses = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Mutation'))->cast(@Class<Any>);
-  let subscriptionClasses = $allTypes->cast(@AnnotatedElement)->filter(t|$t.stereotypes.value->contains('Subscription'))->cast(@Class<Any>);
+  let queryClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Query'))->cast(@Class<Any>);
+  let mutationClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Mutation'))->cast(@Class<Any>);
+  let subscriptionClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Subscription'))->cast(@Class<Any>);
 
   // Gather all allowed operations
   let operationTypeQualifiedProperties = $queryClasses->concatenate($mutationClasses)->concatenate($subscriptionClasses).qualifiedProperties->cast(@AbstractProperty<Any>);
@@ -113,7 +113,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
               // Not used as input --> needs output (unused types will result in output types)
             | buildObjectTypeDefinition($c, $extendedClasses->contains($c))
             )->concatenate(
-              if($c->cast(@AnnotatedElement).stereotypes.value->fold({a,b | $a->in(['Query','Mutation','Subscription']) || $b}, false),
+              if($c->hasGraphQLStereotype('Query') || $c->hasGraphQLStereotype('Mutation') || $c->hasGraphQLStereotype('Subscription'),
                 | [],
                 | buildBoolExpObject($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride)
               )
@@ -125,12 +125,18 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
           )->concatenate(
             ^InputObjectTypeDefinition(
               name = $c.name->toOne() + '_comparison_exp',
-              fields =
+              fields = [
                     ^InputValueDefinition
                     (
                       name = '_eq',
-                      type = ^NamedTypeReference(name=$c.name->toOne(),nullable=true)
+                      type = ^NamedTypeReference(name=$c.name->toOne(),nullable=false)
+                    ),
+                    ^InputValueDefinition
+                    (
+                      name = '_in',
+                      type = ^ListTypeReference(nullable=true,itemType=^NamedTypeReference(name=$c.name->toOne(),nullable=false))
                     )
+              ]
             )
           )
       ]
@@ -239,10 +245,11 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                         | $t1.name + '_comparison_exp',
                         | $t1.name + '_bool_exp'
                       )
-                    )
+                    ),
+            nullable = true
           );,
     | let t1 = $t->cast(@ListTypeReference);
-      ^$t1(itemType = $t1.itemType->changeTypeReferenceName($pureTypeToGraphQLScalarOverride,true,$isEnumType));
+      $t1.itemType->changeTypeReferenceName($pureTypeToGraphQLScalarOverride,true,$isEnumType);
   )
 }
 
@@ -254,20 +261,19 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
       name = $c.name->toOne() + '_bool_exp',
       directives = [],
       fields =
-                $props
+                $props->filter(p|!$p.genericType.rawType->in(meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes($pureTypeToGraphQLScalarOverride).first))
                   ->map(p |
                     let reference = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity(), $pureTypeToGraphQLScalarOverride);
                     ^InputValueDefinition
                     (
                       name = $p.name->toOne(),
-                      type = changeTypeReferenceName(^$reference(nullable = true), $pureTypeToGraphQLScalarOverride,false,$p.genericType.rawType->toOne()->instanceOf(Enumeration))
+                      type = changeTypeReferenceName($reference, $pureTypeToGraphQLScalarOverride,false,$p.genericType.rawType->toOne()->instanceOf(Enumeration))
                     );
                   )
                   ->concatenate(
                     [
                       ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_and'),
-                      ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_or'),
-                      ^InputValueDefinition(type=^NamedTypeReference(nullable=true,name=$c.name->toOne() + '_bool_exp'),name='_not')
+                      ^InputValueDefinition(type=^ListTypeReference(nullable=true,itemType=^NamedTypeReference(nullable=false,name=$c.name->toOne() + '_bool_exp')),name='_or')
 
                     ]
                   )
@@ -284,8 +290,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
 {
   let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars();
-  let isQueryClass = $c->cast(@AnnotatedElement).stereotypes.value->contains('Query');
-  let extraProps = [];
+  let isQueryClass = $c->hasGraphQLStereotype('Query');
   let temporalStereotypes = $c->getTemporalStereotypes();
   $nonBuiltInScalars
     ->concatenate(

@@ -206,7 +206,7 @@ function meta::external::query::graphQL::serialization::graphQLtoString(value: V
       v : Variable[1] | '$'+$v.name,
       e : EnumValue[1] | $e.value,
       n : NullValue[1] | 'null',
-      o : ObjectValue[1] | if($o.fields->size()>1,|'[ ',|'') + $o.fields->map(ofi | '{ ' + $ofi.name + ' : ' + graphQLtoString($ofi.value) + ' }')->joinStrings(', ') + if($o.fields->size()>1,|' ]',|'')
+      o : ObjectValue[1] | if($o.fields->size()>1,|'[ ',|'') + $o.fields->map(ofi | '{ ' + $ofi.name + ': ' + graphQLtoString($ofi.value) + ' }')->joinStrings(', ') + if($o.fields->size()>1,|' ]',|'')
     ]
   )
 }

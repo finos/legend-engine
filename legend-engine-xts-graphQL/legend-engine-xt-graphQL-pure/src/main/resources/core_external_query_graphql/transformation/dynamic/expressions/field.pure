@@ -30,10 +30,10 @@ Class meta::external::query::graphQL::transformation::queryToPure::dynamic::meta
   values: meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::Node[*];
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::field::processField(o: ObjectField[1], prefix: String[1], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::field::objectFieldToFieldExpression(o: ObjectField[1], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
 {
   if($debug.debug, | println($debug.space + 'Field'), |[]);
-  let fieldValue = $o.value->traverseValue($prefix + '_' + $o.name, ^$debug(space=$debug.space + ' '));
+  let fieldValue = $o.value->traverseValue($prefix + '_' + $o.name, $m, ^$debug(space=$debug.space + ' '));
   
   assert($fieldValue->size() == 1, 'Require exact one value for argument ' + $o.name);
   assert(

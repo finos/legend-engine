@@ -512,7 +512,7 @@ public class GraphQLGrammarParser
             listValue.values = ListIterate.collect(valueContext.listValue().value(), this::visitValue);
             return listValue;
         }
-        if (valueContext.objectValue() != null)
+        if (valueContext.objectValue() != null && valueContext.objectValue().objectField() != null)
         {
             ObjectValue objectValue = new ObjectValue();
             objectValue.fields = valueContext.objectValue().objectField().stream().map(objectFieldContext ->

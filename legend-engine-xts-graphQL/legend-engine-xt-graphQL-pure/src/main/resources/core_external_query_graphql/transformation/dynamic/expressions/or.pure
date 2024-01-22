@@ -30,11 +30,11 @@ Class meta::external::query::graphQL::transformation::queryToPure::dynamic::meta
   second: meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanExpression[1];
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::processOr(o: ObjectField[1], prefix: String[1], debug: DebugContext[1]): Node[*]
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::objectFieldToOrExpression(o: ObjectField[1], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
 {
   if($debug.debug, | println($debug.space + 'OrExpression'), |[]);
   assert($o.value->instanceOf(ListValue), | '_or should have a list value');
-  let value = $o.value->traverseValue($prefix + '__or', ^$debug(space=$debug.space + ' '));
+  let value = $o.value->traverseValue($prefix + '__or', $m, ^$debug(space=$debug.space + ' '));
   
   assert($value->size() > 1, '_or should contain atleast two expressions');
   assert($value->filter(v | !$v->instanceOf(BooleanExpression))->size() == 0, 'One of the processed expressions in _or is not a valid boolean expression');
@@ -48,11 +48,6 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::e
   );
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::createOr(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
-{
-  sfe(meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $right]);
-}
-
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::processOrExpression(o: OrExpression[1], fieldNames: String[*], cl: Class<Any>[1], vars: VariableExpression[*], count: Integer[1]): IntermediateClass[1]
 {
   let ic1 = $o.first->nodesToValueSpecification($fieldNames, $cl, $vars, $count);
@@ -64,4 +59,9 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::e
       $ic2.valueSpecifications->toOne()->evaluateAndDeactivate()
     )
   );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::createOr(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+  sfe(meta::pure::functions::boolean::or_Boolean_1__Boolean_1__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $right]);
 }

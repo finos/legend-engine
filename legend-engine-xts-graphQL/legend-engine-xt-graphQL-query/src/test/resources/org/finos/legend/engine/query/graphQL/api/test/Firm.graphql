@@ -6,12 +6,11 @@ type Firm {
 }
 input Firm_bool_exp {
   legalName: String_comparison_exp
-  employees: [Person_exists_exp!]
-  addresses: [Address_exists_exp!]
+  employees: Person_exists_exp
+  addresses: Address_exists_exp
   count: Int_comparison_exp
   _and: [Firm_bool_exp!]
   _or: [Firm_bool_exp!]
-  _not: Firm_bool_exp
 }
 input Firm_exists_exp {
   _exists: Firm_bool_exp

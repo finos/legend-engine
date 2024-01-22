@@ -10,7 +10,8 @@ function meta::external::query::graphQL::generation::tests::constants::inctype_g
   '  CORP\n' +
   '}\n' +
   'input IncType_comparison_exp {\n' +
-  '  _eq: IncType\n' +
+  '  _eq: IncType!\n' +
+  '  _in: [IncType!]\n' +
   '}'
 }
 
@@ -26,10 +27,9 @@ function meta::external::query::graphQL::generation::tests::constants::firm_grap
   '  id: Int_comparison_exp\n' +
   '  legalName: String_comparison_exp\n' +
   '  incType: IncType_comparison_exp\n' +
-  '  employees: [Person_exists_exp!]\n' +
+  '  employees: Person_exists_exp\n' +
   '  _and: [Firm_bool_exp!]\n' +
   '  _or: [Firm_bool_exp!]\n' +
-  '  _not: Firm_bool_exp\n' +
   '}\n' +
   'input Firm_exists_exp {\n' +
   '  _exists: Firm_bool_exp\n' +
@@ -53,7 +53,6 @@ function meta::external::query::graphQL::generation::tests::constants::person_gr
   '  firm: Firm_bool_exp\n' +
   '  _and: [Person_bool_exp!]\n' +
   '  _or: [Person_bool_exp!]\n' +
-  '  _not: Person_bool_exp\n' +
   '}\n' +
   'input Person_exists_exp {\n' +
   '  _exists: Person_bool_exp\n' +
@@ -68,12 +67,8 @@ function meta::external::query::graphQL::generation::tests::constants::classWith
   '  decimal: BigDecimal!\n' +
   '}\n' +
   'input ClassWithCustomScalars_bool_exp {\n' +
-  '  date: Date_comparison_exp\n' +
-  '  datetime: DateTime_comparison_exp\n' +
-  '  decimal: BigDecimal_comparison_exp\n' +
   '  _and: [ClassWithCustomScalars_bool_exp!]\n' +
   '  _or: [ClassWithCustomScalars_bool_exp!]\n' +
-  '  _not: ClassWithCustomScalars_bool_exp\n' +
   '}\n' +
   'input ClassWithCustomScalars_exists_exp {\n' +
   '  _exists: ClassWithCustomScalars_bool_exp\n' +
@@ -102,11 +97,26 @@ function meta::external::query::graphQL::generation::tests::constants::query2_gr
 
 function meta::external::query::graphQL::generation::tests::constants::comparisonExpressions(strs: String[*]): String[1]
 {
-  $strs->map( s | 
-    'input ' + $s + '_comparison_exp {\n' +
-    '  _eq: ' + $s + '!\n' +
+  let m = customGraphQLScalarsToPrimitiveMappingForInput();
+  $strs->zip($strs->map(s|$m->get($s)))->map( s | 
+    'input ' + $s.first + '_comparison_exp {\n' +
+    '  _eq: ' + $s.second + '\n' +
+    '  _in: [' + $s.second + '!]\n' +
+    
+    if($s.first->in(['String']),
+      | '  _contains: ' + $s.second + '\n' +
+        '  _eqIgnoreCase: ' + $s.second + '\n',
+      |''
+    ) +
+    if($s.first->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']),
+      | '  _lt: ' + $s.second + '\n' +
+        '  _gt: ' + $s.second + '\n' +
+        '  _lte: ' + $s.second + '\n' +
+        '  _gte: ' + $s.second + '\n',
+      |''
+    ) +
     '}'
-  )->joinStrings('\n')
+  )->joinStrings('\n');
 }
 
 Enum meta::external::query::graphQL::generation::tests::model::IncType

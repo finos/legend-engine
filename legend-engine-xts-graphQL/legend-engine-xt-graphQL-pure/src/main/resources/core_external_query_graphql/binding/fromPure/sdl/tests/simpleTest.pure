@@ -85,41 +85,6 @@ Class <<GraphQL.Mutation>> meta::external::query::graphQL::binding::fromPure::sd
   upsertEmployee(employee:Employee[1]){Employee.all()->first()}:Employee[0..1];
 }
 
-function meta::external::query::graphQL::binding::fromPure::sdl::tests::getPrimitiveBoolExpStrings():String[1]
-{
-  'input BigDecimal_comparison_exp {\n' +
-  '  _eq: BigDecimal!\n' +
-  '}\n' +
-  '\n' +
-  'input Boolean_comparison_exp {\n' +
-  '  _eq: Boolean!\n' +
-  '}\n' +
-  '\n' +
-  'input DateTime_comparison_exp {\n' +
-  '  _eq: DateTime!\n' +
-  '}\n' +
-  '\n' +
-  'input Date_comparison_exp {\n' +
-  '  _eq: Date!\n' +
-  '}\n' +
-  '\n' +
-  'input Float_comparison_exp {\n' +
-  '  _eq: Float!\n' +
-  '}\n' +
-  '\n' +
-  'input Int_comparison_exp {\n' +
-  '  _eq: Int!\n' +
-  '}\n' +
-  '\n' +
-  'input StrictDate_comparison_exp {\n' +
-  '  _eq: StrictDate!\n' +
-  '}\n' +
-  '\n' +
-  'input String_comparison_exp {\n' +
-  '  _eq: String!\n' +
-  '}';
-}
-
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQuery():Boolean[1]
 {
   let res = typesToGraphQLString([Query, Firm, Person, IncType]->cast(@PackageableElement));
@@ -133,11 +98,10 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Firm_bool_exp {\n' +
     '  legalName: String_comparison_exp\n' +
-    '  employees: [Person_exists_exp!]\n' +
+    '  employees: Person_exists_exp\n' +
     '  incType: IncType_comparison_exp\n' +
     '  _and: [Firm_bool_exp!]\n' +
     '  _or: [Firm_bool_exp!]\n' +
-    '  _not: Firm_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Firm_exists_exp {\n' +
@@ -150,7 +114,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '}\n' +
     '\n' +
     'input IncType_comparison_exp {\n' +
-    '  _eq: IncType\n' +
+    '  _eq: IncType!\n' +
+    '  _in: [IncType!]\n' +
     '}\n' +
     '\n' +
     'type Person {\n' +
@@ -165,7 +130,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int_comparison_exp\n' +
     '  _and: [Person_bool_exp!]\n' +
     '  _or: [Person_bool_exp!]\n' +
-    '  _not: Person_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Person_exists_exp {\n' +
@@ -200,11 +164,10 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Firm_bool_exp {\n' +
     '  legalName: String_comparison_exp\n' +
-    '  employees: [Person_exists_exp!]\n' +
+    '  employees: Person_exists_exp\n' +
     '  incType: IncType_comparison_exp\n' +
     '  _and: [Firm_bool_exp!]\n' +
     '  _or: [Firm_bool_exp!]\n' +
-    '  _not: Firm_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Firm_exists_exp {\n' +
@@ -217,7 +180,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '}\n' +
     '\n' +
     'input IncType_comparison_exp {\n' +
-    '  _eq: IncType\n' +
+    '  _eq: IncType!\n' +
+    '  _in: [IncType!]\n' +
     '}\n' +
     '\n' +
     'type Mutation {\n' +
@@ -242,7 +206,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int_comparison_exp\n' +
     '  _and: [Person_bool_exp!]\n' +
     '  _or: [Person_bool_exp!]\n' +
-    '  _not: Person_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Person_exists_exp {\n' +
@@ -283,13 +246,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  integer: Int_comparison_exp\n' +
     '  float: Float_comparison_exp\n' +
     '  boolean: Boolean_comparison_exp\n' +
-    '  date: Date_comparison_exp\n' +
-    '  datetime: DateTime_comparison_exp\n' +
-    '  decimal: BigDecimal_comparison_exp\n' +
-    '  strictDate: StrictDate_comparison_exp\n' +
     '  _and: [ClassWithPrimitiveTypes_bool_exp!]\n' +
     '  _or: [ClassWithPrimitiveTypes_bool_exp!]\n' +
-    '  _not: ClassWithPrimitiveTypes_bool_exp\n' +
     '}\n' +
     '\n' +
     'input ClassWithPrimitiveTypes_exists_exp {\n' +
@@ -337,13 +295,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  integer: Int_comparison_exp\n' +
     '  float: Float_comparison_exp\n' +
     '  boolean: Boolean_comparison_exp\n' +
-    '  date: Date_comparison_exp\n' +
-    '  datetime: DateTime_comparison_exp\n' +
-    '  decimal: BigDecimal_comparison_exp\n' +
-    '  strictDate: StrictDate_comparison_exp\n' +
     '  _and: [ClassWithPrimitiveTypes_bool_exp!]\n' +
     '  _or: [ClassWithPrimitiveTypes_bool_exp!]\n' +
-    '  _not: ClassWithPrimitiveTypes_bool_exp\n' +
     '}\n' +
     '\n' +
     'input ClassWithPrimitiveTypes_exists_exp {\n' +
@@ -379,7 +332,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  string: String_comparison_exp\n' +
     '  _and: [BitemporalClass_bool_exp!]\n' +
     '  _or: [BitemporalClass_bool_exp!]\n' +
-    '  _not: BitemporalClass_bool_exp\n' +
     '}\n' +
     '\n' +
     'input BitemporalClass_exists_exp {\n' +
@@ -405,13 +357,11 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Employee_bool_exp {\n' +
     '  title: String_comparison_exp\n' +
-    '  startDate: StrictDate_comparison_exp\n' +
     '  firstName: String_comparison_exp\n' +
     '  lastName: String_comparison_exp\n' +
     '  age: Int_comparison_exp\n' +
     '  _and: [Employee_bool_exp!]\n' +
     '  _or: [Employee_bool_exp!]\n' +
-    '  _not: Employee_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Employee_exists_exp {\n' +
@@ -436,7 +386,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int_comparison_exp\n' +
     '  _and: [Person_bool_exp!]\n' +
     '  _or: [Person_bool_exp!]\n' +
-    '  _not: Person_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Person_exists_exp {\n' +
@@ -472,13 +421,11 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Employee_bool_exp {\n' +
     '  title: String_comparison_exp\n' +
-    '  startDate: StrictDate_comparison_exp\n' +
     '  firstName: String_comparison_exp\n' +
     '  lastName: String_comparison_exp\n' +
     '  age: Int_comparison_exp\n' +
     '  _and: [Employee_bool_exp!]\n' +
     '  _or: [Employee_bool_exp!]\n' +
-    '  _not: Employee_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Employee_exists_exp {\n' +
@@ -497,13 +444,11 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     'input GSEmployee_bool_exp {\n' +
     '  division: String_comparison_exp\n' +
     '  title: String_comparison_exp\n' +
-    '  startDate: StrictDate_comparison_exp\n' +
     '  firstName: String_comparison_exp\n' +
     '  lastName: String_comparison_exp\n' +
     '  age: Int_comparison_exp\n' +
     '  _and: [GSEmployee_bool_exp!]\n' +
     '  _or: [GSEmployee_bool_exp!]\n' +
-    '  _not: GSEmployee_bool_exp\n' +
     '}\n' +
     '\n' +
     'input GSEmployee_exists_exp {\n' +
@@ -528,7 +473,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int_comparison_exp\n' +
     '  _and: [Person_bool_exp!]\n' +
     '  _or: [Person_bool_exp!]\n' +
-    '  _not: Person_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Person_exists_exp {\n' +
@@ -556,13 +500,11 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Employee_bool_exp {\n' +
     '  title: String_comparison_exp\n' +
-    '  startDate: StrictDate_comparison_exp\n' +
     '  firstName: String_comparison_exp\n' +
     '  lastName: String_comparison_exp\n' +
     '  age: Int_comparison_exp\n' +
     '  _and: [Employee_bool_exp!]\n' +
     '  _or: [Employee_bool_exp!]\n' +
-    '  _not: Employee_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Employee_exists_exp {\n' +
@@ -587,7 +529,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int_comparison_exp\n' +
     '  _and: [Person_bool_exp!]\n' +
     '  _or: [Person_bool_exp!]\n' +
-    '  _not: Person_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Person_exists_exp {\n' +
@@ -603,10 +544,9 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Team_bool_exp {\n' +
     '  name: String_comparison_exp\n' +
-    '  members: [Employee_exists_exp!]\n' +
+    '  members: Employee_exists_exp\n' +
     '  _and: [Team_bool_exp!]\n' +
     '  _or: [Team_bool_exp!]\n' +
-    '  _not: Team_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Team_exists_exp {\n' +
@@ -640,13 +580,11 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Employee_bool_exp {\n' +
     '  title: String_comparison_exp\n' +
-    '  startDate: StrictDate_comparison_exp\n' +
     '  firstName: String_comparison_exp\n' +
     '  lastName: String_comparison_exp\n' +
     '  age: Int_comparison_exp\n' +
     '  _and: [Employee_bool_exp!]\n' +
     '  _or: [Employee_bool_exp!]\n' +
-    '  _not: Employee_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Employee_exists_exp {\n' +
@@ -682,7 +620,6 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  age: Int_comparison_exp\n' +
     '  _and: [Person_bool_exp!]\n' +
     '  _or: [Person_bool_exp!]\n' +
-    '  _not: Person_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Person_exists_exp {\n' +
@@ -708,10 +645,9 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'input Team_bool_exp {\n' +
     '  name: String_comparison_exp\n' +
-    '  members: [Employee_exists_exp!]\n' +
+    '  members: Employee_exists_exp\n' +
     '  _and: [Team_bool_exp!]\n' +
     '  _or: [Team_bool_exp!]\n' +
-    '  _not: Team_bool_exp\n' +
     '}\n' +
     '\n' +
     'input Team_exists_exp {\n' +

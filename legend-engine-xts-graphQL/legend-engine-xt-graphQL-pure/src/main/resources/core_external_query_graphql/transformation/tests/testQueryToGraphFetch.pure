@@ -271,6 +271,7 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
   phone: Integer[1];
   zipcode: String[1];
   bankBalance: Float[1];
+  dateOfBirth: Date[1];
   fullName() {$this.firstName + ' ' + $this.lastName}: String[1];
   isSeniorCitizen() {$this.age > 60}: Boolean[1];
 }
@@ -279,6 +280,13 @@ Class meta::external::query::graphQL::transformation::queryToPure::tests::model:
 {
   legalName: String[1];
   id: String[1];
+  firmType: FirmType[1];
+}
+
+Enum meta::external::query::graphQL::transformation::queryToPure::tests::model::FirmType
+{
+  LLC,
+  CORP
 }
 
 Association meta::external::query::graphQL::transformation::queryToPure::tests::model::FIrm_Employee

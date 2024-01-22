@@ -61,6 +61,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
+import java.util.TimeZone;
 
 public abstract class TestGraphQLApiAbstract
 {
@@ -95,12 +96,14 @@ public abstract class TestGraphQLApiAbstract
         server.setHandler(handlerCollection);
         server.start();
         metaDataServerConfiguration = new MetaDataServerConfiguration(null, new ServerConnectionConfiguration("127.0.0.1", serverPort), new ServerConnectionConfiguration("127.0.0.1", serverPort));
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
     }
 
     @AfterClass
     public static void afterClass() throws Exception
     {
         server.stop();
+        TimeZone.setDefault(TimeZone.getDefault());
     }
 
     protected ExecutionCache<GraphQLCacheKey, List<SerializedNamedPlans>> getExecutionCacheInstance()

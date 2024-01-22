@@ -66,14 +66,35 @@ function <<access.private>> meta::external::query::graphQL::generation::generate
                         ]))->fold({t,v | $v->concatenate($t)},[])->removeDuplicates();
   if($scalarElements->isEmpty(),
     | [],
-    | let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)->filter(x|$x.first->in($scalarElements))->map(p|$p.second)->sort();
-      let content = $primitiveTypes->fold(
+    | let m = customGraphQLScalarsToPrimitiveMappingForInput();
+      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)->filter(x|$x.first->in($scalarElements))->map(p|$p.second)->sort();
+      let primitiveTypesZipped = $primitiveTypes->zip($primitiveTypes->map(p|$m->get($p)));
+      let content = $primitiveTypesZipped->fold(
         { a,b |
           $b->concatenate(^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputObjectTypeDefinition(
-                name=$a + '_comparison_exp',
+                name=$a.first + '_comparison_exp',
                   fields = [
-                    ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_eq',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=false, name=$a))
-                ]
+                    ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_eq',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                    ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_in',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::ListTypeReference(itemType = ^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=false, name=$a.second), nullable = true))
+                  ]->concatenate(
+                    if($a.first->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']), 
+                    |[
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_lt',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_gt',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_lte',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                      ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_gte',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second))
+                    ], 
+                    |[])
+                  )->concatenate(
+                    if($a.first->in(['String']), 
+                      |[
+                        ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_contains',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second)),
+                        ^meta::external::query::graphQL::metamodel::sdl::typeSystem::InputValueDefinition(name='_eqIgnoreCase',type=^meta::external::query::graphQL::metamodel::sdl::typeSystem::NamedTypeReference(nullable=true, name=$a.second))
+                      ], 
+                      |[]
+                    )
+                  )
+                  
               )
           )
         }, []

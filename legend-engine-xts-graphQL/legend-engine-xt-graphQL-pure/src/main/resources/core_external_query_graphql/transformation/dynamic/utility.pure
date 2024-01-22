@@ -49,6 +49,34 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::u
   'p_' + $count->toString();
 }
 
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::handleEnum(ic: IntermediateClass[1], prop: ValueSpecification[1]): IntermediateClass[1]
+{
+  let vs2 = $ic.valueSpecifications->toOne()->evaluateAndDeactivate();
+  let vs2CorrectType = if($prop.genericType.rawType->toOne()->instanceOf(Enumeration), | ^$vs2(genericType = $prop.genericType), | $vs2)->evaluateAndDeactivate()->cast(@VariableExpression);
+  let varsCorrected = if($prop.genericType.rawType->toOne()->instanceOf(Enumeration), | $ic.vars->filter(v|$v->evaluateAndDeactivate().name != $vs2CorrectType.name)->concatenate($vs2CorrectType), |$ic.vars);
+  ^IntermediateClass(
+    valueSpecifications = $vs2CorrectType,
+    vars = $varsCorrected
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::handleDate(ic: IntermediateClass[1], prop: ValueSpecification[1]): IntermediateClass[1]
+{
+  let vs2 = $ic.valueSpecifications->toOne()->evaluateAndDeactivate();
+  if($prop.genericType.rawType->toOne()->instanceOf(PrimitiveType),
+    | let p = $prop.genericType.rawType->toOne()->cast(@PrimitiveType);
+      let vs2CorrectType = if($p == Date || $p->subTypeOf(Date), | ^$vs2(genericType = $prop.genericType), | $vs2)->evaluateAndDeactivate()->cast(@VariableExpression);
+      let varsCorrected = if($p == Date || $p->subTypeOf(Date), | $ic.vars->filter(v|$v->evaluateAndDeactivate().name != $vs2CorrectType.name)->concatenate($vs2CorrectType), |$ic.vars);
+      ^IntermediateClass(
+        valueSpecifications = $vs2CorrectType,
+        vars = $varsCorrected
+      );,
+
+    | $ic
+  );
+  
+}
+
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::findProperty(cl: Class<Any>[1], fieldName: String[*]): AbstractProperty<Any>[0..1]
 {
   if($fieldName->size()>1,
@@ -139,4 +167,9 @@ function meta::external::query::graphQL::transformation::queryToPure::dynamic::u
 function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::isZeroMany(v:ValueSpecification[1]):Boolean[1]
 {
   $v->evaluateAndDeactivate().multiplicity == ZeroMany;
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::simpleType(type:Type[0..1]): Type[0..1]
+{
+   if ($type == Float || $type == Integer || $type == Decimal, |Number, |$type);
 }

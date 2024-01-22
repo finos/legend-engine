@@ -64,9 +64,11 @@ public class TestHelpers
         obj1.fields.add(objectField1);
         objectField.value = obj1;
         obj.fields.add(objectField);
-        System.out.println(GraphQLExecutionHelper.visitWhere(
-                obj,
-                "where"
-        ));
+        Assert.assertTrue(
+                GraphQLExecutionHelper.visitWhere(
+                    obj,
+                    "where"
+                ).containsKey("where_id__eq")
+        );
     }
 }

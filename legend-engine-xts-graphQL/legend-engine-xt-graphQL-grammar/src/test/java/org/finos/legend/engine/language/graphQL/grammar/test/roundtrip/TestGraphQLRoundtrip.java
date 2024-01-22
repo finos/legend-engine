@@ -166,7 +166,6 @@ public class TestGraphQLRoundtrip
     }
 
     @Test
-    @Ignore
     public void testQueryWithInputObjectRoundtrip()
     {
         check("query getUserWithProjects($a: INT = 1) @cool {\n" +

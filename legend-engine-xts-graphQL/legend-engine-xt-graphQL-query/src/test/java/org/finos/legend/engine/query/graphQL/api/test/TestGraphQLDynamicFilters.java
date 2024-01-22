@@ -19,7 +19,7 @@ import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.runners.Suite;
+import org.junit.Ignore;
 import org.mockito.Mockito;
 
 import javax.servlet.http.Cookie;
@@ -93,6 +93,122 @@ public class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
                 "  }";
         String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"Peter Smith\",\"isAFullTimeEmployee\":true},{\"fullName()\":\"John Hill\",\"isAFullTimeEmployee\":true},{\"fullName()\":\"Fabrice Roberts\",\"isAFullTimeEmployee\":true},{\"fullName()\":\"David Harris\",\"isAFullTimeEmployee\":true}]}}";
         runTest(query, expected);
+    }
+
+    @Test
+    public void testSimpleEnum() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  firms(where: { firmType: { _eq: LLC } }) {\n" +
+                "      legalName," +
+                "      firmType" +
+                "    }\n" +
+                "  }";
+        String expected = "{\"data\":{\"firms\":{\"legalName\":\"Firm A\",\"firmType\":\"LLC\"}}}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testSimpleStrictDate() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { dateOfBirth: { _eq: \"1999-01-28\" } }) {\n" +
+                "      fullName," +
+                "      dateOfBirth" +
+                "    }\n" +
+                "  }";
+        String expected = "{\"data\":{\"allEmployees\":{\"fullName()\":\"Peter Smith\",\"dateOfBirth\":\"1999-01-28\"}}}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testSimpleDateTime() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { modifiedAt: { _eq: \"2024-01-26 12:00:00\" } }) {\n" +
+                "      fullName," +
+                "      modifiedAt" +
+                "    }\n" +
+                "  }";
+        String expected = "{\"data\":{\"allEmployees\":{\"fullName()\":\"Anthony Allen\",\"modifiedAt\":\"2024-01-26T12:00:00.000000000\"}}}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testSimpleLtOperator() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { age: { _lt: 35 } }) {\n" +
+                "      fullName," +
+                "      age" +
+                "    }\n" +
+                "  }";
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"Peter Smith\",\"age\":25},{\"fullName()\":\"John Hill\",\"age\":30}]}}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testSimpleLteOperator() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { age: { _lte: 35 } }) {\n" +
+                "      fullName," +
+                "      age" +
+                "    }\n" +
+                "  }";
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"Peter Smith\",\"age\":25},{\"fullName()\":\"John Johnson\",\"age\":35},{\"fullName()\":\"John Hill\",\"age\":30}]}}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testSimpleGtOperator() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { age: { _gt: 50 } }) {\n" +
+                "      fullName," +
+                "      age" +
+                "    }\n" +
+                "  }";
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"Oliver Hill\",\"age\":60},{\"fullName()\":\"David Harris\",\"age\":55}]}}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testSimpleGteOperator() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { age: { _gte: 50 } }) {\n" +
+                "      fullName," +
+                "      age" +
+                "    }\n" +
+                "  }";
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"Fabrice Roberts\",\"age\":50},{\"fullName()\":\"Oliver Hill\",\"age\":60},{\"fullName()\":\"David Harris\",\"age\":55}]}}";
+        runTest(query, expected);
+    }
+
+    @Test
+    public void testEqIgnoreCaseOperator() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  allEmployees(where: { firstName: { _eqIgnoreCase: %s } }) {\n" +
+                "      fullName," +
+                "      age" +
+                "    }\n" +
+                "  }";
+
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+
+        String expected = "{\"data\":{\"allEmployees\":[{\"fullName()\":\"John Johnson\",\"age\":35},{\"fullName()\":\"John Hill\",\"age\":30}]}}";
+        runTest(String.format(query, "\"john\""), expected, cache);
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        String expected2 = "{\"data\":{\"allEmployees\":{\"fullName()\":\"David Harris\",\"age\":55}}}";
+        runTest(String.format(query, "\"DAVID\""), expected2, cache);
+        Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+
     }
 
     @Test
@@ -261,8 +377,36 @@ public class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
     }
 
     @Test
+    @Ignore(value = "Ignored as collection of enums is not supported as service parameter")
+    public void testEnumWithIn() throws Exception
+    {
+        String query = "query Query {\n" +
+                "  firms(where: { firmType: { _in: %s } }) {\n" +
+                "      legalName," +
+                "      firmType" +
+                "    }\n" +
+                "  }";
+        GraphQLPlanCache cache = new GraphQLPlanCache(getExecutionCacheInstance());
+        String expected = "{\"data\":{\"firms\":{\"legalName\":\"Firm A\",\"firmType\":\"LLC\"}}}";
+        runTest(String.format(query, "[LLC]"), expected, cache);
+        Assert.assertEquals(0, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        String expected2 = "{\"data\":{\"firms\":[{\"legalName\":\"Firm X\",\"firmType\":\"CORP\"},{\"legalName\":\"Firm B\",\"firmType\":\"CORP\"}]}}";
+        runTest(String.format(query, "[CORP]"), expected2, cache);
+        Assert.assertEquals(1, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+
+        String expected3 = "{\"data\":{\"firms\":[{\"legalName\":\"Firm X\",\"firmType\":\"CORP\"},{\"legalName\":\"Firm A\",\"firmType\":\"LLC\"},{\"legalName\":\"Firm B\",\"firmType\":\"CORP\"}]}}";
+        runTest(String.format(query, "[LLC, CORP]"), expected3, cache);
+        Assert.assertEquals(2, cache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, cache.getCache().stats().missCount(), 0);
+    }
+
+    @Test
     public void testExceptions() throws Exception
     {
+        // TODO add another file called TestExceptions with all the cases we expect to fail like _and with an object value
         String query = "query Query {\n" +
                 "  allEmployees(where: { _or : [ { firstName: { _eq: \"John\" } } ] }) {\n" +
                 "      fullName" +
