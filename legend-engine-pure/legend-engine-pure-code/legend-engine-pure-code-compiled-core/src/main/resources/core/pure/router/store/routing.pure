@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::store::*;
 import meta::pure::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::extension::*;
@@ -77,10 +78,10 @@ function <<access.private>> meta::pure::router::store::routing::modifyMappingBas
             | let connection = $inScopeStores->map(s|$runtime->connectionByElementFailSafe($s))->distinct();
             if(
                 $connection->size() == 1,
-                | $connection->toOne()->match(
+                | $inScopeStores->toOne()->match(
                     $extensions.availableStores.localizeXStoreAssociation
-                    ->map(e|$e->eval($x, $inScopeClassMappings, $inScopeStores))
-                    ->concatenate([a:Connection[1] | $x;])->toOneMany()
+                    ->map(e|$e->eval($x, $inScopeClassMappings))
+                    ->concatenate([a:Store[*] | $x;])->toOneMany()
                 );,
                 | $x
             );,
