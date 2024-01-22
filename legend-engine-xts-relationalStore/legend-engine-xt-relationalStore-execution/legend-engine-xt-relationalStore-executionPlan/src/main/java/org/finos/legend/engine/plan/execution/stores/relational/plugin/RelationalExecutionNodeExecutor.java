@@ -30,6 +30,7 @@ import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalResult;
@@ -935,6 +936,14 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             if (v == null)
             {
                 return "null";
+            }
+            if (v instanceof Number)
+            {
+                return v.toString();
+            }
+            if (v instanceof PureDate)
+            {
+                ResultNormalizer.normalizeToSql(v, databaseTimeZone);
             }
             if (v instanceof String && quoteCharacterReplacement != null)
             {
