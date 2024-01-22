@@ -485,7 +485,6 @@ public class TestExtensions
                 .with("core_analytics_lineage")
                 .with("core_analytics_mapping")
                 .with("core_analytics_search")
-                .with("core_connection_metamodel")
                 .with("core_data_space")
                 .with("core_data_space_metamodel")
                 .with("core_diagram")
