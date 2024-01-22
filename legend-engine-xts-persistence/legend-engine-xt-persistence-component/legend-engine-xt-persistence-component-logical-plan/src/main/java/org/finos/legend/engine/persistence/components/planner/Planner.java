@@ -257,20 +257,12 @@ public abstract class Planner
         if (originalStagingDataset() instanceof DerivedDataset)
         {
             DerivedDataset derivedDataset = (DerivedDataset) originalStagingDataset();
-            LogicalPlanUtils.jsonifyStagingFilters(batchSourceInfoMap, derivedDataset.datasetFilters());
+            batchSourceInfoMap = LogicalPlanUtils.jsonifyStagingFilters(derivedDataset.datasetFilters());
         }
-        Optional<StringValue> batchSourceInfo = Optional.empty();
-        if (!batchSourceInfoMap.isEmpty())
-        {
-            batchSourceInfo = Optional.of(LogicalPlanUtils.getStringValueFromMap(batchSourceInfoMap));
-        }
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(batchSourceInfoMap);
 
         // Save additional metadata into additional_metadata column
-        Optional<StringValue> additionalMetadata = Optional.empty();
-        if (!options().additionalMetadata().isEmpty())
-        {
-            additionalMetadata = Optional.of(LogicalPlanUtils.getStringValueFromMap(options().additionalMetadata()));
-        }
+        Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(options().additionalMetadata());
 
         // Save "DONE" into status column
         StringValue status = StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()); // todo: may be a good chance to unify the status now

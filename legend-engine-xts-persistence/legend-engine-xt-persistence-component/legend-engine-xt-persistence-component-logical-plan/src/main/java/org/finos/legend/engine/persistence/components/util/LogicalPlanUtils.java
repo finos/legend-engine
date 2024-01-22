@@ -269,8 +269,10 @@ public class LogicalPlanUtils
         return And.of(conditions);
     }
 
-    public static void jsonifyStagingFilters(Map<String, Object> batchSourceInfoMap, List<DatasetFilter> filters)
+    public static Map<String, Object> jsonifyStagingFilters(List<DatasetFilter> filters)
     {
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
+
         Map<String, Map<String, Object>> stagingFiltersMap = new HashMap<>();
         for (DatasetFilter filter : filters)
         {
@@ -282,10 +284,14 @@ public class LogicalPlanUtils
             stagingFiltersMap.put(key, mapValue);
         }
         batchSourceInfoMap.put(BATCH_SOURCE_INFO_STAGING_FILTERS, stagingFiltersMap);
+
+        return batchSourceInfoMap;
     }
 
-    public static void jsonifyBulkLoadSourceInfo(Map<String, Object> batchSourceInfoMap, StagedFilesDatasetProperties stagedFilesDatasetProperties, Optional<String> bulkLoadEventIdValue)
+    public static Map<String, Object> jsonifyBulkLoadSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties, Optional<String> bulkLoadEventIdValue)
     {
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
+
         List<String> filePaths = stagedFilesDatasetProperties.filePaths();
         List<String> filePatterns = stagedFilesDatasetProperties.filePatterns();
         if (filePaths != null && !filePaths.isEmpty())
@@ -298,19 +304,26 @@ public class LogicalPlanUtils
         }
 
         bulkLoadEventIdValue.ifPresent(s -> batchSourceInfoMap.put(BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID, s));
+
+        return batchSourceInfoMap;
     }
 
-    public static StringValue getStringValueFromMap(Map<String, Object> map)
+    public static Optional<StringValue> getStringValueFromMapIfNotEmpty(Map<String, Object> map)
     {
-        ObjectMapper objectMapper = new ObjectMapper();
-        try
+        if (!map.isEmpty())
         {
-            return StringValue.of(objectMapper.writeValueAsString(map));
+            ObjectMapper objectMapper = new ObjectMapper();
+            try
+            {
+                return Optional.of(StringValue.of(objectMapper.writeValueAsString(map)));
+            }
+            catch (JsonProcessingException e)
+            {
+                throw new RuntimeException(e);
+            }
         }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
+
+        return Optional.empty();
     }
 
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)

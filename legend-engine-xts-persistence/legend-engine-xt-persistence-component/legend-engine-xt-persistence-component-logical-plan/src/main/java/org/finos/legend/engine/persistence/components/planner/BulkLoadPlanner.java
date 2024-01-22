@@ -55,7 +55,7 @@ class BulkLoadPlanner extends Planner
 {
 
     private boolean transformWhileCopy;
-    private Dataset tempDataset;
+    private Dataset externalDataset;
     private StagedFilesDataset stagedFilesDataset;
 
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
@@ -74,7 +74,7 @@ class BulkLoadPlanner extends Planner
         transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
         if (!transformWhileCopy)
         {
-            tempDataset = ExternalDataset.builder()
+            externalDataset = ExternalDataset.builder()
                 .stagedFilesDataset(stagedFilesDataset)
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
@@ -136,8 +136,8 @@ class BulkLoadPlanner extends Planner
 
     private LogicalPlan buildLogicalPlanForCopyAndTransform(Resources resources)
     {
-        List<Value> fieldsToSelect = new ArrayList<>(tempDataset.schemaReference().fieldValues());
-        List<Value> fieldsToInsertIntoMain = new ArrayList<>(tempDataset.schemaReference().fieldValues());
+        List<Value> fieldsToSelect = new ArrayList<>(externalDataset.schemaReference().fieldValues());
+        List<Value> fieldsToInsertIntoMain = new ArrayList<>(externalDataset.schemaReference().fieldValues());
 
         // Add digest
         ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsertIntoMain));
@@ -152,7 +152,7 @@ class BulkLoadPlanner extends Planner
             addAuditing(fieldsToInsertIntoMain, fieldsToSelect);
         }
 
-        return LogicalPlan.of(Collections.singletonList(Insert.of(mainDataset(), Selection.builder().source(tempDataset).addAllFields(fieldsToSelect).build(), fieldsToInsertIntoMain)));
+        return LogicalPlan.of(Collections.singletonList(Insert.of(mainDataset(), Selection.builder().source(externalDataset).addAllFields(fieldsToSelect).build(), fieldsToInsertIntoMain)));
     }
 
     private void addAuditing(List<Value> fieldsToInsert, List<Value> fieldsToSelect)
@@ -171,7 +171,7 @@ class BulkLoadPlanner extends Planner
         operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         if (!transformWhileCopy)
         {
-            operations.add(Create.of(false, tempDataset));
+            operations.add(Create.of(false, externalDataset));
         }
         return LogicalPlan.of(operations);
     }
@@ -190,7 +190,7 @@ class BulkLoadPlanner extends Planner
         List<Operation> operations = new ArrayList<>();
         if (!transformWhileCopy)
         {
-            operations.add(Drop.of(true, tempDataset, false));
+            operations.add(Drop.of(true, externalDataset, false));
         }
         return LogicalPlan.of(operations);
     }
@@ -205,20 +205,11 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
         // Save file paths/patterns and event id into batch_source_info column
-        Map<String, Object> batchSourceInfoMap = new HashMap<>();
-        LogicalPlanUtils.jsonifyBulkLoadSourceInfo(batchSourceInfoMap, stagedFilesDataset.stagedFilesDatasetProperties(), options().bulkLoadEventIdValue());
-        Optional<StringValue> batchSourceInfo = Optional.empty();
-        if (!batchSourceInfoMap.isEmpty())
-        {
-            batchSourceInfo = Optional.of(LogicalPlanUtils.getStringValueFromMap(batchSourceInfoMap));
-        }
+        Map<String, Object> batchSourceInfoMap = LogicalPlanUtils.jsonifyBulkLoadSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties(), options().bulkLoadEventIdValue());
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(batchSourceInfoMap);
 
         // Save additional metadata into additional_metadata column
-        Optional<StringValue> additionalMetadata = Optional.empty();
-        if (!options().additionalMetadata().isEmpty())
-        {
-            additionalMetadata = Optional.of(LogicalPlanUtils.getStringValueFromMap(options().additionalMetadata()));
-        }
+        Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(options().additionalMetadata());
 
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, batchSourceInfo, additionalMetadata)));
     }
