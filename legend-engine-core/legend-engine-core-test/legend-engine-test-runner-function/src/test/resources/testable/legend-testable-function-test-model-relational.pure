@@ -123,6 +123,22 @@ Runtime execution::Runtime
   ];
 }
 
+###Runtime
+Runtime execution::RuntimeWithStoreConnections
+{
+  mappings:
+  [
+    execution::RelationalMapping
+  ];
+  connectionStores:
+  [
+    model::MyConnection:
+    [
+       store::TestDB
+    ]
+  ];
+}
+
 ###Pure
 function model::PersonQuery(): meta::pure::tds::TabularDataSet[1]
 {
@@ -188,5 +204,52 @@ function model::PersonWithParams(firstName: String[1]): meta::pure::tds::Tabular
           }#;
     testFail | PersonWithParams('Nicole') => (JSON) '[]';
     testPass | PersonWithParams('Nicole') => (JSON) '[{\n  "First Name" : "Nicole","Last Name" : "Smith"} ]';
+  )
+}
+function model::PersonQuerySharedData(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Person.all()->project(
+    [
+      x|$x.firstName,
+      x|$x.lastName
+    ],
+    [
+      'First Name',
+      'Last Name'
+    ]
+  )->from(
+    execution::RelationalMapping,
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB: data::RelationalData;
+    test_1 | PersonQuerySharedData() => (JSON) '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
+  )
+}
+
+function model::PersonWithConnectionStores(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Person.all()->project(
+    [
+      x|$x.firstName,
+      x|$x.lastName
+    ],
+    [
+      'First Name',
+      'Last Name'
+    ]
+  )->from(
+    execution::RelationalMapping,
+    execution::RuntimeWithStoreConnections
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB: data::RelationalData;
+    test_1 | PersonWithConnectionStores() => (JSON) '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
   )
 }

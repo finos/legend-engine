@@ -50,7 +50,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     private static XmlModelConnection xmlModelConnection = new XmlModelConnection();
 
 
-    private Pair<Connection, List<Closeable>> resolveExternalFormatData(ExternalFormatData externalFormatData, String _class)
+    public Pair<Connection, List<Closeable>> buildCloseableConnectionFromExternalFormat(ExternalFormatData externalFormatData, String _class)
     {
         Closeable closeable = new Closeable()
         {
@@ -98,7 +98,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
                 EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElement(dataElements, modelEmbeddedData.data);
                 if (resolvedEmbeddedData instanceof ExternalFormatData)
                 {
-                    return Optional.of(resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class));
+                    return Optional.of(buildCloseableConnectionFromExternalFormat((ExternalFormatData) resolvedEmbeddedData, _class));
                 }
                 else
                 {
@@ -114,7 +114,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
                     EmbeddedData testDataElement = EmbeddedDataHelper.findDataElement(dataElements, ((PackageableElementPtr) vs).fullPath).data;
                     if (testDataElement instanceof ExternalFormatData)
                     {
-                        return Optional.of(resolveExternalFormatData((ExternalFormatData) testDataElement, _class));
+                        return Optional.of(buildCloseableConnectionFromExternalFormat((ExternalFormatData) testDataElement, _class));
                     }
                     else
                     {
