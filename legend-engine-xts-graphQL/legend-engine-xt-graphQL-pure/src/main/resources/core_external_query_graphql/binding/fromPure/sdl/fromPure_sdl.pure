@@ -150,8 +150,6 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
 
   let interfaces = $extendedClasses->map(c | $c->buildInterfaceTypeDefinition());
 
-  let primitive_bool_expressions = getPrimitiveComparisonExpSDL($partitioned.first.values->cast(@ScalarTypeDefinition)->removeDuplicatesBy(s | $s.name->toOne()),$pureTypeToGraphQLScalarOverride);
-
   $partitioned.second.values
     // Remove duplicated scalar definitions
     ->concatenate($partitioned.first.values->cast(@ScalarTypeDefinition)->removeDuplicatesBy(s | $s.name->toOne()))
@@ -179,7 +177,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
         |
           []
       )
-    )->concatenate($primitive_bool_expressions->sortBy(p|$p.name));
+    );
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::getTemporalStereotypes(t: meta::pure::metamodel::type::Type[1]): String[*]
@@ -188,23 +186,6 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
     ->map(t | $t.stereotypes)
     ->filter(s | $s.profile == meta::pure::profiles::temporal)
     ->map(s | $s.value)
-}
-
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::getPrimitiveComparisonExpSDL(s: ScalarTypeDefinition[*], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): InputObjectTypeDefinition[*]
-{
-  let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)->map(p|$p.second);
-  $primitiveTypes->fold(
-    { a,b |
-      $a->map(
-          x | ^InputObjectTypeDefinition(
-            name=$x + '_comparison_exp',
-              fields = [
-                ^InputValueDefinition(name='_eq',type=^NamedTypeReference(nullable=false, name=$x))
-            ]
-          )
-        )->concatenate($b)},
-      []
-  );
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::isValidPropertyForGraphQL(p: AbstractProperty<Any>[1]): Boolean[1]

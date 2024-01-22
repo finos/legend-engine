@@ -16,27 +16,3 @@ input Person_bool_exp {
 input Person_exists_exp {
   _exists: Person_bool_exp
 }
-input BigDecimal_comparison_exp {
-  _eq: BigDecimal!
-}
-input Boolean_comparison_exp {
-  _eq: Boolean!
-}
-input DateTime_comparison_exp {
-  _eq: DateTime!
-}
-input Date_comparison_exp {
-  _eq: Date!
-}
-input Float_comparison_exp {
-  _eq: Float!
-}
-input Int_comparison_exp {
-  _eq: Int!
-}
-input StrictDate_comparison_exp {
-  _eq: StrictDate!
-}
-input String_comparison_exp {
-  _eq: String!
-}

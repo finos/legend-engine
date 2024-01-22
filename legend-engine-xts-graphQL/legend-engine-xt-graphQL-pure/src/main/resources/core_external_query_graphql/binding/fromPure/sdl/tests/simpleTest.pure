@@ -178,8 +178,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'schema {\n' +
     '  query : Query\n' +
-    '}\n' +
-    '\n' + getPrimitiveBoolExpStrings(), $res);
+    '}', $res);
 }
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQueryAndMutation():Boolean[1]
@@ -257,8 +256,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     'schema {\n' +
     '  query : Query\n' +
     '  mutation : Mutation\n' +
-    '}\n' +
-    '\n' + getPrimitiveBoolExpStrings(),
+    '}',
     $res);
 }
 
@@ -302,8 +300,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'scalar DateTime\n' +
     '\n' +
-    'scalar StrictDate\n' +
-    '\n' + getPrimitiveBoolExpStrings(), $res);
+    'scalar StrictDate', $res);
 }
 
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testNonBuiltInPrimitiveTypesAreNotDuplicated():Boolean[1]
@@ -365,8 +362,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'schema {\n' +
     '  mutation : MutationPrimitive\n' +
-    '}\n' +
-    '\n' + getPrimitiveBoolExpStrings(),
+    '}',
     $res);
 }
 
@@ -390,8 +386,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  _exists: BitemporalClass_bool_exp\n' +
     '}\n' +
     '\n' +
-    'directive @bitemporal on OBJECT | INPUT_OBJECT\n' +
-    '\n' + getPrimitiveBoolExpStrings(),
+    'directive @bitemporal on OBJECT | INPUT_OBJECT',
     $res);
 }
 
@@ -450,8 +445,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'scalar StrictDate\n' +
     '\n' +
-    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT\n' +
-    '\n' + getPrimitiveBoolExpStrings(),
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
 }
 
@@ -543,8 +537,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '\n' +
     'scalar StrictDate\n' +
     '\n' +
-    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT\n' +
-    '\n' + getPrimitiveBoolExpStrings(),
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
 }
 
@@ -620,8 +613,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '  _exists: Team_bool_exp\n' +
     '}\n' +
     '\n' +
-    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT\n' +
-    '\n' + getPrimitiveBoolExpStrings(),
+    'directive @extends(class: String!) on OBJECT | INPUT_OBJECT',
     $res);
 }
 
@@ -731,8 +723,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     'schema {\n' +
     '  query : QueryHierarchy\n' +
     '  mutation : MutationHierarchy\n' +
-    '}\n' +
-    '\n' + getPrimitiveBoolExpStrings(),
+    '}',
     $res);
 }
 
