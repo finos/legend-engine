@@ -943,7 +943,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             if (v instanceof PureDate)
             {
-                ResultNormalizer.normalizeToSql(v, databaseTimeZone);
+                return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
             }
             if (v instanceof String && quoteCharacterReplacement != null)
             {
