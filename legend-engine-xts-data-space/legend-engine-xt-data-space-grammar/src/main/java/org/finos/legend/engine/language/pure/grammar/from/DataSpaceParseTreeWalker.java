@@ -171,6 +171,18 @@ public class DataSpaceParseTreeWalker
         );
         executionContext.defaultRuntime.sourceInformation = walkerSourceInformation.getSourceInformation(defaultRuntimeContext);
 
+        // Stores
+        DataSpaceParserGrammar.ExecutionContextStoresContext stores = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executionContextStores(), "stores", executionContext.sourceInformation);
+        executionContext.stores = stores == null ? null : ListIterate.collect(stores.qualifiedName(), store ->
+        {
+            PackageableElementPointer ptr = new PackageableElementPointer(
+                    PackageableElementType.STORE,
+                    PureGrammarParserUtility.fromQualifiedName(store.packagePath() == null ? Collections.emptyList() : store.packagePath().identifier(), store.identifier())
+            );
+            ptr.sourceInformation = walkerSourceInformation.getSourceInformation(store);
+            return ptr;
+        });
+
         return executionContext;
     }
 

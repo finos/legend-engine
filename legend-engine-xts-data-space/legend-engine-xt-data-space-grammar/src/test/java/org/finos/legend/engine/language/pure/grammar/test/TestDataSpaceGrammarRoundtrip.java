@@ -32,6 +32,11 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      description: 'some information about the context';\n" +
                 "      mapping: model::String;\n" +
                 "      defaultRuntime: model::Runtime;\n" +
+                "      stores:\n" +
+                "      [\n" +
+                "        test::store::producerStore,\n" +
+                "        test::store::producerStore2\n" +
+                "      ];\n" +
                 "    },\n" +
                 "    {\n" +
                 "      name: 'Context 2';\n" +
