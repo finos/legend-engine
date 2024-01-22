@@ -612,10 +612,11 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    print(if($debug.debug,|$debug.space+'   >Generate cross property query (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'\n',|''));
    let crossQuery          = generateCrossPropertyQuery($rootTree, $parentIdx, $xStorePropertyMapping, $srcProperties, $mapping, $inScopeVars, $simplePrimitiveProperties, $mcForProperty, $debug->indent(2), $extensions);
    let dbConnectionPre        = $runtime->connectionByElement($store)->cast(@DatabaseConnection) ;
-   let dbConnectionStorePre = $runtime.connectionStores->filter(connectionStore|$connectionStore.connection==$dbConnectionPre)->toOne();
+   let dbConnectionStorePre = $runtime.connectionStores->filter(connectionStore|$connectionStore.connection==$dbConnectionPre);
 
-   let dbConnection =  if($clusteredTree.s.reprocessConnection->isEmpty(),|$dbConnectionPre,|$clusteredTree.s.reprocessConnection->toOne()->eval($dbConnectionStorePre))->cast(@DatabaseConnection) ;
-   let oneRuntime          = ^Runtime(connectionStores = ^$dbConnectionStorePre(connection=$dbConnection));
+   let dbConnectionStore =  if($clusteredTree.s.processRuntimeTestConnections->isEmpty(),|$dbConnectionStorePre,|$clusteredTree.s.processRuntimeTestConnections->toOne()->eval($dbConnectionStorePre));
+   let dbConnection = $dbConnectionStore.connection->distinct()->toOne('Expected 1 connection, but received ' + $dbConnectionStore.connection->distinct()->size()->toString())->cast(@DatabaseConnection);
+   let oneRuntime          = ^Runtime(connectionStores = $dbConnectionStore);
    let postProcessorResult = $crossQuery->postProcessSQLQuery($store, [], $mapping, $oneRuntime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
    print(if($debug.debug,|$debug.space+'   >Generated cross property query: '+$postProcessedQuery->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n',|''));
