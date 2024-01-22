@@ -79,11 +79,11 @@ public class HelperModelBuilder
             if (property.defaultValue != null)
             {
                 LambdaFunction<?> lambdaFunction = HelperValueSpecificationBuilder.buildLambda(Collections.singletonList(property.defaultValue.value), Collections.emptyList(), context);
-                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl((String)null);
+                defaultValue = new Root_meta_pure_metamodel_function_property_DefaultValue_Impl(null, SourceInformationHelper.toM3SourceInformation(property.defaultValue.sourceInformation), null);
                 defaultValue._functionDefinition(lambdaFunction);
             }
             GenericType returnGenericType = context.resolveGenericType(property.type, property.propertyTypeSourceInformation);
-            return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name, null, context.pureModel.getClass("meta::pure::metamodel::function::property::Property"))
+            return new Root_meta_pure_metamodel_function_property_Property_Impl<>(property.name, SourceInformationHelper.toM3SourceInformation(property.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::function::property::Property"))
                     ._name(property.name)
                     ._defaultValue(defaultValue)
                     ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::property::Property"))._typeArguments(Lists.fixedSize.of(genericType, returnGenericType))._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(property.multiplicity)))
@@ -164,7 +164,7 @@ public class HelperModelBuilder
 
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression thisVariable = createThisVariableForClass(context, fullPath);
 
-            return new Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl<>(property.name)
+            return new Root_meta_pure_metamodel_function_property_QualifiedProperty_Impl<>(property.name, SourceInformationHelper.toM3SourceInformation(property.sourceInformation), null)
                     ._name(property.name)
                     ._functionName(property.name)
                     ._genericType(context.resolveGenericType(property.returnType, property.sourceInformation))
@@ -221,7 +221,6 @@ public class HelperModelBuilder
     public static RichIterable<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint> processConstraints(List<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint> constraints, CompileContext context, String _package, String _name, ValueSpecificationContext vsContext, ProcessingContext ctx)
     {
         String constraintSourceId = context.pureModel.buildPackageString(_package, _name).replace("::", "_") + "_Constraint$";
-        SourceInformation si = new SourceInformation(constraintSourceId, 0, 0, 0, 0);
 
         return ListIterate.collect(constraints, c ->
         {
@@ -231,7 +230,7 @@ public class HelperModelBuilder
             {
                 lf = HelperValueSpecificationBuilder.buildLambdaWithContext(c.name, c.functionDefinition.body, c.functionDefinition.parameters, context, ctx);
                 lf._expressionSequence().forEach((Procedure<ValueSpecification>) es -> es._usageContext(vsContext));
-                lf.setSourceInformation(si);
+                lf.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.functionDefinition.sourceInformation));
             }
             catch (Exception e)
             {
@@ -250,7 +249,7 @@ public class HelperModelBuilder
                 {
                     mf = HelperValueSpecificationBuilder.buildLambdaWithContext(c.name, c.messageFunction.body, c.messageFunction.parameters, context, ctx);
                     mf._expressionSequence().forEach((Procedure<ValueSpecification>) es -> es._usageContext(vsContext));
-                    mf.setSourceInformation(si);
+                    mf.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.messageFunction.sourceInformation));
                 }
             }
             catch (Exception e)
@@ -267,7 +266,7 @@ public class HelperModelBuilder
                  */
             }
             org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint pureConstraint = new Root_meta_pure_metamodel_constraint_Constraint_Impl(constraintSourceId);
-            pureConstraint.setSourceInformation(si);
+            pureConstraint.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.sourceInformation));
             pureConstraint._functionDefinition(lf);
             pureConstraint._name(c.name);
             pureConstraint._externalId(c.externalId);

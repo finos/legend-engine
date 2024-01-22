@@ -137,7 +137,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 Database.class,
                 (Database srcDatabase, CompileContext context) ->
                 {
-                    org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name)._name(srcDatabase.name);
+                    org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database database = new Root_meta_relational_metamodel_Database_Impl(srcDatabase.name, SourceInformationHelper.toM3SourceInformation(srcDatabase.sourceInformation), null)._name(srcDatabase.name);
 
                     database._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                             ._rawType(context.pureModel.getType("meta::relational::metamodel::Database")));
@@ -182,7 +182,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         RootRelationalClassMapping classMapping = (RootRelationalClassMapping) cm;
                         String id = classMapping.id != null ? classMapping.id : getElementFullPath(context.resolveClass(classMapping._class, classMapping.classSourceInformation), context.pureModel.getExecutionSupport()).replaceAll("::", "_");
-                        final RootRelationalInstanceSetImplementation res = new Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl(id, null, context.pureModel.getClass("meta::relational::mapping::RootRelationalInstanceSetImplementation"))._id(id);
+                        final RootRelationalInstanceSetImplementation res = new Root_meta_relational_mapping_RootRelationalInstanceSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(cm.sourceInformation), context.pureModel.getClass("meta::relational::mapping::RootRelationalInstanceSetImplementation"))._id(id);
                         MutableList<RelationalOperationElement> groupByColumns = ListIterate.collect(classMapping.groupBy, relationalOperationElement -> HelperRelationalBuilder.processRelationalOperationElement(relationalOperationElement, context, Maps.mutable.empty(), Lists.mutable.empty()));
                         org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias mainTableAlias = null;
                         // user has defined main table
@@ -325,7 +325,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     if (associationMapping instanceof RelationalAssociationMapping)
                     {
                         RelationalAssociationMapping relationalAssociationImplementation = (RelationalAssociationMapping) associationMapping;
-                        RelationalAssociationImplementation base = new Root_meta_relational_mapping_RelationalAssociationImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::RelationalAssociationImplementation"));
+                        RelationalAssociationImplementation base = new Root_meta_relational_mapping_RelationalAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::RelationalAssociationImplementation"));
                         final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(relationalAssociationImplementation.association, associationMapping.sourceInformation);
                         MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings = Lists.mutable.empty();
                         MutableList<Store> stores = ListIterate.collect(relationalAssociationImplementation.stores, context::resolveStore);
@@ -352,7 +352,7 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                     {
                         RelationalDatabaseConnection relationalDatabaseConnection = (RelationalDatabaseConnection) connectionValue;
 
-                        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", null, context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
+                        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relational = new Root_meta_external_store_relational_runtime_RelationalDatabaseConnection_Impl("", SourceInformationHelper.toM3SourceInformation(relationalDatabaseConnection.sourceInformation), context.pureModel.getClass("meta::external::store::relational::runtime::RelationalDatabaseConnection"));
                         HelperRelationalDatabaseConnectionBuilder.addDatabaseConnectionProperties(relational, relationalDatabaseConnection.element, relationalDatabaseConnection.elementSourceInformation, relationalDatabaseConnection.type.name(), relationalDatabaseConnection.timeZone, relationalDatabaseConnection.quoteIdentifiers, context);
 
                         List<IRelationalCompilerExtension> extensions = IRelationalCompilerExtension.getExtensions(context);
