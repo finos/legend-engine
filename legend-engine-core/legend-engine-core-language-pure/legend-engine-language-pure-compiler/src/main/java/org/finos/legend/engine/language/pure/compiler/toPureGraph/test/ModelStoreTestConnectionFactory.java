@@ -145,7 +145,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     {
         if (sourceConnection instanceof JsonModelConnection)
         {
-            if(embeddedData.size() == 1)
+            if (embeddedData.size() == 1)
             {
                 JsonModelConnection jsonModelConnection = (JsonModelConnection) sourceConnection;
                 if (!(embeddedData.get(0) instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) embeddedData.get(0)).contentType)))
@@ -166,7 +166,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
         }
         else if (sourceConnection instanceof XmlModelConnection)
         {
-            if(embeddedData.size() == 1)
+            if (embeddedData.size() == 1)
             {
                 XmlModelConnection xmlModelConnection = (XmlModelConnection) sourceConnection;
                 if (!(embeddedData.get(0) instanceof ExternalFormatData && APPLICATION_XML.equals(((ExternalFormatData) embeddedData.get(0)).contentType)))
