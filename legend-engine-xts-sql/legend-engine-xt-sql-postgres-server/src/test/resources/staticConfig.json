@@ -1,0 +1,12 @@
+{
+  "port": 9998,
+  "authenticationMethod": "NO_PASSWORD",
+  "identityType": "ANONYMOUS",
+  "handler": {
+    "result": "legend-engine-xt-sql-postgres-server/src/test/resources/legendTdsResult.json",
+    "schema": "legend-engine-xt-sql-postgres-server/src/test/resources/legendTdsSchema.json",
+    "delay": 6000,
+    "type": "STATIC"
+  },
+  "logConfigFile": "legend-engine-xt-sql-postgres-server/src/test/resources/logback-test.xml"
+}

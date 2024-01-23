@@ -12,13 +12,14 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
+
 package org.finos.legend.engine.postgres.handler.legend;
 
-import java.util.List;
+import java.io.InputStream;
 
-public interface LegendExecutionClient
+public interface LegendClient
 {
-    public List<LegendColumn> getSchema(String query);
+    InputStream executeQueryApi(String query);
 
-    LegendExecutionResult executeQuery(String query);
+    InputStream executeSchemaApi(String query);
 }

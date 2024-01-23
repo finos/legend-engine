@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -31,10 +33,11 @@ import java.sql.SQLException;
 public class LegendSessionFactory implements SessionsFactory
 {
 
-    private final LegendExecutionClient legendExecutionClient;
+    private final LegendExecutionService legendExecutionClient;
     private final JDBCSessionFactory.JDBCSessionHandler metadataSessionHandler;
+    private  ExecutorService executorService = Executors.newCachedThreadPool();
 
-    public LegendSessionFactory(LegendExecutionClient legendExecutionClient)
+    public LegendSessionFactory(LegendExecutionService legendExecutionClient)
     {
         this.legendExecutionClient = legendExecutionClient;
         try
@@ -62,10 +65,10 @@ public class LegendSessionFactory implements SessionsFactory
 
     private static class LegendSessionHandler implements SessionHandler
     {
-        private final LegendExecutionClient legendExecutionClient;
+        private final LegendExecutionService legendExecutionClient;
         private final Identity identity;
 
-        public LegendSessionHandler(LegendExecutionClient legendExecutionClient, Identity identity)
+        public LegendSessionHandler(LegendExecutionService legendExecutionClient, Identity identity)
         {
             this.legendExecutionClient = legendExecutionClient;
             this.identity = identity;

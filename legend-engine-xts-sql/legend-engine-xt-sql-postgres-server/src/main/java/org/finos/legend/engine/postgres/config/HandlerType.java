@@ -17,5 +17,6 @@ package org.finos.legend.engine.postgres.config;
 public enum HandlerType
 {
     LEGEND,
-    JDBC
+    JDBC,
+    STATIC
 }

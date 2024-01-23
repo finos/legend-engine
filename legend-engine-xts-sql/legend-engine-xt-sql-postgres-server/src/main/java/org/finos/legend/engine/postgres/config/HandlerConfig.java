@@ -20,7 +20,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
         @JsonSubTypes.Type(value = LegendHandlerConfig.class, name = "LEGEND"),
-        @JsonSubTypes.Type(value = JDBCHandlerConfig.class, name = "JDBC")
+        @JsonSubTypes.Type(value = JDBCHandlerConfig.class, name = "JDBC"),
+        @JsonSubTypes.Type(value = StaticHandlerConfig.class, name = "STATIC")
 })
 public interface HandlerConfig
 {
