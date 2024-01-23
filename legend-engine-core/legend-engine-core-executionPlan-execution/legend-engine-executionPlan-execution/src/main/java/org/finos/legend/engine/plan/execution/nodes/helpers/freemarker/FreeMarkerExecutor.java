@@ -82,11 +82,15 @@ public class FreeMarkerExecutor
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
         String result = process(input, variableMap, templateFunctions);
-        String freemarkerExpression = ".*[{}].*";
+        String regex = "(\\$\\{)(.+?)(\\})";
+        
+        Pattern p = Pattern.compile(regex);
 
-        if (!result.equals(input.replace("\\\"", "\"")) && result.matches(freemarkerExpression))
+        Matcher matcher = p.matcher(result);
+        if (!result.equals(input.replace("\\\"", "\"")) && matcher.find())
         {
-            return processRecursively(result, variableMap, templateFunctions);
+            if (matcher.group(2) != null) //check there is some content 
+                return processRecursively(result, variableMap, templateFunctions);
         }
         return result;
     }
