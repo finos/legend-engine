@@ -42,6 +42,7 @@ import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -171,12 +172,15 @@ public class BulkLoadTest
                 .relationalSink(SnowflakeSink.get())
                 .collectStatistics(true)
                 .bulkLoadEventIdValue("task123")
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
+                .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> metaIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_bigint\" BIGINT,\"col_variant\" VARIANT,\"batch_id\" INTEGER)";
@@ -188,9 +192,15 @@ public class BulkLoadTest
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
                 "FILE_FORMAT = (TYPE = 'CSV') " +
                 "ON_ERROR = 'ABORT_STATEMENT'";
+        String expectedMetaIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
+            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
+            "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
+            "PARSE_JSON('{\"event_id\":\"task123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
+            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals(expectedMetaIngestSql, metaIngestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
@@ -427,13 +437,14 @@ public class BulkLoadTest
             .relationalSink(SnowflakeSink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue("task123")
+            .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> metaIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_int\" INTEGER,\"col_integer\" INTEGER,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" DATETIME)";
@@ -449,8 +460,16 @@ public class BulkLoadTest
             "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
             "FORCE = true, ON_ERROR = 'ABORT_STATEMENT'";
 
+        String expectedMetaIngestSql = "INSERT INTO batch_metadata " +
+            "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
+            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
+            "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
+            "PARSE_JSON('{\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
+            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals(expectedMetaIngestSql, metaIngestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));

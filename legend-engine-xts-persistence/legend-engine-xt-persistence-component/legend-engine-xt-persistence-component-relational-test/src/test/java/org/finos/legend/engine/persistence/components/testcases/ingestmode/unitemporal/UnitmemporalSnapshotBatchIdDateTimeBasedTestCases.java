@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends BaseTest
 {
@@ -95,6 +96,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
                 .caseConversion(CaseConversion.TO_UPPER)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizerFilterDupsMaxVersion(operations);
@@ -111,6 +113,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithPartitionNoDedupNoVersioning(operations);

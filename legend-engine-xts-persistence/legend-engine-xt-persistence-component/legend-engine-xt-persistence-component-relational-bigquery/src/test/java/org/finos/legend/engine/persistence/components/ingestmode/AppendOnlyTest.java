@@ -160,7 +160,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
 
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableIngestQuery, operations.get(0).metadataIngestSql().get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadata(), operations.get(0).metadataIngestSql().get(0));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
@@ -365,5 +365,15 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         Assertions.assertEquals(rowsDeleted, generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_DELETED));
         Assertions.assertEquals(rowsInserted, generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_INSERTED));
         Assertions.assertEquals(rowsTerminated, generatorResults.get(0).postIngestStatisticsSql().get(StatisticName.ROWS_TERMINATED));
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadata()
+    {
+        return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
+    {
+        return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
     }
 }

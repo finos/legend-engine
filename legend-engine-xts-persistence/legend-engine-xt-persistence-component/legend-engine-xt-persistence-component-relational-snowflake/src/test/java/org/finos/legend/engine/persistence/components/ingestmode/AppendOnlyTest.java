@@ -146,6 +146,18 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
     }
 
+    @Override
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadata()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata;
+    }
+
+    @Override
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
+    }
+
     protected String getExpectedMetadataTableCreateQuery()
     {
         return SnowflakeTestArtifacts.expectedMetadataTableCreateQuery;

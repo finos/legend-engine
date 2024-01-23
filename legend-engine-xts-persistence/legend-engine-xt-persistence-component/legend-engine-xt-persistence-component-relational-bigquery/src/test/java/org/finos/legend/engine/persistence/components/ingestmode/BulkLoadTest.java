@@ -54,6 +54,7 @@ public class BulkLoadTest
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
     private static final String BATCH_ID = "batch_id";
     private static final String EVENT_ID = "xyz123";
+    private static final Map<String, Object> ADDITIONAL_METADATA = Collections.singletonMap("watermark", "my_watermark_value");
     private static final String COL_INT = "col_int";
     private static final String COL_STRING = "col_string";
     private static final String COL_DECIMAL = "col_decimal";
@@ -189,6 +190,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -210,9 +212,10 @@ public class BulkLoadTest
             "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
-        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
+        String expectedMetadataIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`, `additional_metadata`) " +
             "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
-            "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+            "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
+            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
@@ -254,12 +257,14 @@ public class BulkLoadTest
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
             .bulkLoadEventIdValue(EVENT_ID)
+            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> metaIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `my_db`.`my_name`" +
@@ -274,9 +279,16 @@ public class BulkLoadTest
             "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
+        String expectedMetaIngestSql = "INSERT INTO batch_metadata (`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`, `additional_metadata`) " +
+            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MY_NAME')," +
+            "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
+            "PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
+            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
         Assertions.assertEquals(expectedInsertSql, ingestSql.get(0));
+        Assertions.assertEquals(expectedMetaIngestSql, metaIngestSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));

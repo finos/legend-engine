@@ -159,7 +159,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(2, operations.size());
 
-        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableIngestQuery, operations.get(0).metadataIngestSql().get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata, operations.get(0).metadataIngestSql().get(0));
 
         // Stats
         String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
