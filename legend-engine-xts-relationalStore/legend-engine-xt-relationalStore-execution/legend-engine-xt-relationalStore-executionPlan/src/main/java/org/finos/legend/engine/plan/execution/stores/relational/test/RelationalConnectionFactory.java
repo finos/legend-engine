@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.test;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -33,6 +34,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Database;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -81,19 +83,50 @@ public class RelationalConnectionFactory implements ConnectionFactoryExtension
     {
         if (data instanceof RelationalCSVData && sourceConnection instanceof RelationalDatabaseConnection)
         {
-            RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
-            connection.databaseType = DatabaseType.H2;
-            connection.type = DatabaseType.H2;
-            connection.element = sourceConnection.element;
-            connection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();
-            LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
-            // TODO generate sql with pure helper function
-            RelationalCSVData relationalData = (RelationalCSVData) data;
-            localH2DatasourceSpecification.testDataSetupCsv = new HelperRelationalCSVBuilder(relationalData).build();
-            connection.datasourceSpecification = localH2DatasourceSpecification;
-            return Optional.of(Tuples.pair(connection, Collections.emptyList()));
+            return this.buildRelationalTestConnection(sourceConnection.element, (RelationalCSVData) data);
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildConnectionForStoreData(Map<String, DataElement> dataElements, Map<Store, EmbeddedData> storeTestData)
+    {
+        if (storeTestData == null || storeTestData.isEmpty())
+        {
+            return Optional.empty();
+        }
+        if (storeTestData.size() == 1)
+        {
+            Store store = storeTestData.keySet().stream().findFirst().get();
+            EmbeddedData embeddedData = storeTestData.values().stream().findFirst().get();
+            return tryBuildTestConnectionsForStore(dataElements, store, embeddedData);
+        }
+        List<EmbeddedData> embeddedData = new ArrayList<>(storeTestData.values());
+        boolean isRelational = storeTestData.keySet().stream().allMatch(db -> db instanceof Database) && embeddedData.stream().allMatch(rD -> rD instanceof RelationalCSVData);
+        if (isRelational)
+        {
+            List<RelationalCSVData> relationalCSVDataList = ListIterate.selectInstancesOf(embeddedData, RelationalCSVData.class);
+            RelationalCSVData relationalData = new RelationalCSVData();
+            relationalData.tables = ListIterate.flatCollect(relationalCSVDataList, a -> a.tables);
+            return this.buildRelationalTestConnection(null, relationalData);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Pair<Connection, List<Closeable>>> buildRelationalTestConnection(String element, RelationalCSVData data)
+    {
+
+        RelationalDatabaseConnection connection = new RelationalDatabaseConnection();
+        connection.databaseType = DatabaseType.H2;
+        connection.type = DatabaseType.H2;
+        connection.element = element;
+        connection.authenticationStrategy = new TestDatabaseAuthenticationStrategy();
+        LocalH2DatasourceSpecification localH2DatasourceSpecification = new LocalH2DatasourceSpecification();
+        // TODO generate sql with pure helper function
+        RelationalCSVData relationalData = data;
+        localH2DatasourceSpecification.testDataSetupCsv = new HelperRelationalCSVBuilder(relationalData).build();
+        connection.datasourceSpecification = localH2DatasourceSpecification;
+        return Optional.of(Tuples.pair(connection, Collections.emptyList()));
     }
 
     @Override

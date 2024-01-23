@@ -154,6 +154,23 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- Data Space -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-data-space-grammar</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-data-space-compiler</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-data-space-protocol</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Data Space -->
         <!-- TESTS -->
 
         <!-- LOGS -->
