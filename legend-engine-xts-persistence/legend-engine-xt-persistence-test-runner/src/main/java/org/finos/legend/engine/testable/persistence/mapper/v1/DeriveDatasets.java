@@ -33,6 +33,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.persister.ingestmode.snapshot.UnitemporalSnapshot;
 import static org.finos.legend.engine.testable.persistence.mapper.v1.DatasetMapper.STAGING_SUFFIX;
 import static org.finos.legend.engine.testable.persistence.mapper.v1.DatasetMapper.isFieldNamePresent;
+import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.BATCH_ID_FIELD_DEFAULT;
 import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class DeriveDatasets implements IngestModeVisitor<Datasets>
@@ -81,6 +82,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
         enrichMainSchemaWithDigest();
         boolean baseSchemaHasPks = baseSchema.fields().stream().anyMatch(field -> field.primaryKey());
         appendOnly.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema, baseSchemaHasPks));
+        enrichMainSchemaWithBatchId();
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -122,6 +124,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
 
         enrichMainSchemaWithDigest();
         nontemporalDelta.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema, true));
+        enrichMainSchemaWithBatchId();
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -133,6 +136,7 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
         Dataset stagingDataset = stagingDatasetBuilder.schema(stagingSchemaDefinitionBuilder.build()).build();
         boolean baseSchemaHasPks = baseSchema.fields().stream().anyMatch(field -> field.primaryKey());
         nontemporalSnapshot.auditing.accept(new MappingVisitors.EnrichSchemaWithAuditing(mainSchemaDefinitionBuilder, baseSchema, baseSchemaHasPks));
+        enrichMainSchemaWithBatchId();
         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
 
         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -173,6 +177,20 @@ public class DeriveDatasets implements IngestModeVisitor<Datasets>
                     .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
                     .build();
             mainSchemaDefinitionBuilder.addFields(digest);
+        }
+    }
+
+    private void enrichMainSchemaWithBatchId()
+    {
+        // Batch ID field addition
+        // Shall be changed to using the user-defined batch id column name once it is added to the spec
+        if (!isFieldNamePresent(baseSchema, BATCH_ID_FIELD_DEFAULT))
+        {
+            Field batchId = Field.builder()
+                .name(BATCH_ID_FIELD_DEFAULT)
+                .type(FieldType.of(DataType.INTEGER, Optional.empty(), Optional.empty()))
+                .build();
+            mainSchemaDefinitionBuilder.addFields(batchId);
         }
     }
 }

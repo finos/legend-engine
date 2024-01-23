@@ -48,7 +48,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Functio
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -368,19 +367,6 @@ public class LogicalPlanUtils
             optimizationConditions.add(optimizationCondition);
         }
         return optimizationConditions;
-    }
-
-    // Used in Incremental
-    public static Selection getRowsBasedOnLatestTimestamp(Dataset dataset, String field, String alias)
-    {
-        FieldValue fieldValue = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(field).build();
-
-        FunctionImpl maxFunction = FunctionImpl.builder().functionName(FunctionName.MAX).addValue(fieldValue).build();
-        SelectValue maxTs = SelectValue.of(Selection.builder().source(dataset.datasetReference()).addFields(maxFunction).build());
-        Equals<FieldValue, SelectValue> condition = Equals.of(fieldValue, maxTs);
-        FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
-
-        return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
     }
 
     public static List<Field> findCommonPrimaryFieldsBetweenMainAndStaging(Dataset mainDataset, Dataset stagingDataset)

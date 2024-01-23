@@ -16,9 +16,6 @@ package org.finos.legend.engine.shared.core.operational.logs;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.Date;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -28,6 +25,10 @@ import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.pac4j.core.profile.CommonProfile;
+
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Date;
 
 public class LogInfo
 {
@@ -77,6 +78,12 @@ public class LogInfo
     }
 
     public LogInfo(Iterable<? extends CommonProfile> userProfiles, ILoggingEventType eventType, double duration)
+    {
+        this(userProfiles, eventType);
+        this.duration = duration;
+    }
+
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, double duration)
     {
         this(userProfiles, eventType);
         this.duration = duration;
@@ -146,6 +153,12 @@ public class LogInfo
         {
             this.sourceInformation = ((EngineException) ExceptionUtils.getThrowables(t)[index]).getSourceInformation();
         }
+    }
+
+    public LogInfo(Iterable<? extends CommonProfile> userProfiles, String eventType, Throwable t, double duration)
+    {
+        this(userProfiles, eventType, t);
+        this.duration = duration;
     }
 
     public String toString()

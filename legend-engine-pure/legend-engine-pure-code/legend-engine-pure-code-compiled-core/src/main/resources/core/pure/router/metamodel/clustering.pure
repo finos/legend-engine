@@ -69,7 +69,13 @@ function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(s
     //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
     //the only place where sql is generated for this case.
     let rt = $sc.runtime->match([
-      r:Runtime[1] | ^$r(connectionStores = $r.connectionStores->map(c | if ($sc.s.reprocessConnection->isEmpty(),|$c,|^$c(connection=$sc.s.reprocessConnection->toOne()->eval($c))))),
+      r:Runtime[1] | ^$r(connectionStores =
+        if (
+          $sc.s.processRuntimeTestConnections->isEmpty(),
+          |$r.connectionStores,
+          |$sc.s.processRuntimeTestConnections->toOne()->eval($r.connectionStores);
+        )
+      ),      
       r:Runtime[0..1] | $r
     ]);
     let query = ^meta::pure::mapping::StoreQuery(store=$sc.store, fe=$fe, inScopeVars=$inScopeVars);

@@ -86,7 +86,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
@@ -137,7 +137,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_delete_indicator/data_pass1.csv";
@@ -189,7 +189,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/less_columns_in_staging/expected_pass1.csv";
@@ -231,7 +231,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(true).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning With Clean Staging Table ------------------------
         String dataPass1 = basePath + "input/vanilla_case/data_pass1.csv";
@@ -285,7 +285,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_update_timestamp_field/data_pass1.csv";
@@ -324,7 +324,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/with_data_splits/expected_pass1.csv";
@@ -370,7 +370,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_max_versioning/greater_than/without_dedup/data_pass1.csv";
@@ -423,7 +423,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_max_versioning/greater_than_equal_to/without_dedup/data_pass1.csv";
@@ -476,7 +476,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_max_versioning/greater_than/with_dedup/data_pass1.csv";
@@ -529,7 +529,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_max_versioning/greater_than_equal_to/with_dedup/data_pass1.csv";
@@ -578,7 +578,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_staging_filter/with_no_versioning/data_pass1.csv";
@@ -634,7 +634,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_staging_filter/with_max_versioning/greater_than/without_dedup/data_pass1.csv";
@@ -690,7 +690,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_staging_filter/with_max_versioning/greater_than_equal_to/without_dedup/data_pass1.csv";
@@ -747,7 +747,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_staging_filter/with_max_versioning/greater_than/with_dedup/data_pass1.csv";
@@ -821,7 +821,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName};
+        String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, digestName, versionName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String dataPass1 = basePath + "input/with_staging_filter/with_max_versioning/greater_than_equal_to/with_dedup/data_pass1.csv";
@@ -888,7 +888,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/with_staging_filter/with_all_version/greater_than/expected_pass1.csv";
@@ -974,7 +974,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/with_staging_filter/with_all_version/digest_based/expected_pass1.csv";
@@ -1047,7 +1047,7 @@ class NontemporalDeltaTest extends BaseTest
         PlannerOptions options = PlannerOptions.builder().cleanupStagingData(false).collectStatistics(true).build();
         Datasets datasets = Datasets.of(mainTable, stagingTable);
 
-        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName};
+        String[] schema = new String[]{idName, nameName, versionName, incomeName, expiryDateName, digestName, batchIdName};
 
         // ------------ Perform incremental (delta) milestoning Pass1 ------------------------
         String expectedDataPass1 = basePath + "expected/with_staging_filter/with_all_version/digest_based/expected_pass1.csv";
