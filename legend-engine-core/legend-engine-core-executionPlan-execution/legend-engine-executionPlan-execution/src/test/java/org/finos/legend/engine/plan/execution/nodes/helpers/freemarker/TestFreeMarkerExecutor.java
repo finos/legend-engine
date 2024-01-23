@@ -30,6 +30,8 @@ import org.mockito.Mockito;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor.processRecursively;
+
 
 public class TestFreeMarkerExecutor
 {
@@ -90,6 +92,24 @@ public class TestFreeMarkerExecutor
         String result = FreeMarkerExecutor.process(query, state,template);
         Assert.assertEquals("outsideFoo embeddedFoo", result.trim());
     }
+
+    @Test
+    public void testFreemarkerWithSpecialCharacters() throws Exception
+
+    {
+        String templateFunction = "";
+        String sqlQuery = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}')";
+        Map rootMap = new HashMap<String,String>();
+        rootMap.put("firstName", "sbcd<@?fdf");
+        Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'sbcd<@?fdf')",processRecursively(sqlQuery,rootMap,"" ));
+
+        String sqlQuery2  = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${inFilterClause_id}')";
+        Map rootMap2 = new HashMap<String, String> ();
+        rootMap2.put("inFilterClause_id", "${lastName?replace(\"'\", \"''\")}");
+        rootMap2.put("lastName", "Doe");
+        Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'Doe')", processRecursively(sqlQuery2, rootMap2, ""));
+    }
+
 
 
     public static String collectionSizeTemplate()
