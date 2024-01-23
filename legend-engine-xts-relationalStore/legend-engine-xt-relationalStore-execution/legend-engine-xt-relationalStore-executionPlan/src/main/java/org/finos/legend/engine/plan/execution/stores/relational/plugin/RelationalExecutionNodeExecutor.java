@@ -949,6 +949,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             {
                 return "'" + ((String) v).replace("'", quoteCharacterReplacement) + "'";
             }
+            // TODO - Implement db specific processing for boolean type
             return "'" + v.toString() + "'";
         };
     }
