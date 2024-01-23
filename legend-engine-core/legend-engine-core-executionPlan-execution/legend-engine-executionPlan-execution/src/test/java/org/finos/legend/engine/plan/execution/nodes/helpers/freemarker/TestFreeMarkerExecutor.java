@@ -22,6 +22,12 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.junit.Assert;
 import org.junit.Test;
+import freemarker.core.TemplateDateFormatFactory;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import org.eclipse.collections.impl.factory.Maps;
+import org.finos.legend.engine.plan.execution.result.freemarker.PlanDateParameterDateFormatFactory;
+
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +35,8 @@ import java.util.Map;
 import org.mockito.Mockito;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.io.StringReader;
+import java.io.StringWriter;
 
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
