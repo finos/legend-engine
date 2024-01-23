@@ -23,6 +23,6 @@ public class CoreMemSqlFunctionCodeRepositoryProvider implements CodeRepositoryP
     @Override
     public CodeRepository repository()
     {
-        return GenericCodeRepository.build("core_memsqlunction.definition.json");
+        return GenericCodeRepository.build("core_memsqlfunction.definition.json");
     }
 }

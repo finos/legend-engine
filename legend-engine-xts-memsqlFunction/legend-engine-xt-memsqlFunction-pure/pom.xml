@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-memsqlFunction</artifactId>
-        <version>4.35.5-SNAPSHOT</version>
+        <version>4.37.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,10 +36,10 @@
                     <sourceDirectory>src/main/resources</sourceDirectory>
                     <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
-                        <repository>core_bigqueryfunction</repository>
+                        <repository>core_memsqlfunction</repository>
                     </repositories>
                     <extraRepositories>
-                        <extraRepository>${project.basedir}/src/main/resources/core_bigqueryfunction.definition.json</extraRepository>
+                        <extraRepository>${project.basedir}/src/main/resources/core_memsqlfunction.definition.json</extraRepository>
                     </extraRepositories>
                 </configuration>
                 <executions>
@@ -83,7 +83,7 @@
                             <generationType>modular</generationType>
                             <useSingleDir>true</useSingleDir>
                             <repositories>
-                                <repository>core_bigqueryfunction</repository>
+                                <repository>core_memsqlfunction</repository>
                             </repositories>
                         </configuration>
                     </execution>
