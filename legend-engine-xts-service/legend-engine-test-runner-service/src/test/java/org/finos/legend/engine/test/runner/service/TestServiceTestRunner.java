@@ -34,7 +34,6 @@ import java.util.Objects;
 
 import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
 
-@Ignore
 public class TestServiceTestRunner
 {
     private void test(String serviceModelPath, String servicePath, TestResult expectedResult, boolean multiExecution) throws Exception

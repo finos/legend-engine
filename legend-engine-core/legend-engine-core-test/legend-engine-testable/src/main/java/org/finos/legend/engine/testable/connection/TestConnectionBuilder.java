@@ -43,7 +43,7 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
 
     public TestConnectionBuilder(List<EmbeddedData> embeddedData, PureModelContextData pureModelContextData)
     {
-        this.embeddedData = ListIterate.select(embeddedData, Objects::nonNull);
+        this.embeddedData = Objects.isNull(embeddedData) ? Lists.mutable.empty() : ListIterate.select(embeddedData, Objects::nonNull);
         this.pureModelContextData = pureModelContextData;
     }
 
@@ -59,7 +59,7 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
                 .getFirstOptional()
                 .orElseThrow(() ->
                 {
-                    String errorMessage = embeddedData.isEmpty()
+                    String errorMessage = (embeddedData.isEmpty())
                             ? "No test data provided for connection type '" + connection.getClass().getSimpleName() + "'. Either you need to provide test data for the connection type or connection type is not supported."
                             : "Unsupported test data type '" + embeddedData.getClass().getSimpleName() + "' with connection type '" + connection.getClass().getSimpleName() + '"';
                     return new UnsupportedOperationException(errorMessage);
