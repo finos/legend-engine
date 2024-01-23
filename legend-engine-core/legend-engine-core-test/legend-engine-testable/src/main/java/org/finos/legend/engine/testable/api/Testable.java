@@ -19,7 +19,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
@@ -55,10 +59,13 @@ public class Testable
 
     private final ObjectMapper objectMapper;
 
+    private final ModelManager modelManager;
+
 
     public Testable(ModelManager modelManager)
     {
-        this.testableRunner = new TestableRunner(modelManager);
+        this.modelManager = modelManager;
+        this.testableRunner = new TestableRunner();
         this.objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     }
 
@@ -72,7 +79,8 @@ public class Testable
         try
         {
             LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_START, "").toString());
-            RunTestsResult runTestsResult = testableRunner.doTests(input, profiles);
+            Pair<PureModelContextData, PureModel> modelAndData = modelManager.loadModelAndData(input.model, input.model instanceof PureModelContextPointer ? ((PureModelContextPointer) input.model).serializer.version : null, profiles, null);
+            RunTestsResult runTestsResult = testableRunner.doTests(input.testables, modelAndData.getTwo(), modelAndData.getOne());
             LOGGER.info(new LogInfo(profiles, LoggingEventType.TESTABLE_DO_TESTS_STOP, "").toString());
             return ManageConstantResult.manageResult(profiles, runTestsResult, objectMapper);
         }

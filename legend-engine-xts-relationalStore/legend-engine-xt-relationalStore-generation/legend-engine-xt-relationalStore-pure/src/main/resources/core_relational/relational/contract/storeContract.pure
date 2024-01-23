@@ -113,14 +113,16 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
           a: Any[*] | false
         ])
      },
-     reprocessConnection = {c:ConnectionStore[1] |
-                              $c.connection->match(
+     processRuntimeTestConnections = {connectionStores:ConnectionStore[*] |
+                              $connectionStores.connection->distinct()->map(connection|
+                                let specificConnectionStores = $connectionStores->filter(cs|$cs.connection==$connection);
+                                let newConnection = $connection->match(
                                   [
                                     t:meta::external::store::relational::runtime::TestDatabaseConnection[1] |
-                                          ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty() || !$c.element->instanceOf(meta::relational::metamodel::Database),
+                                          ^$t(testDataSetupSqls = if ($t.testDataSetupCsv->isEmpty(),
                                                             | [];,
                                                             | if ($t.testDataSetupSqls->isEmpty(),
-                                                                  | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($c.element->cast(@meta::relational::metamodel::Database)),
+                                                                  | $t.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($specificConnectionStores.element->cast(@meta::relational::metamodel::Database)),
                                                                   | $t.testDataSetupSqls))),
                                     r:meta::external::store::relational::runtime::RelationalDatabaseConnection[1] |
                                           ^$r(
@@ -130,17 +132,19 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                                   (
                                                         testDataSetupSqls =
                                                             $l.testDataSetupSqls->concatenate(
-                                                                if ($l.testDataSetupCsv->isEmpty() || !$c.element->instanceOf(meta::relational::metamodel::Database),
+                                                                if ($l.testDataSetupCsv->isEmpty(),
                                                                     | [];,
-                                                                    | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($c.element->cast(@meta::relational::metamodel::Database))
+                                                                    | $l.testDataSetupCsv->toOne()->meta::alloy::service::execution::setUpDataSQLs($specificConnectionStores.element->cast(@meta::relational::metamodel::Database))
                                                                 )
                                                             )
                                                   ),
                                                 d:meta::pure::alloy::connections::alloy::specification::DatasourceSpecification[1] | $d
                                             ])
                                           ),
-                                    c:Connection[1] | $c
-                                ]);
+                                    conn:Connection[1] | $conn
+                                  ]);
+                                $specificConnectionStores->map(cs| ^$cs(connection=$newConnection));
+                              );
                            },
 
       printPlanNodeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
@@ -240,12 +244,13 @@ function meta::relational::contract::planExecution(sq:meta::pure::mapping::Store
                               let dbConnectionStore = $oldRuntime.connectionStores->filter(c|$c.connection==$dbConn);
                               ^$oldRuntime(connectionStores = $dbConnectionStore);
                         );
-
         let queryExeCtx = if($exeCtx->instanceOf(RelationalExecutionContext),|$exeCtx,|[])->cast(@RelationalExecutionContext);
-        let originalQuery = $sq.fe->toSQLQuery($m, $sq.inScopeVars, $queryExeCtx, $debug, $extensions);
-        $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
-                      ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
-   );    
+            let originalQuery = $sq.fe->toSQLQuery($m, $sq.inScopeVars,$debug,$queryExeCtx->relationalExecutionContextToState(defaultState($m, $sq.inScopeVars, $exeCtx, $extensions)),  $extensions);
+            $originalQuery->postProcessSQLQuery($store, $ext, $m, $storeRuntime, $exeCtx, $extensions)
+                          ->generateExecutionNodeForPostProcessedResult($sq, $store, $ext, $m, $storeRuntime, $exeCtx, $debug, $extensions);
+      );
+
+ 
 }
 
 function meta::relational::contract::postProcessorsMatch(postProcessors1: meta::pure::alloy::connections::PostProcessor[*], postProcessors2: meta::pure::alloy::connections::PostProcessor[*]): Boolean[1]

@@ -20,7 +20,8 @@ Database test::TestDatabase
   (
     ID INTEGER PRIMARY KEY,
     NAME VARCHAR(100),
-    BATCH_TIME_IN TIMESTAMP
+    BATCH_TIME_IN TIMESTAMP,
+    BATCH_ID INTEGER
   )
 )
 ###Service
@@ -105,7 +106,7 @@ Persistence test::TestPersistence
                 ExternalFormat
                 #{
                   contentType: 'application/json';
-                  data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]';
+                  data: '[{"ID":1, "NAME":"ANDY", "BATCH_ID":1},{"ID":2, "NAME":"BRAD", "BATCH_ID":1}]';
                 }#;
               }#
           ]
@@ -132,7 +133,7 @@ Persistence test::TestPersistence
                 ExternalFormat
                 #{
                   contentType: 'application/json';
-                  data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRADLEY"},{"ID":3, "NAME":"CATHY"}]';
+                  data: '[{"ID":1, "NAME":"ANDY", "BATCH_ID":1},{"ID":2, "NAME":"BRADLEY", "BATCH_ID":2},{"ID":3, "NAME":"CATHY", "BATCH_ID":2}]';
                 }#;
               }#
           ]

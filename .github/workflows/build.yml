@@ -16,7 +16,7 @@ name: Build CI
 
 env:
   CI_DEPLOY_USERNAME: ${{ secrets.CI_DEPLOY_USERNAME }}
-  CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_PASSWORD }}
+  CI_DEPLOY_PASSWORD: ${{ secrets.CI_DEPLOY_TOKEN }}
   MAVEN_OPTS: "-Xmx6g"
 
 on: [push, pull_request]

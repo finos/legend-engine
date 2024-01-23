@@ -168,9 +168,10 @@ public class AppendOnlyScenarios extends BaseTest
                     .performStageVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+                .batchIdField(batchNumberField)
                 .filterExistingRecords(true)
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditFieldAndBatchNumber, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
     public TestScenario WITH_AUDITING__FAIL_ON_DUPS__MAX_VERSION__WITH_FILTER_EXISTING_RECORDS()

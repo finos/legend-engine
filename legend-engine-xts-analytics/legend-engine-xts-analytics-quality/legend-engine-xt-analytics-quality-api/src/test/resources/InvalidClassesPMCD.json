@@ -1,0 +1,284 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "class",
+      "name": "Doc",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "targetCompanyObject",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company object"
+            }
+          ],
+          "type": "model::targetCompany"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "targetPersonObject",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "person object"
+            }
+          ],
+          "type": "model::TargetPerson"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "docValue"
+        }
+      ]
+    },
+    {
+      "_type": "class",
+      "name": "targetCompany",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "id",
+          "stereotypes": [
+            {
+              "profile": "equality",
+              "value": "Key"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company id"
+            }
+          ],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "name",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company name"
+            }
+          ],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "addressId",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "company address"
+            }
+          ],
+          "type": "Integer"
+        }
+      ],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "name": "TargetPerson",
+      "package": "model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "legalName",
+          "stereotypes": [
+            {
+              "profile": "equality",
+              "value": "Key"
+            }
+          ],
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "legal name"
+            }
+          ],
+          "type": "String"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "age",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "person's age"
+            }
+          ],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "addressId",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "person's address"
+            }
+          ],
+          "type": "Integer"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "name": "dec",
+          "taggedValues": [
+            {
+              "tag": {
+                "profile": "meta::pure::profiles::doc",
+                "value": "doc"
+              },
+              "value": "decimal value"
+            }
+          ],
+          "type": "Decimal"
+        }
+      ],
+      "taggedValues": [
+        {
+          "tag": {
+            "profile": "meta::pure::profiles::doc",
+            "value": "doc"
+          },
+          "value": "targetPerson"
+        }
+      ]
+    },
+    {
+      "_type": "mapping",
+      "classMappings": [],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "dummyMapping",
+      "package": "model",
+      "tests": []
+    },
+    {
+      "_type": "runtime",
+      "name": "dummyRuntime",
+      "package": "model",
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "connections": [],
+        "mappings": [
+          {
+            "path": "model::dummyMapping",
+            "type": "MAPPING"
+          }
+        ]
+      }
+    },
+    {
+      "_type": "dataSpace",
+      "defaultExecutionContext": "dummyContext",
+      "elements": [],
+      "executionContexts": [
+        {
+          "defaultRuntime": {
+            "path": "model::dummyRuntime",
+            "sourceInformation": {
+              "endColumn": 81,
+              "endLine": 1876,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 1876
+            },
+            "type": "RUNTIME"
+          },
+          "mapping": {
+            "path": "model::dummyMapping",
+            "sourceInformation": {
+              "endColumn": 95,
+              "endLine": 1875,
+              "sourceId": "",
+              "startColumn": 7,
+              "startLine": 1875
+            },
+            "type": "MAPPING"
+          },
+          "name": "dummyContext",
+          "sourceInformation": {
+            "endColumn": 5,
+            "endLine": 1877,
+            "sourceId": "",
+            "startColumn": 5,
+            "startLine": 1873
+          }
+        }
+      ],
+      "name": "TestDataspace",
+      "package": "AlloyDemoRefinerWithAllDataTypes",
+      "sourceInformation": {
+        "endColumn": 1,
+        "endLine": 1880,
+        "sourceId": "",
+        "startColumn": 1,
+        "startLine": 1869
+      },
+      "stereotypes": [],
+      "taggedValues": []
+    }
+  ]
+}

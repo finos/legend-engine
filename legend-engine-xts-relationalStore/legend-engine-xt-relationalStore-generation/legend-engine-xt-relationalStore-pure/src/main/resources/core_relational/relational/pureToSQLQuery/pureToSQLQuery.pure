@@ -109,6 +109,7 @@ Class meta::relational::functions::pureToSqlQuery::State
    preserveJoinOrder : Boolean[0..1];
    graphFetchFlow : Boolean[0..1];
    graphFetchProperties : Property<Nil,Any|*>[*];
+   pushDownEnumTransformations :Boolean[1] = false;
 }
 
 Class meta::relational::functions::pureToSqlQuery::FunctionParamScope
@@ -157,7 +158,8 @@ Class meta::relational::functions::pureToSqlQuery::ColumnGroup
 
 function meta::relational::functions::pureToSqlQuery::toSQLQuery(functionExpression:FunctionExpression[1], mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], execCtx: RelationalExecutionContext[0..1], debug:DebugContext[1], extensions:Extension[*]):SQLQuery[1]
 {
-   toSQLQuery($functionExpression, $mapping, $inScopeVars, $debug, $execCtx->relationalExecutionContextToState(defaultState($mapping, $inScopeVars)), $extensions);
+  
+   toSQLQuery($functionExpression, $mapping, $inScopeVars, $debug, $execCtx->relationalExecutionContextToState(defaultState($mapping, $inScopeVars, $execCtx, $extensions)), $extensions);
 }
 
 function <<access.private>> meta::relational::functions::pureToSqlQuery::processQuery(functionExpression:FunctionExpression[1], state:State[1], debug:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
@@ -197,7 +199,7 @@ function meta::relational::functions::pureToSqlQuery::toSQLQuery(functionExpress
 
 function meta::relational::functions::pureToSqlQuery::toSelectWithCursor(functionExpression:FunctionExpression[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], execCtx: RelationalExecutionContext[0..1], debug:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
-   toSelectWithCursor($functionExpression, $mapping, $inScopeVars, $debug, $execCtx->relationalExecutionContextToState(defaultState($mapping, $inScopeVars)), $extensions);
+   toSelectWithCursor($functionExpression, $mapping, $inScopeVars, $debug, $execCtx->relationalExecutionContextToState(defaultState($mapping, $inScopeVars, $execCtx, $extensions)), $extensions);
 }
 
 function meta::relational::functions::pureToSqlQuery::toSelectWithCursor(functionExpression:FunctionExpression[1], mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1], state:State[1], extensions:Extension[*]):SelectWithCursor[1]
@@ -259,7 +261,7 @@ function meta::relational::functions::pureToSqlQuery::printNodeWithChildren(t:Re
    $t->printNode()+'['+if($t->isEmpty(),|'',|$t->map(x|$x->children())->map(c|$c->printNodeWithChildren())->makeString(','))+']';
 }
 
-function <<access.private>> meta::relational::functions::pureToSqlQuery::relationalExecutionContextToState(execCtx:RelationalExecutionContext[0..1], s:State[1]):State[1]
+function  meta::relational::functions::pureToSqlQuery::relationalExecutionContextToState(execCtx:RelationalExecutionContext[0..1], s:State[1]):State[1]
 {
    if ($execCtx->isEmpty(),
        |$s,
@@ -280,6 +282,24 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::relatio
 function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1]):State[1]
 {
    ^State(inScopeVars=$inScopeVars, supportedFunctions=getSupportedFunctions(), mapping=$mapping, inProject=false, inProjectFunctions=false, inFilter=false, filterChainDepth=0, processingProjectionThread=false, shouldIsolate=true, contextBasedSupportedFunctions=getContextBasedSupportedFunctions());
+}
+
+function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
+{
+  let map = if ($mapping->isEmpty(),|^Mapping(),|$mapping->toOne());
+  meta::relational::functions::pureToSqlQuery::defaultState($map,$inScopeVars, $exeCtx, $extensions);
+}
+
+function meta::relational::functions::pureToSqlQuery::defaultState(mapping:Mapping[1], inScopeVars:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[0..1], extensions:Extension[*]):State[1]
+{
+   let initialState = defaultState($mapping,$inScopeVars);
+      let context = if($exeCtx->isEmpty(),
+             | $initialState,    
+             | if($exeCtx->toOne()->meta::pure::executionPlan::featureFlag::contextHasFlag(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM),
+                  |  ^$initialState(pushDownEnumTransformations=true);,
+                  |$initialState
+                );
+           );             
 }
 
 
@@ -492,7 +512,7 @@ function meta::relational::functions::pureToSqlQuery::processInstanceValue(i:Ins
 
 function meta::relational::functions::pureToSqlQuery::processValue(vals:Any[*], currentPropertyMapping:PropertyMapping[*], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[*]
 {
-    let select = $operation.select;
+    let select = $operation.select;   
 
     if ($vals->isEmpty(), | ^$operation(select = $state.inFilter->if(|^$select(filteringOperation = ^Literal(value=^SQLNull())),|^$select(columns = ^Literal(value=^SQLNull()))))
                         , | $vals->map(v | $v->match([
@@ -1577,10 +1597,11 @@ Class meta::relational::functions::pureToSqlQuery::MissingColProcessigRes
    selectWC:SelectWithCursor[1];
 }
 
-function meta::relational::functions::pureToSqlQuery::processRelationalPropertyMapping(relationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
+function meta::relational::functions::pureToSqlQuery::processRelationalPropertyMapping(OrigrelationalPropertyMappings:RelationalPropertyMapping[*], property:AbstractProperty<Any>[1], propertyOwnerClass:Class<Any>[1], oldSrcOperation:SelectWithCursor[1], state:State[1], joinType:JoinType[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
    let propertyReturnType = $property->cast(@Property<Nil,Any|*>).genericType.rawType->toOne();
-   let firstStep = $propertyReturnType->match(
+  let relationalPropertyMappings = $OrigrelationalPropertyMappings->map(p|$p->buildPossibleEnumMappingPushDown($state));
+  let firstStep = $propertyReturnType->match(
                                  [
                                     p:DataType[1] | let currentTreeNode = $oldSrcOperation.currentTreeNode->toOne();
                                                     // ---------------------------------------------------
@@ -1606,7 +1627,6 @@ function meta::relational::functions::pureToSqlQuery::processRelationalPropertyM
                                                     // ---------------------------------------------------
 
                                                     let mappingImpl = $relationalPropertyMappings->at(0).relationalOperationElement;
-
                                                     let newCurrentTreeNode = $srcOperation.currentTreeNode->toOne();
                                                     let relElement = $newCurrentTreeNode.alias.relationalElement;
                                                     let res = if (
@@ -2574,7 +2594,9 @@ function meta::relational::functions::pureToSqlQuery::processSortBy(f:FunctionEx
       let inScopeVarsWithPlaceholdersState = $lambdaFunction->addPlaceHoldersForLambdaOpenVariables($vars, $updatedState);
       let embeddedMapping = if($leftSideOp.currentPropertyMapping->isEmpty(), | $currentPropertyMapping, | $leftSideOp.currentPropertyMapping);
 
-      let rightSide = processValueSpecification($lambdaFunctionExpression, $embeddedMapping, $mainQuery, $vars, ^$inScopeVarsWithPlaceholdersState(inFilter=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
+      let mainSelect = $mainQuery.select;
+      let rightSide = processValueSpecification($lambdaFunctionExpression, $embeddedMapping, ^$mainQuery(select=^$mainSelect(columns=[])), $vars, ^$inScopeVarsWithPlaceholdersState(inFilter=false), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
+      
       let rightSideSelect = $rightSide.select;
       let rightSideModified = ^$rightSide(
         select = ^$rightSideSelect(
@@ -3519,13 +3541,11 @@ function meta::relational::functions::pureToSqlQuery::processGetAll(viewSpecific
 function meta::relational::functions::pureToSqlQuery::processRelationalMappingSpecification(viewSpecification:RelationalMappingSpecification[1], c:Class<Any>[0..1], nodeId:String[1], addPk:Boolean[1], pkOffset:Integer[1], addAllColumns:Boolean[1], milestoningContext: TemporalMilestoningContext[0..1], state:State[1], context:DebugContext[1], extensions:Extension[*]):SelectWithCursor[1]
 {
    let mainTable = $viewSpecification->mainRelation()->processRelation($c, $nodeId, $addPk, $pkOffset, $addAllColumns, $milestoningContext, $state, $context, $extensions);
-
    let innerJoinFilterExists = $viewSpecification->getFilter().joinTreeNode.joinType == JoinType.INNER;
    let currentRelationalElement = if ($innerJoinFilterExists,
                                       | getRelationalElementWithInnerJoin($viewSpecification, $mainTable, $nodeId, $state, $context, $extensions),
                                       | $mainTable
                                   );
-
    let currentNode = ^RootJoinTreeNode(alias=^TableAlias(name = 'root', relationalElement = $currentRelationalElement));
 
    let base = ^SelectWithCursor(
@@ -3541,7 +3561,7 @@ function meta::relational::functions::pureToSqlQuery::processRelationalMappingSp
    let properties = if($requiresAllProperties, | columnNamesWithRelationalElement($viewSpecification, $c, $state)->map(c | let newQuery = $c.second->processColumnsInRelationalOperationElements($state, $base, $nodeId, ^List<ColumnGroup>(), false, $context, $extensions);
                                                                                                            rebuildSelectWithCursor($c.first, [], $newQuery, $quoteColumnAliases);)
                                              , | [] );
-
+   
    let pks = if($addPk && $viewSpecification->getGroupBy()->isEmpty() && ($viewSpecification->getDistinct()->isEmpty() || $viewSpecification->getDistinct()->toOne() == false),
                   | let pks = viewSpecificationPrimaryKey($viewSpecification);
                     $pks->map(pm|let offset = $pks->indexOf($pm);
@@ -3580,7 +3600,6 @@ function meta::relational::functions::pureToSqlQuery::processRelationalMappingSp
                  );
 
    let addedFks = if ($state.importDataFlowAddFks == true, |$fks->map(a|^$a(name='fk_'+$a.name)), |$fks);
-
    let s = ^SelectWithCursor(
       select = ^SelectSQLQuery(
                   distinct = $viewSpecification->getDistinct(),
@@ -3633,10 +3652,30 @@ function meta::relational::functions::pureToSqlQuery::relationalmappingspecifica
    $vs->match([
                r:RootRelationalInstanceSetImplementation[1] | $r->dataTypePropertyMappings()
                                                               ->filter(x | if($state.graphFetchFlow == true, | $x.property->in($state.graphFetchProperties), | true))
-                                                              ->map(pm|pair($pm.property.name->toOne(),$pm->cast(@RelationalPropertyMapping).relationalOperationElement)),
+                                                              ->map(pm|   pair($pm.property.name->toOne(), buildPossibleEnumMappingPushDown($pm->cast(@RelationalPropertyMapping),$state).relationalOperationElement);)
+                                                                          , 
                v:View[1] | $v.columnMappings->map(cm|pair($cm.columnName, $cm.relationalOperationElement));
               ]);
 }
+function meta::relational::functions::pureToSqlQuery::buildPossibleEnumMappingPushDown(mapping: RelationalPropertyMapping[1],  state: State[1]): RelationalPropertyMapping[1]
+{ 
+  let relationalElement = $mapping.relationalOperationElement;
+   if($state.pushDownEnumTransformations && $mapping.transformer ->isNotEmpty() &&   $mapping.transformer->toOne()->instanceOf(EnumerationMapping)  && !$state.inFilter ,  
+       |let caseParams = $mapping.transformer->cast(@EnumerationMapping<Any>).enumValueMappings
+                                                      ->map(ev  |   if($ev.sourceValues->size() == 1,
+                                                                      | ^DynaFunction(name = 'equal', parameters=[$relationalElement, ^Literal(value=$ev.sourceValues->at(0))]),
+                                                                      | ^DynaFunction(name = 'in', parameters = [$relationalElement, ^LiteralList(values=$ev.sourceValues->map(v|^Literal(value=$v)))]);
+                                                                    )->concatenate(^Literal(value=$ev.enum.name));
+                                                            );
+      
+        ^$mapping(transformer = [], relationalOperationElement=^DynaFunction(name = 'case', parameters =   $caseParams->concatenate(^DynaFunction(name = 'sqlNull'))));
+        ,
+        |$mapping
+      );
+}
+
+
+
 
 function meta::relational::functions::pureToSqlQuery::relationalmappingspecification::viewSpecificationPrimaryKey(vs: RelationalMappingSpecification[1]):RelationalOperationElement[*]
 {
@@ -4626,7 +4665,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
 
      let mainTable = $f.parametersValues->at(0)->cast(@FunctionExpression)->getTableFromParameter();
      let mainTableAliasTDS = ^TableAlias(name = 'root', relationalElement = $mainTable->processRelation([], $nodeId, false, 0, false, [], $state, $context, $extensions));
-     let joinTreeNode = ^RootJoinTreeNode(alias=$mainTableAliasTDS);
+     let joinTreeNode = ^RootJoinTreeNode(alias=$mainTableAliasTDS); 
      ^SelectWithCursor(
       select = ^TdsSelectSqlQuery(
                       data =$joinTreeNode,
@@ -5592,7 +5631,7 @@ function meta::relational::functions::pureToSqlQuery::isSupported(f:FunctionDefi
 
 
 function meta::relational::functions::pureToSqlQuery::processProject(ids:String[*], functions:meta::pure::metamodel::function::Function<Any>[*], docs:String[*], expression:FunctionExpression[1], operation:SelectWithCursor[1], vars:Map<VariableExpression, ValueSpecification>[1], state:State[1], nodeId:String[1], aggFromMap:List<ColumnGroup>[1], context:DebugContext[1],wc:WindowColumnSpecification<Any>[*], extensions:Extension[*]):RelationalOperationElement[1]
-{
+{  
    assertEquals($ids->size(), $functions->size(), | 'The number of column names must match the number of functions. Please provide a column name for each projection function ('+$ids->size()->toString()+' != '+$functions->size()->toString()+')');
    assertEquals($ids->size(), $ids->removeDuplicates()->size(), 'The list of Paths provided to project can\'t contain duplicate names. Please use ! to provide an alias. Example:#/Person/lastName!newAlias#');
 
@@ -5607,7 +5646,6 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
    print(if(!$context.debug, |'',
             | $context.space+'*>Process Project: '+$functions->map(f|$f->match([p:Path<Nil,Any|1>[1]|$p->printPath('/'), f:FunctionDefinition<Any>[1]|'\'Function\'']))->makeString(', ')+'\n'+
               $context.space+'   (P)Source Operation>  '+$operation->cast(@SelectWithCursor).select->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n'));
-
    let sourceQuery = processValueSpecification($expression.parametersValues->at(0), [], $operation, $vars, ^$state(inProject=true), JoinType.LEFT_OUTER, $nodeId, $aggFromMap, $context->shift(), $extensions)->toOne()->cast(@SelectWithCursor);
 
    let sourceSelect = $sourceQuery.select;
@@ -5651,12 +5689,15 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
 
          let newColumnsWithPossiblePKs = $newColumns->concatenate($possiblePKsWithUpdatedData.first.values);
 
+
          let pathInformation = $processedFuncsAndProperties->map(p|let index = $processedFuncsAndProperties->indexOf($p);
                                                              ^PathInformation(propertyMapping = if($p.currentPropertyMapping->isEmpty(),|[],|$p.currentPropertyMapping->at(0)),
-                                                                              type = $functions->at($index)->functionReturnType().rawType->toOne(),
+                                                                              type = $functions->at($index)->functionReturnType().rawType->toOne()->updateEnumerationType($state),
                                                                               documentation = if ($docs->isEmpty(),|[],|let val=$docs->at($index);if($val=='',|[],|$val);)
                                                                                );
                                                         );
+
+                                                      //  $pathInformation->println();   []->toOne();
          let windowColPaths = $wc->map(w| let pureType = $w.func->match([a:OlapAggregation<Any>[1]|$a.aggregateFn->functionReturnType().rawType->toOne(),r:OlapRank<Any>[1]|Integer ]);
                                           let path = ^PathInformation(type = $pureType,documentation = $w.documentation,relationalType = meta::relational::transform::fromPure::pureTypeToDataType($pureType));
                                           pair($w.name,$path);
@@ -5683,7 +5724,7 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
          ^$operation(
                      select = ^TdsSelectSqlQuery(
                         distinct = $merge.distinct,
-                        columns = $nonOlap->concatenate($importDataFlowCols)->cast(@Alias)->removeDuplicates({a,b|$a.name == $b.name})->concatenate($olapCols),//->concatenate($olapCols),
+                        columns = $nonOlap->concatenate($importDataFlowCols)->cast(@Alias)->removeDuplicates({a,b|$a.name == $b.name})->concatenate($olapCols),
                         data = $possiblePKsWithUpdatedData.second,
                         savedFilteringOperation = $merge.savedFilteringOperation,
                         filteringOperation = $merge.filteringOperation,
@@ -5721,6 +5762,11 @@ function meta::relational::functions::pureToSqlQuery::processProject(ids:String[
                      )
                  );
    );
+}
+function<<access.private>> meta::relational::functions::pureToSqlQuery::updateEnumerationType(inputType:Type[1], state:State[1]):Type[1]
+{
+   if($state.pushDownEnumTransformations && $inputType->instanceOf(Enumeration),|String,|$inputType);
+
 }
 
 function meta::relational::functions::pureToSqlQuery::joinToTemp(select:SelectSQLQuery[1], table: Table[1], tempTableName:String[1], indexInUnion:Integer[0..1], context:DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
