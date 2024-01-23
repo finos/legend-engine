@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.postgres.config;
 
-import org.apache.http.client.CookieStore;
-import org.apache.http.impl.client.BasicCookieStore;
-import org.apache.http.impl.cookie.BasicClientCookie;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
@@ -27,11 +27,14 @@ import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.UsernamePasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.handler.jdbc.JDBCSessionFactory;
+import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
+import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
-import org.finos.legend.engine.postgres.handler.legend.LegendTdsClient;
+import org.finos.legend.engine.postgres.handler.legend.LegendStaticClient;
 
 public class Builder
 {
+
     public static SessionsFactory buildSessionFactory(ServerConfig serverConfig)
     {
         if (serverConfig.getHandler().getType() == HandlerType.JDBC)
@@ -42,7 +45,14 @@ public class Builder
         else if (serverConfig.getHandler().getType() == HandlerType.LEGEND)
         {
             LegendHandlerConfig config = (LegendHandlerConfig) serverConfig.getHandler();
-            LegendTdsClient client = new LegendTdsClient(config.getProtocol(), config.getHost(), config.getPort());
+            LegendExecutionService client = new LegendExecutionService(new LegendHttpClient(config.getProtocol(), config.getHost(), config.getPort()));
+            return new LegendSessionFactory(client);
+        }
+        else if (serverConfig.getHandler().getType() == HandlerType.STATIC)
+        {
+            StaticHandlerConfig config = (StaticHandlerConfig) serverConfig.getHandler();
+            LegendStaticClient executionClient = new LegendStaticClient(config.getResult(), config.getSchema(), config.getDelay());
+            LegendExecutionService client = new LegendExecutionService(executionClient);
             return new LegendSessionFactory(client);
         }
         else
