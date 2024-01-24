@@ -56,9 +56,22 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  [\n" +
                 "    model::dummyMapping\n" +
                 "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           model::dataSpace\n" +
+                "       ]\n" +
+                "   ];\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
                 "###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
@@ -69,6 +82,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      description: 'some information about the context';\n" +
                 "      mapping: model::dummyMapping;\n" +
                 "      defaultRuntime: model::dummyRuntime;\n" +
+                "      stores: [ModelStore];\n" +
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +

@@ -61,6 +61,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,6 +117,7 @@ public class CompilerExtensions
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
+    private final ImmutableList<IncludedStoreHandler> extraIncludedStoreHandlers;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -149,6 +151,7 @@ public class CompilerExtensions
         this.extraValueSpecificationBuilderForFuncExpr = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationBuilderForFuncExpr);
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
+        this.extraIncludedStoreHandlers = this.extensions.flatCollect(CompilerExtension::getExtraIncludedStoreHandlers);
     }
 
     public List<CompilerExtension> getExtensions()
@@ -475,5 +478,22 @@ public class CompilerExtensions
     public IncludedMappingHandler getExtraIncludedMappingHandlers(String classType)
     {
         return this.extraIncludedMappingHandlers.get(classType);
+    }
+
+    public List<Store> getUnderlyingStoresFromIncludedStoreHandlers(String packageAddress, CompileContext context, SourceInformation sourceInformation)
+    {
+        ImmutableList<List<Store>> responses = this.extraIncludedStoreHandlers.collect(e -> e.resolveStore(packageAddress, context, sourceInformation)).select(s -> !s.isEmpty());
+        if (responses.isEmpty())
+        {
+            throw new EngineException("Could not find element at address " + packageAddress, sourceInformation, EngineErrorType.COMPILATION);
+        }
+        else if (responses.size() == 1)
+        {
+            return responses.get(0);
+        }
+        else
+        {
+            throw new EngineException("Found more than one element being used as a Store placeholder at address " + packageAddress, sourceInformation, EngineErrorType.COMPILATION);
+        }
     }
 }

@@ -15,12 +15,15 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedStoreHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.MappingIncludedMappingHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreIncludedStoreHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.core.TestAssertionCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
@@ -58,6 +61,12 @@ public class CoreCompilerExtension implements CompilerExtension
         return Maps.mutable.of(
                 MappingIncludeMapping.class.getName(), new MappingIncludedMappingHandler()
         );
+    }
+
+    @Override
+    public List<IncludedStoreHandler> getExtraIncludedStoreHandlers()
+    {
+        return Lists.mutable.of(new StoreIncludedStoreHandler());
     }
 
     @Override
