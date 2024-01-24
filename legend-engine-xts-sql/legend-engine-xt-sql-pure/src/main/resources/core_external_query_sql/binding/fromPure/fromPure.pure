@@ -1353,6 +1353,24 @@ function <<access.private>> meta::external::query::sql::transformation::queryToP
     s:StringLiteral[1] | if ($s.quoted->isTrue(), | '\'' + $s.value + '\'', | $s.value),
     a:ArrayLiteral[1] | $a.values->map(v | extractNameFromExpression($v, $context))->joinStrings(','),
     n:NullLiteral[1] | 'NULL',
+    i:IntervalLiteral[1] | 'INTERVAL\'' + joinStrings(
+                    $i.years->map(x | $x->toString() + ' YEARS')->concatenate(
+                        $i.months->map(x | $x->toString() + ' MONTHS')
+                    )->concatenate(
+                        $i.weeks->map(x | $x->toString() + ' WEEKS')
+                    )->concatenate(
+                        $i.days->map(x | $x->toString() + ' DAYS')
+                    )->concatenate(
+                        $i.hours->map(x | $x->toString() + ' HOURS')
+                    )->concatenate(
+                        $i.minutes->map(x | $x->toString() + ' MINUTES')
+                    )->concatenate(
+                        $i.seconds->map(x | $x->toString() + ' SECONDS')
+                    )->concatenate(
+                        if($i.ago == true, |'AGO', |[])
+                    )
+                , ' ')
+            + '\'',
     l:Literal[1] | ''
   ]);
 }
