@@ -43,10 +43,6 @@ import meta::relational::milestoning::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
 
-Class meta::relational::mapping::DomainTypeToSourceDataTypePair extends Pair<String, meta::relational::metamodel::datatype::DataType>
-{
-}
-
 function meta::relational::mapping::generateExecutionNodeForPostProcessedResult(postProcessorResult:PostProcessorResult[1], sq:meta::pure::mapping::StoreQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:ExecutionContext[1], debug:DebugContext[1], extensions:Extension[*]):ExecutionNode[1]
 {
    generateExecutionNodeForPostProcessedResult($postProcessorResult, $sq, $store, $ext, $m, $runtime, $exeCtx, $debug, true, $extensions)
@@ -752,27 +748,16 @@ function meta::relational::mapping::inferSourceDataType(sourceDataType: Any[0..1
     | 
       if ($type->instanceOf(PrimitiveType),
         | 
-          let typeName = $type->cast(@PrimitiveType).name->toOne();
-          let inferedSourceDataType = meta::relational::mapping::getSourceDataTypeFromType()->get($typeName);
+          let inferedSourceDataType = meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get($type);
           if (
             $inferedSourceDataType->isEmpty(),
             | [],
             | $inferedSourceDataType->toOne());,
         | if ($type->instanceOf(EnumerationMapping),
-          | meta::relational::mapping::getSourceDataTypeFromType()->get('String'),
+          | meta::relational::transform::fromPure::pureTypeToDataTypeMap()->get(String),
           | []
         )
       );,
     | $sourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne()
-  )
-}
-
-function meta::relational::mapping::getSourceDataTypeFromType(): Map<String, meta::relational::metamodel::datatype::DataType>[1]
-{
-  newMap(
-    [
-      ^DomainTypeToSourceDataTypePair(first='Integer',  second=^meta::relational::metamodel::datatype::Integer()),
-      ^DomainTypeToSourceDataTypePair(first='String', second=^meta::relational::metamodel::datatype::Varchar(size=1000))
-    ]
   )
 }
