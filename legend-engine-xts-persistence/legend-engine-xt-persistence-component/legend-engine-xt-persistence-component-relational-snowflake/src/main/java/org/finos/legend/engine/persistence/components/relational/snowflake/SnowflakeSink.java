@@ -71,6 +71,8 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.utils.Sq
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -92,6 +94,7 @@ import static org.finos.legend.engine.persistence.components.relational.api.Rela
 
 public class SnowflakeSink extends AnsiSqlSink
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSink.class);
     private static final RelationalSink INSTANCE;
 
     private static final Set<Capability> CAPABILITIES;
@@ -291,7 +294,8 @@ public class SnowflakeSink extends AnsiSqlSink
         }
         else
         {
-            String errorMessage = String.join(",", errorMessages);
+            String errorMessage = "Errors encountered: " + String.join(",", errorMessages);
+            LOGGER.error(errorMessage);
             result = resultBuilder
                 .status(IngestStatus.FAILED)
                 .message(errorMessage)

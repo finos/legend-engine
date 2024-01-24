@@ -502,7 +502,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithBatchSuccessValue(), metadataIngestSql.get(0));
     }
 
     @Override
@@ -543,6 +543,11 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     protected String getExpectedMetadataTableIngestQuery()
     {
         return BigQueryTestArtifacts.expectedMetadataTableIngestQuery;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithBatchSuccessValue()
+    {
+        return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithBatchSuccessValue;
     }
 
     protected String getExpectedMetadataTableIngestWithStagingFiltersQuery()

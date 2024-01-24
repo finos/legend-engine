@@ -33,6 +33,7 @@ import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvol
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
+import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
@@ -124,6 +125,12 @@ public abstract class RelationalGeneratorAbstract
         return BULK_LOAD_BATCH_STATUS_PATTERN;
     }
 
+    @Default
+    public String batchSuccessStatusValue()
+    {
+        return MetadataUtils.MetaTableStatus.DONE.toString();
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -141,6 +148,7 @@ public abstract class RelationalGeneratorAbstract
             .enableConcurrentSafety(enableConcurrentSafety())
             .putAllAdditionalMetadata(additionalMetadata())
             .bulkLoadEventIdValue(bulkLoadEventIdValue())
+            .batchSuccessStatusValue(batchSuccessStatusValue())
             .build();
     }
 

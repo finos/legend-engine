@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
 import org.finos.legend.engine.persistence.components.SnowflakeTestArtifacts;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
@@ -38,6 +37,11 @@ public class UnitemporalDeltaBatchIdBasedTest extends org.finos.legend.engine.pe
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithBatchSuccessValue()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithBatchSuccessValue;
     }
 
     @Override

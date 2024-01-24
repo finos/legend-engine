@@ -118,6 +118,12 @@ public abstract class Planner
         Map<String, Object> additionalMetadata();
 
         Optional<String> bulkLoadEventIdValue();
+
+        @Default
+        default String batchSuccessStatusValue()
+        {
+            return MetadataUtils.MetaTableStatus.DONE.toString();
+        }
     }
 
     private final Datasets datasets;
@@ -265,7 +271,7 @@ public abstract class Planner
         Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(options().additionalMetadata());
 
         // Save "DONE" into status column
-        StringValue status = StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()); // todo: may be a good chance to unify the status now
+        StringValue status = StringValue.of(options().batchSuccessStatusValue());
 
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, batchSourceInfo, additionalMetadata)));
     }

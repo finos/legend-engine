@@ -134,15 +134,21 @@ public abstract class RelationalIngestorAbstract
         return Collections.emptySet();
     }
 
+    public abstract Map<String, Object> additionalMetadata();
+
+    public abstract Optional<String> bulkLoadEventIdValue();
+
+    @Default
+    public String batchSuccessStatusValue()
+    {
+        return MetadataUtils.MetaTableStatus.DONE.toString();
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
 
     public abstract RelationalSink relationalSink();
-
-    public abstract Map<String, Object> additionalMetadata();
-
-    public abstract Optional<String> bulkLoadEventIdValue();
 
     @Derived
     protected PlannerOptions plannerOptions()
@@ -155,6 +161,7 @@ public abstract class RelationalIngestorAbstract
             .enableConcurrentSafety(enableConcurrentSafety())
             .putAllAdditionalMetadata(additionalMetadata())
             .bulkLoadEventIdValue(bulkLoadEventIdValue())
+            .batchSuccessStatusValue(batchSuccessStatusValue())
             .build();
     }
 
@@ -526,6 +533,7 @@ public abstract class RelationalIngestorAbstract
                 .batchIdPattern(BATCH_ID_PATTERN)
                 .putAllAdditionalMetadata(additionalMetadata())
                 .bulkLoadEventIdValue(bulkLoadEventIdValue())
+                .batchSuccessStatusValue(batchSuccessStatusValue())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());

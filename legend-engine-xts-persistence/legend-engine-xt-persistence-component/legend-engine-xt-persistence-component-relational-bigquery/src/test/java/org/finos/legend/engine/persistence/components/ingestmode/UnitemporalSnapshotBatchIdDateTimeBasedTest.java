@@ -143,7 +143,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase(), metadataIngestSql.get(0));
     }
 
     @Override
@@ -324,5 +324,10 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
     protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
     {
         return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase()
+    {
+        return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase;
     }
 }

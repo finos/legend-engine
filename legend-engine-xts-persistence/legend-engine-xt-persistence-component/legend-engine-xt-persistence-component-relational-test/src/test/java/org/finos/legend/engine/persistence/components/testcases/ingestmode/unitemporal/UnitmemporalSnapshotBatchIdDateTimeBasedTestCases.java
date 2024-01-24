@@ -97,6 +97,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .collectStatistics(true)
                 .caseConversion(CaseConversion.TO_UPPER)
                 .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
+                .batchSuccessStatusValue("SUCCEEDED")
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizerFilterDupsMaxVersion(operations);

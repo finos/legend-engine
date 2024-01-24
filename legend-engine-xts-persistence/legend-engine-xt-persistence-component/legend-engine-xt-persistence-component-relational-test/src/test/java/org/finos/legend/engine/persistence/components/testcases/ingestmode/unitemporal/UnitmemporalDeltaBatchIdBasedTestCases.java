@@ -357,6 +357,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .cleanupStagingData(true)
+                .batchSuccessStatusValue("SUCCEEDED")
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithFailOnDupsMaxVersioningWithoutPerform(operations);

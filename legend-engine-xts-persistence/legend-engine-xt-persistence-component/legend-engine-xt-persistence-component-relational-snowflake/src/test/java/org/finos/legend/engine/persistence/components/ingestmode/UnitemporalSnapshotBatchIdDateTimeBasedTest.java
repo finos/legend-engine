@@ -50,6 +50,11 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends org.finos.legen
         return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
     }
 
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase;
+    }
+
     protected String getExpectedMetadataTableCreateQuery()
     {
         return SnowflakeTestArtifacts.expectedMetadataTableCreateQuery;

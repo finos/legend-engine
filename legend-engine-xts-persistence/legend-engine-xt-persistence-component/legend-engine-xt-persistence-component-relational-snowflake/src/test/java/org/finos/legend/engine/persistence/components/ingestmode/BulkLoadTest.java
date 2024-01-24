@@ -173,6 +173,7 @@ public class BulkLoadTest
                 .collectStatistics(true)
                 .bulkLoadEventIdValue("task123")
                 .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
+                .batchSuccessStatusValue("SUCCEEDED")
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
 
