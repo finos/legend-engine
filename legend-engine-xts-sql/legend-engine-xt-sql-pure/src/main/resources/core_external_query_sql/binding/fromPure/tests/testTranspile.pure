@@ -2538,6 +2538,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), characters = ^StringLiteral(value = ' ', quoted = true), mode =TrimMode.BOTH), 'TRIM(BOTH \' \' FROM \'abc\')');
   doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), mode = TrimMode.BOTH), 'TRIM(BOTH FROM \'abc\')');
+
+  doNameTest(^IntervalLiteral(years = 5), 'INTERVAL\'5 YEARS\'');
+  doNameTest(^IntervalLiteral(years = 5, ago = true), 'INTERVAL\'5 YEARS AGO\'');
+  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS\'');
+  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0, ago = true), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS AGO\'');
 }
 
 
