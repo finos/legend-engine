@@ -794,8 +794,7 @@ public class HelperRelationalBuilder
 
     public static RelationalOperationElement processRelationalOperationElement(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement operationElement, CompileContext context, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias> aliasMap, MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets)
     {
-        org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(operationElement.sourceInformation)
-                ;
+        org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(operationElement.sourceInformation);
         if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn tableAliasColumn = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn) operationElement;
