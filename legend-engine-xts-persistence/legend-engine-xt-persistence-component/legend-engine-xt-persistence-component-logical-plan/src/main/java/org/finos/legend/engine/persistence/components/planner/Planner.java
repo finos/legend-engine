@@ -270,7 +270,7 @@ public abstract class Planner
         // Save additional metadata into additional_metadata column
         Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(options().additionalMetadata());
 
-        // Save "DONE" into status column
+        // Save success status into status column
         StringValue status = StringValue.of(options().batchSuccessStatusValue());
 
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, batchSourceInfo, additionalMetadata)));
