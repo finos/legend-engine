@@ -16,7 +16,9 @@ package org.finos.legend.engine.plan.execution.stores.service.test;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ServiceStoreEmbeddedData;
@@ -37,9 +39,10 @@ import java.util.Optional;
 public class ServiceStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data)
     {
-        if (sourceConnection instanceof ServiceStoreConnection && data instanceof ServiceStoreEmbeddedData)
+        List<ServiceStoreEmbeddedData> serviceStoreDataList = ListIterate.selectInstancesOf(data, ServiceStoreEmbeddedData.class);
+        if (sourceConnection instanceof ServiceStoreConnection && serviceStoreDataList.size() == data.size() && !data.isEmpty())
         {
             String localHostUrl = "http://127.0.0.1";
             int port = DynamicPortGenerator.generatePort();
@@ -47,8 +50,9 @@ public class ServiceStoreTestConnectionFactory implements ConnectionFactoryExten
             ServiceStoreConnection testConnection = new ServiceStoreConnection();
             testConnection.element = sourceConnection.element;
             testConnection.baseUrl = localHostUrl + ":" + port;
-
-            WireMockServer testServer = new TestServerSetupHelper((ServiceStoreEmbeddedData) data, port).setupTestServerWithData();
+            ServiceStoreEmbeddedData serviceStoreEmbeddedData = new ServiceStoreEmbeddedData();
+            serviceStoreEmbeddedData.serviceStubMappings = ListIterate.flatCollect(serviceStoreDataList, a -> a.serviceStubMappings);
+            WireMockServer testServer = new TestServerSetupHelper(serviceStoreEmbeddedData, port).setupTestServerWithData();
 
             Closeable closeable = new Closeable()
             {
@@ -71,7 +75,7 @@ public class ServiceStoreTestConnectionFactory implements ConnectionFactoryExten
         {
             ServiceStoreConnection testConnection = new ServiceStoreConnection();
             testConnection.element = testStore.getPath();
-            return this.tryBuildTestConnection(testConnection, data);
+            return this.tryBuildTestConnection(testConnection, Lists.mutable.of(data));
         }
         return Optional.empty();
     }

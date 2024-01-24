@@ -25,13 +25,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.testable.connection.TestConnectionBuilder;
@@ -49,6 +44,40 @@ public class TestRuntimeBuilder
         EngineRuntime testRuntime = new EngineRuntime();
         testRuntime.mappings = engineRuntime.mappings;
         testRuntime.connections = Lists.mutable.empty();
+        testRuntime.connectionStores = Lists.mutable.empty();
+
+        for (ConnectionStores connectionStores : engineRuntime.connectionStores)
+        {
+            ConnectionStores newConnectionStores = new ConnectionStores();
+            newConnectionStores.storePointers = connectionStores.storePointers;
+            newConnectionStores.sourceInformation = connectionStores.sourceInformation;
+            List<EmbeddedData> data = Lists.mutable.empty();
+            List<ConnectionTestData> connectionTestDataList = ListIterate.select(
+                    testData.connectionsTestData,
+                    connectionData -> connectionData.id.equals(connectionStores.connectionPointer.connection)
+            );
+            for (ConnectionTestData connectionTestData : connectionTestDataList)
+            {
+                if (connectionTestData != null)
+                {
+                    if (connectionTestData.data instanceof DataElementReference)
+                    {
+                        DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
+                        data.add(dataElement.data);
+                    }
+                    else
+                    {
+                        data.add(connectionTestData.data);
+                    }
+                }
+            }
+            Pair<Connection, List<Closeable>> connectionWithCloseables = connectionStores.connectionPointer.accept(new TestConnectionBuilder(data, pureModelContextData));
+
+            closeables.addAll(connectionWithCloseables.getTwo());
+
+            newConnectionStores.connection = connectionWithCloseables.getOne();
+            testRuntime.connectionStores.add(newConnectionStores);
+        }
 
         for (StoreConnections storeConnections : engineRuntime.connections)
         {
@@ -58,19 +87,22 @@ public class TestRuntimeBuilder
 
             for (IdentifiedConnection identifiedConnection : storeConnections.storeConnections)
             {
-                ConnectionTestData connectionTestData = ListIterate.detect(testData.connectionsTestData, connectionData -> connectionData.id.equals(identifiedConnection.id));
+                List<ConnectionTestData> connectionTestDataList = ListIterate.select(testData.connectionsTestData, connectionData -> connectionData.id.equals(identifiedConnection.id));
 
-                EmbeddedData embeddedData = null;
-                if (connectionTestData != null)
+                List<EmbeddedData> embeddedData = Lists.mutable.empty();
+                for (ConnectionTestData connectionTestData : connectionTestDataList)
                 {
-                    if (connectionTestData.data instanceof DataElementReference)
+                    if (connectionTestData != null)
                     {
-                        DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
-                        embeddedData = dataElement.data;
-                    }
-                    else
-                    {
-                        embeddedData = connectionTestData.data;
+                        if (connectionTestData.data instanceof DataElementReference)
+                        {
+                            DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
+                            embeddedData.add(dataElement.data);
+                        }
+                        else
+                        {
+                            embeddedData.add(connectionTestData.data);
+                        }
                     }
                 }
 
