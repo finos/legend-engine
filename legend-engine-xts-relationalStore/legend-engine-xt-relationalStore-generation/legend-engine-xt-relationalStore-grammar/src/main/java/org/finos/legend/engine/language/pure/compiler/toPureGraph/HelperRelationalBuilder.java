@@ -114,13 +114,11 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_V
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Varchar_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_join_JoinTreeNode_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_join_Join_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_operation_SemiStructuredPropertyAccess_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_Table_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_View_Impl;
-import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
@@ -149,7 +147,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.InlineEmbed
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.OtherwiseEmbeddedRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.SemiStructuredRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.ColumnAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
@@ -182,7 +179,6 @@ import java.util.Optional;
 
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_PropertyMappingsImplementation.Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_;
 import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_;
 
 public class HelperRelationalBuilder
 {
