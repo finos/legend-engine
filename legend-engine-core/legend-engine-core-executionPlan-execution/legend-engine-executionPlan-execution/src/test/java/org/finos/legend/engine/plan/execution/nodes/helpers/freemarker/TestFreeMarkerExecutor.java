@@ -28,7 +28,6 @@ import freemarker.template.Template;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.result.freemarker.PlanDateParameterDateFormatFactory;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -111,10 +110,10 @@ public class TestFreeMarkerExecutor
         String sqlQuery = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}')";
         Map rootMap = new HashMap<String,String>();
         rootMap.put("firstName", "sbcd<@?fdf");
-        Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'sbcd<@?fdf')",processRecursively(sqlQuery,rootMap,"" ));
+        Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'sbcd<@?fdf')",processRecursively(sqlQuery,rootMap,""));
 
         String sqlQuery2  = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${inFilterClause_id}')";
-        Map rootMap2 = new HashMap<String, String> ();
+        Map rootMap2 = new HashMap<String, String>();
         rootMap2.put("inFilterClause_id", "${lastName?replace(\"'\", \"''\")}");
         rootMap2.put("lastName", "Doe");
         Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'Doe')", processRecursively(sqlQuery2, rootMap2, ""));
