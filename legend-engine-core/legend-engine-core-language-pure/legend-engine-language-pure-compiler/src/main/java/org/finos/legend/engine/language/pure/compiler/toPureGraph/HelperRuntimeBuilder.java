@@ -27,9 +27,20 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_JsonModelConnection;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelChainConnection;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_XmlModelConnection;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -132,11 +143,15 @@ public class HelperRuntimeBuilder
             }
             ListIterate.forEach(connectionStores.storePointers, storePointer ->
             {
-                Root_meta_core_runtime_ConnectionStore connectionStore =
-                        new Root_meta_core_runtime_ConnectionStore_Impl("")
-                                ._connection(pureConnection)
-                                ._element(getStore(storePointer.path, storePointer.sourceInformation, context));
-                pureRuntime._connectionStoresAdd(connectionStore);
+                List<Store> elements = getStore(storePointer.path, storePointer.sourceInformation, context);
+                for (Store element : elements)
+                {
+                    Root_meta_core_runtime_ConnectionStore connectionStore =
+                            new Root_meta_core_runtime_ConnectionStore_Impl("")
+                                    ._connection(pureConnection)
+                                    ._element(element);
+                    pureRuntime._connectionStoresAdd(connectionStore);
+                }
             });
         });
         ListIterate.forEach(engineRuntime.connections.stream().filter(c -> c.store.path.equals("ModelStore") || !(context.resolvePackageableElement(c.store.path, c.store.sourceInformation) instanceof Root_meta_external_format_shared_binding_Binding)).collect(Collectors.toList()), storeConnections ->
@@ -162,11 +177,15 @@ public class HelperRuntimeBuilder
                 }
                 final Root_meta_core_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-                final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", SourceInformationHelper.toM3SourceInformation(identifiedConnection.sourceInformation), context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
-                        ._connection(pureConnection)
-                        ._element(getStore(storeConnections.store.path, storeConnections.store.sourceInformation, context));
-
-                pureRuntime._connectionStoresAdd(connectionStore);
+                List<Store> elements = getStore(storeConnections.store.path, storeConnections.store.sourceInformation, context);
+                for (Store element : elements)
+                {
+                    Root_meta_core_runtime_ConnectionStore connectionStore =
+                            new Root_meta_core_runtime_ConnectionStore_Impl("", SourceInformationHelper.toM3SourceInformation(identifiedConnection.sourceInformation), context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
+                                    ._connection(pureConnection)
+                                    ._element(element);
+                    pureRuntime._connectionStoresAdd(connectionStore);
+                }
             });
         });
         pureRuntime._connectionStores().forEach(connectionStore ->
@@ -229,10 +248,15 @@ public class HelperRuntimeBuilder
             {
                 final Root_meta_core_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-                final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", SourceInformationHelper.toM3SourceInformation(connection.sourceInformation), context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
-                        ._connection(pureConnection)
-                        ._element(getStore(connection.element, connection.sourceInformation, context));
-                pureRuntime._connectionStoresAdd(connectionStore);
+                List<Store> elements = getStore(connection.element, connection.sourceInformation, context);
+                for (Store element : elements)
+                {
+                    Root_meta_core_runtime_ConnectionStore connectionStore =
+                            new Root_meta_core_runtime_ConnectionStore_Impl("", SourceInformationHelper.toM3SourceInformation(connection.sourceInformation), context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
+                                    ._connection(pureConnection)
+                                    ._element(element);
+                    pureRuntime._connectionStoresAdd(connectionStore);
+                }
             });
             return pureRuntime;
         }
@@ -247,11 +271,11 @@ public class HelperRuntimeBuilder
         throw new UnsupportedOperationException();
     }
 
-    public static Object getStore(String element, SourceInformation sourceInformation, CompileContext context)
+    public static List<Store> getStore(String element, SourceInformation sourceInformation, CompileContext context)
     {
         return element.equals("ModelStore") ?
-                new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"))
-                : context.resolveStore(element, sourceInformation);
+                Lists.mutable.of(new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore")))
+                : Lists.mutable.ofAll(context.getCompilerExtensions().getUnderlyingStoresFromIncludedStoreHandlers(element, context, sourceInformation));
     }
 
     /**

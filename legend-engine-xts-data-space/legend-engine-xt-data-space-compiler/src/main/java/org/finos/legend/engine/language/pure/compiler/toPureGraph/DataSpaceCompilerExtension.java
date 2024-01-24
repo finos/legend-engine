@@ -24,13 +24,30 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedStoreHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutable_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportCombinedInfo_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportEmail_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportInfo;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
@@ -71,7 +88,10 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
                         Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
-                        MutableList<Store> stores = executionContext.stores == null ? null : ListIterate.collect(executionContext.stores, store -> context.resolveStore(store.path, store.sourceInformation));
+                        MutableList<Store> stores = executionContext.stores == null ? null : ListIterate.collect(executionContext.stores, store ->
+                                store.path.equals("ModelStore") ?
+                                        new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"))
+                                        : context.resolveStore(store.path, store.sourceInformation));
                         return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
                                 ._name(executionContext.name)
                                 ._title(executionContext.title)
@@ -103,7 +123,10 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
                         Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
-                        MutableList<Store> stores = executionContext.stores == null ? null : ListIterate.collect(executionContext.stores, store -> context.resolveStore(store.path, store.sourceInformation));
+                        MutableList<Store> stores = executionContext.stores == null ? null : ListIterate.collect(executionContext.stores, store ->
+                                store.path.equals("ModelStore") ?
+                                        new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"))
+                                        : context.resolveStore(store.path, store.sourceInformation));
                         Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
                         if (!HelperRuntimeBuilder.isRuntimeCompatibleWithMapping(runtime, mapping))
                         {
@@ -203,5 +226,11 @@ public class DataSpaceCompilerExtension implements CompilerExtension
         return org.eclipse.collections.impl.factory.Maps.mutable.of(
                 MappingIncludeDataSpace.class.getName(), new DataSpaceIncludedMappingHandler()
         );
+    }
+
+    @Override
+    public List<IncludedStoreHandler> getExtraIncludedStoreHandlers()
+    {
+        return Lists.mutable.of(new DataSpaceIncludedStoreHandler());
     }
 }

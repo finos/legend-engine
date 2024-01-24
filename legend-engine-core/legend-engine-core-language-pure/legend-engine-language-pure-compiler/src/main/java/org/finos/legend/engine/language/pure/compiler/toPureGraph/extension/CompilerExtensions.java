@@ -119,6 +119,7 @@ public class CompilerExtensions
     private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
+    private final ImmutableList<IncludedStoreHandler> extraIncludedStoreHandlers;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -153,6 +154,7 @@ public class CompilerExtensions
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
         this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
+        this.extraIncludedStoreHandlers = this.extensions.flatCollect(CompilerExtension::getExtraIncludedStoreHandlers);
     }
 
     public List<CompilerExtension> getExtensions()
@@ -484,5 +486,22 @@ public class CompilerExtensions
     public ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, ValueSpecification>>  getExtraRelationStoreAccessorProcessors()
     {
         return this.extraRelationStoreAccessorProcessors;
+    }
+
+    public List<Store> getUnderlyingStoresFromIncludedStoreHandlers(String packageAddress, CompileContext context, SourceInformation sourceInformation)
+    {
+        ImmutableList<List<Store>> responses = this.extraIncludedStoreHandlers.collect(e -> e.resolveStore(packageAddress, context, sourceInformation)).select(s -> !s.isEmpty());
+        if (responses.isEmpty())
+        {
+            throw new EngineException("Could not find element at address " + packageAddress, sourceInformation, EngineErrorType.COMPILATION);
+        }
+        else if (responses.size() == 1)
+        {
+            return responses.get(0);
+        }
+        else
+        {
+            throw new EngineException("Found more than one element being used as a Store placeholder at address " + packageAddress, sourceInformation, EngineErrorType.COMPILATION);
+        }
     }
 }
