@@ -14,9 +14,9 @@
 
 package org.finos.legend.engine.protocol.hostedService.deployment;
 
-//import org.finos.legend.engine.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 
 public class HostedServiceArtifact extends FunctionActivatorArtifact
@@ -27,14 +27,16 @@ public class HostedServiceArtifact extends FunctionActivatorArtifact
 
     }
 
-    public HostedServiceArtifact(GenerationInfo info)
+    public HostedServiceArtifact(GenerationInfo info, AlloySDLC sdlc)
     {
         this.content = new HostedServiceContent(info);
+        this.version = getVersionInfo(sdlc);
     }
 
-    public HostedServiceArtifact(GenerationInfo info, PureModelContextData serviceData)
+    public HostedServiceArtifact(GenerationInfo info, PureModelContextData serviceData, AlloySDLC sdlc)
     {
         this.content = new HostedServiceContent(info, serviceData);
+        this.version = getVersionInfo(sdlc);
     }
 
 

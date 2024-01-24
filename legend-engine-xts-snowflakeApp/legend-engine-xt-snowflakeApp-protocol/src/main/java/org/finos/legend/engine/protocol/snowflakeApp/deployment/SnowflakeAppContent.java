@@ -30,9 +30,9 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
     public String applicationName;
     public String description;
     public List<String> owners;
-    public String groupId;
-    public String artifactId;
-    public String version;
+//    public String groupId;
+//    public String artifactId;
+//    public String version;
     public String creationTime;
 
     public SnowflakeAppContent()
@@ -46,12 +46,12 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         this.sqlExpressions = sqlExpressions;
         this.creationTime = convertToValidDate(new Date());
         this.functionArguments = functionArguments;
-        if (sdlc != null)
-        {
-            this.groupId = sdlc.groupId;
-            this.artifactId = sdlc.artifactId;
-            this.version = sdlc.version;
-        }
+//        if (sdlc != null)
+//        {
+//            this.groupId = sdlc.groupId;
+//            this.artifactId = sdlc.artifactId;
+//            this.version = sdlc.version;
+//        }
     }
 
     public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String description, String functionArguments, List<String> owners, AlloySDLC sdlc)
@@ -68,13 +68,13 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         return format.format(date);
     }
 
-    public String getVersionInfo()
-    {
-        if (this.version != null)
-        {
-            return groupId + ":" + this.artifactId + ":" + this.version;
-        }
-        return "";
-    }
+//    public String getVersionInfo()
+//    {
+//        if (this.version != null)
+//        {
+//            return groupId + ":" + this.artifactId + ":" + this.version;
+//        }
+//        return "";
+//    }
 }
 
