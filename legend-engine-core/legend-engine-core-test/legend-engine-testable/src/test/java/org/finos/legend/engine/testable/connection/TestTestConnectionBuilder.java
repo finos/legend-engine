@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.connection;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
@@ -84,7 +85,7 @@ public class TestTestConnectionBuilder
     @Test
     public void testConnectionBuilderForModelChainConnection()
     {
-        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(null, data);
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(Lists.mutable.empty(), data);
         PackageableConnection modelChainConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::modelChainConnection".equals(ele.getPath()));
 
         Pair<Connection, List<Closeable>> testConnectionWithCloseables = modelChainConnection.connectionValue.accept(testConnectionBuilder);
@@ -102,7 +103,7 @@ public class TestTestConnectionBuilder
     public void testConnectionBuilderForJsonModelConnection()
     {
         EmbeddedData embeddedData = ListIterate.detect(data.getElementsOfType(DataElement.class), d -> d.getPath().equals("demo::JsonData")).data;
-        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(Lists.mutable.of(embeddedData), data);
         PackageableConnection jsonModelConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::jsonModelConnection".equals(ele.getPath()));
 
         Pair<Connection, List<Closeable>> testConnectionWithCloseables = jsonModelConnection.connectionValue.accept(testConnectionBuilder);
@@ -122,7 +123,7 @@ public class TestTestConnectionBuilder
         try
         {
             EmbeddedData embeddedData = ListIterate.detect(data.getElementsOfType(DataElement.class), d -> d.getPath().equals("demo::XmlData")).data;
-            TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+            TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(Lists.mutable.of(embeddedData), data);
             PackageableConnection jsonModelConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::jsonModelConnection".equals(ele.getPath()));
             jsonModelConnection.connectionValue.accept(testConnectionBuilder);
         }
@@ -136,7 +137,7 @@ public class TestTestConnectionBuilder
     public void testConnectionBuilderForXmlModelConnection()
     {
         EmbeddedData embeddedData = ListIterate.detect(data.getElementsOfType(DataElement.class), d -> d.getPath().equals("demo::XmlData")).data;
-        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(Lists.mutable.of(embeddedData), data);
         PackageableConnection xmlModelConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::xmlModelConnection".equals(ele.getPath()));
 
         Pair<Connection, List<Closeable>> testConnectionWithCloseables = xmlModelConnection.connectionValue.accept(testConnectionBuilder);
@@ -156,7 +157,7 @@ public class TestTestConnectionBuilder
         try
         {
             EmbeddedData embeddedData = ListIterate.detect(data.getElementsOfType(DataElement.class), d -> d.getPath().equals("demo::JsonData")).data;
-            TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+            TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(Lists.mutable.of(embeddedData), data);
             PackageableConnection xmlModelConnection = ListIterate.detect(data.getElementsOfType(PackageableConnection.class), ele -> "demo::xmlModelConnection".equals(ele.getPath()));
             xmlModelConnection.connectionValue.accept(testConnectionBuilder);
         }
@@ -170,7 +171,7 @@ public class TestTestConnectionBuilder
     public void testConnectionBuilderWithConnectionPointer()
     {
         EmbeddedData embeddedData = ListIterate.detect(data.getElementsOfType(DataElement.class), d -> d.getPath().equals("demo::XmlData")).data;
-        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(embeddedData, data);
+        TestConnectionBuilder testConnectionBuilder = new TestConnectionBuilder(Lists.mutable.of(embeddedData), data);
 
         ConnectionPointer connectionPointer = new ConnectionPointer();
         connectionPointer.connection = "demo::xmlModelConnection";

@@ -120,12 +120,21 @@ public class HelperRuntimeBuilder
         Set<String> ids = new HashSet<>();
         ListIterate.forEach(engineRuntime.connectionStores, connectionStores ->
         {
-            Root_meta_core_runtime_Connection connection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
+            Root_meta_core_runtime_Connection pureConnection;
+            if (connectionStores.connection != null)
+            {
+                pureConnection = connectionStores.connection.accept(new ConnectionFirstPassBuilder(context));
+                connectionStores.connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+            }
+            else
+            {
+                pureConnection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
+            }
             ListIterate.forEach(connectionStores.storePointers, storePointer ->
             {
                 Root_meta_core_runtime_ConnectionStore connectionStore =
                         new Root_meta_core_runtime_ConnectionStore_Impl("")
-                                ._connection(connection)
+                                ._connection(pureConnection)
                                 ._element(getStore(storePointer.path, storePointer.sourceInformation, context));
                 pureRuntime._connectionStoresAdd(connectionStore);
             });
