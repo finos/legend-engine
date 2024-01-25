@@ -1,25 +1,25 @@
 import meta::pure::functions::collection::*;
-import meta::rel::metamodel::*;
-import meta::rel::metamodel::render::binding::*;
-import meta::rel::metamodel::render::buffer::*;
-import meta::rel::metamodel::render::constant::*;
-import meta::rel::metamodel::render::expr::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::binding::*;
+import meta::external::store::rel::metamodel::render::buffer::*;
+import meta::external::store::rel::metamodel::render::constant::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::utils::*;
 
 
 ////////////////////////////////////////
 // Rendering non-constant expressions //
 ////////////////////////////////////////
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], tuple: Tuple[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], tuple: Tuple[1]): RelQueryBuffer[1] {
   $buffer->append('(')->render($tuple.arguments)->append(')')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], tuples: Tuple[*]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], tuples: Tuple[*]): RelQueryBuffer[1] {
   $buffer->append($tuples, {accum: RelQueryBuffer[1], t: Tuple[1] | $accum->render($t)}, '; ')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], cons: RelationCons[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], cons: RelationCons[1]): RelQueryBuffer[1] {
   if ($cons.arguments->isEmpty(),
     | $buffer->append('false'),
     | if ($cons.arguments->size() == 1 && $cons.arguments->at(0).arguments->isEmpty(),
@@ -29,18 +29,18 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], c
     )
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], rel: RelationName[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], rel: RelationName[1]): RelQueryBuffer[1] {
   $buffer->append($rel.identifier)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], expr: HeadExpr[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], expr: HeadExpr[1]): RelQueryBuffer[1] {
   $expr->match([
     rel: RelationName[1]     | $buffer->render($rel),
     app: NamedApplication[1] | $buffer->render($app)
   ])
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], app: NamedApplication[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], app: NamedApplication[1]): RelQueryBuffer[1] {
   $app->match([
     atom: NamedAtom[1]     | $buffer->render($atom),
     a: NamedApplication[1] |
@@ -53,7 +53,7 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], a
   ])
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], atom: NamedAtom[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], atom: NamedAtom[1]): RelQueryBuffer[1] {
   let newBuffer = $buffer->render($atom.head);
   let renderedArguments =
     if (!$atom.arguments->isEmpty(),
@@ -63,7 +63,7 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], a
   $renderedArguments;
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], atom: Atom[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], atom: Atom[1]): RelQueryBuffer[1] {
   let newBuffer = $buffer->render($atom.head);
   let renderedArguments =
     if (!$atom.arguments->isEmpty(),
@@ -73,35 +73,35 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], a
   $renderedArguments;
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], and: And[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], and: And[1]): RelQueryBuffer[1] {
   $buffer->append($and.conjuncts, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ' and ')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], or: Or[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], or: Or[1]): RelQueryBuffer[1] {
   $buffer->append($or.disjuncts, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ' or ')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], not: Not[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], not: Not[1]): RelQueryBuffer[1] {
   $buffer->append('not ')->render($not.inner)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], implies: Implies[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], implies: Implies[1]): RelQueryBuffer[1] {
   $buffer->render($implies.antecedence)->append(' implies ')->render($implies.consequence)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], exists: Exists[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], exists: Exists[1]): RelQueryBuffer[1] {
   $buffer->append('exists')->render($exists.inner)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], forAll: ForAll[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], forAll: ForAll[1]): RelQueryBuffer[1] {
   $buffer->append('forall(')->renderBinding($forAll.bindings)->append(': ')->render($forAll.inner)->append(')')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], equals: Equals[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], equals: Equals[1]): RelQueryBuffer[1] {
   $buffer->render($equals.left)->append(' = ')->render($equals.right)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], app: Application[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], app: Application[1]): RelQueryBuffer[1] {
   $app->match([
     a: Atom[1] |
       $buffer->render($a),
@@ -119,40 +119,40 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], a
   ])
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], abstraction: Abstraction[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], abstraction: Abstraction[1]): RelQueryBuffer[1] {
   $buffer->append('(')->renderBinding($abstraction.bindings)->append(': ')->render($abstraction.body)->append(')')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], composition: Composition[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], composition: Composition[1]): RelQueryBuffer[1] {
   $buffer->render($composition.from)->append('.')->render($composition.to)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], from: From[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], from: From[1]): RelQueryBuffer[1] {
   $buffer->render($from.expr)->append(' from ')->renderBinding($from.bindings)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], for: For[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], for: For[1]): RelQueryBuffer[1] {
   $buffer->render($for.expr)->append(' for ')->renderBinding($for.bindings)
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], product: Product[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], product: Product[1]): RelQueryBuffer[1] {
   $buffer->append($product.exprs, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ', ')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], group: ExprGroup[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], group: ExprGroup[1]): RelQueryBuffer[1] {
   $buffer->append('(')->render($group.parent)->append(')')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], union: Union[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], union: Union[1]): RelQueryBuffer[1] {
   $buffer->append($union.exprs, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, '; ')
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], ifThenElse: IfThenElse[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], ifThenElse: IfThenElse[1]): RelQueryBuffer[1] {
   $buffer->append('if ')->render($ifThenElse.condition)->append(' then ')->render($ifThenElse.then)
          ->append(' else ')->render($ifThenElse.else);
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], expr: Expr[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], expr: Expr[1]): RelQueryBuffer[1] {
   $expr->match([
     e: Fragment[1]         | $buffer->append($e.code),
     e: Abstraction[1]      | $buffer->render($e),
@@ -161,7 +161,7 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], e
     e: Atom[1]             | $buffer->render($e),
     e: Composition[1]      | $buffer->render($e),
     e: Constant[1]         | $buffer->append($e->toRelLiteral()),
-    e: DontCare[1]         | $buffer->render($e),
+    e: DontCare[1]         | $buffer->append('_'),
     e: Equals[1]           | $buffer->render($e),
     e: Exists[1]           | $buffer->render($e),
     e: ExprGroup[1]        | $buffer->render($e),
@@ -184,7 +184,7 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], e
   ]);
 }
 
-function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], exprs: Expr[*]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], exprs: Expr[*]): RelQueryBuffer[1] {
   $buffer->append($exprs, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ', ')
 }
 
@@ -192,11 +192,11 @@ function meta::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], e
 // Rendering entry point when not providing a state //
 //////////////////////////////////////////////////////
 
-function meta::rel::metamodel::render::expr::renderExpr(expr: Expr[1]): String[1] {
+function meta::external::store::rel::metamodel::render::expr::renderExpr(expr: Expr[1]): String[1] {
   emptyBufferSingleLine()->render($expr)->toString()
 }
 
-function meta::rel::metamodel::render::expr::renderExprs(exprs: Expr[*]): String[1] {
+function meta::external::store::rel::metamodel::render::expr::renderExprs(exprs: Expr[*]): String[1] {
   emptyBufferSingleLine()->render($exprs)->toString()
 }
 
@@ -204,11 +204,11 @@ function meta::rel::metamodel::render::expr::renderExprs(exprs: Expr[*]): String
 // Utility functions //
 ///////////////////////
 
-function <<access.private>> meta::rel::metamodel::render::expr::maybeParentheses(str: String[1], do: Boolean[1]): String[1] {
+function <<access.private>> meta::external::store::rel::metamodel::render::expr::maybeParentheses(str: String[1], do: Boolean[1]): String[1] {
   if ($do, | format('(%s)', $str), | $str)
 }
 
-function <<access.private>> meta::rel::metamodel::render::expr::canUnambigouslyApply(expr: Expr[1]): Boolean[1] {
+function <<access.private>> meta::external::store::rel::metamodel::render::expr::canUnambigouslyApply(expr: Expr[1]): Boolean[1] {
   $expr->match([
     e: Abstraction[1]      | true,
     e: Application[1]      | true,

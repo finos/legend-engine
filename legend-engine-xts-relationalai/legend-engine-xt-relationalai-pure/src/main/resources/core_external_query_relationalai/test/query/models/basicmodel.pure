@@ -1,26 +1,26 @@
-import meta::rel::test::query::models::basicmodel::*;
-import meta::rel::mapping::frontend::*;
+import meta::external::store::rel::test::query::models::basicmodel::*;
+import meta::external::store::rel::mapping::frontend::*;
 
-Class meta::rel::test::query::models::basicmodel::Person {
+Class meta::external::store::rel::test::query::models::basicmodel::Person {
   firstName: String[1];
   lastName: String[1];
 }
 
-Class meta::rel::test::query::models::basicmodel::Employee extends Person {
+Class meta::external::store::rel::test::query::models::basicmodel::Employee extends Person {
   salary: Integer[1];
 }
 
-Class meta::rel::test::query::models::basicmodel::Firm {
+Class meta::external::store::rel::test::query::models::basicmodel::Firm {
   legalName: String[1];
 }
 
-Association meta::rel::test::query::models::basicmodel::Employment {
+Association meta::external::store::rel::test::query::models::basicmodel::Employment {
   firm: Firm[1];
   employee: Employee[*];
 }
 
-function meta::rel::test::query::models::basicmodel::schema(): RAISchema[1] {
-  RAISchema('meta::rel::test::query::models::basicmodel')
+function meta::external::store::rel::test::query::models::basicmodel::schema(): RAISchema[1] {
+  RAISchema('meta::external::store::rel::test::query::models::basicmodel')
     ->includeClass(Person)
     ->includeClass(Employee)
     ->includeClass(Firm);

@@ -1,27 +1,27 @@
 import meta::pure::executionPlan::*;
-import meta::rel::compile::*;
-import meta::rel::compile::ir::*;
-import meta::rel::compile::substitution::*;
-import meta::rel::compile::utils::*;
-import meta::rel::contract::*;
-import meta::rel::execute::*;
-import meta::rel::mapping::*;
-import meta::rel::mapping::*;
-import meta::rel::metamodel::*;
-import meta::rel::metamodel::render::program::*;
-import meta::rel::metamodel::store::*;
-import meta::rel::metamodel::utils::*;
-import meta::rel::runtime::*;
-import meta::rel::trace::*;
-import meta::rel::utils::*;
-import meta::rel::utils::collection::*;
-import meta::rel::utils::lang::*;
+import meta::external::store::rel::compile::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::contract::*;
+import meta::external::store::rel::execute::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::program::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::metamodel::utils::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
+import meta::external::store::rel::utils::lang::*;
 
-Class meta::rel::mapping::QueryActivity extends meta::pure::mapping::Activity {
+Class meta::external::store::rel::mapping::QueryActivity extends meta::pure::mapping::Activity {
   relSource: String[1];
 }
 
-function meta::rel::mapping::execution(
+function meta::external::store::rel::mapping::execution(
   sq: meta::pure::mapping::StoreQuery[1],
   _ext: RoutedValueSpecification[0..1],
   mapping: meta::pure::mapping::Mapping[1],
@@ -32,10 +32,10 @@ function meta::rel::mapping::execution(
 ): meta::pure::mapping::Result<Any|*>[1] {
   if (!$sq.store->instanceOf(RAIDatabase), | fail('Rel queries can only be executed against an instance of `RAIDatabase`'), | '');
 
-  $sq.fe->execution($mapping, $debug, meta::rel::trace::emptyTrace());
+  $sq.fe->execution($mapping, $debug, meta::external::store::rel::trace::emptyTrace());
 }
 
-function <<access.private>> meta::rel::mapping::execution(
+function <<access.private>> meta::external::store::rel::mapping::execution(
   query: FunctionExpression[1],
   mapping: meta::pure::mapping::Mapping[1],
   debug: DebugContext[1],
@@ -49,7 +49,7 @@ function <<access.private>> meta::rel::mapping::execution(
     ->functionExprToPExpr($newTrace)
     ->andThen(node: PExpr[1] |
       //$debug->debug(| 'PURE Expression plan:');
-      $debug->debug(| $node->meta::rel::compile::ir::utils::display());
+      $debug->debug(| $node->meta::external::store::rel::compile::ir::utils::display());
       $node->compile(emptySubstitution(), emptyColumnAccessRewrite(), $state, $newTrace);
     )
     ->andThen({state: CompilationState[1] |
@@ -182,7 +182,7 @@ function <<access.private>> meta::rel::mapping::execution(
   * named `property`. This function assumes that query results are stored in
   * `output[:query]`
   */
-function <<access.private>> meta::rel::mapping::propertyOutputs(
+function <<access.private>> meta::external::store::rel::mapping::propertyOutputs(
   set: RelSetImplementation[1],
   trace: Trace[1]
 ): Result<Pair<Label, Rule>|*>[1] {
@@ -224,18 +224,18 @@ function <<access.private>> meta::rel::mapping::propertyOutputs(
     });
 }
 
-function meta::rel::mapping::supports(f: FunctionExpression[1]): Boolean[1] {
+function meta::external::store::rel::mapping::supports(f: FunctionExpression[1]): Boolean[1] {
   true;
 }
 
-function meta::rel::mapping::supportsStream(f: FunctionExpression[1]): Boolean[1] {
+function meta::external::store::rel::mapping::supportsStream(f: FunctionExpression[1]): Boolean[1] {
   [
     meta::pure::functions::collection::in_Any_1__Any_MANY__Boolean_1_,
     meta::pure::functions::collection::in_Any_$0_1$__Any_MANY__Boolean_1_
   ]->contains($f.func);
 }
 
-function meta::rel::mapping::planExecution(
+function meta::external::store::rel::mapping::planExecution(
   sq: meta::pure::mapping::StoreQuery[1],
   ext: RoutedValueSpecification[0..1],
   mapping: meta::pure::mapping::Mapping[0..1],

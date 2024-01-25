@@ -1,27 +1,27 @@
 import meta::pure::functions::collection::*;
-import meta::rel::metamodel::*;
-import meta::rel::metamodel::render::buffer::*;
-import meta::rel::metamodel::render::expr::*;
-import meta::rel::metamodel::render::program::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::buffer::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::metamodel::render::program::*;
+import meta::external::store::rel::utils::*;
 
 
-function meta::rel::metamodel::render::program::render(element: ProgramElement[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(element: ProgramElement[1]): String[1] {
   $element->match([
     r: Rule[1]    | $r->render(),
     c: Comment[1] | $c->render()
   ])
 }
 
-function meta::rel::metamodel::render::program::render(elements: ProgramElement[*]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(elements: ProgramElement[*]): String[1] {
   $elements->map(e: ProgramElement[1] | $e->render())->makeString('', '\n', '\n')
 }
 
-function meta::rel::metamodel::render::program::render(program: Program[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(program: Program[1]): String[1] {
   $program.elements->render()
 }
 
-function meta::rel::metamodel::render::program::render(rule: Rule[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(rule: Rule[1]): String[1] {
   $rule->match([
     r: EntityDef[1] | $r->render(),
     r: IC[1]        | $r->render(),
@@ -32,21 +32,21 @@ function meta::rel::metamodel::render::program::render(rule: Rule[1]): String[1]
   ])
 }
 
-function meta::rel::metamodel::render::program::render(entityDef: EntityDef[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(entityDef: EntityDef[1]): String[1] {
   let annotation = if ($entityDef.inline, | '@inline\n', | '');
   $annotation + format('entity %s %s = %s', [$entityDef.name->renderExpr(), $entityDef.head->renderExpr(), $entityDef.body->renderExprs()]);
 }
 
-function meta::rel::metamodel::render::program::render(ic: IC[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(ic: IC[1]): String[1] {
   format('ic %s {\n%s\n}', [$ic.head->renderExpr(), $ic.body->renderExprs()])
 }
 
-function meta::rel::metamodel::render::program::render(comment: Comment[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(comment: Comment[1]): String[1] {
   $comment->match([
     lc: LineComment[1] | $lc->render()
   ])
 }
 
-function meta::rel::metamodel::render::program::render(comment: LineComment[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(comment: LineComment[1]): String[1] {
   format('// %s', $comment.text)
 }
