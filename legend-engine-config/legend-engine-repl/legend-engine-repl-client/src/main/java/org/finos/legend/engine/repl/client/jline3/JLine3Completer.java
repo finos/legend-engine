@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.repl.client.jline3;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
@@ -48,17 +49,26 @@ public class JLine3Completer implements Completer
             PureModelContextData d = Client.replInterface.parse(buildState().makeString("\n"));
             list.addAll(ListIterate.collect(ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")), c -> new Candidate(PureGrammarComposerUtility.convertPath(c.getPath()))));
         }
-        else if (inScope.startsWith("load"))
+        else if (inScope.startsWith("load "))
         {
-            String compressed = Lists.mutable.withAll(parsedLine.words()).drop(2).makeString("");
-            completer.complete(lineReader, new JLine3Parser.MyParsedLine(new JLine3Parser.ParserResult(parsedLine.line(), Lists.mutable.with("load", " ", compressed))), list);
-            List<Candidate> ca = ListIterate.collect(list, c ->
+            MutableList<String> words = Lists.mutable.withAll(parsedLine.words()).drop(2);
+            if (words.detect(" "::equals) == null)
             {
-                String val = compressed.length() == 1 ? c.value() : c.value().substring(1);
-                return new Candidate(val, val, (String) null, (String) null, (String) null, (String) null, false, 0);
-            });
-            list.clear();
-            list.addAll(ca);
+                String compressed = words.makeString("");
+                completer.complete(lineReader, new JLine3Parser.MyParsedLine(new JLine3Parser.ParserResult(parsedLine.line(), Lists.mutable.with("load", " ", compressed))), list);
+                List<Candidate> ca = ListIterate.collect(list, c ->
+                {
+                    String val = compressed.length() == 1 ? c.value() : c.value().substring(1);
+                    return new Candidate(val, val, (String) null, (String) null, (String) null, (String) null, false, 0);
+                });
+                list.clear();
+                list.addAll(ca);
+            }
+            else
+            {
+                // Connection?!
+            }
+
         }
         else
         {

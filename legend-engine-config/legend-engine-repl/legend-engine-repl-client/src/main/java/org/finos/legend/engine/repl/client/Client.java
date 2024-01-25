@@ -120,7 +120,7 @@ public class Client
                 if (line.isEmpty())
                 {
                     terminal.writer().println("Commands:");
-                    terminal.writer().println("  load <path> [<destination>]");
+                    terminal.writer().println("  load <path> <destination>");
                     terminal.writer().println("  db");
                     terminal.writer().println("  graph [<packagePath>]");
                     terminal.writer().println("  debug");

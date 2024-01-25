@@ -180,7 +180,7 @@ public class JLine3Parser implements Parser
         {
             return String.valueOf(c);
         }
-        if (i < (content.length() - 1)  && c == '-' && content.charAt(i + 1) == '>')
+        if (i < (content.length() - 1) && c == '-' && content.charAt(i + 1) == '>')
         {
             return "->";
         }
