@@ -404,8 +404,8 @@ public class RelationalCompilerExtension implements IRelationalCompilerExtension
                 stats.put("type", "Database");
                 stats.put("tables", Long.toString(Iterate.sumOfInt(db.schemas, s -> s.tables.size())));
                 stats.put("views", Long.toString(Iterate.sumOfInt(db.schemas, s -> s.views.size())));
-                stats.put("joins", Integer.toString(db.joins.size()));
-                stats.put("filters", Integer.toString(db.filters.size()));
+                stats.put("joins", java.lang.Integer.toString(db.joins.size()));
+                stats.put("filters", java.lang.Integer.toString(db.filters.size()));
             }
         });
     }
