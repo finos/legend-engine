@@ -36,6 +36,7 @@ public class TestSQLRoundTrip
     public void testSelectStar()
     {
         check("SELECT * FROM myTable");
+        check("SELECT myTable.* FROM myTable");
     }
 
     @Test

@@ -214,12 +214,14 @@ function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLS
 {
    let sql = toSQLString({|Person.all()
     ->project([
-      col(p|splitPart($p.firstName, '|', 0), 'splitBar')
+      col(p|splitPart($p.firstName, '|', 0), 'splitBar'),
+      col(p|splitPart($p.firstName, '|', 1 + 1), 'splitBarExpression')
     ])->project([
-      col(row:TDSRow[1] | splitPart($row.getString('splitBar'), ',', 1), 'splitComma')
+      col(row:TDSRow[1] | splitPart($row.getString('splitBar'), ',', 1), 'splitComma'),
+      col(row:TDSRow[1] | splitPart($row.getString('splitBarExpression'), ',', 1 + 1), 'splitCommaExpression')
     ])}, simpleRelationalMapping, DatabaseType.H2, meta::relational::extension::relationalExtensions());
 
-   assertEquals('select legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1), \',\', 2) as "splitComma" from personTable as "root"', $sql);
+   assertEquals('select legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', 1), \',\', 2) as "splitComma", legend_h2_extension_split_part(legend_h2_extension_split_part("root".FIRSTNAME, \'|\', ((1 + 1) + 1)), \',\', ((1 + 1) + 1)) as "splitCommaExpression" from personTable as "root"', $sql);
 }
 
 function <<test.Test>> meta::relational::tests::functions::sqlstring::testToSQLStringAscii():Boolean[1]

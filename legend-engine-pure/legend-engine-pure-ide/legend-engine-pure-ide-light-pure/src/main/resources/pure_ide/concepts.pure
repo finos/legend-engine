@@ -157,8 +157,7 @@ function <<access.private>> meta::pure::ide::display_ide(elem:Any[1]):String[1]
                                                f:FunctionDefinition<Any>[1] | let icon = if($f->hasStereotype('externalizable', meta::pure::profiles::access),
                                                                                                 |'"/ide/pure/icons/play.png"',
                                                                                                 |'"/ide/pure/icons/modelElements/function.png"'
-                                                                                                 );
-
+                                                                                         );
                                                                               '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f) + '", "icon":'+$icon+'}';,
                                                f:NativeFunction<Any>[1] | '{"li_attr":' + display_ide_attr($f) + ', "id":"'+$p->buildKey()+ '","text":"' + printFunctionSignature($f) + '", "icon":"/ide/pure/icons/modelElements/function_parenthesis.png"}',
                                                e:Enumeration<Any>[1] | '{"li_attr":' + display_ide_attr($e) + ', "id":"'+$p->buildKey()+ '","text":"' + $e->id() + '", "icon":"/ide/pure/icons/modelElements/enumeration.gif"}',

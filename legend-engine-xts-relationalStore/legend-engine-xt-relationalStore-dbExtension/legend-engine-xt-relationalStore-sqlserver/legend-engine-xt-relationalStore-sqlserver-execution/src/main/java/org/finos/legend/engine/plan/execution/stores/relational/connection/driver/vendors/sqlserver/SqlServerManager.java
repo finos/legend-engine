@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.driv
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.DelegatedKerberosAuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.DatabaseManager;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.commands.RelationalDatabaseCommands;
 
@@ -24,6 +25,10 @@ import java.util.Properties;
 
 public class SqlServerManager extends DatabaseManager
 {
+    private static final String SERVICE_PRINCIPAL_NAME = "ServerSpn";
+    private static final String INTEGRATED_SECURITY = "integratedSecurity";
+    private static final String AUTHENTICATION_SCHEMA = "authenticationScheme";
+
     @Override
     public MutableList<String> getIds()
     {
@@ -33,8 +38,27 @@ public class SqlServerManager extends DatabaseManager
     @Override
     public String buildURL(String host, int port, String databaseName, Properties extraUserDataSourceProperties, AuthenticationStrategy authenticationStrategy)
     {
+        String additionalProperties = "";
+        if (authenticationStrategy instanceof DelegatedKerberosAuthenticationStrategy)
+        {
+            additionalProperties = ";" + SERVICE_PRINCIPAL_NAME + "=" + getServerPrincipal((DelegatedKerberosAuthenticationStrategy) authenticationStrategy);
+            additionalProperties += ";" + INTEGRATED_SECURITY + "=true";
+            additionalProperties += ";" + AUTHENTICATION_SCHEMA + "=JavaKerberos";
+        }
+
         String hostWithPort = host + ":" + port;
-        return "jdbc:sqlserver://" + hostWithPort + ";databaseName=" + databaseName;
+        return "jdbc:sqlserver://" + hostWithPort + ";databaseName=" + databaseName + additionalProperties;
+    }
+
+    private String getServerPrincipal(DelegatedKerberosAuthenticationStrategy authenticationStrategy)
+    {
+        String serverProperty = authenticationStrategy.getServerPrincipal();
+        if (serverProperty == null)
+        {
+            throw new RuntimeException("You must provide a serverPrincipal name for kerberos SqlServer connections");
+        }
+
+        return serverProperty;
     }
 
     @Override

@@ -33,7 +33,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
    let reservedWords = defaultReservedWords();
    let literalProcessors = getDefaultLiteralProcessors()->putAll(getLiteralProcessorsForAthena());
    let literalProcessor = {type:Type[1]| $literalProcessors->get(if($type->instanceOf(Enumeration), | Enum, | $type))->toOne()};
-   let dynaFuncDispatch = getDynaFunctionToSqlForAthena()->groupBy(d| $d.funcName)->getDynaFunctionDispatcher();
+
+   let dynaFuncDispatch = getDynaFunctionToSqlDefault($literalProcessor)->groupBy(d| $d.funcName)->putAll(
+     getDynaFunctionToSqlForAthena()->groupBy(d| $d.funcName))->getDynaFunctionDispatcher();   
 
    ^DbExtension(
       isBooleanLiteralSupported = true,
@@ -141,22 +143,46 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
     dynaFnToSql('and',                    $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' and ')})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),      
+    dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),
     dynaFnToSql('count',                  $allStates,            ^ToSql(format='count(%s)', transform={p:String[*]|if($p->isEmpty(),|'*',|$p)})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='date_diff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForAthena(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='date(%s)')),
-    dynaFnToSql('equal',                  $allStates,            ^ToSql(format='%s = %s')),
-    dynaFnToSql('greaterThan',            $allStates,            ^ToSql(format='%s > %s')),
-    dynaFnToSql('greaterThanEqual',       $allStates,            ^ToSql(format='%s >= %s')),
-    dynaFnToSql('if',                     $allStates,            ^ToSql(format='case when %s then %s else %s end', parametersWithinWhenClause = [true, false, false])),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='mod(day_of_week(%s),7)+1')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='cast(date_trunc(\'month\', current_date) as timestamp)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='cast(date_trunc(\'quarter\', current_date) as timestamp)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='cast(date_trunc(\'year\', current_date) as timestamp)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date_trunc(\'week\', %s)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='date_trunc(\'year\', %s)')),
+    dynaFnToSql('hour',                   $allStates,            ^ToSql(format='hour(%s)')),
     dynaFnToSql('in',                     $allStates,            ^ToSql(format='%s in %s', transform={p:String[2] | if($p->at(1)->startsWith('(') && $p->at(1)->endsWith(')'), | $p, | [$p->at(0), ('(' + $p->at(1) + ')')])})),
-    dynaFnToSql('isEmpty',                $allStates,            ^ToSql(format='%s is null')),
-    dynaFnToSql('isNotEmpty',             $allStates,            ^ToSql(format='%s is not null')),
-    dynaFnToSql('isNotNull',              $allStates,            ^ToSql(format='%s is not null')),
-    dynaFnToSql('isNull',                 $allStates,            ^ToSql(format='%s is null')),
-    dynaFnToSql('lessThan',               $allStates,            ^ToSql(format='%s < %s')),
-    dynaFnToSql('lessThanEqual',          $allStates,            ^ToSql(format='%s <= %s')),
-    dynaFnToSql('notEqual',               $allStates,            ^ToSql(format='%s != %s')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s)', transform={p:String[2] | $p->at(0) + ', ' + $p->at(1)})),
+    dynaFnToSql('left',                   $allStates,            ^ToSql(format='substr(%s,1,%s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
+    dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpLikePattern('%s','%s'), transform={p:String[2]|$p->transformRegexpParams()})),
+    dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
+    dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
+    dynaFnToSql('now',                    $allStates,            ^ToSql(format='current_timestamp')),
     dynaFnToSql('or',                     $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->makeString(' or ')})),
-    dynaFnToSql('sqlNull',                $allStates,            ^ToSql(format='null'))
+    dynaFnToSql('parseDate',              $allStates,            ^ToSql(format='date_parse(%s,%s)')),
+    dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as double)')),
+    dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
+    dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
+    dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
+    dynaFnToSql('right',                  $allStates,            ^ToSql(format='substr(%s,-1,%s)')),
+    dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
+    dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
+    dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
+    dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
+    dynaFnToSql('today',                  $allStates,            ^ToSql(format='cast(current_date as timestamp)')),
+    dynaFnToSql('toString',               $allStates,            ^ToSql(format='cast(%s as varchar)')),
+    dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='week(%s)')),
+    dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))    
   ];
 }
 
@@ -178,4 +204,11 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::athen
   if($s.data == [],|'',| ' ' + $format.separator + 'from ' + $s.data->toOne()->processJoinTreeNode([], $dbConfig, $format->indent(), [], $extensions)) +
   if (eq($opStr, ''), |'', | ' ' + $format.separator + 'where ' + $opStr) +
   if ($s.orderBy->isEmpty(),|'',| ' ' + $format.separator + 'order by '+ $s.orderBy->processOrderBy($dbConfig, $format->indent(), $config, $extensions)->makeString(','));
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::athena::processDateDiffDurationUnitForAthena(durationUnit:String[1]):String[1]
+{
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['\'year\'', '\'month\'', '\'week\'', '\'day\'', '\'hour\'', '\'minute\'', '\'second\'', '\'millisecond\''];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
 }

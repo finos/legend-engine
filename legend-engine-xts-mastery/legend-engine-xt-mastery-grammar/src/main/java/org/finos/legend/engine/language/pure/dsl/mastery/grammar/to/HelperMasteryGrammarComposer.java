@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.dsl.mastery.grammar.to;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.DEPRECATED_PureGrammarComposerCore;
@@ -38,6 +37,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.apache.commons.lang3.StringUtils.chomp;
+import static org.apache.commons.lang3.StringUtils.chop;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 
@@ -248,11 +249,11 @@ public class HelperMasteryGrammarComposer
         StringBuilder nonSourcePrecedenceRulesBuilder = new StringBuilder()
                 .append(getTabString(indentLevel)).append("precedenceRules: [");
 
-        ListIterate.forEachWithIndex(precedenceRules, (precedenceRule, i) ->
+        ListIterate.forEach(precedenceRules, (precedenceRule) ->
         {
             String precedenceRuleString = precedenceRule.accept(new PrecedenceRuleComposer(indentLevel + 1, context, uniqueSourcePrecedenceRules));
             nonSourcePrecedenceRulesBuilder.append(precedenceRuleString);
-            nonSourcePrecedenceRulesBuilder.append(i < precedenceRules.size() - 1 && !precedenceRuleString.equals("") ? "," : "");
+            nonSourcePrecedenceRulesBuilder.append(!precedenceRuleString.isEmpty() ? "," : "");
         });
         return combinePrecedenceRules(uniqueSourcePrecedenceRules, nonSourcePrecedenceRulesBuilder.toString(), indentLevel);
     }
@@ -262,14 +263,15 @@ public class HelperMasteryGrammarComposer
         StringBuilder allPrecedenceRules = new StringBuilder();
         if (uniqueSourcePrecedenceRules.isEmpty())
         {
-            nonSourcePrecedenceRules = StringUtils.chomp(nonSourcePrecedenceRules);
+            nonSourcePrecedenceRules = chop(nonSourcePrecedenceRules);
+            nonSourcePrecedenceRules = chomp(nonSourcePrecedenceRules);
         }
         allPrecedenceRules.append(nonSourcePrecedenceRules);
         List<StringBuilder> sourcePrecedenceRules = new ArrayList<>(uniqueSourcePrecedenceRules.values());
         ListIterate.forEachWithIndex(sourcePrecedenceRules, (sourcePrecedenceRule, i) ->
         {
             allPrecedenceRules.append(i > 0 ? "," : "");
-            String sourcePrecedenceSTring = StringUtils.chop(sourcePrecedenceRule.toString());
+            String sourcePrecedenceSTring = chop(sourcePrecedenceRule.toString());
             allPrecedenceRules.append(sourcePrecedenceSTring).append("\n");
             allPrecedenceRules.append(getTabString(indentLevel + 2)).append("];\n");
             allPrecedenceRules.append(getTabString(indentLevel + 1)).append("}");

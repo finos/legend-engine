@@ -14,17 +14,12 @@
 
 package org.finos.legend.engine.testable;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.extension.TestableRunnerExtensionLoader;
 import org.finos.legend.engine.testable.model.UniqueTestId;
-import org.finos.legend.engine.testable.model.RunTestsInput;
 import org.finos.legend.engine.testable.model.RunTestsResult;
 import org.finos.legend.engine.testable.model.RunTestsTestableInput;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
@@ -32,24 +27,11 @@ import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.List;
 
 public class TestableRunner
 {
-    private final ModelManager modelManager;
-
-    public TestableRunner(ModelManager modelManager)
-    {
-        this.modelManager = modelManager;
-    }
-
-    public RunTestsResult doTests(RunTestsInput input, MutableList<CommonProfile> profiles)
-    {
-        Pair<PureModelContextData, PureModel> modelAndData = modelManager.loadModelAndData(input.model, input.model instanceof PureModelContextPointer ? ((PureModelContextPointer) input.model).serializer.version : null, profiles, null);
-        return doTests(input.testables, modelAndData.getTwo(), modelAndData.getOne());
-    }
 
     public RunTestsResult doTests(List<RunTestsTestableInput> runTestsTestableInputs, PureModel pureModel, PureModelContextData data)
     {

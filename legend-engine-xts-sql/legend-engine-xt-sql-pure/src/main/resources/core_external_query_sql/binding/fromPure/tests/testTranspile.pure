@@ -805,7 +805,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
   test(
-    'SELECT Integer, sum(1) AS "sum", count(*) AS "count", sum(Integer + Float) AS "exp", EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", MAX("StrictDate") + INTERVAL \'1 WEEK\' AS "dateAggMath" FROM service."/service/service1" GROUP BY Integer',
+    'SELECT ' + 
+    'Integer, ' + 
+    'sum(1) AS "sum", ' + 
+    'count(*) AS "count", ' + 
+    'sum(Integer + Float) AS "exp", ' + 
+    'EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", ' + 
+    'MAX("StrictDate") + INTERVAL \'1 WEEK\' AS "dateAggMath" ' +
+    'FROM service."/service/service1" GROUP BY Integer',
 
     {| FlatInput.all()->project(
           [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -815,8 +822,35 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('count', row | $row, y | $y->count()),
           agg('exp', row | $row.getInteger('Integer') + $row.getFloat('Float'), y | $y->sum()),
           agg('aggFunctionCall', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->year()),
-          agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))
+          agg('dateAggMath', row | $row.getStrictDate('StrictDate'), y | $y->max()->toOne()->adjust(1, DurationUnit.WEEKS))])
+      }, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateMixedExpressions():Boolean[1]
+{
+  test(
+    'SELECT ' + 
+    'Integer, ' + 
+    'sum(Integer) AS "sum", ' + 
+    'count(*) AS "count", ' +
+    'CASE WHEN sum(Integer) > sum(Float) THEN 1 ELSE 0 END AS "multiArg", ' + 
+    'CASE WHEN sum(Integer) < count(Float) THEN 1 ELSE 0 END AS "multiArg2" ' + 
+    'FROM service."/service/service1" GROUP BY Integer',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )->groupBy(['Integer'], [
+          agg('sum', row | $row.getInteger('Integer'), y | $y->sum()),
+          agg('count', row | $row, y | $y->count()),
+          agg('sum(Integer)', row | $row.getInteger('Integer'), y | $y->sum()),
+          agg('sum(Float)', row | $row.getFloat('Float'), y | $y->sum()),
+          agg('count(Float)', row | $row.getFloat('Float'), y | $y->count())
+        ])->extend([
+          col(row:TDSRow[1] | if ($row.getInteger('sum(Integer)') > $row.getFloat('sum(Float)'), | 1, | 0), 'multiArg'),
+          col(row:TDSRow[1] | if ($row.getInteger('sum(Integer)') < $row.getInteger('count(Float)'), | 1, | 0), 'multiArg2')
         ])
+        ->restrict(['Integer', 'sum', 'count', 'multiArg', 'multiArg2'])
       }, false)
 }
 
@@ -881,6 +915,24 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         ])
       }, false
   )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByExpression():Boolean[1]
+{
+  //NOTE: group by complex expressions, cannot reference projected columns, only source columns
+  test(
+    'SELECT sum(Integer) AS "sum", String FROM service."/service/service1" GROUP BY String, (case when "String" = \'N/A\' then \'\' else "String" end)',
+
+    {| FlatInput.all()->project(
+          [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+          [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ]
+        )
+        ->extend([
+          col(row:TDSRow[1] | if ($row.getString('String') == 'N/A', | '', | $row.getString('String')), 'CASE WHEN String = N/A THEN  ELSE String END')
+        ])
+        ->groupBy(['String', 'CASE WHEN String = N/A THEN  ELSE String END'], agg('sum', row | $row.getInteger('Integer'), y | $y->sum()))
+        ->restrict(['sum', 'String'])
+      }, false)
 }
 
 //HAVING
@@ -1347,6 +1399,42 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             pair('StrictDate_table1', 'StrictDate'),
             pair('DateTime_table1', 'DateTime')
           ])}, false)
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMultiJoinSelectStarFromLimited():Boolean[1]
+{
+  test(
+    'select * from ( SELECT table1.String as T1String , table2.String as T2String FROM service."/service/service1" AS table1 LEFT OUTER JOIN service."/service/service1" AS table2 ON table1.String = table2.String )',
+
+      {|FlatInput.all()
+          ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+          ->renameColumns([
+            pair('Boolean', 'Boolean_table1'),
+            pair('Integer', 'Integer_table1'),
+            pair('Float', 'Float_table1'),
+            pair('Decimal', 'Decimal_table1'),
+            pair('StrictDate', 'StrictDate_table1'),
+            pair('DateTime', 'DateTime_table1'),
+            pair('String', 'String_table1')
+          ])
+          ->join(FlatInput.all()
+                  ->project([{x|$x.booleanIn}, {x|$x.integerIn}, {x|$x.floatIn}, {x|$x.decimalIn}, {x|$x.strictDateIn}, {x|$x.dateTimeIn}, {x|$x.stringIn}], ['Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String'])
+                  ->renameColumns([
+                    pair('Boolean', 'Boolean_table2'),
+                    pair('Integer', 'Integer_table2'),
+                    pair('Float', 'Float_table2'),
+                    pair('Decimal', 'Decimal_table2'),
+                    pair('StrictDate', 'StrictDate_table2'),
+                    pair('DateTime', 'DateTime_table2'),
+                    pair('String', 'String_table2')
+                  ]),
+            meta::relational::metamodel::join::JoinType.LEFT_OUTER,
+            {row1, row2|$row1.getString('String_table1') == $row2.getString('String_table2')})
+          ->project([
+            col(row:TDSRow[1] | $row.getString('String_table1'), 'T1String'),
+            col(row:TDSRow[1] | $row.getString('String_table2'), 'T2String')
+          ])
+        }, false)
 }
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testJoinWithAliasRenamingInSubQueries():Boolean[1]
@@ -2450,6 +2538,11 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
   doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), characters = ^StringLiteral(value = ' ', quoted = true), mode =TrimMode.BOTH), 'TRIM(BOTH \' \' FROM \'abc\')');
   doNameTest(^Trim(value = ^StringLiteral(value = 'abc', quoted = true), mode = TrimMode.BOTH), 'TRIM(BOTH FROM \'abc\')');
+
+  doNameTest(^IntervalLiteral(years = 5), 'INTERVAL\'5 YEARS\'');
+  doNameTest(^IntervalLiteral(years = 5, ago = true), 'INTERVAL\'5 YEARS AGO\'');
+  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS\'');
+  doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0, ago = true), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS AGO\'');
 }
 
 

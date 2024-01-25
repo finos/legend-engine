@@ -1,0 +1,52 @@
+import meta::pure::router::platform::metamodel::*;
+import meta::pure::executionPlan::*;
+import meta::pure::graphFetch::execution::*;
+import meta::pure::functions::tests::model::*;
+import meta::pure::router::platform::metamodel::clustering::*;
+import meta::pure::executionPlan::featureFlag::*;
+
+Enum meta::pure::executionPlan::tests::ExampleFlag
+{
+   myFlag   
+
+}
+Enum meta::pure::executionPlan::tests::ExampleFlag2
+{
+  AnotherFlag   
+
+}
+
+
+Class  meta::pure::executionPlan::tests::featureFlag::Person
+{
+
+}
+
+function   <<test.Test>> meta::pure::executionPlan::tests::featureFlag::testTwoFeatureFlags() : Boolean[1]
+{
+  let gft = #{Person{firstName}}#;
+  let fn = {|meta::pure::executionPlan::tests::featureFlag::Person.all()->graphFetch($gft)->withFeatureFlags([meta::pure::executionPlan::tests::ExampleFlag.myFlag  ,meta::pure::executionPlan::tests::ExampleFlag2.AnotherFlag ])};
+  let result = meta::pure::router::routeFunction($fn,meta::pure::executionPlan::featureFlag::ExecutionPlanFeatureFlagExtension());
+  let context =$result.expressionSequence->evaluateAndDeactivate()->cast(@PlatformClusteredValueSpecification).val->cast(@PlatformRoutedValueSpecification).executionContext->toOne();
+
+  assert( $context ->contextHasFlag(meta::pure::executionPlan::tests::ExampleFlag.myFlag));
+  assert( $context ->contextHasFlag(meta::pure::executionPlan::tests::ExampleFlag2.AnotherFlag));
+}
+
+function  <<test.Test>>  meta::pure::executionPlan::tests::featureFlag::testTwoFlagFunctions() : Boolean[1]
+{
+  let gft = #{Person{firstName}}#;
+   let fn = {|meta::pure::executionPlan::tests::featureFlag::Person.all()->withFeatureFlags([meta::pure::executionPlan::tests::ExampleFlag.myFlag  ])->graphFetch($gft)->serialize($gft)->withFeatureFlags([meta::pure::executionPlan::tests::ExampleFlag2.AnotherFlag ])};
+   let result = meta::pure::router::routeFunction($fn    ,meta::pure::executionPlan::featureFlag::ExecutionPlanFeatureFlagExtension());
+   let context =$result.expressionSequence->evaluateAndDeactivate()->cast(@PlatformClusteredValueSpecification).val->cast(@PlatformRoutedValueSpecification).executionContext->toOne();
+   assert( $context ->contextHasFlag(meta::pure::executionPlan::tests::ExampleFlag.myFlag));
+   assert( $context ->contextHasFlag(meta::pure::executionPlan::tests::ExampleFlag2.AnotherFlag));
+ 
+}
+
+function <<test.Test>> meta::pure::executionPlan::tests::featureFlag::testContextHasFlag() : Boolean[1]
+{
+  let context1=  ^ExecutionOptionContext(executionOptions=^FeatureFlagOption(flags=meta::pure::executionPlan::tests::ExampleFlag.myFlag));
+  assert( $context1 ->contextHasFlag(meta::pure::executionPlan::tests::ExampleFlag.myFlag));
+
+}

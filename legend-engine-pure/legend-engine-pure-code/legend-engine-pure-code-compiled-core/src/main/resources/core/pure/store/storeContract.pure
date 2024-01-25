@@ -7,6 +7,7 @@ import meta::pure::store::*;
 import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
+import meta::pure::mapping::xStore::*;
 
 Class meta::pure::store::StoreContract extends meta::pure::router::extension::RouterExtension, meta::pure::executionPlan::extension::ExecutionPlanExtension
 {
@@ -16,6 +17,7 @@ Class meta::pure::store::StoreContract extends meta::pure::router::extension::Ro
   supports : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
   supportsNativeJoinAmongElements : Boolean[1];
   isPropertyAutoMapped : Function<{AbstractProperty<Any>[1], InstanceSetImplementation[1]->Boolean[1]}>[0..1];
+  localizeXStoreAssociation : Function<{XStoreAssociationImplementation[1], SetImplementation[*] -> Function<{Nil[1]->AssociationImplementation[1]}>[*]}>[0..1];
   // ------------------------------------------------------------------------------------------ Routing
 
   // ExecutionPlan Generation -------------------------------------------------------------------------

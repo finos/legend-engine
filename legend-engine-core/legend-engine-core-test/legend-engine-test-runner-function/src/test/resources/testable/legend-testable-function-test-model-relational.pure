@@ -123,6 +123,22 @@ Runtime execution::Runtime
   ];
 }
 
+###Runtime
+Runtime execution::RuntimeWithStoreConnections
+{
+  mappings:
+  [
+    execution::RelationalMapping
+  ];
+  connectionStores:
+  [
+    model::MyConnection:
+    [
+       store::TestDB
+    ]
+  ];
+}
+
 ###Pure
 function model::PersonQuery(): meta::pure::tds::TabularDataSet[1]
 {
@@ -140,14 +156,10 @@ function model::PersonQuery(): meta::pure::tds::TabularDataSet[1]
     execution::Runtime
   )
 }
-[
-  testSuite_1:
-  {
-    data:
-    [
-      {
-        store: store::TestDB;
-        data:
+{
+  testSuite_1
+  (
+   store::TestDB:
           Relational
           #{
             default.PersonTable:
@@ -156,29 +168,9 @@ function model::PersonQuery(): meta::pure::tds::TabularDataSet[1]
               '2,1,Nicole,Smith,FTC\n'+
               '3,2,Time,Smith,FTE\n';
           }#;
-      }
-    ];
-    tests:
-    [
-      test_1:
-      {
-        asserts:
-        [
-          assertion_1:
-            EqualToJson
-            #{
-              expected:
-                ExternalFormat
-                #{
-                  contentType: 'application/json';
-                  data: '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
-                }#;
-            }#
-        ]
-      }
-    ]
-  }
-]
+    test_1 | PersonQuery() => (JSON) '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
+  )
+}
 function model::PersonWithParams(firstName: String[1]): meta::pure::tds::TabularDataSet[1]
 {
   model::Person.all()->filter(
@@ -198,14 +190,10 @@ function model::PersonWithParams(firstName: String[1]): meta::pure::tds::Tabular
     execution::Runtime
   )
 }
-[
-  testSuite_1:
-  {
-    data:
-    [
-      {
-        store: store::TestDB;
-        data:
+{
+  testSuite_1
+  (
+    store::TestDB:
           Relational
           #{
             default.PersonTable:
@@ -214,50 +202,54 @@ function model::PersonWithParams(firstName: String[1]): meta::pure::tds::Tabular
               '2,1,Nicole,Smith,FTC\n'+
               '3,2,Time,Smith,FTE\n';
           }#;
-      }
-    ];
-    tests:
+    testFail | PersonWithParams('Nicole') => (JSON) '[]';
+    testPass | PersonWithParams('Nicole') => (JSON) '[{\n  "First Name" : "Nicole","Last Name" : "Smith"} ]';
+  )
+}
+function model::PersonQuerySharedData(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Person.all()->project(
     [
-      testFail:
-      {
-        parameters:
-        [
-            firstName = 'Nicole'
-        ]
-        asserts:
-        [
-          assertion_1:
-            EqualToJson
-            #{
-              expected:
-                ExternalFormat
-                #{
-                  contentType: 'application/json';
-                  data: '[]';
-                }#;
-            }#
-        ]
-      },
-      testPass:
-      {
-        parameters:
-        [
-            firstName = 'Nicole'
-        ]
-        asserts:
-        [
-          assertion_1:
-            EqualToJson
-            #{
-              expected:
-                ExternalFormat
-                #{
-                  contentType: 'application/json';
-                  data: '[ {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n} ]';
-                }#;
-            }#
-        ]
-      }
+      x|$x.firstName,
+      x|$x.lastName
+    ],
+    [
+      'First Name',
+      'Last Name'
     ]
-  }
-]
+  )->from(
+    execution::RelationalMapping,
+    execution::Runtime
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB: data::RelationalData;
+    test_1 | PersonQuerySharedData() => (JSON) '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
+  )
+}
+
+function model::PersonWithConnectionStores(): meta::pure::tds::TabularDataSet[1]
+{
+  model::Person.all()->project(
+    [
+      x|$x.firstName,
+      x|$x.lastName
+    ],
+    [
+      'First Name',
+      'Last Name'
+    ]
+  )->from(
+    execution::RelationalMapping,
+    execution::RuntimeWithStoreConnections
+  )
+}
+{
+  testSuite_1
+  (
+    store::TestDB: data::RelationalData;
+    test_1 | PersonWithConnectionStores() => (JSON) '[ {\n  "First Name" : "I\'m John",\n  "Last Name" : "Doe, Jr"\n}, {\n  "First Name" : "Nicole",\n  "Last Name" : "Smith"\n}, {\n  "First Name" : "Time",\n  "Last Name" : "Smith"\n} ]';
+  )
+}

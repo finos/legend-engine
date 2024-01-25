@@ -22,11 +22,7 @@ import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Any;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.navigation.Instance;
-import org.finos.legend.pure.m3.navigation.M3Paths;
-import org.finos.legend.pure.m3.navigation.M3ProcessorSupport;
-import org.finos.legend.pure.m3.navigation.M3Properties;
-import org.finos.legend.pure.m3.navigation.ProcessorSupport;
+import org.finos.legend.pure.m3.navigation.*;
 import org.finos.legend.pure.m3.navigation._package._Package;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
@@ -79,7 +75,7 @@ public class LegendCompileMixedProcessorSupport extends M3ProcessorSupport
     @Override
     public CoreInstance newGenericType(SourceInformation sourceInformation, CoreInstance source, boolean inferred)
     {
-        CoreInstance coreInstance = _Package.getByUserPath(M3Paths.GenericType, this.originalProcessorSupport);
+        CoreInstance coreInstance = _Package.getByUserPath(inferred ? M3Paths.InferredGenericType : M3Paths.GenericType, this.originalProcessorSupport);
         return this.modelRepository.newCoreInstance("", coreInstance, null);
     }
 

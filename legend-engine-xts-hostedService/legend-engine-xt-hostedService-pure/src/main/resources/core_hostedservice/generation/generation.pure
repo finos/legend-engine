@@ -11,6 +11,7 @@ import meta::pure::graphFetch::*;
 import meta::external::function::activator::hostedService::generation::*;
 import meta::pure::extension::*;
 import meta::external::function::activator::hostedService::*;
+import meta::pure::metamodel::dataSpace::*;
 
 
 function meta::external::function::activator::hostedService::generation::printPlan(h:HostedService[1]): Any[*]
@@ -22,6 +23,7 @@ function meta::external::function::activator::hostedService::generation::printPl
 
 function meta::external::function::activator::hostedService::validator::validateService(s:HostedService[1]):Boolean[1]
 {
+  $s->validateFunctionParamsInPattern();
   $s.function->validateFunction();
   $s->validateReturnType();
 }
@@ -32,6 +34,31 @@ function meta::external::function::activator::hostedService::validator::validate
     | true;,
     | assert($s.binding->isNotEmpty() || $s.contentType->isNotEmpty(), 'Service must return a serializable:  '+ allowedReturnTypes().name->joinStrings('[',',',']')+ ', or must use binding/contentType to externalize')
   );
+}
+
+function meta::external::function::activator::hostedService::validator::validateFunctionParamsInPattern(h:HostedService[1]): Boolean[1]
+{
+  let pattern = $h.pattern;
+  assert($pattern->startsWith('/'),'Pattern must start with backslash');
+  let params  = $h.function->functionType().parameters->evaluateAndDeactivate();
+  let oneParams  = $params->filter(p|$p->deactivate().multiplicity == PureOne);
+  let nonOneParams  = $params->filter(p|!$p->deactivate().multiplicity == PureOne);
+  //all [1] params in pattern
+  $oneParams->map(p| assert($pattern->contains('{'+$p.name+'}'), 'Parameter '+$p.name+' with multiplicty [1] must be in service pattern.'));
+  //all non [1] params not in pattern
+  $nonOneParams->map(p| assert($pattern->contains('{'+$p.name+'}'), 'Parameter '+$p.name+' with multiplicty not [1] cannot be in service pattern.'));
+  //Service has a base pattern
+  let firstParamIndex = $pattern->indexOf('{');
+
+  assert(if($firstParamIndex != -1,| $firstParamIndex != 1,| true), 'Service must have a base pattern. Cannot start with a parameter');
+  //no param in pattern that doesnt exist in function
+  if($firstParamIndex!=-1,
+  |
+    let withoutBase = $pattern->substring($firstParamIndex, $pattern->length());
+    let leftOver = $oneParams.name->fold({b, a| $a->replace('{'+$b+'}','')}, $withoutBase->replace('/',''));
+    assert($leftOver->length()==0, 'Found unexpected params in pattern: '+$leftOver->replace('{','')->replace('}',' ')->trim()->replace(' ',','));,
+  | true);
+  true;
 }
 
 function meta::external::function::activator::hostedService::validator::validateFunction(func:Function<Any>[1]): Boolean[1]
@@ -69,7 +96,7 @@ function meta::external::function::activator::hostedService::generation::needsSe
 function meta::external::function::activator::hostedService::generation::recomposeServiceFunction(service:HostedService[1]):HostedService[1]
 {
   let result = if($service.function->functionReturnType()->needsSerialization(),
-                  |let tree = getTree($service.function); println($service.function->functionReturnType().rawType);
+                  |let tree = getTree($service.function); //println($service.function->functionReturnType().rawType);
                     assert($service.binding->isNotEmpty() || $service.contentType->isNotEmpty() , 'Service needs serialization but no binding/contentType provides');
                     let binding = if($service.binding->isNotEmpty(),
                                     |$service.binding,
@@ -119,11 +146,10 @@ function meta::external::function::activator::hostedService::generation::getTree
           ->cast(@GraphFetchTree)->toOne()
 }
 
-function meta::external::function::activator::hostedService::generation::isMultiEenvironmentService(h:HostedService[1] ):Boolean[1]
+function meta::external::function::activator::hostedService::generation::isMultiEenvironmentService(h:HostedService[1]):Boolean[1]
 {
-  $h.function->meta::external::function::activator::hostedService::generation::getExecutionEnvInstance()->size()>0;
+  $h.function->meta::external::function::activator::hostedService::generation::getExecutionParam()->size() > 0;
 }
-
 
 function meta::external::function::activator::hostedService::generation::getEnvironmentkey(h:HostedService[1] ):String[1]
 {
@@ -142,11 +168,10 @@ function meta::external::function::activator::hostedService::generation::getEnvi
 
 }
 
-
-function meta::external::function::activator::hostedService::generation::getExecutionEnvInstance(func: PackageableFunction<Any>[1]):ExecutionEnvironmentInstance[*]
+function meta::external::function::activator::hostedService::generation::getExecutionParam(func: PackageableFunction<Any>[1]):PackageableElement[*]
 {
   let valueSpecification = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues
-                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters]));
+                            ->filter(x| $x.genericType.rawType->toOne()->in([ExecutionEnvironmentInstance, SingleExecutionParameters, DataSpace]));
                             //today we'll get a function cos we're in the pure IDE. from syudio we should be getting a packageable element so the need for the inner match will be eliminated
   if($valueSpecification->isNotEmpty(),
     |$valueSpecification->match([
@@ -157,26 +182,36 @@ function meta::external::function::activator::hostedService::generation::getExec
                                              e: ExecutionEnvironmentInstance[1]| $e
                                           ]));,
                                         |$s->reactivate()->toOne()
-                                          ); ,
+                                    );,
     e: ExecutionEnvironmentInstance[1]| $e,
+    d: DataSpace[1] | $d,
     a:Any[1]| fail('unexpected type'); $a;
     ]),
-    |[])->cast(@ExecutionEnvironmentInstance);
+    |[])->cast(@PackageableElement);
 }
 
 function meta::external::function::activator::hostedService::generation::rebuildServiceUsingSingleExecutionParams(h:HostedService[1] ):Pair<String,HostedService>[*]
 {
-    let execEnv = getExecutionEnvInstance($h.function);
-    assert($execEnv->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $execEnv->size()->toString());
-    $execEnv.executionParameters->map(
-      p| assert($p->instanceOf(SingleExecutionParameters),'Only handles singleExecutionParams');
-      let newFunc = rebuildFromExpression($h.function, $p->cast(@SingleExecutionParameters));
-      let newHostedService = ^$h(function=$newFunc);
-      pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
-    );
+    let execParam = getExecutionParam($h.function);
+    $execParam->match([
+                       e : ExecutionEnvironmentInstance[*] | assert($e->size()== 1, 'Found too many/not enough execution environment instances. Size='+ $e->size()->toString());
+                                                             $e.executionParameters->map(
+                                                                p | assert($p->instanceOf(SingleExecutionParameters),'Only handles singleExecutionParams');
+                                                                    let newFunc = rebuildFromExpression($h.function, $p->cast(@SingleExecutionParameters).mapping, $p->cast(@SingleExecutionParameters).runtime);
+                                                                    let newHostedService = ^$h(function=$newFunc);
+                                                                    pair($p->cast(@SingleExecutionParameters).key, $newHostedService);
+                                                             );,
+                       d : DataSpace[*]                    | assert($d->size() == 1, 'Found too many/ not enough dataSpaces, Size =' + $d->size()->toString());
+                                                              $d.executionContexts->map(
+                                                                ec | let newFunc = rebuildFromExpression($h.function, $ec.mapping, $ec.defaultRuntime.runtimeValue);
+                                                                let newHostedService = ^$h(function = $newFunc);
+                                                                pair($ec.name, $newHostedService);
+                                                              );,
+                       a : Any[1]                          | fail('unexpected type'); [];
+    ]);
 }
 
-function meta::external::function::activator::hostedService::generation::rebuildFromExpression(func: PackageableFunction<Any>[1], executionParam:SingleExecutionParameters[1]): PackageableFunction<Any>[1]
+function meta::external::function::activator::hostedService::generation::rebuildFromExpression(func: PackageableFunction<Any>[1], mapping: Mapping[1], runtime: Runtime[1]): PackageableFunction<Any>[1]
 {
   let fromExpression = ^SimpleFunctionExpression(
                               importGroup = system::imports::coreImport,
@@ -185,8 +220,8 @@ function meta::external::function::activator::hostedService::generation::rebuild
                               genericType = $func->functionReturnType(),
                               multiplicity = PureOne,
                               parametersValues = $func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->cast(@SimpleFunctionExpression)->evaluateAndDeactivate().parametersValues->at(0)
-                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Mapping), multiplicity = PureOne, values = $executionParam.mapping))
-                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Runtime), multiplicity = PureOne, values = $executionParam.runtime))
+                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Mapping), multiplicity = PureOne, values = $mapping))
+                                                  ->concatenate(^InstanceValue(genericType =^GenericType(rawType = Runtime), multiplicity = PureOne, values = $runtime))
                              )->evaluateAndDeactivate();
     let serviceFunc = $func->cast(@ConcreteFunctionDefinition<Any>);
     let newServiceFunc = ^$serviceFunc(expressionSequence =$fromExpression->evaluateAndDeactivate());
@@ -247,4 +282,3 @@ function meta::external::function::activator::hostedService::validator::allowedR
     Byte
   ]
 }
-

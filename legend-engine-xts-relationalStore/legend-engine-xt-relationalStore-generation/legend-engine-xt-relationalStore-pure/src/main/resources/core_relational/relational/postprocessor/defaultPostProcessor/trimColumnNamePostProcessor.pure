@@ -54,7 +54,7 @@ function meta::relational::postProcessor::reAliasColumnName::lengthConfig(runtim
 {
   let type =  $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
 
-  let length = $type->cast(@DatabaseType)->toOne()->createDbConfig([]).dbExtension.aliasLimit;
+  let length = $type->cast(@DatabaseType)->distinct()->toOne('Provided runtime has multiple database connections of different types')->createDbConfig([]).dbExtension.aliasLimit;
   if($length->isEmpty(),
      | fail('Db not configured for column rename');0;,
      | $length
@@ -81,10 +81,10 @@ function  meta::relational::postProcessor::reAliasColumnName::search(q:Relationa
                      d: DynaFunction[1]| $d.parameters->search($runtime);,
                      b: BinaryOperation[1] |$b.left->search($runtime)->concatenate($b.right->search($runtime));,
                      a: Alias[1] | let maxLength = lengthConfig($runtime);
-                                   if( $a.name->length()>=$maxLength,|pair($a.name->replace('"','')->substring(0,$maxLength-10), $a.name),|[])->concatenate($a.relationalElement->search($runtime));,
+                                   if( $a.name->length()>=$maxLength,|let sanitizedName = $a.name->replace('"',''); pair(if($sanitizedName->length() > ($maxLength - 10),| $a.name->replace('"','')->substring(0,$maxLength-10),| $sanitizedName), $a.name);,|[])->concatenate($a.relationalElement->search($runtime));,
                      js: JoinStrings[1]| $js.strings->search($runtime)->concatenate($js.prefix->search($runtime))->concatenate($js.suffix->search($runtime))->concatenate($js.separator->search($runtime));,
                      c: Column[1]| let maxLength = lengthConfig($runtime);
-                                   if( $c.name->length()>=$maxLength,|pair($c.name->replace('"','')->substring(0,$maxLength-10), $c.name),|[]);,
+                                   if( $c.name->length()>=$maxLength,|let sanitizedName = $c.name->replace('"',''); pair(if($sanitizedName->length() > ($maxLength - 10),| $c.name->replace('"','')->substring(0,$maxLength-10),| $sanitizedName), $c.name);,|[]);,
                      s:SemiStructuredPropertyAccess[1] | $s.operand->concatenate($s.property)->concatenate($s.index)->search($runtime),
                      s:SemiStructuredArrayElementAccess[1] | $s.operand->concatenate($s.index)->search($runtime),
                      s:SemiStructuredArrayFlatten[1] | $s.navigation->search($runtime),

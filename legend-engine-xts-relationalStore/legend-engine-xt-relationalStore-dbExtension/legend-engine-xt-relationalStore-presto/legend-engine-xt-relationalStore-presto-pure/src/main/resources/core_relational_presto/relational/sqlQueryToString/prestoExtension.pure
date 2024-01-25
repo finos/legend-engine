@@ -51,7 +51,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
 
   [
     dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | '\'' + $p->at(2)->mapToDBUnitType() + '\', ' + $p->at(1) + ', ' + $p->at(0)})),
-    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -80,7 +79,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpLikePattern('%s','%s'), transform={p:String[2]|$p->transformRegexpParams()})),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
-    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='date_format(%s, \'%M\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='month(%s)')),
@@ -93,7 +91,6 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('previousDayOfWeek',      $allStates,            ^ToSql(format='date_add(\'day\', case when %s - day_of_week(%s) >= 0 then %s - day_of_week(%s) - 7 else %s - day_of_week(%s) end, %s)', transform={p:String[1..2] | $p->formatMostRecentPresto('current_date')}, parametersWithinWhenClause = [false, false])),
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
-    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('right',                  $allStates,            ^ToSql(format='substr(%s,-1,%s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),

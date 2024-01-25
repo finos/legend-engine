@@ -35,10 +35,11 @@ public class PureWithEngineHelper
         return isNotSet;
     }
 
-    public static void cleanUp()
+    public static boolean cleanUp()
     {
         System.clearProperty("alloy.test.clientVersion");
         System.clearProperty("legend.test.clientVersion");
+        return true;
     }
 
     public static <T extends Application> T initEngineServer(String serverConfigFilePath, Function0<T> engineServerCreator) throws Exception

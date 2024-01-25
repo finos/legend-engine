@@ -31,7 +31,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
       selectSQLQueryProcessor = processSelectSQLQueryDefault_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       columnNameToIdentifier = columnNameToIdentifierDefault_String_1__DbConfig_1__String_1_,
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
-      dynaFuncDispatch = $dynaFuncDispatch
+      dynaFuncDispatch = $dynaFuncDispatch,
+      ddlCommandsTranslator = getDDLCommandsTranslatorForRedshift()
    );
 }
 
@@ -49,17 +50,32 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
   let allStates = allGenerationStates();
 
   [
-    dynaFnToSql('atan2',                  $allStates,            ^ToSql(format='atan2(%s,%s)')),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),        
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='%s', transform={p:String[*]|$p->joinStrings(' + ')})),
+    dynaFnToSql('dateDiff',               $allStates,            ^ToSql(format='datediff(%s,%s,%s)', transform={p:String[*]|[$p->at(2)->replace('\'', '')->processDateDiffDurationUnitForRedshift(),$p->at(0),$p->at(1)]})),
     dynaFnToSql('datePart',               $allStates,            ^ToSql(format='trunc(%s)')),
+    dynaFnToSql('dayOfMonth',             $allStates,            ^ToSql(format='date_part(\'day\', %s)')),
     dynaFnToSql('dayOfWeek',              $allStates,            ^ToSql(format='to_char(%s, \'FMDay\')')),
+    dynaFnToSql('dayOfWeekNumber',        $allStates,            ^ToSql(format='date_part(\'dow\', %s)')),
+    dynaFnToSql('dayOfYear',              $allStates,            ^ToSql(format='date_part(\'doy\', %s)')),
+    dynaFnToSql('firstDayOfMonth',        $allStates,            ^ToSql(format='date_trunc(\'month\', %s)')),
+    dynaFnToSql('firstDayOfQuarter',      $allStates,            ^ToSql(format='date_trunc(\'quarter\', %s)')),
+    dynaFnToSql('firstDayOfThisMonth',    $allStates,            ^ToSql(format='date_trunc(\'month\', current_date)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisQuarter',  $allStates,            ^ToSql(format='date_trunc(\'quarter\', current_date)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfThisYear',     $allStates,            ^ToSql(format='date_trunc(\'year\', current_date)%s', transform={p:String[*] | ''})),
+    dynaFnToSql('firstDayOfWeek',         $allStates,            ^ToSql(format='date_trunc(\'week\', %s)')),
+    dynaFnToSql('firstDayOfYear',         $allStates,            ^ToSql(format='date_trunc(\'year\', %s)')),
+    dynaFnToSql('firstHourOfDay',         $allStates,            ^ToSql(format='date_trunc(\'day\', %s)')),
+    dynaFnToSql('firstMillisecondOfSecond', $allStates,          ^ToSql(format='date_trunc(\'second\', %s)')),
+    dynaFnToSql('firstMinuteOfHour',      $allStates,            ^ToSql(format='date_trunc(\'hour\', %s)')),
+    dynaFnToSql('firstSecondOfMinute',    $allStates,            ^ToSql(format='date_trunc(\'minute\', %s)')),
     dynaFnToSql('hour',                   $allStates,            ^ToSql(format='date_part(hour, %s)')),
+    dynaFnToSql('indexOf',                $allStates,            ^ToSql(format='strpos(%s, %s)')),
     dynaFnToSql('joinStrings',            $allStates,            ^ToSql(format='listagg(%s, %s)')),
+    dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('log10',                  $allStates,            ^ToSql(format='log(%s)')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='extract(minute from %s)')),
-    dynaFnToSql('mod',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='extract(month from %s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='to_char(%s, \'FMMonth\')')),
     dynaFnToSql('monthNumber',            $allStates,            ^ToSql(format='extract(month from %s)')),
@@ -68,10 +84,8 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
     dynaFnToSql('parseFloat',             $allStates,            ^ToSql(format='cast(%s as float)')),
     dynaFnToSql('parseInteger',           $allStates,            ^ToSql(format='cast(%s as integer)')),
     dynaFnToSql('position',               $allStates,            ^ToSql(format='position(%s in %s)')),
-    dynaFnToSql('rem',                    $allStates,            ^ToSql(format='mod(%s,%s)')),
-    dynaFnToSql('right',                  $allStates,            ^ToSql(format='right(%s,%s)')),
+    dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='date_part(\'quarter\', %s)')),
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
-    dynaFnToSql('rtrim',                  $allStates,            ^ToSql(format='rtrim(%s)')),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='extract( second from %s)')),
     dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='sha2(%s, 256)')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -84,4 +98,36 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::redsh
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='extract(week from %s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='extract(year from %s)'))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::processDateDiffDurationUnitForRedshift(durationUnit:String[1]):String[1]
+{
+   let durationEnumNames = [DurationUnit.YEARS,DurationUnit.MONTHS,DurationUnit.WEEKS,DurationUnit.DAYS,DurationUnit.HOURS,DurationUnit.MINUTES,DurationUnit.SECONDS,DurationUnit.MILLISECONDS]->map(e|$e->toString());
+   let durationDbNames = ['year', 'month', 'week', 'day', 'hour', 'minute', 'second', 'millisecond'];
+   $durationEnumNames->zip($durationDbNames)->filter(h | $h.first == $durationUnit).second->toOne();
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::getDDLCommandsTranslatorForRedshift(): RelationalDDLCommandsTranslator[1]
+{
+  ^RelationalDDLCommandsTranslator(
+                createSchema = translateCreateSchemaStatementForRedshift_CreateSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                dropSchema =  translateDropSchemaStatementForRedshift_DropSchemaSQL_1__DbConfig_1__String_$0_1$_,
+                createTable =  translateCreateTableStatementDefault_CreateTableSQL_1__DbConfig_1__String_1_,
+                dropTable = translateDropTableStatementDefault_DropTableSQL_1__DbConfig_1__String_1_,
+                loadTable =  loadValuesToDbTableDefault_LoadTableSQL_1__DbConfig_1__String_MANY_
+              );
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::translateCreateSchemaStatementForRedshift(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+   if ($createSchemaSQL.schema.name == 'default', 
+    | [], 
+    | 'Create Schema if not exists ' + $createSchemaSQL.schema.name + ';';);
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::redshift::translateDropSchemaStatementForRedshift(dropSchemaSQL:DropSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
+{
+  if ($dropSchemaSQL.schema.name == 'default', 
+    |  [], 
+    | 'Drop schema if exists ' + $dropSchemaSQL.schema.name + ';')
 }

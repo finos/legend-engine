@@ -2,42 +2,27 @@ function model::Hello(name: String[1]): String[1]
 {
   'Hello World! My name is ' + $name + '.';
 }
-[
-  testSuite_1:
-  {
-    tests:
-    [
-      testPass:
-      {
-        parameters:
-        [
-          name = 'John'
-        ]
-        asserts:
-        [
-          assertion_1:
-              EqualTo
-              #{
-                expected: 'Hello World! My name is John.';
-              }#
-        ]
-      },
-      testFail:
-      {
-        parameters:
-        [
-          name = 'John'
-        ]
-        asserts:
-        [
-          assertion_1:
-              EqualTo
-              #{
-                expected: 'Hello World! My name is Johnx.';
-              }#
-        ]
-      }
+{
+  testSuite_1
+  (
+    testPass | Hello('John') => 'Hello World! My name is John.';
+    testFail | Hello('John') => 'Hello World! My name is Johnx.';
+  )
+}
 
-    ]
-  }
-]
+function model::Simple(): String[1]
+{
+  'Hello' + ' World!';
+}
+{
+    testPass | Simple() => 'Hello World!';
+}
+
+function model::SimpleReference(): String[1]
+{
+  model::Simple();
+}
+{
+    testPass | SimpleReference() => 'Hello World!';
+    testFail | SimpleReference() => 'Hello World!Nope';
+}
