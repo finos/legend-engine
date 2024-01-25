@@ -53,13 +53,11 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
 
     public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact)
     {
-        return new HostedServiceDeploymentResult();
+        return doDeploy(identity, (HostedServiceDeploymentConfiguration) artifact.deploymentConfiguration, artifact);
     }
-
 
     public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact, List<HostedServiceDeploymentConfiguration> availableRuntimeConfigurations)
     {
-        HostedServiceDeploymentResult result = new HostedServiceDeploymentResult();
         HostedServiceDeploymentConfiguration deployConf ;
         MutableList<HostedServiceDeploymentConfiguration> c = Lists.mutable.withAll(availableRuntimeConfigurations);
         if (artifact.deploymentConfiguration == null
@@ -70,9 +68,16 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
         {
             deployConf = (HostedServiceDeploymentConfiguration) artifact.deploymentConfiguration;
         }
+
+        return doDeploy(identity, deployConf, artifact);
+    }
+
+    public HostedServiceDeploymentResult doDeploy(Identity identity, HostedServiceDeploymentConfiguration deployConf, HostedServiceArtifact artifact)
+    {
+        HostedServiceDeploymentResult result = new HostedServiceDeploymentResult();
         try {
             HttpPost request = new HttpPost(new URIBuilder()
-                    .setScheme("http")
+                    .setScheme("https")
                     .setHost(deployConf.domain)
                     .setPort(deployConf.port)
                     .setPath(deployConf.path)
