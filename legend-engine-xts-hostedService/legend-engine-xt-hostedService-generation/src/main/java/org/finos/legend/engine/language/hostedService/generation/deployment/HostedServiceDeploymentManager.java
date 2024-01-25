@@ -58,10 +58,10 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
 
     public HostedServiceDeploymentResult deploy(Identity identity, HostedServiceArtifact artifact, List<HostedServiceDeploymentConfiguration> availableRuntimeConfigurations)
     {
-        HostedServiceDeploymentConfiguration deployConf ;
+        HostedServiceDeploymentConfiguration deployConf;
         MutableList<HostedServiceDeploymentConfiguration> c = Lists.mutable.withAll(availableRuntimeConfigurations);
         if (artifact.deploymentConfiguration == null
-                && c.select(conf-> conf.destination.equals(((HostedServiceDeploymentConfiguration) (artifact.deploymentConfiguration)).destination)).size()>0) {
+                && c.select(conf -> conf.destination.equals(((HostedServiceDeploymentConfiguration) (artifact.deploymentConfiguration)).destination)).size() > 0) {
             deployConf = c.getFirst();
         }
         else
@@ -75,7 +75,8 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
     public HostedServiceDeploymentResult doDeploy(Identity identity, HostedServiceDeploymentConfiguration deployConf, HostedServiceArtifact artifact)
     {
         HostedServiceDeploymentResult result = new HostedServiceDeploymentResult();
-        try {
+        try
+        {
             HttpPost request = new HttpPost(new URIBuilder()
                     .setScheme("https")
                     .setHost(deployConf.domain)
@@ -90,9 +91,12 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
             Subject.doAs(subject, (PrivilegedExceptionAction<String>) () ->
             {
                 HttpResponse response = httpclient.execute(request);
-                if (response.getStatusLine().getStatusCode() != 200) {
+                if (response.getStatusLine().getStatusCode() != 200)
+                {
                     result.error = EntityUtils.toString(response.getEntity());
-                } else {
+                }
+                else
+                {
                     result.successful = true;
                     result.deploymentLocation = buildDeployStub(deployConf, artifact);
                 }
@@ -111,6 +115,6 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
     public String buildDeployStub(HostedServiceDeploymentConfiguration config, HostedServiceArtifact artifact)
     {
         //change to UI
-        return "http://"+config.domain+":"+ config.port+ config.path + ((HostedServiceContent)artifact.content).pattern;
+        return "http://"+config.domain + ":" + config.port + config.path + ((HostedServiceContent)artifact.content).pattern;
     }
 }
