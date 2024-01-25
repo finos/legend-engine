@@ -17,7 +17,7 @@ Class meta::pure::store::StoreContract extends meta::pure::router::extension::Ro
   supports : Function<{FunctionExpression[1]->Boolean[1]}>[0..1];
   supportsNativeJoinAmongElements : Boolean[1];
   isPropertyAutoMapped : Function<{AbstractProperty<Any>[1], InstanceSetImplementation[1]->Boolean[1]}>[0..1];
-  localizeXStoreAssociation : Function<{XStoreAssociationImplementation[1], SetImplementation[*], Store[*] -> Function<{Nil[1]->AssociationImplementation[1]}>[*]}>[0..1];
+  localizeXStoreAssociation : Function<{XStoreAssociationImplementation[1], SetImplementation[*] -> Function<{Nil[1]->AssociationImplementation[1]}>[*]}>[0..1];
   // ------------------------------------------------------------------------------------------ Routing
 
   // ExecutionPlan Generation -------------------------------------------------------------------------

@@ -42,7 +42,7 @@ public class ConnectionCompilerExtension implements CompilerExtension
                 (element, context) ->
                 {
                     // @HACKY: new-connection-framework
-                    Root_meta_pure_metamodel_connection_Connection metamodel = new Root_meta_pure_metamodel_connection_Connection_Impl(element.name, null, context.pureModel.getClass("meta::pure::metamodel::connection::Connection"))._name(element.name);
+                    Root_meta_pure_metamodel_connection_Connection metamodel = new Root_meta_pure_metamodel_connection_Connection_Impl(element.name, SourceInformationHelper.toM3SourceInformation(element.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::connection::Connection"))._name(element.name);
                     connectionsIndex.put(context.pureModel.buildPackageString(element._package, element.name), metamodel);
                     metamodel._rawValue(element);
                     return metamodel;

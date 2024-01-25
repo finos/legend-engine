@@ -607,7 +607,7 @@ public class TestServiceGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "      [\n" +
                 "        connections:\n" +
                 "        [\n" +
-                "          connection1:\n" +
+                "          meta::legend::test::connection1:\n" +
                 "            ExternalFormat\n" +
                 "            #{\n" +
                 "              contentType: 'application/x.flatdata';\n" +
