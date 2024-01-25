@@ -89,9 +89,9 @@ public class FreeMarkerExecutor
         Pattern p = Pattern.compile(regex);
 
         Matcher matcher = p.matcher(result);
-        if (!result.equals(input.replace("\\\"", "\"")) && matcher.find())
+        if (!result.equals(input.replace("\\\"", "\"")) && matcher.find()) //decide if freemarker expression exists/reprocessing is needed
         {
-            return processRecursively(result, variableMap, templateFunctions); //check there is some content 
+            return processRecursively(result, variableMap, templateFunctions);
         }
         return result;
     }
