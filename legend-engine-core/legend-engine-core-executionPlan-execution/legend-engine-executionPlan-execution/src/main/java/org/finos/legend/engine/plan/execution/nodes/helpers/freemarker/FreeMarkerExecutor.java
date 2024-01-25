@@ -91,10 +91,7 @@ public class FreeMarkerExecutor
         Matcher matcher = p.matcher(result);
         if (!result.equals(input.replace("\\\"", "\"")) && matcher.find())
         {
-            if (matcher.group(2) != null)
-            {
-                return processRecursively(result, variableMap, templateFunctions); //check there is some content 
-            }
+            return processRecursively(result, variableMap, templateFunctions); //check there is some content 
         }
         return result;
     }
