@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function0;
@@ -173,10 +176,6 @@ import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_PropertyMappingsImplementation.Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_;
 import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
@@ -211,15 +210,19 @@ public class HelperRelationalBuilder
         return context.resolve(fullPath, sourceInformation, (String path) -> getDatabase(path, sourceInformation, context));
     }
 
-    private static Column getColumn(Relation tb, final String _column, SourceInformation sourceInformation)
+    public static Column getColumn(Relation tb, final String _column, SourceInformation sourceInformation)
     {
         Column column = (Column) tb._columns().detect(col -> _column.equals(col.getName()));
         Assert.assertTrue(column != null, () -> "Can't find column '" + _column + "'", sourceInformation, EngineErrorType.COMPILATION);
         return column;
     }
 
-    private static Join getJoin(Database db, String _joinName, SourceInformation sourceInformation)
+    public static Join getJoin(JoinPointer joinPointer, CompileContext context)
     {
+        String _joinName = joinPointer.name;
+        Database db = resolveDatabase(joinPointer.db, joinPointer.sourceInformation, context);
+        SourceInformation sourceInformation = joinPointer.sourceInformation;
+
         Join join;
         try
         {
@@ -271,14 +274,14 @@ public class HelperRelationalBuilder
         return null;
     }
 
-    private static Filter getFilter(Database db, String _filterName, SourceInformation sourceInformation)
+    public static Filter getFilter(Database db, String _filterName, SourceInformation sourceInformation)
     {
         Filter filter = db._filters().detect(join -> _filterName.equals(join._name()));
         Assert.assertTrue(filter != null, () -> "Can't find filter '" + _filterName + "' in database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         return filter;
     }
 
-    private static Schema getSchema(Database db, final String _schema)
+    public static Schema getSchema(Database db, final String _schema)
     {
         Schema s = db._schemas().detect(schema -> _schema.equals(schema.getName()));
         Assert.assertTrue(s != null, () -> "Can't find schema '" + _schema + "' in database '" + db.getName() + "'");
@@ -290,7 +293,7 @@ public class HelperRelationalBuilder
         return getRelation(s, _table, SourceInformation.getUnknownSourceInformation());
     }
 
-    private static Relation getRelation(Schema s, final String _table, SourceInformation sourceInformation)
+    public static Relation getRelation(Schema s, final String _table, SourceInformation sourceInformation)
     {
         Relation res = s._tables().detect(table -> _table.equals(table.getName()));
         if (res == null)
@@ -844,7 +847,7 @@ public class HelperRelationalBuilder
     private static JoinTreeNode buildElementWithJoinsJoinTreeNode(List<JoinPointer> joins, CompileContext context)
     {
         MutableList<JoinWithJoinType> newJoins = ListIterate.collect(joins, joinPointer -> new JoinWithJoinType(
-                getJoin(resolveDatabase(joinPointer.db, joinPointer.sourceInformation, context), joinPointer.name, joinPointer.sourceInformation), joinPointer.joinType == null
+                getJoin(joinPointer, context), joinPointer.joinType == null
                 ? null : context.pureModel.getEnumValue("meta::relational::metamodel::join::JoinType", "INNER".equals(joinPointer.joinType) ? "INNER" : "LEFT_OUTER")));
         return processElementWithJoinsJoins(newJoins);
     }
