@@ -2505,3 +2505,28 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
                '  )\n' +
                ')\n', $result->planToString($extensions));
  }
+
+
+ function <<test.Test>> meta::pure::executionPlan::tests::testEnumPushDownWithExternalFormat():Boolean[1]
+ {
+
+    let extensions =meta::relational::extension::relationalExtensions() ->concatenate(meta::external::format::shared::transformation::tests::exampleExternalFormatExtension()->concatenate(meta::pure::extension::configuration::coreExtensions()));
+    let result = executionPlan({|Synonym.all()->project(p|$p.type, 'name')->meta::external::format::shared::functions::externalize('text/example')}, simpleRelationalMapping,meta::external::store::relational::tests::testRuntime(), $extensions);
+    assertEquals (
+    'ExternalFormat_ExternalizeTDS\n' +
+               '(\n' +
+               '  type = String\n' +
+               '  resultSizeRange = 1\n' +
+               '  contentType = text/example\n' +
+               '\n' +
+               '  (\n' +
+               '    Relational\n' +
+               '    (\n' +
+               '      type = TDS[(name, String, VARCHAR(200), "")]\n'+
+               '      resultColumns = [("name", "")]\n'+
+               '      sql = select case when "root".TYPE = \'CUSIP\' then \'CUSIP\' when "root".TYPE = \'ISIN\' then \'ISIN\' else null end as "name" from productSchema.synonymTable as "root"\n'+
+               '      connection = TestDatabaseConnection(type = "H2")\n'+
+               '    )\n' +
+               '  )\n' +
+               ')\n', $result->planToString($extensions));
+ }
