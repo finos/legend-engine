@@ -100,14 +100,12 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
         return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration).collect(e -> (HostedServiceDeploymentConfiguration)e);
     }
 
-
     @Override
     public HostedServiceDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, List<HostedServiceDeploymentConfiguration> runtimeConfigs, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X",routerExtensions);
         HostedServiceArtifact artifact = new HostedServiceArtifact(activator._pattern(), generation, fetchHostedService(activator, (PureModelContextData)inputModel, pureModel), (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo);
         return this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
-//        return new HostedServiceDeploymentResult();
     }
 
     public static PureModelContextData fetchHostedService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContextData data, PureModel pureModel)
@@ -126,6 +124,5 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     {
         return e._package + "::" + e.name;
     }
-
 
 }

@@ -22,10 +22,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
-import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.*;
@@ -33,9 +31,9 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 import java.security.PrivilegedExceptionAction;
@@ -43,6 +41,7 @@ import java.util.List;
 
 public class HostedServiceDeploymentManager implements  DeploymentManager<HostedServiceArtifact, HostedServiceDeploymentResult, HostedServiceDeploymentConfiguration>
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(HostedServiceDeploymentManager.class);
 
     public static ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
@@ -103,10 +102,11 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
                 }
                 return "done";
             });
+            //LOGGER.info("Done deploying hosted service");
         }
         catch (Exception e)
         {
-            //Log
+            LOGGER.error("Error deploying hosted service", e);
             throw new EngineException(e.getMessage());
 
         }
