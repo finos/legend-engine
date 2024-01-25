@@ -61,7 +61,8 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
         HostedServiceDeploymentConfiguration deployConf;
         MutableList<HostedServiceDeploymentConfiguration> c = Lists.mutable.withAll(availableRuntimeConfigurations);
         if (artifact.deploymentConfiguration == null
-                && c.select(conf -> conf.destination.equals(((HostedServiceDeploymentConfiguration) (artifact.deploymentConfiguration)).destination)).size() > 0) {
+                && c.select(conf -> conf.destination.equals(((HostedServiceDeploymentConfiguration) (artifact.deploymentConfiguration)).destination)).size() > 0)
+        {
             deployConf = c.getFirst();
         }
         else
@@ -115,6 +116,6 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
     public String buildDeployStub(HostedServiceDeploymentConfiguration config, HostedServiceArtifact artifact)
     {
         //change to UI
-        return "http://"+config.domain + ":" + config.port + config.path + ((HostedServiceContent)artifact.content).pattern;
+        return "http://" + config.domain + ":" + config.port + config.path + ((HostedServiceContent)artifact.content).pattern;
     }
 }
