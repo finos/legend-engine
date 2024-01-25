@@ -27,15 +27,15 @@ public class HostedServiceArtifact extends FunctionActivatorArtifact
 
     }
 
-    public HostedServiceArtifact(GenerationInfo info, AlloySDLC sdlc)
+    public HostedServiceArtifact(String pattern, GenerationInfo info, AlloySDLC sdlc)
     {
-        this.content = new HostedServiceContent(info);
+        this.content = new HostedServiceContent(pattern, info);
         this.version = getVersionInfo(sdlc);
     }
 
-    public HostedServiceArtifact(GenerationInfo info, PureModelContextData serviceData, AlloySDLC sdlc)
+    public HostedServiceArtifact(String pattern, GenerationInfo info, PureModelContextData serviceData, AlloySDLC sdlc)
     {
-        this.content = new HostedServiceContent(info, serviceData);
+        this.content = new HostedServiceContent(pattern, info, serviceData);
         this.version = getVersionInfo(sdlc);
     }
 
