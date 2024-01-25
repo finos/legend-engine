@@ -31,7 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSource;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.RecordSourceVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.AcquisitionProtocol;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.acquisition.KafkaAcquisitionProtocol;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.authorization.Authorization;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.CollectionEquality;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.IdentityResolution;
@@ -39,6 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.identity.ResolutionQuery;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.precedence.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mastery.trigger.Trigger;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.*;
@@ -49,7 +49,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.proper
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
-import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -58,7 +57,6 @@ import static com.google.common.collect.Iterables.isEmpty;
 import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.String.format;
 import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 public class HelperMasterRecordDefinitionBuilder
@@ -66,7 +64,6 @@ public class HelperMasterRecordDefinitionBuilder
     private static final String MASTERY_PACKAGE_PREFIX = "meta::pure::mastery::metamodel";
     private static final String ROOT = "Root";
     private static final Set<String> CONDITIONAL_BLOCK_RULE_PREDICATE_INPUT = newHashSet("incoming", "current");
-    private static final IdentityResolutionBuilder IDENTITY_RESOLUTION_BUILDER = new IdentityResolutionBuilder();
 
     private HelperMasterRecordDefinitionBuilder()
     {
@@ -104,15 +101,21 @@ public class HelperMasterRecordDefinitionBuilder
         return Iterate.makeString(deque, "", "::", "::" + type._name());
     }
 
-    public static Root_meta_pure_mastery_metamodel_identity_IdentityResolution buildIdentityResolution(IdentityResolution identityResolution, CompileContext context)
+    public static Root_meta_pure_mastery_metamodel_identity_IdentityResolution buildIdentityResolution(IdentityResolution identityResolution, String modelClass, CompileContext context)
     {
-        IDENTITY_RESOLUTION_BUILDER.context = context;
-        return identityResolution.accept(IDENTITY_RESOLUTION_BUILDER);
+        return identityResolution.accept(new IdentityResolutionBuilder(context, modelClass));
     }
 
     private static class IdentityResolutionBuilder implements IdentityResolutionVisitor<Root_meta_pure_mastery_metamodel_identity_IdentityResolution>
     {
-        private CompileContext context;
+        private final CompileContext context;
+        private final String modelClass;
+
+        public IdentityResolutionBuilder(CompileContext context, String modelClass)
+        {
+            this.context = context;
+            this.modelClass = modelClass;
+        }
 
         @Override
         public Root_meta_pure_mastery_metamodel_identity_IdentityResolution visit(IdentityResolution protocolVal)
@@ -131,11 +134,35 @@ public class HelperMasterRecordDefinitionBuilder
             resQuery._keyType(protocolQuery.keyType == null ? null : context.resolveEnumValue(KEY_TYPE_FULL_PATH, protocolQuery.keyType.name()));
             resQuery._optional(protocolQuery.optional);
             resQuery._precedence(protocolQuery.precedence);
+            if (protocolQuery.filter != null)
+            {
+                validateFilterInput(protocolQuery.filter);
+                resQuery._filter(HelperValueSpecificationBuilder.buildLambda(protocolQuery.filter, context));
+            }
 
             ListIterate.forEachWithIndex(protocolQuery.queries, (lambda, i) ->
                     resQuery._queriesAdd(HelperValueSpecificationBuilder.buildLambda(lambda, context)));
             list.add(resQuery);
             return list;
+        }
+
+        private void validateFilterInput(Lambda predicate)
+        {
+            List<Variable> parameters = predicate.parameters;
+            if (parameters.size() != 1)
+            {
+                throw new EngineException(format("The resolution query filter must have exactly one parameter specified in the lambda function - found %s", parameters.size()), EngineErrorType.COMPILATION);
+            }
+            Variable parameter = parameters.get(0);
+            String parameterClass = parameter._class;
+            if (!modelClass.equals(parameterClass))
+            {
+                throw new EngineException(format("Input Class for the resolution key filter should be %s, however found %s", modelClass, parameterClass), EngineErrorType.COMPILATION);
+            }
+            if (parameter.multiplicity.lowerBound != 1 || !parameter.multiplicity.isUpperBoundEqualTo(1))
+            {
+                throw new EngineException("Expected input for resolution key filter to have multiplicity 1", EngineErrorType.COMPILATION);
+            }
         }
     }
 

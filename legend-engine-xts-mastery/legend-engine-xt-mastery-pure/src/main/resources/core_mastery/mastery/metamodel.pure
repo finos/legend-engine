@@ -178,6 +178,9 @@ meta::pure::mastery::metamodel::identity::ResolutionQuery
 
   {doc.doc='The query precedence applied when there are more than one ResoultionQuery definitions on an IdentityResolution, 1 is hiughest.'}
   precedence : Integer[1];
+
+  {doc.doc='An optional filter that when specified will determine whether the input should execute this resolution query or not.'}
+  filter: meta::pure::metamodel::function::LambdaFunction<{Any[*]->Boolean[1]}>[0..1];
 }
 
 Enum {doc.doc = 'Types of resolution keys.'}
