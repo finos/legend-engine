@@ -22,7 +22,6 @@ import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
@@ -215,9 +214,9 @@ public interface CompilerExtension
         return Maps.mutable.empty();
     }
 
-    default List<IncludedStoreHandler> getExtraIncludedStoreHandlers()
+    default Map<String, IncludedStoreHandler> getExtraIncludedStoreHandlers()
     {
-        return Lists.mutable.empty();
+        return Maps.mutable.empty();
     }
 
     default CompilerExtension build()

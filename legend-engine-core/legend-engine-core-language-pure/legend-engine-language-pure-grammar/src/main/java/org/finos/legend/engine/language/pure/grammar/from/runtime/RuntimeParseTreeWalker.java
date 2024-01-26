@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.runtime.RuntimeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
@@ -27,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -39,6 +41,7 @@ public class RuntimeParseTreeWalker
     private final Consumer<PackageableElement> elementConsumer;
     private final ImportAwareCodeSection section;
     private final ConnectionParser connectionParser;
+    private final PureGrammarParserExtensions extensions;
 
     public RuntimeParseTreeWalker(ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, ImportAwareCodeSection section, ConnectionParser connectionParser)
     {
@@ -46,6 +49,7 @@ public class RuntimeParseTreeWalker
         this.elementConsumer = elementConsumer;
         this.section = section;
         this.connectionParser = connectionParser;
+        this.extensions = this.connectionParser.extensions;
     }
 
     public void visit(RuntimeParserGrammar.DefinitionContext ctx)
@@ -97,13 +101,12 @@ public class RuntimeParseTreeWalker
             connectionStores.connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext.connection().packageableElementPointer());
 
             connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext);
-            connectionStores.storePointers = connectionStoresContext.packageableElementPointer() == null ? Collections.emptyList() : ListIterate.collect(connectionStoresContext.packageableElementPointer(), packageableElementPointerContext ->
+            connectionStores.storePointers = connectionStoresContext.includedStore() == null ? Collections.emptyList() : ListIterate.collect(connectionStoresContext.includedStore(), ctx ->
             {
-                String store = packageableElementPointerContext.qualifiedName().getText().equals("ModelStore") ? "ModelStore" : PureGrammarParserUtility.fromQualifiedName(packageableElementPointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : packageableElementPointerContext.qualifiedName().packagePath().identifier(), packageableElementPointerContext.qualifiedName().identifier());
-                PackageableElementPointer storePointer = new PackageableElementPointer();
-                storePointer.type = PackageableElementType.STORE;
-                storePointer.path = store;
-                storePointer.sourceInformation = walkerSourceInformation.getSourceInformation(packageableElementPointerContext.qualifiedName());
+                String includedStoreCarrierType = IncludedStoreParser.parseIncludedStoreCarrierIdentifier(ctx.includedStoreCarrierIdentifier());
+                IncludedStoreCarrier storePointer = this.extensions.getExtraIncludedStoreParser(includedStoreCarrierType).parse();
+                storePointer.path = ctx.packageableElementPointer().qualifiedName().getText().equals("ModelStore") ? "ModelStore" : PureGrammarParserUtility.fromQualifiedName(ctx.packageableElementPointer().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.packageableElementPointer().qualifiedName().packagePath().identifier(), ctx.packageableElementPointer().qualifiedName().identifier());
+                storePointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 return storePointer;
             });
             runtimeValue.connectionStores.add(connectionStores);

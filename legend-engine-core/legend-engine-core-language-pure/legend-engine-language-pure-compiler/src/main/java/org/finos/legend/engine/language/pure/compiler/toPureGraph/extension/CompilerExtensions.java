@@ -47,6 +47,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
@@ -117,7 +118,7 @@ public class CompilerExtensions
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
-    private final ImmutableList<IncludedStoreHandler> extraIncludedStoreHandlers;
+    private final Map<String, IncludedStoreHandler> extraIncludedStoreHandlers;
 
     private CompilerExtensions(Iterable<? extends CompilerExtension> extensions)
     {
@@ -151,7 +152,8 @@ public class CompilerExtensions
         this.extraValueSpecificationBuilderForFuncExpr = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationBuilderForFuncExpr);
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
-        this.extraIncludedStoreHandlers = this.extensions.flatCollect(CompilerExtension::getExtraIncludedStoreHandlers);
+        this.extraIncludedStoreHandlers = Maps.mutable.empty();
+        this.extensions.forEach(e -> extraIncludedStoreHandlers.putAll(e.getExtraIncludedStoreHandlers()));
     }
 
     public List<CompilerExtension> getExtensions()
@@ -480,20 +482,9 @@ public class CompilerExtensions
         return this.extraIncludedMappingHandlers.get(classType);
     }
 
-    public List<Store> getUnderlyingStoresFromIncludedStoreHandlers(String packageAddress, CompileContext context, SourceInformation sourceInformation)
+    public List<Store> getUnderlyingStoresFromIncludedStoreHandlers(IncludedStoreCarrier includedStoreCarrier, CompileContext context, SourceInformation sourceInformation)
     {
-        ImmutableList<List<Store>> responses = this.extraIncludedStoreHandlers.collect(e -> e.resolveStore(packageAddress, context, sourceInformation)).select(s -> !s.isEmpty());
-        if (responses.isEmpty())
-        {
-            throw new EngineException("Could not find element at address " + packageAddress, sourceInformation, EngineErrorType.COMPILATION);
-        }
-        else if (responses.size() == 1)
-        {
-            return responses.get(0);
-        }
-        else
-        {
-            throw new EngineException("Found more than one element being used as a Store placeholder at address " + packageAddress, sourceInformation, EngineErrorType.COMPILATION);
-        }
+        List<Store> responses = this.extraIncludedStoreHandlers.get(includedStoreCarrier.getClass().getName()).resolveStore(includedStoreCarrier.path, context, sourceInformation);
+        return responses;
     }
 }

@@ -39,7 +39,7 @@ public class ConnectionParser implements DEPRECATED_SectionGrammarParser
 {
     public static final String name = "Connection";
 
-    private final PureGrammarParserExtensions extensions;
+    public final PureGrammarParserExtensions extensions;
 
     private ConnectionParser(PureGrammarParserExtensions extensions)
     {

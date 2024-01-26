@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
@@ -65,6 +66,7 @@ public class PureGrammarComposerContext
     public final List<Function2<TestAssertion, PureGrammarComposerContext, ContentWithType>> extraTestAssertionComposers;
     public final Map<String, Function2<Object, PureGrammarComposerContext, String>> extraEmbeddedPureComposers;
     public final MutableList<Function<MappingInclude, String>> extraMappingIncludeComposers;
+    public final MutableList<Function<IncludedStoreCarrier, String>> extraIncludedStoreComposers;
 
     protected PureGrammarComposerContext(Builder builder)
     {
@@ -82,6 +84,7 @@ public class PureGrammarComposerContext
         this.extraConnectionValueComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraConnectionValueComposers);
         this.extraMappingTestInputDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraMappingTestInputDataComposers);
         this.extraMappingIncludeComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraMappingIncludeComposers);
+        this.extraIncludedStoreComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraIncludedStoreComposers);
         this.extraEmbeddedDataComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedDataComposers);
         this.extraEmbeddedPureComposers = merge(ListIterate.collect(this.extensions, PureGrammarComposerExtension::getExtraEmbeddedPureComposers));
         this.extraTestAssertionComposers = ListIterate.flatCollect(this.extensions, PureGrammarComposerExtension::getExtraTestAssertionComposers);

@@ -15,12 +15,17 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.appendTabString;
@@ -82,7 +87,7 @@ public class HelperRuntimeGrammarComposer
                     connectionStoreStrings.add(
                             getTabString(baseIndentation + 1) + PureGrammarComposerUtility.convertPath(connectionPointerStore.connectionPointer.connection) + ":\n" +
                                     getTabString(baseIndentation + 1) + "[\n" +
-                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + PureGrammarComposerUtility.convertPath(storePointer.path))).makeString(",\n") + "\n" +
+                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + PureGrammarComposerUtility.convertPath(storePointer.path) + renderIncludedStoreCarrierType(storePointer, transformer.toContext()))).makeString(",\n") + "\n" +
                                     getTabString(baseIndentation + 1) + "]"
                     );
                 }
@@ -93,5 +98,18 @@ public class HelperRuntimeGrammarComposer
             appendTabString(builder.append("\n"), baseIndentation).append("];");
         }
         return builder.toString();
+    }
+
+    public static String renderIncludedStoreCarrierType(IncludedStoreCarrier includedStoreCarrier, PureGrammarComposerContext context)
+    {
+        Optional<String> renderedIncludedStoreCarrierType = context.extraIncludedStoreComposers.stream().map(func -> func.apply(includedStoreCarrier)).filter(Objects::nonNull).findFirst();
+        if (renderedIncludedStoreCarrierType.isPresent())
+        {
+            return renderedIncludedStoreCarrierType.get();
+        }
+        else
+        {
+            throw new EngineException("Cannot find service to compose provided IncludedStoreCarrier class type.", EngineErrorType.COMPOSER);
+        }
     }
 }

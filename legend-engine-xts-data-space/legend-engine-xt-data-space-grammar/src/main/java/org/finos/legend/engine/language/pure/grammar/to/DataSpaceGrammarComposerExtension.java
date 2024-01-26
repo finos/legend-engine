@@ -24,6 +24,7 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
 
 import java.util.Collections;
 import java.util.List;
@@ -162,6 +163,21 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         {
             MappingIncludeDataSpace mappingIncludeDataSpace = (MappingIncludeDataSpace) mappingInclude;
             return "include dataspace " + mappingIncludeDataSpace.includedDataSpace;
+        }
+        return null;
+    }
+
+    @Override
+    public List<Function<IncludedStoreCarrier, String>> getExtraIncludedStoreComposers()
+    {
+        return Collections.singletonList(this::renderIncludedStore);
+    }
+
+    private String renderIncludedStore(IncludedStoreCarrier includedStoreCarrier)
+    {
+        if (includedStoreCarrier.getClass().equals(DataspaceIncludedStoreCarrier.class))
+        {
+            return "->getStoresFromDataspace()";
         }
         return null;
     }

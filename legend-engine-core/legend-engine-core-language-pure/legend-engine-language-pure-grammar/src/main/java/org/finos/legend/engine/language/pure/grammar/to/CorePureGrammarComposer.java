@@ -29,6 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreIncludedStoreCarrier;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 
 import java.util.Collections;
@@ -111,6 +113,21 @@ public class CorePureGrammarComposer implements PureGrammarComposerExtension
             MappingIncludeMapping mappingIncludeMapping = (MappingIncludeMapping) mappingInclude;
             return "include mapping " + mappingIncludeMapping.getIncludedMapping()
                     + (mappingIncludeMapping.sourceDatabasePath != null && mappingIncludeMapping.targetDatabasePath != null ? "[" + PureGrammarComposerUtility.convertPath(mappingIncludeMapping.sourceDatabasePath) + "->" + PureGrammarComposerUtility.convertPath(mappingIncludeMapping.targetDatabasePath) + "]" : "");
+        }
+        return null;
+    }
+
+    @Override
+    public List<Function<IncludedStoreCarrier, String>> getExtraIncludedStoreComposers()
+    {
+        return Collections.singletonList(this::renderIncludedStoreCarrier);
+    }
+
+    private <T extends IncludedStoreCarrier> String renderIncludedStoreCarrier(T mappingInclude)
+    {
+        if (mappingInclude.getClass().equals(StoreIncludedStoreCarrier.class))
+        {
+            return "";
         }
         return null;
     }
