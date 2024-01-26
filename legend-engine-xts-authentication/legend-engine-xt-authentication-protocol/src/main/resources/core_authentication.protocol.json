@@ -1,5 +1,5 @@
 {
-  "purePackage": "meta::pure::runtime::connection::authentication::",
+  "purePackage": "meta::pure::runtime::connection::authentication",
   "javaPackage": "org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.specification",
   "elementsToBeExcluded": [
   ]
