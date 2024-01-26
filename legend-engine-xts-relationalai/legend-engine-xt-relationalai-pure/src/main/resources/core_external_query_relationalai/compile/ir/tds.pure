@@ -1,22 +1,22 @@
-import meta::rel::compile::ir::*;
-import meta::rel::compile::ir::tds::*;
-import meta::rel::trace::*;
-import meta::rel::utils::*;
-import meta::rel::utils::lang::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
 
-Class meta::rel::compile::ir::tds::Join extends PExpr {
+Class meta::external::store::rel::compile::ir::tds::Join extends PExpr {
   type: meta::relational::metamodel::join::JoinType[1];
   condition: PExprScope[1];
   left: PExpr[1];
   right: PExpr[1];
 }
 
-Class meta::rel::compile::ir::tds::TDSFilter extends PExpr {
+Class meta::external::store::rel::compile::ir::tds::TDSFilter extends PExpr {
   parent: PExpr[1];
   predicate: PExprScope[1];
 }
 
-function meta::rel::compile::ir::tds::join(
+function meta::external::store::rel::compile::ir::tds::join(
   left: PExpr[1], 
   right: PExpr[1], 
   type: meta::relational::metamodel::join::JoinType[1],
@@ -25,11 +25,11 @@ function meta::rel::compile::ir::tds::join(
   ^Join(type=$type, condition=$condition, left=$left, right=$right);
 }
 
-function meta::rel::compile::ir::tds::filter(parent: PExpr[1], predicate: PExprScope[1]): TDSFilter[1] {
+function meta::external::store::rel::compile::ir::tds::filter(parent: PExpr[1], predicate: PExprScope[1]): TDSFilter[1] {
   ^TDSFilter(parent=$parent, predicate=$predicate);
 }
 
-function meta::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+function meta::external::store::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
   let newTrace = $trace->stage('intoPExpr(FunctionExpression[1],Trace[1])');
   switch([
     case($func.func == meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_, {|
@@ -64,7 +64,7 @@ function meta::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1], tra
             ->at(1)
             ->valueSpecToUntypedScoped($newTrace)
             ->then(predicate: PExprScope[1] |
-              meta::rel::compile::ir::tds::filter($parent, $predicate)
+              meta::external::store::rel::compile::ir::tds::filter($parent, $predicate)
             )
         )
     })

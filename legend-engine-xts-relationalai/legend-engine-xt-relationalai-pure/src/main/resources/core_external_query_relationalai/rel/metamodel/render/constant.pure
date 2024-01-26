@@ -1,30 +1,30 @@
 import meta::pure::functions::collection::*;
-import meta::rel::metamodel::*;
-import meta::rel::metamodel::render::constant::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::constant::*;
+import meta::external::store::rel::utils::*;
 
 
 /////////////////////////
 // Rendering constants //
 /////////////////////////
 
-function meta::rel::metamodel::render::constant::toRelLiteral(constant: RelString[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelString[1]): String[1] {
   format('"%s"', $constant.value)
 }
 
-function meta::rel::metamodel::render::constant::toRelLiteral(constant: RelInteger[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelInteger[1]): String[1] {
   $constant.value->toString()
 }
 
-function meta::rel::metamodel::render::constant::toRelLiteral(constant: RelFloat[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelFloat[1]): String[1] {
   $constant.value->toString()
 }
 
-function meta::rel::metamodel::render::constant::toRelLiteral(constant: RelDate[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelDate[1]): String[1] {
   $constant.value->toString()
 }
 
-function meta::rel::metamodel::render::constant::toRelLiteral(constant: RelDateTime[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: RelDateTime[1]): String[1] {
   format(
     '%d-%02d-%02dT%02d:%02d:%02dZ',
     [
@@ -38,11 +38,11 @@ function meta::rel::metamodel::render::constant::toRelLiteral(constant: RelDateT
   )
 }
 
-function meta::rel::metamodel::render::constant::toRelLiteral(dontCare: DontCare[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(dontCare: DontCare[1]): String[1] {
   '_'
 }
 
-function meta::rel::metamodel::render::constant::toRelLiteral(constant: Constant[1]): String[1] {
+function meta::external::store::rel::metamodel::render::constant::toRelLiteral(constant: Constant[1]): String[1] {
   $constant->match([
     c: RelString[1]   | $c->toRelLiteral(),
     c: RelInteger[1]  | $c->toRelLiteral(),

@@ -18,6 +18,7 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
+import org.finos.legend.engine.plan.execution.api.request.ExecutionRequest;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
@@ -110,7 +111,7 @@ public class TestExecutionWithoutMiddleTierConnections
     {
         SingleExecutionPlan executionPlan = this.loadPlanFromFile("/plans/planWithoutMiddleTierConnections.json");
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build(), Relational.build());
-        Response response = new ExecutePlan(executor).doExecutePlanImpl(executionPlan, SerializationFormat.defaultFormat, profiles);
+        Response response = new ExecutePlan(executor).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, profiles);
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         String responseText = this.readResponse(response);

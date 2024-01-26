@@ -69,7 +69,7 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_c
     public Root_meta_core_runtime_Connection visit(JsonModelConnection jsonModelConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(jsonModelConnection.element, jsonModelConnection.elementSourceInformation);
-        return new Root_meta_external_store_model_JsonModelConnection_Impl("", null, context.pureModel.getClass("meta::external::store::model::JsonModelConnection"))
+        return new Root_meta_external_store_model_JsonModelConnection_Impl("", SourceInformationHelper.toM3SourceInformation(jsonModelConnection.sourceInformation), context.pureModel.getClass("meta::external::store::model::JsonModelConnection"))
                 ._class(this.context.resolveClass(jsonModelConnection._class, jsonModelConnection.classSourceInformation))
                 ._url(jsonModelConnection.url);
     }
@@ -78,7 +78,7 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_c
     public Root_meta_core_runtime_Connection visit(XmlModelConnection xmlModelConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(xmlModelConnection.element, xmlModelConnection.elementSourceInformation);
-        return new Root_meta_external_store_model_XmlModelConnection_Impl("", null, context.pureModel.getClass("meta::external::store::model::XmlModelConnection"))
+        return new Root_meta_external_store_model_XmlModelConnection_Impl("", SourceInformationHelper.toM3SourceInformation(xmlModelConnection.sourceInformation), context.pureModel.getClass("meta::external::store::model::XmlModelConnection"))
                 ._class(this.context.resolveClass(xmlModelConnection._class, xmlModelConnection.classSourceInformation))
                 ._url(xmlModelConnection.url);
     }
@@ -87,7 +87,7 @@ public class ConnectionFirstPassBuilder implements ConnectionVisitor<Root_meta_c
     public Root_meta_core_runtime_Connection visit(ModelChainConnection modelChainConnection)
     {
         HelperConnectionBuilder.verifyModelConnectionStore(modelChainConnection.element, modelChainConnection.elementSourceInformation);
-        return new Root_meta_external_store_model_ModelChainConnection_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelChainConnection"))
+        return new Root_meta_external_store_model_ModelChainConnection_Impl("", SourceInformationHelper.toM3SourceInformation(modelChainConnection.sourceInformation), context.pureModel.getClass("meta::external::store::model::ModelChainConnection"))
                 ._mappings(ListIterate.collect(modelChainConnection.mappings, m -> this.context.resolveMapping(m, modelChainConnection.mappingsSourceInformation)));
     }
 }

@@ -162,7 +162,7 @@ public class HelperMappingBuilder
                 ._name(id)
                 ._parent(pureMapping)
                 ._enumeration(context.resolveEnumeration(em.enumeration, em.sourceInformation))
-                ._enumValueMappings(ListIterate.collect(em.enumValueMappings, v -> new Root_meta_pure_mapping_EnumValueMapping_Impl(null, SourceInformationHelper.toM3SourceInformation(em.sourceInformation), null)
+                ._enumValueMappings(ListIterate.collect(em.enumValueMappings, v -> new Root_meta_pure_mapping_EnumValueMapping_Impl(null, SourceInformationHelper.toM3SourceInformation(v.sourceInformation), null)
                         ._enum(context.resolveEnumValue(em.enumeration, v.enumValue))
                         ._sourceValues(convertSourceValues(em, v.sourceValues, context))
                 ));
@@ -308,7 +308,7 @@ public class HelperMappingBuilder
         String propertyName = owner._id() + "." + ppm.property.property;
         String mappingPath = Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(owner._parent(), context.pureModel.getExecutionSupport()).replace("::", "_");
         ctx.flushVariable("src");
-        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl(propertyName, new SourceInformation(mappingPath, 0, 0, 0, 0), null)
+        return new Root_meta_pure_metamodel_function_LambdaFunction_Impl(propertyName, SourceInformationHelper.toM3SourceInformation(lambda.sourceInformation), null)
                 ._classifierGenericType(new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(context.pureModel.getType("meta::pure::metamodel::function::LambdaFunction"))._typeArguments(FastList.newListWith(functionType)))
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
@@ -342,7 +342,7 @@ public class HelperMappingBuilder
         if (associationMapping instanceof XStoreAssociationMapping)
         {
             XStoreAssociationMapping xStoreAssociationMapping = (XStoreAssociationMapping) associationMapping;
-            XStoreAssociationImplementation base = new Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl("", null, context.pureModel.getClass("meta::pure::mapping::xStore::XStoreAssociationImplementation"));
+            XStoreAssociationImplementation base = new Root_meta_pure_mapping_xStore_XStoreAssociationImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(associationMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::xStore::XStoreAssociationImplementation"));
             final org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Association pureAssociation = context.resolveAssociation(xStoreAssociationMapping.association);
             MutableList<Store> stores = ListIterate.collect(xStoreAssociationMapping.stores, context::resolveStore);
             base._association(pureAssociation)._stores(stores)._parent(parentMapping)._propertyMappings(ListIterate.collect(xStoreAssociationMapping.propertyMappings, propertyMapping -> propertyMapping.accept(new PropertyMappingBuilder(context, parentMapping, base, HelperMappingBuilder.getAllClassMappings(parentMapping)))));
@@ -357,7 +357,7 @@ public class HelperMappingBuilder
 
     public static Root_meta_pure_mapping_MappingClass_Impl processMappingClass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingClass mappingclass, CompileContext context, Mapping parent)
     {
-        Root_meta_pure_mapping_MappingClass_Impl mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>(" ");
+        Root_meta_pure_mapping_MappingClass_Impl mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>(" ", SourceInformationHelper.toM3SourceInformation(mappingclass.sourceInformation), null);
         mappingClass._name(mappingclass.name);
         MutableList<Generalization> generalizations = ListIterate.collect(mappingclass.superTypes, (superType) ->
         {
@@ -453,7 +453,7 @@ public class HelperMappingBuilder
                     ._typeArguments(Lists.fixedSize.of(sourceGenericType, targetGenericType))
                     ._multiplicityArgumentsAdd(context.pureModel.getMultiplicity(localMappingPropertyInfo.multiplicity));
 
-            return new Root_meta_pure_metamodel_function_property_Property_Impl<>(propertyMapping.property.property)
+            return new Root_meta_pure_metamodel_function_property_Property_Impl<>(propertyMapping.property.property, SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), null)
                     ._name(propertyMapping.property.property)
                     ._classifierGenericType(propertyClassifierGenericType)
                     ._genericType(targetGenericType)
@@ -513,7 +513,7 @@ public class HelperMappingBuilder
             MappingTestSuite queryTestSuite = (MappingTestSuite) test;
             TestBuilderHelper.validateNonEmptySuite(queryTestSuite);
             TestBuilderHelper.validateTestIds(queryTestSuite.tests, queryTestSuite.sourceInformation);
-            Root_meta_pure_mapping_metamodel_MappingTestSuite compiledMappingSuite = new Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl("", null, context.pureModel.getClass("meta::pure::mapping::metamodel::MappingTestSuite"));
+            Root_meta_pure_mapping_metamodel_MappingTestSuite compiledMappingSuite = new Root_meta_pure_mapping_metamodel_MappingTestSuite_Impl("", SourceInformationHelper.toM3SourceInformation(test.sourceInformation), context.pureModel.getClass("meta::pure::mapping::metamodel::MappingTestSuite"));
             return compiledMappingSuite._id(queryTestSuite.id)
                 ._query(HelperValueSpecificationBuilder.buildLambda(queryTestSuite.func, context))
                 ._tests(ListIterate.collect(queryTestSuite.tests, unitTest -> (Root_meta_pure_test_AtomicTest) HelperMappingBuilder.processMappingTestAndTestSuite(unitTest, pureMapping, context)))
@@ -541,7 +541,7 @@ public class HelperMappingBuilder
 
     static Root_meta_pure_data_StoreTestData processMappingElementTestData(StoreTestData testData, CompileContext context, ProcessingContext processingContext)
     {
-        Root_meta_pure_data_StoreTestData mappingStoreTestData = new Root_meta_pure_data_StoreTestData_Impl("", null, context.pureModel.getClass("meta::pure::data::StoreTestData"));
+        Root_meta_pure_data_StoreTestData mappingStoreTestData = new Root_meta_pure_data_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(testData.sourceInformation), context.pureModel.getClass("meta::pure::data::StoreTestData"));
         mappingStoreTestData._data(context.getCompilerExtensions().getExtraEmbeddedDataProcessors().stream().map(processor -> processor.value(testData.data, context, processingContext))
                 .filter(Objects::nonNull)
                 .findFirst()

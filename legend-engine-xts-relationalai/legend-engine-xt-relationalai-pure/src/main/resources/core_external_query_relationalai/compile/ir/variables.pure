@@ -1,15 +1,15 @@
 import meta::pure::router::metamodel::*;
 import meta::pure::router::store::metamodel::*;
-import meta::rel::compile::ir::*;
-import meta::rel::mapping::*;
-import meta::rel::trace::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
 
 /////////////////////////////////////////////////////////////////////////////
 // Shared implementation for creation of typed and untyped variable scopes //
 /////////////////////////////////////////////////////////////////////////////
 
-function <<access.private>> meta::rel::compile::ir::handleCaseValueSpecToScopes(
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseValueSpecToScopes(
   spec: ValueSpecification[1],
   requireType: Boolean[1],
   parent: PExpr[0..1],
@@ -27,7 +27,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseValueSpecToScopes(
   ]);
 }
 
-function <<access.private>> meta::rel::compile::ir::handleCaseValueSpecToScoped(
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseValueSpecToScoped(
   spec: ValueSpecification[1],
   requireType: Boolean[1],
   parent: PExpr[0..1],
@@ -70,7 +70,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseValueSpecToScoped(
 /**
   * Case handling actual creation of variable scopes, which can either be typed or untyped.
   */
-function <<access.private>> meta::rel::compile::ir::handleCaseFunctionDefToScoped(
+function <<access.private>> meta::external::store::rel::compile::ir::handleCaseFunctionDefToScoped(
   func: FunctionDefinition<Any>[1],
   requireType: Boolean[1],
   parent: PExpr[0..1],
@@ -140,7 +140,7 @@ function <<access.private>> meta::rel::compile::ir::handleCaseFunctionDefToScope
 // Handling creation of untyped variable scopes //
 //////////////////////////////////////////////////
 
-function meta::rel::compile::ir::valueSpecToUntypedScopes(
+function meta::external::store::rel::compile::ir::valueSpecToUntypedScopes(
   spec: ValueSpecification[1],
   parent: PExpr[0..1],
   trace: Trace[1]
@@ -149,7 +149,7 @@ function meta::rel::compile::ir::valueSpecToUntypedScopes(
   handleCaseValueSpecToScopes($spec, false, $parent, $trace);
 }
 
-function meta::rel::compile::ir::valueSpecToUntypedScoped(
+function meta::external::store::rel::compile::ir::valueSpecToUntypedScoped(
   spec: ValueSpecification[1],
   trace: Trace[1]
 ): Result<PExprScope|0..1>[1] {
@@ -157,7 +157,7 @@ function meta::rel::compile::ir::valueSpecToUntypedScoped(
   handleCaseValueSpecToScoped($spec, false, [], $trace);
 }
 
-function meta::rel::compile::ir::valueSpecToUntypedScoped(
+function meta::external::store::rel::compile::ir::valueSpecToUntypedScoped(
   spec: ValueSpecification[1],
   parent: PExpr[0..1],
   trace: Trace[1]
@@ -166,7 +166,7 @@ function meta::rel::compile::ir::valueSpecToUntypedScoped(
   handleCaseValueSpecToScoped($spec, false, $parent, $trace);
 }
 
-function meta::rel::compile::ir::functionDefToUntypedScoped(
+function meta::external::store::rel::compile::ir::functionDefToUntypedScoped(
   func: FunctionDefinition<Any>[1],
   parent: PExpr[0..1],
   trace: Trace[1]
@@ -179,7 +179,7 @@ function meta::rel::compile::ir::functionDefToUntypedScoped(
 // Handling creation of typed variable scopes //
 ////////////////////////////////////////////////
 
-function meta::rel::compile::ir::valueSpecToTypedScopes(
+function meta::external::store::rel::compile::ir::valueSpecToTypedScopes(
   spec: ValueSpecification[1],
   trace: Trace[1]
 ): Result<PExprScopeTyped|0..1>[*] {
@@ -187,7 +187,7 @@ function meta::rel::compile::ir::valueSpecToTypedScopes(
   $spec->valueSpecToTypedScopes([], $newTrace);
 }
 
-function meta::rel::compile::ir::valueSpecToTypedScopes(
+function meta::external::store::rel::compile::ir::valueSpecToTypedScopes(
   spec: ValueSpecification[1],
   parent: PExpr[0..1],
   trace: Trace[1]

@@ -2767,6 +2767,12 @@ function meta::external::language::java::factory::resolveProjects(dependencies:C
    $dependencies->fold({d, s| $d.stateUpdater->eval($s)}, $state);
 }
 
+function meta::external::language::java::factory::addDependencyVisitedFunction(state:CodeDependencyResolutionState[1], visitedFunction:String[1]):CodeDependencyResolutionState[1]
+{
+   ^$state(visitedFunctions=$state.visitedFunctions->concatenate($visitedFunction));
+}
+
+
 function meta::external::language::java::factory::getProjects(state:CodeDependencyResolutionState[1], dependencies:CodeDependency[*]):Project[*]
 {
    $state.projectsByDependency->keyValues()->filter({kv|$kv.first->in($dependencies.name)}).second;
