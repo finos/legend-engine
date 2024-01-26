@@ -17,7 +17,6 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.List;
@@ -27,13 +26,6 @@ public class StoreIncludedStoreHandler implements IncludedStoreHandler
     @Override
     public List<Store> resolveStore(String packageAddress, CompileContext context, SourceInformation sourceInformation)
     {
-        try
-        {
-            return Lists.mutable.of(context.resolveStore(packageAddress, sourceInformation));
-        }
-        catch (EngineException exception)
-        {
-            return Lists.mutable.empty();
-        }
+        return Lists.mutable.of(context.resolveStore(packageAddress, sourceInformation));
     }
 }

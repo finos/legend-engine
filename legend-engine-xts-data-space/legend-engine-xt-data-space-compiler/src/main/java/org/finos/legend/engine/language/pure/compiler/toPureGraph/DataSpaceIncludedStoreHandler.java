@@ -21,7 +21,6 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSp
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.List;
-import java.util.Objects;
 
 public class DataSpaceIncludedStoreHandler implements IncludedStoreHandler
 {
@@ -29,7 +28,7 @@ public class DataSpaceIncludedStoreHandler implements IncludedStoreHandler
     public List<Store> resolveStore(String packageAddress, CompileContext context, SourceInformation sourceInformation)
     {
         Root_meta_pure_metamodel_dataSpace_DataSpace dataspace =
-                DataSpaceCompilerExtension.dataSpacesIndex.getOrDefault(packageAddress, null);
-        return Objects.isNull(dataspace) ? Lists.mutable.empty() : Lists.mutable.withAll(dataspace._defaultExecutionContext()._stores());
+                DataSpaceCompilerExtension.dataSpacesIndex.get(packageAddress);
+        return Lists.mutable.withAll(dataspace._defaultExecutionContext()._stores());
     }
 }

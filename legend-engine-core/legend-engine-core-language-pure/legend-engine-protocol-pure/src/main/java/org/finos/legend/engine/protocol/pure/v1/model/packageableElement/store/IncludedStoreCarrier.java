@@ -12,25 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.context;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
-public enum PackageableElementType
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", defaultImpl = StoreIncludedStoreCarrier.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = StoreIncludedStoreCarrier.class, name = "STORE")
+})
+public abstract class IncludedStoreCarrier extends PackageableElementPointer
 {
-    PACKAGE,
-    PROFILE,
-    CLASS,
-    ASSOCIATION,
-    ENUMERATION,
-    FUNCTION,
-    STORE,
-    RUNTIME,
-    MAPPING,
-    SERVICE,
-    PERSISTENCE,
-    PERSISTENCE_CONTEXT,
-    FLATTEN,
-    DATASTORESPEC,
-    DATASPACE,
-    DIAGRAM,
-    FILE_GENERATION
 }

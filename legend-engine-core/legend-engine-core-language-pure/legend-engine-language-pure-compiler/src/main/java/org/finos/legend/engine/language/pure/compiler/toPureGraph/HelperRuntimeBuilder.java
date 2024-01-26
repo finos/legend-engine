@@ -20,12 +20,15 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreIncludedStoreCarrier;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
@@ -143,7 +146,7 @@ public class HelperRuntimeBuilder
             }
             ListIterate.forEach(connectionStores.storePointers, storePointer ->
             {
-                List<Store> elements = getStore(storePointer.path, storePointer.sourceInformation, context);
+                List<Store> elements = getStore(storePointer, storePointer.sourceInformation, context);
                 for (Store element : elements)
                 {
                     Root_meta_core_runtime_ConnectionStore connectionStore =
@@ -273,9 +276,17 @@ public class HelperRuntimeBuilder
 
     public static List<Store> getStore(String element, SourceInformation sourceInformation, CompileContext context)
     {
-        return element.equals("ModelStore") ?
+        StoreIncludedStoreCarrier s = new StoreIncludedStoreCarrier();
+        s.path = element;
+        s.type = PackageableElementType.STORE;
+        return getStore(s, sourceInformation, context);
+    }
+
+    public static List<Store> getStore(IncludedStoreCarrier includedStoreCarrier, SourceInformation sourceInformation, CompileContext context)
+    {
+        return includedStoreCarrier.path.equals("ModelStore") ?
                 Lists.mutable.of(new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore")))
-                : Lists.mutable.ofAll(context.getCompilerExtensions().getUnderlyingStoresFromIncludedStoreHandlers(element, context, sourceInformation));
+                : Lists.mutable.ofAll(context.getCompilerExtensions().getUnderlyingStoresFromIncludedStoreHandlers(includedStoreCarrier, context, sourceInformation));
     }
 
     /**

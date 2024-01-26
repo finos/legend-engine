@@ -60,7 +60,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "   [\n" +
                 "       model::connection:\n" +
                 "       [\n" +
-                "           model::dataSpace\n" +
+                "           model::dataSpace->getStoresFromDataspace()\n" +
                 "       ]\n" +
                 "   ];\n" +
                 "}\n" +
@@ -72,6 +72,8 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  class: test::B;\n" +
                 "  url: 'executor:default';\n" +
                 "}\n" +
+                "\n" +
+                "\n" +
                 "###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +

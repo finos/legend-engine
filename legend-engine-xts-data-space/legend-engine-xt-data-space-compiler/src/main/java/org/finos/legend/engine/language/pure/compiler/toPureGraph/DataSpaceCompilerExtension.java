@@ -31,6 +31,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataspaceIncludedStoreCarrier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -229,8 +230,8 @@ public class DataSpaceCompilerExtension implements CompilerExtension
     }
 
     @Override
-    public List<IncludedStoreHandler> getExtraIncludedStoreHandlers()
+    public Map<String, IncludedStoreHandler> getExtraIncludedStoreHandlers()
     {
-        return Lists.mutable.of(new DataSpaceIncludedStoreHandler());
+        return Maps.mutable.of(DataspaceIncludedStoreCarrier.class.getName(), new DataSpaceIncludedStoreHandler());
     }
 }
