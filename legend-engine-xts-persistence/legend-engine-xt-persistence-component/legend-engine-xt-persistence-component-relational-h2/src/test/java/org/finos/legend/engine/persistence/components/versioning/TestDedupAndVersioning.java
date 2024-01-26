@@ -619,8 +619,9 @@ public class TestDedupAndVersioning extends BaseTest
                 .relationalSink(H2Sink.get())
                 .build();
 
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
-        datasets = ingestor.create(datasets);
+        Executor executor = ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.initDatasets(datasets);
+        ingestor.create();
         ingestor.dedupAndVersion();
     }
 

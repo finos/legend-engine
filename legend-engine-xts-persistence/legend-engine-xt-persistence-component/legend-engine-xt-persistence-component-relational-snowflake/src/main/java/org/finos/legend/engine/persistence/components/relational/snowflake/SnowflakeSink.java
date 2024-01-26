@@ -144,6 +144,7 @@ public class SnowflakeSink extends AnsiSqlSink
         implicitDataTypeMapping.put(DataType.BIGINT, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT)));
         implicitDataTypeMapping.put(DataType.VARCHAR, new HashSet<>(Arrays.asList(DataType.CHAR, DataType.STRING, DataType.TEXT)));
         implicitDataTypeMapping.put(DataType.TIMESTAMP, Collections.singleton(DataType.DATETIME));
+        implicitDataTypeMapping.put(DataType.JSON, Collections.singleton(DataType.VARIANT));
         IMPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(implicitDataTypeMapping);
 
         EXPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(new HashMap<>());

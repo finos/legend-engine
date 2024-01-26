@@ -166,6 +166,7 @@ public class DatasetCaseConverter
                 .batchStatusField(strategy.apply(metadataDataset.batchStatusField()))
                 .tableBatchIdField(strategy.apply(metadataDataset.tableBatchIdField()))
                 .batchSourceInfoField(strategy.apply(metadataDataset.batchSourceInfoField()))
+                .additionalMetadataField(strategy.apply(metadataDataset.additionalMetadataField()))
                 .build();
     }
 
