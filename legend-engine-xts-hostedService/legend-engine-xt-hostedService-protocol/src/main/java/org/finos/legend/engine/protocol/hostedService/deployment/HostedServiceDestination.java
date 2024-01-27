@@ -1,4 +1,3 @@
-//  Copyright 2023 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -14,9 +13,8 @@
 
 package org.finos.legend.engine.protocol.hostedService.deployment;
 
-import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
-
-public class HostedServiceDeploymentResult extends DeploymentResult
+public enum HostedServiceDestination
 {
-    public String error;
+    Sandbox,
+    Production
 }
