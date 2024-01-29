@@ -128,6 +128,15 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
             "          keyType: AlternateKey;\n" +
             "          optional: true;\n" +
             "          precedence: 2;\n" +
+            "          filter: {input: org::dataeng::Widget[1]|$input.trigger == 'A'};\n" +
+            "        },\n" +
+            "        {\n" +
+            "          queries: [ {input: org::dataeng::Widget[1],EFFECTIVE_DATE: StrictDate[1]|org::dataeng::Widget.all()->filter(widget|((($widget.identifiers.identifierType == 'CUSIP') && ($input.identifiers->filter(idType|$idType.identifierType == 'CUSIP').identifier == $widget.identifiers->filter(idType|$idType.identifierType == 'CUSIP').identifier)) && ($widget.identifiers.FROM_Z->toOne() <= $EFFECTIVE_DATE)) && ($widget.identifiers.THRU_Z->toOne() > $EFFECTIVE_DATE))}\n" +
+            "                   ];\n" +
+            "          keyType: AlternateKey;\n" +
+            "          optional: true;\n" +
+            "          precedence: 2;\n" +
+            "          filter: {input: org::dataeng::Widget[1]|$input.trigger == 'B'};\n" +
             "        },\n" +
             "        {\n" +
             "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.trigger == $input.trigger)}\n" +
@@ -1396,6 +1405,126 @@ public class TestMasteryCompilationFromGrammar extends TestCompilationFromGramma
                 "ExchangeDataProvider alloy::mastery::dataprovider::LSE;\n\n\n";
 
         TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [23:5-29:5]: ConditionalRule with ruleScope is currently unsupported");
+    }
+
+    @Test
+    public void testCompilationErrorWhenResolutionFilterHasMoreThanOneParameter()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "          filter: {input:org::dataeng::Widget[1],current:org::dataeng::Widget[1]| $input.widgetId == $current.widget};\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-producer: {\n" +
+                "      description: 'REST Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: REST;\n" +
+                "      };\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [8:1-34:1]: Error in 'alloy::mastery::WidgetMasterRecord': The resolution query filter must have exactly one parameter specified in the lambda function - found 2");
+    }
+
+    @Test
+    public void testCompilationErrorWhenResolutionFilterHasWrongParameterType()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "          filter: {input:String[1]| $input == 'A'};\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-producer: {\n" +
+                "      description: 'REST Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: REST;\n" +
+                "      };\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [8:1-34:1]: Error in 'alloy::mastery::WidgetMasterRecord': Input Class for the resolution key filter should be org::dataeng::Widget, however found String");
+    }
+
+    @Test
+    public void testCompilationErrorWhenResolutionFilterHasWrongParameterMultiplicity()
+    {
+        String model = "###Pure\n" +
+                "Class org::dataeng::Widget\n" +
+                "{\n" +
+                "  widgetId: String[0..1];\n" +
+                "}\n\n" +
+                "###Mastery\n" + "MasterRecordDefinition alloy::mastery::WidgetMasterRecord" +
+                "\n" +
+                "{\n" +
+                "  modelClass: org::dataeng::Widget;\n" +
+                "  identityResolution: \n" +
+                "  {\n" +
+                "    resolutionQueries:\n" +
+                "      [\n" +
+                "        {\n" +
+                "          queries: [ {input: org::dataeng::Widget[1]|org::dataeng::Widget.all()->filter(widget|$widget.widgetId == $input.widgetId)}\n" +
+                "                   ];\n" +
+                "          precedence: 1;\n" +
+                "          filter: {input:org::dataeng::Widget[0..1]| $input.widgetId == 'A'};\n" +
+                "        }\n" +
+                "      ]\n" +
+                "  }\n" +
+                "  recordSources:\n" +
+                "  [\n" +
+                "    widget-producer: {\n" +
+                "      description: 'REST Acquisition source.';\n" +
+                "      status: Development;\n" +
+                "      recordService: {\n" +
+                "        acquisitionProtocol: REST;\n" +
+                "      };\n" +
+                "      trigger: Manual;\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n\n";
+
+        TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite.test(model, "COMPILATION error at [8:1-34:1]: Error in 'alloy::mastery::WidgetMasterRecord': Expected input for resolution key filter to have multiplicity 1");
     }
 
     private void assertDataProviders(PureModel model)
