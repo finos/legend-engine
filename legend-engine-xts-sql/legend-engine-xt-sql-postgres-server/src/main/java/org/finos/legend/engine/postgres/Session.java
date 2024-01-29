@@ -480,8 +480,8 @@ public class Session implements AutoCloseable
 
     private static class StatementExecutionTask implements Callable<Boolean>
     {
-        private PostgresStatement statement;
-        private ResultSetReceiver resultSetReceiver;
+        private final PostgresStatement statement;
+        private final ResultSetReceiver resultSetReceiver;
 
         private String query;
 
@@ -492,6 +492,7 @@ public class Session implements AutoCloseable
             this.query = query;
         }
 
+        @Override
         public Boolean call() throws Exception
         {
             try
@@ -518,8 +519,8 @@ public class Session implements AutoCloseable
 
     private static class PreparedStatementExecutionTask implements Callable<Boolean>
     {
-        private PostgresPreparedStatement preparedStatement;
-        private ResultSetReceiver resultSetReceiver;
+        private final PostgresPreparedStatement preparedStatement;
+        private final ResultSetReceiver resultSetReceiver;
 
         public PreparedStatementExecutionTask(PostgresPreparedStatement preparedStatement, ResultSetReceiver resultSetReceiver)
         {
@@ -527,6 +528,7 @@ public class Session implements AutoCloseable
             this.resultSetReceiver = resultSetReceiver;
         }
 
+        @Override
         public Boolean call() throws Exception
         {
             try

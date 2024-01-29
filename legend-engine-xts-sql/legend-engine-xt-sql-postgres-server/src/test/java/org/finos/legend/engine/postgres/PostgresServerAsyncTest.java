@@ -98,7 +98,7 @@ public class PostgresServerAsyncTest
     }
 
 
-    private void executeAsyncTest(String testName, AsyncTest callableSupplier) throws Exception
+    private void executeAsyncTest(String testName, Callable callableSupplier) throws Exception
     {
         AtomicInteger counter = new AtomicInteger(numberOfExecutor);
 
@@ -114,7 +114,7 @@ public class PostgresServerAsyncTest
                     try
                     {
                         LOGGER.info(testNameWithCounter + ": Start");
-                        callableSupplier.test();
+                        callableSupplier.call();
                         LOGGER.info(testNameWithCounter + ": Complete");
                         counter.decrementAndGet();
                         return (Void) null;
@@ -140,13 +140,6 @@ public class PostgresServerAsyncTest
     }
 
 
-    private static interface AsyncTest
-    {
-        public void test() throws Exception;
-
-    }
-
-
     @Test
     public void testPreparedStatement() throws Exception
     {
@@ -166,6 +159,7 @@ public class PostgresServerAsyncTest
                 }
                 Assert.assertEquals(4, rows);
             }
+            return null;
         });
     }
 
@@ -188,6 +182,7 @@ public class PostgresServerAsyncTest
                 }
                 Assert.assertEquals(4, rows);
             }
+            return null;
         });
     }
 

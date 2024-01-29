@@ -16,6 +16,10 @@ package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.postgres.SessionsFactory;
+import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
+import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
+import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class LegendHandlerConfig implements HandlerConfig
@@ -56,6 +60,13 @@ public class LegendHandlerConfig implements HandlerConfig
     public HandlerType getType()
     {
         return HandlerType.LEGEND;
+    }
+
+    @Override
+    public SessionsFactory buildSessionsFactory()
+    {
+        LegendExecutionService client = new LegendExecutionService(new LegendHttpClient(getProtocol(), getHost(), getPort()));
+        return new LegendSessionFactory(client);
     }
 
     @Override
