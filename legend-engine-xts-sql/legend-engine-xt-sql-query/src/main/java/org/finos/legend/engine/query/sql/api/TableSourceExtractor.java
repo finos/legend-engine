@@ -242,10 +242,17 @@ public class TableSourceExtractor implements NodeVisitor<Set<TableSource>>
     }
 
     @Override
-    public Set<TableSource> visit(ParameterExpression val)
+    public Set<TableSource> visit(ParameterPlaceholderExpression val)
     {
         return Collections.emptySet();
     }
+
+    @Override
+    public Set<TableSource> visit(PositionalParameterExpression val)
+    {
+        return Collections.emptySet();
+    }
+
 
     @Override
     public Set<TableSource> visit(QualifiedNameReference val)
