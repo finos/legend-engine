@@ -56,11 +56,6 @@ public class LegendHandlerConfig implements HandlerConfig
         return port;
     }
 
-    @Override
-    public HandlerType getType()
-    {
-        return HandlerType.LEGEND;
-    }
 
     @Override
     public SessionsFactory buildSessionsFactory()

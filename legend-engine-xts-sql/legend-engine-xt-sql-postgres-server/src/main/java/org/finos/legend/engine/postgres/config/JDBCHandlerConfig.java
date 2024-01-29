@@ -38,12 +38,6 @@ public class JDBCHandlerConfig implements HandlerConfig
         this.password = password;
     }
 
-    @Override
-    public HandlerType getType()
-    {
-        return HandlerType.JDBC;
-    }
-
     public String getConnectionString()
     {
         return connectionString;
