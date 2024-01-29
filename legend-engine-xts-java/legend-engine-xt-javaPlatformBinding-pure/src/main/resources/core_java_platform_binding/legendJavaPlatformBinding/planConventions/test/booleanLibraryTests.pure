@@ -78,7 +78,7 @@ meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests:
    javaPureTests(engineConventions([]), [
       meta::pure::functions::boolean::tests::testIsPrimitive__Boolean_1_,
       meta::pure::functions::boolean::tests::testIsEnum__Boolean_1_,
-      meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::testInstanceEquality__Boolean_1_,
+      meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::testInstanceEquality__Boolean_1_
       //meta::pure::functions::boolean::tests::testIsNonPrimitive__Boolean_1_, // TODO Requires New
       //meta::pure::functions::boolean::tests::testIsNativeFunctions__Boolean_1_, // TODO Requires Metadata
       //meta::pure::functions::boolean::tests::testIsConcreteFunctionDefinitions, // TODO Requires Metadata
