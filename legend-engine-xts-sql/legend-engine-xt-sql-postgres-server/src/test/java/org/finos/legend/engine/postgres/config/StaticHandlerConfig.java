@@ -54,12 +54,6 @@ public class StaticHandlerConfig implements HandlerConfig
     }
 
     @Override
-    public HandlerType getType()
-    {
-        return HandlerType.STATIC;
-    }
-
-    @Override
     public SessionsFactory buildSessionsFactory()
     {
         LegendStaticClient executionClient = new LegendStaticClient(getResult(), getSchema(), getDelay());
