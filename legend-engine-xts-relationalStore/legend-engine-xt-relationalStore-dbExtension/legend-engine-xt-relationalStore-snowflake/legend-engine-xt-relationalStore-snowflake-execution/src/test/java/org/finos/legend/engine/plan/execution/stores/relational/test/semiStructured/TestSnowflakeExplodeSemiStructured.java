@@ -175,12 +175,12 @@ public class TestSnowflakeExplodeSemiStructured extends AbstractTestSnowflakeSem
         String snowflakeExpected =
                 "    Relational\n" +
                 "    (\n" +
-                "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (quantity, Integer, BIGINT, \"\")]\n" +
+                "      type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (quantity, Integer, INT, \"\")]\n" +
                 "      resultColumns = [(\"Id\", VARCHAR(100)), (\"Account\", VARCHAR(100)), (\"quantity\", \"\")]\n" +
                 "      sql = select \"root\".ID as \"Id\", \"root\".ACCOUNT as \"Account\", sum(\"blocks_1\".TRADESUMMARY['execQuantity']) as \"quantity\" from Semistructured.Blocks as \"root\" left outer join (select \"trades_0\".ID, \"trades_0\".STATUS, \"trades_0\".TRADESUMMARY, \"blocks_2\".leftJoinKey_0 as leftJoinKey_0 from (select \"ss_flatten_0\".value as flattened_prop, \"root\".ID as leftJoinKey_0 from Semistructured.Blocks as \"root\" inner join lateral flatten(input => \"root\".BLOCKDATA['relatedEntities'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\") as \"blocks_2\" inner join Semistructured.Trades as \"trades_0\" on (to_varchar(get_path(\"blocks_2\".flattened_prop, 'tag')) = 'trade' and to_varchar(get_path(\"blocks_2\".flattened_prop, 'tagId')) = \"trades_0\".ID)) as \"blocks_1\" on (\"root\".ID = \"blocks_1\".leftJoinKey_0) group by \"Id\",\"Account\"\n" +
                 "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
                 "    )\n";
-        String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (quantity, Integer, BIGINT, \"\")]\n";
+        String TDSType = "  type = TDS[(Id, String, VARCHAR(100), \"\"), (Account, String, VARCHAR(100), \"\"), (quantity, Integer, INT, \"\")]\n";
         Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
     }
 
