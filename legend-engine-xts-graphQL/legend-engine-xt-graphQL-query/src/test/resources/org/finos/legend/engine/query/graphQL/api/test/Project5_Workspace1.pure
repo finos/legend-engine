@@ -20,6 +20,7 @@ Class simple::model::Query
   allEmployees() {Person.all()}: Person[*];
   firms() {Firm.all()}: Firm[*];
   allEmployeesPaginated(pageNumber: Integer[1]) {Person.all()->sortBy(p|$p.firstName + $p.lastName)->paginated($pageNumber, 1)}: Person[*];
+  allEmployeesSliced(limit: Integer[1], offset: Integer[1]) {let end = $offset + $limit; Person.all()->sortBy(p|$p.firstName + $p.lastName)->slice($offset, $end);}: Person[*];
 }
 
 Class simple::model::Firm
