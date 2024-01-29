@@ -452,10 +452,22 @@ function meta::external::language::java::factory::javaBigDecimal() : meta::exter
 
 function meta::external::language::java::factory::javaPackage(package:String[1]):meta::external::language::java::metamodel::Package[1]
 {
-   let dotPos = $package->lastIndexOf('.');
-   if($dotPos == -1,
-      |^meta::external::language::java::metamodel::Package(name=$package),
-      |^meta::external::language::java::metamodel::Package(name=$package->substring($dotPos+1), parent=$package->substring(0, $dotPos)->javaPackage())
+   let split = $package->split('.');
+   let size = $split->size();
+   if($size==1,
+       |^meta::external::language::java::metamodel::Package(name=$package),
+       | let init = $split->take($size-1);
+         let package  =  ^meta::external::language::java::metamodel::Package(name=$split->at($size-1), parent =$init-> meta::external::language::java::factory::packageRecurse( ));
+     );
+}
+
+function <<access.private>> meta::external::language::java::factory::packageRecurse( names:String[*]): meta::external::language::java::metamodel::Package[1]
+{
+   let size = $names->size();
+   if($size==1,
+      | ^meta::external::language::java::metamodel::Package(name=$names->toOne()),
+      |  let parent  =   meta::external::language::java::factory::packageRecurse($names->take($size-1));
+         ^meta::external::language::java::metamodel::Package(name=$names->at($size-1)->toOne(), parent= $parent );
    );
 }
 
