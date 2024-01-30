@@ -106,17 +106,46 @@ public class TestFreeMarkerExecutor
     public void testFreemarkerWithSpecialCharacters() throws Exception
 
     {
+        //case1: replacing freemaker var with a string with special characters -->original problem
+        //outcome: should pass because this scenario ideally requires only 1 process call
         String templateFunction = "";
-        String sqlQuery = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}')";
-        Map rootMap = new HashMap<String,String>();
+        String sqlQuery1 = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}')";
+        Map rootMap = new HashMap<String, String>();
         rootMap.put("firstName", "sbcd<@?fdf");
-        Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'sbcd<@?fdf')",processRecursively(sqlQuery,rootMap,""));
+        Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'sbcd<@?fdf')", processRecursively(sqlQuery1, rootMap, ""));
 
-        String sqlQuery2  = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${inFilterClause_id}')";
+        //case2: layered freemarker -> double process call
+        //outcome: should pass because double recusion is working as expected
+        String sqlQuery2 = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${inFilterClause_id}')";
         Map rootMap2 = new HashMap<String, String>();
         rootMap2.put("inFilterClause_id", "${lastName?replace(\"'\", \"''\")}");
         rootMap2.put("lastName", "Doe");
         Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'Doe')", processRecursively(sqlQuery2, rootMap2, ""));
+
+        //case3: instances found for ${} where we dont pass in variables in varMap
+        //outcome: should fail since the user should not be setting column names with freemarker template
+        String sqlQuery3 = "select \"root\".countrycode as \"${countryCode}\" where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}'), \"root\".countryCodeZip as \"${countryCodeZip}\" from jasamk_test_data.country_schema as \"root\" ";
+        Map rootMap3 = new HashMap<String, String>();
+        rootMap3.put("countryCodeZip", "75201");
+        Assert.assertThrows(RuntimeException.class, () -> processRecursively(sqlQuery3, rootMap3, ""));
+
+        //case4: instance where ${.. , is unclosed
+        //outcome: expected to fail because this violates freemarker template rules . This will fail before you process it
+        String sqlQuery4 = "select \"root\".countrycode as \"${countryCode\" , \"root\".countryCodeZip as \"countryCodeZip}\" from test_schema as \"root\" ";
+        Assert.assertThrows(RuntimeException.class, ()-> processRecursively(sqlQuery4, new HashMap<String, String>(), "" ));
+
+        //case 5: adding '<@' to the string, should throw error because freemarker prevents use of < within an expression
+        //outcome: should fail as it doesnt comply with freemaker template rules
+        String sqlQuery5 = "'${firstname<@}";
+        Map rootMap5 = new HashMap<String, String>();
+        rootMap5.put("firstname", "test");
+        Assert.assertThrows("SEVERE: Error executing FreeMarker template", RuntimeException.class, ()-> processRecursively(sqlQuery5,rootMap5, "" ));
+
+        //case6: have a tailing ${ with other logic and end bracket in the end  in a join logic
+        //outcome: should fail, users shouldnt be allowed to set their variables as ${countryName and countryCode} as they are mimicing freemarker template
+        String sqlQuery6 = "select \"root\".countryname as \"${countryName\", listagg(\"root\".countrycode, ';') as \"countryCode}\" from test_schema as \"root\" group by \"${countryName\"";
+        Assert.assertThrows("Caused by: freemarker.core.ParseException: Syntax error in template \"template\" in line 1, column 44:\n" +
+                "Encountered \"\\\", listagg(\\\"\", but was expecting one of:", RuntimeException.class, () -> processRecursively(sqlQuery6, new HashMap<String, String>(), ""));
     }
 
 
