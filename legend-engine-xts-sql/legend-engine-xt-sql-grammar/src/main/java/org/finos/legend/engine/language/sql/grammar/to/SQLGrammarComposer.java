@@ -212,9 +212,15 @@ public class SQLGrammarComposer
             }
 
             @Override
-            public String visit(ParameterExpression val)
+            public String visit(PositionalParameterExpression val)
             {
                 return "$" + val.index;
+            }
+
+            @Override
+            public String visit(ParameterPlaceholderExpression val)
+            {
+                return "?";
             }
 
             @Override
