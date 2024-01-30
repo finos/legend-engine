@@ -146,7 +146,7 @@ public class HelperRuntimeBuilder
             }
             ListIterate.forEach(connectionStores.storePointers, storePointer ->
             {
-                List<Store> elements = getStore(storePointer, storePointer.sourceInformation, context);
+                List<Store> elements = getStore(storePointer, context);
                 for (Store element : elements)
                 {
                     Root_meta_core_runtime_ConnectionStore connectionStore =
@@ -279,14 +279,15 @@ public class HelperRuntimeBuilder
         StoreIncludedStoreCarrier s = new StoreIncludedStoreCarrier();
         s.path = element;
         s.type = PackageableElementType.STORE;
-        return getStore(s, sourceInformation, context);
+        s.sourceInformation = sourceInformation;
+        return getStore(s, context);
     }
 
-    public static List<Store> getStore(IncludedStoreCarrier includedStoreCarrier, SourceInformation sourceInformation, CompileContext context)
+    public static List<Store> getStore(IncludedStoreCarrier includedStoreCarrier, CompileContext context)
     {
         return includedStoreCarrier.path.equals("ModelStore") ?
                 Lists.mutable.of(new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore")))
-                : Lists.mutable.ofAll(context.getCompilerExtensions().getUnderlyingStoresFromIncludedStoreHandlers(includedStoreCarrier, context, sourceInformation));
+                : Lists.mutable.ofAll(context.getCompilerExtensions().getUnderlyingStoresFromIncludedStoreHandlers(includedStoreCarrier, context));
     }
 
     /**

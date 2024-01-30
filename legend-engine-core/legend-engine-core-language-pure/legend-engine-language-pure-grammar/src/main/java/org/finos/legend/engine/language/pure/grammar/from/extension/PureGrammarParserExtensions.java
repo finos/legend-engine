@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.test.asserti
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.IncludedStoreFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
@@ -91,7 +92,7 @@ public class PureGrammarParserExtensions
     {
         if (!this.includedStoreParsers.containsKey(type.toLowerCase()))
         {
-            throw new EngineException("Cannot get stores from " + type + ". Supported IncludedStoreCarriers are [" + this.includedStoreParsers.keysView().makeString(",") + "]");
+            throw new EngineException("Cannot get stores from " + type + ". Supported IncludedStoreCarriers are [" + this.includedStoreParsers.keysView().makeString(",") + "]", sourceInformation, EngineErrorType.PARSER);
         }
         else
         {

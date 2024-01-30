@@ -15,12 +15,12 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.List;
 
 public interface IncludedStoreHandler
 {
-    List<Store> resolveStore(String packageAddress, CompileContext context, SourceInformation sourceInformation);
+    List<Store> resolveStore(IncludedStoreCarrier includedStoreCarrier, CompileContext context);
 }

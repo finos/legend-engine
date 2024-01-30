@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
-import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.List;
@@ -24,8 +24,8 @@ import java.util.List;
 public class StoreIncludedStoreHandler implements IncludedStoreHandler
 {
     @Override
-    public List<Store> resolveStore(String packageAddress, CompileContext context, SourceInformation sourceInformation)
+    public List<Store> resolveStore(IncludedStoreCarrier includedStoreCarrier, CompileContext context)
     {
-        return Lists.mutable.of(context.resolveStore(packageAddress, sourceInformation));
+        return Lists.mutable.of(context.resolveStore(includedStoreCarrier.path, includedStoreCarrier.sourceInformation));
     }
 }

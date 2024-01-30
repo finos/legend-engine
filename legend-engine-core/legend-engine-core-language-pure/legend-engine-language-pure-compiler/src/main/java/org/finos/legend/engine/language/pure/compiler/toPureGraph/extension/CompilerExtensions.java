@@ -490,9 +490,9 @@ public class CompilerExtensions
         return this.extraRelationStoreAccessorProcessors;
     }
 
-    public List<Store> getUnderlyingStoresFromIncludedStoreHandlers(IncludedStoreCarrier includedStoreCarrier, CompileContext context, SourceInformation sourceInformation)
+    public List<Store> getUnderlyingStoresFromIncludedStoreHandlers(IncludedStoreCarrier includedStoreCarrier, CompileContext context)
     {
-        List<Store> responses = this.extraIncludedStoreHandlers.get(includedStoreCarrier.getClass().getName()).resolveStore(includedStoreCarrier.path, context, sourceInformation);
+        List<Store> responses = this.extraIncludedStoreHandlers.get(includedStoreCarrier.getClass().getName()).resolveStore(includedStoreCarrier, context);
         return responses;
     }
 }
