@@ -25,6 +25,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.Date;
+import java.util.concurrent.Executors;
 import org.finos.legend.engine.postgres.Session;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -50,7 +51,7 @@ public class JDBCSessionFactory implements SessionsFactory
     @Override
     public Session createSession(String defaultSchema, Identity identity)
     {
-        return new Session(new JDBCSessionHandler(connectionString, user, password), null);
+        return new Session(new JDBCSessionHandler(connectionString, user, password), null, Executors.newCachedThreadPool());
     }
 
     private static class JDBCPostgresStatement implements PostgresStatement
@@ -258,14 +259,5 @@ public class JDBCSessionFactory implements SessionsFactory
             }
             return connection;
         }
-    }
-
-
-    public static void main(String[] args) throws Exception
-    {
-        JDBCSessionFactory sessionFactory = new JDBCSessionFactory(
-                "jdbc:postgresql://localhost:5432/postgres", "postgres", "vika");
-        Session session = sessionFactory.createSession(null, null);
-        session.executeSimple("select * from public.demo");
     }
 }

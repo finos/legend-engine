@@ -15,62 +15,59 @@
 package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
-import org.finos.legend.engine.postgres.handler.legend.LegendHttpClient;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
+import org.finos.legend.engine.postgres.handler.legend.LegendStaticClient;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class LegendHandlerConfig implements HandlerConfig
+public class StaticHandlerConfig implements HandlerConfig
 {
+    private String result;
+    private String schema;
+    private int delay;
 
-    private String protocol;
-    private String host;
-    private String port;
-
-    public LegendHandlerConfig()
+    private StaticHandlerConfig()
     {
-        // DO NOT DELETE: this resets the default constructor for Jackson
     }
 
-    public LegendHandlerConfig(String protocol, String host, String port, String projectId, String sessionCookie)
+    public StaticHandlerConfig(String result, String schema, int delay)
     {
-        this.protocol = protocol;
-        this.host = host;
-        this.port = port;
+        this.result = result;
+        this.schema = schema;
+        this.delay = delay;
     }
 
-    public String getProtocol()
+    public String getResult()
     {
-        return protocol;
+        return result;
     }
 
-    public String getHost()
+    public String getSchema()
     {
-        return host;
+        return schema;
     }
 
-    public String getPort()
+    public int getDelay()
     {
-        return port;
+        return delay;
     }
-
 
     @Override
     public SessionsFactory buildSessionsFactory()
     {
-        LegendExecutionService client = new LegendExecutionService(new LegendHttpClient(getProtocol(), getHost(), getPort()));
+        LegendStaticClient executionClient = new LegendStaticClient(getResult(), getSchema(), getDelay());
+        LegendExecutionService client = new LegendExecutionService(executionClient);
         return new LegendSessionFactory(client);
     }
 
     @Override
     public String toString()
     {
-        return "LegendHandlerConfig{" +
-                "protocol='" + protocol + '\'' +
-                ", host='" + host + '\'' +
-                ", port='" + port + '\'' +
+        return "StaticHandlerConfig{" +
+                "result='" + result + '\'' +
+                ", schema='" + schema + '\'' +
+                ", delay=" + delay +
                 '}';
     }
 }

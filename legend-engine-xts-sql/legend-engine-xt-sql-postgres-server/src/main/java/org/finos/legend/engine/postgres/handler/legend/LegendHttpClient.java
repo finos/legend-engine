@@ -14,15 +14,10 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.IOException;
 import java.io.InputStream;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
@@ -32,111 +27,30 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
-import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LegendTdsClient implements LegendExecutionClient
+public class LegendHttpClient implements LegendClient
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LegendHttpClient.class);
+    private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
+
+
     private final String protocol;
     private final String host;
     private final String port;
-    private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(LegendTdsClient.class);
-
-    public LegendTdsClient(String protocol, String host, String port)
+    public LegendHttpClient(String protocol, String host, String port)
     {
-
         this.protocol = protocol;
         this.host = host;
         this.port = port;
     }
 
-    @Override
-    public List<LegendColumn> getSchema(String query)
-    {
-        try (InputStream inputStream = executeSchemaApi(query);)
-        {
-            JsonNode jsonNode = mapper.readTree(inputStream);
-            if (jsonNode.get("columns") != null)
-            {
-                ArrayNode columns = (ArrayNode) jsonNode.get("columns");
-                return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue()));
-            }
-            return Collections.emptyList();
-        }
-        catch (IOException e)
-        {
-            throw new LegendTdsClientException("Failed to parse result", e);
-        }
-
-    }
-
-    @Override
-    public LegendExecutionResult executeQuery(String query)
-    {
-        try
-        {
-            InputStream inputStream = this.executeQueryApi(query);
-            LegendTdsResultParser parser = new LegendTdsResultParser(inputStream);
-
-            return new LegendExecutionResult()
-            {
-                @Override
-                public List<LegendColumn> getLegendColumns()
-                {
-                    return parser.getLegendColumns();
-                }
-
-                @Override
-                public void close()
-                {
-                    try
-                    {
-                        parser.close();
-                    }
-                    catch (IOException e)
-                    {
-                        throw new LegendTdsClientException("Error while closing parser", e);
-                    }
-                }
-
-                @Override
-                public boolean hasNext()
-                {
-
-                    try
-                    {
-                        return parser.hasNext();
-                    }
-                    catch (IOException e)
-                    {
-                        throw new LegendTdsClientException("Error while retrieving a row", e);
-                    }
-                }
-
-                @Override
-                public List<Object> next()
-                {
-                    return parser.next();
-                }
-
-
-            };
-
-
-        }
-        catch (IOException e)
-        {
-            throw new LegendTdsClientException("Error while parsing response", e);
-        }
-    }
-
-    protected InputStream executeQueryApi(String query)
+    public InputStream executeQueryApi(String query)
     {
         LOGGER.info("executing query " + query);
         String apiPath = "/api/sql/v1/execution/executeQueryString";
@@ -144,7 +58,7 @@ public class LegendTdsClient implements LegendExecutionClient
     }
 
 
-    protected InputStream executeSchemaApi(String query)
+    public InputStream executeSchemaApi(String query)
     {
         LOGGER.info("executing schema query " + query);
         String apiPath = "/api/sql/v1/execution/getSchemaFromQueryString";
@@ -162,7 +76,7 @@ public class LegendTdsClient implements LegendExecutionClient
 
         try
         {
-            HttpClient client =  HttpClientBuilder.getHttpClient(new BasicCookieStore());
+            HttpClient client = HttpClientBuilder.getHttpClient(new BasicCookieStore());
             HttpResponse res = client.execute(req);
             return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());
 
@@ -171,17 +85,6 @@ public class LegendTdsClient implements LegendExecutionClient
         {
             throw new RuntimeException(e);
         }
-    }
-
-
-    private List<LegendColumn> getSchemaFromExecutionResponse(JsonNode jsonNode) throws JsonProcessingException
-    {
-        if (jsonNode.get("builder") != null)
-        {
-            ArrayNode columns = (ArrayNode) jsonNode.get("builder").get("columns");
-            return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").asText(), c.get("type").asText()));
-        }
-        return Collections.emptyList();
     }
 
 
@@ -230,6 +133,5 @@ public class LegendTdsClient implements LegendExecutionClient
 
         }
     }
-
 
 }

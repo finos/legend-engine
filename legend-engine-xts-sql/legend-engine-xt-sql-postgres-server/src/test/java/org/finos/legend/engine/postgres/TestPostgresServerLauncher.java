@@ -12,10 +12,20 @@
 //  See the License for the specific language governing permissions and
 //  limitations under the License.
 
-package org.finos.legend.engine.postgres.config;
+package org.finos.legend.engine.postgres;
 
-public enum HandlerType
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.File;
+import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
+import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
+public class TestPostgresServerLauncher
 {
-    LEGEND,
-    JDBC
+    public static void main(String[] args) throws Exception
+    {
+        new PostgresServerLauncher(args[0]).launch();
+    }
 }

@@ -3,6 +3,7 @@
   "authenticationMethod": "NO_PASSWORD",
   "identityType": "ANONYMOUS",
   "handler": {
+    "className": "org.finos.legend.engine.postgres.config.JDBCHandlerConfig",
     "connectionString": "jdbc:postgresql://localhost:5432/postgres",
     "user": "postgres",
     "password": "password",
