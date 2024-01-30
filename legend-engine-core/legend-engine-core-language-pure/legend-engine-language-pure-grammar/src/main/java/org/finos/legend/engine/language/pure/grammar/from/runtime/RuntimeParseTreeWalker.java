@@ -105,7 +105,7 @@ public class RuntimeParseTreeWalker
                 String path = ctx.packageableElementPointer().qualifiedName().getText().equals("ModelStore") ? "ModelStore" : PureGrammarParserUtility.fromQualifiedName(ctx.packageableElementPointer().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.packageableElementPointer().qualifiedName().packagePath().identifier(), ctx.packageableElementPointer().qualifiedName().identifier());
                 SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
                 String includedStoreCarrierType = IncludedStoreFactory.parseIncludedStoreCarrierIdentifier(ctx.includedStoreCarrierIdentifier());
-                return this.extensions.getExtraIncludedStoreParser(includedStoreCarrierType).create(path, sourceInformation);
+                return this.extensions.getExtraIncludedStoreParser(includedStoreCarrierType, sourceInformation).create(path, sourceInformation);
             });
             runtimeValue.connectionStores.add(connectionStores);
         });

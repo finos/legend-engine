@@ -25,6 +25,8 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.data.Embedde
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
 import org.finos.legend.engine.language.pure.grammar.from.runtime.IncludedStoreFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -85,9 +87,16 @@ public class PureGrammarParserExtensions
         return this.mappingIncludeParsers.get(type);
     }
 
-    public IncludedStoreFactory getExtraIncludedStoreParser(String type)
+    public IncludedStoreFactory getExtraIncludedStoreParser(String type, SourceInformation sourceInformation)
     {
-        return this.includedStoreParsers.get(type.toLowerCase());
+        if (!this.includedStoreParsers.containsKey(type.toLowerCase()))
+        {
+            throw new EngineException("Cannot get stores from " + type + ". Supported IncludedStoreCarriers are [" + this.includedStoreParsers.keysView().makeString(",") + "]");
+        }
+        else
+        {
+            return this.includedStoreParsers.get(type.toLowerCase());
+        }
     }
 
     public MappingTestInputDataParser getExtraMappingTestInputDataParser(String type)
