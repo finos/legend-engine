@@ -3,7 +3,7 @@
     "mode": "TEST_IGNORE_FUNCTION_MATCH"
   },
   "logging": {
-    "level": "INFO",
+    "level": "DEBUG",
     "appenders": [
       {
         "type": "console",

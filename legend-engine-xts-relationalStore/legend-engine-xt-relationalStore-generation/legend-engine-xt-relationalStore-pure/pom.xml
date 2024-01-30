@@ -34,7 +34,7 @@
                 <artifactId>legend-pure-maven-generation-par</artifactId>
                 <configuration>
                     <sourceDirectory>src/main/resources</sourceDirectory>
-                    <purePlatformVersion>5.0.0</purePlatformVersion>
+                    <purePlatformVersion>${legend.pure.version}</purePlatformVersion>
                     <repositories>
                         <repository>core_relational</repository>
                     </repositories>

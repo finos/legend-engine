@@ -28,6 +28,6 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-store-entitlement-analytics</module>
-<!--        <module>legend-engine-xt-relationalStore-store-entitlement-pure</module>-->
+        <module>legend-engine-xt-relationalStore-store-entitlement-pure</module>
     </modules>
 </project>
