@@ -206,10 +206,10 @@ class BulkLoadPlanner extends Planner
     {
         // Save file paths/patterns and event id into batch_source_info column
         Map<String, Object> batchSourceInfoMap = LogicalPlanUtils.jsonifyBulkLoadSourceInfo(stagedFilesDataset.stagedFilesDatasetProperties(), options().bulkLoadEventIdValue());
-        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(batchSourceInfoMap);
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getStringValueFromMap(batchSourceInfoMap);
 
         // Save additional metadata into additional_metadata column
-        Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(options().additionalMetadata());
+        Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMap(options().additionalMetadata());
 
         return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, BulkLoadBatchStatusValue.INSTANCE, batchSourceInfo, additionalMetadata)));
     }

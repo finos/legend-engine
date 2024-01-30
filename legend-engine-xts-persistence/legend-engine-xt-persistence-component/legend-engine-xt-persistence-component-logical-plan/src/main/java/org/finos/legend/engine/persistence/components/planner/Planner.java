@@ -265,10 +265,10 @@ public abstract class Planner
             DerivedDataset derivedDataset = (DerivedDataset) originalStagingDataset();
             batchSourceInfoMap = LogicalPlanUtils.jsonifyStagingFilters(derivedDataset.datasetFilters());
         }
-        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(batchSourceInfoMap);
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getStringValueFromMap(batchSourceInfoMap);
 
         // Save additional metadata into additional_metadata column
-        Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMapIfNotEmpty(options().additionalMetadata());
+        Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMap(options().additionalMetadata());
 
         // Save success status into status column
         StringValue status = StringValue.of(options().batchSuccessStatusValue());

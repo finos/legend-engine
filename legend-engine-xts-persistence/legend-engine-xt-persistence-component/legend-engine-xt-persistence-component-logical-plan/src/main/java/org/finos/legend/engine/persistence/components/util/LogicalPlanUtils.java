@@ -308,7 +308,7 @@ public class LogicalPlanUtils
         return batchSourceInfoMap;
     }
 
-    public static Optional<StringValue> getStringValueFromMapIfNotEmpty(Map<String, Object> map)
+    public static Optional<StringValue> getStringValueFromMap(Map<String, Object> map)
     {
         if (!map.isEmpty())
         {
