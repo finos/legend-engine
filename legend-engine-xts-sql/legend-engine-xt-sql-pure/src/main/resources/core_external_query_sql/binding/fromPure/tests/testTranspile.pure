@@ -25,6 +25,7 @@ import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
+
 //SELECT
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStar():Boolean[1]
 {
@@ -760,14 +761,14 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByFunctions():Boolean[1]
 {
-  test('SELECT ' + 
+  test('SELECT ' +
           'count(Integer) AS "count", count(DISTINCT Integer) AS "distinctCount", SUM(Integer) AS "sum", avg(Integer) AS "avg", ' +
           'stddev_pop(Integer) AS "stdDevPop", stddev_samp(Integer) AS "stdDevSamp", stddev(Integer) AS "stdDev", ' +
           'var_pop(Integer) AS "variancePop", var_samp(Integer) AS "varianceSamp", variance(Integer) AS "variance", ' +
           'min(Integer) AS "minInt", min(StrictDate) AS "minDate", min(String) AS "minString", ' +
           'max(Integer) AS "maxInt", max(StrictDate) AS "maxDate", max(String) AS "maxString", ' +
-          'string_agg(String) AS "stringAgg", string_agg(cast(Integer AS VARCHAR), \' \') AS "stringAgg2", ' + 
-          'bool_and(Boolean) AS "boolAnd", bool_and(Integer > 1) AS "boolAndExp", ' + 
+          'string_agg(String) AS "stringAgg", string_agg(cast(Integer AS VARCHAR), \' \') AS "stringAgg2", ' +
+          'bool_and(Boolean) AS "boolAnd", bool_and(Integer > 1) AS "boolAndExp", ' +
           'every(Boolean) AS "every", every(Integer > 1) AS "everyExp" ' +
           'FROM service."/service/service1" GROUP BY String',
 
@@ -797,7 +798,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           agg('boolAndExp', row | $row.getInteger('Integer') > 1, y | $y->and()),
           agg('every', row | $row.getBoolean('Boolean'), y | $y->and()),
           agg('everyExp', row | $row.getInteger('Integer') > 1, y | $y->and())
-        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString', 
+        ])->restrict(['count', 'distinctCount', 'sum', 'avg', 'stdDevPop', 'stdDevSamp', 'stdDev', 'variancePop', 'varianceSamp', 'variance', 'minInt', 'minDate', 'minString',
                       'maxInt', 'maxDate', 'maxString', 'stringAgg', 'stringAgg2', 'boolAnd', 'boolAndExp', 'every', 'everyExp'])
       }, false)
 }
@@ -805,12 +806,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateExpressions():Boolean[1]
 {
   test(
-    'SELECT ' + 
-    'Integer, ' + 
-    'sum(1) AS "sum", ' + 
-    'count(*) AS "count", ' + 
-    'sum(Integer + Float) AS "exp", ' + 
-    'EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", ' + 
+    'SELECT ' +
+    'Integer, ' +
+    'sum(1) AS "sum", ' +
+    'count(*) AS "count", ' +
+    'sum(Integer + Float) AS "exp", ' +
+    'EXTRACT(YEAR FROM MAX("StrictDate")) AS "aggFunctionCall", ' +
     'MAX("StrictDate") + INTERVAL \'1 WEEK\' AS "dateAggMath" ' +
     'FROM service."/service/service1" GROUP BY Integer',
 
@@ -829,12 +830,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByAggregateMixedExpressions():Boolean[1]
 {
   test(
-    'SELECT ' + 
-    'Integer, ' + 
-    'sum(Integer) AS "sum", ' + 
+    'SELECT ' +
+    'Integer, ' +
+    'sum(Integer) AS "sum", ' +
     'count(*) AS "count", ' +
-    'CASE WHEN sum(Integer) > sum(Float) THEN 1 ELSE 0 END AS "multiArg", ' + 
-    'CASE WHEN sum(Integer) < count(Float) THEN 1 ELSE 0 END AS "multiArg2" ' + 
+    'CASE WHEN sum(Integer) > sum(Float) THEN 1 ELSE 0 END AS "multiArg", ' +
+    'CASE WHEN sum(Integer) < count(Float) THEN 1 ELSE 0 END AS "multiArg2" ' +
     'FROM service."/service/service1" GROUP BY Integer',
 
     {| FlatInput.all()->project(
@@ -875,7 +876,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   test('SELECT ' +
           'CASE WHEN(SUM("Integer") <10) THEN max("Integer") ELSE min("Integer") END AS "MIN/MAX", ' +
           'CASE WHEN(SUM("Integer") < 10) THEN \'LOW\' ELSE \'HIGH\' END AS "HIGH/LOW", ' +
-          'cast(sum("Integer") AS VARCHAR) AS "CAST", ' + 
+          'cast(sum("Integer") AS VARCHAR) AS "CAST", ' +
           'floor(sum("Integer")) AS "FUNC" ' +
         'FROM service."/service/service1"',
 
@@ -1103,8 +1104,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testNullCasts():Boolean[1]
 {
   test('SELECT CAST(NULL AS VARCHAR) AS "string", CAST(NULL AS TEXT) AS "text", CAST(NULL AS DATE) AS "date", ' +
-       'CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE PRECISION) AS "double", ' + 
-       'CAST(NULL AS NUMERIC) AS "numeric", CAST(NULL AS TIMESTAMP) AS "timestamp", CAST(floor(NULL) AS TEXT) AS "exp" ' + 
+       'CAST(NULL AS INTEGER) AS "integer", CAST(NULL AS BOOLEAN) AS "boolean", CAST(NULL AS DOUBLE PRECISION) AS "double", ' +
+       'CAST(NULL AS NUMERIC) AS "numeric", CAST(NULL AS TIMESTAMP) AS "timestamp", CAST(floor(NULL) AS TEXT) AS "exp" ' +
        'FROM service."/service/service1"',
 
       {| FlatInput.all()->project(
@@ -1545,7 +1546,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
           FlatInput.all()
               ->project(
                 [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
-                [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])          
+                [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
         )
       })
 }
@@ -1610,8 +1611,8 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateFunctions():Boolean[1]
 {
   test(
-    'SELECT ' + 
-    'localtimestamp() AS "LOCALTIMESTAMP", ' + 
+    'SELECT ' +
+    'localtimestamp() AS "LOCALTIMESTAMP", ' +
     'make_date(2023, 01, 02) AS "MAKEDATE", ' +
     'make_timestamp(2023, 01, 02, 12, 11, 10.5) AS "MAKETIMESTAMP" ' +
     'FROM service."/service/service1"',
@@ -1763,9 +1764,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         'lower(String) AS "LOWER", repeat(String, 2) AS "REPEAT", replace(String, \'A\', \'a\') AS "REPLACE", starts_with(String, \'a\') AS "STARTSWITH", strpos(String, \'abc\') AS "STRPOS",' +
         'reverse(String) AS "REVERSE", rtrim(String) AS "RTRIM", rtrim(String, \' \') AS "RTRIM2", sha256(String) AS "SHA256", split_part(String, \',\', 1) AS "SPLITPART", ' +
         'split_part(String, \',\', Integer) AS "SPLITPART2", substring(String, 1) AS "SUBSTRING", substr(String, 1, 2) AS "SUBSTR", btrim(String) AS "TRIM", btrim(String, \' \') AS "TRIM2",' +
-        'lpad(String, 2) AS "LPAD", lpad(String, 2, \'a\') AS "LPAD2", rpad(String, 2) AS "RPAD", rpad(String, 2, \'a\') AS "RPAD2", left(String, 1) AS "LEFT", right(String, 1) AS "RIGHT", ' + 
+        'lpad(String, 2) AS "LPAD", lpad(String, 2, \'a\') AS "LPAD2", rpad(String, 2) AS "RPAD", rpad(String, 2, \'a\') AS "RPAD2", left(String, 1) AS "LEFT", right(String, 1) AS "RIGHT", ' +
         'decode(String, \'base64\') AS "DECODE", encode(String, \'base64\') AS "ENCODE", ' +
-        'trim(BOTH from String) AS "TRIMB", trim(BOTH \' \' from String) AS "TRIMB2", trim(LEADING from String) AS "TRIML", trim(LEADING \' \' from String) AS "TRIML2", ' + 
+        'trim(BOTH from String) AS "TRIMB", trim(BOTH \' \' from String) AS "TRIMB2", trim(LEADING from String) AS "TRIML", trim(LEADING \' \' from String) AS "TRIML2", ' +
         'trim(TRAILING from String) AS "TRIMT", trim(TRAILING \' \' from String) AS "TRIMT2"' +
         'FROM service."/service/service1"',
 
@@ -1814,7 +1815,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | ltrim($row.getString('String')), 'TRIML'),
                 col(row:TDSRow[1] | ltrim($row.getString('String')), 'TRIML2'),
                 col(row:TDSRow[1] | rtrim($row.getString('String')), 'TRIMT'),
-                col(row:TDSRow[1] | rtrim($row.getString('String')), 'TRIMT2')              
+                col(row:TDSRow[1] | rtrim($row.getString('String')), 'TRIMT2')
               ])
       })
 }
@@ -1826,7 +1827,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       'ltrim(NULL, \' \') AS "LTRIM2", md5(NULL) AS "MD5", upper(NULL) AS "UPPER", lower(NULL) AS "LOWER", replace(NULL, \'A\', \'a\') AS "REPLACE", starts_with(NULL, \'a\') AS "STARTSWITH", ' +
       'strpos(NULL, \'abc\') AS "STRPOS", reverse(NULL) AS "REVERSE", rtrim(NULL) AS "RTRIM", rtrim(NULL, \' \') AS "RTRIM2", sha256(NULL) AS "SHA256", substring(NULL, 1) AS "SUBSTRING", ' +
       'substr(NULL, 1, 2) AS "SUBSTR", btrim(NULL) AS "TRIM", btrim(NULL, \' \') AS "TRIM2", lpad(NULL, 2) AS "LPAD", lpad(String, NULL) AS "LPAD2", lpad(String, 2, NULL) AS "LPAD3",' +
-      'rpad(NULL, 2) AS "RPAD", rpad(String, NULL) AS "RPAD2", rpad(String, 2, NULL) AS "RPAD3", left(NULL, 1) AS "LEFT", left(String, NULL) AS "LEFT2", right(NULL, 1) AS "RIGHT", right(String, NULL) AS "RIGHT2", ' + 
+      'rpad(NULL, 2) AS "RPAD", rpad(String, NULL) AS "RPAD2", rpad(String, 2, NULL) AS "RPAD3", left(NULL, 1) AS "LEFT", left(String, NULL) AS "LEFT2", right(NULL, 1) AS "RIGHT", right(String, NULL) AS "RIGHT2", ' +
       'decode(NULL, \'base64\') AS "DECODE", encode(NULL, \'base64\') AS "ENCODE", trim(BOTH from NULL) AS "TRIM3" ' +
       'FROM service."/service/service1"',
 
@@ -1869,7 +1870,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
                 col(row:TDSRow[1] | []->cast(@String), 'RIGHT2'),
                 col(row:TDSRow[1] | []->cast(@String), 'DECODE'),
                 col(row:TDSRow[1] | []->cast(@String), 'ENCODE'),
-                col(row:TDSRow[1] | []->cast(@String), 'TRIM3')                                
+                col(row:TDSRow[1] | []->cast(@String), 'TRIM3')
               ])
       })
 }
@@ -1907,12 +1908,12 @@ function meta::external::query::sql::transformation::queryToPure::tests::toCharT
          type=meta::relational::runtime::DatabaseType.H2,
          testDataSetupCsv = $csv
          ))
-   );  
+   );
 
    let sqlStatements = meta::alloy::service::execution::setUpDataSQLs($csv, meta::external::query::sql::transformation::queryToPure::tests::dummyDatabase);
    $sqlStatements->map(sql|
       meta::relational::functions::database::executeInDb($sql, $runtime.connectionStores->at(0), false);
-      )->size();  // NO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;   
+      )->size();  // NO NOT REMOVE: size called to inhibit lazy evaluation ensuring the map is activated;
 
 
   if ($compareLambda,
@@ -1926,7 +1927,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::toCharT
                     [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
         }->appendTdsFunc(project_TabularDataSet_1__ColumnSpecification_MANY__TabularDataSet_1_, list(iv($cols)));
 
-        
+
         assertLambdaEquals($expected, $sqlTransformContext.lambda());,
     | []);
 
@@ -1934,7 +1935,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::toCharT
   let tds = meta::pure::router::execute($sqlTransformContext.lambda()->toOne()->cast(@LambdaFunction<{->TabularDataSet[1]}>), dummyMapping, $runtime, relationalExtensions()).values;
   let values = $tds.rows->at(0).values;
 
-  $items->forAll(i | 
+  $items->forAll(i |
     assertEquals($i.value, $values->at($items->indexOf($i)), | 'expected ' + $values->at($items->indexOf($i))->toString() + ' to equal ' + $i.value + ' sql: ' + $i.sql);
   );
 
@@ -1981,12 +1982,12 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testToCharCombined():Boolean[1]
 {
   toCharTest([
-    tc('to_char(DateTime, \'HH24-FMHH24-MI-FMMI-SS-FMSS-YYYY-YYY-YY-MONTH-FMMONTH-month-FMmonth-DAY-FMDAY-Day-FMDay-day-FMday-DDD-FMDDD-DD-FMDD-D-WW-FMWW-Q\')', [], 
+    tc('to_char(DateTime, \'HH24-FMHH24-MI-FMMI-SS-FMSS-YYYY-YYY-YY-MONTH-FMMONTH-month-FMmonth-DAY-FMDAY-Day-FMDay-day-FMday-DDD-FMDDD-DD-FMDD-D-WW-FMWW-Q\')', [],
       'a-l-l', '09-9-08-8-07-7-2023-023-23-APRIL    -APRIL-april    -april-SATURDAY -SATURDAY-Saturday -Saturday-saturday -saturday-091-91-01-1-7-13-13-2'),
-    tc('to_char(DateTime, \'HH24FMHH24MIFMMISSFMSSYYYY-YYY-YYMONTHFMMONTHmonthFMmonthDAYFMDAYDayFMDaydayFMdayDDDFMDD-D-DDFMDDDWWFMWWQ\')', [], 
+    tc('to_char(DateTime, \'HH24FMHH24MIFMMISSFMSSYYYY-YYY-YYMONTHFMMONTHmonthFMmonthDAYFMDAYDayFMDaydayFMdayDDDFMDD-D-DDFMDDDWWFMWWQ\')', [],
       'all', '0990880772023-023-23APRIL    APRILapril    aprilSATURDAY SATURDAYSaturday Saturdaysaturday saturday0911-7-019113132'),
       tc('to_char(DateTime, \'YYYY-MM-DD\')', [], 'yyyymmdd', '2023-04-01')
-  ], false);  
+  ], false);
 }
 
 
@@ -2083,7 +2084,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCollectionFunctions():Boolean[1]
 {
   test(
-    'SELECT ' + 
+    'SELECT ' +
     'coalesce(NULL, Integer, 1) AS "COALESCE", ' +
     'greatest(NULL, Integer, 1) AS "GREATEST", ' +
     'least(NULL, Integer, 1) AS "LEAST" ' +
@@ -2135,7 +2136,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'row_number() OVER (PARTITION BY String ORDER BY Integer ASC) AS "ROW", ' +
     'dense_rank() OVER (PARTITION BY String ORDER BY Integer DESC) AS "DENSE RANK", ' +
     'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK", ' +
-    'max(Integer) OVER (PARTITION BY String ORDER BY String ASC) AS "MAX" ' + 
+    'max(Integer) OVER (PARTITION BY String ORDER BY String ASC) AS "MAX" ' +
     'FROM service."/service/service1"',
 
     {|
@@ -2376,6 +2377,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       )->restrict(['ID', 'Integer', 'The Enum Value'])->renameColumns(pair('The Enum Value', 'Enum')));})
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPlaceholderParameters():Boolean[1]
+{
+  test(
+    'SELECT * FROM service."/service/service1" where Integer = ? and String = $2',
+
+    {_1:Integer[1], _2:String[1] | FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+        ->filter(row:TDSRow[1] | $row.getInteger('Integer') == $_1 && $row.getString('String') == $_2)
+      }
+  )
+}
+
 
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testEnumValues():Boolean[1]
 {
@@ -2543,6 +2557,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   doNameTest(^IntervalLiteral(years = 5, ago = true), 'INTERVAL\'5 YEARS AGO\'');
   doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS\'');
   doNameTest(^IntervalLiteral(years = 5, months = 6, weeks = 3, days = 1, hours = 9, minutes = 1, seconds = 0, ago = true), 'INTERVAL\'5 YEARS 6 MONTHS 3 WEEKS 1 DAYS 9 HOURS 1 MINUTES 0 SECONDS AGO\'');
+
+  doNameTest(^PositionalParameterExpression(index = 1), '$1');
+  doNameTest(^ParameterPlaceholderExpression(index = 1), '?');
 }
 
 
@@ -2570,7 +2587,7 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
 {
   $sqls->forAll(sql |
     let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom);
-    let actual = $sqlTransformContext.lambda();  
+    let actual = $sqlTransformContext.lambda();
 
     if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
     if ($assertJSON, | assertLambdaJSONEquals($expected, $actual), | true);
