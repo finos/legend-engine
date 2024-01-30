@@ -57,6 +57,11 @@ function meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLS
   ]
 }
 
+function meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScalarTypes(): Pair<PrimitiveType, String>[*]
+{
+  purePrimitivesToGraphQLScalarTypes()->concatenate(purePrimitivesToCustomGraphQLScalarTypes())
+}
+
 function meta::external::query::graphQL::binding::builtInGraphQLScalars(): String[*]
 {
   ['Int', 'Float', 'String', 'Boolean', 'ID'];

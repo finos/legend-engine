@@ -115,7 +115,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
             )->concatenate(
               if($c->hasGraphQLStereotype('Query') || $c->hasGraphQLStereotype('Mutation') || $c->hasGraphQLStereotype('Subscription'),
                 | [],
-                | buildBoolExpObject($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride)
+                | buildBoolExpObject($c, $extendedClasses->contains($c))
               )
           ),
         e:Enumeration<Any>[1] |
@@ -233,12 +233,12 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
       ));            
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::changeTypeReferenceName(t: TypeReference[1], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1], isListType: Boolean[1], isEnumType: Boolean[1]): TypeReference[1]
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::changeTypeReferenceName(t: TypeReference[1], isListType: Boolean[1], isEnumType: Boolean[1]): TypeReference[1]
 {
   if($t->instanceOf(NamedTypeReference),
     |
       let t1 = $t->cast(@NamedTypeReference);
-      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)->map(p|$p.second);
+      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes()->map(p|$p.second);
       ^$t1(name = if($isListType,
                     | $t1.name + '_exists_exp',
                     | if($t1.name->in($primitiveTypes) || $isEnumType,
@@ -249,7 +249,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
             nullable = true
           );,
     | let t1 = $t->cast(@ListTypeReference);
-      $t1.itemType->changeTypeReferenceName($pureTypeToGraphQLScalarOverride,true,$isEnumType);
+      $t1.itemType->changeTypeReferenceName(true,$isEnumType);
   )
 }
 
@@ -261,13 +261,13 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
       name = $c.name->toOne() + '_bool_exp',
       directives = [],
       fields =
-                $props->filter(p|!$p.genericType.rawType->in(meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes($pureTypeToGraphQLScalarOverride).first))
+                $props->filter(p|!$p.genericType.rawType->in(meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes().first))
                   ->map(p |
-                    let reference = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity(), $pureTypeToGraphQLScalarOverride);
+                    let reference = buildObjectTypeCompatibleTypeReference($p->functionReturnType(), $p->functionReturnMultiplicity());
                     ^InputValueDefinition
                     (
                       name = $p.name->toOne(),
-                      type = changeTypeReferenceName($reference, $pureTypeToGraphQLScalarOverride,false,$p.genericType.rawType->toOne()->instanceOf(Enumeration))
+                      type = changeTypeReferenceName($reference, false,$p.genericType.rawType->toOne()->instanceOf(Enumeration))
                     );
                   )
                   ->concatenate(
