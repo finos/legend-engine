@@ -132,14 +132,14 @@ public class TestFreeMarkerExecutor
         //case4: instance where ${.. , is unclosed
         //outcome: expected to fail because this violates freemarker template rules . This will fail before you process it
         String sqlQuery4 = "select \"root\".countrycode as \"${countryCode\" , \"root\".countryCodeZip as \"countryCodeZip}\" from test_schema as \"root\" ";
-        Assert.assertThrows(RuntimeException.class, ()-> processRecursively(sqlQuery4, new HashMap<String, String>(), "" ));
+        Assert.assertThrows(RuntimeException.class, () -> processRecursively(sqlQuery4, new HashMap<String, String>(), ""));
 
         //case 5: adding '<@' to the string, should throw error because freemarker prevents use of < within an expression
         //outcome: should fail as it doesnt comply with freemaker template rules
         String sqlQuery5 = "'${firstname<@}";
         Map rootMap5 = new HashMap<String, String>();
         rootMap5.put("firstname", "test");
-        Assert.assertThrows("SEVERE: Error executing FreeMarker template", RuntimeException.class, ()-> processRecursively(sqlQuery5,rootMap5, "" ));
+        Assert.assertThrows("SEVERE: Error executing FreeMarker template", RuntimeException.class, () -> processRecursively(sqlQuery5,rootMap5, ""));
 
         //case6: have a tailing ${ with other logic and end bracket in the end  in a join logic
         //outcome: should fail, users shouldnt be allowed to set their variables as ${countryName and countryCode} as they are mimicing freemarker template
