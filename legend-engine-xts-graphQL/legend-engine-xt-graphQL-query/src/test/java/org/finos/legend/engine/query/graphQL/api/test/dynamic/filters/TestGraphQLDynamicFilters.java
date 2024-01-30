@@ -38,7 +38,8 @@ public abstract class TestGraphQLDynamicFilters extends TestGraphQLApiAbstract
         Assert.assertEquals(expectedResponse, runQuery(queryString, planCache));
     }
 
-    protected String runQuery(String queryString, GraphQLPlanCache planCache) throws IOException {
+    protected String runQuery(String queryString, GraphQLPlanCache planCache) throws IOException
+    {
         GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(planCache);
         HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
         Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);

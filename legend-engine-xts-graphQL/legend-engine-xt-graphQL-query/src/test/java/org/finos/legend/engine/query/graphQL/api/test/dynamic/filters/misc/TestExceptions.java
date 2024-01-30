@@ -22,7 +22,8 @@ import java.io.*;
 
 public class TestExceptions extends TestGraphQLDynamicFilters
 {
-    private void test(String where, String expectedException) throws IOException {
+    private void test(String where, String expectedException) throws IOException
+    {
         String query = String.format("query Query {\n" +
                 "  allEmployees( %s ) {\n" +
                 "      fullName" +
@@ -31,6 +32,7 @@ public class TestExceptions extends TestGraphQLDynamicFilters
         String result = runQuery(query, null);
         Assert.assertTrue(String.format("%s doesn't contain %s", result, expectedException), result.contains(expectedException));
     }
+
     @Test
     public void testExceptions() throws Exception
     {
