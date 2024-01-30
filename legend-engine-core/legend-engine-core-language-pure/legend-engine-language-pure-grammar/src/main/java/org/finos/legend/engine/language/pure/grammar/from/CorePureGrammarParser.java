@@ -45,8 +45,8 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.*;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.*;
-import org.finos.legend.engine.language.pure.grammar.from.runtime.IncludedStoreParser;
-import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreIncludedStoreParser;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.IncludedStoreFactory;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreIncludedStoreFactory;
 import org.finos.legend.engine.language.pure.grammar.from.relation.RelationStoreAccessorPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
@@ -148,9 +148,9 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     }
 
     @Override
-    public Iterable<? extends IncludedStoreParser> getExtraIncludedStoreParsers()
+    public Iterable<? extends IncludedStoreFactory> getExtraIncludedStoreParsers()
     {
-        return Lists.immutable.with(new StoreIncludedStoreParser());
+        return Lists.immutable.with(new StoreIncludedStoreFactory());
     }
 
     private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)

@@ -13,7 +13,7 @@ options
 identifier:                             VALID_STRING | STRING
                                         | RUNTIME | IMPORT
                                         | MAPPINGS | CONNECTIONS
-                                        | CONNECTIONSTORES | GET_STORE_FROM
+                                        | CONNECTIONSTORES | GET_STORES_FROM
 ;
 
 
@@ -59,7 +59,9 @@ connectionStores:                       connection COLON
 ;
 includedStore:                          packageableElementPointer (includedStoreCarrierIdentifier)?
 ;
-includedStoreCarrierIdentifier:         GET_STORE_FROM VALID_STRING PAREN_OPEN PAREN_CLOSE
+includedStoreCarrierIdentifier:         getStoresFrom VALID_STRING PAREN_OPEN PAREN_CLOSE
+;
+getStoresFrom:                          GET_STORES_FROM
 ;
 identifiedConnection:                   identifier COLON (packageableElementPointer | embeddedConnection)
 ;

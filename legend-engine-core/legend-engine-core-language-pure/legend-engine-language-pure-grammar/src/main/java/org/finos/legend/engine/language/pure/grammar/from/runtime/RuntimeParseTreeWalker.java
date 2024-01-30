@@ -28,7 +28,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.ArrayList;
@@ -103,11 +102,10 @@ public class RuntimeParseTreeWalker
             connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext);
             connectionStores.storePointers = connectionStoresContext.includedStore() == null ? Collections.emptyList() : ListIterate.collect(connectionStoresContext.includedStore(), ctx ->
             {
-                String includedStoreCarrierType = IncludedStoreParser.parseIncludedStoreCarrierIdentifier(ctx.includedStoreCarrierIdentifier());
-                IncludedStoreCarrier storePointer = this.extensions.getExtraIncludedStoreParser(includedStoreCarrierType).parse();
-                storePointer.path = ctx.packageableElementPointer().qualifiedName().getText().equals("ModelStore") ? "ModelStore" : PureGrammarParserUtility.fromQualifiedName(ctx.packageableElementPointer().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.packageableElementPointer().qualifiedName().packagePath().identifier(), ctx.packageableElementPointer().qualifiedName().identifier());
-                storePointer.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-                return storePointer;
+                String path = ctx.packageableElementPointer().qualifiedName().getText().equals("ModelStore") ? "ModelStore" : PureGrammarParserUtility.fromQualifiedName(ctx.packageableElementPointer().qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.packageableElementPointer().qualifiedName().packagePath().identifier(), ctx.packageableElementPointer().qualifiedName().identifier());
+                SourceInformation sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
+                String includedStoreCarrierType = IncludedStoreFactory.parseIncludedStoreCarrierIdentifier(ctx.includedStoreCarrierIdentifier());
+                return this.extensions.getExtraIncludedStoreParser(includedStoreCarrierType).create(path, sourceInformation);
             });
             runtimeValue.connectionStores.add(connectionStores);
         });

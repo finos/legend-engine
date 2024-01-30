@@ -24,7 +24,7 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
-import org.finos.legend.engine.language.pure.grammar.from.runtime.IncludedStoreParser;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.IncludedStoreFactory;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -44,7 +44,7 @@ public class PureGrammarParserExtensions
     private final MapIterable<String, TestAssertionParser> testAssertionParsers;
 
     private final MapIterable<String, MappingIncludeParser> mappingIncludeParsers;
-    private final MapIterable<String, IncludedStoreParser> includedStoreParsers;
+    private final MapIterable<String, IncludedStoreFactory> includedStoreParsers;
 
     private PureGrammarParserExtensions(Iterable<? extends PureGrammarParserExtension> extensions)
     {
@@ -85,7 +85,7 @@ public class PureGrammarParserExtensions
         return this.mappingIncludeParsers.get(type);
     }
 
-    public IncludedStoreParser getExtraIncludedStoreParser(String type)
+    public IncludedStoreFactory getExtraIncludedStoreParser(String type)
     {
         return this.includedStoreParsers.get(type.toLowerCase());
     }
@@ -194,10 +194,10 @@ public class PureGrammarParserExtensions
                 "Conflicting parsers for test assertion type");
     }
 
-    private static MapIterable<String, IncludedStoreParser> indexIncludedStoreParsers(Iterable<? extends PureGrammarParserExtension> extensions)
+    private static MapIterable<String, IncludedStoreFactory> indexIncludedStoreParsers(Iterable<? extends PureGrammarParserExtension> extensions)
     {
         return indexByKey(LazyIterate.flatCollect(extensions, PureGrammarParserExtension::getExtraIncludedStoreParsers),
-                IncludedStoreParser::getIncludedStoreCarrierType,
+                IncludedStoreFactory::getIncludedStoreCarrierType,
                 "Conflicting parsers for test assertion type");
     }
 

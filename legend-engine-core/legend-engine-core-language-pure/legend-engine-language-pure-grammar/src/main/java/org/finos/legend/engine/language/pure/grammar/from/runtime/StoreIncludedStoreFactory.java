@@ -12,25 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.from;
+package org.finos.legend.engine.language.pure.grammar.from.runtime;
 
-import org.finos.legend.engine.language.pure.grammar.from.runtime.IncludedStoreParser;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataspaceIncludedStoreCarrier;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.IncludedStoreCarrier;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreIncludedStoreCarrier;
 
-public class DataspaceIncludedStoreParser implements IncludedStoreParser
+public class StoreIncludedStoreFactory implements IncludedStoreFactory
 {
 
     public String getIncludedStoreCarrierType()
     {
-        return PackageableElementType.DATASPACE.name().toLowerCase();
+        return PackageableElementType.STORE.name().toLowerCase();
     }
 
-    public IncludedStoreCarrier parse()
+    public IncludedStoreCarrier create(String path, SourceInformation sourceInformation)
     {
-        IncludedStoreCarrier includedStoreCarrier = new DataspaceIncludedStoreCarrier();
-        includedStoreCarrier.type = PackageableElementType.DATASPACE;
+        IncludedStoreCarrier includedStoreCarrier = new StoreIncludedStoreCarrier();
+        includedStoreCarrier.type = PackageableElementType.STORE;
+        includedStoreCarrier.path = path;
+        includedStoreCarrier.sourceInformation = sourceInformation;
         return includedStoreCarrier;
     }
 }
