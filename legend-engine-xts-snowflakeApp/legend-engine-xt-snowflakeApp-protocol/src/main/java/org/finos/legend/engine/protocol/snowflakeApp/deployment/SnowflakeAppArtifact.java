@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.snowflakeApp.deployment;
 
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 
 public class SnowflakeAppArtifact extends FunctionActivatorArtifact
 {
@@ -24,14 +25,18 @@ public class SnowflakeAppArtifact extends FunctionActivatorArtifact
         //empty artifact
     }
 
-    public SnowflakeAppArtifact(SnowflakeAppContent content)
+    public SnowflakeAppArtifact(SnowflakeAppContent content, AlloySDLC sdlc)
     {
         this.content = content;
+        if (sdlc != null)
+        {
+            this.version = getVersionInfo(sdlc);
+        }
     }
 
-    public SnowflakeAppArtifact(SnowflakeAppContent content, SnowflakeAppDeploymentConfiguration config, String deployedLocation)
+    public SnowflakeAppArtifact(SnowflakeAppContent content, SnowflakeAppDeploymentConfiguration config, String deployedLocation, AlloySDLC sdlc)
     {
-        this(content);
+        this(content, sdlc);
         this.deploymentConfiguration = config;
         this.deployedLocation = deployedLocation;
     }

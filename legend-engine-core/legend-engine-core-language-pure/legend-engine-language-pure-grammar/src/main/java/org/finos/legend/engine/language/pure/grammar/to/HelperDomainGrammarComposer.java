@@ -294,15 +294,15 @@ public class HelperDomainGrammarComposer
     {
         if (externalFormatData.contentType.equals(APPLICATION_JSON))
         {
-            return "(JSON) " + "'" + externalFormatData.data + "'";
+            return "(JSON) " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
         }
         else if (externalFormatData.contentType.equals(APPLICATION_XML))
         {
-            return "(XML) " + "'" + externalFormatData.data + "'";
+            return "(XML) " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
         }
         else
         {
-            return "(" + externalFormatData.contentType + ") " + "'" + externalFormatData.data + "'";
+            return "(" + externalFormatData.contentType + ") " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
         }
     }
 

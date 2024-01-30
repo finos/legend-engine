@@ -730,6 +730,7 @@ Class meta::external::language::java::metamodel::CodeDependency
 
 Class meta::external::language::java::metamodel::CodeDependencyResolutionState
 {
+   visitedFunctions: String[*];
    projectsByDependency : Map<String, Project>[1];
 }
 

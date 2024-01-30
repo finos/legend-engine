@@ -16,16 +16,18 @@ package org.finos.legend.engine.protocol.bigqueryFunction.deployment;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 
 public class BigQueryFunctionArtifact extends FunctionActivatorArtifact
 {
     public String sourceProjectId;
     public String sourceDefaultDataset;
 
-    public BigQueryFunctionArtifact(String name, MutableList<String> sqlExpressions, String sourceProjectId, String sourceDefaultDataset)
+    public BigQueryFunctionArtifact(String name, MutableList<String> sqlExpressions, String sourceProjectId, String sourceDefaultDataset, AlloySDLC sdlc)
     {
         this.content = new BigQueryFunctionContent(name, sqlExpressions);
         this.sourceProjectId = sourceProjectId;
         this.sourceDefaultDataset = sourceDefaultDataset;
+        this.version = getVersionInfo(sdlc);
     }
 }

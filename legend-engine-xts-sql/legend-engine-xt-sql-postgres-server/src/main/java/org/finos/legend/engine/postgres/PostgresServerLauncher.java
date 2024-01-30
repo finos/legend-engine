@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
-import org.finos.legend.engine.postgres.config.Builder;
 import org.finos.legend.engine.postgres.config.ServerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,12 +26,17 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 
 public class PostgresServerLauncher
 {
+    private String configPath;
 
+    public PostgresServerLauncher(String configPath)
+    {
+        this.configPath = configPath;
+    }
 
-    public static void main(String[] args) throws Exception
+    public void launch() throws Exception
     {
         //TODO ADD CLI
-        String configPath = args[0];
+
         ObjectMapper objectMapper = new ObjectMapper();
         ServerConfig serverConfig = objectMapper.readValue(new File(configPath), ServerConfig.class);
         /*!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -54,10 +58,16 @@ public class PostgresServerLauncher
         // install jul to slf4j bridge
         SLF4JBridgeHandler.install();
 
-        SessionsFactory sessionFactory = Builder.buildSessionFactory(serverConfig);
-        AuthenticationMethod authenticationMethod = Builder.buildAuthenticationMethod(serverConfig);
+        SessionsFactory sessionFactory = serverConfig.buildSessionFactory();
+        AuthenticationMethod authenticationMethod = serverConfig.buildAuthenticationMethod();
 
         logger.info("Starting server in port: " + serverConfig.getPort());
         new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod).run();
+    }
+
+    public static void main(String[] args) throws Exception
+    {
+        String configPath = args[0];
+        new PostgresServerLauncher(configPath).launch();
     }
 }

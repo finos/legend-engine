@@ -1,12 +1,12 @@
-import meta::rel::compile::ir::*;
-import meta::rel::compile::ir::utils::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::utils::*;
+import meta::external::store::rel::utils::*;
 
-function meta::rel::compile::ir::utils::display(expr: PExpr[1]): String[1] {
+function meta::external::store::rel::compile::ir::utils::display(expr: PExpr[1]): String[1] {
   $expr->display(0);
 }
 
-function meta::rel::compile::ir::utils::display(expr: PExpr[1], indent: Integer[1]): String[1] {
+function meta::external::store::rel::compile::ir::utils::display(expr: PExpr[1], indent: Integer[1]): String[1] {
   $expr->match([
     {int: ConstInteger[1] | $int.value->toString()},
     {float: ConstFloat[1] | $float.value->toString()},
