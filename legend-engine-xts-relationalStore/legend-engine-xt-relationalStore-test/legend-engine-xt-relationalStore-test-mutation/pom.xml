@@ -68,7 +68,7 @@
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>
                         <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
-                        <version>4.37.1</version>
+                        <version>${project.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.engine</groupId>

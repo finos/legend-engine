@@ -22,6 +22,10 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Proc
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunction;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 

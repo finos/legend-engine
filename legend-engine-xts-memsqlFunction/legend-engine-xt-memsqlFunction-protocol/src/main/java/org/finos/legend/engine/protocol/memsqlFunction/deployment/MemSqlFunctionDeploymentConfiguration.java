@@ -19,7 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 public class MemSqlFunctionDeploymentConfiguration extends FunctionActivatorDeploymentConfiguration
 {
-    RelationalDatabaseConnection connection;
+    public RelationalDatabaseConnection connection;
 
     public MemSqlFunctionDeploymentConfiguration()
     {

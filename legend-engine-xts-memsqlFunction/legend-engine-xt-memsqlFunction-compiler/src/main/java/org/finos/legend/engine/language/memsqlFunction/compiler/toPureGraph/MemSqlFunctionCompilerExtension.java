@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 
@@ -55,7 +56,7 @@ public class MemSqlFunctionCompilerExtension implements CompilerExtension
     {
         try
         {
-            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(memSqlFunction.function), memSqlFunction.sourceInformation);
+            PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(memSqlFunction.function.path), memSqlFunction.sourceInformation);
             return new Root_meta_external_function_activator_memSqlFunction_MemSqlFunction_Impl(
                     memSqlFunction.name,
                     null,

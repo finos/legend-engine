@@ -22,8 +22,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.memsqlFunction.grammar.from.MemSqlFunctionGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
-import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunction;
-import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
+import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
 import java.util.Collections;
@@ -35,14 +35,14 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
 {
     private static String renderElement(PackageableElement element)
     {
-        if (element instanceof BigQueryFunction)
+        if (element instanceof MemSqlFunction)
         {
-            return renderBigQueryFunction((BigQueryFunction) element);
+            return renderBigQueryFunction((MemSqlFunction) element);
         }
         return "/* Can't transform element '" + element.getPath() + "' in this section */";
     }
 
-    private static String renderBigQueryFunction(BigQueryFunction app)
+    private static String renderBigQueryFunction(MemSqlFunction app)
     {
         String packageName = app._package == null || app._package.isEmpty() ? app.name : app._package + "::" + app.name;
 
@@ -52,7 +52,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
                 "   function : " + app.function + ";\n" +
                 (app.owner == null ? "" : "   owner : '" + app.owner + "';\n") +
                 (app.description == null ? "" : "   description : '" + app.description + "';\n") +
-                (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((BigQueryFunctionDeploymentConfiguration) app.activationConfiguration).activationConnection.connection + ";\n") +
+                (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((MemSqlFunctionDeploymentConfiguration) app.activationConfiguration).activationConnection.connection + ";\n") +
                 "}";
     }
 
@@ -67,9 +67,9 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
             }
             return ListIterate.collect(elements, element ->
             {
-                if (element instanceof BigQueryFunction)
+                if (element instanceof MemSqlFunction)
                 {
-                    return renderBigQueryFunction((BigQueryFunction) element);
+                    return renderBigQueryFunction((MemSqlFunction) element);
                 }
                 return "/* Can't transform element '" + element.getPath() + "' in this section */";
             }).makeString("\n\n");
@@ -81,7 +81,7 @@ public class MemSqlFunctionGrammarComposer implements PureGrammarComposerExtensi
     {
         return Collections.singletonList((elements, context, composedSections) ->
         {
-            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof BigQueryFunction), Lists.mutable.empty());
+            MutableList<PackageableElement> composableElements = Iterate.select(elements, e -> (e instanceof MemSqlFunction), Lists.mutable.empty());
             return composableElements.isEmpty()
                     ? null
                     : new PureFreeSectionGrammarComposerResult(composableElements.asLazy().collect(MemSqlFunctionGrammarComposer::renderElement).makeString("###" + MemSqlFunctionGrammarParserExtension.NAME + "\n", "\n\n", ""), composableElements);

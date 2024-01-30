@@ -21,6 +21,8 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.MemSqlFunctionParserGrammar;
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
@@ -83,7 +85,11 @@ public class MemSqlFunctionTreeWalker
         MemSqlFunctionParserGrammar.FunctionNameContext functionNameContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.functionName(), "functionName", memSqlFunction.sourceInformation);
         memSqlFunction.functionName = PureGrammarParserUtility.fromGrammarString(functionNameContext.STRING().getText(), true);
         MemSqlFunctionParserGrammar.FunctionContext functionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.function(), "function", memSqlFunction.sourceInformation);
-        memSqlFunction.function = functionContext.functionIdentifier().getText();
+        memSqlFunction.function = new PackageableElementPointer(
+                PackageableElementType.FUNCTION,
+                functionContext.functionIdentifier().getText(),
+                walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier()));
+
         MemSqlFunctionParserGrammar.OwnerContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owner(), "owner", memSqlFunction.sourceInformation);
         if (ownerContext != null)
         {

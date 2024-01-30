@@ -85,9 +85,17 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-pure</artifactId>
+            <artifactId>legend-engine-xt-relationalStore-protocol</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-memsqlFunction-pure</artifactId>
@@ -110,6 +118,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-generation</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-executionPlan-execution</artifactId>
+        </dependency>
         <!-- ENGINE -->
 
         <dependency>
@@ -126,11 +138,11 @@
         </dependency>
 
         <!-- MemSql -->
-        <dependency>
-            <groupId>com.singlestore</groupId>
-            <artifactId>singlestore-jdbc-client</artifactId>
-            <version>1.1.8</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>com.singlestore</groupId>-->
+<!--            <artifactId>singlestore-jdbc-client</artifactId>-->
+<!--            <version>1.1.8</version>-->
+<!--        </dependency>-->
         <!-- MemSql -->
 
         <!-- ECLIPSE COLLECTIONS -->

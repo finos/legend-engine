@@ -14,87 +14,109 @@
 
 package org.finos.legend.engine.language.memsql.deployment;
 
-import com.google.cloud.bigquery.BigQuery;
-import com.google.cloud.bigquery.BigQueryOptions;
-import com.google.cloud.bigquery.RoutineId;
-import com.google.cloud.bigquery.RoutineInfo;
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionArtifact;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionContent;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentConfiguration;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentResult;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
+import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentResult;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration;
-import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 
 /**
  * These deployment functions assume that the artifact has already been validated.
  */
-public class MemSqlFunctionDeploymentManager implements DeploymentManager<BigQueryFunctionArtifact, BigQueryFunctionDeploymentResult, BigQueryFunctionDeploymentConfiguration>
+public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSqlFunctionArtifact, MemSqlFunctionDeploymentResult, MemSqlFunctionDeploymentConfiguration>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MemSqlFunctionDeploymentManager.class);
+
+    private PlanExecutor planExecutor;
+    private ConnectionManagerSelector connectionManager;
+
+    public MemSqlFunctionDeploymentManager(PlanExecutor executor)
+    {
+        this.planExecutor = planExecutor;
+        connectionManager = ((RelationalStoreState)planExecutor.getExtraExecutors().select(c -> c instanceof RelationalStoreExecutor).getFirst().getStoreState()).getRelationalExecutor().getConnectionManager();
+    }
 
     @Override
     public boolean canDeploy(FunctionActivatorArtifact activatorArtifact)
     {
-        return activatorArtifact instanceof BigQueryFunctionArtifact;
+        return activatorArtifact instanceof MemSqlFunctionArtifact;
     }
 
     @Override
-    public BigQueryFunctionDeploymentResult deploy(Identity identity, BigQueryFunctionArtifact artifact)
+    public MemSqlFunctionDeploymentResult deploy(Identity identity, MemSqlFunctionArtifact artifact)
     {
-        return new BigQueryFunctionDeploymentResult("", false);
+        return new MemSqlFunctionDeploymentResult("", false);
     }
 
     @Override
-    public BigQueryFunctionDeploymentResult deploy(Identity identity, BigQueryFunctionArtifact artifact, List<BigQueryFunctionDeploymentConfiguration> availableRuntimeConfigurations)
+    public MemSqlFunctionDeploymentResult deploy(Identity identity, MemSqlFunctionArtifact artifact, List<MemSqlFunctionDeploymentConfiguration> availableRuntimeConfigurations)
     {
-        return new BigQueryFunctionDeploymentResult("", false);
-    }
+        MemSqlFunctionDeploymentResult result = null;
+        String functionName = ((MemSqlFunctionContent)artifact.content).functionName;
 
-    public BigQueryFunctionDeploymentResult deployImpl(BigQueryFunctionArtifact artifact, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration deploymentConfiguration)
-    {
-        LOGGER.info("Starting deployment");
-        BigQueryFunctionDeploymentResult result;
-        try
+        try (Connection jdbcConnection = availableRuntimeConfigurations.isEmpty() ? this.getDeploymentConnection(identity, artifact) : this.getDeploymentConnection(identity, availableRuntimeConfigurations.get(0).connection))
         {
-            Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification datasourceSpecification = (Root_meta_pure_alloy_connections_alloy_specification_BigQueryDatasourceSpecification) deploymentConfiguration._target()._datasourceSpecification();
-            String dataset = datasourceSpecification._defaultDataset();
-            String projectId = datasourceSpecification._projectId();
-
-            BigQueryFunctionContent functionContent = (BigQueryFunctionContent) artifact.content;
-            BigQuery bigQuery = BigQueryOptions.newBuilder().setProjectId(projectId).build().getService();
-            RoutineId routineId = RoutineId.of(projectId, dataset, functionContent.functionName);
-
-            String sqlExpression = Iterate.getOnly(functionContent.sqlExpressions);
-            String sourceProjectId = artifact.sourceProjectId;
-            String sourceDefaultDataset = artifact.sourceDefaultDataset;
-            // TODO: Include projectId in core relational BigQuery SQL statement construction
-            String fullyQualifiedSqlExpression = sqlExpression.replace(sourceDefaultDataset, String.format("`%s.%s`", sourceProjectId, sourceDefaultDataset));
-            RoutineInfo routineInfo =
-                    RoutineInfo
-                            .newBuilder(routineId)
-                            .setRoutineType("TABLE_VALUED_FUNCTION")
-                            .setLanguage("SQL")
-                            .setBody(fullyQualifiedSqlExpression)
-                            .build();
-            bigQuery.create(routineInfo);
-
+            jdbcConnection.setAutoCommit(false);
+            this.deployImpl(jdbcConnection, (MemSqlFunctionContent)artifact.content);
+            jdbcConnection.commit();
             LOGGER.info("Completed deployment successfully");
-            result = new BigQueryFunctionDeploymentResult(functionContent.functionName, true);
+            result = new MemSqlFunctionDeploymentResult(functionName, true);
         }
         catch (Exception e)
         {
             LOGGER.info("Completed deployment with error");
-            result = new BigQueryFunctionDeploymentResult(Lists.mutable.with(e.getMessage()));
+            result = new MemSqlFunctionDeploymentResult(functionName, true);
         }
         return result;
+   }
+
+    public void deployImpl(Connection jdbcConnection, MemSqlFunctionContent memSqlFunctionContent) throws SQLException
+    {
+        MutableList<String> statements = createFunctionStatements(memSqlFunctionContent);
+        for (String s: statements)
+        {
+            Statement statement = jdbcConnection.createStatement();
+            statement.execute(s);
+        }
+    }
+
+
+    private Connection getDeploymentConnection(Identity identity, MemSqlFunctionArtifact artifact)
+    {
+        RelationalDatabaseConnection connection = extractConnectionFromArtifact(artifact);
+        return this.connectionManager.getDatabaseConnection(identity, connection);
+    }
+
+    public Connection getDeploymentConnection(Identity identity, RelationalDatabaseConnection connection)
+    {
+        return this.connectionManager.getDatabaseConnection(identity, (DatabaseConnection) connection);
+    }
+
+    private RelationalDatabaseConnection extractConnectionFromArtifact(MemSqlFunctionArtifact artifact)
+    {
+        return ((MemSqlFunctionDeploymentConfiguration)artifact.deploymentConfiguration).connection;
+    }
+
+    public MutableList<String> createFunctionStatements(MemSqlFunctionContent content)
+    {
+        MutableList<String> statements = org.eclipse.collections.impl.factory.Lists.mutable.empty();
+        statements.add(String.format("CREATE OR REPLACE FUNCTION %S RETURNS TABLE  AS RETURN %s ;", content.functionName, content.sqlExpressions.getOnly()));
+        return statements;
     }
 }

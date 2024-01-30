@@ -19,6 +19,8 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
+import org.finos.legend.engine.language.bigqueryFunction.deployment.BigQueryFunctionDeploymentManager;
+import org.finos.legend.engine.language.bigqueryFunction.deployment.BigQueryFunctionGenerator;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionArtifact;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionContent;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentConfiguration;
@@ -31,6 +33,8 @@ import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunct
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration;
 
 import java.util.List;
 

@@ -54,11 +54,11 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-bigqueryFunction-pure</artifactId>
+            <artifactId>legend-engine-xt-memsqlFunction-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-bigqueryFunction-protocol</artifactId>
+            <artifactId>legend-engine-xt-memsqlFunction-protocol</artifactId>
         </dependency>
         <!-- ENGINE -->
 

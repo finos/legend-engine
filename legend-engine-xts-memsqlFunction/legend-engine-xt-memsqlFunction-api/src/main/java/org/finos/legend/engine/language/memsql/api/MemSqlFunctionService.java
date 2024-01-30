@@ -19,86 +19,89 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
-import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionDeploymentManager;
-import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionGenerator;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionArtifact;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionContent;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentConfiguration;
-import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionDeploymentResult;
-import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
-import org.finos.legend.engine.language.bigqueryFunction.deployment.*;
+import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionDeploymentManager;
+import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentResult;
+import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
-import org.finos.legend.pure.generated.*;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_memSqlFunction_MemSqlFunction;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.util.List;
 
-public class MemSqlFunctionService implements FunctionActivatorService<Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction, BigQueryFunctionDeploymentConfiguration, BigQueryFunctionDeploymentResult>
+public class MemSqlFunctionService implements FunctionActivatorService<Root_meta_external_function_activator_memSqlFunction_MemSqlFunction, MemSqlFunctionDeploymentConfiguration, MemSqlFunctionDeploymentResult>
 {
     private final MemSqlFunctionDeploymentManager memSqlFunctionDeploymentManager;
 
-    public MemSqlFunctionService()
+    public MemSqlFunctionService(PlanExecutor executor)
     {
-        this.memSqlFunctionDeploymentManager = new MemSqlFunctionDeploymentManager();
+        this.memSqlFunctionDeploymentManager = new MemSqlFunctionDeploymentManager(executor);
     }
 
     @Override
     public FunctionActivatorInfo info(PureModel pureModel, String version)
     {
         return new FunctionActivatorInfo(
-                "BigQuery Function",
-                "Create a BigQuery Function that can activate in BigQuery.",
-                "meta::protocols::pure::" + version + "::metamodel::function::activator::bigQueryFunction::BigQueryFunction",
-                BigQueryFunctionProtocolExtension.packageJSONType,
+                "MemSql Function",
+                "Create a MemSql Function that can activate in MemSql.",
+                "meta::protocols::pure::" + version + "::metamodel::function::activator::memSqlFunction::MemSqlFunction",
+                MemSqlFunctionProtocolExtension.packageJSONType,
                 pureModel);
     }
 
     @Override
     public boolean supports(Root_meta_external_function_activator_FunctionActivator functionActivator)
     {
-        return functionActivator instanceof Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction;
+        return functionActivator instanceof Root_meta_external_function_activator_memSqlFunction_MemSqlFunction;
     }
 
     @Override
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        BigQueryFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
         return this.validateArtifact(artifact);
     }
 
     @Override
-    public BigQueryFunctionDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, List<BigQueryFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public MemSqlFunctionDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, List<MemSqlFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        BigQueryFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
         MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact);
 
-        Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration) activator._activationConfiguration());
+        Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration) activator._activationConfiguration());
         return validationErrors.notEmpty() ?
-                new BigQueryFunctionDeploymentResult(validationErrors.collect(e -> e.message)) :
-                this.memSqlFunctionDeploymentManager.deployImpl(artifact, deploymentConfiguration);
+                new MemSqlFunctionDeploymentResult(validationErrors.collect(e -> e.message)) :
+                this.memSqlFunctionDeploymentManager.deploy(identity, artifact);
     }
 
     @Override
-    public BigQueryFunctionArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    public MemSqlFunctionArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         return MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
     }
 
     @Override
-    public List<BigQueryFunctionDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
+    public List<MemSqlFunctionDeploymentConfiguration> selectConfig(List<FunctionActivatorDeploymentConfiguration> configurations)
     {
-        return Lists.mutable.withAll(configurations).select(e -> e instanceof BigQueryFunctionDeploymentConfiguration).collect(e -> (BigQueryFunctionDeploymentConfiguration) e);
+        return Lists.mutable.withAll(configurations).select(e -> e instanceof MemSqlFunctionDeploymentConfiguration).collect(e -> (MemSqlFunctionDeploymentConfiguration) e);
     }
 
-    private MutableList<? extends FunctionActivatorError> validateArtifact(BigQueryFunctionArtifact artifact)
+    private MutableList<? extends FunctionActivatorError> validateArtifact(MemSqlFunctionArtifact artifact)
     {
-        int size = ((BigQueryFunctionContent)artifact.content).sqlExpressions.size();
+        int size = ((MemSqlFunctionContent)artifact.content).sqlExpressions.size();
         return size == 1 ?
                 Lists.fixedSize.empty() :
-                Lists.fixedSize.with(new MemSqlFunctionError("BigQuery Function can't be used with a plan containing '" + size + "' SQL expressions", ((BigQueryFunctionContent)artifact.content).sqlExpressions));
+                Lists.fixedSize.with(new MemSqlFunctionError("MemSql Function can't be used with a plan containing '" + size + "' SQL expressions", ((MemSqlFunctionContent)artifact.content).sqlExpressions));
     }
 }

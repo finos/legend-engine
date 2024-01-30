@@ -32,7 +32,7 @@
         <module>legend-engine-xt-relationalStore-snowflake-execution-tests</module>
         <module>legend-engine-xt-relationalStore-snowflake-grammar</module>
         <module>legend-engine-xt-relationalStore-snowflake-protocol</module>
-<!--        <module>legend-engine-xt-relationalStore-snowflake-pure</module>-->
+        <module>legend-engine-xt-relationalStore-snowflake-pure</module>
     </modules>
 
 </project>

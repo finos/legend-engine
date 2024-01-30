@@ -19,13 +19,8 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 
 public class MemSqlFunctionArtifact extends FunctionActivatorArtifact
 {
-    public String sourceProjectId;
-    public String sourceDefaultDataset;
-
-    public MemSqlFunctionArtifact(String name, MutableList<String> sqlExpressions, String sourceProjectId, String sourceDefaultDataset)
+    public MemSqlFunctionArtifact(String name, MutableList<String> sqlExpressions)
     {
         this.content = new MemSqlFunctionContent(name, sqlExpressions);
-        this.sourceProjectId = sourceProjectId;
-        this.sourceDefaultDataset = sourceDefaultDataset;
     }
 }
