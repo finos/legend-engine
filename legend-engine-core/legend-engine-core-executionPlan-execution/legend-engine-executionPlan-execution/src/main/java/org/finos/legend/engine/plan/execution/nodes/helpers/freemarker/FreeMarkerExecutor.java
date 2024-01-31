@@ -91,7 +91,7 @@ public class FreeMarkerExecutor
 
         if (!result.equals(input.replace("\\\"", "\"")))
         {
-            if(matcher.find())
+            if (matcher.find())
             {
                 String first = result.substring(0, matcher.start());
 
@@ -114,6 +114,7 @@ public class FreeMarkerExecutor
         }
         return result;
     }
+    
     private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
         StringWriter stringWriter = new StringWriter();
