@@ -40,11 +40,13 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
                 .digestGenStrategy(UserProvidedDigestGenStrategy.builder().digestField("digest").build())
                 .filterExistingRecords(true)
                 .auditing(DateTimeAuditing.builder().dateTimeField("audit_ts").build())
+                .batchIdField("batch_id")
                 .build();
 
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Pass 1
         System.out.println("--------- Batch 1 started ------------");
@@ -55,7 +57,7 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
         String expectedPath = "src/test/resources/expected/append/data_pass1.csv";
-        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts"};
+        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts", "batch_id"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         // Pass 2
@@ -76,6 +78,7 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
         AppendOnly ingestMode = AppendOnly.builder()
             .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName("demo.LAKEHOUSE_MD5").digestField(digestName).build())
             .auditing(NoAuditing.builder().build())
+            .batchIdField("batch_id")
             .build();
 
         SchemaDefinition stagingSchema = SchemaDefinition.builder()
@@ -88,6 +91,7 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Register UDF
         runQuery("DROP FUNCTION IF EXISTS demo.stringifyJson;");
@@ -113,7 +117,7 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by name asc");
         String expectedPath = "src/test/resources/expected/append/digest_generation/data_pass1.csv";
-        String [] schema = new String[] {"name", "amount", "biz_date", "insert_ts", "digest"};
+        String [] schema = new String[] {"name", "amount", "biz_date", "insert_ts", "digest", "batch_id"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         // Pass 2

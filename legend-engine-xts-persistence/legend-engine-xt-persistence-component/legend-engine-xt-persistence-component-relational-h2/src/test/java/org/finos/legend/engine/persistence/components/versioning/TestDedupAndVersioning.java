@@ -621,7 +621,7 @@ public class TestDedupAndVersioning extends BaseTest
 
         Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
         datasets = ingestor.create(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
+        ingestor.dedupAndVersion();
     }
 
     public static void loadDataIntoStagingTableWithoutVersion(String path) throws Exception

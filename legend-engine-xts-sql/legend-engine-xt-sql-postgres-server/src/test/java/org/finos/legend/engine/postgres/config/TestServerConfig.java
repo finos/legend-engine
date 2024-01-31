@@ -17,6 +17,7 @@ package org.finos.legend.engine.postgres.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.FileInputStream;
+import org.finos.legend.engine.postgres.SessionsFactory;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.auth.IdentityType;
 import org.junit.Assert;
@@ -38,10 +39,10 @@ public class TestServerConfig
         Assert.assertEquals(AuthenticationMethodType.NO_PASSWORD, serverConfig.getAuthenticationMethod());
         Assert.assertEquals(IdentityType.ANONYMOUS, serverConfig.getIdentityType());
         JDBCHandlerConfig jdbcHandlerConfig = (JDBCHandlerConfig) serverConfig.getHandler();
+        jdbcHandlerConfig.buildSessionsFactory();
         Assert.assertEquals("jdbc:postgresql://localhost:5432/postgres", jdbcHandlerConfig.getConnectionString());
         Assert.assertEquals("password", jdbcHandlerConfig.getPassword());
         Assert.assertEquals("postgres", jdbcHandlerConfig.getUser());
-        Assert.assertEquals(HandlerType.JDBC, jdbcHandlerConfig.getType());
     }
 
     @Test
@@ -55,9 +56,9 @@ public class TestServerConfig
         Assert.assertEquals(AuthenticationMethodType.NO_PASSWORD, serverConfig.getAuthenticationMethod());
         Assert.assertEquals(IdentityType.ANONYMOUS, serverConfig.getIdentityType());
         LegendHandlerConfig legendHandlerConfig = (LegendHandlerConfig) serverConfig.getHandler();
+        legendHandlerConfig.buildSessionsFactory();
         Assert.assertEquals("http", legendHandlerConfig.getProtocol());
         Assert.assertEquals("localhost", legendHandlerConfig.getHost());
         Assert.assertEquals("6300", legendHandlerConfig.getPort());
-        Assert.assertEquals(HandlerType.LEGEND, legendHandlerConfig.getType());
     }
 }

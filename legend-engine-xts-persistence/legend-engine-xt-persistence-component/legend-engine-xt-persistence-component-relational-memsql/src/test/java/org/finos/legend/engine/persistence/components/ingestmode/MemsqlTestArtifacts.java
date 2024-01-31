@@ -21,6 +21,7 @@ public class MemsqlTestArtifacts
             "`name` VARCHAR(256) NOT NULL," +
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`))";
 
     public static String expectedStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
@@ -35,6 +36,7 @@ public class MemsqlTestArtifacts
             "`NAME` VARCHAR(256) NOT NULL," +
             "`AMOUNT` DOUBLE," +
             "`BIZ_DATE` DATE," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
@@ -43,6 +45,7 @@ public class MemsqlTestArtifacts
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`digest` VARCHAR(256)," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`))";
 
     public static String expectedStagingTableWithDigestCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
@@ -60,6 +63,7 @@ public class MemsqlTestArtifacts
             "`biz_date` DATE," +
             "`digest` VARCHAR(256)," +
             "`version` INTEGER," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`))";
 
     public static String expectedBaseTempStagingTableWithCount = "CREATE TABLE IF NOT EXISTS `mydb`.`staging_legend_persistence_temp_staging`" +
@@ -102,6 +106,7 @@ public class MemsqlTestArtifacts
             "`BIZ_DATE` DATE," +
             "`DIGEST` VARCHAR(256)," +
             "`VERSION` INTEGER," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
@@ -110,6 +115,7 @@ public class MemsqlTestArtifacts
             "`AMOUNT` DOUBLE," +
             "`BIZ_DATE` DATE," +
             "`DIGEST` VARCHAR(256)," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`))";
 
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
@@ -117,7 +123,8 @@ public class MemsqlTestArtifacts
             "`name` VARCHAR(256)," +
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
-            "`digest` VARCHAR(256))";
+            "`digest` VARCHAR(256)," +
+            "`batch_id` INTEGER)";
 
     public static String expectedStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`staging`(" +
             "`id` INTEGER," +
@@ -125,9 +132,6 @@ public class MemsqlTestArtifacts
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`digest` VARCHAR(256))";
-
-    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS `mydb`.`main`" +
-            "(`id` INTEGER,`name` VARCHAR(256),`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256),`batch_update_time` DATETIME)";
 
     public static String expectedMainTableBatchIdAndVersionBasedCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER NOT NULL,`name` VARCHAR(256) NOT NULL,`amount` DOUBLE,`biz_date` DATE,`digest` VARCHAR(256),`version` INTEGER," +
@@ -144,6 +148,7 @@ public class MemsqlTestArtifacts
             "`biz_date` DATE," +
             "`digest` VARCHAR(256)," +
             "`batch_update_time` DATETIME NOT NULL," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS `MYDB`.`MAIN`(" +
@@ -153,16 +158,18 @@ public class MemsqlTestArtifacts
             "`BIZ_DATE` DATE," +
             "`DIGEST` VARCHAR(256)," +
             "`BATCH_UPDATE_TIME` DATETIME NOT NULL," +
+            "`BATCH_ID` INTEGER," +
             "PRIMARY KEY (`ID`, `NAME`, `BATCH_UPDATE_TIME`))";
 
-    public static String expectedBaseTableWithAuditNotPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
-            "`id` INTEGER NOT NULL," +
-            "`name` VARCHAR(256) NOT NULL," +
-            "`amount` DOUBLE," +
-            "`biz_date` DATE," +
-            "`digest` VARCHAR(256)," +
-            "`batch_update_time` DATETIME," +
-            "PRIMARY KEY (`id`, `name`))";
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampAndBatchNumberCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
+        "`id` INTEGER NOT NULL," +
+        "`name` VARCHAR(256) NOT NULL," +
+        "`amount` DOUBLE," +
+        "`biz_date` DATE," +
+        "`digest` VARCHAR(256)," +
+        "`batch_update_time` DATETIME NOT NULL," +
+        "`batch_number` INTEGER," +
+        "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
     public static String expectedBaseTableWithAuditPKCreateQuery = "CREATE TABLE IF NOT EXISTS `mydb`.`main`(" +
             "`id` INTEGER NOT NULL," +
@@ -170,6 +177,7 @@ public class MemsqlTestArtifacts
             "`amount` DOUBLE," +
             "`biz_date` DATE," +
             "`batch_update_time` DATETIME NOT NULL," +
+            "`batch_id` INTEGER," +
             "PRIMARY KEY (`id`, `name`, `batch_update_time`))";
 
     public static String expectedStagingCleanupQuery = "DELETE FROM `mydb`.`staging` as stage";

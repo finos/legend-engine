@@ -26,6 +26,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Ins
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
@@ -65,6 +66,10 @@ class NontemporalSnapshotPlanner extends Planner
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
         }
+
+        // Add batch_id field
+        fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
+        fieldsToSelect.add(metadataUtils.getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
 
         Selection selectStaging = Selection.builder().source(stagingDataset()).addAllFields(fieldsToSelect).build();
 
@@ -110,5 +115,4 @@ class NontemporalSnapshotPlanner extends Planner
     {
         return false;
     }
-
 }

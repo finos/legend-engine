@@ -385,7 +385,7 @@ function meta::relational::graphFetch::executionPlan::planRootGraphFetchExecutio
 
    /* Generate SQL Query */
    print(if($debug.debug,|$debug.space+'   >Process left expression (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'): '+$lhsFe->meta::pure::router::printer::asString()+'\n',|''));
-   let pureToSqlState      = createPureToSqlState($simplePrimitiveProperties, $sq.inScopeVars, $mapping, $exeCtx);
+   let pureToSqlState      = createPureToSqlState($simplePrimitiveProperties, $sq.inScopeVars, $mapping, $exeCtx,$extensions);
    let selectWithCursor    = $lhsFe->toSelectWithCursor($mapping, $sq.inScopeVars, $debug->indent(2), $pureToSqlState, $extensions);
    let postProcessorResult = $selectWithCursor.select->toOne()->cast(@SelectSQLQuery)->postProcessSQLQuery($store, $ext, $mapping, $oneRuntime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
@@ -442,11 +442,11 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
 
    /* Generate Sql Query */
    print(if($debug.debug,|$debug.space+'   >Generate local store property query\n',|''));
-   let primitiveQuery     = generatePrimitivePropertyQuery($parentSets, $currentTree, $parentTree, $mapping, $inScopeVars, $mc, $debug->indent(2), $extensions);
+   let primitiveQuery     = generatePrimitivePropertyQuery($parentSets, $currentTree, $parentTree, $mapping, $inScopeVars, $mc, $debug->indent(2), $exeCtx, $extensions);
    let resultColumnnName  = '"node_' + $currentIdxString + '_result"';
    let namedColumnQuery   = ^$primitiveQuery(columns = ^Alias(name = $resultColumnnName, relationalElement = $primitiveQuery.columns->toOne()));
    let changedDriverQuery = $namedColumnQuery->changeDriverToTempWithPkProjection(tempTableName($parentIdx), $parentSets, $extensions);
-   let shouldManageAgg    = $currentTree.property->instanceOf(QualifiedProperty) && $currentTree.property->containsAggregationFunctionInFunction(defaultState($mapping, $inScopeVars).supportedFunctions);
+   let shouldManageAgg    = $currentTree.property->instanceOf(QualifiedProperty) && $currentTree.property->containsAggregationFunctionInFunction(defaultState($mapping, $inScopeVars, $exeCtx, $extensions).supportedFunctions);
    let managedAggQuery    = if ($shouldManageAgg,
                                 | ^$changedDriverQuery
                                   (
@@ -521,7 +521,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::planGra
    let wrappedNode   = generateExecutionNodeForPostProcessedResult($sqlNode, $allExecNodes, $postProcessorResult, $extensions);
 
    let newVars = newVarsForMilestoningContext($currentTree, $inScopeVars);
-   let mcForProperty = milestoningContextFromPropertyTree($currentTree, $parentTree, $mc, defaultState($mapping, $inScopeVars->putAll($newVars)), $debug->indent(), $extensions);
+   let mcForProperty = milestoningContextFromPropertyTree($currentTree, $parentTree, $mc, defaultState($mapping, $inScopeVars->putAll($newVars), $exeCtx ,$extensions),$debug->indent(), $extensions);
    let children = $currentTree->generateRelationalChildGraphNodes($currentPath, $setImpls, $simplePrimitiveProperties, $orderedPaths, $store, $mapping, $runtime, $inScopeVars, $mcForProperty, $exeCtx, $extensions, $debug);
    let columns = $sqlNode.resultColumns->filter(x | $x.label->startsWith('"pk_'))->map(x | ^SQLResultColumn(label = $x.label->substring(1, $x.label->length() - 1), dataType = $x.dataType->toOne()));
    let dbType = $dbConnection.type;
@@ -612,10 +612,11 @@ function meta::relational::graphFetch::executionPlan::planCrossRootGraphFetchExe
    print(if($debug.debug,|$debug.space+'   >Generate cross property query (with properties - '+$simplePrimitiveProperties->map(p|$p.name)->removeDuplicates()->joinStrings('[',', ',']')+'\n',|''));
    let crossQuery          = generateCrossPropertyQuery($rootTree, $parentIdx, $xStorePropertyMapping, $srcProperties, $mapping, $inScopeVars, $simplePrimitiveProperties, $mcForProperty, $debug->indent(2), $extensions);
    let dbConnectionPre        = $runtime->connectionByElement($store)->cast(@DatabaseConnection) ;
-   let dbConnectionStorePre = $runtime.connectionStores->filter(connectionStore|$connectionStore.connection==$dbConnectionPre)->toOne();
+   let dbConnectionStorePre = $runtime.connectionStores->filter(connectionStore|$connectionStore.connection==$dbConnectionPre);
 
-   let dbConnection =  if($clusteredTree.s.reprocessConnection->isEmpty(),|$dbConnectionPre,|$clusteredTree.s.reprocessConnection->toOne()->eval($dbConnectionStorePre))->cast(@DatabaseConnection) ;
-   let oneRuntime          = ^Runtime(connectionStores = ^$dbConnectionStorePre(connection=$dbConnection));
+   let dbConnectionStore =  if($clusteredTree.s.processRuntimeTestConnections->isEmpty(),|$dbConnectionStorePre,|$clusteredTree.s.processRuntimeTestConnections->toOne()->eval($dbConnectionStorePre));
+   let dbConnection = $dbConnectionStore.connection->distinct()->toOne('Expected 1 connection, but received ' + $dbConnectionStore.connection->distinct()->size()->toString())->cast(@DatabaseConnection);
+   let oneRuntime          = ^Runtime(connectionStores = $dbConnectionStore);
    let postProcessorResult = $crossQuery->postProcessSQLQuery($store, [], $mapping, $oneRuntime, $exeCtx, $extensions);
    let postProcessedQuery  = $postProcessorResult.query->cast(@SelectSQLQuery);
    print(if($debug.debug,|$debug.space+'   >Generated cross property query: '+$postProcessedQuery->meta::relational::functions::sqlQueryToString::processOperation(meta::relational::runtime::DatabaseType.H2, $extensions)+'\n',|''));
@@ -683,9 +684,9 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::assertC
    });
 }
 
-function <<access.private>> meta::relational::graphFetch::executionPlan::createPureToSqlState(simplePrimitiveProperties: Property<Nil,Any|*>[*], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], exeCtx: ExecutionContext[1]):State[1]
+function <<access.private>> meta::relational::graphFetch::executionPlan::createPureToSqlState(simplePrimitiveProperties: Property<Nil,Any|*>[*], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], exeCtx: ExecutionContext[1],extensions:Extension[*]):State[1]
 {
-   let defaultPureToSqlState = defaultState($mapping, $inScopeVars);
+   let defaultPureToSqlState =  defaultState($mapping, $inScopeVars, $exeCtx, $extensions);
    let sqlStateAsPerContext  = if($exeCtx->isNotEmpty() && $exeCtx->toOne()->instanceOf(RelationalExecutionContext),
                                   | let relContext = $exeCtx->toOne()->cast(@RelationalExecutionContext);
                                     ^$defaultPureToSqlState
@@ -776,7 +777,7 @@ function <<access.private>> meta::relational::graphFetch::executionPlan::buildBa
    );
 }
 
-function <<access.private>> meta::relational::graphFetch::executionPlan::generatePrimitivePropertyQuery(setImpls: RelationalInstanceSetImplementation[*], propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], mapping:Mapping[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], debug: DebugContext[1], extensions:Extension[*]):SelectSQLQuery[1]
+function <<access.private>> meta::relational::graphFetch::executionPlan::generatePrimitivePropertyQuery(setImpls: RelationalInstanceSetImplementation[*], propTree: RoutedPropertyGraphFetchTree[1], parentTree: GraphFetchTree[1], mapping:Mapping[1], inScopeVars: Map<String, List<Any>>[1], mc: TemporalMilestoningContext[0..1], debug: DebugContext[1], exeCtx : ExecutionContext[1], extensions:Extension[*]):SelectSQLQuery[1]
 {
    let isQualified    = $propTree.property->instanceOf(QualifiedProperty);
    let pureToSqlState = defaultState($mapping, $inScopeVars);

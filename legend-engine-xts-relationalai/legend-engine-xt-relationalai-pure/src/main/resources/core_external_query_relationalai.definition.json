@@ -1,6 +1,6 @@
 {
   "name" : "core_external_query_relationalai",
-  "pattern" : "(meta::rel|meta::pure::mapping)(::.*)?",
+  "pattern" : "(meta::external::store::rel)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",

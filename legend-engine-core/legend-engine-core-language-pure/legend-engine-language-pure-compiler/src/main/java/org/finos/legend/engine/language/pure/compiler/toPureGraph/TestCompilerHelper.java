@@ -37,7 +37,7 @@ public class TestCompilerHelper
                 throw new EngineException("Mapping Tests can only have one assertion", mappingTest.sourceInformation, EngineErrorType.COMPILATION);
             }
 
-            Root_meta_pure_mapping_metamodel_MappingTest compiledTest = new Root_meta_pure_mapping_metamodel_MappingTest_Impl("", null, context.pureModel.getClass("meta::pure::mapping::metamodel::MappingTest"));
+            Root_meta_pure_mapping_metamodel_MappingTest compiledTest = new Root_meta_pure_mapping_metamodel_MappingTest_Impl("", SourceInformationHelper.toM3SourceInformation(mappingTest.sourceInformation), context.pureModel.getClass("meta::pure::mapping::metamodel::MappingTest"));
             compiledTest
                     ._storeTestData(ListIterate.collect(mappingTest.storeTestData, ele -> HelperMappingBuilder.processMappingElementTestData(ele, context, new ProcessingContext("Mapping Element: "))))
                     ._id(mappingTest.id)

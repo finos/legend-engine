@@ -20,18 +20,20 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 
 public class HostedServiceContent extends FunctionActivatorDeploymentContent
 {
+    public String pattern;
 
     public GenerationInfo info;
     public PureModelContextData serviceData;
 
-    public HostedServiceContent(GenerationInfo info)
+    public HostedServiceContent(String pattern, GenerationInfo info)
     {
+        this.pattern = pattern;
         this.info = info;
     }
 
-    public HostedServiceContent(GenerationInfo info, PureModelContextData serviceData)
+    public HostedServiceContent(String pattern, GenerationInfo info, PureModelContextData serviceData)
     {
-        this.info = info;
+        this(pattern, info);
         this.serviceData = serviceData;
     }
 }

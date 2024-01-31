@@ -1146,6 +1146,7 @@ public class RelationalParseTreeWalker
         String binding = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         BindingTransformer bindingTransformer = new BindingTransformer();
         bindingTransformer.binding = binding;
+        bindingTransformer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
         return bindingTransformer;
     }
 

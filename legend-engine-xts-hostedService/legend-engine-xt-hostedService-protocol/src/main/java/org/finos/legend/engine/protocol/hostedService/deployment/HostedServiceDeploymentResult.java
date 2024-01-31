@@ -18,4 +18,5 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentR
 
 public class HostedServiceDeploymentResult extends DeploymentResult
 {
+    public String error;
 }

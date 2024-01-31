@@ -100,7 +100,7 @@ public class HelperRuntimeBuilder
     public static Root_meta_core_runtime_Runtime buildEngineRuntime(EngineRuntime engineRuntime, CompileContext context)
     {
         // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
-        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime");
+        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(engineRuntime.sourceInformation), null);
         buildEngineRuntime(engineRuntime, pureRuntime, context);
         return pureRuntime;
     }
@@ -120,12 +120,21 @@ public class HelperRuntimeBuilder
         Set<String> ids = new HashSet<>();
         ListIterate.forEach(engineRuntime.connectionStores, connectionStores ->
         {
-            Root_meta_core_runtime_Connection connection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
+            Root_meta_core_runtime_Connection pureConnection;
+            if (connectionStores.connection != null)
+            {
+                pureConnection = connectionStores.connection.accept(new ConnectionFirstPassBuilder(context));
+                connectionStores.connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
+            }
+            else
+            {
+                pureConnection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
+            }
             ListIterate.forEach(connectionStores.storePointers, storePointer ->
             {
                 Root_meta_core_runtime_ConnectionStore connectionStore =
                         new Root_meta_core_runtime_ConnectionStore_Impl("")
-                                ._connection(connection)
+                                ._connection(pureConnection)
                                 ._element(getStore(storePointer.path, storePointer.sourceInformation, context));
                 pureRuntime._connectionStoresAdd(connectionStore);
             });
@@ -153,7 +162,7 @@ public class HelperRuntimeBuilder
                 }
                 final Root_meta_core_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-                final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", null, context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
+                final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", SourceInformationHelper.toM3SourceInformation(identifiedConnection.sourceInformation), context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
                         ._connection(pureConnection)
                         ._element(getStore(storeConnections.store.path, storeConnections.store.sourceInformation, context));
 
@@ -215,12 +224,12 @@ public class HelperRuntimeBuilder
         if (runtime instanceof LegacyRuntime)
         {
             LegacyRuntime legacyRuntime = (LegacyRuntime) runtime;
-            Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime");
+            Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(runtime.sourceInformation), null);
             ListIterate.forEach(legacyRuntime.connections, connection ->
             {
                 final Root_meta_core_runtime_Connection pureConnection = connection.accept(new ConnectionFirstPassBuilder(context));
                 connection.accept(new ConnectionSecondPassBuilder(context, pureConnection));
-                final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", null, context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
+                final Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("", SourceInformationHelper.toM3SourceInformation(connection.sourceInformation), context.pureModel.getClass("meta::core::runtime::ConnectionStore"))
                         ._connection(pureConnection)
                         ._element(getStore(connection.element, connection.sourceInformation, context));
                 pureRuntime._connectionStoresAdd(connectionStore);

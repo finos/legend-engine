@@ -51,7 +51,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
   let allStates = allGenerationStates();
 
   [
-    // dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | '\'' + $p->at(2)->mapToDBUnitTrino() + '\', ' + $p->at(1) + ', ' + $p->at(0)})),
+    dynaFnToSql('adjust',                 $allStates,            ^ToSql(format='date_add(%s)', transform={p:String[3] | '\'' + $p->at(2)->mapToDBUnitType() + '\', ' + $p->at(1) + ', ' + $p->at(0)})),
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)', transform={p:String[*] | joinStrings($p, ', ')})),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)', transform={p:String[*] | joinStrings($p, ', ')})),    
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
@@ -82,7 +82,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('length',                 $allStates,            ^ToSql(format='length(%s)')),
     dynaFnToSql('lpad',                   $allStates,            ^ToSql(format='lpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),
     dynaFnToSql('matches',                $allStates,            ^ToSql(format=regexpLikePattern('%s','%s'), transform={p:String[2]|$p->transformRegexpParams()})),
-    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='to_hex(md5(to_utf8(%s)))')),
+    dynaFnToSql('md5',                    $allStates,            ^ToSql(format='lower(to_hex(md5(to_utf8(%s))))')),
     dynaFnToSql('minute',                 $allStates,            ^ToSql(format='minute(%s)')),
     dynaFnToSql('month',                  $allStates,            ^ToSql(format='month(%s)')),
     dynaFnToSql('monthName',              $allStates,            ^ToSql(format='format(\'%%B\', %s)')),
@@ -97,12 +97,12 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::trino
     dynaFnToSql('quarter',                $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('quarterNumber',          $allStates,            ^ToSql(format='quarter(%s)')),
     dynaFnToSql('repeatString',           $allStates,            ^ToSql(format='rpad(%s, length(%s) * %s, %s)', transform={p:String[2] | [$p->at(0), $p->at(0), $p->at(1), $p->at(0)]})),    
-    dynaFnToSql('right',                  $allStates,            ^ToSql(format='substr(%s,-1,%s)')),
+    dynaFnToSql('right',                  $allStates,            ^ToSql(format='substr(%s,-%s)')),
     dynaFnToSql('rpad',                   $allStates,            ^ToSql(format='rpad(%s)', transform={p:String[2..*] | $p->concatenate(if ($p->size() == 2, | '\' \'', | []))->joinStrings(', ')})),    
     dynaFnToSql('round',                  $allStates,            ^ToSql(format='round(%s, %s)', transform=transformRound_String_MANY__String_MANY_)),
     dynaFnToSql('second',                 $allStates,            ^ToSql(format='second(%s)')),
-    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='to_hex(sha1(to_utf8(%s)))')),
-    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='to_hex(sha256(to_utf8(%s)))')),
+    dynaFnToSql('sha1',                   $allStates,            ^ToSql(format='lower(to_hex(sha1(to_utf8(%s))))')),
+    dynaFnToSql('sha256',                 $allStates,            ^ToSql(format='lower(to_hex(sha256(to_utf8(%s))))')),
     dynaFnToSql('substring',              $allStates,            ^ToSql(format='substring%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('stdDevPopulation',       $allStates,            ^ToSql(format='stddev_pop(%s)')),
     dynaFnToSql('stdDevSample',           $allStates,            ^ToSql(format='stddev_samp(%s)')),
