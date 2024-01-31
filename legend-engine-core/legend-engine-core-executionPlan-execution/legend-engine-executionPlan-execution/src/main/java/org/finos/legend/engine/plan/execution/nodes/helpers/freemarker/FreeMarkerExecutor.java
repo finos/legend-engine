@@ -88,7 +88,7 @@ public class FreeMarkerExecutor
 
         if (!result.equals(input.replace("\\\"", "\"")))
         {
-            return processLastString(result,variableMap, templateFunctions, templateFunctions);
+            return processLastString(result,variableMap, templateFunctions);
         }
         return result;
     }
