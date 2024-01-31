@@ -82,7 +82,7 @@ public class FreeMarkerExecutor
         return StringUtils.isBlank(templateFunctions) ? process(input, variableMap, templateFunctions) : processRecursively(input, variableMap, templateFunctions);
     }
 
-    public String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
+    public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
         String result = process(input, variableMap, templateFunctions);//check if intended freemarker expression exists
 
@@ -93,7 +93,7 @@ public class FreeMarkerExecutor
         return result;
     }
 
-    public String processLastString(String string, Map<String, ?> variableMap)
+    public static String processLastString(String string, Map<String, ?> variableMap)
     {
         Matcher m = p.matcher(string);
         if (m.find())
