@@ -19,6 +19,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -278,6 +280,13 @@ public class GraphQLExecute extends GraphQL
         }
         catch (Exception e)
         {
+            LOGGER.error(new LogInfo(profiles, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, e).toString());
+            Span activeSpan = GlobalTracer.get().activeSpan();
+            if (activeSpan != null)
+            {
+                Tags.ERROR.set(activeSpan, true);
+                activeSpan.setTag("error.message", e.getMessage());
+            }
             throw e;
         }
         return execute(profiles, planWithSerialized, graphQLQuery);
