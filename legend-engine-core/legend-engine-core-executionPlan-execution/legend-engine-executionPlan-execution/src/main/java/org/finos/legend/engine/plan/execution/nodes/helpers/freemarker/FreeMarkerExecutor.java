@@ -36,6 +36,7 @@ public class FreeMarkerExecutor
 {
     private static Configuration freemarkerConfig = new Configuration();
     private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
+    public static Pattern p = Pattern.compile("(\\$\\{)(.+?)(\\})");
 
     static
     {
