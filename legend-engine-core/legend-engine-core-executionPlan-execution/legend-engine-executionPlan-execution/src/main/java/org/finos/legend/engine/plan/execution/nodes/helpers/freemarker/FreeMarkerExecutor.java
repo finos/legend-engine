@@ -88,19 +88,19 @@ public class FreeMarkerExecutor
 
         if (!result.equals(input.replace("\\\"", "\"")))
         {
-            return processLastString(result,variableMap);
+            return processLastString(result,variableMap, templateFunctions, templateFunctions);
         }
         return result;
     }
 
-    public static String processLastString(String string, Map<String, ?> variableMap)
+    public static String processLastString(String string, Map<String, ?> variableMap, String templateFunctions)
     {
         Matcher m = p.matcher(string);
         if (m.find())
         {
             String a = string.substring(0, m.start());
-            String b = processRecursively(string.substring(m.start(), m.end()), variableMap,"");
-            String c = processLastString(string.substring(m.end()), variableMap);
+            String b = processRecursively(string.substring(m.start(), m.end()), variableMap, templateFunctions);
+            String c = processLastString(string.substring(m.end()), variableMap, templateFunctions);
             return a + b + c;
         }
         return string;
