@@ -153,6 +153,7 @@ public class TestFreeMarkerExecutor
         rootMap3.put("countryCodeZip", "75201");
         Assert.assertThrows(RuntimeException.class, () -> processRecursively(sqlQuery3, rootMap3, ""));
     }
+    
     @Test
     public void testFreemarkerCharacterFail2() throws Exception
     {
@@ -161,6 +162,7 @@ public class TestFreeMarkerExecutor
         String sqlQuery4 = "select \"root\".countrycode as \"${countryCode\" , \"root\".countryCodeZip as \"countryCodeZip}\" from test_schema as \"root\" ";
         Assert.assertThrows(RuntimeException.class, () -> processRecursively(sqlQuery4, new HashMap<String, String>(), ""));
     }
+    
     @Test
     public void testFreemarkerCharacterFail3() throws Exception
     {
@@ -171,6 +173,7 @@ public class TestFreeMarkerExecutor
         rootMap5.put("firstname", "test");
         Assert.assertThrows("SEVERE: Error executing FreeMarker template", RuntimeException.class, () -> processRecursively(sqlQuery5, rootMap5, ""));
     }
+    
     @Test
     public void testFreemarkerCharacterFail4() throws Exception
     {
