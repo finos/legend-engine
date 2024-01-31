@@ -1,0 +1,454 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::core::runtime::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::external::query::graphQL::transformation::queryToPure::tests::model::*;
+import meta::pure::graphFetch::*;
+import meta::external::store::relational::runtime::*;
+import meta::pure::functions::lang::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::*;
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testOr(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { _or : [ { age: { _eq: 1 } }, { age: { _eq: 2 } } ] }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where__or0_age__eq:Integer[1],where__or1_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__or0_age__eq -> or($p_0.age == $where__or1_age__eq);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testAnd(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { _and : [ { age: { _eq: 3 } }, { age: { _eq: 4 } } ] }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where__and0_age__eq:Integer[1],where__and1_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where__and0_age__eq -> and($p_0.age == $where__and1_age__eq);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testEq(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { age : { _eq : 0 } }) { '   +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where_age__eq:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age == $where_age__eq;'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testEqIgnoreCase(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { firstName : { _eqIgnoreCase : "Abhishoya" } }) { '   +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where_firstName__eqIgnoreCase:String[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firstName -> toLower() == $where_firstName__eqIgnoreCase -> toLower();'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testLt(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { age : { _lt : 0 } }) { '   +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where_age__lt:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age -> lessThan($where_age__lt);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testLte(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { age : { _lte : 0 } }) { '   +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where_age__lte:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age -> lessThanEqual($where_age__lte);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testGt(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { age : { _gt : 0 } }) { '   +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where_age__gt:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age -> greaterThan($where_age__gt);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testGte(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { age : { _gte : 0 } }) { '   +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+    'where_age__gte:Integer[1] | Class Person.all() -> filter('+
+      'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.age -> greaterThanEqual($where_age__gte);'+
+    ') -> graphFetch('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ') -> serialize('+
+      '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+    ');';
+  runTest($query, $expectedLambda);
+}
+
+
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testString(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { firstName : { _eq: "John" } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_firstName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firstName == $where_firstName__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testBoolean(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { isSeniorCitizen : { _eq: true } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_isSeniorCitizen__eq:Boolean[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0 -> isSeniorCitizen(){ $this.age -> greaterThan(60) } == $where_isSeniorCitizen__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testFloat(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { bankBalance : { _eq: 1000.0 } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_bankBalance__eq:Float[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.bankBalance == $where_bankBalance__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testEnum(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { firmType: { _eq: LLC } }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_firmType__eq:meta::external::query::graphQL::transformation::queryToPure::tests::model::FirmType[1] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.firmType == $where_firmType__eq;' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testDateEq(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { dateOfBirth: { _eq: "29-01-1990" } }) { ' +
+  '            firstName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_dateOfBirth__eq:Date[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.dateOfBirth == $where_dateOfBirth__eq;' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testDateLtGt(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { _and: [{ dateOfBirth: { _gt: "29-01-1990" } }, { dateOfBirth: { _lt: "30-01-1990" } }] }) { ' +
+  '            firstName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where__and0_dateOfBirth__gt:Date[1],where__and1_dateOfBirth__lt:Date[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.dateOfBirth -> greaterThan($where__and0_dateOfBirth__gt) -> and($p_0.dateOfBirth -> lessThan($where__and1_dateOfBirth__lt));' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testDateLteGte(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { _and: [{ dateOfBirth: { _gte: "29-01-1990" } }, { dateOfBirth: { _lte: "30-01-1990" } }] }) { ' +
+  '            firstName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where__and0_dateOfBirth__gte:Date[1],where__and1_dateOfBirth__lte:Date[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.dateOfBirth -> greaterThanEqual($where__and0_dateOfBirth__gte) -> and($p_0.dateOfBirth -> lessThanEqual($where__and1_dateOfBirth__lte));' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testDateIn(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { dateOfBirth: { _in: ["29-01-1990"] } }) { ' +
+  '            firstName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_dateOfBirth__in:Date[*] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.dateOfBirth -> in($where_dateOfBirth__in);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {firstName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testEnumIn(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { firmType: { _in: [LLC] } }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_firmType__in:meta::external::query::graphQL::transformation::queryToPure::tests::model::FirmType[*] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.firmType -> in($where_firmType__in);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testIn(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { legalName: { _in: ["FINOS"]} }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_legalName__in:String[*] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.legalName -> in($where_legalName__in);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testContains(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { legalName: { _contains: "F"} }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'wherelegalNamecontains:String[1] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.legalName -> contains($wherelegalNamecontains);' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testExists(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        firms (where: { employees : { _exists: { firstName: { _eq: "John" } } } }) { ' +
+  '            legalName ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_employees__exists_firstName__eq:String[1] | Class Firm.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm[1] | $p_0.employees -> exists('+
+              'p_1:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_1.firstName == $where_employees__exists_firstName__eq;'+
+            ');' +
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Firm {legalName}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testNested(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        persons (where: { firm : { legalName: { _eq: "FINOS" } } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'where_firm_legalName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firm.legalName == $where_firm_legalName__eq;'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::dynamic::tests::queryToLambda::simple::testPaginated(): Boolean[1]
+{
+  let query = 
+  '    query { ' +
+  '        personsPaginated (pageNumber: 0, where: { firstName : { _eq: "John" } }) { ' +
+  '            age ' +
+  '        } ' +
+  '    } ';
+  let expectedLambda = 
+          'pageNumber:Integer[1],where_firstName__eq:String[1] | Class Person.all() -> filter('+
+            'p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0.firstName == $where_firstName__eq;'+
+          ') -> sortBy('+
+            '#/Person/fullName#'+
+          ') -> paginated('+
+            '$pageNumber, 1'+
+          ') -> graphFetch('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ') -> serialize('+
+            '#{meta::external::query::graphQL::transformation::queryToPure::tests::model::Person {age}}#'+
+          ');';
+  runTest($query, $expectedLambda);
+}

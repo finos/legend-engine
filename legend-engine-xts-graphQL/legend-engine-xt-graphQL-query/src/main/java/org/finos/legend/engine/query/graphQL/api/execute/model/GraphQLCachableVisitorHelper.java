@@ -39,8 +39,9 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.SchemaDefin
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.Type;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemDefinition;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.StringValue;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.*;
 
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class GraphQLCachableVisitorHelper
@@ -78,7 +79,14 @@ public class GraphQLCachableVisitorHelper
                 {
                     Argument arg = new Argument();
                     arg.name = a.name;
-                    arg.value = placeholderValue;
+                    if (Objects.equals(a.name, "where"))
+                    {
+                        arg.value = getValueWithoutLiterals(a.value);
+                    }
+                    else
+                    {
+                        arg.value = placeholderValue;
+                    }
                     return arg;
 
                 }).collect(Collectors.toList());
@@ -98,6 +106,42 @@ public class GraphQLCachableVisitorHelper
                 return val;
             }
         });
+    }
+
+    private static Value getValueWithoutLiterals(Value value)
+    {
+        if (value instanceof ObjectValue)
+        {
+            ObjectValue objectValue = new ObjectValue();
+            objectValue.fields = ((ObjectValue) value).fields.stream().map(v ->
+                {
+                    ObjectField objectField = new ObjectField();
+                    objectField.name = v.name;
+                    if (v.name.equals("_in"))
+                    {
+                        objectField.value = placeholderValue;
+                    }
+                    else
+                    {
+                        objectField.value = getValueWithoutLiterals(v.value);
+                    }
+                    return objectField;
+                }
+            ).collect(Collectors.toList());
+            return objectValue;
+        }
+        else if (value instanceof ListValue)
+        {
+            ListValue listValue = new ListValue();
+            listValue.values = ((ListValue) value).values.stream().map(
+                    GraphQLCachableVisitorHelper::getValueWithoutLiterals
+            ).collect(Collectors.toList());
+            return listValue;
+        }
+        else
+        {
+            return placeholderValue;
+        }
     }
 
     private static Definition definitionVisitor(Definition definition)
