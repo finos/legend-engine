@@ -452,22 +452,10 @@ function meta::external::language::java::factory::javaBigDecimal() : meta::exter
 
 function meta::external::language::java::factory::javaPackage(package:String[1]):meta::external::language::java::metamodel::Package[1]
 {
-   let split = $package->split('.');
-   let size = $split->size();
-   if($size==1,
-       |^meta::external::language::java::metamodel::Package(name=$package),
-       | let init = $split->take($size-1);
-         let package  =  ^meta::external::language::java::metamodel::Package(name=$split->at($size-1), parent =$init-> meta::external::language::java::factory::packageRecurse( ));
-     );
-}
-
-function <<access.private>> meta::external::language::java::factory::packageRecurse( names:String[*]): meta::external::language::java::metamodel::Package[1]
-{
-   let size = $names->size();
-   if($size==1,
-      | ^meta::external::language::java::metamodel::Package(name=$names->toOne()),
-      |  let parent  =   meta::external::language::java::factory::packageRecurse($names->take($size-1));
-         ^meta::external::language::java::metamodel::Package(name=$names->at($size-1)->toOne(), parent= $parent );
+   let dotPos = $package->lastIndexOf('.');
+   if($dotPos == -1,
+      |^meta::external::language::java::metamodel::Package(name=$package),
+      |^meta::external::language::java::metamodel::Package(name=$package->substring($dotPos+1), parent=$package->substring(0, $dotPos)->javaPackage())
    );
 }
 
@@ -478,11 +466,10 @@ function meta::external::language::java::factory::javaEnum(pkg:meta::external::l
 
 function meta::external::language::java::factory::javaEnum(modifiers:String[*], qualifiedName:String[1]): meta::external::language::java::metamodel::Enumeration[1]
 {
+   let dotPos  = $qualifiedName->lastIndexOf('.');
+   let package = if($dotPos == -1, |^meta::external::language::java::metamodel::Package(name=''), |javaPackage($qualifiedName->substring(0, $dotPos)));
+   let name    = if($dotPos == -1, |$qualifiedName,                           |$qualifiedName->substring($dotPos+1));
 
-   let split =  $qualifiedName->split('.');
-   let size = $split->size();
-   let package = if($size==1, |^meta::external::language::java::metamodel::Package(name=''), |meta::external::language::java::factory::packageRecurse($split->take($size-1)));
-   let name    = if($size==1, |$qualifiedName,|$split->at($size-1));
    javaEnum($modifiers, $package, $name);
 }
 
@@ -538,10 +525,10 @@ function meta::external::language::java::factory::javaClass(modifiers:String[*],
 
 function meta::external::language::java::factory::javaClass(modifiers:String[*], typeParams:meta::external::language::java::metamodel::TypeVariable[*], fullClassName:String[1]):meta::external::language::java::metamodel::Class[1]
 {
-   let split =  $fullClassName->split('.');
-   let size = $split->size();
-   let package = if($size==1, |^meta::external::language::java::metamodel::Package(name=''), |meta::external::language::java::factory::packageRecurse($split->take($size-1)));
-   let name    = if($size==1, |$fullClassName,|$split->at($size-1));
+   let dotPos  = $fullClassName->lastIndexOf('.');
+   let package = if($dotPos == -1, |^meta::external::language::java::metamodel::Package(name=''), |javaPackage($fullClassName->substring(0, $dotPos)));
+   let name    = if($dotPos == -1, |$fullClassName,                           |$fullClassName->substring($dotPos+1));
+
    javaClass($modifiers, $typeParams, $package, $name);
 }
 
@@ -597,11 +584,9 @@ function meta::external::language::java::factory::javaClass(modifiers:String[*],
 
 function meta::external::language::java::factory::javaClass(modifiers:String[*], typeParams:meta::external::language::java::metamodel::TypeVariable[*], fullClassName:String[1], fields:meta::external::language::java::metamodel::Field[*], methods:Pair<meta::external::language::java::metamodel::Method,Code>[*]):meta::external::language::java::metamodel::Class[1]
 {
-
-   let split =  $fullClassName->split('.');
-   let size = $split->size();
-   let package = if($size==1, |^meta::external::language::java::metamodel::Package(name=''), |meta::external::language::java::factory::packageRecurse($split->take($size-1)));
-   let name    = if($size==1, |$fullClassName,|$split->at($size-1));
+   let dotPos  = $fullClassName->lastIndexOf('.');
+   let package = if($dotPos == -1, |^meta::external::language::java::metamodel::Package(name=''), |javaPackage($fullClassName->substring(0, $dotPos)));
+   let name    = if($dotPos == -1, |$fullClassName,                           |$fullClassName->substring($dotPos+1));
 
    javaClass($modifiers, $typeParams, $package, $name, $fields, $methods);
 }
