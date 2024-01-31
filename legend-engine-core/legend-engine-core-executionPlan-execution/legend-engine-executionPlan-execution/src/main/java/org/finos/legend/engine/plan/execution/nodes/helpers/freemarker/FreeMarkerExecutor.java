@@ -84,25 +84,36 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-
         //initial step
         String result = process(input, variableMap, templateFunctions);//check if intended freemarker expression exists
 
         Matcher matcher = p.matcher(result);
 
-        if (!result.equals(input.replace("\\\"", "\"")) && matcher.find())
+        if (!result.equals(input.replace("\\\"", "\"")))
         {
-            String first = result.substring(0, matcher.start());
+            if(matcher.find())
+            {
+                String first = result.substring(0, matcher.start());
 
-            String last = result.substring(matcher.end(),result.length());
+                String last = result.substring(matcher.end());
 
-            String processString = result.substring(matcher.start(), matcher.end());
+                String processString = result.substring(matcher.start(), matcher.end());
 
-            return first + processRecursively(processString, variableMap, templateFunctions) + last;
+                Matcher n = p.matcher(last);
+
+                if (n.find()) //does the tailing string contain placeholders?
+                {
+                    return first + processRecursively(processString + last, variableMap, templateFunctions);
+                }
+                else
+                {
+                    return first + processRecursively(processString, variableMap, templateFunctions) + last;
+                }
+            }
+
         }
         return result;
     }
-
     private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
         StringWriter stringWriter = new StringWriter();
