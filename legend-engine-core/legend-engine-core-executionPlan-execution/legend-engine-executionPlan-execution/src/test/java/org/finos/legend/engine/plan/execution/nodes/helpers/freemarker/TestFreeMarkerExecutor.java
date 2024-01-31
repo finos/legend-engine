@@ -178,7 +178,7 @@ public class TestFreeMarkerExecutor
     public void testFreemarkerCharacterFail4() throws Exception
     {
         //case6: have a tailing ${ with other logic and end bracket in the end  in a join logic
-        //outcome: should fail, users shouldnt be allowed to set their variables as ${countryName and countryCode} as they are mimicing freemarker template
+        //outcome: should fail, users shouldnt be allowed to set their variables as ${countryName and countryCode} as they are mimicking freemarker template
         String sqlQuery6 = "select \"root\".countryname as \"${countryName\", listagg(\"root\".countrycode, ';') as \"countryCode}\" from test_schema as \"root\" group by \"${countryName\"";
         Assert.assertThrows("Caused by: freemarker.core.ParseException: Syntax error in template \"template\" in line 1, column 44:\n" +
                 "Encountered \"\\\", listagg(\\\"\", but was expecting one of:", RuntimeException.class, () -> processRecursively(sqlQuery6, new HashMap<String, String>(), ""));
