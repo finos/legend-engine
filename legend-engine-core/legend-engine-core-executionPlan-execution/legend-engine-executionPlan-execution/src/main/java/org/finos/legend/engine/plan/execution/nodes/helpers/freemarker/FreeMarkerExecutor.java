@@ -88,10 +88,6 @@ public class FreeMarkerExecutor
         //initial step
         String result = process(input, variableMap, templateFunctions);//check if intended freemarker expression exists
 
-        String regex2 = "(\\$\\{)(.+?)(\\})";
-
-        Pattern p = Pattern.compile(regex2);
-
         Matcher matcher = p.matcher(result);
 
         if (!result.equals(input.replace("\\\"", "\"")) && matcher.find())
