@@ -101,7 +101,7 @@ public class FreeMarkerExecutor
 
             String processString = result.substring(matcher.start(), matcher.end());
 
-            return first + processRecursively(processString, variableMap, templateFunctions) + last;
+            return first + processRecursively(processString + last, variableMap, templateFunctions);
         }
         return result;
     }
