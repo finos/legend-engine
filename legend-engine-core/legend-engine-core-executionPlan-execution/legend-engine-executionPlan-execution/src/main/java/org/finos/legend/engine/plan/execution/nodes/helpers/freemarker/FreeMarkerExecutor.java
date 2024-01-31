@@ -82,38 +82,30 @@ public class FreeMarkerExecutor
         return StringUtils.isBlank(templateFunctions) ? process(input, variableMap, templateFunctions) : processRecursively(input, variableMap, templateFunctions);
     }
 
-    public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
+    public String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        //initial step
         String result = process(input, variableMap, templateFunctions);//check if intended freemarker expression exists
-
-        Matcher matcher = p.matcher(result);
 
         if (!result.equals(input.replace("\\\"", "\"")))
         {
-            if (matcher.find())
-            {
-                String first = result.substring(0, matcher.start());
-
-                String last = result.substring(matcher.end());
-
-                String processString = result.substring(matcher.start(), matcher.end());
-
-                Matcher n = p.matcher(last);
-
-                if (n.find()) //does the tailing string contain placeholders?
-                {
-                    return first + processRecursively(processString + last, variableMap, templateFunctions);
-                }
-                else
-                {
-                    return first + processRecursively(processString, variableMap, templateFunctions) + last;
-                }
-            }
-
+            return processLastString(result,variableMap);
         }
         return result;
     }
+
+    public String processLastString(String string, Map<String, ?> variableMap)
+    {
+        Matcher m = p.matcher(string);
+        if (m.find())
+        {
+            String a = string.substring(0, m.start());
+            String b = processRecursively(string.substring(m.start(), m.end()), variableMap,"");
+            String c = processLastString(string.substring(m.end()), variableMap);
+            return a + b + c;
+        }
+        return string;
+    }
+
     
     private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
