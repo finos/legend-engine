@@ -143,6 +143,18 @@ public class TestFreeMarkerExecutor
     }
 
     @Test
+    public void testFreeMarkerWithCompoundPlaceholders2() throws Exception
+    {
+        String sql = "Provide your '${firstName}' and '${lastName}' and '${thirdName}' goodbye";
+        Map rootMap = new HashMap<String, String>();
+        rootMap.put("firstName", "sbcd<@?fdf");
+        rootMap.put("lastName","${lastName2?replace(\"'\", \"''\")}");
+        rootMap.put("lastName2", "doe");
+        rootMap.put("thirdName", "sbcd<@?fdf");
+        Assert.assertEquals("Provide your 'sbcd<@?fdf' and 'doe' and 'sbcd<@?fdf' goodbye", processRecursively(sql, rootMap, ""));
+    }
+
+    @Test
     public void testFreemarkerCharacterFail() throws Exception
     {
 
