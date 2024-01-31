@@ -502,6 +502,10 @@ public class DomainParseTreeWalker
         }
         FunctionTest functionTest = new FunctionTest();
         functionTest.id = PureGrammarParserUtility.fromIdentifier(simpleFunctionTestContext.identifier(0));
+        if (simpleFunctionTestContext.STRING() != null)
+        {
+           functionTest.doc = PureGrammarParserUtility.fromGrammarString(simpleFunctionTestContext.STRING().getText(), true);
+        }
         functionTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(simpleFunctionTestContext);
         DomainParserGrammar.FunctionParamsContext functionParamsContext = simpleFunctionTestContext.functionParams();
         if (functionParamsContext != null && !functionParamsContext.primitiveValue().isEmpty())
