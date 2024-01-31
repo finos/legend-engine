@@ -19,6 +19,7 @@ import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLParserExcept
 import org.finos.legend.engine.language.graphQL.grammar.to.GraphQLGrammarComposer;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestGraphQLRoundtrip
@@ -160,6 +161,24 @@ public class TestGraphQLRoundtrip
                 "        description(p: 3.2, z: [1, 2, \"ok\"]) @nestedDirective2\n" +
                 "      }\n" +
                 "    }\n" +
+                "  }\n" +
+                "}");
+    }
+
+    @Test
+    public void testQueryWithInputObjectRoundtrip()
+    {
+        check("query getUserWithProjects($a: INT = 1) @cool {\n" +
+                "  user(where: { firstName: { _eq: \"John\" } }) {\n" +
+                "    firstname\n" +
+                "    lastname\n" +
+                "  }\n" +
+                "}");
+
+        check("query getUserWithProjects($a: INT = 1) @cool {\n" +
+                "  user(where: { _or: { _eq: \"John\" } }) {\n" +
+                "    firstname\n" +
+                "    lastname\n" +
                 "  }\n" +
                 "}");
     }

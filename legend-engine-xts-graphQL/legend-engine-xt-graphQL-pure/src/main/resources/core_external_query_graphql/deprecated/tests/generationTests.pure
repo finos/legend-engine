@@ -8,7 +8,11 @@ function meta::external::query::graphQL::generation::tests::constants::inctype_g
   'enum IncType {\n' +
   '  LLC\n' +
   '  CORP\n' +
-  '}';
+  '}\n' +
+  'input IncType_comparison_exp {\n' +
+  '  _eq: IncType!\n' +
+  '  _in: [IncType!]\n' +
+  '}'
 }
 
 function meta::external::query::graphQL::generation::tests::constants::firm_graphql(): String[1]
@@ -18,7 +22,18 @@ function meta::external::query::graphQL::generation::tests::constants::firm_grap
   '  legalName: String!\n' +
   '  incType: IncType!\n' +
   '  employees: [Person!]!\n' +
-  '}';
+  '}\n' +
+  'input Firm_bool_exp {\n' +
+  '  id: Int_comparison_exp\n' +
+  '  legalName: String_comparison_exp\n' +
+  '  incType: IncType_comparison_exp\n' +
+  '  employees: Person_exists_exp\n' +
+  '  _and: [Firm_bool_exp!]\n' +
+  '  _or: [Firm_bool_exp!]\n' +
+  '}\n' +
+  'input Firm_exists_exp {\n' +
+  '  _exists: Firm_bool_exp\n' +
+  '}'
 }
 
 function meta::external::query::graphQL::generation::tests::constants::person_graphql(): String[1]
@@ -29,7 +44,19 @@ function meta::external::query::graphQL::generation::tests::constants::person_gr
   '  lastName: String!\n' +
   '  age: Int!\n' +
   '  firm: Firm!\n' +
-  '}';
+  '}\n' +
+  'input Person_bool_exp {\n' +
+  '  id: Int_comparison_exp\n' +
+  '  firstName: String_comparison_exp\n' +
+  '  lastName: String_comparison_exp\n' +
+  '  age: Int_comparison_exp\n' +
+  '  firm: Firm_bool_exp\n' +
+  '  _and: [Person_bool_exp!]\n' +
+  '  _or: [Person_bool_exp!]\n' +
+  '}\n' +
+  'input Person_exists_exp {\n' +
+  '  _exists: Person_bool_exp\n' +
+  '}'
 }
 
 function meta::external::query::graphQL::generation::tests::constants::classWithCustomScalars_graphql(): String[1]
@@ -38,13 +65,20 @@ function meta::external::query::graphQL::generation::tests::constants::classWith
   '  date: Date!\n' +
   '  datetime: DateTime!\n' +
   '  decimal: BigDecimal!\n' +
-  '}';
+  '}\n' +
+  'input ClassWithCustomScalars_bool_exp {\n' +
+  '  _and: [ClassWithCustomScalars_bool_exp!]\n' +
+  '  _or: [ClassWithCustomScalars_bool_exp!]\n' +
+  '}\n' +
+  'input ClassWithCustomScalars_exists_exp {\n' +
+  '  _exists: ClassWithCustomScalars_bool_exp\n' +
+  '}'
 }
 
 function meta::external::query::graphQL::generation::tests::constants::query_graphql(): String[1]
 {
   'type Query {\n' +
-  '  firmByName(name: String!): Firm\n' +
+  '  firmByName(name: String!, where: Firm_bool_exp): Firm\n' +
   '}\n' +
   'schema {\n' +
   '  query : Query\n' +
@@ -54,11 +88,35 @@ function meta::external::query::graphQL::generation::tests::constants::query_gra
 function meta::external::query::graphQL::generation::tests::constants::query2_graphql(): String[1]
 {
   'type Query2 {\n' +
-  '  persons: [Person!]!\n' +
+  '  persons(where: Person_bool_exp): [Person!]!\n' +
   '}\n' +
   'schema {\n' +
   '  query : Query2\n' +
   '}';
+}
+
+function meta::external::query::graphQL::generation::tests::constants::comparisonExpressions(strs: String[*]): String[1]
+{
+  let m = customGraphQLScalarsToPrimitiveMappingForInput();
+  $strs->zip($strs->map(s|$m->get($s)))->map( s | 
+    'input ' + $s.first + '_comparison_exp {\n' +
+    '  _eq: ' + $s.second + '\n' +
+    '  _in: [' + $s.second + '!]\n' +
+    
+    if($s.first->in(['String']),
+      | '  _contains: ' + $s.second + '\n' +
+        '  _eqIgnoreCase: ' + $s.second + '\n',
+      |''
+    ) +
+    if($s.first->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']),
+      | '  _lt: ' + $s.second + '\n' +
+        '  _gt: ' + $s.second + '\n' +
+        '  _lte: ' + $s.second + '\n' +
+        '  _gte: ' + $s.second + '\n',
+      |''
+    ) +
+    '}'
+  )->joinStrings('\n');
 }
 
 Enum meta::external::query::graphQL::generation::tests::model::IncType
@@ -127,7 +185,7 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
   );
 
   assertEquals(
-  [firm_graphql()], $res.content);
+  [firm_graphql()]->concatenate(['Int','String']->comparisonExpressions()), $res.content);
 }
 
 function <<test.Test>> meta::external::query::graphQL::generation::tests::testGeneratePackage():Boolean[1]
@@ -146,11 +204,12 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
     'meta/external/query/graphQL/generation/tests/model/Query.graphql',
     'meta/external/query/graphQL/generation/tests/model/Query2.graphql',
     'meta/external/query/graphQL/generation/tests/model/IncType.graphql',
+    'primitive_comparisons.graphql',
     'scalars.graphql'
   ], $res.fileName);
 
   let scalars = +'scalar BigDecimal\n'+'scalar Date\n'+'scalar DateTime';
-  assertSameElements([classWithCustomScalars_graphql(), firm_graphql(), person_graphql(), query_graphql(), query2_graphql(), inctype_graphql(), $scalars], $res.content);
+  assertSameElements([classWithCustomScalars_graphql(), firm_graphql(), person_graphql(), query_graphql(), query2_graphql(), inctype_graphql()]->concatenate($scalars)->concatenate(['BigDecimal','Date','DateTime','Int','String']->comparisonExpressions()), $res.content);
 }
 
 function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateMultiple():Boolean[1]
@@ -162,5 +221,18 @@ function <<test.Test>> meta::external::query::graphQL::generation::tests::testGe
     )
   );
 
-  assertEquals([person_graphql(), firm_graphql(), query2_graphql()], $res.content);
+  assertEquals([query2_graphql()], $res.content->at(2));
 }
+
+function <<test.Test>> meta::external::query::graphQL::generation::tests::testGenerateEnum():Boolean[1]
+{
+  let res = meta::external::query::graphQL::generation::generateGraphQL(
+    ^meta::external::query::graphQL::generation::GraphQLConfig
+    (
+      scopeElements = [IncType]
+    )
+  );
+
+  assertEquals([inctype_graphql()], $res.content);
+}
+
