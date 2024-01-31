@@ -103,6 +103,20 @@ public class TestFreeMarkerExecutor
     }
 
     @Test
+    public void testFreeMarkerWithCompoundPlaceholders() throws Exception
+    {
+        String sql = "Provide your '${firstName}' and '${lastName}' and '${thirdName}' goodbye";
+        Map rootMap = new HashMap<String, String>();
+        rootMap.put("firstName", "sbcd<@?fdf");
+        rootMap.put("lastName","${lastName2?replace(\"'\", \"''\")}");
+        rootMap.put("lastName2", "doe");
+        rootMap.put("thirdName", "${lastName3?replace(\"'\", \"''\")}");
+        rootMap.put("lastName3", "smith");
+        Assert.assertEquals("Provide your 'sbcd<@?fdf' and 'doe' and 'smith' goodbye", processRecursively(sql, rootMap, ""));
+
+    }
+
+    @Test
     public void testFreemarkerWithSpecialCharacters() throws Exception
 
     {
@@ -113,7 +127,11 @@ public class TestFreeMarkerExecutor
         Map rootMap = new HashMap<String, String>();
         rootMap.put("firstName", "sbcd<@?fdf");
         Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'sbcd<@?fdf')", processRecursively(sqlQuery1, rootMap, ""));
+    }
 
+    @Test
+    public void testFreemarkerCharacterPass() throws Exception
+    {
         //case2: layered freemarker -> double process call
         //outcome: should pass because double recusion is working as expected
         String sqlQuery2 = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${inFilterClause_id}')";
@@ -122,25 +140,40 @@ public class TestFreeMarkerExecutor
         rootMap2.put("lastName", "Doe");
         Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'Doe')", processRecursively(sqlQuery2, rootMap2, ""));
 
+    }
+
+    @Test
+    public void testFreemarkerCharacterFail() throws Exception
+    {
+
         //case3: instances found for ${} where we dont pass in variables in varMap
         //outcome: should fail since the user should not be setting column names with freemarker template
-        String sqlQuery3 = "select \"root\".countrycode as \"${countryCode}\" where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}'), \"root\".countryCodeZip as \"${countryCodeZip}\" from jasamk_test_data.country_schema as \"root\" ";
+        String sqlQuery3 = "select \"root\".countrycode as \"${countryCode}\" , where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}'), \"root\".countryCodeZip as \"${countryCodeZip}\" from jasamk_test_data.country_schema as \"root\" ";
         Map rootMap3 = new HashMap<String, String>();
         rootMap3.put("countryCodeZip", "75201");
         Assert.assertThrows(RuntimeException.class, () -> processRecursively(sqlQuery3, rootMap3, ""));
-
+    }
+    @Test
+    public void testFreemarkerCharacterFail2() throws Exception
+    {
         //case4: instance where ${.. , is unclosed
         //outcome: expected to fail because this violates freemarker template rules . This will fail before you process it
         String sqlQuery4 = "select \"root\".countrycode as \"${countryCode\" , \"root\".countryCodeZip as \"countryCodeZip}\" from test_schema as \"root\" ";
         Assert.assertThrows(RuntimeException.class, () -> processRecursively(sqlQuery4, new HashMap<String, String>(), ""));
-
+    }
+    @Test
+    public void testFreemarkerCharacterFail3() throws Exception
+    {
         //case 5: adding '<@' to the string, should throw error because freemarker prevents use of < within an expression
         //outcome: should fail as it doesnt comply with freemaker template rules
         String sqlQuery5 = "'${firstname<@}";
         Map rootMap5 = new HashMap<String, String>();
         rootMap5.put("firstname", "test");
-        Assert.assertThrows("SEVERE: Error executing FreeMarker template", RuntimeException.class, () -> processRecursively(sqlQuery5,rootMap5, ""));
-
+        Assert.assertThrows("SEVERE: Error executing FreeMarker template", RuntimeException.class, () -> processRecursively(sqlQuery5, rootMap5, ""));
+    }
+    @Test
+    public void testFreemarkerCharacterFail4() throws Exception
+    {
         //case6: have a tailing ${ with other logic and end bracket in the end  in a join logic
         //outcome: should fail, users shouldnt be allowed to set their variables as ${countryName and countryCode} as they are mimicing freemarker template
         String sqlQuery6 = "select \"root\".countryname as \"${countryName\", listagg(\"root\".countrycode, ';') as \"countryCode}\" from test_schema as \"root\" group by \"${countryName\"";
