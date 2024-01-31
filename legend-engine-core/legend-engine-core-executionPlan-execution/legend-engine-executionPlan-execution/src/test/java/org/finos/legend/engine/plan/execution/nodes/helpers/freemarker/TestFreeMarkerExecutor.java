@@ -184,8 +184,6 @@ public class TestFreeMarkerExecutor
                 "Encountered \"\\\", listagg(\\\"\", but was expecting one of:", RuntimeException.class, () -> processRecursively(sqlQuery6, new HashMap<String, String>(), ""));
     }
 
-
-
     public static String collectionSizeTemplate()
     {
         return "<#function collectionSize collection>" +
