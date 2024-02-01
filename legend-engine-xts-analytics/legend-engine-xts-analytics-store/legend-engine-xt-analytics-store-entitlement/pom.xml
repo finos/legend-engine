@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-analytics-store</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.37.10-SNAPSHOT</version>
+        <version>4.38.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,6 +31,10 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-extensions</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

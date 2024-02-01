@@ -778,7 +778,8 @@ function meta::pure::milestoning::dateParamCount(s:TemporalStrategy[1]):Integer[
 function meta::pure::milestoning::isMilestonedEqualityOperation(vs:ValueSpecification[1]) : Boolean[1]{
     let isSimpleFuncExpression =  { vs:ValueSpecification[1] | $vs->instanceOf(SimpleFunctionExpression)};
     let withSimpleFunctionExpressionArg =  { vs:ValueSpecification[1] | $vs->cast(@SimpleFunctionExpression).parametersValues->at(0)->byPassRouterInfo()->instanceOf(SimpleFunctionExpression)};
-    let isGeneratedMilestoningProperty =  { vs:ValueSpecification[1] | $vs->cast(@SimpleFunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@SimpleFunctionExpression).func->hasGeneratedMilestoningPropertyStereotype()};
+    let isGeneratedMilestoningProperty =  { vs:ValueSpecification[1] | let f = $vs->cast(@SimpleFunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@SimpleFunctionExpression).func;
+                                                                      $f->instanceOf(ElementWithStereotypes) && $f->hasGeneratedMilestoningPropertyStereotype();};
     $isSimpleFuncExpression->eval($vs) && $withSimpleFunctionExpressionArg->eval($vs) && $isGeneratedMilestoningProperty->eval($vs);
 }
 

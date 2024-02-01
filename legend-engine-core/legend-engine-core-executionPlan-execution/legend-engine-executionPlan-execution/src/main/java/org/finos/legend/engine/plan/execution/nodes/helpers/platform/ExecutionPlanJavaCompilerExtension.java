@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
+import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
 
-public interface ExecutionPlanJavaCompilerExtension
+public interface ExecutionPlanJavaCompilerExtension extends LegendPlanExtension
 {
     ClassPathFilter getExtraClassPathFilter();
 }

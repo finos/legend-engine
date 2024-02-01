@@ -70,6 +70,13 @@ function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpec
                                                    property = $fe.func.name->toOne()->cast(@String),
                                                    parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions))
                                                 ),
+                                             p:meta::pure::metamodel::relation::Column<Nil,Any|*>[1]|
+                                                ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::application::AppliedProperty
+                                                (
+                                                   _type = 'property',
+                                                   property = $fe.func.name->toOne()->cast(@String),
+                                                   parameters = $fe.parametersValues->evaluateAndDeactivate()->map(pm|$pm->meta::protocols::pure::vX_X_X::transformation::fromPureGraph::valueSpecification::transformValueSpecification($inScope, $open, false, $extensions))
+                                                ),                                                
                                              f:Function<Any>[1]|
                                                 let passToTransformAny =
                                                    [
@@ -310,6 +317,16 @@ function <<access.private>> meta::protocols::pure::vX_X_X::transformation::fromP
                      (
                         _type = 'latestDate'
                      ),
+                  r:meta::pure::store::RelationStoreAccessor<Any>[1]|
+                     ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::ClassInstance
+                          (
+                            _type = 'classInstance',
+                            type = 'relationStoreAccessor',
+                            value = ^meta::protocols::pure::vX_X_X::metamodel::store::RelationStoreAccessor
+                                    (
+                                      path = $r.path
+                                    )
+                          ),
                   c:Class<Any>[1]|
                      ^meta::protocols::pure::vX_X_X::metamodel::valueSpecification::raw::PackageableElementPtr
                      (

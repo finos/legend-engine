@@ -18,8 +18,9 @@ import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceI
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.ContentPattern;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 
-public interface ContentPatternGrammarParser
+public interface ContentPatternGrammarParser extends LegendModuleSpecificExtension
 {
     String getType();
 

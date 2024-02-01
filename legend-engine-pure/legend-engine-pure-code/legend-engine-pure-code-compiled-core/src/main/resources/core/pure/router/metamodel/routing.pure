@@ -33,8 +33,9 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::extension::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
-import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::pure::store::*;
+
 
 Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
 {

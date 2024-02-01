@@ -873,7 +873,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "   {\n" +
                 "      name : [model::store::db]myTable.name\n" +
                 "   }\n" +
-                ")", "COMPILATION error at [10:32-38]: Can't find store 'model::store::db'"
+                ")", "COMPILATION error at [10:32-38]: The store 'model::store::db' can't be found."
         );
 
         test(MODEL + DB_INC +
@@ -1165,7 +1165,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
                 "      assert: '[ {\\n  \"values\" : [ \"Doe;\" ]\\n}, {\\n  \"values\" : [ \"Wrong\" ]\\n} ]';\n" +
                 "    )\n" +
                 "  ]\n" +
-                ")", "COMPILATION error at [99:9-242]: Can't find store 'test::DB'"
+                ")", "COMPILATION error at [99:9-242]: The store 'test::DB' can't be found."
         );
     }
 

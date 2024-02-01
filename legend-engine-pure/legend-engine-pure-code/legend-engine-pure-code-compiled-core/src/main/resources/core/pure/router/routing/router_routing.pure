@@ -139,7 +139,10 @@ function <<access.private>> meta::pure::router::routing::routeValueSpecification
                                                           | $i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor) || ($i.values->isEmpty() && $i.multiplicity == PureOne && $i.genericType.rawType->isNotEmpty() && $i.genericType.rawType->toOne()->subTypeOf(Relation)),
                                                           | // We match cast to Relation & RelationStoreAccessor.. However we're only processing the Accessor
                                                             if($i.values->size() == 1 && $i.values->at(0)->instanceOf(RelationStoreAccessor),
-                                                              | $state.routingStrategy.processRelationStoreAccessor($i.values->at(0)->cast(@RelationStoreAccessor<Any>), $i, $state, $executionContext, $debug);,
+                                                              | if($state.routingStrategy.processRelationStoreAccessor->isEmpty(),
+                                                                  | fail('RelationStoreAccessor should be used with a from(Rumtime) expression.'); $state;,
+                                                                  | $state.routingStrategy.processRelationStoreAccessor($i.values->at(0)->cast(@RelationStoreAccessor<Any>), $i, $state, $executionContext, $debug)
+                                                                ),
                                                               | $state
                                                             );
                                                         ),

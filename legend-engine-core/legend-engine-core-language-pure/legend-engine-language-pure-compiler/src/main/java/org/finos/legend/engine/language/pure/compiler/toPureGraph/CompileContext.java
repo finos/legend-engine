@@ -86,6 +86,7 @@ public class CompileContext
             "meta::pure::functions::asserts",
             "meta::pure::functions::test",
             "meta::pure::functions::multiplicity",
+            "meta::pure::functions::relation",
             "meta::pure::router",
             "meta::pure::service",
             "meta::pure::tds",

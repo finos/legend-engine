@@ -16,9 +16,9 @@ package org.finos.legend.pure.code.core.external.format.arrowCore;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.pure.code.core.PureCoreExtension;
+import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.pure.code.core.ArrowPureCoreExtension;
+import org.finos.legend.pure.code.core.ArrowLegendPureCoreExtension;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -27,8 +27,8 @@ public class TestExtensionAvailable
     @Test
     public void testServiceAvailable()
     {
-        MutableList<PureCoreExtension> extensions = PureCoreExtensionLoader.extensions();
-        Assert.assertEquals(1, extensions.selectInstancesOf(ArrowPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
+        MutableList<LegendPureCoreExtension> extensions = PureCoreExtensionLoader.extensions();
+        Assert.assertEquals(1, extensions.selectInstancesOf(ArrowLegendPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
         Assert.assertEquals("External Format - Arrow", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).getFirst()._type());
     }
 }

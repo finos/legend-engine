@@ -14,10 +14,13 @@
 
 package org.finos.legend.connection;
 
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+
 import java.util.List;
 import java.util.Properties;
 
-public interface RelationalDatabaseManager
+public interface RelationalDatabaseManager extends LegendConnectionExtension
 {
     List<String> getIds();
 

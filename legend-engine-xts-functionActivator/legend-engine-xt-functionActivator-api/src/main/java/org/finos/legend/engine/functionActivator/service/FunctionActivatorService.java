@@ -23,13 +23,14 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.util.List;
 
-public interface FunctionActivatorService<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorDeploymentConfiguration, V extends DeploymentResult>
+public interface FunctionActivatorService<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorDeploymentConfiguration, V extends DeploymentResult> extends LegendExtension
 {
     FunctionActivatorInfo info(PureModel pureModel, String version);
 

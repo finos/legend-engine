@@ -385,14 +385,8 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                                       $identifier
                                                       ]);
                                              ,
-                                          c:TableAliasColumn[1]|let doubleQuote = if($config.useQuotesForTableAliasColumn == false, |'', |'"');
-                                                                if(!$config.generateJoin->isEmpty() && $config.generateJoin->toOne(),|if ($config.generateJoinTarget == $c.alias,
-                                                                                                                                          |'{target}.',
-                                                                                                                                          |let schema = $c.alias.relationalElement->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name]);
-                                                                                                                                           if ($schema == 'default',|'',|$schema+'.');
-                                                                                                                                      )
-                                                                                                                                    ,|''
-                                                                ) + if ($config.generateJoinTarget == $c.alias, |'',|$dbConfig.identifierProcessor($doubleQuote+$c.alias.name->toOne()+$doubleQuote) + '.') + processColumnName($c.column.name->toOne(), $dbConfig);,
+                                          x:TableAliasColumnName[1] | processTableAlias($x.alias, $dbConfig, $config) + processColumnName($x.columnName, $dbConfig);,                                                                
+                                          c:TableAliasColumn[1]| processTableAlias($c.alias, $dbConfig, $config) + processColumnName($c.column.name->toOne(), $dbConfig);,                                                                
                                           l:Literal[1]| processLiteral($l, $dbConfig),
                                           ll:LiteralList[1] | $ll.values->map(e | $e->processOperation($dbConfig, $format, $generationState, $config, $extensions))->joinStrings('(', ', ', ')'),
                                           s:SelectSQLQuery[1]| $s->processSelectSQLQuery($sgc, false),
@@ -409,6 +403,19 @@ function meta::relational::functions::sqlQueryToString::processOperation(relatio
                                        ])->toOneMany()
                                      );
 }
+
+function meta::relational::functions::sqlQueryToString::processTableAlias(tableAlias:TableAlias[1], dbConfig : DbConfig[1], config:Config[1]):String[1]
+{
+  let doubleQuote = if($config.useQuotesForTableAliasColumn == false, |'', |'"');
+  if(!$config.generateJoin->isEmpty() && $config.generateJoin->toOne(),|if ($config.generateJoinTarget == $tableAlias,
+                                                                            |'{target}.',
+                                                                            |let schema = $tableAlias.relationalElement->match([t:Table[1]|$t.schema.name, v:View[1]|$v.schema.name]);
+                                                                              if ($schema == 'default',|'',|$schema+'.');
+                                                                        )
+                                                                      ,|''
+  ) + if ($config.generateJoinTarget == $tableAlias, |'',|$dbConfig.identifierProcessor($doubleQuote+$tableAlias.name->toOne()+$doubleQuote) + '.');
+}
+
 
 function meta::relational::functions::sqlQueryToString::tableToString(table:Table[1], dbConfig : DbConfig[1]):String[1]
 {
