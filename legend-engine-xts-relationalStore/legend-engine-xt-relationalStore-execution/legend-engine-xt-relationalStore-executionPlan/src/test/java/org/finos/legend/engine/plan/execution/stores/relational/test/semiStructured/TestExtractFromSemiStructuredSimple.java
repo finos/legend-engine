@@ -101,17 +101,17 @@ public class TestExtractFromSemiStructuredSimple extends AbstractTestSemiStructu
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, \"\", \"\"), (Est Date, StrictDate, \"\", \"\"), (Mnc, Boolean, \"\", \"\"), (Employee Count, Integer, \"\", \"\"), (Last Update, DateTime, \"\", \"\")]\n" +
-                "  resultColumns = [(\"Id\", INT), (\"Legal Name\", \"\"), (\"Est Date\", \"\"), (\"Mnc\", \"\"), (\"Employee Count\", \"\"), (\"Last Update\", \"\")]\n" +
-                "  sql = select `root`.ID as `Id`, json_extract_string(`root`.FIRM_DETAILS, 'legalName') as `Legal Name`, date(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'estDate')) as `Est Date`, json_extract_json(`root`.FIRM_DETAILS, 'mnc') as `Mnc`, json_extract_double(`root`.FIRM_DETAILS, 'employeeCount') as `Employee Count`, timestamp(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'last Update')) as `Last Update` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
+                "  type = TDS[(Id, Integer, INT, \"\"), (Legal Name, String, \"\", \"\"), (Est Date, StrictDate, \"\", \"\"), (Mnc, Boolean, \"\", \"\"), (Employee Count, Integer, \"\", \"\"), (Revenue, Float, \"\", \"\"), (Last Update, DateTime, \"\", \"\")]\n" +
+                "  resultColumns = [(\"Id\", INT), (\"Legal Name\", \"\"), (\"Est Date\", \"\"), (\"Mnc\", \"\"), (\"Employee Count\", \"\"), (\"Revenue\", \"\"), (\"Last Update\", \"\")]\n" +
+                "  sql = select `root`.ID as `Id`, json_extract_string(`root`.FIRM_DETAILS, 'legalName') as `Legal Name`, date(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'estDate')) as `Est Date`, json_extract_json(`root`.FIRM_DETAILS, 'mnc') as `Mnc`, json_extract_bigint(`root`.FIRM_DETAILS, 'employeeCount') as `Employee Count`, json_extract_double(`root`.FIRM_DETAILS, 'revenue') as `Revenue`, timestamp(json_extract_string(`root`.FIRM_DETAILS, 'dates', 'last Update')) as `Last Update` from FIRM_SCHEMA.FIRM_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
                 ")\n";
         Assert.assertEquals(memSQLExpected, memSQLPlan);
 
         String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
-        Assert.assertEquals("1,Firm X,2010-03-04,true,4,2022-01-16 01:00:00.0\n" +
-                "2,Firm A,2012-11-13,false,1,2022-02-14 03:00:00.0\n" +
-                "3,Firm B,2017-07-07,true,2,2022-09-01 06:00:00.0\n", h2Result.replace("\r\n", "\n"));
+        Assert.assertEquals("1,Firm X,2010-03-04,true,4,5.0,2022-01-16 01:00:00.0\n" +
+                "2,Firm A,2012-11-13,false,1,2000.5,2022-02-14 03:00:00.0\n" +
+                "3,Firm B,2017-07-07,true,2,0.1,2022-09-01 06:00:00.0\n", h2Result.replace("\r\n", "\n"));
     }
 
     public String modelResourcePath()

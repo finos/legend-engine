@@ -157,7 +157,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   if ($returnType == 'DATE', | 'date(json_extract_string(' + $fullPath + '))', |
   if ($returnType == 'BOOLEAN', | 'json_extract_json(' + $fullPath + ')', |
   if ($returnType == 'FLOAT', | 'json_extract_double(' + $fullPath + ')', |
-  if ($returnType == 'INTEGER', | 'json_extract_double(' + $fullPath + ')', |
+  if ($returnType == 'INTEGER', | 'json_extract_bigint(' + $fullPath + ')', |
   'json_extract_json(' + $fullPath + ')'))))));
 }
 
@@ -261,9 +261,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
    // Dates treated as strings and explicitly casted after
    if($type == StrictDate, | '::$', |
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::$', |
-   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Number), | '::%', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Integer), | '::', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Float), | '::%', |
    if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::$', |
-   '::')))));
+   '::'))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processUpsertSQLQueryForMemSQL(upsertQuery:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]
