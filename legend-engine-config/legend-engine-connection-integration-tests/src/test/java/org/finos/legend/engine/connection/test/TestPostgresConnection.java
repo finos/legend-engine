@@ -16,18 +16,16 @@ package org.finos.legend.engine.connection.test;
 
 import org.finos.legend.authentication.vault.CredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.DatabaseType;
 import org.finos.legend.connection.PostgresTestContainerWrapper;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
-import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
-import org.finos.legend.connection.protocol.AuthenticationConfiguration;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
-import org.finos.legend.connection.protocol.ConnectionSpecification;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.vault.PropertiesFileSecret;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.AuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-import java.sql.Connection;
 import java.sql.Statement;
 import java.util.Properties;
 
@@ -35,7 +33,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class TestPostgresConnection
 {
-    public static class WithUserPassword extends AbstractConnectionFactoryTest<Connection>
+    public static class WithUserPassword extends AbstractConnectionFactoryTest<java.sql.Connection>
     {
         private PostgresTestContainerWrapper postgresContainer;
 
@@ -71,27 +69,25 @@ public class TestPostgresConnection
         }
 
         @Override
-        public StoreInstance getStoreInstance()
+        public Identity getIdentity()
         {
-            ConnectionSpecification connectionSpecification = new StaticJDBCConnectionSpecification(
+            return getAnonymousIdentity(this.identityFactory);
+        }
+
+        @Override
+        public DatabaseType getDatabaseType()
+        {
+            return RelationalDatabaseType.POSTGRES;
+        }
+
+        @Override
+        public ConnectionSpecification getConnectionSpecification()
+        {
+            return new StaticJDBCConnectionSpecification(
                     this.postgresContainer.getHost(),
                     this.postgresContainer.getPort(),
                     this.postgresContainer.getDatabaseName()
             );
-            return new StoreInstance.Builder(this.environment)
-                    .withIdentifier(TEST_STORE_INSTANCE_NAME)
-                    .withStoreSupportIdentifier("Postgres")
-                    .withAuthenticationMechanismConfigurations(
-                            new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).build()
-                    )
-                    .withConnectionSpecification(connectionSpecification)
-                    .build();
-        }
-
-        @Override
-        public Identity getIdentity()
-        {
-            return getAnonymousIdentity(this.identityFactory);
         }
 
         @Override
@@ -104,7 +100,7 @@ public class TestPostgresConnection
         }
 
         @Override
-        public void runTestWithConnection(Connection connection) throws Exception
+        public void runTestWithConnection(java.sql.Connection connection) throws Exception
         {
             Statement statement = connection.createStatement();
             statement.setMaxRows(10);

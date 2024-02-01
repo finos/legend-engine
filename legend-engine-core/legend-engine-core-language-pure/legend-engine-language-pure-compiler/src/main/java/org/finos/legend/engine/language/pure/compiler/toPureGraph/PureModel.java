@@ -15,22 +15,17 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.predicate.Predicate;
-import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
-import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
-import org.eclipse.collections.api.map.primitive.MutableObjectIntMap;
-import org.eclipse.collections.api.map.primitive.ObjectIntMap;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
-import org.eclipse.collections.impl.factory.primitive.ObjectIntMaps;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.MetadataWrapper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
@@ -41,13 +36,12 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.UserD
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.AssociationValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ClassValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.EnumerationValidator;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.FunctionValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.ProfileValidator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.PureModelContextDataValidator;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -62,18 +56,17 @@ import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
-import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.generated.Package_Impl;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_MultiplicityValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_multiplicity_Multiplicity_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_Class_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_FunctionType_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_PrimitiveType_LazyImpl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_GenericType_Impl;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
-import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity;
@@ -117,6 +110,7 @@ public class PureModel implements IPureModel
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(PureModel.class);
     private static final ImmutableSet<String> RESERVED_PACKAGES = Sets.immutable.with("$implicit");
+
     public static final MetadataLazy METADATA_LAZY = MetadataLazy.fromClassLoader(PureModel.class.getClassLoader(), CodeRepositoryProviderHelper.findCodeRepositories(PureModel.class.getClassLoader(), true).collectIf(r -> !r.getName().startsWith("test_") && !r.getName().startsWith("other_"), CodeRepository::getName));
 
     private final CompiledExecutionSupport executionSupport;
@@ -170,16 +164,18 @@ public class PureModel implements IPureModel
 
     public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, Iterable<? extends CommonProfile> pm, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        this.extensions = extensions;
-        List<Procedure2<PureModel, PureModelContextData>> extraPostValidators = this.extensions.getExtraPostValidators();
+        long start = System.nanoTime();
 
         if (classLoader == null)
         {
             classLoader = Thread.currentThread().getContextClassLoader();
         }
+
+        this.extensions = extensions;
         this.deploymentMode = deploymentMode;
         this.pureModelProcessParameter = pureModelProcessParameter;
-        try (Scope scope = GlobalTracer.get().buildSpan("Build Pure Model").startActive(true))
+        Span span = GlobalTracer.get().buildSpan("Build Pure Model").start();
+        try (Scope ignore = GlobalTracer.get().scopeManager().activate(span))
         {
             ConsoleCompiled console = new ConsoleCompiled();
             console.disable();
@@ -203,36 +199,38 @@ public class PureModel implements IPureModel
 
             this.typesIndex.put("Package", this.executionSupport.getMetadataAccessor().getClass("Package"));
             this.immutables.add("Package");
-            this.modifyRootClassifier();
+            modifyRootClassifier();
 
             registerElementsForPathToElement();
+            long preInitEnd = System.nanoTime();
 
-            long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_START, (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo instanceof AlloySDLC) ? "" : ((PureSDLC) pureModelContextData.origin.sdlcInfo).packageableElementPointers).toString());
-            scope.span().log(LoggingEventType.GRAPH_START.toString());
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_START", (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo == null) ? "" : pureModelContextData.origin.sdlcInfo.packageableElementPointers, nanosDurationToMillis(start, preInitEnd)));
+            span.log("GRAPH_START");
 
+            long initStart = System.nanoTime();
             this.handlers = new Handlers(this);
-            this.initializeMultiplicities();
-            this.initializePrimitiveTypes();
-            long initFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_INITIALIZED, (double) initFinished - start).toString());
-            scope.span().log(LoggingEventType.GRAPH_INITIALIZED.toString());
-
-            long parsingFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_PARSED, (double) parsingFinished - initFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_PARSED.toString());
+            initializeMultiplicities();
+            initializePrimitiveTypes();
+            long initEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_INITIALIZED", nanosDurationToMillis(initStart, initEnd)));
+            span.log("GRAPH_INITIALIZED");
 
             // Pre Validation
-            PureModelContextDataValidator preValidator = new PureModelContextDataValidator();
-            preValidator.validate(this, pureModelContextData);
-            long preValidationFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double) preValidationFinished - initFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED.toString());
+            long preValidationStart = System.nanoTime();
+            new PureModelContextDataValidator().validate(this, pureModelContextData);
+            long preValidationEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_PRE_VALIDATION_COMPLETED", nanosDurationToMillis(preValidationStart, preValidationEnd)));
+            span.log("GRAPH_PRE_VALIDATION_COMPLETED");
 
             // Processing
+            long indexStart = System.nanoTime();
             PureModelContextDataIndex pureModelContextDataIndex = index(pureModelContextData);
+            long indexEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_INDEX_INPUT", pureModelContextDataIndex, nanosDurationToMillis(indexStart, indexEnd)));
+            span.log("GRAPH_INDEX_INPUT");
 
             // First pass -> ensure all packageable elements are resolved as early as possible.
+            long firstPassStart = System.nanoTime();
             pureModelContextDataIndex.sectionIndices.forEach(this::processFirstPass);
             pureModelContextDataIndex.profiles.forEach(this::processFirstPass);
             pureModelContextDataIndex.classes.forEach(this::processFirstPass);
@@ -247,61 +245,75 @@ public class PureModel implements IPureModel
             pureModelContextDataIndex.connections.forEach(this::processFirstPass);
             this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView())
                     .forEach(p -> pureModelContextDataIndex.otherElementsByProcessor.get(p).forEach(this::processFirstPass));
+            long firstPassEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_FIRST_PASS", nanosDurationToMillis(firstPassStart, firstPassEnd)));
+            span.log("GRAPH_FIRST_PASS");
 
-            this.loadTypes(pureModelContextDataIndex);
-            long loadTypesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_DOMAIN_BUILT, this.buildDomainStats(pureModelContextData), (double) loadTypesFinished - preValidationFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_DOMAIN_BUILT.toString());
+            long loadTypesStart = System.nanoTime();
+            loadTypes(pureModelContextDataIndex);
+            long loadTypesEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_LOAD_TYPES", nanosDurationToMillis(loadTypesStart, loadTypesEnd)));
+            span.log("GRAPH_LOAD_TYPES");
 
-            this.loadDataElements(pureModelContextDataIndex);
+            long loadOtherElementsPreStoresStart = System.nanoTime();
+            loadDataElements(pureModelContextDataIndex);
+            loadOtherElementsPreStores(pureModelContextDataIndex);
+            long loadOtherElementsPreStoresEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES", nanosDurationToMillis(loadOtherElementsPreStoresStart, loadOtherElementsPreStoresEnd)));
+            span.log("GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES");
 
-            this.loadOtherElementsPreStores(pureModelContextDataIndex);
-            long loadOtherElementsPreStores = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES, (double) loadOtherElementsPreStores - loadTypesFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES.toString());
+            long loadStoresStart = System.nanoTime();
+            loadStores(pureModelContextDataIndex);
+            long loadStoresEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_STORES_BUILT", storeStats(pureModelContextDataIndex), nanosDurationToMillis(loadStoresStart, loadStoresEnd)));
+            span.log("GRAPH_STORES_BUILT");
 
-            this.loadStores(pureModelContextDataIndex);
-            long loadStoresFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_STORES_BUILT, this.buildStoreStats(pureModelContextData, this), (double) loadOtherElementsPreStores - loadTypesFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_STORES_BUILT.toString());
+            long loadMappingsStart = System.nanoTime();
+            loadMappings(pureModelContextDataIndex);
+            long loadMappingsEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_MAPPINGS_BUILT", nanosDurationToMillis(loadMappingsStart, loadMappingsEnd)));
+            span.log("GRAPH_MAPPINGS_BUILT");
 
-            this.loadMappings(pureModelContextDataIndex);
-            long loadMappingsFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_MAPPINGS_BUILT, (double) loadMappingsFinished - loadStoresFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_MAPPINGS_BUILT.toString());
+            long loadConnectionsAndRuntimesStart = System.nanoTime();
+            loadConnectionsAndRuntimes(pureModelContextDataIndex);
+            long loadConnectionsAndRuntimesEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT", nanosDurationToMillis(loadConnectionsAndRuntimesStart, loadConnectionsAndRuntimesEnd)));
+            span.log("GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT");
 
-            this.loadConnectionsAndRuntimes(pureModelContextDataIndex);
-            long loadConnectionsAndRuntimesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT, (double) loadConnectionsAndRuntimesFinished - loadMappingsFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT.toString());
-
-            this.loadOtherElementsPostConnectionsAndRuntimes(pureModelContextDataIndex);
-            long loadOtherElementsPostConnectionsAndRuntimesFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES, (double) loadOtherElementsPostConnectionsAndRuntimesFinished - loadConnectionsAndRuntimesFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES.toString());
-
-            long processingFinished = System.currentTimeMillis();
+            long loadOtherElementsPostConnectionsAndRuntimesStart = System.nanoTime();
+            loadOtherElementsPostConnectionsAndRuntimes(pureModelContextDataIndex);
+            long loadOtherElementsPostConnectionsAndRuntimesEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES", nanosDurationToMillis(loadOtherElementsPostConnectionsAndRuntimesStart, loadOtherElementsPostConnectionsAndRuntimesEnd)));
+            span.log("GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES");
 
             // Post Validation
+            long postValidationStart = System.nanoTime();
             new ProfileValidator().validate(this, pureModelContextData);
             new EnumerationValidator().validate(this, pureModelContextData);
             new ClassValidator().validate(this, pureModelContextData);
             new AssociationValidator().validate(this, pureModelContextData);
+            new FunctionValidator().validate(getContext(), pureModelContextData);
             new org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator().validate(this, pureModelContextData, extensions);
-            extraPostValidators.forEach(validator -> validator.value(this, pureModelContextData));
-            long postValidationFinished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED, (double) postValidationFinished - processingFinished).toString());
-            scope.span().log(LoggingEventType.GRAPH_POST_VALIDATION_COMPLETED.toString());
+            this.extensions.getExtraPostValidators().forEach(validator -> validator.value(this, pureModelContextData));
+            long postValidationEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
+            span.log("GRAPH_POST_VALIDATION_COMPLETED");
 
-            long finished = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_STOP, (double) finished - start).toString());
-            scope.span().log(LoggingEventType.GRAPH_STOP.toString());
+            long end = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_STOP", nanosDurationToMillis(start, end)));
+            span.log("GRAPH_STOP");
         }
         catch (Exception e)
         {
-            LOGGER.info(new LogInfo(pm, LoggingEventType.GRAPH_ERROR, e).toString());
+            long end = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_ERROR", e, nanosDurationToMillis(start, end)));
+            span.log("GRAPH_ERROR");
             // TODO: we need to have a better strategy to throw compilation error instead of the generic exception
             throw e;
+        }
+        finally
+        {
+            span.finish();
         }
     }
 
@@ -339,40 +351,27 @@ public class PureModel implements IPureModel
         return this.warnings;
     }
 
-    private ObjectIntMap<String> buildDomainStats(PureModelContextData pure)
+    private Object storeStats(PureModelContextDataIndex index)
     {
-        MutableObjectIntMap<String> result = ObjectIntMaps.mutable.empty();
-        pure.getElements().forEach(e ->
+        return new Object()
         {
-            if (e instanceof Class)
+            public List<Map<String, String>> getStats()
             {
-                result.addToValue("classes", 1);
+                return buildStoreStats(index);
             }
-            else if (e instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration)
-            {
-                result.addToValue("enums", 1);
-            }
-            else if (e instanceof Association)
-            {
-                result.addToValue("associations", 1);
-            }
-            else if (e instanceof Function)
-            {
-                result.addToValue("functions", 1);
-            }
-        });
+        };
+    }
+
+    private List<Map<String, String>> buildStoreStats(PureModelContextDataIndex index)
+    {
+        MutableList<Map<String, String>> result = Lists.mutable.empty();
+        index.stores.forEachValue(stores -> stores.collect(this::buildStoreStats, result));
         return result;
     }
 
-    private ListIterable<Map<String, String>> buildStoreStats(PureModelContextData pure, PureModel pureModel)
+    private Map<String, String> buildStoreStats(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store store)
     {
-        return LazyIterate.selectInstancesOf(pure.getElements(), org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store.class)
-                .collect(s -> buildStoreStats(s, pureModel), Lists.mutable.empty());
-    }
-
-    private Map<String, String> buildStoreStats(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store store, PureModel pureModel)
-    {
-        MutableMap<String, String> map = Maps.mutable.of("name", pureModel.buildPackageString(store._package, store.name));
+        MutableMap<String, String> map = Maps.mutable.of("name", buildPackageString(store._package, store.name));
         this.extensions.getExtraStoreStatBuilders().forEach(processor -> processor.value(store, map));
         return map;
     }
@@ -776,6 +775,7 @@ public class PureModel implements IPureModel
         }
     }
 
+    @SuppressWarnings("unchecked")
     public Enumeration<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enum> getEnumeration(String fullPath, SourceInformation sourceInformation)
     {
         Type type;
@@ -1028,7 +1028,7 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype getStereotype(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String fullPath, String value, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype stereotype = profile._p_stereotypes().select(s -> s._value().equals(value)).getFirst();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Stereotype stereotype = profile._p_stereotypes().detect(s -> value.equals(s._value()));
         Assert.assertTrue(stereotype != null, () -> "Can't find stereotype '" + value + "' in profile '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return stereotype;
     }
@@ -1040,7 +1040,7 @@ public class PureModel implements IPureModel
 
     public org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag getTag(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Profile profile, String fullPath, String value, SourceInformation sourceInformation)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag tag = profile._p_tags().select(t -> t._value().equals(value)).getFirst();
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.extension.Tag tag = profile._p_tags().detect(t -> value.equals(t._value()));
         Assert.assertTrue(tag != null, () -> "Can't find tag '" + value + "' in profile '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
         return tag;
     }
@@ -1186,7 +1186,7 @@ public class PureModel implements IPureModel
 
     public String buildPackageString(String pack, String name)
     {
-        return pack.equals("") ? name : this.packagePrefix(pack) + "::" + name;
+        return ((pack == null) || pack.isEmpty()) ? name : this.packagePrefix(pack) + "::" + name;
     }
 
     public String addPrefixToTypeReference(String pack)
@@ -1393,5 +1393,43 @@ public class PureModel implements IPureModel
         private final MutableList<DataElement> dataElements = Lists.mutable.empty();
         private final MutableMap<Processor<?>, MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store>> stores = Maps.mutable.empty();
         private final MutableMap<Processor<?>, MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement>> otherElementsByProcessor = Maps.mutable.empty();
+
+        public Map<String, Number> getStats()
+        {
+            MutableMap<String, Number> result = Maps.mutable.empty();
+            possiblyAddStats(result, "associations", this.associations);
+            possiblyAddStats(result, "classes", this.classes);
+            possiblyAddStats(result, "enumerations", this.enumerations);
+            possiblyAddStats(result, "functions", this.functions);
+            possiblyAddStats(result, "mappings", this.mappings);
+            possiblyAddStats(result, "measures", this.measures);
+            possiblyAddStats(result, "connections", this.connections);
+            possiblyAddStats(result, "runtimes", this.runtimes);
+            possiblyAddStats(result, "profiles", this.profiles);
+            possiblyAddStats(result, "sectionIndices", this.sectionIndices);
+            possiblyAddStats(result, "dataElements", this.dataElements);
+            if (this.stores.notEmpty())
+            {
+                result.put("stores", this.stores.valuesView().sumOfInt(MutableList::size));
+            }
+            if (this.otherElementsByProcessor.notEmpty())
+            {
+                result.put("otherElements", this.otherElementsByProcessor.valuesView().sumOfInt(MutableList::size));
+            }
+            return result;
+        }
+
+        private static void possiblyAddStats(MutableMap<String, Number> stats, String name, MutableList<?> list)
+        {
+            if (list.notEmpty())
+            {
+                stats.put(name, list.size());
+            }
+        }
+    }
+
+    private static double nanosDurationToMillis(long startNanos, long endNanos)
+    {
+        return (endNanos - startNanos) / 1_000_000.0d;
     }
 }

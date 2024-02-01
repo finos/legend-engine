@@ -22,6 +22,7 @@ import java.net.URI;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
@@ -52,6 +53,7 @@ public class ElasticsearchCommands
 
     public static Root_meta_pure_functions_io_http_URL startServer(String imageTag)
     {
+        System.setProperty("org.finos.legend.engine.plan.execution.stores.elasticsearch.test.password", UUID.randomUUID().toString());
         Root_meta_pure_functions_io_http_URL_Impl url = new Root_meta_pure_functions_io_http_URL_Impl("esUrl");
         ElasticsearchContainer container = CONTAINERS.computeIfAbsent(imageTag, ElasticsearchCommands::createContainer);
         url._host(container.getHost());
@@ -64,6 +66,7 @@ public class ElasticsearchCommands
 
     public static void stopServer(String imageTag)
     {
+        System.clearProperty("org.finos.legend.engine.plan.execution.stores.elasticsearch.test.password");
         Optional.ofNullable(CONTAINERS.remove(imageTag)).ifPresent(ElasticsearchContainer::stop);
     }
 

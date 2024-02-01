@@ -128,6 +128,11 @@ Class meta::legend::test::handlers::model::TestMaxMin
    
    minDateTime() {$this.dateTimes->min()}:DateTime[0..1];
    minTwoDateTime() {$this.dateTime->min($this.dateTime)}:DateTime[1];
+
+   greatest() {$this.numbers->greatest()}:Number[0..1];
+   greatestMinOne() {$this.numbersMinOne->greatest()}:Number[1];
+   least() {$this.numbers->least()}:Number[0..1];
+   leastMinOne() {$this.numbersMinOne->least()}:Number[1];
 }
 
 Class meta::legend::test::handlers::model::TestAlgebra
@@ -375,7 +380,9 @@ Class meta::legend::test::handlers::model::TestString
    lpad(){$this.string->lpad(1)}:String[1];
    lpad2(){$this.string->lpad(1, '0')}:String[1];   
    rpad(){$this.string->rpad(1)}:String[1];
-   rpad2(){$this.string->rpad(1, '0')}:String[1];   
+   rpad2(){$this.string->rpad(1, '0')}:String[1];
+   left(){$this.string->left(1)}:String[1];
+   right(){$this.string->right(1)}:String[1];
    
    parseBoolean(){$this.string->parseBoolean()}:Boolean[1];
    parseDate(){$this.string->parseDate()}:Date[1];

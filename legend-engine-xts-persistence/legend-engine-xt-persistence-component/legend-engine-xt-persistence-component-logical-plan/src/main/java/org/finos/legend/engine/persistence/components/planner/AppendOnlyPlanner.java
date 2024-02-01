@@ -22,6 +22,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingV
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
+import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
@@ -31,8 +34,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
+import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
@@ -53,10 +60,22 @@ import static org.finos.legend.engine.persistence.components.util.LogicalPlanUti
 class AppendOnlyPlanner extends Planner
 {
     private final Optional<Condition> dataSplitInRangeCondition;
+    private final Optional<String> userProvidedDigest;
 
     AppendOnlyPlanner(Datasets datasets, AppendOnly ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
         super(datasets, ingestMode, plannerOptions, capabilities);
+
+        // Retrieve user provided digest if present
+        DigestGenStrategy digestGenStrategy = ingestMode().digestGenStrategy();
+        if (digestGenStrategy instanceof UserProvidedDigestGenStrategy)
+        {
+            userProvidedDigest = Optional.of(((UserProvidedDigestGenStrategy) digestGenStrategy).digestField());
+        }
+        else
+        {
+            userProvidedDigest = Optional.empty();
+        }
 
         // Validation
         // 1. If primary keys are present, then auditing must be turned on and the auditing column must be one of the primary keys
@@ -65,10 +84,10 @@ class AppendOnlyPlanner extends Planner
             ingestMode.auditing().accept(new ValidateAuditingForPrimaryKeys(mainDataset()));
         }
 
-        // 2. For filterExistingRecords, we must have digest and primary keys to filter them
+        // 2. For filterExistingRecords, we must have (user provided) digest and primary keys to filter them
         if (ingestMode.filterExistingRecords())
         {
-            if (!ingestMode.digestField().isPresent() || primaryKeys.isEmpty())
+            if (!userProvidedDigest.isPresent() || primaryKeys.isEmpty())
             {
                 throw new IllegalStateException("Primary keys and digest are mandatory for filterExistingRecords");
             }
@@ -90,6 +109,10 @@ class AppendOnlyPlanner extends Planner
         List<Value> fieldsToSelect = new ArrayList<>(dataFields);
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);
 
+        // Add digest generation (if applicable)
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
+
+        // Add auditing (if applicable)
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
         {
             BatchStartTimestamp batchStartTimestamp = BatchStartTimestamp.INSTANCE;
@@ -98,11 +121,10 @@ class AppendOnlyPlanner extends Planner
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
         }
-        else if (!ingestMode().dataSplitField().isPresent())
-        {
-            // this is just to print a "*" when we are in the simplest case (no auditing, no data split)
-            fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
-        }
+
+        // Add batch_id field
+        fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
+        fieldsToSelect.add(metadataUtils.getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
 
         Dataset selectStage = ingestMode().filterExistingRecords() ? getSelectStageWithFilterExistingRecords(fieldsToSelect) : getSelectStage(fieldsToSelect);
 
@@ -113,9 +135,9 @@ class AppendOnlyPlanner extends Planner
     List<String> getDigestOrRemainingColumns()
     {
         List<String> remainingCols = new ArrayList<>();
-        if (ingestMode().digestField().isPresent())
+        if (userProvidedDigest.isPresent())
         {
-            remainingCols = Arrays.asList(ingestMode().digestField().get());
+            remainingCols = Arrays.asList(userProvidedDigest.get());
         }
         else if (!primaryKeys.isEmpty())
         {
@@ -143,7 +165,7 @@ class AppendOnlyPlanner extends Planner
             .condition(And.builder()
                 .addConditions(
                     getPrimaryKeyMatchCondition(mainDataset(), stagingDataset(), primaryKeys.toArray(new String[0])),
-                    getDigestMatchCondition(mainDataset(), stagingDataset(), ingestMode().digestField().orElseThrow(IllegalStateException::new)))
+                    getDigestMatchCondition(mainDataset(), stagingDataset(), userProvidedDigest.orElseThrow(IllegalStateException::new)))
                 .build())
             .addAllFields(ALL_COLUMNS())
             .build()));
@@ -163,18 +185,12 @@ class AppendOnlyPlanner extends Planner
 
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            // Rows inserted = rows in main with audit column equals latest timestamp
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
-                .addOps(LogicalPlanUtils.getRowsBasedOnLatestTimestamp(mainDataset(), auditField, ROWS_INSERTED.get()))
-                .build());
-        }
-        else
-        {
-            // Not supported at the moment
-        }
+        // Rows inserted = rows in main with batch_id column equals latest batch id value
+        List<Value> fields = Collections.singletonList(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(ROWS_INSERTED.get()).build());
+        Condition condition = LogicalPlanUtils.getBatchIdEqualityCondition(mainDataset(), metadataUtils.getBatchId(mainTableName), ingestMode().batchIdField());
+        Selection selection = Selection.builder().source(mainDataset().datasetReference()).condition(condition).addAllFields(fields).build();
+
+        postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder().addOps(selection).build());
     }
 
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()

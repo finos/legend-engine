@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function0;
@@ -114,13 +117,11 @@ import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_V
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_datatype_Varchar_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_join_JoinTreeNode_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_join_Join_Impl;
-import org.finos.legend.pure.generated.Root_meta_relational_metamodel_operation_SemiStructuredPropertyAccess_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_Table_Impl;
 import org.finos.legend.pure.generated.Root_meta_relational_metamodel_relation_View_Impl;
-import org.finos.legend.pure.generated.core_pure_corefunctions_metaExtension;
 import org.finos.legend.pure.generated.core_pure_model_modelUnit;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningStereotype;
@@ -149,7 +150,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.InlineEmbed
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.OtherwiseEmbeddedRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RootRelationalInstanceSetImplementation;
-import org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.SemiStructuredRelationalInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Column;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.ColumnAccessor;
 import org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Database;
@@ -176,13 +176,8 @@ import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.m4.coreinstance.primitive.date.PureDate;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-
 import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_PropertyMappingsImplementation.Root_meta_pure_mapping_superMapping_PropertyMappingsImplementation_1__PropertyMappingsImplementation_$0_1$_;
 import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_;
 
 public class HelperRelationalBuilder
 {
@@ -215,15 +210,19 @@ public class HelperRelationalBuilder
         return context.resolve(fullPath, sourceInformation, (String path) -> getDatabase(path, sourceInformation, context));
     }
 
-    private static Column getColumn(Relation tb, final String _column, SourceInformation sourceInformation)
+    public static Column getColumn(Relation tb, final String _column, SourceInformation sourceInformation)
     {
         Column column = (Column) tb._columns().detect(col -> _column.equals(col.getName()));
         Assert.assertTrue(column != null, () -> "Can't find column '" + _column + "'", sourceInformation, EngineErrorType.COMPILATION);
         return column;
     }
 
-    private static Join getJoin(Database db, String _joinName, SourceInformation sourceInformation)
+    public static Join getJoin(JoinPointer joinPointer, CompileContext context)
     {
+        String _joinName = joinPointer.name;
+        Database db = resolveDatabase(joinPointer.db, joinPointer.sourceInformation, context);
+        SourceInformation sourceInformation = joinPointer.sourceInformation;
+
         Join join;
         try
         {
@@ -275,14 +274,14 @@ public class HelperRelationalBuilder
         return null;
     }
 
-    private static Filter getFilter(Database db, String _filterName, SourceInformation sourceInformation)
+    public static Filter getFilter(Database db, String _filterName, SourceInformation sourceInformation)
     {
         Filter filter = db._filters().detect(join -> _filterName.equals(join._name()));
         Assert.assertTrue(filter != null, () -> "Can't find filter '" + _filterName + "' in database '" + db.getName() + "'", sourceInformation, EngineErrorType.COMPILATION);
         return filter;
     }
 
-    private static Schema getSchema(Database db, final String _schema)
+    public static Schema getSchema(Database db, final String _schema)
     {
         Schema s = db._schemas().detect(schema -> _schema.equals(schema.getName()));
         Assert.assertTrue(s != null, () -> "Can't find schema '" + _schema + "' in database '" + db.getName() + "'");
@@ -294,7 +293,7 @@ public class HelperRelationalBuilder
         return getRelation(s, _table, SourceInformation.getUnknownSourceInformation());
     }
 
-    private static Relation getRelation(Schema s, final String _table, SourceInformation sourceInformation)
+    public static Relation getRelation(Schema s, final String _table, SourceInformation sourceInformation)
     {
         Relation res = s._tables().detect(table -> _table.equals(table.getName()));
         if (res == null)
@@ -446,7 +445,7 @@ public class HelperRelationalBuilder
 
     public static Schema processDatabaseSchema(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Schema srcSchema, CompileContext context, Database database)
     {
-        final Schema schema = new Root_meta_relational_metamodel_Schema_Impl(srcSchema.name, null, context.pureModel.getClass("meta::relational::metamodel::Schema"))._name(srcSchema.name);
+        final Schema schema = new Root_meta_relational_metamodel_Schema_Impl(srcSchema.name, SourceInformationHelper.toM3SourceInformation(srcSchema.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Schema"))._name(srcSchema.name);
         RichIterable<Table> tables = ListIterate.collect(srcSchema.tables, _table -> processDatabaseTable(_table, context, schema));
         return schema._tables(tables)._database(database);
     }
@@ -467,7 +466,7 @@ public class HelperRelationalBuilder
 
     public static Table processDatabaseTable(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Table databaseTable, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.Schema schema)
     {
-        Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name, null, context.pureModel.getClass("meta::relational::metamodel::relation::Table"))._name(databaseTable.name);
+        Table table = new Root_meta_relational_metamodel_relation_Table_Impl(databaseTable.name, SourceInformationHelper.toM3SourceInformation(databaseTable.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::relation::Table"))._name(databaseTable.name);
         MutableList<Column> columns = Lists.mutable.empty();
         MutableSet<String> validColumnNames = Sets.mutable.empty();
         MutableSet<String> duplicateColumns = Sets.mutable.empty();
@@ -480,7 +479,7 @@ public class HelperRelationalBuilder
             else
             {
                 validColumnNames.add(column.name);
-                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name, null, context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type, context))._owner(table));
+                columns.add(new Root_meta_relational_metamodel_Column_Impl(column.name, SourceInformationHelper.toM3SourceInformation(column.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(column.name)._name(column.name)._nullable(column.nullable)._type(transformDatabaseDataType(column.type, context))._owner(table));
             }
         }
 
@@ -495,8 +494,8 @@ public class HelperRelationalBuilder
 
     public static View processDatabaseViewFirstPass(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.View srcView, CompileContext context, Schema schema)
     {
-        View view = new Root_meta_relational_metamodel_relation_View_Impl(srcView.name)._name(srcView.name);
-        MutableList<Column> columns = ListIterate.collect(srcView.columnMappings, columnMapping -> new Root_meta_relational_metamodel_Column_Impl(columnMapping.name, null, context.pureModel.getClass("meta::relational::metamodel::Column"))._name(columnMapping.name)._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))._owner(view));
+        View view = new Root_meta_relational_metamodel_relation_View_Impl(srcView.name, SourceInformationHelper.toM3SourceInformation(srcView.sourceInformation), null)._name(srcView.name);
+        MutableList<Column> columns = ListIterate.collect(srcView.columnMappings, columnMapping -> new Root_meta_relational_metamodel_Column_Impl(columnMapping.name, SourceInformationHelper.toM3SourceInformation(columnMapping.sourceInformation), context.pureModel.getClass("meta::relational::metamodel::Column"))._name(columnMapping.name)._type(new Root_meta_relational_metamodel_datatype_Varchar_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::datatype::Varchar")))._owner(view));
         RichIterable<Column> pk = ListIterate.collect(srcView.primaryKey, s -> columns.select(column -> s.equals(column._name())).getFirst());
         return view._columns(columns)._primaryKey(pk)._schema(schema);
     }
@@ -631,7 +630,7 @@ public class HelperRelationalBuilder
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets = Lists.mutable.empty();
         Operation op = (Operation) processRelationalOperationElement(srcJoin.operation, context, aliasMap, selfJoinTargets);
         MutableList<TableAlias> aliases = aliasMap.valuesView().toList();
-        Join join = new Root_meta_relational_metamodel_join_Join_Impl(srcJoin.name)
+        Join join = new Root_meta_relational_metamodel_join_Join_Impl(srcJoin.name, SourceInformationHelper.toM3SourceInformation(srcJoin.sourceInformation), null)
                 ._name(srcJoin.name);
         if (aliases.size() == 2)
         {
@@ -694,9 +693,10 @@ public class HelperRelationalBuilder
 
     public static Filter processDatabaseFilter(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.Filter srcFilter, CompileContext context, Database database)
     {
+        org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(srcFilter.sourceInformation);
         MutableMap<String, TableAlias> aliasMap = UnifiedMap.newMap();
         Operation op = (Operation) processRelationalOperationElement(srcFilter.operation, context, aliasMap, FastList.newList());
-        Filter filter = "multigrain".equals(srcFilter._type) ? new Root_meta_relational_metamodel_MultiGrainFilter_Impl(srcFilter.name) : new Root_meta_relational_metamodel_Filter_Impl(srcFilter.name);
+        Filter filter = "multigrain".equals(srcFilter._type) ? new Root_meta_relational_metamodel_MultiGrainFilter_Impl(srcFilter.name, m3SourceInformation, null) : new Root_meta_relational_metamodel_Filter_Impl(srcFilter.name, m3SourceInformation, null);
         filter
                 ._name(srcFilter.name)
                 ._database(database)
@@ -793,13 +793,14 @@ public class HelperRelationalBuilder
 
     public static RelationalOperationElement processRelationalOperationElement(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.RelationalOperationElement operationElement, CompileContext context, MutableMap<String, org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAlias> aliasMap, MutableList<org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn> selfJoinTargets)
     {
+        org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(operationElement.sourceInformation);
         if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn tableAliasColumn = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.TableAliasColumn) operationElement;
             // Self join
             if (tableAliasColumn.table.table.equals(SELF_JOIN_TABLE_NAME) && tableAliasColumn.tableAlias.equals(SELF_JOIN_TABLE_NAME))
             {
-                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn selfJoin = new Root_meta_relational_metamodel_TableAliasColumn_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::TableAliasColumn"))
+                org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.TableAliasColumn selfJoin = new Root_meta_relational_metamodel_TableAliasColumn_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::TableAliasColumn"))
                         ._columnName(tableAliasColumn.column);
                 selfJoinTargets.add(selfJoin);
                 return selfJoin;
@@ -810,7 +811,7 @@ public class HelperRelationalBuilder
                     ._name(tableAliasColumn.tableAlias)
                     ._relationalElement(col._owner())
                     ._database(HelperRelationalBuilder.resolveDatabase(tableAliasColumn.table.getDb(), tableAliasColumn.table.sourceInformation, context)));
-            return new Root_meta_relational_metamodel_TableAliasColumn_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::TableAliasColumn"))
+            return new Root_meta_relational_metamodel_TableAliasColumn_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::TableAliasColumn"))
                     ._columnName(col._name())
                     ._column(col)
                     ._alias(alias);
@@ -818,7 +819,7 @@ public class HelperRelationalBuilder
         else if (operationElement instanceof ElementWithJoins)
         {
             ElementWithJoins elementWithJoins = (ElementWithJoins) operationElement;
-            RelationalOperationElementWithJoin res = new Root_meta_relational_metamodel_RelationalOperationElementWithJoin_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::RelationalOperationElementWithJoin"))
+            RelationalOperationElementWithJoin res = new Root_meta_relational_metamodel_RelationalOperationElementWithJoin_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::RelationalOperationElementWithJoin"))
                     ._joinTreeNode(buildElementWithJoinsJoinTreeNode(elementWithJoins.joins, context));
             return elementWithJoins.relationalElement == null ? res : res._relationalOperationElement(processRelationalOperationElement(elementWithJoins.relationalElement, context, UnifiedMap.newMap(), selfJoinTargets));
         }
@@ -826,19 +827,19 @@ public class HelperRelationalBuilder
         {
             DynaFunc dynaFunc = (DynaFunc) operationElement;
             MutableList<RelationalOperationElement> ps = ListIterate.collect(dynaFunc.parameters, relationalOperationElement -> processRelationalOperationElement(relationalOperationElement, context, aliasMap, selfJoinTargets));
-            return new Root_meta_relational_metamodel_DynaFunction_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::DynaFunction"))
+            return new Root_meta_relational_metamodel_DynaFunction_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::DynaFunction"))
                     ._name(dynaFunc.funcName)
                     ._parameters(ps);
         }
         else if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal literal = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.Literal) operationElement;
-            return new Root_meta_relational_metamodel_Literal_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::Literal"))._value(convertLiteral(convertLiteral(literal.value)));
+            return new Root_meta_relational_metamodel_Literal_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::Literal"))._value(convertLiteral(convertLiteral(literal.value)));
         }
         else if (operationElement instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList literalList = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.operation.LiteralList) operationElement;
-            return new Root_meta_relational_metamodel_LiteralList_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::LiteralList"))._values(ListIterate.collect(literalList.values, l -> new Root_meta_relational_metamodel_Literal_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::Literal"))._value(convertLiteral(l.value))));
+            return new Root_meta_relational_metamodel_LiteralList_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::LiteralList"))._values(ListIterate.collect(literalList.values, l -> new Root_meta_relational_metamodel_Literal_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::Literal"))._value(convertLiteral(l.value))));
         }
         throw new UnsupportedOperationException();
     }
@@ -846,7 +847,7 @@ public class HelperRelationalBuilder
     private static JoinTreeNode buildElementWithJoinsJoinTreeNode(List<JoinPointer> joins, CompileContext context)
     {
         MutableList<JoinWithJoinType> newJoins = ListIterate.collect(joins, joinPointer -> new JoinWithJoinType(
-                getJoin(resolveDatabase(joinPointer.db, joinPointer.sourceInformation, context), joinPointer.name, joinPointer.sourceInformation), joinPointer.joinType == null
+                getJoin(joinPointer, context), joinPointer.joinType == null
                 ? null : context.pureModel.getEnumValue("meta::relational::metamodel::join::JoinType", "INNER".equals(joinPointer.joinType) ? "INNER" : "LEFT_OUTER")));
         return processElementWithJoinsJoins(newJoins);
     }
@@ -905,10 +906,11 @@ public class HelperRelationalBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.relational.metamodel.relation.Milestoning visitMilestoning(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.Milestoning milestoning, CompileContext context, Multimap<String, Column> columns)
     {
+        org.finos.legend.pure.m4.coreinstance.SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(milestoning.sourceInformation);
         if (milestoning instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning businessMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessMilestoning) milestoning;
-            Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl pureBm = new Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::relation::BusinessMilestoning"));
+            Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl pureBm = new Root_meta_relational_metamodel_relation_BusinessMilestoning_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::relation::BusinessMilestoning"));
             pureBm._from(getMilestoneColumn(businessMilestoning.from, columns, milestoning.sourceInformation));
             pureBm._thru(getMilestoneColumn(businessMilestoning.thru, columns, milestoning.sourceInformation));
             if (businessMilestoning.infinityDate != null)
@@ -921,14 +923,14 @@ public class HelperRelationalBuilder
         else if (milestoning instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning businessSnapshotMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.BusinessSnapshotMilestoning) milestoning;
-            Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl pureBsm = new Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::relation::BusinessSnapshotMilestoning"));
+            Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl pureBsm = new Root_meta_relational_metamodel_relation_BusinessSnapshotMilestoning_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::relation::BusinessSnapshotMilestoning"));
             pureBsm._snapshotDate(getMilestoneColumn(businessSnapshotMilestoning.snapshotDate, columns, milestoning.sourceInformation));
             return pureBsm;
         }
         else if (milestoning instanceof org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning)
         {
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning processingMilestoning = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.milestoning.ProcessingMilestoning) milestoning;
-            Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl purePm = new Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl("", null, context.pureModel.getClass("meta::relational::metamodel::relation::ProcessingMilestoning"));
+            Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl purePm = new Root_meta_relational_metamodel_relation_ProcessingMilestoning_Impl("", m3SourceInformation, context.pureModel.getClass("meta::relational::metamodel::relation::ProcessingMilestoning"));
             purePm._in(getMilestoneColumn(processingMilestoning.in, columns, milestoning.sourceInformation));
             purePm._out(getMilestoneColumn(processingMilestoning.out, columns, milestoning.sourceInformation));
             if (processingMilestoning.infinityDate != null)
@@ -960,7 +962,7 @@ public class HelperRelationalBuilder
 
     private static PropertyMapping processRelationalPropertyMapping(RelationalPropertyMapping propertyMapping, CompileContext context, PropertyMappingsImplementation immediateParent, InstanceSetImplementation topParent, MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings, RichIterable<EnumerationMapping<Object>> allEnumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping rpm = new Root_meta_relational_mapping_RelationalPropertyMapping_Impl("", null, context.pureModel.getClass("meta::relational::mapping::RelationalPropertyMapping"));
+        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.RelationalPropertyMapping rpm = new Root_meta_relational_mapping_RelationalPropertyMapping_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::RelationalPropertyMapping"));
         Property property = resolvePropertyForRelationalPropertyMapping(propertyMapping, immediateParent, context);
         if (propertyMapping.bindingTransformer != null)
         {
@@ -997,20 +999,20 @@ public class HelperRelationalBuilder
         {
             return processOtherwiseEmbeddedRelationalPropertyMapping((OtherwiseEmbeddedRelationalPropertyMapping) propertyMapping, context, immediateParent, topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap);
         }
-        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl(propertyMapping.id);
+        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.EmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_EmbeddedRelationalInstanceSetImplementation_Impl(propertyMapping.id, SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), null);
         return processEmbeddedRelationalPropertyMapping(propertyMapping, rpm, context, immediateParent, (RootRelationalInstanceSetImplementation) topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap);
     }
 
     private static PropertyMapping processOtherwiseEmbeddedRelationalPropertyMapping(OtherwiseEmbeddedRelationalPropertyMapping propertyMapping, CompileContext context, PropertyMappingsImplementation immediateParent, InstanceSetImplementation topParent, MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings, RichIterable<EnumerationMapping<Object>> allEnumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.OtherwiseEmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_OtherwiseEmbeddedRelationalInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::OtherwiseEmbeddedRelationalInstanceSetImplementation"));
+        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.OtherwiseEmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_OtherwiseEmbeddedRelationalInstanceSetImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::OtherwiseEmbeddedRelationalInstanceSetImplementation"));
         rpm._otherwisePropertyMapping(processAbstractRelationalPropertyMapping(propertyMapping.otherwisePropertyMapping, context, immediateParent, topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap));
         return processEmbeddedRelationalPropertyMapping(propertyMapping, rpm, context, immediateParent, (RootRelationalInstanceSetImplementation) topParent, embeddedRelationalPropertyMappings, allEnumerationMappings, aliasMap);
     }
 
     private static PropertyMapping processInlineEmbeddedPropertyMapping(InlineEmbeddedPropertyMapping propertyMapping, CompileContext context, PropertyMappingsImplementation immediateParent, InstanceSetImplementation topParent, MutableList<EmbeddedRelationalInstanceSetImplementation> embeddedRelationalPropertyMappings, RichIterable<EnumerationMapping<Object>> allEnumerationMappings, MutableMap<String, TableAlias> aliasMap)
     {
-        InlineEmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_InlineEmbeddedRelationalInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::InlineEmbeddedRelationalInstanceSetImplementation"))._inlineSetImplementationId(propertyMapping.setImplementationId);
+        InlineEmbeddedRelationalInstanceSetImplementation rpm = new Root_meta_relational_mapping_InlineEmbeddedRelationalInstanceSetImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::InlineEmbeddedRelationalInstanceSetImplementation"))._inlineSetImplementationId(propertyMapping.setImplementationId);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class propertyOwnerClass = extractPropertyOwner(context, propertyMapping, immediateParent);
         Property property = HelperModelBuilder.getPropertyOrResolvedEdgePointProperty(context, propertyOwnerClass, Optional.empty(), propertyMapping.property.property, propertyMapping.property.sourceInformation);
         String sourceId = HelperRelationalBuilder.getPropertyMappingSourceId(propertyMapping, immediateParent, property, context);
@@ -1033,7 +1035,7 @@ public class HelperRelationalBuilder
         MutableList<org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.PropertyMapping> localMappingProperties = ListIterate.select(relationalClassMapping.propertyMappings, p -> p.localMappingProperty != null);
         if (localMappingProperties.notEmpty())
         {
-            MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>("");
+            MappingClass mappingClass = new Root_meta_pure_mapping_MappingClass_Impl<>("", SourceInformationHelper.toM3SourceInformation(relationalClassMapping.sourceInformation), null);
             mappingClass._name(pureClass._name() + "_" + parent._name() + "_" + base._id());
             GenericType gType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                     ._rawType(context.pureModel.getType("meta::pure::mapping::MappingClass"))
@@ -1326,7 +1328,7 @@ public class HelperRelationalBuilder
 
     public static org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.FilterMapping processFilterMapping(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.mapping.FilterMapping srcFilterMapping, Database ownerDb, CompileContext context)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.FilterMapping filterMapping = new Root_meta_relational_mapping_FilterMapping_Impl("", null, context.pureModel.getClass("meta::relational::mapping::FilterMapping"));
+        org.finos.legend.pure.m3.coreinstance.meta.relational.mapping.FilterMapping filterMapping = new Root_meta_relational_mapping_FilterMapping_Impl("", SourceInformationHelper.toM3SourceInformation(srcFilterMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::FilterMapping"));
         filterMapping._filter(getFilter(ownerDb, srcFilterMapping.filter.name, srcFilterMapping.sourceInformation));
         filterMapping._filterName(srcFilterMapping.filter.name);
         if (!srcFilterMapping.joins.isEmpty())
@@ -1571,7 +1573,7 @@ public class HelperRelationalBuilder
 
     private static PropertyMapping buildSemiStructuredPropertyMapping(Property<?, ?> property, RelationalPropertyMapping propertyMapping, PropertyMappingsImplementation parent, RootRelationalInstanceSetImplementation topParent, MutableMap<String, TableAlias> aliasMap, CompileContext context)
     {
-        Root_meta_external_format_shared_binding_Binding binding = HelperExternalFormat.getBinding(propertyMapping.bindingTransformer.binding, context);
+        Root_meta_external_format_shared_binding_Binding binding = HelperExternalFormat.getBinding(propertyMapping.bindingTransformer.binding, propertyMapping.bindingTransformer.sourceInformation, context);
         List<? extends Class<?>> bindingClasses = FastList.newList(core_pure_model_modelUnit.Root_meta_pure_model_unit_resolve_ModelUnit_1__ResolvedModelUnit_1_(binding._modelUnit(), context.getExecutionSupport()).classes(context.getExecutionSupport()));
 
         Type propertyType = property._genericType()._rawType();
@@ -1592,7 +1594,7 @@ public class HelperRelationalBuilder
                 ._rawType(classifier)
                 ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(propertyReturnType)));
         String setId = "semi_structured_generated_embedded_" + parent._id() + "_" + property._name();
-        return new Root_meta_relational_mapping_SemiStructuredEmbeddedRelationalInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation"))
+        return new Root_meta_relational_mapping_SemiStructuredEmbeddedRelationalInstanceSetImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::relational::mapping::SemiStructuredEmbeddedRelationalInstanceSetImplementation"))
                 ._id(setId)
                 ._root(false)
                 ._class(propertyReturnType)
@@ -1604,7 +1606,7 @@ public class HelperRelationalBuilder
                 ._owner(parent)
                 ._relationalOperationElement(processRelationalOperationElement(propertyMapping.relationalOperation, context, aliasMap, FastList.newList()))
                 ._transformer(
-                        new Root_meta_external_format_shared_binding_BindingTransformer_Impl<>("", null, classifier)
+                        new Root_meta_external_format_shared_binding_BindingTransformer_Impl<>("", SourceInformationHelper.toM3SourceInformation(propertyMapping.bindingTransformer.sourceInformation), classifier)
                                 ._binding(binding)
                                 ._classifierGenericType(genericType)
                                 ._class(propertyReturnType)

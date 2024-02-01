@@ -199,6 +199,22 @@ public class TestSnowflakeSemiStructuredFlattening extends AbstractTestSnowflake
     }
 
     @Test
+    public void testSemiStructuredMultiLevelFlatten()
+    {
+        String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredMultiLevelFlattening__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);
+        String snowflakeExpected =
+                "    Relational\n" +
+                "    (\n" +
+                "      type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name Line No, Integer, \"\", \"\")]\n" +
+                "      resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Name\", \"\"), (\"Firm Address Name Line No\", \"\")]\n" +
+                "      sql = select \"root\".FIRSTNAME as \"First Name\", \"root\".FIRM_DETAILS['legalName']::varchar as \"Firm Name\", \"ss_flatten_1\".value['lineno'] as \"Firm Address Name Line No\" from PERSON_SCHEMA.PERSON_TABLE as \"root\" inner join lateral flatten(input => \"root\".FIRM_DETAILS['addresses'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_0\" inner join lateral flatten(input => \"ss_flatten_0\".value['lines'], outer => true, recursive => false, mode => 'array') as \"ss_flatten_1\"\n" +
+                "      connection = RelationalDatabaseConnection(type = \"Snowflake\")\n" +
+                "    )\n";
+        String TDSType = "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Name, String, \"\", \"\"), (Firm Address Name Line No, Integer, \"\", \"\")]\n";
+        Assert.assertEquals(wrapPreAndFinallyExecutionSqlQuery(TDSType, snowflakeExpected), snowflakePlan);
+    }
+
+    @Test
     public void testSemiStructuredMultiFlatten()
     {
         String snowflakePlan = this.buildExecutionPlanString("flatten::semiStructuredMultiFlatten__TabularDataSet_1_", snowflakeMapping, snowflakeRuntime);

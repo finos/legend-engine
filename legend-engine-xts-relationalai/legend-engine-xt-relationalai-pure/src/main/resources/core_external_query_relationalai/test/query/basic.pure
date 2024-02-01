@@ -1,10 +1,11 @@
-import meta::rel::test::testutils::*;
-import meta::rel::test::query::models::basicmodel::*;
-import meta::rel::mapping::*;
-import meta::rel::utils::assert::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::test::testutils::*;
+import meta::external::store::rel::test::query::models::basicmodel::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::utils::assert::*;
 
-function <<test.Test>> meta::rel::test::query::basic::testQueryAllPersons(): Any[*] {
-  let rai = testConnection(schema());
+function <<test.Test>> meta::external::store::rel::test::query::basic::testQueryAllPersons(): Any[*] {
+  let rai = schema()->TestConnection();
 
   assertEqualRel(
     [
@@ -13,13 +14,13 @@ function <<test.Test>> meta::rel::test::query::basic::testQueryAllPersons(): Any
       'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
     ],
     $rai
-      ->doQuery(| Person.all())
+      ->query(| Person.all())
       ->rel()
   );
 }
 
-function <<test.Test>> meta::rel::test::query::basic::testFilterByFirstName(): Any[*] {
-  let rai = testConnection(schema());
+function <<test.Test>> meta::external::store::rel::test::query::basic::testFilterByFirstName(): Any[*] {
+  let rai = schema()->TestConnection();
 
   assertEqualRel(
     [
@@ -28,7 +29,7 @@ function <<test.Test>> meta::rel::test::query::basic::testFilterByFirstName(): A
       'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
     ],
     $rai
-      ->doQuery(| 
+      ->query(| 
         Person.all()
           ->filter(p | $p.firstName == 'John')
       )
@@ -36,8 +37,8 @@ function <<test.Test>> meta::rel::test::query::basic::testFilterByFirstName(): A
   );
 }
 
-function <<test.Test>> meta::rel::test::query::basic::testCombinedFilter(): Any[*] {
-  let rai = testConnection(schema());
+function <<test.Test>> meta::external::store::rel::test::query::basic::testCombinedFilter(): Any[*] {
+  let rai = schema()->TestConnection();
 
   assertEqualRel(
     [
@@ -46,7 +47,7 @@ function <<test.Test>> meta::rel::test::query::basic::testCombinedFilter(): Any[
       'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
     ],
     $rai
-      ->doQuery(| 
+      ->query(| 
         Person.all()
           ->filter(p | $p.firstName == 'John' && $p.lastName == 'Doe')
       )
@@ -54,15 +55,15 @@ function <<test.Test>> meta::rel::test::query::basic::testCombinedFilter(): Any[
   );
 }
 
-function <<test.Test>> meta::rel::test::query::basic::testExists(): Any[*] {
-  let rai = testConnection(schema());
+function <<test.Test>> meta::external::store::rel::test::query::basic::testExists(): Any[*] {
+  let rai = schema()->TestConnection();
 
   assertEqualRel(
     [
       'def output = exists(x1 in Person: boolean_true)'
     ],
     $rai
-      ->doQuery(| 
+      ->query(| 
         Person.all()
           ->exists(p | true)
       )
@@ -70,15 +71,15 @@ function <<test.Test>> meta::rel::test::query::basic::testExists(): Any[*] {
   );
 }
 
-function <<test.Test>> meta::rel::test::query::basic::testMap(): Any[*] {
-  let rai = testConnection(schema());
+function <<test.Test>> meta::external::store::rel::test::query::basic::testMap(): Any[*] {
+  let rai = schema()->TestConnection();
 
   assertEqualRel(
     [
-      'def output = ("foo" from x1 in Person)'
+      'def output = "foo" from x1 in Person'
     ],
     $rai
-      ->doQuery(| 
+      ->query(| 
         Person.all()
           ->map(p | 'foo')
       )

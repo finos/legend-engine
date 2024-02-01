@@ -1,56 +1,55 @@
-import meta::rel::mapping::frontend::*;
-import meta::rel::mapping::*;
+import meta::external::store::rel::mapping::frontend::*;
+import meta::external::store::rel::mapping::*;
 import meta::pure::mapping::*;
-import meta::rel::metamodel::*;
-import meta::rel::metamodel::render::*;
-import meta::rel::utils::*;
-import meta::rel::utils::meta::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::meta::*;
 import meta::pure::store::*;
-import meta::rel::metamodel::store::*;
-import meta::rel::utils::collection::*;
-import meta::rel::utils::lang::*;
-import meta::rel::compile::utils::*;
-import meta::rel::runtime::*;
-import meta::rel::execute::*;
-import meta::rel::utils::visitor::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::utils::collection::*;
+import meta::external::store::rel::utils::lang::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::runtime::*;
+import meta::external::store::rel::execute::*;
+import meta::external::store::rel::utils::visitor::*;
 
-Class meta::rel::mapping::frontend::RAISchema {
+Class meta::external::store::rel::mapping::frontend::RAISchema {
   mapping: Mapping[1];
   store: RAIDatabase[1];
 
   insertFns: Map<Class<Any>, FunctionDefinition<{Any[1..*]->Rule[*]}>>[1];
 }
 
-function meta::rel::mapping::frontend::RAISchema(name: String[1]): RAISchema[1] {
+function meta::external::store::rel::mapping::frontend::RAISchema(name: String[1]): RAISchema[1] {
   ^RAISchema(
     mapping=^Mapping(), 
     store=RAIDatabase([], $name), 
     insertFns=^Map<Class<Any>, FunctionDefinition<{Any[1]->Rule[*]}>>()
-  );
+  )
 }
 
-function meta::rel::mapping::frontend::schema(class: Class<Any>[1]): RelationDeclaration[1] {
+function meta::external::store::rel::mapping::frontend::schema(class: Class<Any>[1]): RelationDeclaration[1] {
   $class.name
     ->toOne()
-    ->relation([entityType($class)]);
+    ->relation([entityType($class)])
 }
 
-function meta::rel::mapping::frontend::schema(property: Property<Nil,Any|*>[1]): RelationDeclaration[1] {
+function meta::external::store::rel::mapping::frontend::schema(property: Property<Nil,Any|*>[1]): RelationDeclaration[1] {
   $property->schema(
     $property
       .owner
       ->cast(@Class<Any>)
-  );
+  )
 }
 
-function meta::rel::mapping::frontend::schema(property: Property<Nil,Any|*>[1], parent: Class<Any>[0..1]): RelationDeclaration[1] {
+function meta::external::store::rel::mapping::frontend::schema(property: Property<Nil,Any|*>[1], parent: Class<Any>[0..1]): RelationDeclaration[1] {
   let name = $property.name->toOne();
   let rawType = $property->type();
 
   let type = switch([
-    case($rawType == String, | stringType()),
-    case($rawType == Integer, | integerType()),
-    case($rawType == Float, | floatType()),
+    case($rawType == String,          | stringType()),
+    case($rawType == Integer,         | integerType()),
+    case($rawType == Float,           | floatType()),
     case($rawType->instanceOf(Class), | entityType($rawType->cast(@Class<Any>)))
   ], {| 
     fail(format('Unknown type for property %s', $name));
@@ -65,8 +64,11 @@ function meta::rel::mapping::frontend::schema(property: Property<Nil,Any|*>[1], 
     ->orElse($name->relation([hashValueType(), $type]));
 }
 
-function meta::rel::mapping::frontend::includeClass(schema: RAISchema[1], class: Class<Any>[1]): RAISchema[1] {
-  if ($schema.mapping->_classMappingByClass($class)->isEmpty(), {|
+function meta::external::store::rel::mapping::frontend::includeClass(schema: RAISchema[1], class: Class<Any>[1]): RAISchema[1] {
+  /*
+   * If the schema already includes a mapping for the given class then this function does nothing.
+   */
+  if (!$schema.mapping->_classMappingByClass($class)->isEmpty(), | $schema, {|
     let classRelation = $class->schema();
 
     let properties = $class
@@ -96,14 +98,22 @@ function meta::rel::mapping::frontend::includeClass(schema: RAISchema[1], class:
         }, $schema.store)
       ->with($classRelation);
 
-    let augmentedMapping = 
+    /*
+     * The Rel expression that corresponds to the Pure class.
+     */
+    let classExpr = $classRelation->name()->rel();
+
+    let instanceSetInitial = $schema.mapping->relInstanceSet($class, $classExpr);
+
+    let instanceSetComplete =
+      $properties
+        ->fold({property: Pair<Property<Nil, Any|*>, RelationDeclaration>[1], accum: RelSetImplementation[1] |
+          $accum->withPropertyMapping($property.first, $property.second->name()->rel(), $augmentedStore);
+        }, $instanceSetInitial);
+
+    let augmentedMapping =
       $schema.mapping
-        ->withClassMapping($class, $classRelation->name()->rel(), {set: RelSetImplementation[1] |
-          $properties
-            ->fold({property, accum |
-              $accum->withPropertyMapping($property.first, $property.second->name()->rel(), $augmentedStore);
-            }, $set);
-        });
+        ->addSetImplementation($instanceSetComplete);
 
     let augmentedSchema = 
       ^$schema(
@@ -123,21 +133,30 @@ function meta::rel::mapping::frontend::includeClass(schema: RAISchema[1], class:
           ->cast(@Class<Any>);
         $accum->includeClass($associated);
       }, $augmentedSchema);
-  }, | $schema);
+  });
 }
 
-function meta::rel::mapping::frontend::insertFunction(
+function meta::external::store::rel::mapping::frontend::includeClassRecursive(schema: RAISchema[1], class: Class<Any>[1]): RAISchema[1] {
+  // TODO: Do we need all specializations / generalizations?
+  let subclasses = meta::pure::functions::meta::findAllSpecializations($class);
+  let superclasses = meta::pure::functions::meta::hierarchicalAllGeneralizations($class);
+  $subclasses->concatenate($superclasses)->fold({c: Class<Any>[1], s: RAISchema[1] |
+    $s->includeClass($c)
+  }, $schema->includeClass($class));
+}
+
+function meta::external::store::rel::mapping::frontend::insertFunction(
   class: Class<Any>[1]
 ): FunctionDefinition<{Any[1..*]->Rule[*]}>[1] {
   {objects: Any[1..*] |
     $class
       ->insertFunction(^Visited<Rule>(explored=^Map<Any,Any>()))
       ->eval($objects)
-      .values;
-  };
+      .values
+  }
 }
 
-function <<access.private>> meta::rel::mapping::frontend::insertFunction(
+function <<access.private>> meta::external::store::rel::mapping::frontend::insertFunction(
   class: Class<Any>[1],
   visited: Visited<Rule>[1]
 ): FunctionDefinition<{Any[1..*]->Visited<Rule>[1]}>[1] {
@@ -160,7 +179,7 @@ function <<access.private>> meta::rel::mapping::frontend::insertFunction(
               ->rawEvalProperty($object)
               ->map({value |
                 // Introduce a bound variable for each associated property
-                triple($property.name->toOne()->label(), $value, $factory->next()->var());
+                triple($property.name->toOne()->label(), $value, $factory->next()->var())
               });
           });
 
@@ -179,7 +198,7 @@ function <<access.private>> meta::rel::mapping::frontend::insertFunction(
                       ->rawEvalProperty($object)
                       ->map({value: Any[1] |
                         [$property.name->toOne()->label(), $entityVar, const($value)]
-                          ->tuple();
+                          ->tuple()
                       })
                   })
               )
@@ -224,7 +243,7 @@ function <<access.private>> meta::rel::mapping::frontend::insertFunction(
   };
 }
 
-function <<access.private>> meta::rel::mapping::frontend::entityRecord(object: Any[1]): Expr[1] {
+function <<access.private>> meta::external::store::rel::mapping::frontend::entityRecord(object: Any[1]): Expr[1] {
   let class = $object->class();
 
   $class

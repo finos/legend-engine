@@ -206,9 +206,13 @@ function meta::pure::router::routing::findMappingsFromProperty(p:AbstractPropert
                                      ),
                                    | if($embeddedMappings->at(0)->instanceOf(InlineEmbeddedSetImplementation),
                                           |$embeddedMappings->at(0)->cast(@InlineEmbeddedSetImplementation)->inlineEmbeddedMapping($mapping),
-                                          |$embeddedMappings
-                                     )
-
+                                          |
+                                     if($state.graphFetchFlow == true && $embeddedMappings->at(0)->instanceOf(OtherwiseEmbeddedSetImplementation),
+                                          | let otherwiseTargetIds = $embeddedMappings->at(0)->cast(@OtherwiseEmbeddedSetImplementation).otherwisePropertyMapping.targetSetImplementationId;
+                                            let classMappingsById = if ($otherwiseTargetIds->isEmpty(),|[],|findMappingsFromProperty($p, $mapping, $mapping->_classMappingByIdRecursive($otherwiseTargetIds), $state, $extensions));
+                                            $classMappingsById;,
+                                          | $embeddedMappings
+                                       ))
                           );
 
        // We don't find anything in the old flow (if the source is an operation and the target type is not directly mapped...
@@ -252,6 +256,11 @@ function <<access.private>> meta::pure::router::operations::getMappedLeafClasses
     let foundClassMapping = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).classMappingsForClass($class);
     let mappedClass = if($foundClassMapping->isEmpty(), | $leafMostMappedClass, | $class);
     if($specs->isEmpty(), | $mappedClass, | $specs->map(s | $s->getMappedLeafClasses_recursive($mappedClass, $mapping, $state)));
+}
+
+function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], runtime:Runtime[1]):T[m]
+{
+   $t
 }
 
 function <<functionType.NotImplementedFunction>> meta::pure::mapping::from<T|m>(t:T[m], m:meta::pure::mapping::Mapping[1], runtime:Runtime[1]):T[m]

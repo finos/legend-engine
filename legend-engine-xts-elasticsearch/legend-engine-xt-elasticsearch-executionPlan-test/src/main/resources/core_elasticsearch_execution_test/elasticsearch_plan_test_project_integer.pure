@@ -20,6 +20,14 @@ import meta::external::store::elasticsearch::executionTest::utils::*;
 
 function 
   <<paramTest.Test>>
+  {doc.doc = 'Test restrict on Elasticsearch Integer property mapping'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::restrict::integer::testRestrictInteger(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x|$x->restrict('Budget'));
+}
+
+function 
+  <<paramTest.Test>>
   {doc.doc = 'Test projection on Elasticsearch Integer property mapping'} 
 meta::external::store::elasticsearch::executionTest::testCase::tds::project::integer::testProjectInteger(config:TestConfig[1]):Boolean[1]
 {

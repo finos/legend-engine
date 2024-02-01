@@ -14,7 +14,13 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
@@ -40,7 +46,18 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
         for (int i = 0; i < current.values().size(); i++)
         {
             columnNameList.add(StringValue.of(current.fieldNames().get(i)));
-            columnValueList.add(current.values().get(i));
+
+            if (current.values().get(i) instanceof StagedFilesFieldValue)
+            {
+                // The field, being StagedFilesFieldValue, is already a String
+                StagedFilesFieldValue stagedFilesField = (StagedFilesFieldValue) current.values().get(i);
+                columnValueList.add(FieldValue.builder().fieldName(stagedFilesField.fieldName()).build());
+            }
+            else
+            {
+                // Else need to convert the field into a String
+                columnValueList.add(FunctionImpl.builder().functionName(FunctionName.CONVERT).addValue(current.values().get(i), ObjectValue.of(DataType.VARCHAR.name())).build());
+            }
         }
 
         ToArrayFunction columnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();

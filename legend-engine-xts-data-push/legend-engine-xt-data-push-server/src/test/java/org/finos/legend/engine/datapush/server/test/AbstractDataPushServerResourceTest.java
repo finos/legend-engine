@@ -16,7 +16,7 @@ package org.finos.legend.engine.datapush.server.test;
 
 import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
-import org.finos.legend.engine.datapush.server.config.DataPushServerConfiguration;
+import org.finos.legend.engine.datapush.server.configuration.DataPushServerConfiguration;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -48,6 +48,11 @@ public class AbstractDataPushServerResourceTest
     {
         this.client = this.clientRule.getClient();
         this.client.target(getServerUrl()).request().get();
+    }
+
+    protected DataPushServerForTest getApplicationInstance()
+    {
+        return APP_RULE.getApplication();
     }
 
     protected WebTarget clientFor(String url)

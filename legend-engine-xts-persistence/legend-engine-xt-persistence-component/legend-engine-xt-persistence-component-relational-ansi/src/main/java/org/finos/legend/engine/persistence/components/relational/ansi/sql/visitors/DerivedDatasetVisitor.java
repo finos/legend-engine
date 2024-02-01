@@ -25,7 +25,6 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class DerivedDatasetVisitor implements LogicalPlanVisitor<DerivedDataset>
 {

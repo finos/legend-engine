@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema.model;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -28,8 +29,7 @@ public class DatabasePattern
 
     private final boolean escapeSchemaPattern;
 
-    private final boolean escapteTablePattern;
-
+    private final boolean escapeTablePattern;
 
     @JsonCreator
     public DatabasePattern(
@@ -37,14 +37,14 @@ public class DatabasePattern
             @JsonProperty("schemaPattern") String schemaPattern,
             @JsonProperty("tablePattern") String tablePattern,
             @JsonProperty("escapeSchemaPattern") boolean escapeSchemaPattern,
-            @JsonProperty("escapteTablePattern") boolean escapeTablePattern
+            @JsonProperty("escapeTablePattern") @JsonAlias("escapteTablePattern") boolean escapeTablePattern
     )
     {
         this.catalog = catalog;
         this.schemaPattern = schemaPattern;
         this.tablePattern = tablePattern;
         this.escapeSchemaPattern = escapeSchemaPattern;
-        this.escapteTablePattern = escapeTablePattern;
+        this.escapeTablePattern = escapeTablePattern;
     }
 
     public DatabasePattern(String schemaPattern, String tablePattern, boolean escapeSchemaPattern, boolean escapeTablePattern)
@@ -85,12 +85,12 @@ public class DatabasePattern
 
     public boolean isEscapeTablePattern()
     {
-        return escapteTablePattern;
+        return escapeTablePattern;
     }
 
     public DatabasePattern withNewCatalog(String catalog)
     {
-        return new DatabasePattern(catalog, this.schemaPattern, this.tablePattern, this.escapeSchemaPattern, this.escapteTablePattern);
+        return new DatabasePattern(catalog, this.schemaPattern, this.tablePattern, this.escapeSchemaPattern, this.escapeTablePattern);
     }
 
 }

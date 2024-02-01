@@ -160,7 +160,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
 
     public void validateDatasetSchema(Dataset dataset, TypeMapping typeMapping)
     {
-        if (!(typeMapping instanceof  DataTypeMapping))
+        if (!(typeMapping instanceof DataTypeMapping))
         {
             throw new IllegalStateException("Only DataTypeMapping allowed in validateDatasetSchema");
         }
@@ -184,7 +184,19 @@ public class BigQueryHelper implements RelationalExecutionHelper
             Integer columnSize = Objects.nonNull(dbField.getMaxLength()) ? Integer.valueOf(dbField.getMaxLength().intValue()) : Objects.nonNull(dbField.getPrecision()) ? Integer.valueOf(dbField.getPrecision().intValue()) : null;
             Integer scale = Objects.nonNull(dbField.getScale()) ? Integer.valueOf(dbField.getScale().intValue()) : null;
 
-            org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType matchedDataType = org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.valueOf(typeName.toUpperCase());
+            org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType matchedDataType = null;
+            for (org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType dataType : org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.values())
+            {
+                if (dataType.name().equalsIgnoreCase(typeName))
+                {
+                    matchedDataType = dataType;
+                    break;
+                }
+            }
+            if (matchedDataType == null)
+            {
+                matchedDataType = org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.valueOf(dbField.getType().name());
+            }
 
             FieldType fieldType = FieldType.of(matchedDataType, columnSize, scale);
             DataType physicalDataType = datatypeMapping.getDataType(fieldType);
@@ -213,7 +225,7 @@ public class BigQueryHelper implements RelationalExecutionHelper
         String tableName = dataset.datasetReference().name().orElseThrow(IllegalStateException::new);
         String schemaName = dataset.datasetReference().group().orElse(null);
         String databaseName = dataset.datasetReference().database().orElse(null);
-        if (!(typeMapping instanceof  JdbcPropertiesToLogicalDataTypeMapping))
+        if (!(typeMapping instanceof JdbcPropertiesToLogicalDataTypeMapping))
         {
             throw new IllegalStateException("Only JdbcPropertiesToLogicalDataTypeMapping allowed in constructDatasetFromDatabase");
         }

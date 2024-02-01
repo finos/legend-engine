@@ -52,6 +52,7 @@ import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.block.function.checked.ThrowingFunction2;
 import org.eclipse.collections.impl.lazy.iterator.CollectIterator;
+import org.eclipse.collections.impl.lazy.iterator.FlatCollectIterator;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.plan.execution.nodes.helpers.ExecutionNodeTDSResultHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -67,11 +68,14 @@ import org.finos.legend.engine.protocol.store.elasticsearch.specification.utils.
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.tds.TDSColumnResultPath;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.tds.TDSMetadata;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.tds.AggregateResultPath;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.tds.DocCountAggregateResultPath;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.ElasticsearchObjectMapperProvider;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.LiteralOrExpression;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.SearchRequest;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.Hit;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.TotalHits;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.global.search.types.TotalHitsRelation;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.AbstractRequestBaseVisitor;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.FieldValue;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.RequestBase;
@@ -81,8 +85,11 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.typ
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregateBase;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AggregationContainer;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.AvgAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.Buckets;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.CompositeBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.DoubleTermsBucket;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.FiltersAggregate;
+import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.FiltersBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.LongTermsBucket;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MaxAggregate;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.specification.types.aggregations.MinAggregate;
@@ -169,6 +176,13 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         List<TDSColumn> tdsColumns = ((TDSResultType) this.node.resultType).tdsColumns;
         List<TDSColumnResultPath> columnResultPaths = ((TDSMetadata) node.metadata).columnResultPaths;
 
+        List<String> docCountName = columnResultPaths.stream()
+                .map(x -> x.resultPath)
+                .filter(DocCountAggregateResultPath.class::isInstance)
+                .map(DocCountAggregateResultPath.class::cast)
+                .map(x -> String.join(".", x.fieldPath))
+                .collect(Collectors.toList());
+
         List<Function<ObjectNode, Object>> extractors = ListIterate.zip(tdsColumns, columnResultPaths).stream()
                 .map(ElasticsearchTDSResultHelper::aggregationTransformer)
                 .collect(Collectors.toList());
@@ -188,7 +202,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 bucketsParser.nextToken();
                 bucketsParser.clearCurrentToken();
                 Iterator<CompositeBucket> compositeBucketIterator = bucketsParser.readValuesAs(CompositeBucket.class);
-                objectNodeStream = processComposite(aggregateTDSResultVisitor, compositeBucketIterator, lastBucket);
+                objectNodeStream = processComposite(aggregateTDSResultVisitor, compositeBucketIterator, docCountName, lastBucket);
             }
             else if (aggregationContainer.terms != null)
             {
@@ -219,7 +233,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 bucketsParser.nextToken();
                 bucketsParser.clearCurrentToken();
                 Iterator<? extends TermsBucketBase> bucketsIterator = bucketsParser.readValuesAs(bucketClazz);
-                objectNodeStream = processTermsBucket(key, aggregateTDSResultVisitor, bucketsIterator, lastBucket);
+                objectNodeStream = processTermsBucket(key, aggregateTDSResultVisitor, bucketsIterator, docCountName, lastBucket);
             }
             else if (aggregationContainer.multi_terms != null)
             {
@@ -227,18 +241,42 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 bucketsParser.nextToken();
                 bucketsParser.clearCurrentToken();
                 Iterator<MultiTermsBucket> bucketsIterator = bucketsParser.readValuesAs(MultiTermsBucket.class);
-                objectNodeStream = processMultiTermsBucket(aggregationContainerEntry.getKey(), aggregateTDSResultVisitor, bucketsIterator, lastBucket);
+                objectNodeStream = processMultiTermsBucket(aggregationContainerEntry.getKey(), aggregateTDSResultVisitor, bucketsIterator, docCountName, lastBucket);
+            }
+            else if (aggregationContainer.filters != null)
+            {
+                String key = aggregationContainerEntry.getKey();
+                FilteringParserDelegate filtersParser = new FilteringParserDelegate(aggsParser, new JsonPointerBasedFilter("/filters#" + key), false, false);
+                filtersParser.nextToken();
+                filtersParser.clearCurrentToken();
+                FiltersAggregate filtersAggregate = filtersParser.readValueAs(FiltersAggregate.class);
+                objectNodeStream = processFiltersBucket(aggregateTDSResultVisitor, key, docCountName, filtersAggregate);
             }
         }
 
         if (objectNodeStream == null)
         {
-            Map<String, Aggregate> aggregateMap = aggsParser.readValueAs(new TypeReference<ExternalTaggedUnionMap<String, Aggregate>>()
-            {
+            Map<String, Aggregate> aggregateMap;
 
-            });
+            if (searchRequest.body.aggregations.isEmpty())
+            {
+                aggregateMap = Collections.emptyMap();
+            }
+            else
+            {
+                aggregateMap = aggsParser.readValueAs(new TypeReference<ExternalTaggedUnionMap<String, Aggregate>>()
+                {
+
+                });
+            }
 
             MutableMap<String, Object> result = Maps.mutable.empty();
+
+            for (String docValue : docCountName)
+            {
+                Assert.assertTrue(totalHits.relation.equals(TotalHitsRelation.eq), () -> "Doc value count operation could not be computed as elastic give inaccurate total hits!");
+                result.put(docValue, totalHits.value.unionValue());
+            }
 
             for (Map.Entry<String, Aggregate> entry : aggregateMap.entrySet())
             {
@@ -253,12 +291,49 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         return new CollectIterator<>(objectNodeStream, h -> extractors.stream().map(x -> x.apply(h)).toArray());
     }
 
-    private static Iterator<ObjectNode> processComposite(AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<CompositeBucket> buckets, Procedure<MultiBucketBase> lastBucket)
+    private static Iterator<ObjectNode> processFiltersBucket(AggregateTDSResultVisitor aggregateTDSResultVisitor, String key, List<String> docCountName, FiltersAggregate filtersAggregate)
+    {
+        Buckets<FiltersBucket> buckets = filtersAggregate.buckets;
+
+        List<ObjectNode> bucketResults = Lists.mutable.empty();
+
+        for (Map.Entry<String, FiltersBucket> bucketEntry : buckets.keyed.entrySet())
+        {
+            FiltersBucket value = bucketEntry.getValue();
+
+            if (value.doc_count.getLiteral() == 0)
+            {
+                continue;
+            }
+
+            MutableMap<String, Object> result = Maps.mutable.with(key, bucketEntry.getKey());
+
+            for (String docValue : docCountName)
+            {
+                result.put(docValue, value.doc_count.unionValue());
+            }
+
+            for (Map.Entry<String, Aggregate> aggregateEntry : value.__additionalProperties.entrySet())
+            {
+                result.put(aggregateEntry.getKey(), ((AggregateBase) aggregateEntry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+            }
+
+            bucketResults.add(ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(result));
+        }
+        return bucketResults.iterator();
+    }
+
+    private static Iterator<ObjectNode> processComposite(AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<CompositeBucket> buckets, List<String> docCountName, Procedure<MultiBucketBase> lastBucket)
     {
         return new CollectIterator<>(buckets, b ->
         {
             lastBucket.accept(b);
             MutableMap<Object, Object> map = Maps.mutable.empty();
+
+            for (String docValue : docCountName)
+            {
+                map.put(docValue, b.doc_count.unionValue());
+            }
 
             for (Map.Entry<String, FieldValue> entry : b.key.entrySet())
             {
@@ -274,7 +349,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         });
     }
 
-    private static Iterator<ObjectNode> processMultiTermsBucket(String key, AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<MultiTermsBucket> buckets, Procedure<MultiBucketBase> lastBucket)
+    private static Iterator<ObjectNode> processMultiTermsBucket(String key, AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<MultiTermsBucket> buckets, List<String> docCountName, Procedure<MultiBucketBase> lastBucket)
     {
         String[] fields = key.split("~");
 
@@ -282,6 +357,11 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         {
             lastBucket.accept(b);
             MutableMap<Object, Object> map = Maps.mutable.empty();
+
+            for (String docValue : docCountName)
+            {
+                map.put(docValue, b.doc_count.unionValue());
+            }
 
             for (int i = 0; i < fields.length; i++)
             {
@@ -299,20 +379,86 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
         });
     }
 
-    private static Iterator<ObjectNode> processTermsBucket(String key, AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<? extends TermsBucketBase> buckets, Procedure<MultiBucketBase> lastBucket)
+    private static Iterator<ObjectNode> processTermsBucket(String key, AggregateTDSResultVisitor aggregateTDSResultVisitor, Iterator<? extends TermsBucketBase> buckets, List<String> docCountName, Procedure<MultiBucketBase> lastBucket)
     {
         MultiBucketKeyVisitor multiBucketKeyVisitor = new MultiBucketKeyVisitor();
-        return new CollectIterator<>(buckets, b ->
+        return new FlatCollectIterator<>(buckets, bucket ->
         {
-            lastBucket.accept(b);
-            MutableMap<Object, Object> map = Maps.mutable.with(key, b.accept(multiBucketKeyVisitor));
+            lastBucket.accept(bucket);
+            Object keyValue = bucket.accept(multiBucketKeyVisitor);
+            keyValue = keyValue instanceof LiteralOrExpression ? ((LiteralOrExpression<?>) keyValue).unionValue() : keyValue;
 
-            for (Map.Entry<String, Aggregate> entry : b.__additionalProperties.entrySet())
+            List<ObjectNode> results = Lists.mutable.empty();
+
+            Aggregate nullKey = bucket.__additionalProperties.get(key + "~missing~_last");
+            boolean nullLast = true;
+            if (nullKey == null)
             {
-                map.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+                nullKey = bucket.__additionalProperties.get(key + "~missing~_first");
+                nullLast = false;
+            }
+            Aggregate notNullKey = bucket.__additionalProperties.get(key + "~exists");
+
+            if (notNullKey != null && notNullKey.filter.doc_count.value != 0)
+            {
+                MutableMap<Object, Object> map = Maps.mutable.with(key, keyValue);
+
+                for (String docValue : docCountName)
+                {
+                    map.put(docValue, notNullKey.filter.doc_count.unionValue());
+                }
+
+                for (Map.Entry<String, Aggregate> entry : notNullKey.filter.__additionalProperties.entrySet())
+                {
+                    map.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+                }
+
+                results.add(ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map));
             }
 
-            return ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map);
+            if (nullKey != null && nullKey.missing.doc_count.value != 0)
+            {
+                MutableMap<Object, Object> map = Maps.mutable.with(key, null);
+
+                for (String docValue : docCountName)
+                {
+                    map.put(docValue, nullKey.missing.doc_count.unionValue());
+                }
+
+                for (Map.Entry<String, Aggregate> entry : nullKey.missing.__additionalProperties.entrySet())
+                {
+                    map.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+                }
+
+                if (!nullLast)
+                {
+                    results.add(0, ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map));
+                }
+                else
+                {
+                    results.add(ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map));
+                }
+            }
+
+            // backward compatible processing... before the missing/existing was introduced
+            if (nullKey == null && notNullKey == null)
+            {
+                MutableMap<Object, Object> map = Maps.mutable.with(key, keyValue);
+
+                for (String docValue : docCountName)
+                {
+                    map.put(docValue, bucket.doc_count.unionValue());
+                }
+
+                for (Map.Entry<String, Aggregate> entry : bucket.__additionalProperties.entrySet())
+                {
+                    map.put(entry.getKey(), ((AggregateBase) entry.getValue().unionValue()).accept(aggregateTDSResultVisitor));
+                }
+
+                results.add(ElasticsearchObjectMapperProvider.OBJECT_MAPPER.valueToTree(map));
+            }
+
+            return results;
         });
     }
 
@@ -477,6 +623,7 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
 
         private final SearchRequest searchRequest;
         private final List<ExecutionActivity> activities;
+        private final boolean isAggregation;
         private boolean closed = false;
         private InputStream currInputStream = EmptyInputStream.INSTANCE;
         private MultiBucketBase lastBucket = null;
@@ -487,6 +634,9 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
             super(Long.MAX_VALUE, Spliterator.ORDERED | Spliterator.IMMUTABLE);
             this.searchRequest = searchRequest;
             this.activities = activities;
+            this.isAggregation = ((TDSMetadata) node.metadata).columnResultPaths.stream()
+                    .map(x -> x.resultPath)
+                    .allMatch(x -> x instanceof AggregateResultPath || x instanceof DocCountAggregateResultPath);
         }
 
         @Override
@@ -498,11 +648,10 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 this.closeCurrentInputStream();
 
                 boolean next = false;
-                boolean isAggregation = !this.searchRequest.body.aggregations.isEmpty();
 
                 ThrowingFunction2<JsonParser, Span, Iterator<Object[]>> processor;
 
-                if (isAggregation)
+                if (this.isAggregation)
                 {
                     processor = (x, y) -> ExecutionRequestVisitor.this.processAggregateResponse(this.searchRequest, x, y, b ->
                     {
@@ -578,6 +727,11 @@ public class ExecutionRequestVisitor extends AbstractRequestBaseVisitor<Result>
                 else
                 {
                     processor = ExecutionRequestVisitor.this::processNotAggregateResponse;
+                }
+
+                if (!next && !this.activities.isEmpty())
+                {
+                    return false;
                 }
 
                 HttpUriRequest request = this.searchRequest.accept(new ElasticsearchV7RequestToHttpRequestVisitor(ExecutionRequestVisitor.this.url, ExecutionRequestVisitor.this.executionState));

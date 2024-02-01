@@ -252,6 +252,43 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMin()
    assertEquals('select "producttable_0".NAME as "prodName", min("root".quantity) as "min" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
 }
 
+function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAnd():Boolean[1]
+{
+   let result = execute(|Trade.all()
+                         ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
+                         ->groupBy('prodName', [
+                            agg('and', x|$x.getFloat('quantity') > 20, y| $y->and())
+                         ])
+                         ->sort(desc('prodName')), 
+                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(4, $tds.rows->size());
+   assertEquals(['Firm X', true], $tds.rows->at(0).values);
+   assertEquals(['Firm C', true], $tds.rows->at(1).values);
+   assertEquals(['Firm A', false], $tds.rows->at(2).values);
+   assertEquals([^TDSNull(), false], $tds.rows->at(3).values);
+   assertEquals('select "producttable_0".NAME as "prodName", every("root".quantity > 20) as "and" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+}
+
+
+function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByOr():Boolean[1]
+{
+   let result = execute(|Trade.all()
+                         ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
+                         ->groupBy('prodName', [
+                            agg('or', x|$x.getFloat('quantity') > 50, y| $y->or())
+                         ])
+                         ->sort(desc('prodName')), 
+                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let tds = $result.values->at(0);
+   assertEquals(4, $tds.rows->size());
+   assertEquals(['Firm X', true], $tds.rows->at(0).values);
+   assertEquals(['Firm C', false], $tds.rows->at(1).values);
+   assertEquals(['Firm A', false], $tds.rows->at(2).values);
+   assertEquals([^TDSNull(), false], $tds.rows->at(3).values);
+   assertEquals('select "producttable_0".NAME as "prodName", any("root".quantity > 50) as "or" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result->sqlRemoveFormatting());
+}
+
 function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnConstant():Boolean[1]
 {
    let result = execute(|Trade.all()

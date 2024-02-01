@@ -830,14 +830,13 @@ function meta::relational::testDataGeneration::executionPlan::planTestDataGenera
 {
    let newParameterNameValuePairs = meta::relational::testDataGeneration::generateParametersNameValuePair($func, [], $parameterNameValuePairs);
    let relationTree = if($func->functionReturnType().rawType->toOne()->_subTypeOf(TabularDataSet), | scanRelations($func, $mapping, $runtime, $newParameterNameValuePairs, $extensions),| scanRelations($func, $mapping, $extensions));
-   let dbConnection = $runtime.connectionStores->filter(c|$c.connection->instanceOf(DatabaseConnection))->toOne();
-   let updatedDbConnection = $extensions.executionPlanExtensions().reprocessConnection->toOne()->eval($dbConnection)->cast(@DatabaseConnection);
-   let dbConnectionStore = ^$dbConnection(connection=$updatedDbConnection);
-   let newRuntime = ^$runtime(connectionStores=$dbConnectionStore);
+   let dbConnectionStore = $runtime.connectionStores->filter(c|$c.connection->instanceOf(DatabaseConnection));
+   let updatedDbConnectionStore = $extensions.executionPlanExtensions().processRuntimeTestConnections->toOne()->eval($dbConnectionStore);
+   let newRuntime = ^$runtime(connectionStores=$updatedDbConnectionStore);
 
    let relationColumnMap = $relationTree->generateRelationColumnMap(^Map<NamedRelation, List<Column>>());
 
-   let node = meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($relationTree, $newRuntime, $exeCtx, $updatedDbConnection, $relationColumnMap, [], ^TestDataGenerationConfig(rowIdentifiers=$rowIdentifiers,  generateWithDefaultPKs=false, hashStrings=$hashStrings, temporalMilestoningDates=$temporalMilestoningDates), $extensions);
+   let node = meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($relationTree, $newRuntime, $exeCtx, $updatedDbConnectionStore.connection->distinct()->toOne()->cast(@DatabaseConnection), $relationColumnMap, [], ^TestDataGenerationConfig(rowIdentifiers=$rowIdentifiers,  generateWithDefaultPKs=false, hashStrings=$hashStrings, temporalMilestoningDates=$temporalMilestoningDates), $extensions);
    ^ExecutionPlan
    (
       func = $func,

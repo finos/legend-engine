@@ -58,7 +58,7 @@ public class SnowflakeAppGenerator
                 sdlc = (AlloySDLC) sdlcInfo;
             }
         }
-        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), functionColumns, activator._type()._name(), Lists.mutable.with(activator._owner()), sdlc);
+        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), functionColumns, Lists.mutable.with(activator._owner()), sdlc);
         if (activator._activationConfiguration() != null)
         {
             //identify connection
@@ -67,10 +67,12 @@ public class SnowflakeAppGenerator
                     .getFirst();
             connection   = (RelationalDatabaseConnection) Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration)protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
-            return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection));
+            SnowflakeDatasourceSpecification ds = (SnowflakeDatasourceSpecification)connection.datasourceSpecification;
+            String deployedLocation = String.format("https://app.%s.privatelink.snowflakecomputing.com/%s/%s/data/databases/%S", ds.region, ds.region, ds.accountName, ds.databaseName);
+            return new SnowflakeAppArtifact(content, new SnowflakeAppDeploymentConfiguration(connection), deployedLocation, sdlc);
         }
 
-        return new SnowflakeAppArtifact(content);
+        return new SnowflakeAppArtifact(content, sdlc);
     }
 
     private static RichIterable<String> extractSQLExpressions(Root_meta_pure_executionPlan_ExecutionPlan executionPlan)

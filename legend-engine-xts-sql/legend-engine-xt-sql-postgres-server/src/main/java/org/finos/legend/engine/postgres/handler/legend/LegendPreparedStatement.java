@@ -26,13 +26,13 @@ import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCre
 public class LegendPreparedStatement implements PostgresPreparedStatement
 {
     private final String query;
-    private final LegendExecutionClient client;
+    private final LegendExecutionService client;
 
     private final Identity identity;
 
     private LegendResultSet legendResultSet;
 
-    public LegendPreparedStatement(String query, LegendExecutionClient client, Identity identity)
+    public LegendPreparedStatement(String query, LegendExecutionService client, Identity identity)
     {
         this.query = query;
         this.client = client;
@@ -107,5 +107,13 @@ public class LegendPreparedStatement implements PostgresPreparedStatement
     public PostgresResultSet getResultSet()
     {
         return legendResultSet;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "LegendPreparedStatement{" +
+                "query='" + query + '\'' +
+                '}';
     }
 }

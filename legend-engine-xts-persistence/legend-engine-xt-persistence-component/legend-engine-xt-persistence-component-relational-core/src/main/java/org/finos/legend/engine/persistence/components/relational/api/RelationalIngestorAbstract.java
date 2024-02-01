@@ -140,7 +140,7 @@ public abstract class RelationalIngestorAbstract
 
     public abstract RelationalSink relationalSink();
 
-    public abstract Optional<String> bulkLoadTaskIdValue();
+    public abstract Optional<String> bulkLoadEventIdValue();
 
     @Derived
     protected PlannerOptions plannerOptions()
@@ -151,7 +151,7 @@ public abstract class RelationalIngestorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
-            .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
+            .bulkLoadEventIdValue(bulkLoadEventIdValue())
             .build();
     }
 
@@ -181,6 +181,16 @@ public abstract class RelationalIngestorAbstract
     // ---------- API ----------
 
     /*
+    - Get Executor
+    - @return : The methods returns the Executor to the caller enabling them to handle their own transaction
+    */
+    public static Executor getExecutor(RelationalSink relationalSink, RelationalConnection connection)
+    {
+        LOGGER.info("Invoked getExecutor method");
+        return relationalSink.getRelationalExecutor(connection);
+    }
+
+    /*
     - Initializes executor
     - @return : The methods returns the Executor to the caller enabling them to handle their own transaction
     */
@@ -189,6 +199,15 @@ public abstract class RelationalIngestorAbstract
         LOGGER.info("Invoked init method, will initialize the executor");
         this.executor = relationalSink().getRelationalExecutor(connection);
         return executor;
+    }
+
+    /*
+    - Initializes executor
+    */
+    public void init(Executor executor)
+    {
+        LOGGER.info("Invoked init method, will initialize the executor");
+        this.executor = executor;
     }
 
     /*
@@ -215,23 +234,13 @@ public abstract class RelationalIngestorAbstract
     }
 
     /*
-    - Perform cleanup of temporary tables
-    */
-    public Datasets dedupAndVersion(Datasets datasets)
-    {
-        LOGGER.info("Invoked dedupAndVersion method, will perform Deduplication and Versioning");
-        init(datasets);
-        dedupAndVersion();
-        return this.enrichedDatasets;
-    }
-
-    /*
     - Perform ingestion from staging to main dataset based on the Ingest mode, executes in current transaction
     */
     public List<IngestorResult> ingest(Datasets datasets)
     {
         LOGGER.info("Invoked ingest method, will perform the ingestion");
         init(datasets);
+        dedupAndVersion();
         List<DataSplitRange> dataSplitRanges = ApiUtils.getDataSplitRanges(executor, planner, transformer, ingestMode());
         List<IngestorResult> result = ingest(dataSplitRanges);
         LOGGER.info("Ingestion completed");
@@ -321,7 +330,7 @@ public abstract class RelationalIngestorAbstract
         executor.executePhysicalPlan(generatorResult.preActionsSqlPlan());
     }
 
-    private void dedupAndVersion()
+    public void dedupAndVersion()
     {
         if (generatorResult.deduplicationAndVersioningSqlPlan().isPresent())
         {
@@ -512,7 +521,7 @@ public abstract class RelationalIngestorAbstract
                 .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
                 .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
                 .batchIdPattern(BATCH_ID_PATTERN)
-                .bulkLoadTaskIdValue(bulkLoadTaskIdValue())
+                .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());

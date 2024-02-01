@@ -43,22 +43,18 @@ import org.finos.legend.authentication.vault.CredentialVaultProvider;
 import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
 import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanismConfiguration;
+import org.finos.legend.connection.AuthenticationMechanism;
 import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.DatabaseType;
+import org.finos.legend.connection.DatabaseSupport;
 import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstanceProvider;
-import org.finos.legend.connection.impl.DefaultStoreInstanceProvider;
-import org.finos.legend.connection.impl.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
 import org.finos.legend.connection.impl.HACKY__SnowflakeConnectionAdapter;
 import org.finos.legend.connection.impl.KerberosCredentialExtractor;
 import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
+import org.finos.legend.connection.impl.RelationalDatabaseType;
 import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
 import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
-import org.finos.legend.connection.protocol.AuthenticationMechanismType;
 import org.finos.legend.engine.api.analytics.BindingAnalytics;
 import org.finos.legend.engine.api.analytics.ClassAnalytics;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
@@ -126,6 +122,8 @@ import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
@@ -158,7 +156,7 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
 import org.finos.legend.engine.testData.generation.api.TestDataGeneration;
-import org.finos.legend.engine.testable.api.Testable;
+import org.finos.legend.engine.testable.api.TestableApi;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
@@ -399,7 +397,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
                 new RelationalStoreSQLSourceProvider(projectCoordinateLoader),
                 new FunctionSQLSourceProvider(projectCoordinateLoader),
                 new LegendServiceSQLSourceProvider(projectCoordinateLoader)),
-        generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers))));
+                generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers))));
         environment.jersey().register(new SqlGrammar());
 
         // Service
@@ -428,7 +426,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new StoreEntitlementAnalytics(modelManager, entitlementServiceExtensions));
 
         // Testable
-        environment.jersey().register(new Testable(modelManager));
+        environment.jersey().register(new TestableApi(modelManager));
 
         //TestData Generation
         environment.jersey().register(new TestDataGeneration(modelManager));
@@ -439,39 +437,48 @@ public class Server<T extends ServerConfiguration> extends Application<T>
     // TODO: @akphi - this is temporary, rework when we find a better way to handle the initialization of connection factory from config or some external source.
     private ConnectionFactory setupConnectionFactory(List<VaultConfiguration> vaultConfigurations)
     {
-        LegendEnvironment environment = new LegendEnvironment.Builder()
-                .withVaults(
+        LegendEnvironment environment = LegendEnvironment
+                .builder()
+                .vaults(
                         new SystemPropertiesCredentialVault(),
                         new EnvironmentCredentialVault(),
                         new PropertiesFileCredentialVault(this.buildVaultProperties(vaultConfigurations))
                 )
-                .withStoreSupports(
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.POSTGRES)
-                                .withIdentifier("Postgres")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.USER_PASSWORD).withAuthenticationConfigurationTypes(
-                                                UserPasswordAuthenticationConfiguration.class
-                                        ).build()
+                .databaseSupports(
+                        DatabaseSupport
+                                .builder()
+                                .type(RelationalDatabaseType.POSTGRES)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism
+                                                .builder()
+                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD)
+                                                .authenticationConfigurationTypes(
+                                                        UserPasswordAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build(),
-                        new RelationalDatabaseStoreSupport.Builder(DatabaseType.SNOWFLAKE)
-                                .withIdentifier("Snowflake")
-                                .withAuthenticationMechanismConfigurations(
-                                        new AuthenticationMechanismConfiguration.Builder(AuthenticationMechanismType.KEY_PAIR).withAuthenticationConfigurationTypes(
-                                                EncryptedPrivateKeyPairAuthenticationConfiguration.class
-                                        ).build()
+                        DatabaseSupport
+                                .builder()
+                                .type(RelationalDatabaseType.SNOWFLAKE)
+                                .authenticationMechanisms(
+                                        AuthenticationMechanism
+                                                .builder()
+                                                .type(CoreAuthenticationMechanismType.KEY_PAIR)
+                                                .authenticationConfigurationTypes(
+                                                        EncryptedPrivateKeyPairAuthenticationConfiguration.class
+                                                ).build()
                                 )
                                 .build()
                 ).build();
 
-        StoreInstanceProvider storeInstanceProvider = new DefaultStoreInstanceProvider.Builder().build();
-        return new ConnectionFactory.Builder(environment, storeInstanceProvider)
-                .withCredentialBuilders(
+        return ConnectionFactory.builder()
+                .environment(environment)
+                .credentialBuilders(
                         new KerberosCredentialExtractor(),
                         new UserPasswordCredentialBuilder(),
                         new KeyPairCredentialBuilder()
                 )
-                .withConnectionBuilders(
+                .connectionBuilders(
                         new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword(),
                         new SnowflakeConnectionBuilder.WithKeyPair()
                 )

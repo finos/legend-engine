@@ -2226,7 +2226,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [106:5-123:5]: Service TestSuites should have atleast 1 test"
+                "COMPILATION error at [106:5-123:5]: Service TestSuites should have at least 1 test"
         );
 
         //Test Single TestSuite without asserts
@@ -2275,7 +2275,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "    }\n" +
                         "  ]\n" +
                         "}\n",
-                "COMPILATION error at [122:9-127:9]: Service Tests should have atleast 1 assert"
+                "COMPILATION error at [122:9-127:9]: Service Tests should have at least 1 assert"
         );
 
         //Multiple TestSuites with same ids
@@ -2467,7 +2467,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "COMPILATION error at [110:9-135:9]: Multiple assertions found with ids : 'assert1'"
         );
 
-        //Multiple Test data with same connection ids
+        //Should no longer throw errors. Correctly aggregates under listed connection
         test(resource + "###Service\n" +
                         "Service test::service::FirmService\n" +
                         "{\n" +
@@ -2528,8 +2528,7 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                         "      ]\n" +
                         "    }\n" +
                         "  ]\n" +
-                        "}\n",
-                "COMPILATION error at [108:7-125:7]: Multiple connection test data found with ids : 'connection1'"
+                        "}\n"
         );
 
         // Mis-match between parameter type & parameter value

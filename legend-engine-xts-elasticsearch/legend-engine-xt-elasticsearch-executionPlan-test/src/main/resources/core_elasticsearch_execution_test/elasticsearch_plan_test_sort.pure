@@ -145,3 +145,19 @@ meta::external::store::elasticsearch::executionTest::testCase::tds::sort::date::
 {
   $config->testTdsExpression(x | $x->sort(desc('ReleaseDate')));
 }
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort on null Keyword field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSortOnNullableAsc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort([asc('MPAA'), desc('Title')]));
+}
+
+function 
+  <<paramTest.Test>>
+  {doc.doc = 'Test sort null Keyword field on Elasticsearch'} 
+meta::external::store::elasticsearch::executionTest::testCase::tds::sort::keyword::testSortOnNullableDesc(config:TestConfig[1]):Boolean[1]
+{
+  $config->testTdsExpression(x | $x->sort([desc('MPAA'), asc('Title')]));
+}

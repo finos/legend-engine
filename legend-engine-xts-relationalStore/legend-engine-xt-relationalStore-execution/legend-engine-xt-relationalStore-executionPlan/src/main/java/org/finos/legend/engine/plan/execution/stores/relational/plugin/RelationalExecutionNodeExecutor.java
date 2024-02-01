@@ -30,6 +30,7 @@ import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
+import org.finos.legend.engine.plan.dependencies.domain.date.PureDate;
 import org.finos.legend.engine.plan.dependencies.domain.graphFetch.IGraphInstance;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalCreateAndPopulateTempTableExecutionNodeSpecifics;
 import org.finos.legend.engine.plan.dependencies.store.relational.IRelationalResult;
@@ -938,17 +939,18 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
             }
             if (v instanceof Number)
             {
-                return (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone);
+                return v.toString();
             }
-            if (v instanceof String)
+            if (v instanceof PureDate)
             {
-                if (quoteCharacterReplacement != null)
-                {
-                    return "'" + ((String)ResultNormalizer.normalizeToSql(v, databaseTimeZone)).replace("'", quoteCharacterReplacement) + "'";
-                }
-                return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+                return "'" + (String) ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
             }
-            return "'" + ResultNormalizer.normalizeToSql(v, databaseTimeZone) + "'";
+            if (v instanceof String && quoteCharacterReplacement != null)
+            {
+                return "'" + ((String) v).replace("'", quoteCharacterReplacement) + "'";
+            }
+            // TODO - Implement db specific processing for boolean type
+            return "'" + v.toString() + "'";
         };
     }
 
@@ -1909,7 +1911,7 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                                 {
                                 }
                                 node.parentTempTableStrategy.createTempTableNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
-                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.tempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.profiles);
+                                loadValuesIntoTempTablesFromRelationalResult(node.parentTempTableStrategy.loadTempTableNode, parentRealizedRelationalResult, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).tupleBatchSize, ((LoadFromResultSetAsValueTuplesTempTableStrategy) node.parentTempTableStrategy).quoteCharacterReplacement, databaseTimeZone, this.executionState, this.profiles);
                             }
                             else if (node.parentTempTableStrategy instanceof LoadFromTempFileTempTableStrategy)
                             {

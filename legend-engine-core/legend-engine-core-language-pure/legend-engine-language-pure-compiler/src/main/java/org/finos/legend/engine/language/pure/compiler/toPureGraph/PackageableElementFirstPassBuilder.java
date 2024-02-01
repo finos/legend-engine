@@ -104,7 +104,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     public PackageableElement visit(Enumeration _enum)
     {
         String fullPath = this.context.pureModel.buildPackageString(_enum._package, _enum.name);
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<Object> en = new Root_meta_pure_metamodel_type_Enumeration_Impl<>(_enum.name, null, this.context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Enumeration<Object> en = new Root_meta_pure_metamodel_type_Enumeration_Impl<>(_enum.name, SourceInformationHelper.toM3SourceInformation(_enum.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"));
         this.context.pureModel.typesIndex.put(fullPath, en);
         GenericType genericType = newGenericType(en);
         this.context.pureModel.typesGenericTypeIndex.put(fullPath, genericType);
@@ -112,7 +112,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
         return en._classifierGenericType(newGenericType(this.context.pureModel.getClass("meta::pure::metamodel::type::Enumeration"), genericType))
                 ._stereotypes(ListIterate.collect(_enum.stereotypes, this::resolveStereotype))
                 ._taggedValues(ListIterate.collect(_enum.taggedValues, this::newTaggedValue))
-                ._values(ListIterate.collect(_enum.values, v -> new Root_meta_pure_metamodel_type_Enum_Impl(v.value, SourceInformationHelper.toM3SourceInformation(_enum.sourceInformation), null)
+                ._values(ListIterate.collect(_enum.values, v -> new Root_meta_pure_metamodel_type_Enum_Impl(v.value, SourceInformationHelper.toM3SourceInformation(v.sourceInformation), null)
                         ._classifierGenericType(genericType)
                         ._stereotypes(ListIterate.collect(v.stereotypes, this::resolveStereotype))
                         ._taggedValues(ListIterate.collect(v.taggedValues, this::newTaggedValue))
@@ -248,7 +248,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Mapping mapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name);
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping pureMapping = new Root_meta_pure_mapping_Mapping_Impl(mapping.name, SourceInformationHelper.toM3SourceInformation(mapping.sourceInformation), null);
         this.context.pureModel.mappingsIndex.put(this.context.pureModel.buildPackageString(mapping._package, mapping.name), pureMapping);
         GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::mapping::Mapping"));
         pureMapping._classifierGenericType(mappingGenericType);
@@ -258,13 +258,13 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(PackageableRuntime packageableRuntime)
     {
-        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, null, this.context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
+        Root_meta_pure_runtime_PackageableRuntime metamodel = new Root_meta_pure_runtime_PackageableRuntime_Impl(packageableRuntime.name, SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::pure::runtime::PackageableRuntime"));
         this.context.pureModel.packageableRuntimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), metamodel);
         GenericType packageableRuntimeGenericType = newGenericType(this.context.pureModel.getType("meta::pure::runtime::PackageableRuntime"));
         metamodel._classifierGenericType(packageableRuntimeGenericType);
 
         // NOTE: the whole point of this processing is to put the Pure Runtime in an index
-        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", null, this.context.pureModel.getClass("meta::core::runtime::Runtime"));
+        Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(packageableRuntime.sourceInformation), this.context.pureModel.getClass("meta::core::runtime::Runtime"));
         this.context.pureModel.runtimesIndex.put(this.context.pureModel.buildPackageString(packageableRuntime._package, packageableRuntime.name), pureRuntime);
 
         return setNameAndPackage(metamodel, packageableRuntime);
@@ -273,7 +273,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(PackageableConnection packageableConnection)
     {
-        Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, null, this.context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
+        Root_meta_pure_runtime_PackageableConnection metamodel = new Root_meta_pure_runtime_PackageableConnection_Impl(packageableConnection.name, SourceInformationHelper.toM3SourceInformation(packageableConnection.sourceInformation), this.context.pureModel.getClass("meta::pure::runtime::PackageableConnection"));
         this.context.pureModel.packageableConnectionsIndex.put(this.context.pureModel.buildPackageString(packageableConnection._package, packageableConnection.name), metamodel);
         // NOTE: the whole point of this processing is to put the Pure Connection in an index
         Root_meta_core_runtime_Connection connection = packageableConnection.connectionValue.accept(new ConnectionFirstPassBuilder(this.context));
@@ -284,7 +284,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(SectionIndex sectionIndex)
     {
-        Root_meta_pure_metamodel_section_SectionIndex stub = new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, null, this.context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"));
+        Root_meta_pure_metamodel_section_SectionIndex stub = new Root_meta_pure_metamodel_section_SectionIndex_Impl(sectionIndex.name, SourceInformationHelper.toM3SourceInformation(sectionIndex.sourceInformation), this.context.pureModel.getClass("meta::pure::metamodel::section::SectionIndex"));
         // NOTE: we don't really need to add section index to the PURE graph
         sectionIndex.sections.forEach(section -> section.elements.forEach(elementPath -> this.context.pureModel.sectionsIndex.putIfAbsent(elementPath, section)));
         return setNameAndPackage(stub, sectionIndex);
@@ -293,7 +293,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(DataElement dataElement)
     {
-        Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name);
+        Root_meta_pure_data_DataElement compiled = new Root_meta_pure_data_DataElement_Impl(dataElement.name, SourceInformationHelper.toM3SourceInformation(dataElement.sourceInformation), null);
         GenericType mappingGenericType = newGenericType(this.context.pureModel.getType("meta::pure::data::DataElement"));
         setNameAndPackage(compiled, dataElement);
         return compiled._classifierGenericType(mappingGenericType)
@@ -373,6 +373,7 @@ public class PackageableElementFirstPassBuilder implements PackageableElementVis
             throw new EngineException("An element named '" + name + "' already exists in the package '" + packagePath + "'", sourceInformation, EngineErrorType.COMPILATION);
         }
         pureElement._package(pack);
+        pureElement.setSourceInformation(SourceInformationHelper.toM3SourceInformation(sourceInformation));
         pack._childrenAdd(pureElement);
         return pureElement;
     }

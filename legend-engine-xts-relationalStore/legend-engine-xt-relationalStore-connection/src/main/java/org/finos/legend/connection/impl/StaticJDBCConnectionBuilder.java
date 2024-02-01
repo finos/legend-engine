@@ -15,15 +15,13 @@
 package org.finos.legend.connection.impl;
 
 import org.finos.legend.connection.Authenticator;
-import org.finos.legend.connection.JDBCConnectionBuilder;
-import org.finos.legend.connection.RelationalDatabaseStoreSupport;
-import org.finos.legend.connection.StoreInstance;
-import org.finos.legend.connection.protocol.StaticJDBCConnectionSpecification;
+import org.finos.legend.connection.Connection;
+import org.finos.legend.connection.DatabaseSupport;
+import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
 
-import java.sql.Connection;
 import java.util.Properties;
 import java.util.function.Function;
 
@@ -31,10 +29,10 @@ public class StaticJDBCConnectionBuilder
 {
     public static class WithPlaintextUsernamePassword extends JDBCConnectionBuilder<PlaintextUserPasswordCredential, StaticJDBCConnectionSpecification>
     {
-        public Connection getConnection(StaticJDBCConnectionSpecification connectionSpecification, Authenticator<PlaintextUserPasswordCredential> authenticator, Identity identity) throws Exception
+        public java.sql.Connection getConnection(StaticJDBCConnectionSpecification connectionSpecification, Authenticator<PlaintextUserPasswordCredential> authenticator, Identity identity) throws Exception
         {
-            StoreInstance storeInstance = authenticator.getStoreInstance();
-            RelationalDatabaseStoreSupport storeSupport = RelationalDatabaseStoreSupport.cast(storeInstance.getStoreSupport());
+            Connection connection = authenticator.getConnection();
+            DatabaseSupport databaseSupport = connection.getDatabaseSupport();
 
             Properties connectionProperties = new Properties();
             Function<Credential, Properties> authenticationPropertiesSupplier = cred ->
@@ -46,7 +44,7 @@ public class StaticJDBCConnectionBuilder
                 return properties;
             };
 
-            return this.getConnectionManager().getConnection(storeSupport.getDatabase(), connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, connectionProperties, this.getConnectionPoolConfig(), authenticationPropertiesSupplier, authenticator, identity);
+            return this.getConnectionManager().getConnection(databaseSupport.getDatabaseType(), connectionSpecification.host, connectionSpecification.port, connectionSpecification.databaseName, connectionProperties, this.getConnectionPoolConfig(), authenticationPropertiesSupplier, authenticator, identity);
         }
     }
 }

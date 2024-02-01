@@ -1,18 +1,18 @@
-import meta::rel::utils::*;
+import meta::external::store::rel::utils::*;
 
-function meta::rel::utils::unlessEmpty<S, T|n>(values: T[*], logic: FunctionDefinition<{T[1..*]->S[n]}>[1], else: S[n]): S[n] {
+function meta::external::store::rel::utils::unlessEmpty<S, T|n>(values: T[*], logic: FunctionDefinition<{T[1..*]->S[n]}>[1], else: S[n]): S[n] {
   if ($values->size() == 0, | $else, | $logic->eval($values->toOneMany()));
 }
 
-function meta::rel::utils::else<T>(value: T[0..1], or: FunctionDefinition<{->T[1]}>[1]): T[1] {
+function meta::external::store::rel::utils::else<T>(value: T[0..1], or: FunctionDefinition<{->T[1]}>[1]): T[1] {
   if ($value->isEmpty(), | $or->eval(), | $value->toOne());
 }
 
-function meta::rel::utils::else<T>(value: T[*], or: FunctionDefinition<{->T[1..*]}>[1]): T[1..*] {
+function meta::external::store::rel::utils::else<T>(value: T[*], or: FunctionDefinition<{->T[1..*]}>[1]): T[1..*] {
   if ($value->isEmpty(), | $or->eval(), | $value->toOneMany());
 }
 
-function meta::rel::utils::maybeAt<T>(collection: T[*], index: Integer[1]): T[0..1] {
+function meta::external::store::rel::utils::maybeAt<T>(collection: T[*], index: Integer[1]): T[0..1] {
   if (($index >= 0) && ($index < $collection->size()), | $collection->at($index), | []);
 }
 

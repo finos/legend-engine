@@ -36,6 +36,14 @@ public class TestSQLRoundTrip
     public void testSelectStar()
     {
         check("SELECT * FROM myTable");
+        check("SELECT myTable.* FROM myTable");
+    }
+
+    @Test
+    public void testParameters()
+    {
+        check("SELECT * FROM myTable where name = $1");
+        check("SELECT * FROM myTable where name = ?");
     }
 
     @Test
@@ -313,6 +321,19 @@ public class TestSQLRoundTrip
     public void testWithinGroup()
     {
         check("SELECT percentile_cont(0.1) WITHIN GROUP (ORDER BY a ASC) FROM myTable");
+    }
+
+    @Test
+    public void testFunctionCallWithOrder()
+    {
+        check("SELECT string_agg(Col1, ', ' ORDER BY Col2 ASC, Col3 DESC) FROM myTable");
+    }
+
+    @Test
+    public void testTrim()
+    {
+        check("SELECT trim(BOTH ' ' FROM 'abc') FROM myTable");
+        check("SELECT trim(BOTH FROM 'abc') FROM myTable");
     }
 
     @Test

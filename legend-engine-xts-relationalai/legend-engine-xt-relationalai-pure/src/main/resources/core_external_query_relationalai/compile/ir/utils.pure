@@ -1,39 +1,39 @@
-import meta::rel::compile::ir::*;
-import meta::rel::compile::ir::utils::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::utils::*;
+import meta::external::store::rel::utils::*;
 
-function meta::rel::compile::ir::utils::display(expr: PExpr[1]): String[1] {
+function meta::external::store::rel::compile::ir::utils::display(expr: PExpr[1]): String[1] {
   $expr->display(0);
 }
 
-function meta::rel::compile::ir::utils::display(expr: PExpr[1], indent: Integer[1]): String[1] {
+function meta::external::store::rel::compile::ir::utils::display(expr: PExpr[1], indent: Integer[1]): String[1] {
   $expr->match([
-    {int: IntegerConst[1] | $int.value->toString()},
-    {float: FloatConst[1] | $float.value->toString()},
+    {int: ConstInteger[1] | $int.value->toString()},
+    {float: ConstFloat[1] | $float.value->toString()},
     {var: VariablePlaceholder[1] | $var.identifier},
-    {all: All[1] | format('%sAll %s', [indent($indent), $all.set.id])},
-    {access: SetAccess[1] | 
+    {all: PExprAll[1] | format('%sAll %s', [indent($indent), $all.set.id])},
+    {access: PExprSetAccess[1] | 
       format('%sSet access %s via variable `%s`', [indent($indent), $access.set.id->orElse(''), $access.variable]);
     },
-    {access: PropertyAccess[1] |
+    {access: PExprPropertyAccess[1] |
       format('%sProperty access on `%s`\n%s', [indent($indent), $access.property.name->toOne(), $access.parent->display($indent + 2)]);
     },
-    {scoped: Scoped[1] |
-      format('%sScope via `%s`:\n%s', [indent($indent), $scoped.variables->joinStrings(', '), $scoped.inner->display($indent + 2)]);
+    {scoped: PExprScope[1] |
+      format('%sScope via `%s`:\n%s', [indent($indent), $scoped->variables()->joinStrings(', '), $scoped.inner->display($indent + 2)]);
     },
-    {exists: Exists[1] |
+    {exists: PExprExists[1] |
       format('%sExists\n%s\n%s', [indent($indent), $exists.parent->display($indent + 2), $exists.predicate->display($indent + 2)])
     },
-    {forAll: ForAll[1] |
+    {forAll: PExprForAll[1] |
       format('%sFor all\n%s\n%s', [indent($indent), $forAll.parent->display($indent + 2), $forAll.predicate->display($indent + 2)])
     },
-    {filter: Filter[1] |
+    {filter: PExprFilter[1] |
       format('%sFilter\n%s\n%s', [indent($indent), $filter.parent->display($indent + 2), $filter.predicate->display($indent + 2)])
     },
-    {map: MapExpr[1] |
+    {map: PExprMap[1] |
       format('%sMap\n%s\n%s', [indent($indent), $map.parent->display($indent + 2), $map.body->display($indent + 2)])
     },
-    {fexpr: FunctionExpr<|*>[1] |
+    {fexpr: PExprFunction<|*>[1] |
       format('%sFunction Expression %s\n%s', [
         indent($indent),
         $fexpr.fn->id(),

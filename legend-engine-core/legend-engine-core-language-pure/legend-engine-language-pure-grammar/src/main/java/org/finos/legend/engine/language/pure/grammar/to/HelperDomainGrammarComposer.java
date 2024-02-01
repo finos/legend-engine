@@ -15,15 +15,27 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Property;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.QualifiedProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -38,6 +50,11 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class HelperDomainGrammarComposer
 {
+
+    private static String DEFAULT_TESTABLE_ID = "default";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String APPLICATION_XML = "application/xml";
+
     public static String renderStereotypePointer(StereotypePtr stereotypePtr)
     {
         return PureGrammarComposerUtility.convertPath(stereotypePtr.profile) + "." + PureGrammarComposerUtility.convertIdentifier(stereotypePtr.value);
@@ -116,10 +133,10 @@ public class HelperDomainGrammarComposer
                 + LazyIterate.collect(functionParameters, p -> p.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(transformer).withVariableInFunctionSignature().build())).makeString(",")
                 + ") {"
                 + (qualifiedProperty.body.size() <= 1
-                    ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
-                    : LazyIterate
-                        .collect(qualifiedProperty.body, b -> b.accept(transformer))
-                        .makeString("\n" + getTabString(2),";\n" + getTabString(2),";\n" + getTabString()))
+                ? LazyIterate.collect(qualifiedProperty.body, b -> b.accept(transformer)).makeString("\n")
+                : LazyIterate
+                .collect(qualifiedProperty.body, b -> b.accept(transformer))
+                .makeString("\n" + getTabString(2), ";\n" + getTabString(2), ";\n" + getTabString()))
                 + "}: "
                 + qualifiedProperty.returnType + "[" + renderMultiplicity(qualifiedProperty.returnMultiplicity) + "]";
     }
@@ -162,4 +179,132 @@ public class HelperDomainGrammarComposer
             return builder.toString();
         }
     }
+
+
+    public static String renderFunctionTestSuites(Function function, PureGrammarComposerContext context)
+    {
+        StringBuilder stringBuilder = new StringBuilder();
+        if (function.tests == null)
+        {
+            return stringBuilder.toString();
+        }
+        stringBuilder.append("\n{\n");
+        stringBuilder.append(String.join("\n" + (function.tests.size() > 1 ? "\n" : ""), ListIterate.collect(function.tests, suite -> renderFunctionTestSuite(function, suite, context))));
+        stringBuilder.append("\n}");
+        return stringBuilder.toString();
+    }
+
+    public static String renderFunctionTestSuite(Function function, FunctionTestSuite functionTestSuite, PureGrammarComposerContext context)
+    {
+        int baseIndentation = 1;
+        StringBuilder str = new StringBuilder();
+        if (!functionTestSuite.id.equals(DEFAULT_TESTABLE_ID))
+        {
+           str.append(getTabString(baseIndentation)).append(functionTestSuite.id).append("\n").append(getTabString(baseIndentation)).append("(\n");
+            if (functionTestSuite.testData != null && !functionTestSuite.testData.isEmpty())
+            {
+                str.append(String.join("\n", ListIterate.collect(functionTestSuite.testData, test -> renderFunctionTestData(test, baseIndentation + 1, context)))).append("\n");
+            }
+            if (functionTestSuite.tests != null)
+            {
+                str.append(String.join("\n", ListIterate.collect(functionTestSuite.tests, test -> renderFunctionTest(function, (FunctionTest) test, baseIndentation + 1, context))));
+            }
+            str.append("\n").append(getTabString(baseIndentation)).append(")");
+        }
+        else
+        {
+            if (functionTestSuite.testData != null && !functionTestSuite.testData.isEmpty())
+            {
+                str.append(String.join("\n", ListIterate.collect(functionTestSuite.testData, test -> renderFunctionTestData(test, baseIndentation, context)))).append("\n");
+            }
+            if (functionTestSuite.tests != null)
+            {
+                str.append(String.join("\n", ListIterate.collect(functionTestSuite.tests, test -> renderFunctionTest(function, (FunctionTest) test, baseIndentation, context))));
+            }
+        }
+        return str.toString();
+    }
+
+    public static String renderFunctionTestData(StoreTestData storeTestData, int currentInt, PureGrammarComposerContext context)
+    {
+        StringBuilder dataStrBuilder = new StringBuilder();
+        dataStrBuilder.append(getTabString(currentInt));
+        dataStrBuilder.append(storeTestData.store + ":");
+        EmbeddedData embeddedData = storeTestData.data;
+        if (embeddedData instanceof DataElementReference)
+        {
+            dataStrBuilder.append(" ");
+            dataStrBuilder.append(((DataElementReference) embeddedData).dataElement);
+        }
+        else if (embeddedData instanceof ExternalFormatData)
+        {
+            dataStrBuilder.append(" ");
+            dataStrBuilder.append(renderSimpleExternalFormat(((ExternalFormatData) embeddedData)));
+        }
+        else
+        {
+            dataStrBuilder.append("\n");
+            dataStrBuilder.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(storeTestData.data, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(currentInt + 2)).build()));
+        }
+        dataStrBuilder.append(";");
+        return dataStrBuilder.toString();
+    }
+
+
+    public static String renderFunctionTest(Function function, FunctionTest functionTest, int currentInt, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+        str.append(getTabString(currentInt)).append(functionTest.id).append(" | ").append(HelperValueSpecificationGrammarComposer.getFunctionNameWithNoPackage(function)).append("(");
+        if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
+        {
+            str.append(LazyIterate.collect(functionTest.parameters, parameterValue -> parameterValue.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).makeString(","));
+        }
+        str.append(") => ");
+        if (functionTest.assertions.size() > 1)
+        {
+            throw new EngineException("Unable to generate grammar for function tests with more than one assertion", functionTest.sourceInformation, EngineErrorType.COMPOSER);
+        }
+        if (functionTest.assertions.size() == 1)
+        {
+            str.append(renderTestAssertion(functionTest.assertions.get(0), context));
+        }
+        str.append(";");
+        return str.toString();
+    }
+
+    private static String renderTestAssertion(TestAssertion testAssertion, PureGrammarComposerContext context)
+    {
+        if (testAssertion instanceof EqualTo)
+        {
+            return ((EqualTo)testAssertion).expected.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build());
+        }
+        else if (testAssertion instanceof EqualToJson)
+        {
+            EqualToJson equalToJson = (EqualToJson) testAssertion;
+            ExternalFormatData externalFormatData = equalToJson.expected;
+            return renderSimpleExternalFormat(externalFormatData);
+        }
+        else
+        {
+            throw new EngineException("Unknown test assertion type: " + testAssertion.toString(), testAssertion.sourceInformation, EngineErrorType.COMPOSER);
+        }
+    }
+
+    private static String renderSimpleExternalFormat(ExternalFormatData externalFormatData)
+    {
+        if (externalFormatData.contentType.equals(APPLICATION_JSON))
+        {
+            return "(JSON) " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
+        }
+        else if (externalFormatData.contentType.equals(APPLICATION_XML))
+        {
+            return "(XML) " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
+        }
+        else
+        {
+            return "(" + externalFormatData.contentType + ") " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
+        }
+    }
+
+
 }

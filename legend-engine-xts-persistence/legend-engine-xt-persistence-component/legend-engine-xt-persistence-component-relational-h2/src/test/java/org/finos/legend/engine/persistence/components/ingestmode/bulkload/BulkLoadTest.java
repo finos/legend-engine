@@ -16,7 +16,7 @@ package org.finos.legend.engine.persistence.components.ingestmode.bulkload;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.FileFormat;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
@@ -104,8 +104,8 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                         H2StagedFilesDatasetProperties.builder()
-                            .fileFormat(FileFormat.CSV)
-                            .addAllFiles(Collections.singletonList(filePath)).build())
+                            .fileFormat(FileFormatType.CSV)
+                            .addAllFilePaths(Collections.singletonList(filePath)).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
 
@@ -177,8 +177,8 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(Collections.singletonList(filePath)).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 
@@ -195,7 +195,7 @@ public class BulkLoadTest extends BaseTest
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE_1)
+            .bulkLoadEventIdValue(TASK_ID_VALUE_1)
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -250,8 +250,8 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(Collections.singletonList(filePath)).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 
@@ -267,7 +267,7 @@ public class BulkLoadTest extends BaseTest
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE_1)
+            .bulkLoadEventIdValue(TASK_ID_VALUE_1)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
@@ -325,8 +325,8 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(Collections.singletonList(filePath)).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 
@@ -342,7 +342,7 @@ public class BulkLoadTest extends BaseTest
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE_1)
+            .bulkLoadEventIdValue(TASK_ID_VALUE_1)
             .executionTimestampClock(fixedClock_2000_01_01)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
@@ -399,8 +399,8 @@ public class BulkLoadTest extends BaseTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 H2StagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(Collections.singletonList(filePath)).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
             .build();
 
@@ -499,7 +499,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                     .ingestMode(bulkLoad)
                     .relationalSink(H2Sink.get())
-                    .bulkLoadTaskIdValue(TASK_ID_VALUE_1)
+                    .bulkLoadEventIdValue(TASK_ID_VALUE_1)
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
                     .build();
@@ -533,8 +533,8 @@ public class BulkLoadTest extends BaseTest
             Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                     H2StagedFilesDatasetProperties.builder()
-                        .fileFormat(FileFormat.CSV)
-                        .addAllFiles(Collections.singletonList("src/test/resources/data/bulk-load/input/staged_file1.csv")).build())
+                        .fileFormat(FileFormatType.CSV)
+                        .addAllFilePaths(Collections.singletonList("src/test/resources/data/bulk-load/input/staged_file1.csv")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, pkCol)).build())
                 .build();
 
@@ -546,7 +546,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(H2Sink.get())
-                .bulkLoadTaskIdValue(TASK_ID_VALUE_1)
+                .bulkLoadEventIdValue(TASK_ID_VALUE_1)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
@@ -580,8 +580,8 @@ public class BulkLoadTest extends BaseTest
             Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                     H2StagedFilesDatasetProperties.builder()
-                        .fileFormat(FileFormat.CSV)
-                        .addAllFiles(Collections.singletonList("src/test/resources/data/bulk-load/input/staged_file1.csv")).build())
+                        .fileFormat(FileFormatType.CSV)
+                        .addAllFilePaths(Collections.singletonList("src/test/resources/data/bulk-load/input/staged_file1.csv")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
 
@@ -593,7 +593,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(H2Sink.get())
-                .bulkLoadTaskIdValue(TASK_ID_VALUE_1)
+                .bulkLoadEventIdValue(TASK_ID_VALUE_1)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
@@ -615,8 +615,8 @@ public class BulkLoadTest extends BaseTest
             Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                     H2StagedFilesDatasetProperties.builder()
-                        .fileFormat(FileFormat.CSV)
-                        .addAllFiles(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.csv", "src/test/resources/data/bulk-load/input/staged_file2.csv")).build())
+                        .fileFormat(FileFormatType.CSV)
+                        .addAllFilePaths(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.csv", "src/test/resources/data/bulk-load/input/staged_file2.csv")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
             Assertions.fail("Exception was not thrown");
@@ -635,8 +635,8 @@ public class BulkLoadTest extends BaseTest
             Dataset stagedFilesDataset = StagedFilesDataset.builder()
                 .stagedFilesDatasetProperties(
                     H2StagedFilesDatasetProperties.builder()
-                        .fileFormat(FileFormat.JSON)
-                        .addAllFiles(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.json")).build())
+                        .fileFormat(FileFormatType.JSON)
+                        .addAllFilePaths(Arrays.asList("src/test/resources/data/bulk-load/input/staged_file1.json")).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
                 .build();
             Assertions.fail("Exception was not thrown");
@@ -655,7 +655,7 @@ public class BulkLoadTest extends BaseTest
                 .executionTimestampClock(executionTimestampClock)
                 .cleanupStagingData(options.cleanupStagingData())
                 .collectStatistics(options.collectStatistics())
-                .bulkLoadTaskIdValue(taskId)
+                .bulkLoadEventIdValue(taskId)
                 .enableConcurrentSafety(true)
                 .caseConversion(caseConversion)
                 .build();
@@ -668,14 +668,14 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals("main", appendMetadata.get("table_name"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_start_ts_utc").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_end_ts_utc").toString());
-        Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"files\":[\"%s\"]", fileName)));
+        Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
         if (taskId.isPresent())
         {
-            Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"task_id\":\"%s\"", taskId.get())));
+            Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
         }
         else
         {
-            Assertions.assertFalse(appendMetadata.get("batch_source_info").toString().contains("\"task_id\""));
+            Assertions.assertFalse(appendMetadata.get("batch_source_info").toString().contains("\"event_id\""));
         }
     }
 
@@ -686,14 +686,14 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals("MAIN", appendMetadata.get("TABLE_NAME"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_START_TS_UTC").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_END_TS_UTC").toString());
-        Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"files\":[\"%s\"]", fileName)));
+        Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
         if (taskId.isPresent())
         {
-            Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"task_id\":\"%s\"", taskId.get())));
+            Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
         }
         else
         {
-            Assertions.assertFalse(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains("\"task_id\""));
+            Assertions.assertFalse(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains("\"event_id\""));
         }
     }
 

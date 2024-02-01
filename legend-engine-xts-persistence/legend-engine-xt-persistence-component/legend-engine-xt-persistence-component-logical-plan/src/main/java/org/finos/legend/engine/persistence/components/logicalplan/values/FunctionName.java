@@ -40,5 +40,6 @@ public enum FunctionName
     PARSE_DATETIME,
     OBJECT_CONSTRUCT,
     TO_VARIANT,
-    TO_JSON;
+    TO_JSON,
+    CONVERT;
 }

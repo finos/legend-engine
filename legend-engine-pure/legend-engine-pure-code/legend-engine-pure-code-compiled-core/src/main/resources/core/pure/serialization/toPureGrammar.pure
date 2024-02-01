@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::metamodel::relation::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
@@ -92,6 +93,7 @@ function meta::pure::metamodel::serialization::grammar::printPropertyOrFunctionE
     $functionExpression.func->match([
                                         p:Property<Nil,Any|*>[1]   | printProperty($p, $functionExpression.parametersValues->at(0), $space), 
                                         q:QualifiedProperty<Any>[1]| printProperty($q, $functionExpression.parametersValues, $space),
+                                        c:Column<Nil,Any|*>[1]     | printColumn($c, $functionExpression.parametersValues->at(0), $space),
                                         a:Any[1]                   | printFunctionExpression($functionExpression, $space)
                                     ])
 }
@@ -127,12 +129,17 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                    | $functionExpression.parametersValues->head()->toOne()->printValueSpecification($space) + '->' + $functionExpression.func.functionName->toOne() + $functionExpression.parametersValues->tail()->map(vs | printValueSpecification($vs, $space))->joinStrings('(', ', ', ')');
                    );,
              |let vals = if ($name->in(['plus', 'minus', 'times']),
-                  |$functionExpression.parametersValues->cast(@InstanceValue).values,
+                  |$functionExpression.parametersValues->match([
+                    i:InstanceValue[1] | $i.values,
+                    v:ValueSpecification[1] | $v
+                  ]),
                   |$functionExpression.parametersValues
               );
               if ($name == 'minus' && $vals->size() == 1,
                   | $m->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($space),
-                  | '(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')'
+                  | if ($name->in(['and', 'or']) && $vals->size() == 1,
+                      | $name + '(' + $vals->at(0)->printValueSpecification($space) + ')',
+                      | '(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')')
               );
          );
     );
@@ -141,6 +148,11 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
 function meta::pure::metamodel::serialization::grammar::printProperty(p:Property<Nil,Any|*>[1], o:ValueSpecification[1], space:String[1]):String[1]
 {
    $o->printValueSpecification($space) + '.' + $p.name->toOne();
+}
+
+function meta::pure::metamodel::serialization::grammar::printColumn(c:Column<Nil,Any|*>[1], o:ValueSpecification[1], space:String[1]):String[1]
+{
+   $c.name->toOne();
 }
 
 function meta::pure::metamodel::serialization::grammar::printProperty(p:QualifiedProperty<Any>[1], params:ValueSpecification[*], space:String[1]):String[1]
@@ -223,11 +235,18 @@ function meta::pure::metamodel::serialization::grammar::printProperty(p:Property
 
 function meta::pure::metamodel::serialization::grammar::printGenericType(genericType:GenericType[1]):String[1]
 {
-    if ($genericType.rawType->isEmpty(),
-        |$genericType.typeParameter->toOne().name->toOne(),
-        |$genericType.rawType->toOne()->match(
+    if ($genericType->instanceOf(GenericTypeOperation),
+      |let go = $genericType->cast(@GenericTypeOperation);
+       $go.left->printGenericType()+if($go.type == GenericTypeOperationType.Union,|'+',|'-')+$go.right->printGenericType();,
+      |if ($genericType.rawType->isEmpty(),
+            |if ($genericType.typeParameter->isEmpty(),
+                  |'',
+                  |$genericType.typeParameter->toOne().name->toOne()
+            ),
+            |$genericType.rawType->toOne()->match(
                         [
                             f:FunctionType[1]|printFunctionType($f),
+                            x:meta::pure::metamodel::relation::RelationType<Any>[1]|printRelationType($x),
                             c:Class<Any>[1]|if ($c.name->isEmpty(),|'?MappingClass?',|$c->elementToPath()),
                             e:Enumeration<Any>[1]|$e->elementToPath(),
                             a:Any[1]|$a->id()
@@ -239,6 +258,7 @@ function meta::pure::metamodel::serialization::grammar::printGenericType(generic
                            |if($genericType.multiplicityArguments->isNotEmpty(),
                                |$genericType.multiplicityArguments->map(m | $m->printMultiplicity())->joinStrings('<|', ',', '>'),
                                |'')))
+    )
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionType(functionType:FunctionType[1]):String[1]
@@ -246,6 +266,11 @@ function meta::pure::metamodel::serialization::grammar::printFunctionType(functi
     '{'+$functionType.parameters->evaluateAndDeactivate()->map(v|printGenericType($v.genericType)+'['+printMultiplicity($v.multiplicity)+']')->joinStrings(',')
     +'->'
     +printGenericType($functionType.returnType)+'['+printMultiplicity($functionType.returnMultiplicity)+']}';
+}
+
+function meta::pure::metamodel::serialization::grammar::printRelationType(rType:meta::pure::metamodel::relation::RelationType<Any>[1]):String[1]
+{
+    '('+$rType.columns->map(x|if($x.nameWildCard,|'?',|$x.name->toOne())+':'+$x.classifierGenericType.typeArguments->at(1)->printGenericType())->joinStrings(', ')+')';
 }
 
 function meta::pure::metamodel::serialization::grammar::printFunctionSignature(func:Function<Any>[1]):String[1]

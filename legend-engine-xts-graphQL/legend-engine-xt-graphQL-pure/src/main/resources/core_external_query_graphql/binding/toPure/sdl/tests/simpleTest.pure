@@ -172,6 +172,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
       '  date: Date!\n' +
       '  datetime: DateTime!\n' +
       '  decimal: BigDecimal!\n' +
+      '  strictDate: StrictDate!\n' +
       '}\n' +
       '\n' +
       'scalar Date\n' +
@@ -179,6 +180,8 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
       'scalar DateTime\n' +
       '\n' +
       'scalar BigDecimal\n' +
+      '\n' +
+      'scalar StrictDate\n' +
       '}#',
       'meta::external::query::graphQL::metamodel::sql'
     );
@@ -193,6 +196,7 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
     '  date : Date[1];\n' +
     '  datetime : DateTime[1];\n' +
     '  decimal : Decimal[1];\n' +
+    '  strictDate : StrictDate[1];\n' +
     '}',
     $pureTypes);
 }

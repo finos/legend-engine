@@ -50,7 +50,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     private static XmlModelConnection xmlModelConnection = new XmlModelConnection();
 
 
-    private Pair<Connection, List<Closeable>> resolveExternalFormatData(ExternalFormatData externalFormatData, String _class)
+    public Pair<Connection, List<Closeable>> buildCloseableConnectionFromExternalFormat(ExternalFormatData externalFormatData, String _class)
     {
         Closeable closeable = new Closeable()
         {
@@ -98,7 +98,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
                 EmbeddedData resolvedEmbeddedData = EmbeddedDataHelper.resolveDataElement(dataElements, modelEmbeddedData.data);
                 if (resolvedEmbeddedData instanceof ExternalFormatData)
                 {
-                    return Optional.of(resolveExternalFormatData((ExternalFormatData) resolvedEmbeddedData, _class));
+                    return Optional.of(buildCloseableConnectionFromExternalFormat((ExternalFormatData) resolvedEmbeddedData, _class));
                 }
                 else
                 {
@@ -114,7 +114,7 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
                     EmbeddedData testDataElement = EmbeddedDataHelper.findDataElement(dataElements, ((PackageableElementPtr) vs).fullPath).data;
                     if (testDataElement instanceof ExternalFormatData)
                     {
-                        return Optional.of(resolveExternalFormatData((ExternalFormatData) testDataElement, _class));
+                        return Optional.of(buildCloseableConnectionFromExternalFormat((ExternalFormatData) testDataElement, _class));
                     }
                     else
                     {
@@ -141,36 +141,50 @@ public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtensi
     }
 
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData embeddedData)
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> embeddedData)
     {
         if (sourceConnection instanceof JsonModelConnection)
         {
-            JsonModelConnection jsonModelConnection = (JsonModelConnection) sourceConnection;
-            if (!(embeddedData instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) embeddedData).contentType)))
+            if (embeddedData.size() == 1)
             {
-                throw new UnsupportedOperationException("Json data should be provided for JsonModelConnection");
-            }
+                JsonModelConnection jsonModelConnection = (JsonModelConnection) sourceConnection;
+                if (!(embeddedData.get(0) instanceof ExternalFormatData && APPLICATION_JSON.equals(((ExternalFormatData) embeddedData.get(0)).contentType)))
+                {
+                    throw new UnsupportedOperationException("Json data should be provided for JsonModelConnection");
+                }
 
-            JsonModelConnection testConnection = new JsonModelConnection();
-            testConnection.element = jsonModelConnection.element;
-            testConnection._class = jsonModelConnection._class;
-            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData, APPLICATION_JSON);
-            return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
+                JsonModelConnection testConnection = new JsonModelConnection();
+                testConnection.element = jsonModelConnection.element;
+                testConnection._class = jsonModelConnection._class;
+                testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData.get(0), APPLICATION_JSON);
+                return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
+            }
+            else
+            {
+                throw new RuntimeException(JsonModelConnection.class.getSimpleName() + " cannot support multiple embedded data sources.");
+            }
         }
         else if (sourceConnection instanceof XmlModelConnection)
         {
-            XmlModelConnection xmlModelConnection = (XmlModelConnection) sourceConnection;
-            if (!(embeddedData instanceof ExternalFormatData && APPLICATION_XML.equals(((ExternalFormatData) embeddedData).contentType)))
+            if (embeddedData.size() == 1)
             {
-                throw new UnsupportedOperationException("Xml data should be provided for XmlModelConnection");
+                XmlModelConnection xmlModelConnection = (XmlModelConnection) sourceConnection;
+                if (!(embeddedData.get(0) instanceof ExternalFormatData && APPLICATION_XML.equals(((ExternalFormatData) embeddedData.get(0)).contentType)))
+                {
+                    throw new UnsupportedOperationException("Xml data should be provided for XmlModelConnection");
+                }
+
+                XmlModelConnection testConnection = new XmlModelConnection();
+                testConnection.element = xmlModelConnection.element;
+                testConnection._class = xmlModelConnection._class;
+                testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData.get(0), APPLICATION_XML);
+
+                return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
             }
-
-            XmlModelConnection testConnection = new XmlModelConnection();
-            testConnection.element = xmlModelConnection.element;
-            testConnection._class = xmlModelConnection._class;
-            testConnection.url = buildModelConnectionURL((ExternalFormatData) embeddedData, APPLICATION_XML);
-
-            return Optional.of(Tuples.pair(testConnection, Collections.emptyList()));
+            else
+            {
+                throw new RuntimeException(XmlModelConnection.class.getSimpleName() + " cannot support multiple embedded data sources.");
+            }
         }
         return Optional.empty();
     }

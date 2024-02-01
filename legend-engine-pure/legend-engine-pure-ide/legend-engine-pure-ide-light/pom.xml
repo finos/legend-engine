@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-pure-ide</artifactId>
-        <version>4.35.4-SNAPSHOT</version>
+        <version>4.37.10-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -120,6 +120,13 @@
             <scope>runtime</scope>
         </dependency>
 
+
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-elasticsearch-executionPlan-test</artifactId>
+            <scope>runtime</scope>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.smoketurner</groupId>

@@ -152,13 +152,6 @@ public class HelperServiceBuilder
 
         if (testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty())
         {
-            List<String> connectionIds = ListIterate.collect(testData.connectionsTestData, d -> d.id);
-            List<String> duplicateConnectionIds = connectionIds.stream().filter(e -> Collections.frequency(connectionIds, e) > 1).distinct().collect(Collectors.toList());
-
-            if (!duplicateConnectionIds.isEmpty())
-            {
-                throw new EngineException("Multiple connection test data found with ids : '" + String.join(",", duplicateConnectionIds) + "'", testData.sourceInformation, EngineErrorType.COMPILATION);
-            }
             pureTestData._connectionsTestData(ListIterate.collect(testData.connectionsTestData, data -> HelperServiceBuilder.processServiceConnectionData(data, context, processingContext)));
         }
 

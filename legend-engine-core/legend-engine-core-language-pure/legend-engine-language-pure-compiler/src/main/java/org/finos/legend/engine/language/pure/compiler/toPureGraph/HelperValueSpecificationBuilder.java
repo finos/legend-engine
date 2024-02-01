@@ -213,12 +213,12 @@ public class HelperValueSpecificationBuilder
                 automapLambda.parameters = lambdaParams;
                 List<ValueSpecification> newParams = Lists.mutable.of(parameters.get(0), automapLambda);
                 MilestoningDatePropagationHelper.updateMilestoningPropagationContextWhileReprocessingFunctionExpression(processingContext);
-                result = context.buildFunctionExpression("map", null, newParams, openVariables, null, processingContext).getOne();
+                result = context.buildFunctionExpression("map", null, newParams, openVariables, sourceInformation, processingContext).getOne();
                 processingContext.pop();
             }
             else
             {
-                result = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
+                result = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", SourceInformationHelper.toM3SourceInformation(sourceInformation), context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                         ._func(foundProperty)
                         ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.fixedSize.of(foundProperty.getName())))
                         ._genericType(genericType)
@@ -314,7 +314,7 @@ public class HelperValueSpecificationBuilder
         Type returnType = subType == null ? property._genericType()._rawType() : subType;
 
         ListIterable<GraphFetchTree> children = ListIterate.collect(propertyGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, (Class<?>) returnType, openVariables, processingContext));
-        return new Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl("", null, context.pureModel.getClass("meta::pure::graphFetch::PropertyGraphFetchTree"))
+        return new Root_meta_pure_graphFetch_PropertyGraphFetchTree_Impl("", SourceInformationHelper.toM3SourceInformation(propertyGraphFetchTree.sourceInformation), context.pureModel.getClass("meta::pure::graphFetch::PropertyGraphFetchTree"))
                 ._property(property)
                 ._parameters(pureParameters)
                 ._alias(propertyGraphFetchTree.alias)
@@ -352,7 +352,7 @@ public class HelperValueSpecificationBuilder
         GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))
                 ._rawType(classifier)
                 ._typeArguments(Lists.fixedSize.of(context.pureModel.getGenericType(_class)));
-        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("", null, classifier)
+        return new Root_meta_pure_graphFetch_RootGraphFetchTree_Impl<>("", SourceInformationHelper.toM3SourceInformation(rootGraphFetchTree.sourceInformation), classifier)
                 ._class(_class)
                 ._classifierGenericType(genericType)
                 ._subTrees(children)
@@ -368,7 +368,7 @@ public class HelperValueSpecificationBuilder
             throw new EngineException("The type " + subTypeClass.getName() + " is not a subtype of " + parentClass.getName(), subTypeGraphFetchTree.sourceInformation, EngineErrorType.COMPILATION);
         }
         ListIterable<GraphFetchTree> children = ListIterate.collect(subTypeGraphFetchTree.subTrees, subTree -> buildGraphFetchTree(subTree, context, subTypeClass, openVariables, processingContext));
-        return new Root_meta_pure_graphFetch_SubTypeGraphFetchTree_Impl("", null, context.pureModel.getClass("meta::pure::graphFetch::SubTypeGraphFetchTree"))
+        return new Root_meta_pure_graphFetch_SubTypeGraphFetchTree_Impl("", SourceInformationHelper.toM3SourceInformation(subTypeGraphFetchTree.sourceInformation), context.pureModel.getClass("meta::pure::graphFetch::SubTypeGraphFetchTree"))
                 ._subTypeClass(subTypeClass)
                 ._subTrees(children);
     }

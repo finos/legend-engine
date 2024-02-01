@@ -40,7 +40,7 @@ public class ShowTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "SHOW TABLES FROM CITIBIKE.public LIKE 'trips'";
+        String expected = "SHOW TABLES FROM `CITIBIKE`.`public` LIKE 'trips'";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
@@ -54,7 +54,7 @@ public class ShowTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "SHOW TABLES FROM CITIBIKE.PUBLIC LIKE 'TRIPS'";
+        String expected = "SHOW TABLES FROM `CITIBIKE`.`PUBLIC` LIKE 'TRIPS'";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
@@ -82,7 +82,7 @@ public class ShowTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "SHOW TABLES FROM public LIKE 'trips'";
+        String expected = "SHOW TABLES FROM `public` LIKE 'trips'";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
@@ -110,7 +110,7 @@ public class ShowTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "SHOW COLUMNS FROM trips IN CITIBIKE.public";
+        String expected = "SHOW COLUMNS FROM `trips` IN `CITIBIKE`.`public`";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
@@ -124,7 +124,7 @@ public class ShowTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "SHOW COLUMNS FROM trips";
+        String expected = "SHOW COLUMNS FROM `trips`";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }
@@ -138,7 +138,7 @@ public class ShowTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
-        String expected = "SHOW COLUMNS FROM trips IN public";
+        String expected = "SHOW COLUMNS FROM `trips` IN `public`";
         assertEquals(1, list.size());
         assertEquals(expected, list.get(0));
     }

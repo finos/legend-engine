@@ -1,0 +1,29 @@
+import meta::external::store::rel::trace::*;
+
+/**
+  * A traced computation.
+  */
+Class meta::external::store::rel::trace::Trace {
+  <<equality.Key>> stages: String[*];
+}
+
+function meta::external::store::rel::trace::emptyTrace(): Trace[1] {
+  ^Trace(stages=[])
+}
+
+/**
+  * Append a named staged to the traced computation. 
+  */
+function meta::external::store::rel::utils::stage(trace: Trace[1], stageName: String[1]): Trace[1] {
+  ^$trace(stages=$trace.stages->add($stageName))
+}
+
+function meta::external::store::rel::utils::traceLog(trace: Trace[0..1]): String[*] {
+  if($trace->isEmpty(),
+    | ['(no trace)'],
+    | if($trace.stages->isEmpty(),
+        | ['(empty trace)'],
+        {| $trace.stages->reverse()->toNumbered()->map(p: Pair<Integer,String>[1] | format('stage %s: %s', [$p.first, $p.second])) }
+      )
+  )
+}

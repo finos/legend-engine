@@ -3152,6 +3152,206 @@ public class TestServiceTestSuite
     }
 
     @Test
+    public void testFailingRelationalLegacyServiceSuite()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-simple-fail.pure", "service::SimpleRelationalPassFailing");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassFailing");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted failedResult = (TestExecuted) testResult;
+        Assert.assertEquals(failedResult.atomicTestId, "test1");
+        Assert.assertEquals(failedResult.testSuiteId, "testSuite1");
+        List<AssertionStatus> statuses = failedResult.assertStatuses;
+        Assert.assertEquals(statuses.size(), 2);
+        // pass assertion
+        AssertionStatus status1 = statuses.stream().filter(t -> t.id.equals("shouldPass")).findFirst().get();
+        Assert.assertEquals(status1.id, "shouldPass");
+        Assert.assertTrue(status1 instanceof AssertPass);
+        // fail assertion
+        AssertionStatus failStatus = statuses.stream().filter(t -> t.id.equals("shouldFail")).findFirst().get();
+        Assert.assertTrue(failStatus instanceof EqualToJsonAssertFail);
+        EqualToJsonAssertFail jsonAssertFail = (EqualToJsonAssertFail) failStatus;
+        Assert.assertEquals("Actual result does not match Expected result", jsonAssertFail.message);
+        String expected_Expected =
+                "[ {\n" +
+                        "  \"Employees/First Name\" : \"JohnDIFF\",\n" +
+                        "  \"Employees/Last Name\" : \"Doe\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Nicole\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Time\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Apple\"\n" +
+                        "} ]";
+        String expected_Actual = "[ {\n" +
+                "  \"Employees/First Name\" : \"John\",\n" +
+                "  \"Employees/Last Name\" : \"Doe\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Nicole\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Time\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Apple\"\n" +
+                "} ]";
+
+        MatcherAssert.assertThat(expected_Expected, JsonMatchers.jsonEquals(jsonAssertFail.expected));
+        MatcherAssert.assertThat(expected_Actual, JsonMatchers.jsonEquals(jsonAssertFail.actual));
+    }
+
+    @Test
+    public void testFailingRelationalLegacyInlineServiceSuite()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-simple-fail.pure", "service::SimpleRelationalPassFailing");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassFailing");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.FAIL, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted failedResult = (TestExecuted) testResult;
+        Assert.assertEquals(failedResult.atomicTestId, "test1");
+        Assert.assertEquals(failedResult.testSuiteId, "testSuite1");
+        List<AssertionStatus> statuses = failedResult.assertStatuses;
+        Assert.assertEquals(statuses.size(), 2);
+        // pass assertion
+        AssertionStatus status1 = statuses.stream().filter(t -> t.id.equals("shouldPass")).findFirst().get();
+        Assert.assertEquals(status1.id, "shouldPass");
+        Assert.assertTrue(status1 instanceof AssertPass);
+        // fail assertion
+        AssertionStatus failStatus = statuses.stream().filter(t -> t.id.equals("shouldFail")).findFirst().get();
+        Assert.assertTrue(failStatus instanceof EqualToJsonAssertFail);
+        EqualToJsonAssertFail jsonAssertFail = (EqualToJsonAssertFail) failStatus;
+        Assert.assertEquals("Actual result does not match Expected result", jsonAssertFail.message);
+        String expected_Expected =
+                "[ {\n" +
+                        "  \"Employees/First Name\" : \"JohnDIFF\",\n" +
+                        "  \"Employees/Last Name\" : \"Doe\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Nicole\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Finos\"\n" +
+                        "}, {\n" +
+                        "  \"Employees/First Name\" : \"Time\",\n" +
+                        "  \"Employees/Last Name\" : \"Smith\",\n" +
+                        "  \"Legal Name\" : \"Apple\"\n" +
+                        "} ]";
+        String expected_Actual = "[ {\n" +
+                "  \"Employees/First Name\" : \"John\",\n" +
+                "  \"Employees/Last Name\" : \"Doe\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Nicole\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Finos\"\n" +
+                "}, {\n" +
+                "  \"Employees/First Name\" : \"Time\",\n" +
+                "  \"Employees/Last Name\" : \"Smith\",\n" +
+                "  \"Legal Name\" : \"Apple\"\n" +
+                "} ]";
+
+        MatcherAssert.assertThat(expected_Expected, JsonMatchers.jsonEquals(jsonAssertFail.expected));
+        MatcherAssert.assertThat(expected_Actual, JsonMatchers.jsonEquals(jsonAssertFail.actual));
+    }
+
+    @Test
+    public void testPassingRelationalLegacyWithParams()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-parameters.pure", "service::RelationalServiceWithParams");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithParams");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite1");
+    }
+
+    @Test
+    public void testRelationalLegacyServiceWithCommaWithQuotesInCSV()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSVWithCommaWithQuotes");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSVWithCommaWithQuotes");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test_1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite_1");
+    }
+
+    @Test
+    public void testRelationalLegacyServiceWithCommaWithoutQuotesInCSV()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-csv-test-data.pure","service::RelationalServiceWithCSVWithComma");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithCSVWithComma");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test_1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite_1");
+    }
+
+    @Test
+    public void testPassingRelationalLegacyWithEnumParams()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-enum-parameters.pure", "service::RelationalServiceWithEnumParams");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::RelationalServiceWithEnumParams");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+    }
+
+    @Test
+    public void testPassingRelationalLegacyWithSpecialEmbeddedData()
+    {
+        // setup
+        List<TestResult> relationalTestResult = executeServiceTest("testable/relational-legacy-runtime-dsl/", "legend-testable-relational-model.pure", "legend-testable-relational-service-embeddedData.pure", "service::SimpleRelationalPassWithSpecialEmbeddedData");
+        // Assertions
+        Assert.assertEquals(relationalTestResult.size(), 1);
+        TestResult testResult = relationalTestResult.get(0);
+        Assert.assertEquals(testResult.testable, "service::SimpleRelationalPassWithSpecialEmbeddedData");
+        Assert.assertTrue(testResult instanceof TestExecuted);
+        if (((TestExecuted) testResult).testExecutionStatus == TestExecutionStatus.FAIL)
+        {
+            AssertionStatus status = ((TestExecuted) testResult).assertStatuses.get(0);
+            if (status instanceof EqualToJsonAssertFail)
+            {
+                EqualToJsonAssertFail failAssert = (EqualToJsonAssertFail) status;
+                Assert.assertEquals(failAssert.expected, failAssert.actual);
+            }
+        }
+        Assert.assertEquals(TestExecutionStatus.PASS, ((TestExecuted) testResult).testExecutionStatus);
+        TestExecuted passed = (TestExecuted) testResult;
+        Assert.assertEquals(passed.atomicTestId, "test1");
+        Assert.assertEquals(passed.testSuiteId, "testSuite1");
+    }
+
+    @Test
     public void testTestExecutionForLimitedTestIds()
     {
         String grammar = "###ServiceStore\n" +

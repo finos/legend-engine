@@ -28,6 +28,12 @@ public class TestMasteryGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
     }
 
     @Test
+    public void masteryRoundTripWithOneRule()
+    {
+        testWithSectionInfoPreserved(TestMasteryCompilationFromGrammar.MASTERY_MODEL_WITH_ONE_RULE);
+    }
+
+    @Test
     public void masteryRoundTripMinimum()
     {
         testWithSectionInfoPreserved(TestMasteryCompilationFromGrammar.MINIMUM_CORRECT_MASTERY_MODEL);

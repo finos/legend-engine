@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
@@ -32,18 +34,26 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FilteredDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
+import org.finos.legend.engine.persistence.components.logicalplan.values.All;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,14 +117,18 @@ public abstract class Planner
             return false;
         }
 
-        Optional<String> bulkLoadTaskIdValue();
+        Optional<String> bulkLoadEventIdValue();
     }
 
     private final Datasets datasets;
     private final IngestMode ingestMode;
+    protected final MetadataUtils metadataUtils;
     private final PlannerOptions plannerOptions;
     protected final Set<Capability> capabilities;
     protected final List<String> primaryKeys;
+    protected final StringValue mainTableName;
+    protected final BatchStartTimestamp batchStartTimestamp;
+    protected final BatchEndTimestamp batchEndTimestamp;
     private final Optional<Dataset> tempStagingDataset;
     private final Optional<Dataset> tempStagingDatasetWithoutPks;
     private final Dataset effectiveStagingDataset;
@@ -122,8 +136,11 @@ public abstract class Planner
 
     Planner(Datasets datasets, IngestMode ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        this.datasets = datasets;
+        this.datasets = datasets.metadataDataset().isPresent()
+            ? datasets
+            : datasets.withMetadataDataset(MetadataDataset.builder().build());
         this.ingestMode = ingestMode;
+        this.metadataUtils = new MetadataUtils(metadataDataset().orElseThrow(IllegalStateException::new));
         this.plannerOptions = plannerOptions == null ? PlannerOptions.builder().build() : plannerOptions;
         this.isTempTableNeededForStaging = LogicalPlanUtils.isTempTableNeededForStaging(ingestMode);
         this.tempStagingDataset = getTempStagingDataset();
@@ -131,12 +148,17 @@ public abstract class Planner
         this.effectiveStagingDataset = isTempTableNeededForStaging ? tempStagingDataset() : originalStagingDataset();
         this.capabilities = capabilities;
         this.primaryKeys = findCommonPrimaryKeysBetweenMainAndStaging();
+        this.mainTableName = StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
+        this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
+        this.batchEndTimestamp = BatchEndTimestamp.INSTANCE;
 
         // Validation
         // 1. MaxVersion & AllVersion strategies must have primary keys
         ingestMode.versioningStrategy().accept(new ValidatePrimaryKeysForVersioningStrategy(primaryKeys, this::validatePrimaryKeysNotEmpty));
         // 2. Validate if the versioningField is comparable if a versioningStrategy is present
         validateVersioningField(ingestMode().versioningStrategy(), stagingDataset());
+        // 3. cleanupStagingData must be turned off when using DerivedDataset or FilteredDataset
+        validateCleanUpStagingData(plannerOptions, originalStagingDataset());
     }
 
     private Optional<Dataset> getTempStagingDataset()
@@ -235,7 +257,8 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        return null;
+        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(originalStagingDataset());
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
     }
 
     public LogicalPlan buildLogicalPlanForInitializeLock(Resources resources)
@@ -266,6 +289,7 @@ public abstract class Planner
         {
             operations.add(Create.of(true, originalStagingDataset()));
         }
+        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
         if (options().enableConcurrentSafety())
         {
             operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
@@ -495,6 +519,14 @@ public abstract class Planner
             {
                 throw new IllegalStateException(String.format("Versioning field's data type [%s] is not supported", filterField.type().dataType()));
             }
+        }
+    }
+
+    protected void validateCleanUpStagingData(PlannerOptions plannerOptions, Dataset dataset)
+    {
+        if (plannerOptions.cleanupStagingData() && (dataset instanceof DerivedDataset || dataset instanceof FilteredDataset))
+        {
+            throw new IllegalStateException("cleanupStagingData cannot be turned on when using DerivedDataset or FilteredDataset");
         }
     }
 

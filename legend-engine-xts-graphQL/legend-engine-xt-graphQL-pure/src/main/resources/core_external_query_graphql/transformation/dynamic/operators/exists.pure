@@ -1,0 +1,71 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::exists::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::exists::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::pure::functions::lang::*;
+import meta::pure::functions::multiplicity::*;
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::ExistsOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
+{
+  value: BooleanExpression[1];
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::exists::objectFieldToExistsOperator(o: ObjectField[1], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
+{
+  if($debug.debug, | println($debug.space + 'ExistsOperator'), |[]);
+  let value = $o.value->traverseValue($prefix + '__exists', $m, ^$debug(space=$debug.space + ' '));
+  
+  assert($value->size() == 1, '_exists should contain only one value');
+  assert($value->toOne()->instanceOf(BooleanExpression), '_exists value should be a BooleanExpression');
+  
+  ^ExistsOperator(value=$value->toOne()->cast(@BooleanExpression));
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::exists::processExistsOperator(ex: ExistsOperator[1], fieldNames: String[*], cl: Class<Any>[1], vars: VariableExpression[*], count: Integer[1]): IntermediateClass[1]
+{
+  let sfe = createProperty($fieldNames, $cl, constructVarName($count));
+  assert($sfe.genericType.rawType->toOne()->instanceOf(Class), 'Should be a class');
+  let ic2 = $ex.value->nodesToValueSpecification([], $sfe.genericType.rawType->toOne()->cast(@Class<Any>), $vars, $count + 1);
+  ^IntermediateClass(
+    vars = $ic2.vars,
+    valueSpecifications=createExists(
+      $sfe,
+      $ic2.valueSpecifications->toOne()->evaluateAndDeactivate(),
+      constructVarName($count + 1)
+    )
+  );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::exists::createExists(left: ValueSpecification[1], right: ValueSpecification[1], varName: String[1]): SimpleFunctionExpression[1]
+{
+  let filterLambda = newLambdaFunction(
+    ^FunctionType(
+      returnMultiplicity = PureOne, returnType = ^GenericType(rawType = Boolean), parameters = [^VariableExpression(multiplicity=PureOne,genericType=$left.genericType,name=$varName)])
+  );
+  let iv = ^InstanceValue(
+    multiplicity=PureOne,
+    genericType=^GenericType(rawType = LambdaFunction, typeArguments = [^GenericType(rawType = ^FunctionType(returnMultiplicity=PureOne,returnType=^GenericType(rawType=Boolean)))]),
+    values= ^$filterLambda(expressionSequence = $right->evaluateAndDeactivate()->toOneMany())
+  );
+  sfe(meta::pure::functions::collection::exists_T_MANY__Function_1__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $iv]);
+}

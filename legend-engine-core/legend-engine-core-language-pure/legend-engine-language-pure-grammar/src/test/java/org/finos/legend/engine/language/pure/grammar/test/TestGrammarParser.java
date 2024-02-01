@@ -28,6 +28,8 @@ import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -101,7 +103,8 @@ public class TestGrammarParser
             {
                 LogInfo errorResponse = new LogInfo(null, LoggingEventType.PARSE_ERROR, e);
                 Assert.assertNotNull("No source information provided in error", errorResponse.sourceInformation);
-                Assert.assertEquals(expectedErrorMsg, EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation, EngineErrorType.PARSER));
+                MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation,
+                        EngineErrorType.PARSER), CoreMatchers.startsWith(expectedErrorMsg));
             }
         }
     }
@@ -159,6 +162,21 @@ public class TestGrammarParser
                 "  (shared) prop1: String[1];\n" +
                 "  (entrance) prop2: String[1];\n" +
                 "}\n", "PARSER error at [4:4-11]: Unexpected token 'entrance'");
+    }
+
+
+    @Test
+    public void testFunction()
+    {
+        test("function my::SimpleFunction(): String[1]\n" +
+                "{\n" +
+                "  'Hello World!'\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | SimpleFunctionMisMatch() => 'Hello World!';\n" +
+                "}",
+                "PARSER error at [6:12-33]: Function name in test 'SimpleFunctionMisMatch' does not match function name 'SimpleFunction'"
+                );
     }
 
     public static void testFromJson(Class<?> _class, String path, String code)

@@ -15,8 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.common.FileFormat;
-import org.finos.legend.engine.persistence.components.common.LoadOptions;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeAuditing;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditing;
@@ -40,10 +39,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
@@ -102,8 +98,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -117,7 +113,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .batchIdPattern("{NEXT_BATCH_ID}")
             .build();
 
@@ -137,11 +133,11 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,{NEXT_BATCH_ID},PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT {NEXT_BATCH_ID},'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"],\"task_id\":\"xyz123\"}'))";
+            "(SELECT {NEXT_BATCH_ID},'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"xyz123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
@@ -151,7 +147,7 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -163,20 +159,21 @@ public class BulkLoadTest
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .build();
 
+        Map<String, Object> loadOptions = new HashMap<>();
+        loadOptions.put("encoding", "UTF8");
+        loadOptions.put("max_bad_records", 100L);
+        loadOptions.put("null_marker", "NULL");
+        loadOptions.put("quote", "'");
+        loadOptions.put("compression", "GZIP");
+        loadOptions.put("field_delimiter", ",");
+        loadOptions.put("skip_leading_rows", 1L);
+
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .loadOptions(LoadOptions.builder()
-                        .encoding("UTF8")
-                        .maxBadRecords(100L)
-                        .nullMarker("NULL")
-                        .quote("'")
-                        .compression("GZIP")
-                        .fieldDelimiter(",")
-                        .skipLeadingRows(1L)
-                        .build())
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .putAllLoadOptions(loadOptions)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -205,16 +202,16 @@ public class BulkLoadTest
         String expectedCopySql = "LOAD DATA OVERWRITE `my_db`.`my_name_legend_persistence_temp` " +
             "(`col_int` INT64,`col_string` STRING,`col_decimal` NUMERIC(5,2),`col_datetime` DATETIME,`col_variant` JSON) " +
             "FROM FILES " +
-            "(uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], max_bad_records=100, quote=''', skip_leading_rows=1, format='CSV', encoding='UTF8', compression='GZIP', field_delimiter=',', null_marker='NULL')";
+            "(uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], compression='GZIP', encoding='UTF8', field_delimiter=',', format='CSV', max_bad_records=100, null_marker='NULL', quote=''', skip_leading_rows=1)";
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         String expectedMetadataIngestSql = "INSERT INTO bulk_load_batch_metadata (`batch_id`, `table_name`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`) " +
-            "(SELECT (SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
-            "PARSE_JSON('{\"files\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
+            "(SELECT (SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),'my_name',PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
+            "PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedCopySql, ingestSql.get(0));
@@ -224,7 +221,7 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -239,8 +236,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -254,7 +251,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -297,8 +294,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -312,7 +309,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -330,7 +327,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `my_db`.`my_name` " +
             "(`col_int`, `col_string`, `col_decimal`, `col_datetime`, `col_variant`, `digest`, `batch_id`, `append_time`) " +
-            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
+            "(SELECT legend_persistence_temp.`col_int`,legend_persistence_temp.`col_string`,legend_persistence_temp.`col_decimal`,legend_persistence_temp.`col_datetime`,legend_persistence_temp.`col_variant`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(bulk_load_batch_metadata.`batch_id`),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.`table_name`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `my_db`.`my_name_legend_persistence_temp` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -340,7 +337,7 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as `rowsDeleted`", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as `rowsTerminated`", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as `rowsUpdated`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as `rowsInserted` FROM `my_db`.`my_name` as my_alias WHERE my_alias.`append_time` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -355,8 +352,8 @@ public class BulkLoadTest
         Dataset stagedFilesDataset = StagedFilesDataset.builder()
             .stagedFilesDatasetProperties(
                 BigQueryStagedFilesDatasetProperties.builder()
-                    .fileFormat(FileFormat.CSV)
-                    .addAllFiles(filesList).build())
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
             .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
             .build();
 
@@ -370,7 +367,7 @@ public class BulkLoadTest
             .relationalSink(BigQuerySink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadTaskIdValue(TASK_ID_VALUE)
+            .bulkLoadEventIdValue(TASK_ID_VALUE)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 
@@ -389,7 +386,7 @@ public class BulkLoadTest
 
         String expectedInsertSql = "INSERT INTO `MY_DB`.`MY_NAME` " +
             "(`COL_INT`, `COL_STRING`, `COL_DECIMAL`, `COL_DATETIME`, `COL_VARIANT`, `DIGEST`, `BATCH_ID`, `APPEND_TIME`) " +
-            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.`BATCH_ID`),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000') " +
+            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`,LAKEHOUSE_MD5(TO_JSON(legend_persistence_temp)),(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.`BATCH_ID`),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `MY_DB`.`MY_NAME_LEGEND_PERSISTENCE_TEMP` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
@@ -399,7 +396,7 @@ public class BulkLoadTest
         Assertions.assertEquals("SELECT 0 as `ROWSDELETED`", statsSql.get(ROWS_DELETED));
         Assertions.assertEquals("SELECT 0 as `ROWSTERMINATED`", statsSql.get(ROWS_TERMINATED));
         Assertions.assertEquals("SELECT 0 as `ROWSUPDATED`", statsSql.get(ROWS_UPDATED));
-        Assertions.assertEquals("SELECT COUNT(*) as `ROWSINSERTED` FROM `MY_DB`.`MY_NAME` as my_alias WHERE my_alias.`APPEND_TIME` = PARSE_DATETIME('%Y-%m-%d %H:%M:%S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as `ROWSINSERTED` FROM `MY_DB`.`MY_NAME` as my_alias WHERE my_alias.`APPEND_TIME` = PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')", statsSql.get(ROWS_INSERTED));
     }
 
     @Test
@@ -462,7 +459,7 @@ public class BulkLoadTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(BigQuerySink.get())
-                .bulkLoadTaskIdValue(TASK_ID_VALUE)
+                .bulkLoadEventIdValue(TASK_ID_VALUE)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();

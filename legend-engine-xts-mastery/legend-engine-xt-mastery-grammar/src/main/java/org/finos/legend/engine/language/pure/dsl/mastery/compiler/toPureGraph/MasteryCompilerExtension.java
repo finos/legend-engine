@@ -76,7 +76,7 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
                 (masterRecordDefinition, context) ->
                 {
                     Root_meta_pure_mastery_metamodel_MasterRecordDefinition pureMasteryMetamodelMasterRecordDefinition = (Root_meta_pure_mastery_metamodel_MasterRecordDefinition) context.pureModel.getOrCreatePackage(masterRecordDefinition._package)._children().detect(c -> masterRecordDefinition.name.equals(c._name()));
-                    pureMasteryMetamodelMasterRecordDefinition._identityResolution(HelperMasterRecordDefinitionBuilder.buildIdentityResolution(masterRecordDefinition.identityResolution, context));
+                    pureMasteryMetamodelMasterRecordDefinition._identityResolution(HelperMasterRecordDefinitionBuilder.buildIdentityResolution(masterRecordDefinition.identityResolution, masterRecordDefinition.modelClass, context));
                     pureMasteryMetamodelMasterRecordDefinition._sources(HelperMasterRecordDefinitionBuilder.buildRecordSources(masterRecordDefinition.sources, context));
                     pureMasteryMetamodelMasterRecordDefinition._postCurationEnrichmentService(BuilderUtil.buildService(masterRecordDefinition.postCurationEnrichmentService, context, masterRecordDefinition.sourceInformation));
                     pureMasteryMetamodelMasterRecordDefinition._exceptionWorkflowTransformService(BuilderUtil.buildService(masterRecordDefinition.exceptionWorkflowTransformService, context, masterRecordDefinition.sourceInformation));

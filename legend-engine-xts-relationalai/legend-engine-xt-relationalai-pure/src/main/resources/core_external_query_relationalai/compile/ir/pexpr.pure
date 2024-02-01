@@ -1,0 +1,562 @@
+/**
+  * Intermediate representation (IR) for PURE queries
+  *
+  * Here we define classes that model the part of PURE expressions
+  * which are supported for compilation into Rel code. Most of this file
+  * consists of functions that take instances of `ValueSpecification` and 
+  * translate these instances into IR objects. IR objects exist so that
+  * subsequent compilation can rely on well-defined type signatures without
+  * having to manually parse `ValueSpecification`s first.
+  */
+
+import meta::external::store::rel::utils::lang::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::mapping::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::utils::*;
+
+/**
+  * Abstract type representing PURE types.
+  */
+Class <<typemodifiers.abstract>> meta::external::store::rel::compile::ir::PExprType { }
+
+/**
+  * Type of a class as specificed by the given set.
+  */
+Class meta::external::store::rel::compile::ir::PExprTypeClass extends PExprType {
+  set: RelSetImplementation[1];
+}
+
+/**
+  * Type of a primitive as specificed by the given set.
+  */
+Class meta::external::store::rel::compile::ir::PExprTypePrimitive extends PExprType {
+  kind: SupportedPrimitiveType[1];
+}
+
+Enum meta::external::store::rel::compile::ir::SupportedPrimitiveType {
+  TypeBoolean,
+  TypeDateTime,
+  TypeFloat,
+  TypeInteger,
+  TypeStrictDate,
+  TypeString
+}
+
+function meta::external::store::rel::compile::ir::name(t: SupportedPrimitiveType[1]): String[1] {
+  switch([
+    case($t == SupportedPrimitiveType.TypeBoolean,    | 'Boolean'),
+    case($t == SupportedPrimitiveType.TypeDateTime,   | 'DateTime'),
+    case($t == SupportedPrimitiveType.TypeFloat,      | 'Float'),
+    case($t == SupportedPrimitiveType.TypeInteger,    | 'Integer'),
+    case($t == SupportedPrimitiveType.TypeStrictDate, | 'DateTime'), // TODO: Check this is the correct Rel type.
+    case($t == SupportedPrimitiveType.TypeString,     | 'String')
+  ], {|
+    fail(format('Unsupported primitive type `%s`', $t));
+    'unreachable';
+  })
+}
+
+function meta::external::store::rel::compile::ir::exprType(set: RelSetImplementation[1]): PExprTypeClass[1] {
+  ^PExprTypeClass(set=$set);
+}
+
+function meta::external::store::rel::compile::ir::exprTypeBoolean(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeBoolean);
+}
+function meta::external::store::rel::compile::ir::exprTypeDateTime(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeDateTime);
+}
+function meta::external::store::rel::compile::ir::exprTypeFloat(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeFloat);
+}
+function meta::external::store::rel::compile::ir::exprTypeInteger(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeInteger);
+}
+function meta::external::store::rel::compile::ir::exprTypeStrictDate(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeStrictDate);
+}
+function meta::external::store::rel::compile::ir::exprTypeString(): PExprTypePrimitive[1] {
+  ^PExprTypePrimitive(kind=SupportedPrimitiveType.TypeString);
+}
+
+function meta::external::store::rel::compile::ir::exprType(rawType: Type[1]): PExprTypePrimitive[1] {
+  switch([
+    case($rawType == Boolean,    | exprTypeBoolean()),
+    case($rawType == DateTime,   | exprTypeDateTime()),
+    case($rawType == Float,      | exprTypeFloat()),
+    case($rawType == Integer,    | exprTypeInteger()),
+    case($rawType == StrictDate, | exprTypeStrictDate())
+  ], {|
+    assert($rawType == String, format('Unsupported primitive type `%s`', $rawType.name));
+    exprTypeString();
+  })
+}
+
+/**
+  * Abstract type representing PURE query expressions. Expressions evaluate to values.
+  */
+Class <<typemodifiers.abstract>> meta::external::store::rel::compile::ir::PExpr { }
+
+Class <<typemodifiers.abstract>> meta::external::store::rel::compile::ir::Constant extends PExpr { }
+
+Class meta::external::store::rel::compile::ir::VariablePlaceholder extends PExpr {
+  identifier: String[1];
+}
+
+Class meta::external::store::rel::compile::ir::ConstString extends meta::external::store::rel::compile::ir::Constant {
+  value: String[1];
+}
+
+Class meta::external::store::rel::compile::ir::ConstInteger extends meta::external::store::rel::compile::ir::Constant {
+  value: Integer[1];
+}
+
+Class meta::external::store::rel::compile::ir::ConstFloat extends meta::external::store::rel::compile::ir::Constant {
+  value: Float[1];
+}
+
+Class meta::external::store::rel::compile::ir::ConstBoolean extends meta::external::store::rel::compile::ir::Constant {
+  value: Boolean[1];
+}
+
+Class meta::external::store::rel::compile::ir::ConstStrictDate extends meta::external::store::rel::compile::ir::Constant {
+  value: StrictDate[1];
+}
+
+Class meta::external::store::rel::compile::ir::ConstDateTime extends meta::external::store::rel::compile::ir::Constant {
+  value: DateTime[1];
+}
+
+/** Marker for the empty collection. */
+Class meta::external::store::rel::compile::ir::ConstEmpty extends meta::external::store::rel::compile::ir::Constant {
+  /* No properties. */
+}
+
+/**
+  * Expression asking to fetch all elements of a certain type.
+  */
+Class meta::external::store::rel::compile::ir::PExprAll extends PExpr {
+  set: RelSetImplementation[1];
+}
+
+/**
+  * Expression asking to filter another query node by a given predicate.
+  */
+Class meta::external::store::rel::compile::ir::PExprFilter extends PExpr {
+  parent: PExpr[1];
+  predicate: PExprScope[1];
+}
+
+/**
+  * Type denoting an application of a function to multiple expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprFunction<|n> extends PExpr {
+  arguments: PExpr[n];
+  fn: FunctionDefinition<{meta::external::store::rel::metamodel::Expr[n]->meta::external::store::rel::metamodel::Expr[1]}>[1];
+}
+
+/**
+  * Type denoting `cast` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprCast extends PExpr {
+  parent: PExpr[1];
+  set: RelSetImplementation[1];
+}
+
+/**
+  * Type denoting `exists` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprExists extends PExpr {
+  parent: PExpr[1];
+  predicate: PExprScope[1];
+}
+
+/**
+  * Type denoting `forAll` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprForAll extends PExpr {
+  parent: PExpr[1];
+  predicate: PExprScope[1];
+}
+
+/**
+  * Type for expressions which denote access to a variable
+  * representing a Rel set.
+  */
+Class meta::external::store::rel::compile::ir::PExprSetAccess extends PExpr {
+  set: RelSetImplementation[1];
+  variable: String[1];
+}
+
+/**
+  * Type representing access to a property.
+  */
+Class meta::external::store::rel::compile::ir::PExprPropertyAccess extends PExpr {
+  parent: PExpr[1];
+  property: Property<Nil, Any|*>[1];
+  set: RelSetImplementation[0..1];
+}
+
+/**
+  * Type representing an access to a column of a row.
+  * Such calls can only occur if the `parent` expression represents
+  * a `TDSRow`.
+  */
+Class meta::external::store::rel::compile::ir::PExprColumnAccess extends PExpr {
+  parent: PExpr[1];
+  column: String[1];
+}
+
+/**
+  * Helper type for representing variable scopes.
+  */ 
+Class <<typemodifiers.abstract>> meta::external::store::rel::compile::ir::PExprScope extends PExpr {
+  inner: PExpr[1];
+  parent: PExpr[0..1];
+}
+
+Class meta::external::store::rel::compile::ir::PExprScopeTyped extends PExprScope {
+  exprType: PExprType[1];
+  variable: String[1];
+}
+
+Class meta::external::store::rel::compile::ir::PExprScopeUntyped extends PExprScope {
+  variables: String[*];
+}
+
+/**
+  * Type denoting `at` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprAt extends PExpr {
+  parent: PExpr[1];
+  index: Integer[1];
+}
+
+/**
+  * Type denoting `map` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprMap extends PExpr {
+  parent: PExpr[1];
+  body: PExprScope[1];
+}
+
+/**
+  * Type denoting projections.
+  */
+Class meta::external::store::rel::compile::ir::PExprProject extends PExpr {
+  parent: PExpr[1];
+  projections: Pair<String,PExprScope>[*];
+}
+
+/**
+  * Denotes an aggregation function.
+  */
+Class meta::external::store::rel::compile::ir::PExprAggregate {
+  map: PExprScope[1];
+  aggregateFunction: PExprScope[1];
+  name: String[0..1];
+}
+
+Class <<typemodifiers.abstract>> meta::external::store::rel::compile::ir::PExprGroupBy extends PExpr {
+  parent: PExpr[1];
+  aggregates: PExprAggregate[*];
+}
+
+/**
+  * Expression type denting `group by` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprGroupByScopes extends PExprGroupBy {
+  group: PExprScope[*];
+  names: String[*];
+
+  group() {
+    $this.group;
+  }: Any[*];
+
+  names() {
+    $this.names;
+  }: String[*];
+}
+
+/**
+  * Expression type denting `group by` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprGroupByColumns extends PExprGroupBy {
+  group: String[*];
+
+  group() {
+    $this.group;
+  }: Any[*];
+
+  names() {
+    $this.group->concatenate($this.aggregates.name);
+  }: String[*];
+}
+
+/**
+  * If-then-else expression.
+  */
+Class meta::external::store::rel::compile::ir::PExprIfThenElse extends PExpr {
+  condition: PExpr[1];
+  then: PExprScope[1];
+  else: PExprScope[1];
+}
+
+/**
+  * Match expression.
+  */
+Class meta::external::store::rel::compile::ir::PExprMatch extends PExpr {
+  parent: PExpr[1];
+  cases: PExprScopeTyped[*];
+}
+
+/**
+  * Helper class for implementing a custom compilation step without the need
+  * to represent IR objects explicitly.
+  */
+Class meta::external::store::rel::compile::ir::PExprCompilationStep extends PExpr {
+  logic: FunctionDefinition<{
+    meta::external::store::rel::compile::substitution::VariableSubstitution[1],
+    meta::external::store::rel::compile::substitution::ColumnAccessRewrite[1],
+    meta::external::store::rel::compile::CompilationState[1]
+      ->Result<meta::external::store::rel::compile::CompilationState|0..1>[1]
+  }>[1];
+
+  property: FunctionDefinition<{String[1], Any[*]->Any[*]}>[0..1];
+}
+
+///////////////////////////
+// Constructor functions //
+///////////////////////////
+
+function meta::external::store::rel::compile::ir::const(value: String[1]): ConstString[1] {
+  string($value)
+}
+
+function meta::external::store::rel::compile::ir::const(value: Integer[1]): ConstInteger[1] {
+  integer($value)
+}
+
+function meta::external::store::rel::compile::ir::const(value: Float[1]): ConstFloat[1] {
+  float($value)
+}
+
+function meta::external::store::rel::compile::ir::const(value: Boolean[1]): ConstBoolean[1] {
+  boolean($value)
+}
+
+function meta::external::store::rel::compile::ir::const(value: StrictDate[1]): ConstStrictDate[1] {
+  strictDate($value)
+}
+
+function meta::external::store::rel::compile::ir::const(value: DateTime[1]): ConstDateTime[1] {
+  dateTime($value)
+}
+
+function meta::external::store::rel::compile::ir::string(value: String[1]): ConstString[1] {
+  ^ConstString(value=$value)
+}
+
+function meta::external::store::rel::compile::ir::integer(value: Integer[1]): ConstInteger[1] {
+  ^ConstInteger(value=$value)
+}
+
+function meta::external::store::rel::compile::ir::float(value: Float[1]): ConstFloat[1] {
+  ^ConstFloat(value=$value)
+}
+
+function meta::external::store::rel::compile::ir::boolean(value: Boolean[1]): ConstBoolean[1] {
+  ^ConstBoolean(value=$value)
+}
+
+function meta::external::store::rel::compile::ir::strictDate(value: StrictDate[1]): ConstStrictDate[1] {
+  ^ConstStrictDate(value=$value)
+}
+
+function meta::external::store::rel::compile::ir::dateTime(value: DateTime[1]): ConstDateTime[1] {
+  ^ConstDateTime(value=$value)
+}
+
+function meta::external::store::rel::compile::ir::constEmpty(): ConstEmpty[1] {
+  ^ConstEmpty()
+}
+
+function meta::external::store::rel::compile::ir::variablePlaceholder(identifier: String[1]): VariablePlaceholder[1] {
+  ^VariablePlaceholder(identifier=$identifier)
+}
+
+function meta::external::store::rel::compile::ir::fexpr<|n>(
+  arguments: PExpr[n], 
+  fn: FunctionDefinition<{meta::external::store::rel::metamodel::Expr[n]->meta::external::store::rel::metamodel::Expr[1]}>[1]
+): PExprFunction<|n>[1] {
+  ^PExprFunction<|n>(arguments=$arguments, fn=$fn)
+}
+
+function meta::external::store::rel::compile::ir::castExpr(parent: PExpr[1], set: RelSetImplementation[1]): PExprCast[1] {
+  ^PExprCast(parent=$parent, set=$set);
+}
+
+function meta::external::store::rel::compile::ir::setAccess(set: RelSetImplementation[1], variable: String[1]): PExprSetAccess[1] {
+  ^PExprSetAccess(set=$set, variable=$variable)
+}
+
+function meta::external::store::rel::compile::ir::propertyAccess(
+  parent: PExpr[1], 
+  property: Property<Nil, Any|*>[1],
+  set: RelSetImplementation[0..1]
+): PExprPropertyAccess[1] {
+  ^PExprPropertyAccess(parent=$parent, property=$property, set=$set)
+}
+
+
+function meta::external::store::rel::compile::ir::columnAccess(parent: PExpr[1], column: String[1]): PExprColumnAccess[1] {
+  ^PExprColumnAccess(parent=$parent, column=$column)
+}
+
+function meta::external::store::rel::compile::ir::all(set: RelSetImplementation[1]): PExprAll[1] {
+  ^PExprAll(set=$set)
+}
+
+function meta::external::store::rel::compile::ir::filter(parent: PExpr[1], predicate: PExprScope[1]): PExprFilter[1] {
+  ^PExprFilter(parent=$parent, predicate=$predicate)
+}
+
+function meta::external::store::rel::compile::ir::scopeTyped(inner: PExpr[1], variable: String[1], exprType: PExprType[1]): PExprScopeTyped[1] {
+  scopeTyped($inner, $variable, $exprType, [])
+}
+
+function meta::external::store::rel::compile::ir::scopeTyped(inner: PExpr[1], variable: String[1], exprType: PExprType[1], parent: PExpr[0..1]): PExprScopeTyped[1] {
+  ^PExprScopeTyped(inner=$inner, variable=$variable, exprType=$exprType, parent=$parent)
+}
+
+function meta::external::store::rel::compile::ir::scopeUntyped(inner: PExpr[1], variables: String[*]): PExprScopeUntyped[1] {
+  scopeUntyped($inner, $variables, [])
+}
+
+function meta::external::store::rel::compile::ir::scopeUntyped(inner: PExpr[1], variables: String[*], parent: PExpr[0..1]): PExprScopeUntyped[1] {
+  ^PExprScopeUntyped(inner=$inner, variables=$variables, parent=$parent)
+}
+
+function meta::external::store::rel::compile::ir::withParent(scoped: PExprScope[1], parent: PExpr[0..1]): PExprScope[1] {
+  ^$scoped(parent=$parent)
+}
+
+function meta::external::store::rel::compile::ir::atExpr(parent: PExpr[1], index: Integer[1]): PExprAt[1] {
+  ^PExprAt(parent=$parent, index=$index)
+}
+
+function meta::external::store::rel::compile::ir::mapExpr(parent: PExpr[1], body: PExprScope[1]): PExprMap[1] {
+  ^PExprMap(parent=$parent, body=$body)
+}
+
+function meta::external::store::rel::compile::ir::exists(parent: PExpr[1], predicate: PExprScope[1]): meta::external::store::rel::compile::ir::PExprExists[1] {
+  ^PExprExists(parent=$parent, predicate=$predicate)
+}
+
+function meta::external::store::rel::compile::ir::forAll(parent: PExpr[1], predicate: PExprScope[1]): meta::external::store::rel::compile::ir::PExprForAll[1] {
+  ^PExprForAll(parent=$parent, predicate=$predicate)
+}
+
+function meta::external::store::rel::compile::ir::project(parent: PExpr[1], projections: Pair<String,PExprScope>[*]): PExprProject[1] {
+  ^PExprProject(parent=$parent, projections=$projections)
+}
+
+function meta::external::store::rel::compile::ir::aggregate(map: PExprScope[1], aggregateFunction: PExprScope[1]): PExprAggregate[1] {
+  ^PExprAggregate(map=$map, aggregateFunction=$aggregateFunction)
+}
+
+function meta::external::store::rel::compile::ir::aggregate(map: PExprScope[1], aggregateFunction: PExprScope[1], name: String[1]): PExprAggregate[1] {
+  let agg = aggregate($map, $aggregateFunction);
+  ^$agg(name=$name);
+}
+
+function meta::external::store::rel::compile::ir::groupBy(parent: PExpr[1], group: PExprScope[*], aggregates: PExprAggregate[*], names: String[*]): PExprGroupByScopes[1] {
+  ^PExprGroupByScopes(parent=$parent, group=$group, aggregates=$aggregates, names=$names)
+}
+
+function meta::external::store::rel::compile::ir::groupBy(parent: PExpr[1], group: String[*], aggregates: PExprAggregate[*]): PExprGroupByColumns[1] {
+  ^PExprGroupByColumns(parent=$parent, group=$group, aggregates=$aggregates)
+}
+
+function meta::external::store::rel::compile::ir::compilationStep(
+  logic: FunctionDefinition<{
+    meta::external::store::rel::compile::substitution::VariableSubstitution[1],
+    meta::external::store::rel::compile::substitution::ColumnAccessRewrite[1],
+    meta::external::store::rel::compile::CompilationState[1]
+      ->Result<meta::external::store::rel::compile::CompilationState|0..1>[1]
+  }>[1]
+): PExprCompilationStep[1] {
+  compilationStep($logic, [])
+}
+
+function meta::external::store::rel::compile::ir::compilationStep(
+  logic: FunctionDefinition<{
+    meta::external::store::rel::compile::substitution::VariableSubstitution[1],
+    meta::external::store::rel::compile::substitution::ColumnAccessRewrite[1],
+    meta::external::store::rel::compile::CompilationState[1]
+      ->Result<meta::external::store::rel::compile::CompilationState|0..1>[1]
+  }>[1],
+  property: FunctionDefinition<{String[1], Any[*]->Any[*]}>[0..1]
+): PExprCompilationStep[1] {
+  ^PExprCompilationStep(logic=$logic, property=$property)
+}
+
+function meta::external::store::rel::compile::ir::ifThenElse(condition: PExpr[1], then: PExprScope[1], else: PExprScope[1]): meta::external::store::rel::compile::ir::PExprIfThenElse[1] {
+  ^meta::external::store::rel::compile::ir::PExprIfThenElse(condition=$condition, then=$then, else=$else)
+}
+
+function meta::external::store::rel::compile::ir::matchExpr(parent: PExpr[1], cases: PExprScopeTyped[*]): PExprMatch[1] {
+  ^PExprMatch(parent=$parent, cases=$cases);
+}
+
+///////////////////
+// API functions //
+///////////////////
+
+function meta::external::store::rel::compile::ir::set(expr: PExpr[1]): RelSetImplementation[0..1] {
+  $expr->match([
+    e: PExprAt[1]             | $e.parent->set(),
+    e: PExprSetAccess[1]      | $e.set,
+    e: PExprScope[1]          | $e.parent->map(p | $p->set()),
+    e: PExprAll[1]            | $e.set,
+    e: PExprPropertyAccess[1] | $e.set,
+    e: PExprCast[1]           | $e.set,
+    e: PExprMap[1]            | $e.parent->set(),
+    e: PExprFilter[1]         | $e.parent->set(),
+    e: PExprExists[1]         | $e.parent->set(),
+    e: PExprForAll[1]         | $e.parent->set(),
+    e: PExprProject[1]        | $e.parent->set(),
+    e: PExprGroupBy[1]        | $e.parent->set(),
+    step: PExprCompilationStep[1] | $step.property->map(fun | $fun->eval('set', []))->first()->cast(@RelSetImplementation)
+  ])
+}
+
+function meta::external::store::rel::compile::ir::root(expr: PExpr[1]): PExpr[1] {
+  $expr->match([
+    access: PExprSetAccess[1]        | $access,
+    scoped: PExprScope[1]            | $scoped.parent->map(p | $p->root())->orElse($scoped),
+    variable: VariablePlaceholder[1] | $variable,
+    access: PExprPropertyAccess[1]   | $access.parent->root(),
+    access: PExprColumnAccess[1]     | $access.parent->root()
+  ])
+}
+
+function meta::external::store::rel::compile::ir::variables(scope: PExprScope[1]): String[*] {
+  $scope->match([
+    typed: PExprScopeTyped[1]     | $typed.variable,
+    untyped: PExprScopeUntyped[1] | $untyped.variables
+  ])
+}
+
+function meta::external::store::rel::compile::ir::variable(scope: PExprScope[1]): String[1] {
+  $scope->match([
+    typed: PExprScopeTyped[1] |
+      $typed.variable,
+    untyped: PExprScopeUntyped[1] |
+      if ($untyped.variables->size() != 1,
+        {| fail('Expected exactly one variable.'); 'unreachable';},
+        {| $untyped.variables->toOne() }
+      )
+  ])
+}

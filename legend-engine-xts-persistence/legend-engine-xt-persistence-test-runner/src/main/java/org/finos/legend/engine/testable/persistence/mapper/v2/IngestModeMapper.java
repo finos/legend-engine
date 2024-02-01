@@ -67,6 +67,7 @@ import static org.finos.legend.engine.testable.persistence.mapper.v2.DatasetMapp
 public class IngestModeMapper
 {
     public static final String DIGEST_FIELD_DEFAULT = "DIGEST";
+    public static final String BATCH_ID_FIELD_DEFAULT = "BATCH_ID";
 
     /*
     Mapper from Persistence model to IngestMode object
@@ -173,6 +174,7 @@ public class IngestModeMapper
                 if (datasetType instanceof Snapshot)
                 {
                     ignoreAuditField(fieldsToIgnore, nontemporal);
+                    ignoreBatchIdField(fieldsToIgnore);
                         //todo: fix index logic
                     //    filteredStagingIndices = baseSchema.indexes().stream().filter(index -> !fieldsToIgnore.contains(index.indexName())).collect(Collectors.toList());
                     Dataset stagingDataset = getStagingDataset(baseSchema, stagingDatasetBuilder, fieldsToIgnore, fieldsToAdd);
@@ -185,6 +187,7 @@ public class IngestModeMapper
                     {
                         ((Delta)datasetType).actionIndicator.accept(new MappingVisitors.DeriveStagingSchemaWithActionIndicatorStrategy(baseSchema, fieldsToAdd));
                         ignoreAuditField(fieldsToIgnore, nontemporal);
+                        ignoreBatchIdField(fieldsToIgnore);
                         enrichMainSchemaWithDigest(baseSchema, mainSchemaDefinitionBuilder);
                         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
                         Dataset stagingDataset = getStagingDataset(baseSchema, stagingDatasetBuilder, fieldsToIgnore, fieldsToAdd);
@@ -193,11 +196,8 @@ public class IngestModeMapper
                     else
                     {
                         ignoreAuditField(fieldsToIgnore, nontemporal);
-                        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly appendOnlyHandling = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly) nontemporal.updatesHandling;
-                        if (appendOnlyHandling.appendStrategy instanceof FilterDuplicates)
-                        {
-                            enrichMainSchemaWithDigest(baseSchema, mainSchemaDefinitionBuilder);
-                        }
+                        ignoreBatchIdField(fieldsToIgnore);
+                        enrichMainSchemaWithDigest(baseSchema, mainSchemaDefinitionBuilder);
                         Dataset stagingDataset = getStagingDataset(baseSchema, stagingDatasetBuilder, fieldsToIgnore, fieldsToAdd);
                         Dataset enrichedMainDataset = mainDatasetDefinitionBuilder.schema(mainSchemaDefinitionBuilder.build()).build();
                         return Datasets.of(enrichedMainDataset, stagingDataset);
@@ -288,22 +288,9 @@ public class IngestModeMapper
                 }
                 else
                 {
-                    if (nontemporal.updatesHandling instanceof Overwrite)
-                    {
-                        ignoreAuditField(fieldsToIgnore, nontemporal);
-                        fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
-                        return fieldsToIgnore;
-                    }
-                    else
-                    {
-                        ignoreAuditField(fieldsToIgnore, nontemporal);
-                        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly appendOnlyHandling = (org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.updatesHandling.AppendOnly) nontemporal.updatesHandling;
-                        if (appendOnlyHandling.appendStrategy instanceof FilterDuplicates)
-                        {
-                            fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
-                        }
-                        return fieldsToIgnore;
-                    }
+                    ignoreAuditField(fieldsToIgnore, nontemporal);
+                    fieldsToIgnore.add(DIGEST_FIELD_DEFAULT);
+                    return fieldsToIgnore;
                 }
             }
             case Unitemporal:
@@ -332,6 +319,12 @@ public class IngestModeMapper
         {
             fieldsToIgnore.add(auditField.get());
         }
+    }
+
+    private static void ignoreBatchIdField(Set<String> fieldsToIgnore)
+    {
+        // Shall be changed to using the user-defined batch id column name once it is added to the spec
+        fieldsToIgnore.add(BATCH_ID_FIELD_DEFAULT);
     }
 
     public static boolean isTransactionMilestoningTimeBased(ServiceOutputTarget serviceOutputTarget) throws Exception

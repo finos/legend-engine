@@ -14,11 +14,11 @@
 
 import meta::meta::external::query::sql::metamodel::*;
 
-Class meta::external::query::sql::metamodel::Node
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Node
 {
 }
 
-Class meta::external::query::sql::metamodel::Statement extends meta::external::query::sql::metamodel::Node
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Statement extends meta::external::query::sql::metamodel::Node
 {
 }
 
@@ -30,11 +30,11 @@ Class meta::external::query::sql::metamodel::Query extends meta::external::query
   <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
 }
 
-Class meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Relation extends meta::external::query::sql::metamodel::Node
 {
 }
 
-Class meta::external::query::sql::metamodel::QueryBody extends meta::external::query::sql::metamodel::Relation
+Class <<typemodifiers.abstract>>meta::external::query::sql::metamodel::QueryBody extends meta::external::query::sql::metamodel::Relation
 {
 }
 
@@ -60,7 +60,7 @@ Class meta::external::query::sql::metamodel::QuerySpecification extends meta::ex
   <<equality.Key>> offset: meta::external::query::sql::metamodel::Expression[0..1];
 }
 
-Class meta::external::query::sql::metamodel::SetOperation extends meta::external::query::sql::metamodel::QueryBody
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SetOperation extends meta::external::query::sql::metamodel::QueryBody
 {
 }
 
@@ -84,7 +84,7 @@ Class meta::external::query::sql::metamodel::Select extends meta::external::quer
   <<equality.Key>> selectItems: meta::external::query::sql::metamodel::SelectItem[*];
 }
 
-Class meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::SelectItem extends meta::external::query::sql::metamodel::Node
 {
 }
 
@@ -109,11 +109,11 @@ Class meta::external::query::sql::metamodel::TableFunction extends meta::externa
   <<equality.Key>> functionCall: meta::external::query::sql::metamodel::FunctionCall[1];
 }
 
-Class meta::external::query::sql::metamodel::Expression extends meta::external::query::sql::metamodel::Node
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Expression extends meta::external::query::sql::metamodel::Node
 {
 }
 
-Class meta::external::query::sql::metamodel::Literal extends meta::external::query::sql::metamodel::Expression
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::Literal extends meta::external::query::sql::metamodel::Expression
 {
 }
 
@@ -168,6 +168,15 @@ Class meta::external::query::sql::metamodel::NamedArgumentExpression extends met
 {
   <<equality.Key>> name: String[1];
   <<equality.Key>> expression: meta::external::query::sql::metamodel::Expression[1];
+}
+
+Class meta::external::query::sql::metamodel::PositionalParameterExpression extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> index: Integer[1];
+}
+
+Class meta::external::query::sql::metamodel::ParameterPlaceholderExpression extends meta::external::query::sql::metamodel::PositionalParameterExpression
+{
 }
 
 Class meta::external::query::sql::metamodel::LikePredicate extends meta::external::query::sql::metamodel::Expression
@@ -240,6 +249,7 @@ Class meta::external::query::sql::metamodel::FunctionCall extends meta::external
   <<equality.Key>> filter: meta::external::query::sql::metamodel::Expression[0..1];
   <<equality.Key>> window: meta::external::query::sql::metamodel::Window[0..1];
   <<equality.Key>> group: meta::external::query::sql::metamodel::Group[0..1];
+  <<equality.Key>> orderBy: meta::external::query::sql::metamodel::SortItem[*];
 }
 
 Class meta::external::query::sql::metamodel::SimpleCaseExpression extends meta::external::query::sql::metamodel::Expression
@@ -267,6 +277,13 @@ Class meta::external::query::sql::metamodel::Extract extends meta::external::que
   <<equality.Key>> field: meta::external::query::sql::metamodel::ExtractField[1];
 }
 
+Class meta::external::query::sql::metamodel::Trim extends meta::external::query::sql::metamodel::Expression
+{
+  <<equality.Key>> value: meta::external::query::sql::metamodel::Expression[1];
+  <<equality.Key>> characters: meta::external::query::sql::metamodel::Expression[0..1 ];
+  <<equality.Key>> mode: meta::external::query::sql::metamodel::TrimMode[1];
+}
+
 Class meta::external::query::sql::metamodel::Join extends meta::external::query::sql::metamodel::Relation
 {
   <<equality.Key>> type: meta::external::query::sql::metamodel::JoinType[1];
@@ -275,7 +292,7 @@ Class meta::external::query::sql::metamodel::Join extends meta::external::query:
   <<equality.Key>> criteria: meta::external::query::sql::metamodel::JoinCriteria[0..1];
 }
 
-Class meta::external::query::sql::metamodel::JoinCriteria
+Class <<typemodifiers.abstract>> meta::external::query::sql::metamodel::JoinCriteria
 {
 }
 
