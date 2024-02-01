@@ -36,7 +36,7 @@ public class FreeMarkerExecutor
 {
     private static Configuration freemarkerConfig = new Configuration();
     private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
-    public static Pattern p = Pattern.compile("(\\$\\{)(.+?)(\\})");
+    public static Pattern p = Pattern.compile("(\\$)[\\{](?:[^\\{\\}]+|[\\{][^\\{\\}]*[\\}])*[\\}]");
 
     static
     {
@@ -98,10 +98,10 @@ public class FreeMarkerExecutor
         Matcher m = p.matcher(string);
         if (m.find())
         {
-            String a = string.substring(0, m.start());
-            String b = processRecursively(string.substring(m.start(), m.end()), variableMap, templateFunctions);
-            String c = processLastString(string.substring(m.end()), variableMap, templateFunctions);
-            return a + b + c;
+            String constantString = string.substring(0, m.start());
+            String processString = processRecursively(string.substring(m.start(), m.end()), variableMap, templateFunctions);
+            String tailString = processLastString(string.substring(m.end()), variableMap, templateFunctions);
+            return constantString + processString + tailString;
         }
         return string;
     }
