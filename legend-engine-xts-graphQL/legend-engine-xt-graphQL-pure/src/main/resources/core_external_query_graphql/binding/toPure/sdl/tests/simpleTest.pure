@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::query::graphQL::binding::*;
 import meta::external::query::graphQL::binding::toPure::sdl::*;
 import meta::external::query::graphQL::binding::toPure::sdl::tests::*;
 
@@ -184,6 +185,51 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
       'scalar StrictDate\n' +
       '}#',
       'meta::external::query::graphQL::metamodel::sql'
+    );
+
+  assertEquals(   
+    'Class meta::external::query::graphQL::metamodel::sql::ClassWithPrimitiveTypes\n' +
+    '{\n' +
+    '  string : String[1];\n' +
+    '  integer : Integer[1];\n' +
+    '  float : Float[1];\n' +
+    '  boolean : Boolean[1];\n' +
+    '  date : Date[1];\n' +
+    '  datetime : DateTime[1];\n' +
+    '  decimal : Decimal[1];\n' +
+    '  strictDate : StrictDate[1];\n' +
+    '}',
+    $pureTypes);
+}
+
+function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tests::testNonBuiltInPrimitiveTypesWithLongForInteger():Boolean[1]
+{
+  let pureTypes = 
+    graphQLToPure(
+      '#GQL{' + 
+      'type ClassWithPrimitiveTypes {\n' +
+      '  string: String!\n' +
+      '  integer: Long!\n' +
+      '  float: Float!\n' +
+      '  boolean: Boolean!\n' +
+      '  date: Date!\n' +
+      '  datetime: DateTime!\n' +
+      '  decimal: BigDecimal!\n' +
+      '  strictDate: StrictDate!\n' +
+      '}\n' +
+      '\n' +
+      'scalar Date\n' +
+      '\n' +
+      'scalar DateTime\n' +
+      '\n' +
+      'scalar BigDecimal\n' +
+      '\n' +
+      'scalar Long\n' +
+      '\n' +
+      'scalar StrictDate\n' +
+      '}#',
+      'meta::external::query::graphQL::metamodel::sql',
+      ^PureTypeToGraphQLScalarOverride(integerScalarType = 'Long')
     );
 
   assertEquals(   
@@ -509,9 +555,14 @@ function <<test.Test>> meta::external::query::graphQL::binding::toPure::sdl::tes
 
 function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl::tests::graphQLToPure(graphQLDocument: String[1], purePackage: String[1]): String[1]
 {
+  graphQLToPure($graphQLDocument, $purePackage, [])
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::toPure::sdl::tests::graphQLToPure(graphQLDocument: String[1], purePackage: String[1], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): String[1]
+{
   let sql = meta::legend::compileVS($graphQLDocument)->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
 
-  graphQLTypeSystemtoPure($sql->toOne(), $purePackage)
+  graphQLTypeSystemtoPure($sql->toOne(), $purePackage, $pureTypeToGraphQLScalarOverride)
     ->sortBy(t | $t->elementToPath())
     ->map(t | $t->meta::pure::metamodel::serialization::grammar::printType())
     ->joinStrings('\n\n');

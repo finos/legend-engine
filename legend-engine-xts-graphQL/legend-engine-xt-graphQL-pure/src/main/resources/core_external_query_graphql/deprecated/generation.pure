@@ -40,13 +40,13 @@ Class <<doc.deprecated>> meta::external::query::graphQL::generation::GraphQLOutp
 function <<access.private, doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLScalars(scopeElements: PackageableElement[*]): GraphQLOutput[0..1] {
   let scalarElements = $scopeElements->meta::external::query::graphQL::binding::fromPure::sdl::findTypes()->map(t|$t->match([
                             c:Class<Any>[1] | $c->meta::pure::functions::meta::allProperties()->map(p|$p->functionReturnType().rawType)->filter(
-                                                t| $t->in(meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes().first)
+                                                t| $t->in(meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes([]).first)
                                               ),
                             e:Enumeration<Any>[1] | []
                         ]))->fold({t,v | $v->concatenate($t)},[])->removeDuplicates();
   if($scalarElements->isEmpty(),
     | [],
-    | let scalarStringMap =  meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes()->newMap();
+    | let scalarStringMap =  meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes([])->newMap();
       ^GraphQLOutput(
         content=$scalarElements->map(x|'scalar '+ $scalarStringMap->meta::pure::functions::collection::get($x->toOne())->toOne())->sort()->joinStrings('\n'),
         fileName='scalars.graphql',
@@ -60,14 +60,14 @@ function <<access.private>> meta::external::query::graphQL::generation::generate
 {
   let scalarElements = $scopeElements->meta::external::query::graphQL::binding::fromPure::sdl::findTypes()->map(t|$t->match([
                             c:Class<Any>[1] | $c->meta::pure::functions::meta::allProperties()->map(p|$p->functionReturnType().rawType)->filter(
-                                                t| $t->in(meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScalarTypes().first)
+                                                t| $t->in(meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScalarTypes([]).first)
                                               ),
                             e:Enumeration<Any>[1] | []
                         ]))->fold({t,v | $v->concatenate($t)},[])->removeDuplicates();
   if($scalarElements->isEmpty(),
     | [],
     | let m = customGraphQLScalarsToPrimitiveMappingForInput();
-      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes()->filter(x|$x.first->in($scalarElements))->map(p|$p.second)->sort();
+      let primitiveTypes = purePrimitivesToAllGraphQLScalarTypes([])->filter(x|$x.first->in($scalarElements))->map(p|$p.second)->sort();
       let primitiveTypesZipped = $primitiveTypes->zip($primitiveTypes->map(p|$m->get($p)));
       let content = $primitiveTypesZipped->fold(
         { a,b |
@@ -120,7 +120,7 @@ function <<doc.deprecated>> meta::external::query::graphQL::generation::generate
 
 function <<doc.deprecated>> meta::external::query::graphQL::generation::generateGraphQLFromPure(config: GraphQLConfig[1], pe: PackageableElement[1]): GraphQLOutput[*]
 {
-   let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([$pe])
+   let content = meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL([$pe], meta::external::query::graphQL::binding::fromPure::sdl::defaultConfig())
                   // filter out scalars as this is handled all together above
                   ->filter(x | ! ($x->instanceOf(meta::external::query::graphQL::metamodel::sdl::typeSystem::ScalarTypeDefinition)))
                   ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
