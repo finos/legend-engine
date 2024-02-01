@@ -222,7 +222,9 @@ public class SnowflakeConnectionExtension implements RelationalConnectionExtensi
                         snowflakeDatasourceSpecification.nonProxyHosts,
                         snowflakeDatasourceSpecification.accountType,
                         snowflakeDatasourceSpecification.organization,
-                        snowflakeDatasourceSpecification.role);
+                        snowflakeDatasourceSpecification.role,
+                        snowflakeDatasourceSpecification.tempTableDb,
+                        snowflakeDatasourceSpecification.tempTableSchema);
             }
             return null;
         };

@@ -66,6 +66,10 @@ public class SnowflakeCompilerExtension implements IRelationalCompilerExtension
             if (datasourceSpecification instanceof SnowflakeDatasourceSpecification)
             {
                 SnowflakeDatasourceSpecification snowflakeDatasourceSpecification = (SnowflakeDatasourceSpecification) datasourceSpecification;
+                if (snowflakeDatasourceSpecification.tempTableDb != null ^ snowflakeDatasourceSpecification.tempTableSchema != null)
+                {
+                    throw new RuntimeException("One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+                }
                 Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification _snowflake = new Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification_Impl("", null, context.pureModel.getClass("meta::pure::alloy::connections::alloy::specification::SnowflakeDatasourceSpecification"));
                 _snowflake._accountName(snowflakeDatasourceSpecification.accountName);
                 _snowflake._region(snowflakeDatasourceSpecification.region);
@@ -77,6 +81,8 @@ public class SnowflakeCompilerExtension implements IRelationalCompilerExtension
                 _snowflake._proxyHost(snowflakeDatasourceSpecification.proxyHost);
                 _snowflake._proxyPort(snowflakeDatasourceSpecification.proxyPort);
                 _snowflake._nonProxyHosts(snowflakeDatasourceSpecification.nonProxyHosts);
+                _snowflake._tempTableDb(snowflakeDatasourceSpecification.tempTableDb);
+                _snowflake._tempTableSchema(snowflakeDatasourceSpecification.tempTableSchema);
                 if (snowflakeDatasourceSpecification.accountType != null)
                 {
                     _snowflake._accountType(context.pureModel.getEnumValue("meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType", snowflakeDatasourceSpecification.accountType));

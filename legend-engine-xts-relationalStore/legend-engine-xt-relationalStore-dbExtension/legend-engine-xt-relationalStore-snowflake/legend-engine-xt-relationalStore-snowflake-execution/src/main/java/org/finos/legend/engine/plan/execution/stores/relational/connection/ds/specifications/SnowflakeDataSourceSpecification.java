@@ -42,6 +42,9 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static final String SNOWFLAKE_ROLE = "role";
     public static final String SNOWFLAKE_ENABLE_QUERY_TAGS = "enableQueryTags";
 
+    public static final String SNOWFLAKE_TEMP_TABLE_DB = "tempTableDb";
+    public static final String SNOWFLAKE_TEMP_TABLE_SCHEMA = "tempTableSchema";
+
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {
         super(key, databaseManager, authenticationStrategy, extraUserProperties);
@@ -74,6 +77,10 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_PROXY_HOST, key.getProxyHost());
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_PROXY_PORT, key.getProxyPort());
         putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_NON_PROXY_HOSTS, key.getNonProxyHosts());
+
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_TEMP_TABLE_DB, updateSnowflakeIdentifiers(key.getTempTableDb(), key.getQuoteIdentifiers()));
+        putIfNotEmpty(this.extraDatasourceProperties, SNOWFLAKE_TEMP_TABLE_SCHEMA, updateSnowflakeIdentifiers(key.getTempTableSchema(), key.getQuoteIdentifiers()));
+
         this.extraDatasourceProperties.put(SNOWFLAKE_USE_PROXY, this.extraDatasourceProperties.get(SNOWFLAKE_PROXY_HOST) != null);
     }
 

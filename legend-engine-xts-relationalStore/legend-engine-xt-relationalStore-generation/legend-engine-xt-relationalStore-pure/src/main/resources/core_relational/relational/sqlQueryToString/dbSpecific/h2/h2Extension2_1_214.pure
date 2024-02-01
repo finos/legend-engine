@@ -35,7 +35,7 @@ function meta::relational::functions::sqlQueryToString::h2::v2_1_214::createDbEx
       identifierProcessor = processIdentifierWithDoubleQuotes_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
-      processTempTableName = processTempTableNameDefault_String_1__String_1_
+      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_$0_1$__String_1_
    );
 }
 
