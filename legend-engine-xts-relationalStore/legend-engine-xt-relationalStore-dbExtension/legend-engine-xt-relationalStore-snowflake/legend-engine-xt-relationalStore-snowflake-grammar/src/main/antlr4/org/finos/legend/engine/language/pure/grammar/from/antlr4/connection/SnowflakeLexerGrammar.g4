@@ -13,6 +13,8 @@ QUOTED_IDENTIFIERS_IGNORE_CASE:             'quotedIdentifiersIgnoreCase';
 PROXYHOST:                                  'proxyHost';
 PROXYPORT:                                  'proxyPort';
 NONPROXYHOSTS:                              'nonProxyHosts';
+TEMPTABLEDB:                                'tempTableDb';
+TEMPTABLESCHEMA:                            'tempTableSchema';
 ACCOUNTTYPE:                                'accountType';
 ORGANIZATION:                               'organization';
 ROLE:                                       'role';

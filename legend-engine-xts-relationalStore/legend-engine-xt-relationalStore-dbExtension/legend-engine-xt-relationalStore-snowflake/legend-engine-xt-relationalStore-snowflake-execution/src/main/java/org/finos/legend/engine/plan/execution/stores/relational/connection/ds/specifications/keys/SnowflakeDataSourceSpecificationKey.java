@@ -32,11 +32,20 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     private String proxyPort;
     private String nonProxyHosts;
 
+    private String tempTableDb;
+    private String tempTableSchema;
+
     private SnowflakeAccountType accountType;
     private String organisation;
 
     private String role;
 
+    public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role, String tempTableDb, String tempTableSchema)
+    {
+        this(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, enableQueryTags, proxyHost, proxyPort, nonProxyHosts, accountType, organisation, role);
+        this.tempTableDb = tempTableDb;
+        this.tempTableSchema = tempTableSchema;
+    }
 
     public SnowflakeDataSourceSpecificationKey(String accountName, String region, String warehouseName, String databaseName, String cloudType, Boolean quoteIdentifiers, Boolean enableQueryTags, String proxyHost, String proxyPort, String nonProxyHosts, String accountType, String organisation, String role)
     {
@@ -139,6 +148,16 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
         return enableQueryTags;
     }
 
+    public String getTempTableDb()
+    {
+        return tempTableDb;
+    }
+
+    public String getTempTableSchema()
+    {
+        return tempTableSchema;
+    }
+
     @Override
     public String toString()
     {
@@ -152,6 +171,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 ", proxyHost='" + proxyHost + '\'' +
                 ", proxyPort='" + proxyPort + '\'' +
                 ", nonProxyHosts='" + nonProxyHosts + '\'' +
+                ", tempTableDb='" + tempTableDb + '\'' +
+                ", tempTableSchema='" + tempTableSchema + '\'' +
                 ", accountType='" + accountType + '\'' +
                 ", organisation='" + organisation + '\'' +
                 ", role='" + role + '\'' +
@@ -171,6 +192,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 "proxyHost:" + proxyHost + "_" +
                 "proxyPort:" + proxyPort + "_" +
                 "nonProxyHosts:" + nonProxyHosts + "_" +
+                "tempTableDb:" + tempTableDb + "_" +
+                "tempTableSchema:" + tempTableSchema + "_" +
                 "accountType:" + accountType + "_" +
                 "organisation:" + organisation + "_" +
                 "quoteIdentifiers:" + quoteIdentifiers +
@@ -198,6 +221,8 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
                 Objects.equals(proxyHost, that.proxyHost) &&
                 Objects.equals(proxyPort, that.proxyPort) &&
                 Objects.equals(nonProxyHosts, that.nonProxyHosts) &&
+                Objects.equals(tempTableDb, that.tempTableDb) &&
+                Objects.equals(tempTableSchema, that.tempTableSchema) &&
                 Objects.equals(accountType, that.accountType) &&
                 Objects.equals(organisation, that.organisation) &&
                 Objects.equals(quoteIdentifiers, that.quoteIdentifiers) &&
@@ -208,6 +233,6 @@ public class SnowflakeDataSourceSpecificationKey implements DataSourceSpecificat
     @Override
     public int hashCode()
     {
-        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, proxyHost, proxyPort, nonProxyHosts, accountType, organisation, role, enableQueryTags);
+        return Objects.hash(accountName, region, warehouseName, databaseName, cloudType, quoteIdentifiers, proxyHost, proxyPort, nonProxyHosts, tempTableDb, tempTableSchema, accountType, organisation, role, enableQueryTags);
     }
 }

@@ -30,6 +30,9 @@ public class SnowflakeDatasourceSpecification extends DatasourceSpecification
     public String organization;
     public String accountType;
 
+    public String tempTableDb;
+    public String tempTableSchema;
+
     public String role;
 
     @Override
