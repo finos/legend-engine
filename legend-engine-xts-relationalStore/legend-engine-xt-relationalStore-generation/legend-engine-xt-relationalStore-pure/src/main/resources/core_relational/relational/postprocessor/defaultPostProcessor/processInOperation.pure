@@ -51,7 +51,7 @@ function <<access.private>> meta::relational::postProcessor::prefixForWrapperAll
    'inFilterClause_';
 }
 
-function <<access.private>> meta::relational::postProcessor::processedTempTableNameForIn(dbType: DatabaseType[1], dc: meta::external::store::relational::runtime::DatabaseConnection[0..1]):String[1]
+function <<access.private>> meta::relational::postProcessor::processedTempTableNameForIn(dbType: DatabaseType[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]):String[1]
 {
    $dbType->createDbConfig([]).procesTempTableName('tempTableForIn_', $dc);
 }

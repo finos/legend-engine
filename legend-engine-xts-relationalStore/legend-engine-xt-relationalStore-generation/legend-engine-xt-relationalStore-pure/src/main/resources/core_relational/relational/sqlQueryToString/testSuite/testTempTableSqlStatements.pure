@@ -30,7 +30,7 @@ function meta::relational::functions::sqlQueryToString::tests::createTable(tempT
     ^Column(name='date_Column', type=^meta::relational::metamodel::datatype::Date())
   ];
   let dbConfig  = $dbType->createDbConfig([]);
-  ^Table( name = $dbConfig.procesTempTableName('temp_table_test',[]),
+  ^Table( name = $dbConfig.procesTempTableName('temp_table_test', ^meta::external::store::relational::runtime::DatabaseConnection(type = $dbType)),
           schema = ^Schema(name = if($tempTableSchemaName->isNotEmpty(),|$tempTableSchemaName->toOne(),|'default') , database = ^Database(name='TempTableDb')),
           columns = $columns,
           temporaryTable = true
@@ -43,7 +43,7 @@ function meta::relational::functions::sqlQueryToString::tests::getProccessedTemp
   if($dbTypeEnum->isNotEmpty(),
   |let dbType = $dbTypeEnum->at(0)->toOne();
   let dbConfig  = $dbType->createDbConfig([]);
-  $dbConfig.procesTempTableName($tempTableName,[]);,
+  $dbConfig.procesTempTableName($tempTableName, ^meta::external::store::relational::runtime::DatabaseConnection(type = $dbType));,
   |[]);
 }
 function meta::relational::functions::sqlQueryToString::tests::getCreateTempTableSqlStatements(databaseType: String[1]): String[*]

@@ -45,7 +45,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
       dynaFuncDispatch = $dynaFuncDispatch,
       preAndFinallyExecutionSQLQuery = preAndFinallyExecutionSQLQueryForSnowflake_DbConfig_1__DatabaseConnection_1__PreAndFinallyExecutionSQLQuery_MANY_,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
-      processTempTableName = processTempTableNameSnowflake_String_1__DatabaseConnection_$0_1$__String_1_
+      processTempTableName = processTempTableNameSnowflake_String_1__DatabaseConnection_1__String_1_
    );
 }
 
@@ -71,10 +71,9 @@ function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommand
               );
 }
 
-function meta::relational::functions::sqlQueryToString::snowflake::processTempTableNameSnowflake(tempTableName: String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[0..1]): String[1]
+function meta::relational::functions::sqlQueryToString::snowflake::processTempTableNameSnowflake(tempTableName: String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]): String[1]
 {
-   if($dc->isNotEmpty() && 
-      $dc->toOne()->instanceOf(RelationalDatabaseConnection) && 
+   if($dc->toOne()->instanceOf(RelationalDatabaseConnection) && 
       ($dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableDb->isNotEmpty() ||
       $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableSchema->isNotEmpty()),
    |
