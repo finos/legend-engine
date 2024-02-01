@@ -5318,7 +5318,7 @@ function meta::relational::functions::pureToSqlQuery::processTdsLambda(mapFn:Val
                                                         ]->map(func|
                                                           ^PureFunctionTDSToRelationalFunctionPair(first = $func, second = {|
                                                             ^DynaFunction(
-                                                              name = 'concat',
+                                                              name = 'concat_ws',
                                                               parameters =$f.parametersValues->map(p|$p->processTdsLambda($a, $returnColumnName, $vars, $state, $currentPropertyMapping, $context))
                                                               )
                                                           })

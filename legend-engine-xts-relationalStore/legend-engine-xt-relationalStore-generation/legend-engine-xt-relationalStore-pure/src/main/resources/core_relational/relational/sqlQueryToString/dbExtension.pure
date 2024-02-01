@@ -918,6 +918,7 @@ Enum meta::relational::functions::sqlQueryToString::DynaFunctionRegistry
   char,
   coalesce,
   concat,
+  concat_ws,
   contains,
   convertDate,
   convertDateTime,

@@ -54,6 +54,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::prest
     dynaFnToSql('booland',                $allStates,            ^ToSql(format='bool_and(%s)')),
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='bool_or(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('concat_ws',              $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDatePresto()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimePresto()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='cast(%s as VARCHAR(128))')),

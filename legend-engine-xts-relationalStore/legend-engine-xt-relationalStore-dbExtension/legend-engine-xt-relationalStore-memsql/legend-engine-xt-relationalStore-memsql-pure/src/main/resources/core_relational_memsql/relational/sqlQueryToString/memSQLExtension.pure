@@ -82,6 +82,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('boolor',                    $allStates,            ^ToSql(format='max(%s)')),
     dynaFnToSql('char',                      $allStates,            ^ToSql(format='char(%s)')),
     dynaFnToSql('concat',                    $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('concat_ws',                 $allStates,            ^ToSql(format='concat_ws%s', transform={p:String[*]|$p->prependDelimiterInParams()->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',               $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateMemSQL()})),
     dynaFnToSql('convertVarchar128',         $allStates,            ^ToSql(format='convert(%s, CHAR)')),
     dynaFnToSql('dateDiff',                  $allStates,            ^ToSql(format='%s', transform={p:String[*]|generateDateDiffExpressionForMemSQL ([$p->at(0), $p->at(1), $p->at(2)->replace('\'', '')])})),
@@ -140,6 +141,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
     dynaFnToSql('year',                      $allStates,            ^ToSql(format='year(%s)')),
     dynaFnToSql('weekOfYear',                $allStates,            ^ToSql(format='weekofyear(%s)'))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::prependDelimiterInParams(params:String[*]):String[*]
+{
+  let delimiter = $params->last();
+  let paramsWithoutDelimiter = $params->slice(0, $params->size() - 1);
+  $delimiter->concatenate($paramsWithoutDelimiter);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processExtractFromSemiStructuredParamsForMemSQL(params:String[3]):String[1]

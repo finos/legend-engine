@@ -115,6 +115,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('boolor',                 $allStates,            ^ToSql(format='boolor(%s)')),    
     dynaFnToSql('ceiling',                $allStates,            ^ToSql(format='ceil(%s)')),
     dynaFnToSql('concat',                 $allStates,            ^ToSql(format='concat%s', transform={p:String[*]|$p->joinStrings('(', ', ', ')')})),
+    dynaFnToSql('concat_ws',              $allStates,            ^ToSql(format='concat_ws%s', transform={p:String[*]|$p->prependDelimiterInParams()->joinStrings('(', ', ', ')')})),
     dynaFnToSql('convertDate',            $allStates,            ^ToSql(format='%s', transform={p:String[*] | $p->convertToDateSnowflake()})),
     dynaFnToSql('convertDateTime',        $allStates,            ^ToSql(format='%s' , transform={p:String[*] | $p->convertToDateTimeSnowflake()})),
     dynaFnToSql('convertVarchar128',      $allStates,            ^ToSql(format='to_char(%s)')),
@@ -172,6 +173,13 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
     dynaFnToSql('weekOfYear',             $allStates,            ^ToSql(format='WEEKOFYEAR(%s)')),
     dynaFnToSql('year',                   $allStates,            ^ToSql(format='year(%s)'))
   ];
+}
+
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::prependDelimiterInParams(params:String[*]):String[*]
+{
+  let delimiter = $params->last();
+  let paramsWithoutDelimiter = $params->slice(0, $params->size() - 1);
+  $delimiter->concatenate($paramsWithoutDelimiter);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::processExtractFromSemiStructuredParamsForSnowflake(params:String[3]):String[1]
