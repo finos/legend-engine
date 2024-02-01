@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -35,36 +37,36 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.unsupported;
 
 public class ServiceGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof Service)
+        {
+            return renderService((Service) element, context);
+        }
+        else if (element instanceof ExecutionEnvironmentInstance)
+        {
+            return renderExecutionEnvironment((ExecutionEnvironmentInstance) element, context);
+        }
+        return null;
+    });
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with(
-            (elements, context, sectionName) ->
-            {
-                if (!ServiceParserExtension.NAME.equals(sectionName))
-                {
-                    return null;
-                }
-                return ListIterate.collect(elements, element ->
-                {
-                    if (element instanceof Service)
-                    {
-                        return renderService((Service) element, context);
-                    }
-                    else if (element instanceof ExecutionEnvironmentInstance)
-                    {
-                        return renderExecutionEnvironment((ExecutionEnvironmentInstance) element, context);
-                    }
-                    return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                }).makeString("\n\n");
-            }
-        );
+        return Lists.mutable.with(buildSectionComposer(ServiceParserExtension.NAME, renderers));
     }
 
     @Override
@@ -143,11 +145,11 @@ public class ServiceGrammarComposerExtension implements PureGrammarComposerExten
     {
         if (o instanceof DeploymentOwnership)
         {
-            return "DID { identifier: \'" + ((DeploymentOwnership)o).identifier + "\' }";
+            return "DID { identifier: \'" + ((DeploymentOwnership) o).identifier + "\' }";
         }
         if (o instanceof UserListOwnership)
         {
-            return "UserList { users: " + Lists.mutable.withAll(((UserListOwnership)o).users).makeString("[\'", "\', \'", "\']") + " }";
+            return "UserList { users: " + Lists.mutable.withAll(((UserListOwnership) o).users).makeString("[\'", "\', \'", "\']") + " }";
         }
         else
         {

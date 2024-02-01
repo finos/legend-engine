@@ -17,11 +17,12 @@ package org.finos.legend.engine.authentication.provider;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.flows.DatabaseAuthenticationFlowKey;
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
 
 import java.util.Map;
 import java.util.Optional;
 
-public interface DatabaseAuthenticationFlowProvider
+public interface DatabaseAuthenticationFlowProvider extends LegendConnectionExtension
 {
     Optional<DatabaseAuthenticationFlow> lookupFlow(RelationalDatabaseConnection connection);
 

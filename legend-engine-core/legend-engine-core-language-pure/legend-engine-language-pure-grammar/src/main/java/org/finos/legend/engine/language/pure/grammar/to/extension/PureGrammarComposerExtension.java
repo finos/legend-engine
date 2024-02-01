@@ -18,7 +18,9 @@ import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -30,13 +32,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public interface PureGrammarComposerExtension
+public interface PureGrammarComposerExtension extends LegendLanguageExtension
 {
     /**
      * This method takes a list of elements which are supposed to be within a section (specified by the parser name)
@@ -104,5 +108,10 @@ public interface PureGrammarComposerExtension
     default List<Function<MappingInclude, String>> getExtraMappingIncludeComposers()
     {
         return Collections.emptyList();
+    }
+
+    default MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return Lists.mutable.empty();
     }
 }

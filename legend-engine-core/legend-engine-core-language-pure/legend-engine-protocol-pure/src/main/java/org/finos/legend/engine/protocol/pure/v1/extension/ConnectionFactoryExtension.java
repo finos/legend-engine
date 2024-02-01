@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
 
 import java.io.Closeable;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.Optional;
 /**
  * Used to build connections using test data. Main goal is to leverage connection for execution
  */
-public interface ConnectionFactoryExtension
+public interface ConnectionFactoryExtension extends LegendConnectionExtension
 {
 
     /**

@@ -284,7 +284,12 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                       val = ^$f(parametersValues = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreClusteredValueSpecification[1]|$c.val;, a:ValueSpecification[1]|$a]))),
                                                       executable = $params->evaluateAndDeactivate()->map(p|$p->match([c:StoreClusteredValueSpecification[1]|$c.executable;, a:ValueSpecification[1]|[]]))->concatenate(false)->toOneMany()->or() || $f.functionName == 'getAll'
                                             );
-                                            ^ClusterResponse(cluster=$res,letFunctions=$letFunctions,executableSetOperations=$executables->concatenate($childExecutables));,
+                                            ^ClusterResponse
+                                            (
+                                                cluster=$res,
+                                                letFunctions=$letFunctions,
+                                                executableSetOperations=$executables->concatenate($childExecutables)
+                                            );,
                                           |  print(if($debug.debug,|$f->evaluateAndDeactivate()->asString()->debug($debug.space+'Func Expression(non unique: '+$unique->size()->toString()+'): '),|''));
                                              let k = if ($unique->size() == 0,
                                                 | ^ClusterResponse(cluster=^$f(parametersValues = $params)),
@@ -443,18 +448,23 @@ function meta::pure::router::clustering::cluster(v:ValueSpecification[1], mappin
                                                                                 executable = true
                                                                               )),
                s:StoreRoutedValueSpecification[1]|
-                      ^ClusterResponse( cluster = ^StoreClusteredValueSpecification(
+                      let processed = $s.value->cluster([], $openVariables, $s.executionContext, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions);
+                      if ($processed.cluster->instanceOf(StoreClusteredValueSpecification),
+                        |$processed,
+                        |^ClusterResponse( cluster = 
+                                                ^StoreClusteredValueSpecification(
                                                       genericType  = $s.genericType,
                                                       multiplicity = $s.multiplicity,
                                                       s = meta::pure::extension::storeContractFromStore($extensions, $s.store->toOne()),
                                                       store = $s.store->toOne(),
                                                       runtime = $s.runtime,
                                                       openVars = $openVariables,
-                                                      val = $s.value->cluster([], $openVariables, $s.executionContext, ^$debug(space = $debug.space+'   '), $analyticsDecision, $extensions).cluster,
+                                                      val = $processed.cluster,
                                                       exeCtx = $s.executionContext,
                                                       executable = true
                                                   )
-                      )
+                         )
+                      );
                ,
                e:ExtendedRoutedValueSpecification[1] | ^ClusterResponse(cluster=$e->clusterFunctionExpressions($openVariables, $exeCtx, $extensions, $debug)->toOne())
 

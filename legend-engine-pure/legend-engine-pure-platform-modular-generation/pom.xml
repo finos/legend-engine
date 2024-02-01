@@ -32,6 +32,7 @@
         <module>legend-engine-pure-platform-dsl-diagram-java</module>
         <module>legend-engine-pure-platform-dsl-graph-java</module>
         <module>legend-engine-pure-platform-dsl-mapping-java</module>
+        <module>legend-engine-pure-platform-dsl-store-java</module>
         <module>legend-engine-pure-platform-dsl-path-java</module>
         <module>legend-engine-pure-platform-dsl-tds-java</module>
         <module>legend-engine-pure-platform-functions-java</module>

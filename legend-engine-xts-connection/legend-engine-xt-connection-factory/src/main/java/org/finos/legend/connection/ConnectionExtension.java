@@ -14,10 +14,12 @@
 
 package org.finos.legend.connection;
 
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
+
 import java.util.Collections;
 import java.util.List;
 
-public interface ConnectionExtension
+public interface ConnectionExtension extends LegendConnectionExtension
 {
     default List<DatabaseType> getExtraDatabaseTypes()
     {

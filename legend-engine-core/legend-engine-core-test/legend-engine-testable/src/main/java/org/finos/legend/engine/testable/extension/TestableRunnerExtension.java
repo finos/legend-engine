@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.testable.extension;
 
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
-public interface TestableRunnerExtension
+public interface TestableRunnerExtension extends LegendExtension
 {
     String getSupportedClassifierPath();
 

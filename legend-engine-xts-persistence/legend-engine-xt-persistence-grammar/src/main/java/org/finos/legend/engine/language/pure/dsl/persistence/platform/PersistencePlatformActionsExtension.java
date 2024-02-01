@@ -14,9 +14,10 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.platform;
 
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_persistence_metamodel_context_PersistencePlatform;
 
-public interface PersistencePlatformActionsExtension
+public interface PersistencePlatformActionsExtension extends LegendModuleSpecificExtension
 {
     Class<? extends Root_meta_pure_persistence_metamodel_context_PersistencePlatform> platformType();
 

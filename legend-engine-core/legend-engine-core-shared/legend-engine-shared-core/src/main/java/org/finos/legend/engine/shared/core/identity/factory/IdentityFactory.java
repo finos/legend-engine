@@ -15,6 +15,7 @@
 package org.finos.legend.engine.shared.core.identity.factory;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.pac4j.core.profile.CommonProfile;
 
@@ -22,7 +23,7 @@ import javax.security.auth.Subject;
 import java.util.Collections;
 import java.util.List;
 
-public interface IdentityFactory
+public interface IdentityFactory extends LegendConnectionExtension
 {
     Identity makeIdentity(Subject subject);
 

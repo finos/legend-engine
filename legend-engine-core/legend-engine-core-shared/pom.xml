@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-shared-core</module>
+        <module>legend-engine-shared-extensions</module>
         <module>legend-engine-shared-javaCompiler</module>
     </modules>
 </project>

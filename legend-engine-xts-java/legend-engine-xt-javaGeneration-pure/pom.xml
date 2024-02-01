@@ -54,9 +54,9 @@
                 </executions>
                 <dependencies>
                     <dependency>
-                        <groupId>org.finos.legend.engine</groupId>
-                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
-                        <version>${project.version}</version>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-graph-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
@@ -67,6 +67,21 @@
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
                         <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-functions-json-pure</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-core</artifactId>
+                        <version>${project.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.finos.legend.engine</groupId>
+                        <artifactId>legend-engine-pure-code-compiled-functions</artifactId>
+                        <version>${project.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>

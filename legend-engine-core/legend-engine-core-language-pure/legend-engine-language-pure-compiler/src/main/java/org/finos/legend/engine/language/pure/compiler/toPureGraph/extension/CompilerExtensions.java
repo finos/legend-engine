@@ -49,6 +49,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
 import org.finos.legend.engine.protocol.pure.v1.model.test.Test;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
 import org.finos.legend.engine.shared.core.function.Function4;
 import org.finos.legend.engine.shared.core.function.Procedure3;
@@ -61,6 +62,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -114,6 +116,7 @@ public class CompilerExtensions
     private final Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> extraClassInstanceProcessors;
     private final ImmutableList<BiConsumer<PureModel, MappingValidatorContext>> extraMappingPostValidators;
     private final ImmutableList<Function3<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement, CompileContext, ProcessingContext, InstanceValue>> extraValueSpecificationBuilderForFuncExpr;
+    private final ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> extraRelationStoreAccessorProcessors;
 
     private final Map<String, IncludedMappingHandler> extraIncludedMappingHandlers;
 
@@ -149,6 +152,7 @@ public class CompilerExtensions
         this.extraValueSpecificationBuilderForFuncExpr = this.extensions.flatCollect(CompilerExtension::getExtraValueSpecificationBuilderForFuncExpr);
         this.extraIncludedMappingHandlers = Maps.mutable.empty();
         this.extensions.forEach(e -> extraIncludedMappingHandlers.putAll(e.getExtraIncludedMappingHandlers()));
+        this.extraRelationStoreAccessorProcessors = this.extensions.flatCollect(CompilerExtension::getExtraRelationStoreAccessorProcessors);
     }
 
     public List<CompilerExtension> getExtensions()
@@ -475,5 +479,10 @@ public class CompilerExtensions
     public IncludedMappingHandler getExtraIncludedMappingHandlers(String classType)
     {
         return this.extraIncludedMappingHandlers.get(classType);
+    }
+
+    public ImmutableList<Function4<RelationStoreAccessor, Store, CompileContext, ProcessingContext, ValueSpecification>>  getExtraRelationStoreAccessorProcessors()
+    {
+        return this.extraRelationStoreAccessorProcessors;
     }
 }
