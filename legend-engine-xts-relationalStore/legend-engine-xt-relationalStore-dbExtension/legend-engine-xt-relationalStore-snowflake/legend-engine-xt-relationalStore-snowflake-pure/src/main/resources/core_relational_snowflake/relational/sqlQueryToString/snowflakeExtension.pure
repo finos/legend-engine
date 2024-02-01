@@ -198,20 +198,20 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertToDateSnowflake(params:String[*]):String[1]
 {
    assert(2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
-   assert($params->size()==1 || dateFormatsSnowFlake()->
-   ($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
+   assert($params->size()==1 || dateFormatsSnowFlake()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
    let dateFormat = if( $params->size() == 1 ,|'\'YYYY-MM-DD\'',| $params->at(1));
    //https://docs.snowflake.net/manuals/sql-reference/data-types-datetime.html
    'to_date('+$params->at(0)+','+$dateFormat +')';
 }
 
-function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertToDateSnowflake(params:String[*]):String[1]
+function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::convertToDateTimeSnowflake(params:String[*]):String[1]
 {
-   assert(2 - $params->size()  >= 0,'Incorrect number of parameters for convertDate: convertDate(column,[dateformat])');
-   assert($params->size()==1 || dateFormatsSnowFlake()->contains($params->at(1)->replace('\'', '')) , | $params->at(1) +' not supported ');
-   let dateFormat = if( $params->size() == 1 ,|'\'YYYY-MM-DD\'',| $params->at(1));
+   assert(2 - $params->size()  >= 0,'Incorrect number of parameters for convertDateTime: convertDateTime(column,[dateTimeformat])');
+   let supportedDateTimeFormat = if($params->size() == 2, |dateTimeFormatsSnowFlake()->get($params->at(1)->replace('\'', '')), |[]);
+   assert($params->size() == 1 || $supportedDateTimeFormat->size() == 1 , | $params->at(1) +' not supported ');
+   let dateTimeFormat = if( $params->size() == 1,|'\'YYYY-MM-DD HH24:MI:SS\'',| $params->at(1));
    //https://docs.snowflake.net/manuals/sql-reference/data-types-datetime.html
-   'to_date('+$params->at(0)+','+$dateFormat +')';
+   'to_timestamp('+$params->at(0)+','+$dateTimeFormat +')';
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::transformToTimestampSnowflake(params:String[2]):String[1]
