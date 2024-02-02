@@ -39,6 +39,20 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testFilterUsin
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root" left outer join firmTable as "firmTable_d#2_dy0_d#3_d_m1" on ("firmTable_d#2_dy0_d#3_d_m1".ID = "root".FIRMID) where "firmTable_d#2_dy0_d#3_d_m1".LEGALNAME regexp \'^[A-Za-z0-9]*$\'',$s);
 }
 
+function <<test.Test>> meta::relational::tests::query::snowflake::testFilterUsingContains():Boolean[1]
+{
+   let sql =toSQLString(|Person.all()->project(p|$p.firstName,'firstName')->filter(p |  $p.getString('firstName')->contains('d')),
+      simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where contains("root".FIRSTNAME,\'d\')', $sql);
+}
+
+function <<test.Test>> meta::relational::tests::query::snowflake::testFilterUsingContainsNested():Boolean[1]
+{
+   let sql =toSQLString(|Person.all()->project(p|$p.firstName,'firstName')->filter(p |  $p.getString('firstName')->toLower()->contains(toLower('d'))),
+      simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where contains(lower("root".FIRSTNAME),lower(\'d\'))', $sql);
+}
+
 function <<test.Test>> meta::relational::tests::query::snowflake::testFilterBoolean():Boolean[1]
 {
    let sql =toSQLString(|Person.all()->project(p|$p.firstName,'firstName')->filter(p | if(
@@ -47,5 +61,7 @@ function <<test.Test>> meta::relational::tests::query::snowflake::testFilterBool
       |false
     )),
       simpleRelationalMapping, meta::relational::runtime::DatabaseType.Snowflake, meta::relational::extension::relationalExtensions());
-   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where case when "root".FIRSTNAME like \'d%\' then true else false end', $sql);
+   assertEquals('select "root".FIRSTNAME as "firstName" from personTable as "root" where case when startswith("root".FIRSTNAME,\'d\') then true else false end', $sql);
 }
+
+
