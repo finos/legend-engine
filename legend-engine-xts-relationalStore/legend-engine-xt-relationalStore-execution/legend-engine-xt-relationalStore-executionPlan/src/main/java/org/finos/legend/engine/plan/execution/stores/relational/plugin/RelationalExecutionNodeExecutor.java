@@ -210,14 +210,6 @@ public class RelationalExecutionNodeExecutor implements ExecutionNodeVisitor<Res
                 if (result instanceof ConstantResult)
                 {
                     Object value = ((ConstantResult) result).getValue();
-                    if (value instanceof Map && ((Map<?, ?>) value).get("values") instanceof List)
-                    {
-                        return ((List<?>) ((Map<?, ?>) value).get("values")).stream().map(val ->
-                        {
-                            Map<?, ?> struct = (Map<?, ?>) val;
-                            return struct.get("value") != null ? struct.get("value") : ((List<?>) struct.get("values")).get(0);
-                        });
-                    }
                     if (value instanceof List)
                     {
                         return ((List<?>) value).stream();

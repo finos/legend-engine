@@ -132,7 +132,7 @@ public class PrimitiveValueSpecificationToObjectVisitor implements ValueSpecific
     @Override
     public Object visit(ClassInstance iv)
     {
-        throw new UnsupportedOperationException("Unsupported value specification type");
+        return iv.value;
     }
 
     @Override
