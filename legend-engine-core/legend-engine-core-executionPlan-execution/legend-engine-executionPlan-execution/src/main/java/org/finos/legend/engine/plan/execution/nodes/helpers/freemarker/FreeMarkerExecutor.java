@@ -98,10 +98,10 @@ public class FreeMarkerExecutor
         Matcher m = p.matcher(string);
         if (m.find())
         {
-            String constantString = string.substring(0, m.start());
-            String processString = processRecursively(string.substring(m.start(), m.end()), variableMap, templateFunctions);
-            String tailString = processLastString(string.substring(m.end()), variableMap, templateFunctions);
-            return constantString + processString + tailString;
+            String head = string.substring(0, m.start());
+            String template = processRecursively(string.substring(m.start(), m.end()), variableMap, templateFunctions);
+            String tail = processLastString(string.substring(m.end()), variableMap, templateFunctions);
+            return head + template + tail;
         }
         return string;
     }
