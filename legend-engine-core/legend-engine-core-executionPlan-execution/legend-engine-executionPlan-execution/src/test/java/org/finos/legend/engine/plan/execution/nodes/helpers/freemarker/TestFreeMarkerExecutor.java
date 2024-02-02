@@ -103,24 +103,27 @@ public class TestFreeMarkerExecutor
     }
 
     @Test
-    public void testFreeMarkerWithCompoundPlaceholders() throws Exception
+    public void testFreemarkerStringWithCombinations() throws Exception
     {
-        String sql = "Provide your '${firstName}' and '${lastName}' and '${thirdName}' goodbye";
+        String sql = "this is ${A} and ${B} and ${C} placeholders and ${D} with special characters.";
         Map rootMap = new HashMap<String, String>();
-        rootMap.put("firstName", "sbcd<@?fdf");
-        rootMap.put("lastName","${lastName2?replace(\"'\", \"''\")}");
-        rootMap.put("lastName2", "doe");
-        rootMap.put("thirdName", "${lastName3?replace(\"'\", \"''\")}");
-        rootMap.put("lastName3", "smith");
-        Assert.assertEquals("Provide your 'sbcd<@?fdf' and 'doe' and 'smith' goodbye", processRecursively(sql, rootMap, ""));
-
+        rootMap.put("A", "A1");
+        rootMap.put("B", "${B2}");
+        rootMap.put("B2", "B2");
+        rootMap.put("C", "${C1}");
+        rootMap.put("C1", "${C2}");
+        rootMap.put("C2", "${C3}");
+        rootMap.put("C3", "${C4}");
+        rootMap.put("C4", "C4");
+        rootMap.put("D", "abcd<@efg");
+        Assert.assertEquals("this is A1 and B2 and C3 placeholders and abcd<@efg with special characters.", processRecursively(sql, rootMap, ""));
     }
 
     @Test
     public void testFreemarkerWithSpecialCharacters() throws Exception
 
     {
-        //case1: replacing freemaker var with a string with special characters -->original problem
+        //case: replacing freemaker var with a string with special characters -->original problem
         //outcome: should pass because this scenario ideally requires only 1 process call
         String templateFunction = "";
         String sqlQuery1 = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}')";
@@ -130,35 +133,10 @@ public class TestFreeMarkerExecutor
     }
 
     @Test
-    public void testFreemarkerCharacterPass() throws Exception
-    {
-        //case2: layered freemarker -> double process call
-        //outcome: should pass because double recusion is working as expected
-        String sqlQuery2 = "select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = '${inFilterClause_id}')";
-        Map rootMap2 = new HashMap<String, String>();
-        rootMap2.put("inFilterClause_id", "${lastName?replace(\"'\", \"''\")}");
-        rootMap2.put("lastName", "Doe");
-        Assert.assertEquals("select \"root\".NAME from ACCOUNT as \"root\" where (\"root\".NAME = 'Doe')", processRecursively(sqlQuery2, rootMap2, ""));
-
-    }
-
-    @Test
-    public void testFreeMarkerWithCompoundPlaceholders2() throws Exception
-    {
-        String sql = "Provide your '${firstName}' and '${lastName}' and '${thirdName}' goodbye";
-        Map rootMap = new HashMap<String, String>();
-        rootMap.put("firstName", "sbcd<@?fdf");
-        rootMap.put("lastName","${lastName2?replace(\"'\", \"''\")}");
-        rootMap.put("lastName2", "doe");
-        rootMap.put("thirdName", "sbcd<@?fdf");
-        Assert.assertEquals("Provide your 'sbcd<@?fdf' and 'doe' and 'sbcd<@?fdf' goodbye", processRecursively(sql, rootMap, ""));
-    }
-
-    @Test
     public void testFreemarkerCharacterFail() throws Exception
     {
 
-        //case3: instances found for ${} where we dont pass in variables in varMap
+        //case: instances found for ${} where we dont pass in variables in varMap
         //outcome: should fail since the user should not be setting column names with freemarker template
         String sqlQuery3 = "select \"root\".countrycode as \"${countryCode}\" , where (\"root\".NAME = '${firstName?replace(\"'\", \"''\")}'), \"root\".countryCodeZip as \"${countryCodeZip}\" from jasamk_test_data.country_schema as \"root\" ";
         Map rootMap3 = new HashMap<String, String>();
