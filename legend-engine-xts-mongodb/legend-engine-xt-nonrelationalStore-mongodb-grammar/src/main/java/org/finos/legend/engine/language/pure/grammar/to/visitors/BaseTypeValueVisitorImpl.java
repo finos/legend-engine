@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Lon
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.VariableTypeValue;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -85,6 +86,12 @@ public class BaseTypeValueVisitorImpl implements BaseTypeValueVisitor<String>
     public String visit(StringTypeValue val)
     {
         return convertToStringWithQuotes(String.valueOf(val.value));
+    }
+
+    @Override
+    public String visit(VariableTypeValue val)
+    {
+        return String.valueOf(val.value);
     }
 
     @Override
