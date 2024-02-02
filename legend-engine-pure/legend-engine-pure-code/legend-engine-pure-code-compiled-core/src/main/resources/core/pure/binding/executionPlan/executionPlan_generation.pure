@@ -223,7 +223,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::gener
                                       ]);
 }
 
-function <<access.private>> meta::external::format::shared::executionPlan::extractPackageableElementFromTree(tree:GraphFetchTree[1]): PackageableElement[*]
+function meta::external::format::shared::executionPlan::extractPackageableElementFromTree(tree:GraphFetchTree[1]): PackageableElement[*]
 {
   let classesFromTree = $tree->match([
                                   r:RootGraphFetchTree<Any>[1] | $r.class,
