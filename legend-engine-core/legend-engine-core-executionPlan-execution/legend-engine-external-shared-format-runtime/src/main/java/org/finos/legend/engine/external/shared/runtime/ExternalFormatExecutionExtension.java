@@ -99,7 +99,7 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         InputStream stream = ExecutionHelper.inputStreamFromResult(sourceResult);
         StreamingObjectResult<?> streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, profiles, executionState);
         StreamingObjectResult<?> withConstraints = applyConstraints(streamingObjectResult, sourceResult, node.checked, node.enableConstraints);
-        if(!executionState.realizeInMemory)
+        if (!executionState.realizeInMemory)
         {
             return withConstraints;
         }
