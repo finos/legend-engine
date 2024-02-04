@@ -50,7 +50,12 @@ public class ResultManager
 
     public static Response manageResult(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
     {
-        return manageResultWithCustomErrorCodeImpl(pm, result, false, format, loggingEventType);
+        return manageResult(pm, result, format, loggingEventType, null);
+    }
+
+    public static Response manageResult(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType, String attachmentFile)
+    {
+        return manageResultWithCustomErrorCodeImpl(pm, result, false, format, loggingEventType, attachmentFile);
     }
 
     public static Response manageResultWithCustomErrorCode(MutableList<CommonProfile> pm, Result result, SerializationFormat format, LoggingEventType loggingEventType)
@@ -59,6 +64,11 @@ public class ResultManager
     }
 
     private static Response manageResultWithCustomErrorCodeImpl(MutableList<CommonProfile> pm, Result result, boolean propagateErrorCode, SerializationFormat format, LoggingEventType loggingEventType)
+    {
+        return manageResultWithCustomErrorCodeImpl(pm, result, propagateErrorCode, format, loggingEventType, null);
+    }
+
+    private static Response manageResultWithCustomErrorCodeImpl(MutableList<CommonProfile> pm, Result result, boolean propagateErrorCode, SerializationFormat format, LoggingEventType loggingEventType, String attachmentFile)
     {
         if (result instanceof ErrorResult)
         {
@@ -71,7 +81,12 @@ public class ResultManager
         }
         else if (result instanceof StreamingResult)
         {
-            return Response.ok(new StreamingResultHandler((StreamingResult) result, format)).header(LEGEND_RESPONSE_FORMAT, ((StreamingResult) result).resultFormat).build();
+            Response.ResponseBuilder builder = Response.ok(new StreamingResultHandler((StreamingResult) result, format)).header(LEGEND_RESPONSE_FORMAT, ((StreamingResult) result).resultFormat);
+            if (attachmentFile != null && !attachmentFile.isEmpty())
+            {
+                builder.header("Content-Disposition", "attachment;filename=" + attachmentFile);
+            }
+            return builder.build();
         }
         else if (result instanceof ConstantResult)
         {
@@ -82,6 +97,7 @@ public class ResultManager
             throw new RuntimeException("Unknown Error " + result.getClass().getName());
         }
     }
+
 
     public static class ErrorMessage
     {
