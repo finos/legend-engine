@@ -116,7 +116,7 @@ public class TestFreeMarkerExecutor
         rootMap.put("C3", "${C4}");
         rootMap.put("C4", "C4");
         rootMap.put("D", "abcd<@efg");
-        Assert.assertEquals("this is A1 and B2 and C3 placeholders and abcd<@efg with special characters.", processRecursively(sql, rootMap, ""));
+        Assert.assertEquals("this is A1 and B2 and C4 placeholders and abcd<@efg with special characters.", processRecursively(sql, rootMap, ""));
     }
 
     @Test
