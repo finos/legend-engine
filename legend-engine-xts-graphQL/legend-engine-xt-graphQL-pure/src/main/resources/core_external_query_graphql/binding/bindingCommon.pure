@@ -37,34 +37,23 @@ function meta::external::query::graphQL::binding::fromInterfaceTypeName(interfac
   if($interfaceTypeName->endsWith('Interface'), | $interfaceTypeName->substring(0, $interfaceTypeName->length() - 9), | '')
 }
 
-function meta::external::query::graphQL::binding::purePrimitivesToGraphQLScalarTypes(): Pair<PrimitiveType,String>[*]
+Class meta::external::query::graphQL::binding::PureTypeToGraphQLScalarOverride
 {
-  [
-    pair(String, 'String'),
-    pair(Integer, 'Int'),
-    pair(Float, 'Float'),
-    pair(Boolean, 'Boolean')
-  ]
+  integerScalarType: String[0..1];
 }
 
-function meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes(): Pair<PrimitiveType,String>[*]
+function meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScalarTypes(pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): Pair<PrimitiveType,String>[*]
 {
   [
+    pair(Integer, if($pureTypeToGraphQLScalarOverride->isEmpty() || $pureTypeToGraphQLScalarOverride->toOne().integerScalarType->isEmpty(), | 'Int', | $pureTypeToGraphQLScalarOverride->toOne().integerScalarType->toOne())),
+    pair(String, 'String'),
+    pair(Float, 'Float'),
+    pair(Boolean, 'Boolean'),
     pair(Date, 'Date'),
     pair(StrictDate, 'StrictDate'),
     pair(DateTime, 'DateTime'),
     pair(Decimal, 'BigDecimal')
   ]
-}
-
-function meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScalarTypes(): Pair<PrimitiveType, String>[*]
-{
-  purePrimitivesToGraphQLScalarTypes()->concatenate(purePrimitivesToCustomGraphQLScalarTypes())
-}
-
-function meta::external::query::graphQL::binding::builtInGraphQLScalars(): String[*]
-{
-  ['Int', 'Float', 'String', 'Boolean', 'ID'];
 }
 
 function meta::external::query::graphQL::binding::customGraphQLScalarsToPrimitiveMappingForInput(): Map<String, String>[1]
@@ -82,12 +71,36 @@ function meta::external::query::graphQL::binding::customGraphQLScalarsToPrimitiv
   ])
 }
 
-// Concat and invert the pure primitives to graphQL
-function meta::external::query::graphQL::binding::graphQLScalarTypesToPurePrimitives(): Pair<String,PrimitiveType>[*]
+function meta::external::query::graphQL::binding::builtInGraphQLScalars(): String[*]
 {
-  purePrimitivesToGraphQLScalarTypes()->concatenate(purePrimitivesToCustomGraphQLScalarTypes())
-    ->map(p | pair($p.second, $p.first))
-    ->concatenate(pair('ID', String))
+  ['Int', 'Float', 'String', 'Boolean', 'ID'];
+}
+
+function meta::external::query::graphQL::binding::purePrimitivesToCustomGraphQLScalarTypes(pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): Pair<PrimitiveType,String>[*]
+{
+  purePrimitivesToAllGraphQLScalarTypes($pureTypeToGraphQLScalarOverride)
+    // remove built in GraphQL Scalars
+    ->filter(p | !$p.second->in(builtInGraphQLScalars()))
+}
+
+// Inversion of the pure primitives to graphQL with some extras
+function meta::external::query::graphQL::binding::graphQLScalarTypesToPurePrimitives(pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[0..1]): Pair<String,PrimitiveType>[*]
+{
+  if($pureTypeToGraphQLScalarOverride->isEmpty() || $pureTypeToGraphQLScalarOverride->toOne().integerScalarType->isEmpty(), | [], | [pair($pureTypeToGraphQLScalarOverride->toOne().integerScalarType->toOne(), Integer)])
+    ->concatenate(
+      [
+        // Keep all default mappings as well
+        pair('String', String),
+        pair('Int', Integer),
+        pair('Float', Float),
+        pair('Boolean', Boolean),
+        pair('Date', Date),
+        pair('StrictDate', StrictDate),
+        pair('DateTime', DateTime),
+        pair('BigDecimal', Decimal),
+        pair('ID', String)
+      ]
+    )
 }
 
 function meta::external::query::graphQL::binding::temporalityToDirectives(): Map<String,DirectiveDefinition>[1]
