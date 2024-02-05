@@ -87,7 +87,8 @@ public class FreeMarkerExecutor
         Map constant = new HashMap();
         Map recur = new HashMap();
         Map totalMap = new HashMap();
-        variableMap.forEach((key,value) -> {
+        variableMap.forEach((key,value) -> 
+        {
            if (value.getClass() == String.class)
            {
                Matcher m = p.matcher((String) value);
@@ -106,10 +107,11 @@ public class FreeMarkerExecutor
            }
         });
 
-        recur.forEach((key,value) -> {
+        recur.forEach((key,value) -> 
+        {
            String s = (String) value;
            Matcher m = p.matcher(s);
-           while(m.find())
+           while (m.find())
            {
                s = process((String) value, variableMap, templateFunctions);
                m = p.matcher(s);
