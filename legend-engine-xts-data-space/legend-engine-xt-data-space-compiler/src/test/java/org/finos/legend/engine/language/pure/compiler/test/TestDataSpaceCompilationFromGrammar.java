@@ -69,10 +69,184 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      description: 'some information about the context';\n" +
                 "      mapping: model::dummyMapping;\n" +
                 "      defaultRuntime: model::dummyRuntime;\n" +
+                "      testData:\n" +
+                "        ExternalFormat\n" +
+                "        #{\n" +
+                "          contentType: 'test';\n" +
+                "          data: 'test';\n" +
+                "        }#;\n" +
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testDataspaceIncludesDataspaceWithoutTestData()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   include dataspace model::dataSpace\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           ModelStore\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace2" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "      testData:\n" +
+                "        DataspaceTestData\n" +
+                "        #{\n" +
+                "          model::dataSpace\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [76:9-79:10]: Dataspace model::dataSpace does not have test data in its default execution context.");
+    }
+
+    @Test
+    public void testDataspaceDataELementNotFound()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   include dataspace model::dataSpace\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           ModelStore\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::dummyMapping;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "      testData:\n" +
+                "        DataspaceTestData\n" +
+                "        #{\n" +
+                "          model::nonexistantDataspace\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n", "COMPILATION error at [62:9-65:10]: Dataspace model::nonexistantDataspace cannot be found.");
     }
 
     @Test

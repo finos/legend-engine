@@ -19,9 +19,11 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataspaceDataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 
 import java.util.List;
@@ -38,6 +40,9 @@ public class DataSpaceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(MappingInclude.class)
                         .withSubtype(MappingIncludeDataSpace.class, "mappingIncludeDataSpace")
+                        .build(),
+                ProtocolSubTypeInfo.newBuilder(EmbeddedData.class)
+                        .withSubtype(DataspaceDataElementReference.class, "dataspaceDataElementReference")
                         .build()
         ));
     }
