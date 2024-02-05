@@ -28,13 +28,6 @@
     <name>Legend Engine - XT - Relational Store - Connection</name>
 
     <dependencies>
-        <!-- ENGINE -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-extensions</artifactId>
-        </dependency>
-        <!-- ENGINE -->
-
         <!-- DRIVER -->
         <dependency>
             <groupId>com.h2database</groupId>
