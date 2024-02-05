@@ -84,28 +84,42 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        String result = process(input, variableMap, templateFunctions);//check if intended freemarker expression exists
+        Map constant = new HashMap();
+        Map recur = new HashMap();
+        Map totalMap = new HashMap();
+        variableMap.forEach((key,value) -> {
+           if (value.getClass() == String.class)
+           {
+               Matcher m = p.matcher((String) value);
+               if (!m.find())
+               {
+                   constant.put(key, value);
+               }
+               else
+               {
+                   recur.put(key, value);
+               }
+           }
+           else
+           {
+               constant.put(key,value);
+           }
+        });
 
-        if (!result.equals(input.replace("\\\"", "\"")))
-        {
-            return processLastString(result,variableMap, templateFunctions);
-        }
-        return result;
+        recur.forEach((key,value) -> {
+           String s = (String) value;
+           Matcher m = p.matcher(s);
+           while(m.find())
+           {
+               s = process((String) value, variableMap, templateFunctions);
+               m = p.matcher(s);
+           }
+           recur.replace(key, s);
+        });
+        totalMap.putAll(constant);
+        totalMap.putAll(recur);
+        return process(input, totalMap, templateFunctions);
     }
-
-    public static String processLastString(String string, Map<String, ?> variableMap, String templateFunctions)
-    {
-        Matcher m = p.matcher(string);
-        if (m.find())
-        {
-            String head = string.substring(0, m.start());
-            String template = processRecursively(string.substring(m.start(), m.end()), variableMap, templateFunctions);
-            String tail = processLastString(string.substring(m.end()), variableMap, templateFunctions);
-            return head + template + tail;
-        }
-        return string;
-    }
-
     
     private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
     {
