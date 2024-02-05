@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
@@ -21,10 +22,12 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
@@ -34,10 +37,7 @@ import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataSpaceCompilerExtension implements CompilerExtension
 {
@@ -69,48 +69,16 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                     }
                     metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
                     {
-                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
-                        return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
-                                ._name(executionContext.name)
-                                ._title(executionContext.title)
-                                ._description(executionContext.description)
-                                ._mapping(mapping);
-                    }));
-                    Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                    Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
-                    if (defaultExecutionContext == null)
-                    {
-                        throw new EngineException("Default execution context '" + dataSpace.defaultExecutionContext + "' does not match any existing execution contexts", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                    }
-                    metamodel._defaultExecutionContext(defaultExecutionContext);
-
-                    return metamodel;
-                },
-                (dataSpace, context) ->
-                {
-                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = dataSpacesIndex.get(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
-                    metamodel._stereotypes(ListIterate.collect(dataSpace.stereotypes, s -> context.resolveStereotype(s.profile, s.value, s.profileSourceInformation, s.sourceInformation)));
-                    metamodel._taggedValues(ListIterate.collect(dataSpace.taggedValues, t -> new Root_meta_pure_metamodel_extension_TaggedValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::extension::TaggedValue"))._tag(context.resolveTag(t.tag.profile, t.tag.value, t.tag.profileSourceInformation, t.tag.sourceInformation))._value(t.value)));
-
-                    // execution context
-                    if (dataSpace.executionContexts.isEmpty())
-                    {
-                        throw new EngineException("Data space must have at least one execution context", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                    }
-                    metamodel._executionContexts(ListIterate.collect(dataSpace.executionContexts, executionContext ->
-                    {
-                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
                         Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
-                        if (!HelperRuntimeBuilder.isRuntimeCompatibleWithMapping(runtime, mapping))
-                        {
-                            throw new EngineException("Execution context '" + executionContext.name + "' default runtime is not compatible with mapping", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                        }
+                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                        Root_meta_pure_data_EmbeddedData data = Objects.isNull(executionContext.testData) ? null : executionContext.testData.accept(new EmbeddedDataFirstPassBuilder(context, new ProcessingContext("Dataspace '" + metamodel._name() + "' First Pass")));
                         return new Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceExecutionContext"))
                                 ._name(executionContext.name)
                                 ._title(executionContext.title)
                                 ._description(executionContext.description)
                                 ._mapping(mapping)
-                                ._defaultRuntime(runtime);
+                                ._testData(data)
+                                .defaultRuntime(runtime);
                     }));
                     Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
@@ -122,6 +90,22 @@ public class DataSpaceCompilerExtension implements CompilerExtension
 
                     metamodel._title(dataSpace.title);
                     metamodel._description(dataSpace.description);
+
+                    return metamodel;
+                },
+                (dataSpace, context) ->
+                {
+                    Root_meta_pure_metamodel_dataSpace_DataSpace metamodel = dataSpacesIndex.get(context.pureModel.buildPackageString(dataSpace._package, dataSpace.name));
+
+                    ListIterate.forEach(dataSpace.executionContexts, executionContext ->
+                    {
+                        Mapping mapping = context.resolveMapping(executionContext.mapping.path, executionContext.mapping.sourceInformation);
+                        Root_meta_pure_runtime_PackageableRuntime runtime = context.resolvePackageableRuntime(executionContext.defaultRuntime.path, executionContext.defaultRuntime.sourceInformation);
+                        if (!HelperRuntimeBuilder.isRuntimeCompatibleWithMapping(runtime, mapping))
+                        {
+                            throw new EngineException("Execution context '" + executionContext.name + "' default runtime is not compatible with mapping", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                        }
+                    });
 
                     // elements
                     if (dataSpace.elements != null)
@@ -198,5 +182,27 @@ public class DataSpaceCompilerExtension implements CompilerExtension
         return org.eclipse.collections.impl.factory.Maps.mutable.of(
                 MappingIncludeDataSpace.class.getName(), new DataSpaceIncludedMappingHandler()
         );
+    }
+
+    @Override
+    public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
+    {
+        return Collections.singletonList(this::compileDataspaceDataElementReference);
+    }
+
+    private Root_meta_pure_data_EmbeddedData compileDataspaceDataElementReference(EmbeddedData embeddedData, CompileContext compileContext, ProcessingContext processingContext)
+    {
+        if (embeddedData instanceof DataspaceDataElementReference)
+        {
+            DataspaceDataElementReference data = (DataspaceDataElementReference) embeddedData;
+            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataspaceAddress))
+            {
+                return Optional
+                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataspaceAddress)._defaultExecutionContext()._testData())
+                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataspaceAddress + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
+            }
+            throw new EngineException("Dataspace " + data.dataspaceAddress + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        return null;
     }
 }

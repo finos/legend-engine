@@ -23,6 +23,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParser
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
@@ -49,7 +50,7 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
         DefaultCodeSection section = new DefaultCodeSection();
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
-        DataSpaceParseTreeWalker walker = new DataSpaceParseTreeWalker(parserInfo.input, parserInfo.walkerSourceInformation, elementConsumer, section);
+        DataSpaceParseTreeWalker walker = new DataSpaceParseTreeWalker(parserInfo.input, parserInfo.walkerSourceInformation, elementConsumer, section, pureGrammarParserContext);
         walker.visit((DataSpaceParserGrammar.DefinitionContext) parserInfo.rootContext);
         return section;
     }
@@ -84,5 +85,11 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
         mappingIncludeDataSpace.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         return mappingIncludeDataSpace;
+    }
+
+    @Override
+    public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
+    {
+        return org.eclipse.collections.api.factory.Lists.immutable.with(new DataspaceDataElementReferenceParser());
     }
 }
