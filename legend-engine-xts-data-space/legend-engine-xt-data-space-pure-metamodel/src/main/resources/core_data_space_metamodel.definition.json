@@ -5,6 +5,7 @@
     "platform",
     "platform_dsl_mapping",
     "platform_functions",
+    "platform_dsl_store",
     "core",
     "core_diagram_metamodel"
   ]
