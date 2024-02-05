@@ -4,6 +4,7 @@ Class meta::external::function::activator::FunctionActivator extends Packageable
 {
   {doc.doc = 'The function that needs to be activated.'} function : PackageableFunction<Any>[1];
   {doc.doc = 'The activation configuration.'} activationConfiguration : DeploymentConfiguration[0..1];
+  {doc.doc = 'The ownership criteria.'} ownership : Ownership[1];
   
 }
 

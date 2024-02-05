@@ -74,7 +74,7 @@ userList:                               BRACKET_OPEN
                                              (STRING (COMMA STRING)*)?
                                          BRACKET_CLOSE
 ;
-deployment:                             INTEGER
+deployment:                             STRING
 ;
 
 serviceBindingOrContent:                (serviceBinding|serviceContentType) SEMI_COLON

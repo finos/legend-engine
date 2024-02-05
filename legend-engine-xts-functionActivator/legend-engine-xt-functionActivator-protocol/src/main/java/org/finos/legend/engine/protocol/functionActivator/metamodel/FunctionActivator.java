@@ -31,5 +31,5 @@ public abstract class FunctionActivator extends PackageableElement
     public List<TaggedValue> taggedValues = Collections.emptyList();
     public PackageableElementPointer function;
     public DeploymentConfiguration activationConfiguration;
-    public Ownership owner;
+    public Ownership ownership;
 }
