@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Bas
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DateTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FloatTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LongTypeValue;
@@ -66,6 +67,12 @@ public class BaseTypeValueVisitorImpl implements BaseTypeValueVisitor<String>
     {
         // not used
         return String.valueOf(val);
+    }
+
+    @Override
+    public String visit(FloatTypeValue val)
+    {
+        return String.valueOf(val.value);
     }
 
     @Override

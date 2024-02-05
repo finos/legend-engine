@@ -190,6 +190,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
     s: String[1]      | ^LiteralValue(value=^StringTypeValue(value=$s)),
     i: Integer[1]     | ^LiteralValue(value=^IntTypeValue(value=$i)),
     b: Boolean[1]     | ^LiteralValue(value=^BoolTypeValue(value=$b)),
+    f: Float[1]       | ^LiteralValue(value=^FloatTypeValue(value=$f)),
+    d: Decimal[1]     | ^LiteralValue(value=^DecimalTypeValue(value=$d)),
     sd: StrictDate[1] | ^LiteralValue(value=^DateTypeValue(value=meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0)->toString()));,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
     dt: DateTime[1]   | ^LiteralValue(value=^DateTypeValue(value=$dt->toString()));,
     l: LambdaFunction<Any>[1] |
@@ -206,11 +208,11 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   let var = $inScopeVars->get($v.name->toOne()).values->cast(@PlanVarPlaceHolder)->toOne();
   let varType = $var.type;
 
-  if($varType == String,                                   | ^LiteralValue(value=^VariableTypeValue(value='\"${'+$var->toOne().name+'}\"')),
-  | if($varType == Boolean,                                | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'?c}')),
-      | if($varType == Integer,                            | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'}')),
-        | if($varType->in([Float, Number, Decimal]),       | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'}')),
-          | if($varType->in([Date, DateTime, StrictDate]), | ^LiteralValue(value=^VariableTypeValue(value='new ISODate(\"${'+$var->toOne().name+'}\")')),
+  if($varType == String,                                    | ^LiteralValue(value=^VariableTypeValue(value='\"${'+$var->toOne().name+'}\"')),
+  | if($varType == Boolean,                                 | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'?c}')),
+      | if($varType->in([Integer, Float, Number, Decimal]), | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'}')),
+        | if($varType == StrictDate,                        | ^LiteralValue(value=^VariableTypeValue(value='new ISODate(\"${'+$var->toOne().name+'}\")')),
+          | if($varType->in([Date, DateTime]),              | ^LiteralValue(value=^VariableTypeValue(value='new ISODate(\"${'+$var->toOne().name+'}Z\")')),
             {|
               fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
               ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'}'));

@@ -438,6 +438,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue exte
   value: Integer[1];
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::FloatTypeValue extends BaseTypeValue
+{
+  value: Float[1];
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue extends BaseTypeValue
 {
   value: Decimal[1];
