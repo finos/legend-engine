@@ -78,7 +78,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension
                                 ._description(executionContext.description)
                                 ._mapping(mapping)
                                 ._testData(data)
-                                .defaultRuntime(runtime);
+                                ._defaultRuntime(runtime);
                     }));
                     Assert.assertTrue(dataSpace.defaultExecutionContext != null, () -> "Default execution context is missing", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                     Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext defaultExecutionContext = metamodel._executionContexts().toList().select(c -> dataSpace.defaultExecutionContext.equals(c._name())).getFirst();
