@@ -28,6 +28,7 @@ import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::core::runtime::*;
 import meta::pure::runtime::*;
+import meta::pure::store::*;
 
 // =========================================================================================
 // Store Mapping Routing Strategy Builder Helper

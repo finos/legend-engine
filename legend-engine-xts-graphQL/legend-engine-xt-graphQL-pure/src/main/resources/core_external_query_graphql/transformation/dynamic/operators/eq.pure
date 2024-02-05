@@ -1,0 +1,69 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::eq::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::pure::functions::lang::*;
+import meta::pure::functions::multiplicity::*;
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::EqOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
+{
+  value: Literal[1];
+}
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::objectFieldToEqOperator(o: ObjectField[1], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
+{
+  if($debug.debug, | println($debug.space + 'EqOperator'), |[]);
+  let value = $o.value->traverseValue($prefix + '__eq', $m, ^$debug(space=$debug.space + ' '));
+  
+  assert($value->size() == 1, '_eq should contain only one value');
+  assert($value->toOne()->instanceOf(Literal), '_eq value should be a literal');
+  
+  ^EqOperator(value=$value->toOne()->cast(@Literal));
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::processEqOperator(e: EqOperator[1], fieldNames: String[*], cl: Class<Any>[1], vars: VariableExpression[*], count: Integer[1]): IntermediateClass[1]
+{
+  let prop = createProperty($fieldNames, $cl, constructVarName($count));
+  let ic2 = $e.value->nodesToValueSpecification($fieldNames, $cl, $vars, $count)->toOne()
+                    ->handleEnum($prop)
+                    ->handleDate($prop);
+  
+  ^IntermediateClass(
+    vars = $ic2.vars,
+    valueSpecifications=createEqual(
+      $prop,
+      $ic2.valueSpecifications->toOne()->evaluateAndDeactivate()
+    )
+  );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::createEqual(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+  assertEquals(
+    $left.genericType.rawType,
+    $right.genericType.rawType, 
+    'Incorrect type of value provided for "' + $left->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>).name->toOne() + '".' + 
+    'Expected: ' + $left.genericType.rawType->toOne()->toString() + ', Actual: ' + $right.genericType.rawType->toOne()->toString()
+  );
+  
+  sfe(meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$left, $right]);
+}

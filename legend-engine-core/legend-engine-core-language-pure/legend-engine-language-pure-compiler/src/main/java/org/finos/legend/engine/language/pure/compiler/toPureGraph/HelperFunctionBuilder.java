@@ -95,7 +95,8 @@ public class HelperFunctionBuilder
         {
             FunctionTest functionTest = (FunctionTest) test;
             Root_meta_legend_function_metamodel_FunctionTest metamodelTest = new Root_meta_legend_function_metamodel_FunctionTest_Impl("", SourceInformationHelper.toM3SourceInformation(test.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTest"))
-                    ._id(functionTest.id);
+                    ._id(functionTest.id)
+                    ._doc(functionTest.doc);
             if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
             {
                 metamodelTest._parameters(ListIterate.collect(functionTest.parameters, param -> processFunctionTestParameterValue(param, compileContext)));

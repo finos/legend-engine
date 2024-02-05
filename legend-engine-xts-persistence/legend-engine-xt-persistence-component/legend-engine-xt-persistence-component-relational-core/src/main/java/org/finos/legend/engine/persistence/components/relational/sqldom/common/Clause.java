@@ -23,6 +23,7 @@ public enum Clause
     INSERT("INSERT"),
     INSERT_INTO("INSERT INTO"),
     CREATE("CREATE"),
+    REPLACE("REPLACE"),
     ALTER("ALTER"),
     VALUES("VALUES"),
     FROM("FROM"),
@@ -36,6 +37,7 @@ public enum Clause
     WHEN_NOT_MATCHED("WHEN NOT MATCHED"),
     THEN("THEN"),
     AND("AND"),
+    OR("OR"),
     IN("IN"),
     ON("ON"),
     NOT("NOT"),
@@ -61,7 +63,9 @@ public enum Clause
     ARRAY("ARRAY"),
     LOAD_DATA("LOAD DATA"),
     OVERWRITE("OVERWRITE"),
-    FILES("FILES");
+    FILES("FILES"),
+    EXTERNAL("EXTERNAL"),
+    OPTIONS("OPTIONS");
 
     private final String clause;
 

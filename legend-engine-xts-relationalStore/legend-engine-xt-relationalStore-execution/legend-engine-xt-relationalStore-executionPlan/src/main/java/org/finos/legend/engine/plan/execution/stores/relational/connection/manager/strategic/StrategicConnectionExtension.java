@@ -25,12 +25,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategyVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecificationVisitor;
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-public interface StrategicConnectionExtension
+public interface StrategicConnectionExtension extends LegendConnectionExtension
 {
     AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators();
 

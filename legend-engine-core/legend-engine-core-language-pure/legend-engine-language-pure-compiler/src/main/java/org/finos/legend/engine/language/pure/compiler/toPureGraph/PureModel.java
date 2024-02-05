@@ -286,6 +286,8 @@ public class PureModel implements IPureModel
             LOGGER.info("{}", new LogInfo(pm, "GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES", nanosDurationToMillis(loadOtherElementsPostConnectionsAndRuntimesStart, loadOtherElementsPostConnectionsAndRuntimesEnd)));
             span.log("GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES");
 
+            pureModelContextDataIndex.functions.forEach(this::processFifthPass);
+
             // Post Validation
             long postValidationStart = System.nanoTime();
             new ProfileValidator().validate(this, pureModelContextData);
@@ -937,7 +939,7 @@ public class PureModel implements IPureModel
     public Store getStore(String fullPath, SourceInformation sourceInformation)
     {
         Store store = getStore_safe(fullPath);
-        Assert.assertTrue(store != null, () -> "Can't find store '" + fullPath + "'", sourceInformation, EngineErrorType.COMPILATION);
+        Assert.assertTrue(store != null, () -> "The store '" + fullPath + "' can't be found.", sourceInformation, EngineErrorType.COMPILATION);
         return store;
     }
 
@@ -978,6 +980,15 @@ public class PureModel implements IPureModel
         return this.mappingsIndex.get(packagePrefix(fullPath));
     }
 
+    public RichIterable<Root_meta_pure_runtime_PackageableRuntime> getAllRuntimes()
+    {
+        return this.packageableRuntimesIndex.valuesView();
+    }
+
+    public RichIterable<Store> getAllStores()
+    {
+        return this.storesIndex.valuesView();
+    }
 
     public Root_meta_core_runtime_Runtime getRuntime(String fullPath)
     {

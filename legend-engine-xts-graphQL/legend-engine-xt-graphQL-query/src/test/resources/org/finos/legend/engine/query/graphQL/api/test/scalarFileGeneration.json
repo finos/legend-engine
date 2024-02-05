@@ -29,7 +29,8 @@
           },
           {
             "multiplicity": {
-              "lowerBound": 0
+              "lowerBound": 0,
+              "upperBound": 1
             },
             "name": "decimal",
             "type": "Decimal"

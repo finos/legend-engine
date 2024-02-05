@@ -84,6 +84,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Gen
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.nio.charset.StandardCharsets;
@@ -502,6 +504,10 @@ public class DomainParseTreeWalker
         }
         FunctionTest functionTest = new FunctionTest();
         functionTest.id = PureGrammarParserUtility.fromIdentifier(simpleFunctionTestContext.identifier(0));
+        if (simpleFunctionTestContext.STRING() != null)
+        {
+           functionTest.doc = PureGrammarParserUtility.fromGrammarString(simpleFunctionTestContext.STRING().getText(), true);
+        }
         functionTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(simpleFunctionTestContext);
         DomainParserGrammar.FunctionParamsContext functionParamsContext = simpleFunctionTestContext.functionParams();
         if (functionParamsContext != null && !functionParamsContext.primitiveValue().isEmpty())
@@ -1323,12 +1329,57 @@ public class DomainParseTreeWalker
         {
             result = this.instanceReference(ctx.instanceReference(), typeParametersNames, lambdaContext, space, addLines);
         }
+        else if (ctx.columnBuilders() != null)
+        {
+            DomainParserGrammar.OneColSpecContext oneColSpec = ctx.columnBuilders().oneColSpec();
+            DomainParserGrammar.ColSpecArrayContext colSpecArray = ctx.columnBuilders().colSpecArray();
+            if (oneColSpec != null)
+            {
+                ColSpec colSpec = processOneColSpec(oneColSpec, typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions);
+                result = DomainParseTreeWalker.wrapWithClassInstance(colSpec, colSpec.sourceInformation, "colSpec");
+            }
+            else if (colSpecArray != null)
+            {
+                ColSpecArray colSpecArr = new ColSpecArray();
+                colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions));
+                result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
+                ;
+            }
+            else
+            {
+                throw new RuntimeException("No Possible");
+            }
+        }
         else
         {
             // lambdaPipe
             result = this.lambdaPipe(ctx.lambdaPipe(), null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
         return result;
+    }
+
+    private ColSpec processOneColSpec(DomainParserGrammar.OneColSpecContext oneColSpec, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    {
+        ValueSpecification result;
+        ColSpec colSpec = new ColSpec();
+
+        colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
+
+        colSpec.name = oneColSpec.identifier().getText().trim();
+        colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
+        colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
+        if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
+        {
+            Variable var = this.lambdaParam(oneColSpec.lambdaParam().lambdaParamType(), oneColSpec.lambdaParam().identifier(), typeParametersNames, space);
+            expressions.add(var);
+            colSpec.function1 = this.lambdaPipe(oneColSpec.lambdaPipe(), oneColSpec.lambdaParam().getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            if (oneColSpec.extraFunction() != null)
+            {
+                List<Variable> var2 = Lists.mutable.with(this.lambdaParam(oneColSpec.extraFunction().lambdaParam().lambdaParamType(), oneColSpec.extraFunction().lambdaParam().identifier(), typeParametersNames, space));
+                colSpec.function2 = this.lambdaPipe(oneColSpec.extraFunction().lambdaPipe(), oneColSpec.extraFunction().lambdaParam().getStart(), var2, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            }
+        }
+        return colSpec;
     }
 
     private ListIterable<ValueSpecification> visitDsl(DomainParserGrammar.DslContext ctx, ParseTreeWalkerSourceInformation parentWalkerSourceInformation)
@@ -1355,7 +1406,7 @@ public class DomainParseTreeWalker
                     throw new EngineException("Can't find an embedded Pure parser for the type '" + openTag + "' available ones: [" + this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParsers().collect(p -> p.getType()).makeString(",") + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
                 }
                 String content = ListIterate.collect(ctx.dslExtension().dslExtensionContent(), RuleContext::getText).makeString("").trim();
-                return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions())));
+                return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions()), sourceInformation));
             }
         }
         else if (ctx.dslNavigationPath() != null)
@@ -1430,7 +1481,7 @@ public class DomainParseTreeWalker
         return variable;
     }
 
-    private ValueSpecification lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private Lambda lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
 //        List<ValueSpecification> block = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, addLines, space);
 //        ValueSpecification result;
@@ -1834,11 +1885,12 @@ public class DomainParseTreeWalker
         return m;
     }
 
-    public static ClassInstance wrapWithClassInstance(Object obj, String val)
+    public static ClassInstance wrapWithClassInstance(Object obj, SourceInformation sourceInformation, String val)
     {
         ClassInstance value = new ClassInstance();
         value.type = val;
         value.value = obj;
+        value.sourceInformation = sourceInformation;
         return value;
     }
 

@@ -16,10 +16,12 @@ package org.finos.legend.engine.plan.generation;
 
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -89,6 +91,11 @@ public class PlanGenerator
         return generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, planId, false, extensions).getOne();
     }
 
+    public static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanAsPure(FunctionDefinition<?> l, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
+    {
+        return generateExecutionPlanAsPure(l, null, null, context, pureModel, platform, planId, debug, extensions);
+    }
+
     private static Pair<Root_meta_pure_executionPlan_ExecutionPlan, String> generateExecutionPlanAsPure(FunctionDefinition<?> l, Mapping mapping, Root_meta_core_runtime_Runtime pureRuntime, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, PlanPlatform platform, String planId, boolean debug, RichIterable<? extends Root_meta_pure_extension_Extension> extensions)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Generate Plan").startActive(true))
@@ -96,36 +103,46 @@ public class PlanGenerator
             Root_meta_pure_executionPlan_ExecutionPlan plan;
             String debugInfo = "";
 
-            if (mapping == null)
+            if (debug)
             {
-                plan = context == null ?
-                        core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Extension_MANY__ExecutionPlan_1_(l, extensions, pureModel.getExecutionSupport())
-                        : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__Extension_MANY__ExecutionPlan_1_(l, context, extensions, pureModel.getExecutionSupport());
-            }
-            else
-            {
-                if (debug)
+                ByteArrayOutputStream bs = new ByteArrayOutputStream();
+                Console console = pureModel.getExecutionSupport().getConsole();
+                console.enable();
+                try (PrintStream ps = new PrintStream(bs, true, StandardCharsets.UTF_8.name()))
                 {
-                    ByteArrayOutputStream bs = new ByteArrayOutputStream();
-                    Console console = pureModel.getExecutionSupport().getConsole();
-                    console.enable();
-                    try (PrintStream ps = new PrintStream(bs, true, StandardCharsets.UTF_8.name()))
+                    console.setPrintStream(ps);
+                    if (mapping == null)
                     {
-                        console.setPrintStream(ps);
+                        plan = context == null ?
+                                core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport())
+                                : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, context, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
+                    }
+                    else
+                    {
                         plan = context == null ?
                                 core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport())
                                 : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, core_pure_tools_tools_extension.Root_meta_pure_tools_debug__DebugContext_1_(pureModel.getExecutionSupport()), pureModel.getExecutionSupport());
-                        debugInfo = bs.toString(StandardCharsets.UTF_8.name());
                     }
-                    catch (Exception e)
-                    {
-                        debugInfo = bs.toString();
-                        throw new RuntimeException(e.getMessage() + "-- Debug details before exception: " + debugInfo + "--", e);
-                    }
-                    finally
-                    {
-                        console.disable();
-                    }
+                    debugInfo = bs.toString(StandardCharsets.UTF_8.name());
+                }
+                catch (Exception e)
+                {
+                    debugInfo = bs.toString();
+                    throw new RuntimeException(e.getMessage() + "-- Debug details before exception: " + debugInfo + "--", e);
+                }
+                finally
+                {
+                    console.disable();
+                }
+            }
+            else
+            {
+                if (mapping == null)
+                {
+                    plan = context == null ?
+                            core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Extension_MANY__ExecutionPlan_1_(l, extensions, pureModel.getExecutionSupport())
+                            : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__ExecutionContext_1__Extension_MANY__ExecutionPlan_1_(l, context, extensions, pureModel.getExecutionSupport());
+
                 }
                 else
                 {
@@ -134,6 +151,7 @@ public class PlanGenerator
                             : core_pure_executionPlan_executionPlan_generation.Root_meta_pure_executionPlan_executionPlan_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__ExecutionPlan_1_(l, mapping, pureRuntime, context, extensions, pureModel.getExecutionSupport());
                 }
             }
+
             if (platform != null)
             {
                 plan = platform.bindPlan(plan, planId, pureModel, extensions);

@@ -18,7 +18,7 @@ import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.pure.code.core.PureCoreExtension;
+import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.pure.m3.compiler.Context;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
@@ -51,7 +51,7 @@ public class LegendExtensions extends NativeFunction
     @Override
     public CoreInstance execute(ListIterable<? extends CoreInstance> params, Stack<MutableMap<String, CoreInstance>> resolvedTypeParameters, Stack<MutableMap<String, CoreInstance>> resolvedMultiplicityParameters, VariableContext variableContext, CoreInstance functionExpressionToUseInStack, Profiler profiler, InstantiationContext instantiationContext, ExecutionSupport executionSupport, Context context, ProcessorSupport processorSupport) throws PureExecutionException
     {
-        MutableList<String> allSignatures = PureCoreExtensionLoader.extensions().collect(PureCoreExtension::functionSignature);
+        MutableList<String> allSignatures = PureCoreExtensionLoader.extensions().collect(LegendPureCoreExtension::functionSignature);
         if (allSignatures.contains(null))
         {
             String message = PureCoreExtensionLoader.extensions().select(c -> c.functionSignature() == null).collect(z -> z.getClass().getSimpleName() + " didn't define a functionSignature!").makeString(", ");

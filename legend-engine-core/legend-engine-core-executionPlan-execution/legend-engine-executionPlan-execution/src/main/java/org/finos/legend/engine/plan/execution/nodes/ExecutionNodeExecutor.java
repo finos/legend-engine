@@ -43,6 +43,7 @@ import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNo
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.nodes.state.GraphExecutionState;
+import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.MultiResult;
@@ -222,14 +223,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     {
         String varName = allocationExecutionNode.varName;
         Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState).varName(varName).setRealizeInMemory(allocationExecutionNode.realizeInMemory)));
-        if (result instanceof ConstantResult && ((ConstantResult) result).getValue() instanceof Map && ((Map<?, ?>) ((ConstantResult) result).getValue()).get("values") != null)
-        {
-            result = new ConstantResult(((List<?>) ((Map<?, ?>) ((ConstantResult) result).getValue()).get("values")).get(0));
-        }
-        if (result instanceof ConstantResult && ((ConstantResult) result).getValue() instanceof Map && ((Map<?, ?>) ((ConstantResult) result).getValue()).get("value") != null)
-        {
-            result = new ConstantResult(((Map<?, ?>) ((ConstantResult) result).getValue()).get("value"));
-        }
+
         if (this.executionState.realizeAllocationResults)
         {
             result = result.realizeInMemory();
@@ -306,7 +300,12 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(ConstantExecutionNode constantExecutionNode)
     {
-        return new ConstantResult(constantExecutionNode.values());
+        Object value = constantExecutionNode.values().accept(new PrimitiveValueSpecificationToObjectVisitor());
+        if (value instanceof List && ((List<?>) value).size() == 1 && ((List<?>) value).get(0) instanceof List)
+        {
+            value = ((List<?>) value).get(0);
+        }
+        return new ConstantResult(value);
     }
 
 

@@ -51,7 +51,8 @@ import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.NodeVisitor;
 import org.finos.legend.engine.protocol.sql.metamodel.NotExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.NullLiteral;
-import org.finos.legend.engine.protocol.sql.metamodel.ParameterExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.ParameterPlaceholderExpression;
+import org.finos.legend.engine.protocol.sql.metamodel.PositionalParameterExpression;
 import org.finos.legend.engine.protocol.sql.metamodel.QualifiedNameReference;
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.metamodel.QueryBody;
@@ -319,7 +320,13 @@ public class BaseNodeModifierVisitor implements NodeVisitor<Node>
     }
 
     @Override
-    public Node visit(ParameterExpression val)
+    public Node visit(PositionalParameterExpression val)
+    {
+        return val;
+    }
+
+    @Override
+    public Node visit(ParameterPlaceholderExpression val)
     {
         return val;
     }

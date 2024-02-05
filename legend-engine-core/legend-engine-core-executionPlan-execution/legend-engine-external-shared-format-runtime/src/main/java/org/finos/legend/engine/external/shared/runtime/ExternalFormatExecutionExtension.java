@@ -27,6 +27,7 @@ import org.finos.legend.engine.plan.execution.extension.ExecutionExtension;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
+import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.InputStreamResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResult;
@@ -45,7 +46,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 public class ExternalFormatExecutionExtension implements ExecutionExtension
 {
@@ -95,7 +98,12 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         Result sourceResult = node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState)));
         InputStream stream = ExecutionHelper.inputStreamFromResult(sourceResult);
         StreamingObjectResult<?> streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, profiles, executionState);
-        return applyConstraints(streamingObjectResult, sourceResult, node.checked, node.enableConstraints);
+        StreamingObjectResult<?> withConstraints = applyConstraints(streamingObjectResult, sourceResult, node.checked, node.enableConstraints);
+        if (!executionState.realizeInMemory)
+        {
+            return withConstraints;
+        }
+        return new ConstantResult(withConstraints.getObjectStream().collect(Collectors.toList()));
     }
 
     private Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
@@ -153,7 +161,7 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         return applyConstraints(streamingObjectResult, streamingObjectResult.getChildResult(), node.checked, node.enableConstraints);
     }
 
-    private Result applyConstraints(StreamingObjectResult<?> streamingObjectResult, Result childResult, boolean checked, boolean enableConstraints)
+    private StreamingObjectResult<?> applyConstraints(StreamingObjectResult<?> streamingObjectResult, Result childResult, boolean checked, boolean enableConstraints)
     {
         Stream<IChecked<?>> checkedStream = (Stream<IChecked<?>>) streamingObjectResult.getObjectStream();
         Stream<IChecked<?>> withConstraints = enableConstraints

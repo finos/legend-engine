@@ -511,7 +511,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "  'Hello ' + $name\n" +
                         "}\n" +
                         "{\n" +
-                        "  myTest | Hello('John',20) => 'Hello John!';\n" +
+                        "  myTest 'this is some documentation for the test' | Hello('John',20) => 'Hello John!';\n" +
                         "  myOtherTest | Hello('Nicole',20) => 'Hello Nicole!';\n" +
                         "}\n");
         test("function my::Hello(name: String[1]): String[1]\n" +

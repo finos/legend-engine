@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -73,10 +74,10 @@ public class AppendOnlyGeneratorTest extends BigQueryEndToEndTest
     }
 
     @Test
-    public void testMilestoningWithDigestGeneration() throws IOException, InterruptedException
+    public void testMilestoningWithDigestGenerationWithFieldsToExclude() throws IOException, InterruptedException
     {
         AppendOnly ingestMode = AppendOnly.builder()
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName("demo.LAKEHOUSE_MD5").digestField(digestName).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName("demo.LAKEHOUSE_MD5").digestField(digestName).addAllFieldsToExcludeFromDigest(Arrays.asList(bizDate.name(), insertTimestamp.name())).build())
             .auditing(NoAuditing.builder().build())
             .batchIdField("batch_id")
             .build();

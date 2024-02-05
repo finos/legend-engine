@@ -254,7 +254,12 @@ public class HelperDomainGrammarComposer
     public static String renderFunctionTest(Function function, FunctionTest functionTest, int currentInt, PureGrammarComposerContext context)
     {
         StringBuilder str = new StringBuilder();
-        str.append(getTabString(currentInt)).append(functionTest.id).append(" | ").append(HelperValueSpecificationGrammarComposer.getFunctionNameWithNoPackage(function)).append("(");
+        str.append(getTabString(currentInt)).append(functionTest.id);
+        if (functionTest.doc != null)
+        {
+            str.append(" ").append(PureGrammarComposerUtility.convertString(functionTest.doc, true));
+        }
+        str.append(" | ").append(HelperValueSpecificationGrammarComposer.getFunctionNameWithNoPackage(function)).append("(");
         if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
         {
             str.append(LazyIterate.collect(functionTest.parameters, parameterValue -> parameterValue.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).makeString(","));

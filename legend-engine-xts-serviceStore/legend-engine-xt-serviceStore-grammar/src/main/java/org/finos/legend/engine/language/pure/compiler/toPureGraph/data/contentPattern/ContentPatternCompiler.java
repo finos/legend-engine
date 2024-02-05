@@ -15,9 +15,11 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.data.contentPattern;
 
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.ContentPattern;
+import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 import org.finos.legend.pure.generated.Root_meta_external_store_service_metamodel_data_ContentPattern;
 
-public interface ContentPatternCompiler
+public interface ContentPatternCompiler extends LegendModuleSpecificExtension
 {
     boolean supports(ContentPattern contentPattern);
 

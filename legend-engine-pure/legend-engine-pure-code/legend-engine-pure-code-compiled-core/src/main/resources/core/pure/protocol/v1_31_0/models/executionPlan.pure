@@ -106,7 +106,7 @@ Class meta::protocols::pure::v1_31_0::metamodel::executionPlan::CompiledClass
 
 Class meta::protocols::pure::v1_31_0::metamodel::executionPlan::ConstantExecutionNode extends ExecutionNode
 {
-   values : Any[1];
+   values : meta::protocols::pure::v1_31_0::metamodel::valueSpecification::ValueSpecification[1];
 }
 
 Class meta::protocols::pure::v1_31_0::metamodel::executionPlan::SequenceExecutionNode extends ExecutionNode

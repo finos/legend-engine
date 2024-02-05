@@ -23,5 +23,5 @@ public interface PostgresResultSet
 
     boolean next() throws Exception;
 
-    public void close() throws Exception;
+    void close() throws Exception;
 }

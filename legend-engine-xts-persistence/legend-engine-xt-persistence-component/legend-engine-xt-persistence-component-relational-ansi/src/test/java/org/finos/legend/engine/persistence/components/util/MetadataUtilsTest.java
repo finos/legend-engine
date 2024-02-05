@@ -20,6 +20,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Ins
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -34,6 +35,7 @@ import java.time.Clock;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class MetadataUtilsTest
 {
@@ -138,7 +140,7 @@ public abstract class MetadataUtilsTest
     public void testInsertMetaStore()
     {
         MetadataUtils store = new MetadataUtils(metadataDataset());
-        Insert operation = store.insertMetaData(tableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE);
+        Insert operation = store.insertMetaData(tableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()));
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions);
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
@@ -151,7 +153,7 @@ public abstract class MetadataUtilsTest
     public void testInsertMetaStoreWithUpperCase()
     {
         MetadataUtils store = new MetadataUtils(metadataDataset());
-        Insert operation = store.insertMetaData(tableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE);
+        Insert operation = store.insertMetaData(tableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()));
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
 
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withOptimizers(new UpperCaseOptimizer()));
@@ -171,7 +173,7 @@ public abstract class MetadataUtilsTest
         RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withOptimizers(new UpperCaseOptimizer()));
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
-        String expectedSql = "SELECT " + lowerCaseTableName() + ".\"STAGING_FILTERS\" FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " " +
+        String expectedSql = "SELECT " + lowerCaseTableName() + ".\"BATCH_SOURCE_INFO\" FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " " +
                 "WHERE (UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'MAIN') AND " +
                 "(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\" = (SELECT MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\") " +
                 "FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE " +
@@ -180,4 +182,41 @@ public abstract class MetadataUtilsTest
 
     }
 
+    @Test
+    public void testInsertMetadataWithAdditionalInfo()
+    {
+        MetadataUtils store = new MetadataUtils(metadataDataset());
+        StringValue bulkLoadTableName = StringValue.of("appeng_log_table_name");
+        StringValue batchSourceInfoValue = StringValue.of("my_batch_source_info");
+        StringValue additionalMetadataValue = StringValue.of("my_additional_metadata");
+        Insert operation = store.insertMetaData(bulkLoadTableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchSourceInfoValue), Optional.of(additionalMetadataValue));
+
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withBulkLoadBatchStatusPattern("<BATCH_STATUS_PATTERN>"));
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expectedSql = "INSERT INTO " + lowerCaseTableName() +
+            " (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\")" +
+            " (SELECT 'appeng_log_table_name',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"table_batch_id\"),0)+1 FROM " + lowerCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"table_name\") = 'APPENG_LOG_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_batch_source_info'),PARSE_JSON('my_additional_metadata'))";;
+        Assertions.assertEquals(expectedSql, list.get(0));
+    }
+
+    @Test
+    public void testInsertMetadataWithAdditionalInfoInUpperCase()
+    {
+        MetadataUtils store = new MetadataUtils(metadataDataset());
+        StringValue bulkLoadTableName = StringValue.of("BULK_LOAD_TABLE_NAME");
+        StringValue batchSourceInfoValue = StringValue.of("my_batch_source_info");
+        StringValue additionalMetadataValue = StringValue.of("my_additional_metadata");
+        Insert operation = store.insertMetaData(bulkLoadTableName, BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, BulkLoadBatchStatusValue.INSTANCE, Optional.of(batchSourceInfoValue), Optional.of(additionalMetadataValue));
+
+        RelationalTransformer transformer = new RelationalTransformer(AnsiSqlSink.get(), transformOptions.withBulkLoadBatchStatusPattern("<BATCH_STATUS_PATTERN>").withOptimizers(new UpperCaseOptimizer()));
+        LogicalPlan logicalPlan = LogicalPlan.builder().addOps(operation).build();
+        SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
+        List<String> list = physicalPlan.getSqlList();
+        String expectedSql = "INSERT INTO " + upperCaseTableName() +
+            " (\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"BATCH_SOURCE_INFO\", \"ADDITIONAL_METADATA\")" +
+            " (SELECT 'BULK_LOAD_TABLE_NAME',(SELECT COALESCE(MAX(" + lowerCaseTableName() + ".\"TABLE_BATCH_ID\"),0)+1 FROM " + upperCaseTableName() + " as " + lowerCaseTableName() + " WHERE UPPER(" + lowerCaseTableName() + ".\"TABLE_NAME\") = 'BULK_LOAD_TABLE_NAME'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'<BATCH_STATUS_PATTERN>',PARSE_JSON('my_batch_source_info'),PARSE_JSON('my_additional_metadata'))";
+        Assertions.assertEquals(expectedSql, list.get(0));
+    }
 }

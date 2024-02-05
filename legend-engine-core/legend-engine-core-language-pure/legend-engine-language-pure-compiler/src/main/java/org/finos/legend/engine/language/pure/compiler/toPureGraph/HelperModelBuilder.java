@@ -235,7 +235,6 @@ public class HelperModelBuilder
             catch (Exception e)
             {
                 LOGGER.warn(new LogInfo(null, LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build constraint '" + c.name + "' of class '" + context.pureModel.buildPackageString(_package, _name) + "- stack: " + ctx.getStack()).toString());
-                System.out.println(e.getMessage());
                 if (e instanceof EngineException)
                 {
                     throw e;

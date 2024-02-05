@@ -45,6 +45,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -518,7 +519,7 @@ class AppendOnlyTest extends BaseTest
     Scenario: Test Append Only with auditing, all version, filter duplicates and no filter existing records with UDF based digest generation
     */
     @Test
-    void testAppendOnlyWithUDFDigestGeneration2() throws Exception
+    void testAppendOnlyWithUDFDigestGenerationWithFieldsToExclude() throws Exception
     {
         // Register UDF
         H2DigestUtil.registerMD5Udf(h2Sink, digestUDF);
@@ -542,7 +543,7 @@ class AppendOnlyTest extends BaseTest
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeName).build())
             .filterExistingRecords(false)
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUDF).digestField(digestName).addAllFieldsToExcludeFromDigest(Arrays.asList(versionName)).build())
             .build();
 
         // Verify SQLs using generator
@@ -564,7 +565,7 @@ class AppendOnlyTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST\".\"main\" " +
             "(\"id\", \"name\", \"income\", \"start_time\", \"expiry_date\", \"version\", \"digest\", \"batch_update_time\", \"batch_id\") " +
             "(SELECT staging.\"id\" as \"id\",staging.\"name\" as \"name\",staging.\"income\" as \"income\",staging.\"start_time\" as \"start_time\",staging.\"expiry_date\" as \"expiry_date\",staging.\"version\" as \"version\"," +
-            "LAKEHOUSE_MD5(ARRAY['id','name','income','start_time','expiry_date','version'],ARRAY[CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"name\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),CONVERT(staging.\"start_time\",VARCHAR),CONVERT(staging.\"expiry_date\",VARCHAR),CONVERT(staging.\"version\",VARCHAR)])," +
+            "LAKEHOUSE_MD5(ARRAY['id','name','income','start_time','expiry_date'],ARRAY[CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"name\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),CONVERT(staging.\"start_time\",VARCHAR),CONVERT(staging.\"expiry_date\",VARCHAR)])," +
             "'2000-01-01 00:00:00.000000'," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"TEST\".\"staging_legend_persistence_temp_staging\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
@@ -578,8 +579,8 @@ class AppendOnlyTest extends BaseTest
         String[] schema = new String[]{idName, nameName, incomeName, startTimeName, expiryDateName, versionName, digestName, batchUpdateTimeName, batchIdName};
 
         // ------------ Perform incremental (append) milestoning Pass1 ------------------------
-        String dataPass1 = basePath + "input/digest_generation2/data_pass1.csv";
-        String expectedDataPass1 = basePath + "expected/digest_generation2/expected_pass1.csv";
+        String dataPass1 = basePath + "input/digest_generation_with_fields_to_exclude/data_pass1.csv";
+        String expectedDataPass1 = basePath + "expected/digest_generation_with_fields_to_exclude/expected_pass1.csv";
         // 1. Load staging table
         loadStagingDataWithVersionWithoutDigest(dataPass1);
         // 2. Execute plans and verify results
@@ -591,8 +592,8 @@ class AppendOnlyTest extends BaseTest
         executePlansAndVerifyResultsWithDerivedDataSplits(ingestMode, options, datasets, schema, expectedDataPass1, expectedStatsList, incrementalClock);
 
         // ------------ Perform incremental (append) milestoning Pass2 ------------------------
-        String dataPass2 = basePath + "input/digest_generation2/data_pass2.csv";
-        String expectedDataPass2 = basePath + "expected/digest_generation2/expected_pass2.csv";
+        String dataPass2 = basePath + "input/digest_generation_with_fields_to_exclude/data_pass2.csv";
+        String expectedDataPass2 = basePath + "expected/digest_generation_with_fields_to_exclude/expected_pass2.csv";
         // 1. Load staging table
         loadStagingDataWithVersionWithoutDigest(dataPass2);
         // 2. Execute plans and verify results

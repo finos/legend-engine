@@ -17,6 +17,8 @@ package org.finos.legend.engine.language.stores.elasticsearch.v7.to;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
@@ -33,28 +35,29 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.runtime
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.Elasticsearch7Store;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
+
 public class ElasticsearchGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof Elasticsearch7Store)
+        {
+            return HelperElasticsearchStoreComposer.render((Elasticsearch7Store) element, context);
+        }
+        return null;
+    });
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
     @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.fixedSize.with((elements, context, sectionName) ->
-        {
-            if (ElasticsearchGrammarParserExtension.NAME.equals(sectionName))
-            {
-                return elements.stream().map(element ->
-                {
-                    if (element instanceof Elasticsearch7Store)
-                    {
-                        return HelperElasticsearchStoreComposer.render((Elasticsearch7Store) element, context);
-                    }
-
-                    throw new EngineException("", EngineErrorType.COMPOSER);
-                }).collect(Collectors.joining("\n\n"));
-            }
-
-            return null;
-        });
+        return Lists.mutable.with(buildSectionComposer(ElasticsearchGrammarParserExtension.NAME, renderers));
     }
 
     @Override

@@ -84,15 +84,15 @@ import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParser
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
-import org.finos.legend.pure.code.core.ElasticsearchPureCoreExtension;
+import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtensionLoader;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppProtocolExtension;
-import org.finos.legend.engine.pure.code.core.CorePureCoreExtension;
-import org.finos.legend.engine.pure.code.core.PureCoreExtension;
-import org.finos.legend.engine.pure.code.core.ServicePureCoreExtension;
+import org.finos.legend.engine.pure.code.core.CoreLegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.ServiceLegendPureCoreExtension;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.code.core.*;
@@ -138,7 +138,7 @@ public class TestExtensions
     @Test
     public void testPlanGeneratorExtensionArePresent()
     {
-        assertHasExtensions(getExpectedPlanGeneratorExtensions(), PureCoreExtension.class);
+        assertHasExtensions(getExpectedPlanGeneratorExtensions(), LegendPureCoreExtension.class);
     }
 
     @Test
@@ -409,27 +409,27 @@ public class TestExtensions
                 ;
     }
 
-    protected Iterable<? extends Class<? extends PureCoreExtension>> getExpectedPlanGeneratorExtensions()
+    protected Iterable<? extends Class<? extends LegendPureCoreExtension>> getExpectedPlanGeneratorExtensions()
     {
         // DO NOT DELETE ITEMS FROM THIS LIST (except when replacing them with something equivalent)
-        return Lists.mutable.<Class<? extends PureCoreExtension>>empty()
-                .with(JSONJavaBindingPureCoreExtension.class)
-                .with(MongoDBPureCoreExtension.class)
-                .with(FlatDataPureCoreExtension.class)
-                .with(ElasticsearchPureCoreExtension.class)
-                .with(CorePureCoreExtension.class)
-                .with(JSONPureCoreExtension.class)
-                .with(RelationalPureCoreExtension.class)
-                .with(BindingJavaBindingPureCoreExtension.class)
-                .with(M2MJavaBindingPureCoreExtension.class)
-                .with(ServiceStoreJavaBindingPureCoreExtension.class)
-                .with(ServiceStorePureCoreExtension.class)
-                .with(FlatDataJavaBindingPureCoreExtension.class)
-                .with(XMLPureCoreExtension.class)
-                .with(XMLJavaBindingPureCoreExtension.class)
-                .with(ServicePureCoreExtension.class)
-                .with(RelationalJavaBindingPureCoreExtension.class)
-                .with(ArrowPureCoreExtension.class)
+        return Lists.mutable.<Class<? extends LegendPureCoreExtension>>empty()
+                .with(JSONJavaBindingLegendPureCoreExtension.class)
+                .with(MongoDBLegendPureCoreExtension.class)
+                .with(FlatDataLegendPureCoreExtension.class)
+                .with(ElasticsearchLegendPureCoreExtension.class)
+                .with(CoreLegendPureCoreExtension.class)
+                .with(JSONLegendPureCoreExtension.class)
+                .with(RelationalLegendPureCoreExtension.class)
+                .with(BindingJavaBindingLegendPureCoreExtension.class)
+                .with(M2MJavaBindingLegendPureCoreExtension.class)
+                .with(ServiceStoreJavaBindingLegendPureCoreExtension.class)
+                .with(ServiceStoreLegendPureCoreExtension.class)
+                .with(FlatDataJavaBindingLegendPureCoreExtension.class)
+                .with(XMLLegendPureCoreExtension.class)
+                .with(XMLJavaBindingLegendPureCoreExtension.class)
+                .with(ServiceLegendPureCoreExtension.class)
+                .with(RelationalJavaBindingLegendPureCoreExtension.class)
+                .with(ArrowLegendPureCoreExtension.class)
                 ;
     }
 

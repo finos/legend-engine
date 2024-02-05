@@ -464,7 +464,7 @@ public class ServiceParseTreeWalker
                 PureList param = new PureList();
                 param.values = paramValues;
                 param.sourceInformation = walkerSourceInformation.getSourceInformation(ctx.testListValueParam());
-                return new ClassInstance("listInstance", param);
+                return new ClassInstance("listInstance", param, param.sourceInformation);
             }
             else if (ctx.testSingleValueParam() != null)
             {

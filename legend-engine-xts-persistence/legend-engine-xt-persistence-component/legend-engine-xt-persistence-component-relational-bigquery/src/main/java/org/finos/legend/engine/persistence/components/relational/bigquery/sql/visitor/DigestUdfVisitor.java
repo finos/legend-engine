@@ -17,7 +17,6 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.sql.v
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
@@ -34,7 +33,9 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
         Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
         prev.push(udf);
 
-        FunctionImpl function = FunctionImpl.builder().functionName(FunctionName.TO_JSON).addValue(ObjectValue.of(current.dataset().orElseThrow(IllegalStateException::new).datasetReference().alias())).build();
-        return new VisitorResult(udf, Arrays.asList(function));
+        FunctionImpl structFunction = FunctionImpl.builder().functionName(FunctionName.STRUCT).addAllValue(current.values()).build();
+        FunctionImpl toJsonFunction = FunctionImpl.builder().functionName(FunctionName.TO_JSON).addValue(structFunction).build();
+
+        return new VisitorResult(udf, Arrays.asList(toJsonFunction));
     }
 }
