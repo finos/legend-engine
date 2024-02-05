@@ -15,11 +15,11 @@
 package org.finos.legend.engine.language.hostedService.generation.control;
 
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Ownership;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 
-public interface HostedServiceOwnerValidator<T extends Root_meta_external_function_activator_hostedService_Ownership>
+public interface HostedServiceOwnerValidator<T extends Root_meta_external_function_activator_Ownership>
 {
      boolean isOwner(Identity identity, T ownershipModel);
 
-    public boolean supports(Root_meta_external_function_activator_hostedService_Ownership ownershipModel);
+    public boolean supports(Root_meta_external_function_activator_Ownership ownershipModel);
 }
