@@ -110,7 +110,7 @@ class AppendOnlyPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);
 
         // Add digest generation (if applicable)
-        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsert));
 
         // Add auditing (if applicable)
         if (ingestMode().auditing().accept(AUDIT_ENABLED))

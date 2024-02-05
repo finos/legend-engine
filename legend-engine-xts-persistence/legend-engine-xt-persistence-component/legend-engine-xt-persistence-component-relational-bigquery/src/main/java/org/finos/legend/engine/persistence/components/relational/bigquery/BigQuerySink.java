@@ -19,6 +19,7 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ClusterKey;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.PartitionKey;
@@ -60,6 +61,7 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.sql.vi
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DatetimeValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DeleteVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.DigestUdfVisitor;
+import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.ExternalDatasetVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.FieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.PartitionKeyVisitor;
 import org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor.SQLCreateVisitor;
@@ -120,6 +122,7 @@ public class BigQuerySink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(BatchEndTimestamp.class, new BatchEndTimestampVisitor());
         logicalPlanVisitorByClass.put(BatchStartTimestamp.class, new BatchStartTimestampVisitor());
         logicalPlanVisitorByClass.put(Copy.class, new CopyVisitor());
+        logicalPlanVisitorByClass.put(ExternalDataset.class, new ExternalDatasetVisitor());
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(StagedFilesDataset.class, new StagedFilesDatasetVisitor());
         logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());

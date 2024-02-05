@@ -73,15 +73,7 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
 
     public Map<StatisticName, Object> executeLoadPhysicalPlanAndGetStats(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
     {
-        List<String> sqlList = physicalPlan.getSqlList();
-
-        // Load statement (Not supported in Bigquery to run in a transaction)
-        Map<StatisticName, Object> loadStats = bigQueryHelper.executeLoadStatement(getEnrichedSql(placeholderKeyValues, sqlList.get(0)));
-
-        // Isolation level of Bigquery is Snapshot,
-        // So Insert statement has to run in a new transaction so that it can see the changes of Load
-        bigQueryHelper.executeStatementInANewTransaction(getEnrichedSql(placeholderKeyValues, sqlList.get(1)));
-        return loadStats;
+        return bigQueryHelper.executeLoadStatement(getEnrichedSql(placeholderKeyValues, physicalPlan.getSqlList().get(0)));
     }
 
     @Override

@@ -58,6 +58,8 @@ public class H2JdbcPropertiesToLogicalDataTypeMapping implements JdbcPropertiesT
                 return FieldType.builder().dataType(DataType.TIMESTAMP).scale(decimalDigits).build();
             case TIMESTAMP_WITH_TIME_ZONE:
                 return FieldType.builder().dataType(DataType.TIMESTAMP_TZ).scale(decimalDigits).build();
+            case JSON:
+                return FieldType.builder().dataType(DataType.JSON).build();
             default:
                 throw new IllegalArgumentException("Unexpected values: JDBC TYPE_NAME " + typeName + ", JDBC DATA_TYPE: " + dataType);
         }
