@@ -17,6 +17,7 @@
 
     <modules>
         <module>legend-engine-xt-analytics-quality-pure</module>
+        <module>legend-engine-xt-analytics-quality-api</module>
     </modules>
 
 </project>

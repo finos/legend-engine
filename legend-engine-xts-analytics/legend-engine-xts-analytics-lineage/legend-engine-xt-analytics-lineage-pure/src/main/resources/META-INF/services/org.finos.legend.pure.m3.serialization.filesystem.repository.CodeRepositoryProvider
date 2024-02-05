@@ -62,4 +62,4 @@
 #  limitations under the License.
 #
 
-org.finos.legend.pure.code.core.CoreExternalLineageAnalysisCodeRepositoryProvider
+org.finos.legend.pure.code.core.CoreQualityAnalysisCodeRepositoryProvider

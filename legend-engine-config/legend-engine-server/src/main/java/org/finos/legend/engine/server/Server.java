@@ -62,6 +62,7 @@ import org.finos.legend.engine.api.analytics.DiagramAnalytics;
 import org.finos.legend.engine.api.analytics.FunctionAnalytics;
 import org.finos.legend.engine.api.analytics.LineageAnalytics;
 import org.finos.legend.engine.api.analytics.MappingAnalytics;
+import org.finos.legend.engine.api.analytics.DataspaceQualityAnalytics;
 import org.finos.legend.engine.api.analytics.StoreEntitlementAnalytics;
 import org.finos.legend.engine.application.query.api.ApplicationQuery;
 import org.finos.legend.engine.application.query.configuration.ApplicationQueryConfiguration;
@@ -424,6 +425,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new DataSpaceAnalytics(modelManager, generatorExtensions, entitlementServiceExtensions));
         environment.jersey().register(new LineageAnalytics(modelManager));
         environment.jersey().register(new StoreEntitlementAnalytics(modelManager, entitlementServiceExtensions));
+        environment.jersey().register(new DataspaceQualityAnalytics(modelManager));
 
         // Testable
         environment.jersey().register(new TestableApi(modelManager));
