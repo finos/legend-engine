@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.from.extension;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
@@ -24,9 +25,14 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReferenceInterface;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
@@ -44,6 +50,7 @@ public class PureGrammarParserExtensions
     private final MapIterable<String, TestAssertionParser> testAssertionParsers;
 
     private final MapIterable<String, MappingIncludeParser> mappingIncludeParsers;
+    private final ImmutableList<Function2<DataElementReferenceInterface, PureModelContextData, List<EmbeddedData>>> dataReferenceParsers;
 
     private PureGrammarParserExtensions(Iterable<? extends PureGrammarParserExtension> extensions)
     {
@@ -56,6 +63,7 @@ public class PureGrammarParserExtensions
         this.testAssertionParsers = indexTestAssertionDataParsers(this.extensions);
         this.embeddedPureParsers = indexEmbeddedPureParsers(this.extensions);
         this.mappingIncludeParsers = indexMappingIncludeParsers(this.extensions);
+        this.dataReferenceParsers = indexDataReferenceParsers(this.extensions);
     }
 
     public List<PureGrammarParserExtension> getExtensions()
@@ -81,6 +89,25 @@ public class PureGrammarParserExtensions
     public MappingIncludeParser getExtraMappingIncludeParser(String type)
     {
         return this.mappingIncludeParsers.get(type);
+    }
+
+    public EmbeddedData getEmbeddedDataFromDataElement(DataElementReferenceInterface dataElementReference, PureModelContextData pureModelContextData)
+    {
+        List<EmbeddedData> dataList = this.dataReferenceParsers
+                .flatCollect(f -> f.apply(dataElementReference, pureModelContextData))
+                .select(Objects::nonNull).toList();
+        if (dataList.size() > 1)
+        {
+            throw new EngineException("More than one data element found at the address " + dataElementReference.dataElement, dataElementReference.sourceInformation, EngineErrorType.PARSER);
+        }
+        else if (dataList.isEmpty())
+        {
+            throw new EngineException("No data element found at the address " + dataElementReference.dataElement, dataElementReference.sourceInformation, EngineErrorType.PARSER);
+        }
+        else
+        {
+            return dataList.get(0);
+        }
     }
 
     public MappingTestInputDataParser getExtraMappingTestInputDataParser(String type)
@@ -199,5 +226,10 @@ public class PureGrammarParserExtensions
             }
         });
         return index;
+    }
+
+    private ImmutableList<Function2<DataElementReferenceInterface, PureModelContextData, List<EmbeddedData>>> indexDataReferenceParsers(ImmutableList<PureGrammarParserExtension> extensions)
+    {
+        return Lists.immutable.withAll(extensions.flatCollect(PureGrammarParserExtension::getExtraDataReferenceParsers));
     }
 }

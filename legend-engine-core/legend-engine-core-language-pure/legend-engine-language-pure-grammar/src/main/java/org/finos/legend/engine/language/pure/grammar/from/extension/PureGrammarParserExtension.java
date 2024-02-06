@@ -14,12 +14,17 @@
 
 package org.finos.legend.engine.language.pure.grammar.from.extension;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReferenceInterface;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
 
 import java.util.Collections;
+import java.util.List;
 
 public interface PureGrammarParserExtension extends LegendLanguageExtension
 {
@@ -59,6 +64,11 @@ public interface PureGrammarParserExtension extends LegendLanguageExtension
     }
 
     default Iterable<? extends MappingIncludeParser> getExtraMappingIncludeParsers()
+    {
+        return Collections.emptyList();
+    }
+
+    default Iterable<? extends Function2<DataElementReferenceInterface, PureModelContextData, List<EmbeddedData>>> getExtraDataReferenceParsers()
     {
         return Collections.emptyList();
     }

@@ -43,7 +43,7 @@ public class DataspaceDataElementReferenceParser implements EmbeddedDataParser
 
         DataspaceDataElementReference result = new DataspaceDataElementReference();
         result.sourceInformation = sourceInformation;
-        result.dataspaceAddress = validPath;
+        result.dataElement = validPath;
         return result;
     }
 }

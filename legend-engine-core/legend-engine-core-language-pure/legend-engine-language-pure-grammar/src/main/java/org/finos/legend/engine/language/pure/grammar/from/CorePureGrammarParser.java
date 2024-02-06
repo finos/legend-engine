@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -41,18 +42,39 @@ import org.finos.legend.engine.language.pure.grammar.from.data.DataParseTreeWalk
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ExternalFormatEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ModelStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ReferenceEmbeddedDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.*;
+import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
-import org.finos.legend.engine.language.pure.grammar.from.mapping.*;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.AggregationAwareMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.EnumerationMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.OperationClassMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.PureInstanceClassMappingParseTreeWalker;
+import org.finos.legend.engine.language.pure.grammar.from.mapping.XStoreAssociationMappingParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.relation.RelationStoreAccessorPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReferenceInterface;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.AssociationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.ClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.EnumerationMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MergeOperationClassMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.OperationClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregateSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwareClassMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.InputData;
@@ -143,6 +165,19 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
         return Lists.immutable.with(
                 MappingIncludeParser.newParser("mapping", CorePureGrammarParser::parseMappingInclude)
         );
+    }
+
+    @Override
+    public Iterable<? extends Function2<DataElementReferenceInterface, PureModelContextData, List<EmbeddedData>>> getExtraDataReferenceParsers()
+    {
+        return Lists.immutable.with(CorePureGrammarParser::getDataElementFromDataReference);
+    }
+
+    private static List<EmbeddedData> getDataElementFromDataReference(DataElementReferenceInterface dataElementReference, PureModelContextData pureModelContextData)
+    {
+        return ListIterate
+                .select(pureModelContextData.getElementsOfType(DataElement.class), e -> dataElementReference.dataElement.equals(e.getPath()))
+                .collect(d -> d.data);
     }
 
     private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)

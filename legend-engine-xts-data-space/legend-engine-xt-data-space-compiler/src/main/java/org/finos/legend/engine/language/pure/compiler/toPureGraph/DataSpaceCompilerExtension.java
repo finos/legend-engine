@@ -195,13 +195,13 @@ public class DataSpaceCompilerExtension implements CompilerExtension
         if (embeddedData instanceof DataspaceDataElementReference)
         {
             DataspaceDataElementReference data = (DataspaceDataElementReference) embeddedData;
-            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataspaceAddress))
+            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataElement))
             {
                 return Optional
-                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataspaceAddress)._defaultExecutionContext()._testData())
-                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataspaceAddress + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
+                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataElement)._defaultExecutionContext()._testData())
+                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataElement + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
             }
-            throw new EngineException("Dataspace " + data.dataspaceAddress + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Dataspace " + data.dataElement + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
         }
         return null;
     }

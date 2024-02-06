@@ -14,10 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.data;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-public class DataElementReference extends EmbeddedData
+public class DataElementReference extends DataElementReferenceInterface
 {
-    @JsonProperty(required = true)
-    public String dataElement;
 }

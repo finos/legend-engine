@@ -195,7 +195,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
     {
         if (embeddedData instanceof DataspaceDataElementReference)
         {
-            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataspaceDataElementReference) embeddedData).dataspaceAddress);
+            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataspaceDataElementReference) embeddedData).dataElement);
             return new ContentWithType(DataspaceDataElementReferenceParser.TYPE, content);
         }
         return null;
