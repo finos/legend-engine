@@ -246,7 +246,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "}\n", "COMPILATION error at [62:9-65:10]: Dataspace model::nonexistantDataspace cannot be found.");
+                "}\n", "COMPILATION error at [63:9-66:10]: Dataspace model::nonexistantDataspace cannot be found.");
     }
 
     @Test
@@ -431,7 +431,23 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 2';\n" +
-                "}\n", "COMPILATION error at [8:7-35]: Can't find mapping 'model::dummyMapping'");
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping2\n" +
+                "  ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping2\n" +
+                "(\n" +
+                ")\n", "COMPILATION error at [8:7-35]: Can't find mapping 'model::dummyMapping'");
 
         test("###Mapping\n" +
                 "Mapping model::dummyMapping\n" +
