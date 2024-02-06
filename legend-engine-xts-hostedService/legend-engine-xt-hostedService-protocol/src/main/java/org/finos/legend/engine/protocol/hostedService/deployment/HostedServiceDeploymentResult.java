@@ -21,4 +21,18 @@ public class HostedServiceDeploymentResult extends DeploymentResult
     public String error;
     public String deployed;
     public String generationId;
+
+    public HostedServiceDeploymentResult()
+    {
+        //jackson
+    }
+    public HostedServiceDeploymentResult(String error, String deployed, String generationId)
+    {
+        this.error = error;
+        this.deployed = deployed;
+        this.generationId = generationId;
+    }
+
+
+
 }
