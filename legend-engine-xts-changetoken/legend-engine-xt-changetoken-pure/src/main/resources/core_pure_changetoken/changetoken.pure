@@ -107,10 +107,10 @@ Class
 {doc.doc='a constant value, e.g. 100 or "SomeValue"'}
 meta::pure::changetoken::ConstValue extends FieldGetter 
 {
-  value: Any[1];
+  value: Any[0..1];
 
   toString() { 'ConstValue(' 
-    + 'value=' + $this.value->toString()
+    + 'value=' + $this.value->map(v|$v->toString())->joinStrings(',')
     + ')' }: String[1];
 }
 
