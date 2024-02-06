@@ -19,6 +19,7 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.Credential;
+import org.finos.legend.engine.shared.core.identity.DelegatedProfile;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
@@ -68,12 +69,23 @@ public final class DefaultIdentityFactory implements IdentityFactory
             return INSTANCE.makeIdentity(kerberosProfileHolder.get().getSubject());
         }
 
+        Optional<DelegatedProfile> delegatedProfileHolder = this.getDelegatedProfile(profiles);
+        if (delegatedProfileHolder.isPresent())
+        {
+            return delegatedProfileHolder.get().getIdentity();
+        }
+
         return INSTANCE.makeUnknownIdentity();
     }
 
     private Optional<KerberosProfile> getKerberosProfile(MutableList<CommonProfile> profiles)
     {
         return Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, KerberosProfile.class).getFirst());
+    }
+
+    private Optional<DelegatedProfile> getDelegatedProfile(MutableList<CommonProfile> profiles)
+    {
+        return Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, DelegatedProfile.class).getFirst());
     }
 
     public Identity makeUnknownIdentity()
