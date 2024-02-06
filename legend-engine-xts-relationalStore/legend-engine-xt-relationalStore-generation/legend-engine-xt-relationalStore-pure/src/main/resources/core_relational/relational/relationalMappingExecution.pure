@@ -84,13 +84,17 @@ function meta::relational::mapping::generateInstantiationExecutionNode(sq:meta::
                                                                                       | $p.second.relationalType,
                                                                                       | $p.second.propertyMapping->match([
                                                                                           rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
-                                                                                          rpm1: RelationalPropertyMapping[1] | $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first),
+                                                                                          rpm1: RelationalPropertyMapping[1] | 
+                                                                                                                                let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
+                                                                                                                                if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
                                                                                           cpm: meta::pure::router::clustering::CrossSetImplementationPrimtivePropertyMapping[0..1] | $cpm.sourcePropertyMapping->match([
                                                                                                                                     rpm0: RelationalPropertyMapping[0] | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()),
-                                                                                                                                    rpm1: RelationalPropertyMapping[1] | $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first),
+                                                                                                                                    rpm1: RelationalPropertyMapping[1] | 
+                                                                                                                                                                          let relationalType = $rpm1->meta::relational::mapping::getRelationalTypeFromRelationalPropertyMapping($p.first);
+                                                                                                                                                                          if ($relationalType->isEmpty(), | meta::relational::mapping::inferSourceDataType($p.second.type->toOne()), | $relationalType);,
                                                                                                                                     pm: PropertyMapping[0..1] | []]
                                                                                                                                   ),
-                                                                                          pm: PropertyMapping[0..1] | []
+                                                                                          pm: PropertyMapping[0..1] | [];
                                                                                         ])
                                                                                       )
                                                                 );
