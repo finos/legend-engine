@@ -24,7 +24,6 @@ import org.finos.legend.engine.functionActivator.service.FunctionActivatorServic
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionDeploymentManager;
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
@@ -44,9 +43,9 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
 {
     private final MemSqlFunctionDeploymentManager memSqlFunctionDeploymentManager;
 
-    public MemSqlFunctionService(PlanExecutor executor)
+    public MemSqlFunctionService()
     {
-        this.memSqlFunctionDeploymentManager = new MemSqlFunctionDeploymentManager(executor);
+        this.memSqlFunctionDeploymentManager = new MemSqlFunctionDeploymentManager();
     }
 
     @Override
@@ -82,7 +81,7 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
         Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration) activator._activationConfiguration());
         return validationErrors.notEmpty() ?
                 new MemSqlFunctionDeploymentResult(validationErrors.collect(e -> e.message)) :
-                this.memSqlFunctionDeploymentManager.deploy(identity, artifact);
+                this.memSqlFunctionDeploymentManager.deployImpl(artifact, deploymentConfiguration);
     }
 
     @Override

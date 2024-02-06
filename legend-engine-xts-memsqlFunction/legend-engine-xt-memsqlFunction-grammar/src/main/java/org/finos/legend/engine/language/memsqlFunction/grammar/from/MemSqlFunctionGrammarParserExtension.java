@@ -34,7 +34,7 @@ import java.util.function.Consumer;
 
 public class MemSqlFunctionGrammarParserExtension implements PureGrammarParserExtension
 {
-    public static final String NAME = "BigQuery";
+    public static final String NAME = "MemSql";
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

@@ -92,9 +92,13 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -106,11 +110,6 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-memsqlFunction-compiler</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-memsqlFunction-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -118,10 +117,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-dsl-generation</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-executionPlan-execution</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.finos.legend.engine</groupId>-->
+<!--            <artifactId>legend-engine-executionPlan-execution</artifactId>-->
+<!--        </dependency>-->
         <!-- ENGINE -->
 
         <dependency>

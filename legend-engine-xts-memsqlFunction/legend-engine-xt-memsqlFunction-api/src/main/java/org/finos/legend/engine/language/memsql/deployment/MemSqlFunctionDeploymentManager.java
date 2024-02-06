@@ -16,22 +16,20 @@ package org.finos.legend.engine.language.memsql.deployment;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.deployment.DeploymentManager;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
-import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreState;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentResult;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.pure.generated.Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
@@ -42,15 +40,6 @@ import java.util.List;
 public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSqlFunctionArtifact, MemSqlFunctionDeploymentResult, MemSqlFunctionDeploymentConfiguration>
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(MemSqlFunctionDeploymentManager.class);
-
-    private PlanExecutor planExecutor;
-    private ConnectionManagerSelector connectionManager;
-
-    public MemSqlFunctionDeploymentManager(PlanExecutor executor)
-    {
-        this.planExecutor = planExecutor;
-        connectionManager = ((RelationalStoreState)planExecutor.getExtraExecutors().select(c -> c instanceof RelationalStoreExecutor).getFirst().getStoreState()).getRelationalExecutor().getConnectionManager();
-    }
 
     @Override
     public boolean canDeploy(FunctionActivatorArtifact activatorArtifact)
@@ -67,50 +56,43 @@ public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSql
     @Override
     public MemSqlFunctionDeploymentResult deploy(Identity identity, MemSqlFunctionArtifact artifact, List<MemSqlFunctionDeploymentConfiguration> availableRuntimeConfigurations)
     {
-        MemSqlFunctionDeploymentResult result = null;
-        String functionName = ((MemSqlFunctionContent)artifact.content).functionName;
+        return new MemSqlFunctionDeploymentResult("", false);
+    }
 
-        try (Connection jdbcConnection = availableRuntimeConfigurations.isEmpty() ? this.getDeploymentConnection(identity, artifact) : this.getDeploymentConnection(identity, availableRuntimeConfigurations.get(0).connection))
+    public MemSqlFunctionDeploymentResult deployImpl(MemSqlFunctionArtifact artifact, Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration deploymentConfiguration)
+    {
+
+        MemSqlFunctionDeploymentResult result = null;
+        String functionName = ((MemSqlFunctionContent) artifact.content).functionName;
+
+        try
         {
-            jdbcConnection.setAutoCommit(false);
-            this.deployImpl(jdbcConnection, (MemSqlFunctionContent)artifact.content);
-            jdbcConnection.commit();
+            Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification datasourceSpecification = (Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification) deploymentConfiguration._target()._datasourceSpecification();
+
+            String connectionString = String.format("jdbc:mariadb://%s:%s/%s?useSsl=true&user=%s&password=%s", datasourceSpecification._host(), datasourceSpecification._port(), datasourceSpecification._databaseName(), datasourceSpecification._username(), datasourceSpecification._password());
+
+            Connection connection = DriverManager.getConnection(connectionString);
+            MemSqlFunctionContent functionContent = (MemSqlFunctionContent) artifact.content;
+            //MutableList<String> statements = createFunctionStatements(functionContent);
+            for (String s : functionContent.sqlExpressions)
+            {
+                Statement statement = connection.createStatement();
+                statement.execute(s);
+            }
             LOGGER.info("Completed deployment successfully");
             result = new MemSqlFunctionDeploymentResult(functionName, true);
         }
-        catch (Exception e)
+        catch (SQLException e)
         {
             LOGGER.info("Completed deployment with error");
             result = new MemSqlFunctionDeploymentResult(functionName, true);
         }
         return result;
-   }
-
-    public void deployImpl(Connection jdbcConnection, MemSqlFunctionContent memSqlFunctionContent) throws SQLException
-    {
-        MutableList<String> statements = createFunctionStatements(memSqlFunctionContent);
-        for (String s: statements)
-        {
-            Statement statement = jdbcConnection.createStatement();
-            statement.execute(s);
-        }
-    }
-
-
-    private Connection getDeploymentConnection(Identity identity, MemSqlFunctionArtifact artifact)
-    {
-        RelationalDatabaseConnection connection = extractConnectionFromArtifact(artifact);
-        return this.connectionManager.getDatabaseConnection(identity, connection);
-    }
-
-    public Connection getDeploymentConnection(Identity identity, RelationalDatabaseConnection connection)
-    {
-        return this.connectionManager.getDatabaseConnection(identity, (DatabaseConnection) connection);
     }
 
     private RelationalDatabaseConnection extractConnectionFromArtifact(MemSqlFunctionArtifact artifact)
     {
-        return ((MemSqlFunctionDeploymentConfiguration)artifact.deploymentConfiguration).connection;
+        return ((MemSqlFunctionDeploymentConfiguration) artifact.deploymentConfiguration).connection;
     }
 
     public MutableList<String> createFunctionStatements(MemSqlFunctionContent content)
