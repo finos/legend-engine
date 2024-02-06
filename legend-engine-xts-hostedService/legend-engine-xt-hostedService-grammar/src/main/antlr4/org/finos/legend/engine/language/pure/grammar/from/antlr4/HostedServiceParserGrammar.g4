@@ -70,11 +70,19 @@ serviceOwnership:                          SERVICE_OWNERSHIP COLON
                                             (userList| deployment)
                                         SEMI_COLON
 ;
-userList:                               BRACKET_OPEN
-                                             (STRING (COMMA STRING)*)?
-                                         BRACKET_CLOSE
+userList:                               SERVICE_OWNERSHIP_USERLIST
+                                            BRACE_OPEN
+                                                SERVICE_OWNERSHIP_USERLIST_USERS COLON
+                                                    BRACKET_OPEN
+                                                         (STRING (COMMA STRING)*)?
+                                                    BRACKET_CLOSE
+                                            BRACE_CLOSE
+
 ;
-deployment:                             STRING
+deployment:                             SERVICE_OWNERSHIP_DEPLOYMENT
+                                            BRACE_OPEN
+                                                SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER COLON STRING
+                                            BRACE_CLOSE
 ;
 
 serviceBindingOrContent:                (serviceBinding|serviceContentType) SEMI_COLON
