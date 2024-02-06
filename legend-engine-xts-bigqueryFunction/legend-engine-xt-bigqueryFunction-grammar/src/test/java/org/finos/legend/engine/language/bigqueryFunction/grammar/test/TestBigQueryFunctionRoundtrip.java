@@ -27,7 +27,7 @@ public class TestBigQueryFunctionRoundtrip extends TestGrammarRoundtrip.TestGram
                 "{\n" +
                 "   functionName : 'MyApp';\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
-                "   owner : 'pierre';\n" +
+                "   ownership : 'pierre';\n" +
                 "   description : 'A super nice app!';\n" +
                 "   activationConfiguration : com::gs::test::TestConnection;\n" +
                 "}\n");
