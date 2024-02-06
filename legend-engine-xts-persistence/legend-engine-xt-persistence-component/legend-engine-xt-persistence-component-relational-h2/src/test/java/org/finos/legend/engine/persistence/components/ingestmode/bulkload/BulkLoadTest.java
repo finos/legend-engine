@@ -339,13 +339,17 @@ public class BulkLoadTest extends BaseTest
 
         Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
 
+        Map<String, Object> additionalMetadata = new HashMap<>();
+        additionalMetadata.put("watermark", "my_watermark_value");
+        additionalMetadata.put("external_uuid", "my_external_uuid");
+
         // Verify SQLs using generator
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .bulkLoadEventIdValue(EVENT_ID_1)
-            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
+            .putAllAdditionalMetadata(additionalMetadata)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
@@ -380,10 +384,10 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table6.csv";
 
-        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1), ADDITIONAL_METADATA);
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1), additionalMetadata);
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
         Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.of(ADDITIONAL_METADATA));
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.of(additionalMetadata));
     }
 
     @Test
@@ -415,12 +419,17 @@ public class BulkLoadTest extends BaseTest
 
         Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
 
+        Map<String, Object> additionalMetadata = new HashMap<>();
+        additionalMetadata.put("watermark", "my_watermark_value");
+        additionalMetadata.put("external_uuid", "my_external_uuid");
+
         // Verify SQLs using generator
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .bulkLoadEventIdValue(EVENT_ID_1)
+            .putAllAdditionalMetadata(additionalMetadata)
             .executionTimestampClock(fixedClock_2000_01_01)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
@@ -457,10 +466,10 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table4.csv";
 
-        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(EVENT_ID_1));
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(EVENT_ID_1), additionalMetadata);
         executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
         Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from BATCH_METADATA").get(0);
-        verifyBulkLoadMetadataForUpperCase(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.empty());
+        verifyBulkLoadMetadataForUpperCase(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.of(additionalMetadata));
     }
 
     @Test

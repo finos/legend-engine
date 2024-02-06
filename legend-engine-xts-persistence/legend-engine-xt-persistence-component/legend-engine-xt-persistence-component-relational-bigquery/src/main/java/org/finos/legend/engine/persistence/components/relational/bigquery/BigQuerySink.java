@@ -77,6 +77,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -262,7 +263,7 @@ public class BigQuerySink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         BigQueryExecutor bigQueryExecutor = (BigQueryExecutor) executor;
         Map<StatisticName, Object> stats = bigQueryExecutor.executeLoadPhysicalPlanAndGetStats(ingestSqlPlan, placeHolderKeyValues);
@@ -270,8 +271,8 @@ public class BigQuerySink extends AnsiSqlSink
         IngestorResult.Builder resultBuilder = IngestorResult.builder()
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
-            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null));
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
         IngestorResult result;
 
         if ((long) stats.get(StatisticName.ROWS_WITH_ERRORS) == 0)

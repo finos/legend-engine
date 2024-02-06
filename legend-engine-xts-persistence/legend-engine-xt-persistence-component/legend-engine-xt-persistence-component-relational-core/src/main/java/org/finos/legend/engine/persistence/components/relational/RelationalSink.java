@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 
 import java.util.Collections;
 import java.util.Map;
@@ -189,5 +190,5 @@ public abstract class RelationalSink implements Sink
         Dataset execute(Executor<SqlGen, TabularData, SqlPlan> executor, RelationalExecutionHelper sink, Dataset dataset);
     }
 
-    public abstract IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues);
+    public abstract IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues);
 }

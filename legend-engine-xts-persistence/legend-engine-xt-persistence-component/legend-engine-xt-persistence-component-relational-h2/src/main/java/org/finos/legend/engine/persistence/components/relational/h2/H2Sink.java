@@ -66,6 +66,7 @@ import org.finos.legend.engine.persistence.components.relational.sql.TabularData
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -203,7 +204,7 @@ public class H2Sink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         executor.executePhysicalPlan(ingestSqlPlan, placeHolderKeyValues);
 
@@ -227,10 +228,10 @@ public class H2Sink extends AnsiSqlSink
         IngestorResult result;
         result = IngestorResult.builder()
             .status(IngestStatus.SUCCEEDED)
-            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null))
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
-            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
             .build();
 
         return result;

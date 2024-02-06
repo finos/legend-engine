@@ -71,6 +71,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.utils.Sq
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -233,7 +234,7 @@ public class SnowflakeSink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(ingestSqlPlan, placeHolderKeyValues);
         List<Map<String, Object>> resultSets = results.get(0).getData();
@@ -283,8 +284,8 @@ public class SnowflakeSink extends AnsiSqlSink
         IngestorResult.Builder resultBuilder = IngestorResult.builder()
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
-            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null));
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
         IngestorResult result;
 
         if (dataFilePathsWithErrors.isEmpty())
