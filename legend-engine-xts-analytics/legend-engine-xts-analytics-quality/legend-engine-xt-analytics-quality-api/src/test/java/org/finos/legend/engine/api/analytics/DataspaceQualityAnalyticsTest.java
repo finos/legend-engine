@@ -22,6 +22,10 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DataspaceQualityAnalyticsTest
 {
@@ -41,8 +45,23 @@ public class DataspaceQualityAnalyticsTest
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataSpaceWithBadClasses);
         Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-        String message = "Class name (targetCompany) does not match required standards: should start with upper case,Provide documentation for class TargetPerson and its properties";
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        List<Map<String, String>> message = new ArrayList<>();
+        Map<String, String> targetCompany = new HashMap<>();
+        targetCompany.put("ruleDescription", "Class name should start with Upper case");
+        targetCompany.put("packageableElementName", "targetCompany");
+        targetCompany.put("errorMessage", "Class name (targetCompany) does not match required standards: should start with upper case");
+        targetCompany.put("violationType", "Invalid Class Names");
+
+        Map<String, String> targetPerson = new HashMap<>();
+        targetPerson.put("ruleDescription", "All entities and properties must have a long description.");
+        targetPerson.put("packageableElementName", "TargetPerson");
+        targetPerson.put("errorMessage", "Provide documentation for class TargetPerson and its properties");
+        targetPerson.put("violationType", "Documentation not provided for entity and/or its properties");
+
+        message.add(targetCompany);
+        message.add(targetPerson);
         Assert.assertEquals(message, response.getEntity());
     }
 
@@ -51,8 +70,16 @@ public class DataspaceQualityAnalyticsTest
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadAssociation);
         Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-        String message = "Associatation (targetCompany_TargetPerson) does not match required standards: Camel case must be used Association name and should be upper camel case, with an underscore between both sides of the join";
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        List<Map<String, String>> message = new ArrayList<>();
+        Map<String, String> targetCompany = new HashMap<>();
+        targetCompany.put("ruleDescription", "Camel case must be used Association name and should be upper camel case, with an underscore between both sides of the join.");
+        targetCompany.put("packageableElementName", "targetCompany_TargetPerson");
+        targetCompany.put("errorMessage", "Association (targetCompany_TargetPerson) does not match required standards: Camel case must be used Association name and should be upper camel case, with an underscore between both sides of the join");
+        targetCompany.put("violationType", "Invalid Association Name");
+
+        message.add(targetCompany);
         Assert.assertEquals(message, response.getEntity());
     }
 
@@ -61,8 +88,16 @@ public class DataspaceQualityAnalyticsTest
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadEnum);
         Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-        String message = "Enumeration name (testEnum_ForMyDataspace) does not match required standards: should start with upper case;should not contain '_';should not contain 'Enum'";
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        List<Map<String, String>> message = new ArrayList<>();
+        Map<String, String> e = new HashMap<>();
+        e.put("ruleDescription", "Enum name should start with Upper case, not contain underscores or the word Enum");
+        e.put("packageableElementName", "testEnum_ForMyDataspace");
+        e.put("errorMessage", "Enumeration name (testEnum_ForMyDataspace) does not match required standards: should start with upper case;should not contain '_';should not contain 'Enum'");
+        e.put("violationType", "Invalid Enumeration Names");
+        message.add(e);
+
         Assert.assertEquals(message, response.getEntity());
     }
 
@@ -71,8 +106,23 @@ public class DataspaceQualityAnalyticsTest
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadFunction);
         Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-        String message = "Function (equal) does not match required standards: Possible invalid equal check (type mismatch, Integer vs String),Possible invalid contains check (type mismatch, Integer vs String)";
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        List<Map<String, String>> message = new ArrayList<>();
+        Map<String, String> fn = new HashMap<>();
+        fn.put("ruleDescription", "Check for equality checks that will always result in false due to type mismatches (e.g. \\'abc\\' == 123)");
+        fn.put("packageableElementName", "");
+        fn.put("errorMessage", "Function (equal) does not match required standards: Possible invalid equal check (type mismatch, Integer vs String)");
+        fn.put("violationType", "Invalid Equality");
+        message.add(fn);
+
+        Map<String, String> fn2 = new HashMap<>();
+        fn2.put("ruleDescription", "Check for contains / containsAll / containsAny checks that will always result in false due to type mismatches (e.g. [\\'abc\\']->contains(123))");
+        fn2.put("packageableElementName", "");
+        fn2.put("errorMessage", "Possible invalid contains check (type mismatch, Integer vs String)");
+        fn2.put("violationType", "Invalid Contains");
+        message.add(fn2);
+
         Assert.assertEquals(message, response.getEntity());
     }
 
@@ -81,8 +131,24 @@ public class DataspaceQualityAnalyticsTest
     {
         PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(dataspaceWithBadClassProperties);
         Response response = api.checkDataSpaceConstraints(new DataspaceQualityCheckInput(minimumPureClientVersion, "model::NewDataSpace", modelData), null);
-        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), response.getStatus());
-        String message = "Property name (id_TargetCompany) does not match required standards: should not contain '_',Property name (Name) does not match required standards: should start with lower case";
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        List<Map<String, String>> message = new ArrayList<>();
+        Map<String, String> prop = new HashMap<>();
+        prop.put("ruleDescription", "Property name should start with lower letter and in camelCase");
+        prop.put("packageableElementName", "id_TargetCompany");
+        prop.put("errorMessage", "Property name (id_TargetCompany) does not match required standards: should not contain '_'");
+        prop.put("violationType", "Invalid Property Names");
+
+        Map<String, String> prop2 = new HashMap<>();
+        prop2.put("ruleDescription", "Property name should start with lower letter and in camelCase");
+        prop2.put("packageableElementName", "Name");
+        prop2.put("errorMessage", "Property name (Name) does not match required standards: should start with lower case");
+        prop2.put("violationType", "Invalid Property Names");
+
+        message.add(prop);
+        message.add(prop2);
+
         Assert.assertEquals(message, response.getEntity());
     }
 

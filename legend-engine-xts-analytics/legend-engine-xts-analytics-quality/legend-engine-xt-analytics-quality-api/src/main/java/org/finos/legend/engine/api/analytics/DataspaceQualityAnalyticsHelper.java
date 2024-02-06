@@ -21,7 +21,6 @@ import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.pure.generated.Root_meta_analytics_quality_model_ViolationInstance;
 import org.finos.legend.pure.generated.core_analytics_quality_checksEngine;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
@@ -29,8 +28,9 @@ import org.pac4j.core.profile.CommonProfile;
 
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
 
 public class DataspaceQualityAnalyticsHelper
@@ -52,22 +52,24 @@ public class DataspaceQualityAnalyticsHelper
         RichIterable<? extends Root_meta_analytics_quality_model_ViolationInstance<?>> result = core_analytics_quality_checksEngine.Root_meta_analytics_quality_model_domain_runQualityChecks_PackageableElement_MANY__ViolationInstance_MANY_(_elements, es);
         if (result.isEmpty())
         {
-            return ManageConstantResult.manageResult(profiles, validDataspaceResponseString, getNewObjectMapper());
+            return Response.ok().entity(validDataspaceResponseString).build();
         }
-        return Response.status(Response.Status.BAD_REQUEST).entity(aggregateErrorMessages(result)).build();
+        return Response.ok().entity(aggregateErrorMessages(result)).build();
     }
 
-    private static String aggregateErrorMessages(RichIterable<? extends Root_meta_analytics_quality_model_ViolationInstance<? extends Object>> result)
+    private static List<Map<String, String>> aggregateErrorMessages(RichIterable<? extends Root_meta_analytics_quality_model_ViolationInstance<?>> result)
     {
-        String finalError = "";
-        List<String> errorMessages = new ArrayList<>();
-        result.forEach(r -> errorMessages.add(r._detail()._message()));
-        if (result.size() == 1)
+        List<Map<String, String>> totalErrors = new ArrayList<>();
+        for (Root_meta_analytics_quality_model_ViolationInstance<?> violationInstance : result)
         {
-            return errorMessages.get(0);
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("packageableElementName", violationInstance._source().toString());
+            errorMap.put("violationType", violationInstance._rule()._id());
+            errorMap.put("errorMessage", violationInstance._detail()._message());
+            errorMap.put("ruleDescription", violationInstance._rule()._description());
+            totalErrors.add(errorMap);
         }
-        finalError = errorMessages.stream().map(Object::toString).collect(Collectors.joining(","));
-        return finalError;
+        return totalErrors;
     }
 
 }
