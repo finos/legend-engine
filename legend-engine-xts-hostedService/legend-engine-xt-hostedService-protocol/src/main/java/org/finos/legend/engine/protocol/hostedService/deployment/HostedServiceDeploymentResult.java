@@ -26,6 +26,7 @@ public class HostedServiceDeploymentResult extends DeploymentResult
     {
         //jackson
     }
+
     public HostedServiceDeploymentResult(String error, String deployed, String generationId)
     {
         this.error = error;
