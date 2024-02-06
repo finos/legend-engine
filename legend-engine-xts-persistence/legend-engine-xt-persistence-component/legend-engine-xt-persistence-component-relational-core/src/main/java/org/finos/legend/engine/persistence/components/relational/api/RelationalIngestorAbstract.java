@@ -586,7 +586,7 @@ public abstract class RelationalIngestorAbstract
         // 7. Enrich temp Datasets
         enrichedDatasets = enrichedIngestMode.accept(new TempDatasetsEnricher(enrichedDatasets));
 
-        // 8. Put additional metadata into placeholder
+        // 8. Use a placeholder for additional metadata
         Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
         if (!additionalMetadata().isEmpty())
         {
