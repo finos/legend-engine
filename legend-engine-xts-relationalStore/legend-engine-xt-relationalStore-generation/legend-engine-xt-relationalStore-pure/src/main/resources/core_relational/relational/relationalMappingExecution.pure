@@ -756,11 +756,11 @@ function meta::relational::mapping::inferSourceDataType(type: Any[1]): meta::rel
 {
   if ($type->instanceOf(PrimitiveType),
     | 
-      let inferedSourceDataType = meta::relational::mapping::pureTypeToDataTypeMap()->get($type)->cast(@meta::relational::metamodel::datatype::DataType)->toOne();
+      let inferedSourceDataType = meta::relational::mapping::pureTypeToDataTypeMap()->get($type);
       if (
         $inferedSourceDataType->isEmpty(),
           | [],
-          | $inferedSourceDataType->toOne());,
+          | $inferedSourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne());,
       | if ($type->instanceOf(EnumerationMapping),
         | meta::relational::mapping::pureTypeToDataTypeMap()->get(String)->cast(@meta::relational::metamodel::datatype::DataType)->toOne(),
         | []
