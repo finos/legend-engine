@@ -245,83 +245,61 @@ function meta::pure::graphFetch::routing::routeRootGraphFetchTree(root: RootGrap
 function meta::pure::graphFetch::splitPropertyTrees(tree:RoutedGraphFetchTree[1], mapping: Mapping[1], extensions:meta::pure::extension::Extension[*], exeCtx: ExecutionContext[1]):RoutedGraphFetchTree[1]
 {
   let updatedSubTrees = $tree.subTrees->map(st | let propertyTree = $st->cast(@RoutedPropertyGraphFetchTree);
+                                                 let splitPropertyTreeWhenMultipleSetImpls = ($propertyTree.sets->size() > 1) && ($propertyTree.sets->forAll(set | $set->storeContractForSetImplementation($mapping, $extensions).first.splitGraphFetchTreeForPropertyUnion));
                                                  let splitPropertyTreeWhenMultiplePropertyMappings = ($propertyTree.propertyMapping->size() > 1) && $propertyTree.propertyMapping->forAll(pm | $pm.owner->isNotEmpty() && $pm.owner->toOne()->instanceOf(InstanceSetImplementation) && $extensions->storeContractForSetImplementation($pm.owner->cast(@InstanceSetImplementation)->toOne()).splitGraphFetchTreeForPropertyUnion);
-                                                
-                                                 if($propertyTree.property->instanceOf(QualifiedProperty) && $tree.sets->forAll(set | $set->storeContractForSetImplementation($mapping, $extensions).first.splitGraphFetchTreeForPropertyUnion),
-                                                  | splitBasedOnQualifiedProperty($propertyTree,  $tree.sets->toOne(), $mapping,  $exeCtx, $extensions),
-                                                  |if($splitPropertyTreeWhenMultiplePropertyMappings,
-                                                     |
-                                                        let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
-                                                       $propertyTree.propertyMapping->filter(x | $x.sourceSetImplementationId->in($sourceSetImplementationIds))->map(pm | ^$propertyTree(propertyMapping = $pm, sets =  $propertyTree.sets->filter(s | $s.id == $pm.targetSetImplementationId)));,
-                                                    | $propertyTree
-                                                    )
-                                                 ); 
+
+                                                 if( $splitPropertyTreeWhenMultipleSetImpls,
+                                                 |  if($propertyTree.property->instanceOf(QualifiedProperty),
+                                                    | let property = $propertyTree.property->cast(@QualifiedProperty<Any>);
+                                                      let sourceSetImplementation = $tree.sets->toOne();
+                                                      let multipleExpressionForUnion = meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation($property.expressionSequence->evaluateAndDeactivate()->toOne()->cast(@StoreMappingRoutedValueSpecification), $sourceSetImplementation, $exeCtx, $extensions);
+                                                      $multipleExpressionForUnion->map(x | ^$propertyTree(property = ^$property(expressionSequence = $x), sets = $x.sets););,
+                                                    | let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
+                                                      $propertyTree.propertyMapping->filter(x | $x.sourceSetImplementationId->in($sourceSetImplementationIds))->map(pm | ^$propertyTree(propertyMapping = $pm, sets =  $propertyTree.sets->filter(s | $s.id == $pm.targetSetImplementationId)));
+                                                    );,
+                                                 | if($splitPropertyTreeWhenMultiplePropertyMappings,
+                                                      | let sourceSetImplementationIds = $mapping->allSuperSetImplementationIds($tree.sets->toOne().id);
+                                                        ^$propertyTree(propertyMapping = $propertyTree.propertyMapping->filter(pm | $pm.sourceSetImplementationId->in($sourceSetImplementationIds)));,
+                                                      | $propertyTree
+                                                      );
+                                                 );
                                            );
   ^$tree(subTrees = $updatedSubTrees->map(s | $s->cast(@RoutedGraphFetchTree)->splitPropertyTrees($mapping, $extensions, $exeCtx)));
 }
 
-function meta::pure::graphFetch::getPermutationSetList(vs: ValueSpecification[1]): PermutationSet[*]
+function meta::pure::graphFetch::getMultiValueSpecBasedOnSetImplPermutation(routedVs: StoreMappingRoutedValueSpecification[1], sourceSetImplementation:SetImplementation[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*]): StoreMappingRoutedValueSpecification[*]
 {
-    $vs->match([
-               f:FunctionExpression[1]| $f->evaluateAndDeactivate().parametersValues->evaluateAndDeactivate()->map(x | $x->meta::pure::graphFetch::getPermutationSetList());,
-               routedVs:StoreMappingRoutedValueSpecification[1]| $routedVs->evaluateAndDeactivate().routingStrategy->cast(@StoreMappingRoutingStrategy).sets->cast(@PermutationSet);,
-               f:FunctionRoutedValueSpecification[1]| $f->evaluateAndDeactivate().value->getPermutationSetList();,
-               a: Any[1] | [];
-             ]);
-}
+  let debug = noDebug();
+  let permutationSetList = $routedVs.routingStrategy->cast(@StoreMappingRoutingStrategy).sets->cast(@PermutationSet);
+  let uniqueClassesInPermutationSet = $permutationSetList->map(permSet | $permSet.sets->at(0).class)->removeDuplicates();
 
-function meta::pure::graphFetch::splitBasedOnQualifiedProperty(propertyTree: RoutedPropertyGraphFetchTree[1], sourceSetImplementation:SetImplementation[1],  mapping: Mapping[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*]): RoutedPropertyGraphFetchTree[*]
-{
-  let debug =  noDebug();
-  let qualifiedProperty = $propertyTree.property->cast(@QualifiedProperty<Any>);
-  let expr = $qualifiedProperty.expressionSequence->toOne();
+  assert($permutationSetList->size() == $uniqueClassesInPermutationSet->size(), 'Multiple permutationSetImplementation for same class is not suppported for qualified/milestoned property union in GraphFetch');
 
-  let permutationSetList = $expr->getPermutationSetList();
+  let setsInScope = $permutationSetList->map(x | ^$x(sets = $x.sets->map(s | $s->resolveOperation($routedVs.mapping))));
+  let mapping     = $routedVs.mapping;
 
   print(if($debug.debug,|'\n'+$debug.space+'Sets found:\n', |''));
-  print(if($debug.debug,|$permutationSetList->map(s|$debug.space+'   ['+$s.id->toString()+'|'+$s.sets->map(si|$si.id)->joinStrings(',')+']')->joinStrings('\n')+'\n',|''));
+  print(if($debug.debug,|$setsInScope->map(s|$debug.space+'   ['+$s.id->toString()+'|'+$s.sets->map(si|$si.id)->joinStrings(',')+']')->joinStrings('\n')+'\n',|''));
 
-  if($permutationSetList->isEmpty(),
-  | $propertyTree,
-  | let filteredSets = $permutationSetList->map(permSet | if($permSet.sets->at(0).class == $sourceSetImplementation.class,
-                                                            | ^$permSet(sets = $permSet.sets->map(s | $s->resolveOperation($mapping))->filter(s | $s.id == $sourceSetImplementation.id)),
-                                                            | $permSet
-                                                            );
-                                               );
-    
-    print(if($debug.debug,|'\n'+$debug.space+'filtered sets found:\n', |''));
-    print(if($debug.debug,|$filteredSets->map(s|$debug.space+'   ['+$s.id->toString()+'|'+$s.sets->map(si|$si.id)->joinStrings(',')+']')->joinStrings('\n')+'\n',|''));
+  print(if($debug.debug,|'\n'+$debug.space+'Process Permutations ('+$setsInScope.id->size()->toString()+')\n', |''));
+  let permutations = $setsInScope->meta::pure::router::store::routing::permute();
+  print(if($debug.debug,|$permutations->map(l|$l.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets->toOne().id->toString()+']')->makeString(', '))->makeString('\n')+'\n', |''));
 
-    let returnType = $qualifiedProperty.genericType.rawType->toOne();
-    let propertyTreeWithRequiredPermutationSet = if($returnType->instanceOf(Class),
-                                                    |  let permutationSetOfReturnType = $filteredSets->filter(permSet | $permSet.sets->at(0).class == $returnType)->at(0);
-                                                        $permutationSetOfReturnType.sets->map(s | $s->resolveOperation($mapping))->map(s | pair(^$propertyTree(sets = $s), ^List<PermutationSet>(values = $filteredSets->map(permSet | if($permSet.sets->at(0).class == $returnType,
-                                                                                                                                                                        | ^$permSet(sets = $permSet.sets->map(s | $s->resolveOperation($mapping))->filter(set | $set.id == $s.id)),
-                                                                                                                                                                        | $permSet
-                                                                                                                                                                        )
-                                                                                                                                                            )
-                                                                                                                                )
-                                                                                                      )
-                                                                                            );,
-                                                    |  pair(^$propertyTree(sets = []), ^List<PermutationSet>(values=$filteredSets))
-                                                    );
+  print(if($debug.debug,|'\n'+$debug.space+'Filtered Permutations ('+$setsInScope.id->size()->toString()+')\n', |''));
+  let filteredPermutationSet = $permutations->filter(permSet | $permSet.values.sets->forAll(s | ($s.class == $sourceSetImplementation.class && $s.id == $sourceSetImplementation.id) || $s.class != $sourceSetImplementation.class));
 
-    print(if($debug.debug,|'\n'+$debug.space+ 'RequiredPermutationSet found:\n', |''));
-    print(if($debug.debug,|$propertyTreeWithRequiredPermutationSet->map(l|$l.second.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets.id->map(x | $x->toString())->makeString(', ') +']')->makeString(', '))->makeString('\n')+'\n', |''));
+  print(if($debug.debug,|$filteredPermutationSet->map(l|$l.values->map(p|$debug.space + '   ['+$p.id->toString()+'|'+$p.sets->toOne().id->toString()+']')->makeString(', '))->makeString('\n')+'\n', |''));
 
-    print(if($debug.debug,|'\n'+$debug.space+'Building new queries\n', |''));
-    let built = $propertyTreeWithRequiredPermutationSet->map(p | print(if($debug.debug,|'  Query '+$propertyTreeWithRequiredPermutationSet->indexOf($p)->toString()+'\n', |''));
-                                                                  pair($p.first, $expr->evaluateAndDeactivate()->meta::pure::router::store::routing::build($p.second, [], $mapping, $exeCtx, $extensions, $debug));
-                                                              );
+  print(if($debug.debug,|'\n'+$debug.space+'Building new queries\n', |''));
+  let built = $filteredPermutationSet->map(p | print(if($debug.debug,|'  Query '+$permutations->indexOf($p)->toString()+'\n', |''));
+                                           $routedVs->evaluateAndDeactivate()->meta::pure::router::store::routing::build($p, [], $mapping, $exeCtx, $extensions, $debug););
 
-    print(if($debug.debug,|'\n'+$debug.space+'Built queries:'+$built->size()->toString()+'\n', |''));
-    print(if($debug.debug,|$built->map(b|$debug.space+'   - '+$b.second->asString())->makeString('\n')+'\n',|''));
+  print(if($debug.debug,|'\n'+$debug.space+'Built queries:'+$built->size()->toString()+'\n', |''));
+  print(if($debug.debug,|$built->map(b|$debug.space+'   - '+$b->asString())->makeString('\n')+'\n',|''));
 
-    $built->filter(x|!$x.second->instanceOf(Void))->map(p | let pt = $p.first;
-                                                            ^$pt(property = ^$qualifiedProperty(expressionSequence = $p.second));
-                                                        );
-  );
+  $built->filter(x|!$x->instanceOf(Void))->cast(@StoreMappingRoutedValueSpecification);
 }
+
 function <<access.private>> meta::pure::graphFetch::routing::ensureXStoreRequirementsAtCurrentLevel(currentTree: RoutedGraphFetchTree[1], currentExpression: ValueSpecification[1], processedXStoreMappings: XStorePropertyMapping[*], processedQualifiers: QualifiedProperty<Any>[*], mapping: Mapping[1], extensions: Extension[*]): RoutedGraphFetchTree[1]
 {
   // Add XStore requirements
