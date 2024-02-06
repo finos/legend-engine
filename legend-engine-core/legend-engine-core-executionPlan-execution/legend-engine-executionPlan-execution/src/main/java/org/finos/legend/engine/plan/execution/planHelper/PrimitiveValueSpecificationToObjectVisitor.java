@@ -137,8 +137,10 @@ public class PrimitiveValueSpecificationToObjectVisitor implements ValueSpecific
         {
             case "listInstance":
                 return ListIterate.collect(((PureList) iv.value).values, x -> x.accept(this));
+            case "path":
+                return iv.value;                
             default:
-                return iv.value;
+                throw new UnsupportedOperationException("Unsupported ClassInstance type: " + iv.type);
         }
     }
 
