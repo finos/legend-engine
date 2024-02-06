@@ -27,7 +27,6 @@ public class HostedService extends FunctionActivator
 {
 //    public String applicationName;
     public String documentation;
-    public Ownership ownership;
     public String pattern;
     public List<TestSuite> testSuites;
     public boolean autoActivateUpdates = true;
