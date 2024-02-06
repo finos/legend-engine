@@ -1,0 +1,107 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::handleRenameField(
+    class: meta::external::language::java::metamodel::Class[1],
+    oldFieldNames: String[1..*],
+    newFieldNames: String[1..*],
+    objVar: Code[1],
+    typeVar: Code[1],
+    version: String[1],
+    pathVar: Code[1],
+    rootObjVar: Code[1],
+    resVar: Code[1]): Code[1]
+{
+    $oldFieldNames->size()->range()->tail()->reverse()->fold({i, r |
+        validateSourceIsMap($oldFieldNames, $i, $resVar, $r)
+    },
+        validateDestinationAndMoveValues($oldFieldNames, $newFieldNames, $resVar)
+    );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::validateSourceIsMap(
+    oldFieldNames: String[1..*],
+    i: Integer[1],
+    resVar: Code[1],
+    r: Code[1]): Code[1]
+{
+    let fieldName = $oldFieldNames->take($i);
+    let field = $fieldName->deepGet($resVar);
+    j_if($field->j_instanceof(javaRawMap()),
+        $r,
+        j_if($field->j_ne(j_null()),
+            javaRuntimeException()->j_new(j_string('Source is not a map: ')->j_plus(j_string($fieldName->joinStrings('.'))))->j_throw()
+        )
+    );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::validateDestinationAndMoveValues(
+    oldFieldNames: String[1..*],
+    newFieldNames: String[1..*],
+    resVar: Code[1]): Code[1]
+{
+    let oldField = $oldFieldNames->deepGet($resVar);
+    j_if($oldField->j_ne(j_null()), j_block(
+        $newFieldNames->size()->range()->tail()->map({i |
+            validateDestinationIsMap($newFieldNames, $i, $resVar)
+        })->concatenate(
+            validateAndMoveValues($oldFieldNames, $newFieldNames, $resVar)
+        )
+    ));
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::validateDestinationIsMap(
+    newFieldNames: String[1..*],
+    i: Integer[1],
+    resVar: Code[1]): Code[1]
+{
+    let fieldName = $newFieldNames->take($i);
+    let field = $fieldName->deepGet($resVar);
+    j_if($field->j_instanceof(javaRawMap())->j_not(),
+        javaRuntimeException()->j_new(j_string('Destination is not a map: ')->j_plus(j_string($fieldName->joinStrings('.'))))->j_throw()
+    );
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::validateAndMoveValues(
+    oldFieldNames: String[1..*],
+    newFieldNames: String[1..*],
+    resVar: Code[1]): Code[*]
+{
+    let oldFieldName = $oldFieldNames->last()->toOne();
+    let newFieldName = $newFieldNames->last()->toOne();
+    let oldField = $oldFieldNames->init()->deepGet($resVar)->j_cast(objectNode())->j_invoke('get', [j_string($oldFieldName)], javaObject());
+    let newField = $newFieldNames->init()->deepGet($resVar)->j_cast(objectNode())->j_invoke('get', [j_string($newFieldName)], javaObject());
+    [
+        j_if($newField->j_ne(j_null())
+            ->j_and($newField
+                ->j_invoke('equals', $oldField)->j_not()),
+            javaRuntimeException()->j_new(j_string('Cannot overwrite with different value:')
+                ->j_plus($newField))->j_throw()
+        ),
+        $newFieldNames->init()->deepGet($resVar)->j_cast(objectNode())->j_invoke('put', [j_string($newFieldName), $oldField], javaVoid()),
+        $oldFieldNames->init()->deepGet($resVar)->j_cast(objectNode())->j_invoke('remove', [j_string($oldFieldName)], javaVoid())
+    ];
+}
+
+function <<access.private>> meta::pure::changetoken::cast_generation::deepGet(
+    fieldNames: String[*],
+    resVar: Code[1]): Code[1]
+{
+    $fieldNames->fold({t, res | $res->j_cast(objectNode())->j_invoke('get', [j_string($t)], javaObject())}, $resVar);
+}
