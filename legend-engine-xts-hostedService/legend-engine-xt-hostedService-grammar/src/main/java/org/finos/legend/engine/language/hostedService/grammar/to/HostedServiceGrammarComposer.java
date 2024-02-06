@@ -91,11 +91,11 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
     {
         if (owner instanceof UserList)
         {
-            return "[\n" + LazyIterate.collect(((UserList) owner).users, o -> getTabString(2) + convertString(o, true)).makeString(",\n") + "\n" + getTabString(2) + "];\n";
+            return "UserList { users: [\n" + LazyIterate.collect(((UserList) owner).users, o -> getTabString(2) + convertString(o, true)).makeString(",\n") + "\n" + getTabString(2) + "] };\n";
         }
         else if (owner instanceof DeploymentOwner)
         {
-            return "" + ((DeploymentOwner)owner).id + ";\n";
+            return "Deployment { identifier: " + ((DeploymentOwner)owner).id + " };\n";
         }
         throw new RuntimeException("Owner type invalid");
     }
