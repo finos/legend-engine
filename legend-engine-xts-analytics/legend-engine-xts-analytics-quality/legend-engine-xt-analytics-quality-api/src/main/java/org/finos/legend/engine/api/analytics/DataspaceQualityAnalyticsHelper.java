@@ -52,7 +52,7 @@ public class DataspaceQualityAnalyticsHelper
         RichIterable<? extends Root_meta_analytics_quality_model_ViolationInstance<?>> result = core_analytics_quality_checksEngine.Root_meta_analytics_quality_model_domain_runQualityChecks_PackageableElement_MANY__ViolationInstance_MANY_(_elements, es);
         if (result.isEmpty())
         {
-            return Response.ok().entity(validDataspaceResponseString).build();
+            return Response.ok().build();
         }
         return Response.ok().entity(aggregateErrorMessages(result)).build();
     }
