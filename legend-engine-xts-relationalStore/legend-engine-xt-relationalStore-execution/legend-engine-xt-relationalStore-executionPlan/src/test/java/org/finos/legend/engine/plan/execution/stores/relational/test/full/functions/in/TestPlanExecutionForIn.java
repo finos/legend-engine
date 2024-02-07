@@ -41,6 +41,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "{\n" +
             "  fullName: String[1];\n" +
             "  birthTime: DateTime[0..1];\n" +
+            "  firmName: String[1];\n" +
             "}\n" +
             "Class test::Address\n" +
             "{\n" +
@@ -79,7 +80,8 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "    )\n" +
             "    ~mainTable [test::DB]PERSON\n" +
             "    fullName: [test::DB]PERSON.fullName,\n" +
-            "    birthTime: [test::DB]PERSON.birthTime\n" +
+            "    birthTime: [test::DB]PERSON.birthTime,\n" +
+            "    firmName: [test::DB]PERSON.firmName\n" +
             "  }\n" +
             "   test::Address: Relational\n" +
             "   {\n" +
