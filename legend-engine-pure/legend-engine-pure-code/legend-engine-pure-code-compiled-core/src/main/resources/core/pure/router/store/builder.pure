@@ -107,7 +107,10 @@ function meta::pure::router::store::routing::build(v:ValueSpecification[1], l:Li
                                                                                                                                 p:Property<Nil,Any|*>[1]|pair($p, $p.classifierGenericType.typeArguments->at(1).rawType->toOne()),
                                                                                                                                 qp:QualifiedProperty<Any>[1]|pair($qp, $qp.genericType.rawType->toOne())
                                                                                                                              ])->toOne();
-                                                                                    let propertyName = $propReturnTypePair.first.name->toOne();
+                                                                                    let propertyName = if($propReturnTypePair.first->instanceOf(QualifiedProperty) && $propReturnTypePair.first->meta::pure::milestoning::hasGeneratedMilestoningPropertyStereotype(),
+                                                                                                          |$propReturnTypePair.first->edgePointPropertyName()->toOne(); ,
+                                                                                                          |$propReturnTypePair.first.name->toOne();
+                                                                                                         );
                                                                                     let setImplementation = $params->at(0)->cast(@StoreMappingRoutedValueSpecification).sets->toOne();
                                                                                     let newParams = $setImplementation->match([
                                                                                                               o:OtherwiseEmbeddedSetImplementation[1]| let pMapping = $o->propertyMappingsByPropertyName($propertyName);

@@ -48,6 +48,7 @@ class MergeStatementTest
             setPairs,
             setPairs,
             null,
+            null,
             null);
 
         String sql1 = BaseTest.genSqlIgnoringErrors(query);

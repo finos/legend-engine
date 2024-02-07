@@ -98,7 +98,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         String insertSql  = "INSERT INTO \"mydb\".\"main\" " +
             "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_update_time\", \"batch_id\") " +
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
-            "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('id',stage.\"id\",'name',stage.\"name\",'amount',stage.\"amount\",'biz_date',stage.\"biz_date\"))," +
+            "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('name',stage.\"name\",'biz_date',stage.\"biz_date\"))," +
             "'2000-01-01 00:00:00.000000',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
             "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
@@ -144,6 +144,18 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    @Override
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadata()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata;
+    }
+
+    @Override
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
     }
 
     protected String getExpectedMetadataTableCreateQuery()

@@ -232,7 +232,7 @@ function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::root
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_SameStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_SameStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -262,7 +262,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    true;
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_SameStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_SameStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -296,7 +296,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    );
 }
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_SameStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_SameStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -441,7 +441,7 @@ import meta::pure::graphFetcha::tests::XStore::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
-function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_CrossStore():Boolean[1]
+function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testSimpleUnion_CrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -470,7 +470,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::rel
    true;
 }
 
-function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_CrossStore():Boolean[1]
+function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testNestedUnion_CrossStore():Boolean[1]
 {
    let tree = #{
       Trade {
@@ -504,7 +504,7 @@ function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::re
    );
 }
 
-function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_CrossStore():Boolean[1]
+function <<test.ToFix, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::relational::graphFetch::tests::union::rootLevel::testRootUnionWithOnePropertySet_CrossStore():Boolean[1]
 {
    let tree = #{
       Trade {

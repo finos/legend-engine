@@ -1,0 +1,60 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::generateRecurseArray(
+    class: meta::external::language::java::metamodel::Class[1],
+    objRecurseFuncName: String[1],
+    arrRecurseFuncName: String[1]): Method[1]
+{
+    let rootObjVar = j_parameter(objectNode(), 'rootObjectNode');
+    let pathVar = j_parameter(javaList(javaObject()), 'path');
+    let arrVar = j_parameter(arrayNode(), 'arrayNode');
+    let i = j_variable(javaInt(), 'i');
+    let arrI = $arrVar->j_invoke('get', [$i], javaObject());
+    let newPathVar = j_variable(javaList(javaObject()), 'newPath');
+    let resVar = j_variable(arrayNode(), 'res');
+    let newPathDeclare = $newPathVar->j_declare(
+        javaStream()->j_invoke('concat',
+        [
+            $pathVar->j_invoke('stream', [], javaVoid()),
+            javaStream()->j_invoke('of', [$i], javaVoid())
+        ], javaVoid())
+        ->j_invoke('collect', [javaCollectors()->j_invoke('toList', [], javaVoid())], javaVoid()));
+    javaMethod(['private', 'static'], arrayNode(), $arrRecurseFuncName, [$rootObjVar, $pathVar, $arrVar], j_block([
+        $resVar->j_declare(javaArrayList()->j_new([$arrVar->j_invoke('size', [], javaInt())])),
+        j_for($i->j_declare(j_int(0)), $i->j_lt($arrVar->j_invoke('size', [], javaInt())), $i->j_inc(), [
+            j_if($arrI->j_instanceof(javaList()),
+                [
+                    $newPathDeclare,
+                    $resVar->j_invoke('add', [$class->j_invoke($arrRecurseFuncName, [$rootObjVar, $newPathVar, $arrI->j_cast(arrayNode())], arrayNode())], javaVoid())
+                ],
+                j_if($arrI->j_instanceof(javaRawMap()),
+                [
+                    $newPathDeclare,
+                    $resVar->j_invoke('add', [$class->j_invoke($objRecurseFuncName, [$rootObjVar, $newPathVar, $arrI->j_cast(objectNode())], objectNode())], javaVoid())
+                ],
+                [
+                    $resVar->j_invoke('add', [$arrI], javaVoid())
+                ]
+                )
+            )
+        ]),
+        j_return($resVar)
+    ]));
+}
