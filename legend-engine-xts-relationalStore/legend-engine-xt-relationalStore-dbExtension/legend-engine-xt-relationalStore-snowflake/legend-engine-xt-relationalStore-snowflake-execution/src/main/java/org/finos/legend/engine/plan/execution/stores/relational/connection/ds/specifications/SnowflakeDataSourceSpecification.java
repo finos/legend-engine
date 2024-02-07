@@ -42,8 +42,8 @@ public class SnowflakeDataSourceSpecification extends DataSourceSpecification
     public static final String SNOWFLAKE_ROLE = "role";
     public static final String SNOWFLAKE_ENABLE_QUERY_TAGS = "enableQueryTags";
 
-    public static final String SNOWFLAKE_TEMP_TABLE_DB = "tempTableDb";
-    public static final String SNOWFLAKE_TEMP_TABLE_SCHEMA = "tempTableSchema";
+    public static final String SNOWFLAKE_TEMP_TABLE_DB = "LEGEND_TEMP_DB";
+    public static final String SNOWFLAKE_TEMP_TABLE_SCHEMA = "LEGEND_TEMP_SCHEMA";
 
     public SnowflakeDataSourceSpecification(SnowflakeDataSourceSpecificationKey key, DatabaseManager databaseManager, AuthenticationStrategy authenticationStrategy, Properties extraUserProperties)
     {

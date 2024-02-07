@@ -49,6 +49,8 @@ public class TestSnowflakeConnectionGrammarCompiler
                 "    accountType: MultiTenant;\n" +
                 "    organization: 'sampleOrganization';\n" +
                 "    role: 'DB_ROLE_123';\n" +
+                "    tempTableDb: 'temp_table_db';\n" +
+                "    tempTableSchema: 'temp_table_schema';\n" +
                 "  };\n" +
                 "  auth: SnowflakePublic\n" +
                 "  {" +
@@ -73,6 +75,9 @@ public class TestSnowflakeConnectionGrammarCompiler
         Assert.assertEquals(result.getTwo().getEnumValue("meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType", "MultiTenant"), specification._accountType());
         Assert.assertEquals("sampleOrganization", specification._organization());
         Assert.assertEquals("DB_ROLE_123", specification._role());
+        Assert.assertEquals("temp_table_db", specification._tempTableDb());
+        Assert.assertEquals("temp_table_schema", specification._tempTableSchema());
+
 
         Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy authenticationStrategy = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) connection._authenticationStrategy();
 
