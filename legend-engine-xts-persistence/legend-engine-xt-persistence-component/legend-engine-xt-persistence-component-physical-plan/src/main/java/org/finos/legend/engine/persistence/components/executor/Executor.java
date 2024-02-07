@@ -31,6 +31,8 @@ public interface Executor<C extends PhysicalPlanNode, R extends ResultData, P ex
 
     List<R> executePhysicalPlanAndGetResults(P physicalPlan);
 
+    List<R> executePhysicalPlanAndGetResults(P physicalPlan, int rows);
+
     List<R> executePhysicalPlanAndGetResults(P physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues);
 
     boolean datasetExists(Dataset dataset);

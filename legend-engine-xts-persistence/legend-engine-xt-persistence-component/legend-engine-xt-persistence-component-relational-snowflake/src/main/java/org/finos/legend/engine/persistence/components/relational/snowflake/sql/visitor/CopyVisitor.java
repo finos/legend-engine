@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
@@ -38,21 +39,28 @@ public class CopyVisitor implements LogicalPlanVisitor<Copy>
     {
         SnowflakeStagedFilesDatasetProperties properties = (SnowflakeStagedFilesDatasetProperties) current.stagedFilesDatasetProperties();
         CopyStatement copyStatement = new CopyStatement();
-        setCopyStatementProperties(properties, copyStatement);
+        setCopyStatementProperties(properties, copyStatement, current);
         prev.push(copyStatement);
 
         List<LogicalPlanNode> logicalPlanNodes = new ArrayList<>();
         logicalPlanNodes.add(current.sourceDataset());
         logicalPlanNodes.add(current.targetDataset());
-        logicalPlanNodes.addAll(current.fields());
-
+        if (!current.fields().isEmpty())
+        {
+            logicalPlanNodes.addAll(current.fields());
+        }
         return new VisitorResult(copyStatement, logicalPlanNodes);
     }
 
-    private static void setCopyStatementProperties(SnowflakeStagedFilesDatasetProperties properties, CopyStatement copyStatement)
+    private static void setCopyStatementProperties(SnowflakeStagedFilesDatasetProperties properties, CopyStatement copyStatement, Copy current)
     {
         copyStatement.setFilePatterns(properties.filePatterns());
         copyStatement.setFilePaths(properties.filePaths());
+
+        if (current.dryRun())
+        {
+            copyStatement.setValidationMode("RETURN_ERRORS");
+        }
 
         // Add default option into the map
         Map<String, Object> copyOptions = new HashMap<>(properties.copyOptions());
@@ -74,8 +82,13 @@ public class CopyVisitor implements LogicalPlanVisitor<Copy>
             else if (format instanceof StandardFileFormat)
             {
                 StandardFileFormat standardFileFormat = (StandardFileFormat) format;
+                Map<String, Object> formatOptions = new HashMap<>(standardFileFormat.formatOptions());
+                if (current.dryRun() && standardFileFormat.formatType().equals(FileFormatType.CSV))
+                {
+                    formatOptions.put("ERROR_ON_COLUMN_COUNT_MISMATCH", false);
+                }
                 copyStatement.setFileFormatType(standardFileFormat.formatType());
-                copyStatement.setFileFormatOptions(standardFileFormat.formatOptions());
+                copyStatement.setFileFormatOptions(formatOptions);
             }
         }
     }

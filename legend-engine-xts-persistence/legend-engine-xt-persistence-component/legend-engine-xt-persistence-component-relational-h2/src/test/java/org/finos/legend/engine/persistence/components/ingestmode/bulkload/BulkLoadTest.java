@@ -131,7 +131,9 @@ public class BulkLoadTest extends BaseTest
         GeneratorResult operations = generator.generateOperations(datasets);
 
         List<String> preActionsSql = operations.preActionsSql();
+        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> dryRunSql = operations.dryRunSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
@@ -146,7 +148,8 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
-
+        Assertions.assertEquals(0, dryRunPreActionsSql.size());
+        Assertions.assertEquals(0, dryRunSql.size());
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();

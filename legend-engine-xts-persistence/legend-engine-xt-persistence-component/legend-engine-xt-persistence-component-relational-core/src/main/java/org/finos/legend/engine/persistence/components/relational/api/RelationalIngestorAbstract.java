@@ -260,6 +260,18 @@ public abstract class RelationalIngestorAbstract
     }
 
     /*
+    - Perform dry run of Ingestion - only supported for Bulk Load atm
+    */
+    public void dryRun()
+    {
+        LOGGER.info("Invoked dryRun method, will perform the dryRun");
+        validateDatasetsInitialization();
+        // TODO invoke dry run
+        LOGGER.info("DryRun completed");
+    }
+
+
+    /*
     - Perform ingestion from staging to main dataset based on the Ingest mode, executes in current transaction
     */
     public List<IngestorResult> ingest()
@@ -487,6 +499,18 @@ public abstract class RelationalIngestorAbstract
         {
             LOGGER.info(String.format("Starting Ingestion with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
             return performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult);
+        }
+    }
+
+    private void performDryRun()
+    {
+        if (enrichedIngestMode instanceof BulkLoad)
+        {
+            relationalSink().performDryRun(executor, generatorResult.ingestSqlPlan());
+        }
+        else
+        {
+            throw new RuntimeException("dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
         }
     }
 

@@ -43,6 +43,8 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan preActionsSqlPlan();
 
+    public abstract SqlPlan dryRunPreActionsSqlPlan();
+
     public abstract Optional<SqlPlan> initializeLockSqlPlan();
 
     public abstract Optional<SqlPlan> acquireLockSqlPlan();
@@ -52,6 +54,8 @@ public abstract class GeneratorResultAbstract
     public abstract Optional<Dataset> schemaEvolutionDataset();
 
     public abstract SqlPlan ingestSqlPlan();
+
+    public abstract SqlPlan dryRunSqlPlan();
 
     public abstract Optional<DataSplitRange> ingestDataSplitRange();
 
@@ -72,6 +76,11 @@ public abstract class GeneratorResultAbstract
     public List<String> preActionsSql()
     {
         return preActionsSqlPlan().getSqlList();
+    }
+
+    public List<String> dryRunPreActionsSql()
+    {
+        return dryRunPreActionsSqlPlan().getSqlList();
     }
 
     public List<String> initializeLockSql()
@@ -97,6 +106,11 @@ public abstract class GeneratorResultAbstract
                 .map(sql -> enrichSqlWithDataSplits(sql, dataSplitRange))
                 .collect(Collectors.toList()))
             .orElseGet(ingestSqlPlan()::getSqlList);
+    }
+
+    public List<String> dryRunSql()
+    {
+        return dryRunSqlPlan().getSqlList();
     }
 
     public List<String> metadataIngestSql()

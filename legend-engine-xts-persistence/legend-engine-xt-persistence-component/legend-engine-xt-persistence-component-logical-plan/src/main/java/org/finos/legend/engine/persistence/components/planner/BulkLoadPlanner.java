@@ -23,6 +23,9 @@ import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGe
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
@@ -112,6 +115,24 @@ class BulkLoadPlanner extends Planner
         }
     }
 
+    @Override
+    public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        if (capabilities.contains(Capability.DRY_RUN))
+        {
+            Dataset validationDataset = getValidationDataset();
+            Copy copy = Copy.builder()
+                    .targetDataset(validationDataset)
+                    .sourceDataset(stagedFilesDataset.datasetReference().withAlias(""))
+                    .stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties())
+                    .dryRun(true)
+                    .build();
+            operations.add(copy);
+        }
+        return LogicalPlan.of(operations);
+    }
+
     private LogicalPlan buildLogicalPlanForTransformWhileCopy(Resources resources)
     {
         List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
@@ -131,7 +152,13 @@ class BulkLoadPlanner extends Planner
         }
 
         Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
-        return LogicalPlan.of(Collections.singletonList(Copy.of(mainDataset(), selectStage, fieldsToInsert, stagedFilesDataset.stagedFilesDatasetProperties())));
+        return LogicalPlan.of(Collections.singletonList(
+                Copy.builder()
+                        .targetDataset(mainDataset())
+                        .sourceDataset(selectStage)
+                        .addAllFields(fieldsToInsert)
+                        .stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties())
+                        .build()));
     }
 
     private LogicalPlan buildLogicalPlanForCopyAndTransform(Resources resources)
@@ -172,6 +199,17 @@ class BulkLoadPlanner extends Planner
         if (!transformWhileCopy)
         {
             operations.add(Create.of(false, externalDataset));
+        }
+        return LogicalPlan.of(operations);
+    }
+
+    @Override
+    public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        if (capabilities.contains(Capability.DRY_RUN))
+        {
+            operations.add(Create.of(true, getValidationDataset()));
         }
         return LogicalPlan.of(operations);
     }
@@ -247,5 +285,17 @@ class BulkLoadPlanner extends Planner
     protected void addPostRunStatsForRowsDeleted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
         // Not supported at the moment
+    }
+
+    private Dataset getValidationDataset()
+    {
+        String tableName = mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+        return DatasetDefinition.builder()
+                .schema(stagedFilesDataset.schema())
+                .database(mainDataset().datasetReference().database())
+                .group(mainDataset().datasetReference().group())
+                .name(tableName + UNDERSCORE + "validation")
+                .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
+                .build();
     }
 }

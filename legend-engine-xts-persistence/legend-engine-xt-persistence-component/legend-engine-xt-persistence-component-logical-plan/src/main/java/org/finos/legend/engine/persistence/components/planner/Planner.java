@@ -256,6 +256,16 @@ public abstract class Planner
 
     public abstract LogicalPlan buildLogicalPlanForIngest(Resources resources);
 
+    public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
+    {
+        return LogicalPlan.of(Collections.emptyList());
+    }
+
+    public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
+    {
+        return LogicalPlan.of(Collections.emptyList());
+    }
+
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
         // Save staging filters into batch_source_info column

@@ -329,4 +329,9 @@ public class AnsiSqlSink extends RelationalSink
     {
         throw new UnsupportedOperationException("Bulk Load not supported!");
     }
+
+    public void performDryRun(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan)
+    {
+        throw new UnsupportedOperationException("DryRun not supported!");
+    }
 }

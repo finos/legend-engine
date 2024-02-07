@@ -34,15 +34,17 @@ import static org.immutables.value.Value.Style;
 )
 public interface CopyAbstract extends Operation
 {
-    @Parameter(order = 0)
     Dataset targetDataset();
 
-    @Parameter(order = 1)
     Dataset sourceDataset();
 
-    @Parameter(order = 2)
     List<Value> fields();
 
-    @Parameter(order = 3)
     StagedFilesDatasetProperties stagedFilesDatasetProperties();
+
+    @org.immutables.value.Value.Default
+    default boolean dryRun()
+    {
+        return false;
+    }
 }

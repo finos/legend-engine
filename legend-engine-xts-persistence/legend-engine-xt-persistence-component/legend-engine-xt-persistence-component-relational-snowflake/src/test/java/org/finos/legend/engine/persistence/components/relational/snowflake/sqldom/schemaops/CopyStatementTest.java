@@ -119,6 +119,50 @@ public class CopyStatementTest
         assertEquals(expectedStr, sql1);
     }
 
+
+    @Test
+    void testCopyStatementWithStandardDataLoad() throws SqlDomException
+    {
+        Table table = new Table("mydb", null, "mytable1", "sink", QUOTE_IDENTIFIER);
+        StagedFilesTable stagedFiles = new StagedFilesTable("@my_stage");
+
+        CopyStatement copyStatement = new CopyStatement();
+        copyStatement.push(table);
+        copyStatement.push(stagedFiles);
+        copyStatement.setFilePaths(Arrays.asList("path1", "path2"));
+        Map<String, Object> fileFormatOptions = new HashMap<>();
+        fileFormatOptions.put("error_on_column_count_mismatch", false);
+        copyStatement.setFileFormatType(FileFormatType.CSV);
+        copyStatement.setFileFormatOptions(fileFormatOptions);
+
+        String sql = genSqlIgnoringErrors(copyStatement);
+        String expectedSql = "COPY INTO \"mydb\".\"mytable1\"  FROM @my_stage FILES = ('path1', 'path2') " +
+                "FILE_FORMAT = (TYPE = 'CSV', error_on_column_count_mismatch = false)";
+        assertEquals(expectedSql, sql);
+    }
+
+    @Test
+    void testCopyStatementWithStandardDataLoadAndValidate() throws SqlDomException
+    {
+        Table table = new Table("mydb", null, "mytable1", "sink", QUOTE_IDENTIFIER);
+        StagedFilesTable stagedFiles = new StagedFilesTable("@my_stage");
+
+        CopyStatement copyStatement = new CopyStatement();
+        copyStatement.push(table);
+        copyStatement.push(stagedFiles);
+        copyStatement.setFilePaths(Arrays.asList("path1", "path2"));
+        Map<String, Object> fileFormatOptions = new HashMap<>();
+        fileFormatOptions.put("error_on_column_count_mismatch", false);
+        copyStatement.setFileFormatType(FileFormatType.CSV);
+        copyStatement.setFileFormatOptions(fileFormatOptions);
+        copyStatement.setValidationMode("RETURN_ERRORS");
+
+        String sql = genSqlIgnoringErrors(copyStatement);
+        String expectedSql = "COPY INTO \"mydb\".\"mytable1\"  FROM @my_stage FILES = ('path1', 'path2') " +
+                "FILE_FORMAT = (TYPE = 'CSV', error_on_column_count_mismatch = false) VALIDATION_MODE = 'RETURN_ERRORS'";
+        assertEquals(expectedSql, sql);
+    }
+
     public static String genSqlIgnoringErrors(SqlGen item)
     {
         StringBuilder builder = new StringBuilder();

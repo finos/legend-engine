@@ -115,7 +115,9 @@ public class BulkLoadTest
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
+        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> dryRunSql = operations.dryRunSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
@@ -132,9 +134,19 @@ public class BulkLoadTest
         String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
                 "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"task123\",\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
+        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation\"" +
+                "(\"col_int\" INTEGER,\"col_integer\" INTEGER)";
+        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation\"  FROM my_location " +
+                "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
+                "FILE_FORMAT = (ERROR_ON_COLUMN_COUNT_MISMATCH = false, FIELD_DELIMITER = ',', TYPE = 'CSV') " +
+                "ON_ERROR = 'ABORT_STATEMENT' " +
+                "VALIDATION_MODE = 'RETURN_ERRORS'";
+
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
+        Assertions.assertEquals(expectedDryRunPreActionsSql, dryRunPreActionsSql.get(0));
+        Assertions.assertEquals(expectedDryRunSql, dryRunSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
@@ -156,7 +168,7 @@ public class BulkLoadTest
                 .stagedFilesDatasetProperties(
                         SnowflakeStagedFilesDatasetProperties.builder()
                                 .location("my_location")
-                                .fileFormat(StandardFileFormat.builder().formatType(FileFormatType.CSV).build())
+                                .fileFormat(StandardFileFormat.builder().formatType(FileFormatType.AVRO).build())
                                 .addAllFilePaths(filesList).build())
                 .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3, col4)).build())
                 .alias("t")
@@ -180,7 +192,9 @@ public class BulkLoadTest
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
+        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> dryRunSql = operations.dryRunSql();
         List<String> metaIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
@@ -191,17 +205,26 @@ public class BulkLoadTest
                 "(SELECT t.$4 as \"col_bigint\",TO_VARIANT(PARSE_JSON(t.$5)) as \"col_variant\",(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME') " +
                 "FROM my_location as t) " +
                 "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
-                "FILE_FORMAT = (TYPE = 'CSV') " +
+                "FILE_FORMAT = (TYPE = 'AVRO') " +
                 "ON_ERROR = 'ABORT_STATEMENT'";
         String expectedMetaIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
-            "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
-            "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
-            "PARSE_JSON('{\"event_id\":\"task123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
-            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+                "(SELECT 'my_name',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME')," +
+                "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
+                "PARSE_JSON('{\"event_id\":\"task123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
+                "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation\"" +
+                "(\"col_bigint\" BIGINT,\"col_variant\" VARIANT)";
+        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation\"  FROM my_location " +
+                "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
+                "FILE_FORMAT = (TYPE = 'AVRO') " +
+                "ON_ERROR = 'ABORT_STATEMENT' " +
+                "VALIDATION_MODE = 'RETURN_ERRORS'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetaIngestSql, metaIngestSql.get(0));
+        Assertions.assertEquals(expectedDryRunPreActionsSql, dryRunPreActionsSql.get(0));
+        Assertions.assertEquals(expectedDryRunSql, dryRunSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
@@ -243,7 +266,9 @@ public class BulkLoadTest
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
+        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
+        List<String> dryRunSql = operations.dryRunSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
@@ -264,9 +289,19 @@ public class BulkLoadTest
             "(SELECT 'MY_NAME',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
             "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
+        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME_VALIDATION\"" +
+                "(\"COL_INT\" INTEGER,\"COL_INTEGER\" INTEGER)";
+        String expectedDryRunSql = "COPY INTO \"MY_DB\".\"MY_NAME_VALIDATION\"  FROM my_location " +
+                "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
+                "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
+                "ON_ERROR = 'ABORT_STATEMENT' " +
+                "VALIDATION_MODE = 'RETURN_ERRORS'";
+
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
+        Assertions.assertEquals(expectedDryRunPreActionsSql, dryRunPreActionsSql.get(0));
+        Assertions.assertEquals(expectedDryRunSql, dryRunSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));

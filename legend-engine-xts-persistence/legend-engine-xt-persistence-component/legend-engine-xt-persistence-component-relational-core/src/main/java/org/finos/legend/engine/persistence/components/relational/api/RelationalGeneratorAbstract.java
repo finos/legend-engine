@@ -219,6 +219,10 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan preActionsLogicalPlan = planner.buildLogicalPlanForPreActions(resources);
         SqlPlan preActionsSqlPlan = transformer.generatePhysicalPlan(preActionsLogicalPlan);
 
+        // dry-run pre-actions
+        LogicalPlan dryRunPreActionsLogicalPlan = planner.buildLogicalPlanForDryRunPreActions(resources);
+        SqlPlan dryRunPreActionsSqlPlan = transformer.generatePhysicalPlan(dryRunPreActionsLogicalPlan);
+
         // initialize-lock
         LogicalPlan initializeLockLogicalPlan = planner.buildLogicalPlanForInitializeLock(resources);
         Optional<SqlPlan> initializeLockSqlPlan = Optional.empty();
@@ -272,6 +276,10 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
 
+        // dry-run
+        LogicalPlan dryRunLogicalPlan = planner.buildLogicalPlanForDryRun(resources);
+        SqlPlan dryRunSqlPlan = transformer.generatePhysicalPlan(dryRunLogicalPlan);
+
         // metadata ingest
         LogicalPlan metaDataIngestLogicalPlan = planner.buildLogicalPlanForMetadataIngest(resources);
         SqlPlan metaDataIngestSqlPlan = transformer.generatePhysicalPlan(metaDataIngestLogicalPlan);
@@ -297,11 +305,13 @@ public abstract class RelationalGeneratorAbstract
 
         return GeneratorResult.builder()
             .preActionsSqlPlan(preActionsSqlPlan)
+            .dryRunPreActionsSqlPlan(dryRunPreActionsSqlPlan)
             .initializeLockSqlPlan(initializeLockSqlPlan)
             .acquireLockSqlPlan(acquireLockSqlPlan)
             .schemaEvolutionSqlPlan(schemaEvolutionSqlPlan)
             .schemaEvolutionDataset(schemaEvolutionDataset)
             .ingestSqlPlan(ingestSqlPlan)
+            .dryRunSqlPlan(dryRunSqlPlan)
             .postActionsSqlPlan(postActionsSqlPlan)
             .postCleanupSqlPlan(postCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)
