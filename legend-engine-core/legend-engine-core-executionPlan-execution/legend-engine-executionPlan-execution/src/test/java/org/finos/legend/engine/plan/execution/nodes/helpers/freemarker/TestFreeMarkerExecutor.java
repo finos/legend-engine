@@ -28,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Execut
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.junit.Assert;
 import org.junit.Test;
+
 import java.sql.SQLException;
 import java.sql.Statement;
 import freemarker.core.TemplateDateFormatFactory;
