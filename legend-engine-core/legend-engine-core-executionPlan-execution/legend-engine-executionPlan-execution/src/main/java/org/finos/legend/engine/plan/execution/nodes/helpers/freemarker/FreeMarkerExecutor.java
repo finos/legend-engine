@@ -109,10 +109,10 @@ public class FreeMarkerExecutor
         public TemplateModel get(String s) throws TemplateModelException
         {
             Object result = map.get(s);
-            String prev = "";
-            while (isPlaceHolder(result) && prev != result)
+            String previousResult = "";
+            while (isPlaceHolder(result) && previousResult != result)
             {
-                prev = (String) result;
+                previousResult = (String) result;
                 result = process((String)result, map, templateFunctions);
             }
 
