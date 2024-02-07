@@ -42,12 +42,7 @@ import org.finos.legend.engine.language.pure.grammar.from.data.DataParseTreeWalk
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ExternalFormatEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ModelStoreEmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.ReferenceEmbeddedDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.ConnectionValueParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.MappingElementParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
-import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.*;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.AggregationAwareMappingParseTreeWalker;
@@ -177,7 +172,10 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     {
         return ListIterate
                 .select(pureModelContextData.getElementsOfType(DataElement.class), e -> dataElementReference.dataElement.equals(e.getPath()))
-                .collect(d -> d.data);
+                .collect(d -> d.data)
+                .collect(d -> d instanceof DataElementReferenceInterface
+                              ? PureGrammarParserExtensions.fromAvailableExtensions().getEmbeddedDataFromDataElement((DataElementReferenceInterface) d, pureModelContextData)
+                              : d);
     }
 
     private static Connection parseJsonModelConnection(ConnectionValueSourceCode connectionValueSourceCode)
