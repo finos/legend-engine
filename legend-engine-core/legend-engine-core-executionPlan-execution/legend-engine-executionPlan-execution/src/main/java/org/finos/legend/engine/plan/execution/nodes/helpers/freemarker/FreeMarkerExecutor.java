@@ -41,8 +41,7 @@ public class FreeMarkerExecutor
     private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
     public static Pattern pattern = Pattern.compile("(\\$)[\\{](?:[^\\{\\}]+|[\\{][^\\{\\}]*[\\}])*[\\}]");
     private static ObjectWrapper objectWrapper = FreeMarkerExecutor.freemarkerConfig.getObjectWrapper();
-    private static boolean overrideTemplateModelFlag = Boolean.valueOf(System.getProperty("overrideTemplateModel"));
-
+    
     static
     {
         freemarkerConfig.setNumberFormat("computer");
@@ -108,11 +107,17 @@ public class FreeMarkerExecutor
         public TemplateModel get(String s) throws TemplateModelException
         {
             Object result = map.get(s);
-            String prev = "";
-            while (isPlaceHolder(result) && prev != result)
+            boolean isResultUnchanged = true;
+            while (isResultUnchanged)
             {
-                prev = (String) result;
-                result = process((String)result, map, templateFunctions);
+               if (isPlaceHolder(result))
+               {
+                   result = process((String)result, map, templateFunctions);
+               }
+               else
+               {
+                   isResultUnchanged = false;
+               }
             }
 
             return objectWrapper.wrap(result);
@@ -127,6 +132,7 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
+        boolean overrideTemplateModelFlag = Boolean.valueOf(System.getProperty("overrideTemplateModel"));
         if (!overrideTemplateModelFlag)
         {
             return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);
