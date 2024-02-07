@@ -166,6 +166,7 @@ function meta::relational::milestoning::applyMilestoningFilters(j:RelationalTree
                                                         let newJoinOperation = if(!$sourceFilterContainTableFilter && $tableFilter!=[],|newAndOrDynaFunctionRelaxedBrackets('and', [$join.operation, $tableFilter->toOne()]);,
                                                                                                    |$join.operation);
                                                         let newJoin = ^$join(operation=$newJoinOperation);,
+                                           c:CommonTableExpressionReference[1] | $join,
                                            u:Union[1] | $join,
                                            s:SelectSQLQuery[1] | $join,
                                            s:SemiStructuredArrayFlatten[1] | $join
