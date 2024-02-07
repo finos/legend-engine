@@ -41,7 +41,7 @@ public class FreeMarkerExecutor
 {
     private static Configuration freemarkerConfig = new Configuration();
     private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
-    public static Pattern p = Pattern.compile("(\\$)[\\{](?:[^\\{\\}]+|[\\{][^\\{\\}]*[\\}])*[\\}]");
+    public static Pattern pattern = Pattern.compile("(\\$)[\\{](?:[^\\{\\}]+|[\\{][^\\{\\}]*[\\}])*[\\}]");
     private static ObjectWrapper objectWrapper = FreeMarkerExecutor.freemarkerConfig.getObjectWrapper();
     private static boolean overrideTemplateModelFlag = Boolean.valueOf(System.getProperty("overrideTemplateModel"));
 
