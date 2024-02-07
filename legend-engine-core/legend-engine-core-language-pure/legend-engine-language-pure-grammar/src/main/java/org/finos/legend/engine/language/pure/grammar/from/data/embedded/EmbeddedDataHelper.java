@@ -12,10 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.data;
+package org.finos.legend.engine.language.pure.grammar.from.data.embedded;
 
-import org.eclipse.collections.impl.utility.Iterate;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReferenceInterface;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 
 import java.util.Map;
@@ -23,22 +26,11 @@ import java.util.Map;
 public class EmbeddedDataHelper
 {
 
-    public static DataElement resolveDataElementInPMCDWithPath(PureModelContextData pureModelContextData, String fullPath)
-    {
-        DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> (fullPath.equals(e.getPath())));
-        if (dataElement == null)
-        {
-            throw new RuntimeException("Data Element '" + fullPath + "' not found.");
-        }
-        return dataElement;
-    }
-
     public static EmbeddedData resolveEmbeddedDataInPMCD(PureModelContextData pureModelContextData, EmbeddedData embeddedData)
     {
-        if (embeddedData instanceof DataElementReference)
+        if (embeddedData instanceof DataElementReferenceInterface)
         {
-            DataElement dataElement = resolveDataElementInPMCDWithPath(pureModelContextData, ((DataElementReference)embeddedData).dataElement);
-            return dataElement.data;
+            return PureGrammarParserExtensions.fromAvailableExtensions().getEmbeddedDataFromDataElement((DataElementReferenceInterface) embeddedData, pureModelContextData);
         }
         return embeddedData;
     }

@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph.test;
 
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.EmbeddedDataHelper;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
