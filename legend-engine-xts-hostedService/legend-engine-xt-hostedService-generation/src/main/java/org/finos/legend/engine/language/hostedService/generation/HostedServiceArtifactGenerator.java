@@ -31,8 +31,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExe
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Ownership;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_hostedservice_generation_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -73,13 +74,13 @@ public class HostedServiceArtifactGenerator
 
     public boolean validateOwner(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_Ownership> service = getOwnerValidatorService(activator,pureModel);
+        HostedServiceOwnerValidator<Root_meta_external_function_activator_Ownership> service = getOwnerValidatorService(activator,pureModel);
         return  service.isOwner(identity, activator._ownership());
     }
 
-    public HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_Ownership> getOwnerValidatorService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModel pureModel)
+    public HostedServiceOwnerValidator<Root_meta_external_function_activator_Ownership> getOwnerValidatorService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModel pureModel)
     {
-        HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_Ownership> service = HostedServiceOwnerValidationService.extensions().select(c -> c.supports(activator._ownership())).getFirst();
+        HostedServiceOwnerValidator<Root_meta_external_function_activator_Ownership> service = HostedServiceOwnerValidationService.extensions().select(c -> c.supports(activator._ownership())).getFirst();
         if (service == null)
         {
             throw new RuntimeException(activator._ownership().getClass().getSimpleName() + "is not yet supported as an ownership model!");

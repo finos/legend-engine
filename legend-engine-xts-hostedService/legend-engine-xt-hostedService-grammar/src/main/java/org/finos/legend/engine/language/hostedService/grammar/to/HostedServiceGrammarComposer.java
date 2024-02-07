@@ -26,8 +26,8 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Deployment;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Ownership;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
@@ -91,11 +91,11 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
     {
         if (owner instanceof UserList)
         {
-            return "[\n" + LazyIterate.collect(((UserList) owner).users, o -> getTabString(2) + convertString(o, true)).makeString(",\n") + "\n" + getTabString(2) + "];\n";
+            return "UserList { users: [\n" + LazyIterate.collect(((UserList) owner).users, o -> getTabString(2) + convertString(o, true)).makeString(",\n") + "\n" + getTabString(2) + "] };\n";
         }
-        else if (owner instanceof Deployment)
+        else if (owner instanceof DeploymentOwner)
         {
-            return "" + ((Deployment) owner).id + ";\n";
+            return "Deployment { identifier: " + ((DeploymentOwner)owner).id + " };\n";
         }
         throw new RuntimeException("Owner type invalid");
     }
