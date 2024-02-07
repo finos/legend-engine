@@ -20,21 +20,13 @@ import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
-import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
-import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.sql.SQLException;
-import java.sql.Statement;
 import freemarker.core.TemplateDateFormatFactory;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import org.eclipse.collections.impl.factory.Maps;
-import java.util.stream.Collectors;
 import org.finos.legend.engine.plan.execution.result.freemarker.PlanDateParameterDateFormatFactory;
 
 import java.util.HashMap;
@@ -51,20 +43,8 @@ import static org.mockito.Mockito.verify;
 import static org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor.processRecursively;
 
 
-public class TestFreeMarkerExecutor extends AlloyTestServer
+public class TestFreeMarkerExecutor
 {
-    public TestPlanExecutionForIn test = new TestPlanExecutionForIn();
-
-    @Override
-    protected void insertTestData(Statement statement) throws SQLException
-    {
-        statement.execute("Drop table if exists PERSON;");
-        statement.execute("Create Table PERSON(fullName VARCHAR(100) NOT NULL,firmName VARCHAR(100) NULL,addressName VARCHAR(100) NULL,birthTime TIMESTAMP NULL, PRIMARY KEY(fullName));");
-        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P1','F1','A1','2020-12-12 20:00:00');");
-        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P2','F2','A2','2020-12-13 20:00:00');");
-        statement.execute("insert into PERSON (fullName,firmName,addressName,birthTime) values ('P3',null,null,'2020-12-14 20:00:00');");
-    }
-    
     @Test
     public void testCollectionSizeTemplateFunction()
     {
@@ -121,70 +101,6 @@ public class TestFreeMarkerExecutor extends AlloyTestServer
         String query = "${outsideParam} ${withEmbedded()}";
         String result = FreeMarkerExecutor.process(query, state,template);
         Assert.assertEquals("outsideFoo embeddedFoo", result.trim());
-    }
-    
-    @Test
-    public void TestFreeMarkerProcessingForTempTable() throws Exception
-    {
-        String fetchFunction = "###Pure\n" +
-                "function test::fetch(): Any[1]\n" +
-                "{\n" +
-                "  {names:String[*]| test::Person.all()\n" +
-                "                        ->filter(p:test::Person[1] | $p.fullName->in($names))\n" +
-                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
-                "}";
-
-        SingleExecutionPlan plan = test.buildPlanForFetchFunction(fetchFunction, false);
-        List largeCollection = Lists.mutable.with(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75);
-        List<String> result = (List<String>) largeCollection.stream().map(i -> i.toString()).collect(Collectors.toList());
-        HashMap queryParam = new HashMap();
-        queryParam.put("names",result);
-
-        ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
-        String sql = ((SQLExecutionNode)sqlNode).sqlQuery;
-
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in (select \\\"temptableforin_names_0\\\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_names as \\\"temptableforin_names_0\\\")\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
-        Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParam)));
-
-        String sqlQuery = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where \"root\".fullName in (${inFilterClause_names})";
-        Map rootMap = new HashMap();
-        rootMap.put("inFilterClause_names", "select \"temptableforin_names_0\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_names as \"temptableforin_names_0\"");
-        String templateFunctions = "<#function renderCollection collection separator prefix suffix replacementMap defaultValue><#if collection?size == 0><#return defaultValue></#if><#assign newCollection = collection><#list replacementMap as oldValue, newValue>   <#assign newCollection = collection?map(ele -> ele?replace(oldValue, newValue))></#list><#return prefix + newCollection?join(suffix + separator + prefix) + suffix></#function><#function collectionSize collection> <#return collection?size?c> </#function><#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause></#if></#function><#function varPlaceHolderToString optionalParameter prefix suffix replacementMap defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#assign newParam = optionalParameter><#list replacementMap as oldValue, newValue>   <#assign newParam = newParam?replace(oldValue, newValue)></#list><#return prefix + newParam + suffix></#if></#function><#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(\",\")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna></#if></#function>";
-
-        Assert.assertEquals("select \"root\".fullName as \"fullName\" from PERSON as \"root\" where \"root\".fullName in (select \"temptableforin_names_0\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_names as \"temptableforin_names_0\")", processRecursively(sql, rootMap, templateFunctions));
-    }
-
-    @Test
-    public void testFreeMarkerProcessingForPlanExecution() throws Exception
-    {
-        String fetchFunction = "###Pure\n" +
-                "function test::fetch(): Any[1]\n" +
-                "{\n" +
-                "  {names:String[*], firmName:String[1], birthTime:DateTime[0..1]| test::Person.all()\n" +
-                "                        ->filter(p:test::Person[1] | $p.fullName->in($names) && $p.firmName == $firmName && $p.birthTime == $birthTime)\n" +
-                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
-                "}";
-
-        SingleExecutionPlan plan = test.buildPlanForFetchFunction(fetchFunction, false);
-        HashMap queryParameters = new HashMap();
-        queryParameters.put("names", Lists.mutable.with("user1", "user2", "user3"));
-        queryParameters.put("firmName", "abcd<@efg");
-
-
-        //executePlan with freemarker placeholders in sql Query
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where ((\\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'abcd<@efg') and (\\\"root\\\".birthTime is null))\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
-        Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
-
-        //process freemarker via processRecurisvely call directly
-        ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
-        String sql = ((SQLExecutionNode)sqlNode).sqlQuery;
-        Map rootMap = new HashMap();
-        rootMap.put("names", Lists.mutable.with("user1", "user2", "user3"));
-        rootMap.put("inFilterClause_names", "${renderCollection(names![] \",\" \"'\" \"'\" {\"'\" : \"''\" } \"null\")}");
-        rootMap.put("firmName", "abcd<@efg");
-        String templateFunctions = "<#function renderCollection collection separator prefix suffix replacementMap defaultValue><#if collection?size == 0><#return defaultValue></#if><#assign newCollection = collection><#list replacementMap as oldValue, newValue>   <#assign newCollection = collection?map(ele -> ele?replace(oldValue, newValue))></#list><#return prefix + newCollection?join(suffix + separator + prefix) + suffix></#function><#function collectionSize collection> <#return collection?size?c> </#function><#function optionalVarPlaceHolderOperationSelector optionalParameter trueClause falseClause><#if optionalParameter?has_content || optionalParameter?is_string><#return trueClause><#else><#return falseClause></#if></#function><#function varPlaceHolderToString optionalParameter prefix suffix replacementMap defaultValue><#if optionalParameter?is_enumerable && !optionalParameter?has_content><#return defaultValue><#else><#assign newParam = optionalParameter><#list replacementMap as oldValue, newValue>   <#assign newParam = newParam?replace(oldValue, newValue)></#list><#return prefix + newParam + suffix></#if></#function><#function equalEnumOperationSelector enumVal inDyna equalDyna><#assign enumList = enumVal?split(\",\")><#if enumList?size = 1><#return equalDyna><#else><#return inDyna></#if></#function>";
-        String expectedProcessedString = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in ('user1','user2','user3') and \"root\".firmName = 'abcd<@efg') and (\"root\".birthTime is null))";
-        Assert.assertEquals(expectedProcessedString, processRecursively(sql,rootMap,templateFunctions));
     }
 
     @Test
