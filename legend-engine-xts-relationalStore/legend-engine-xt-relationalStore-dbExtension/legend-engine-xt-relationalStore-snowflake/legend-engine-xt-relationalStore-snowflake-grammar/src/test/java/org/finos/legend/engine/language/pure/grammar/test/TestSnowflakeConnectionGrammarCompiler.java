@@ -88,6 +88,70 @@ public class TestSnowflakeConnectionGrammarCompiler
     }
 
     @Test
+    public void testSnowflakeConnectionTempTableDbPresentAndSchemaAbsent()
+    {
+        test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::SnowflakeConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "    role: 'DB_ROLE_123';\n" +
+                "    tempTableDb: 'temp_table_db';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       privateKeyVaultReference: 'privateKey';\n" +
+                "       passPhraseVaultReference: 'passPhrase';\n" +
+                "  };\n" +
+                "}\n", "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+    }
+
+    @Test
+    public void testSnowflakeConnectionTempTableSchemaPresentAndDbAbsent()
+    {
+        test(TestRelationalCompilationFromGrammar.DB_INC +
+                "###Connection\n" +
+                "RelationalDatabaseConnection simple::SnowflakeConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "    role: 'DB_ROLE_123';\n" +
+                "    tempTableSchema: 'temp_table_schema';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       privateKeyVaultReference: 'privateKey';\n" +
+                "       passPhraseVaultReference: 'passPhrase';\n" +
+                "  };\n" +
+                "}\n", "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+    }
+
+    @Test
     public void testSnowflakeConnectionPropertiesLocalMode()
     {
         Pair<PureModelContextData, PureModel> result = test(TestRelationalCompilationFromGrammar.DB_INC +
