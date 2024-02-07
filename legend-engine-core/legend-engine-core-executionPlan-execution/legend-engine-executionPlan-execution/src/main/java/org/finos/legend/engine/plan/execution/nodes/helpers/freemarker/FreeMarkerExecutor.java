@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 import freemarker.core.TemplateDateFormatFactory;
 import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
-
 import freemarker.template.Template;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModel;
@@ -34,7 +33,6 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class FreeMarkerExecutor
@@ -88,7 +86,8 @@ public class FreeMarkerExecutor
 
         return StringUtils.isBlank(templateFunctions) ? process(input, variableMap, templateFunctions) : processRecursively(input, variableMap, templateFunctions);
     }
-    
+
+
     private static boolean isPlaceHolder(Object object)
     {
         return object instanceof String && pattern.matcher((String)object).find();
@@ -109,10 +108,10 @@ public class FreeMarkerExecutor
         public TemplateModel get(String s) throws TemplateModelException
         {
             Object result = map.get(s);
-            String previousResult = "";
-            while (isPlaceHolder(result) && previousResult != result)
+            String prev = "";
+            while (isPlaceHolder(result) && prev != result)
             {
-                previousResult = (String) result;
+                prev = (String) result;
                 result = process((String)result, map, templateFunctions);
             }
 
@@ -128,7 +127,7 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        if (!overrideTemplateModelFlag) 
+        if (!overrideTemplateModelFlag)
         {
             return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);
         }
@@ -143,12 +142,12 @@ public class FreeMarkerExecutor
         String result = process(input, variableMap, templateFunctions);
         if (!result.equals(input.replace("\\\"", "\"")))
         {
-            return recur(result, variableMap, templateFunctions);
+            return processRecursively(result, variableMap, templateFunctions);
         }
-        return result; 
+        return result;
     }
-    
-    private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
+
+    private static String process(String input, Object variableMap, String templateFunctions)
     {
         StringWriter stringWriter = new StringWriter();
         try
