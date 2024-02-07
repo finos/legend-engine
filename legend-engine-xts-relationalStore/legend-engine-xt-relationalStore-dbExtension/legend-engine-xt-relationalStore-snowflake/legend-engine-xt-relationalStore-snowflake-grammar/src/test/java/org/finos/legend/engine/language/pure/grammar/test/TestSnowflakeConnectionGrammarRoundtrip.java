@@ -234,4 +234,33 @@ public class TestSnowflakeConnectionGrammarRoundtrip extends TestGrammarRoundtri
                 "}\n");
 
     }
+
+    @Test
+    public void testSnowflakeTempTableSpec()
+    {
+        test("###Connection\n" +
+                "RelationalDatabaseConnection meta::mySimpleConnection\n" +
+                "{\n" +
+                "  store: store::Store;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehousename';\n" +
+                "    region: 'us-east-1';\n" +
+                "    quotedIdentifiersIgnoreCase: false;\n" +
+                "    enableQueryTags: true;\n" +
+                "    tempTableDb: 'temp_table_db';\n" +
+                "    tempTableSchema: 'temp_table_schema';\n" +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {\n" +
+                "    publicUserName: 'myName';\n" +
+                "    privateKeyVaultReference: 'privateKeyRef';\n" +
+                "    passPhraseVaultReference: 'passRef';\n" +
+                "  };\n" +
+                "}\n");
+
+    }
 }
