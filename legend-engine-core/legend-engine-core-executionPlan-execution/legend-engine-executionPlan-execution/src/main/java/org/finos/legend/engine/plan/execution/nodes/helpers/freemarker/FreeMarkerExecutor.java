@@ -107,19 +107,14 @@ public class FreeMarkerExecutor
         public TemplateModel get(String s) throws TemplateModelException
         {
             Object result = map.get(s);
-            boolean isResultUnchanged = true;
-            while (isResultUnchanged)
+            boolean isResultUnchanged = false;
+            String lastProcessedResult = "";
+            while (!isResultUnchanged && isPlaceHolder(result))
             {
-               if (isPlaceHolder(result))
-               {
-                   result = process((String)result, map, templateFunctions);
-               }
-               else
-               {
-                   isResultUnchanged = false;
-               }
+                lastProcessedResult = (String) result;
+                result = process((String) result, map, templateFunctions);
+                isResultUnchanged = lastProcessedResult.equals(((String) result).replace("\\\"", "\""));
             }
-
             return objectWrapper.wrap(result);
         }
 
