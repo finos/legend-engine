@@ -16,7 +16,12 @@ package org.finos.legend.engine.plan.execution.nodes.helpers.freemarker;
 
 import freemarker.core.TemplateDateFormatFactory;
 import freemarker.template.Configuration;
+import freemarker.template.ObjectWrapper;
+
 import freemarker.template.Template;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateModel;
+import freemarker.template.TemplateModelException;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -37,6 +42,8 @@ public class FreeMarkerExecutor
     private static Configuration freemarkerConfig = new Configuration();
     private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
     public static Pattern p = Pattern.compile("(\\$)[\\{](?:[^\\{\\}]+|[\\{][^\\{\\}]*[\\}])*[\\}]");
+    private static ObjectWrapper objectWrapper = FreeMarkerExecutor.freemarkerConfig.getObjectWrapper();
+    private static boolean overrideTemplateModelFlag = Boolean.valueOf(System.getProperty("overrideTemplateModel"));
 
     static
     {
@@ -81,46 +88,64 @@ public class FreeMarkerExecutor
 
         return StringUtils.isBlank(templateFunctions) ? process(input, variableMap, templateFunctions) : processRecursively(input, variableMap, templateFunctions);
     }
+    
+    private static boolean isPlaceHolder(Object object)
+    {
+        return object instanceof String && pattern.matcher((String)object).find();
+    }
+
+    private static class TemplateHashModelOverride implements TemplateHashModel
+    {
+        private Map map;
+        private String templateFunctions;
+
+        TemplateHashModelOverride(Map map, String templateFunctions)
+        {
+            this.map = map;
+            this.templateFunctions = templateFunctions;
+        }
+
+        @Override
+        public TemplateModel get(String s) throws TemplateModelException
+        {
+            Object result = map.get(s);
+            String prev = "";
+            while (isPlaceHolder(result) && prev != result)
+            {
+                prev = (String) result;
+                result = process((String)result, map, templateFunctions);
+            }
+
+            return objectWrapper.wrap(result);
+        }
+
+        @Override
+        public boolean isEmpty()
+        {
+            return map.isEmpty();
+        }
+    }
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        Map constant = new HashMap();
-        Map recur = new HashMap();
-        Map totalMap = new HashMap();
-        variableMap.forEach((key,value) -> 
+        if (!overrideTemplateModelFlag) 
         {
-           if (value.getClass() == String.class)
-           {
-               Matcher m = p.matcher((String) value);
-               if (!m.find())
-               {
-                   constant.put(key, value);
-               }
-               else
-               {
-                   recur.put(key, value);
-               }
-           }
-           else
-           {
-               constant.put(key,value);
-           }
-        });
+            return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);
+        }
+        else
+        {
+           return recur(input, variableMap, templateFunctions);
+        }
+    }
 
-        recur.forEach((key,value) -> 
+    private static String recur(String input, Map<String, ?> variableMap, String templateFunctions)
+    {
+        String result = process(input, variableMap, templateFunctions);
+        if (!result.equals(input.replace("\\\"", "\"")))
         {
-           String s = (String) value;
-           Matcher m = p.matcher(s);
-           while (m.find())
-           {
-               s = process((String) value, variableMap, templateFunctions);
-               m = p.matcher(s);
-           }
-           recur.replace(key, s);
-        });
-        totalMap.putAll(constant);
-        totalMap.putAll(recur);
-        return process(input, totalMap, templateFunctions);
+            return recur(result, variableMap, templateFunctions);
+        }
+        return result; 
     }
     
     private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
