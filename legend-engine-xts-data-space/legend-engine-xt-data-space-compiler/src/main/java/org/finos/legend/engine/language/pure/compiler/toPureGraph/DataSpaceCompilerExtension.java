@@ -27,6 +27,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
@@ -192,16 +194,17 @@ public class DataSpaceCompilerExtension implements CompilerExtension
 
     private Root_meta_pure_data_EmbeddedData compileDataspaceDataElementReference(EmbeddedData embeddedData, CompileContext compileContext, ProcessingContext processingContext)
     {
-        if (embeddedData instanceof DataspaceDataElementReference)
+        if (embeddedData instanceof DataElementReference
+                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
         {
-            DataspaceDataElementReference data = (DataspaceDataElementReference) embeddedData;
-            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataspaceAddress))
+            DataElementReference data = (DataElementReference) embeddedData;
+            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataElement.path))
             {
                 return Optional
-                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataspaceAddress)._defaultExecutionContext()._testData())
-                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataspaceAddress + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
+                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataElement.path)._defaultExecutionContext()._testData())
+                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataElement.path + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
             }
-            throw new EngineException("Dataspace " + data.dataspaceAddress + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Dataspace " + data.dataElement.path + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
         }
         return null;
     }

@@ -26,6 +26,8 @@ import org.finos.legend.engine.language.pure.grammar.from.DataspaceDataElementRe
 import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
@@ -193,9 +195,10 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
 
     private ContentWithType composeDataspaceDataElementReference(EmbeddedData embeddedData, PureGrammarComposerContext context)
     {
-        if (embeddedData instanceof DataspaceDataElementReference)
+        if (embeddedData instanceof DataElementReference
+                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
         {
-            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataspaceDataElementReference) embeddedData).dataspaceAddress);
+            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement.path);
             return new ContentWithType(DataspaceDataElementReferenceParser.TYPE, content);
         }
         return null;

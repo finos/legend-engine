@@ -41,6 +41,8 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPure
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -615,7 +617,11 @@ public class DomainParseTreeWalker
             if (dataValueContext.qualifiedName() != null)
             {
                 DataElementReference dataElementReference = new DataElementReference();
-                dataElementReference.dataElement = PureGrammarParserUtility.fromQualifiedName(dataValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : dataValueContext.qualifiedName().packagePath().identifier(), dataValueContext.qualifiedName().identifier());
+                dataElementReference.dataElement = new PackageableElementPointer(
+                        PackageableElementType.DATA,
+                        PureGrammarParserUtility.fromQualifiedName(dataValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : dataValueContext.qualifiedName().packagePath().identifier(), dataValueContext.qualifiedName().identifier()),
+                        this.walkerSourceInformation.getSourceInformation(dataValueContext.qualifiedName())
+                );
                 storeTestData.data = dataElementReference;
                 dataElementReference.sourceInformation = this.walkerSourceInformation.getSourceInformation(dataValueContext.qualifiedName());
             }

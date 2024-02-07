@@ -60,7 +60,7 @@ public class HelperEmbeddedDataGrammarComposer
         }
         else if (embeddedData instanceof DataElementReference)
         {
-            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement);
+            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement.path);
 
             return new ContentWithType(ReferenceEmbeddedDataParser.TYPE, content);
         }

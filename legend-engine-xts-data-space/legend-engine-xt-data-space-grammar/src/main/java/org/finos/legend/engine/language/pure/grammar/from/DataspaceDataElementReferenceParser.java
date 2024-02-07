@@ -18,8 +18,10 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataspaceDataElementReference;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 public class DataspaceDataElementReferenceParser implements EmbeddedDataParser
@@ -41,9 +43,9 @@ public class DataspaceDataElementReferenceParser implements EmbeddedDataParser
         }
         String validPath = PureGrammarParserUtility.validatePath(code.trim(), sourceInformation);
 
-        DataspaceDataElementReference result = new DataspaceDataElementReference();
+        DataElementReference result = new DataElementReference();
         result.sourceInformation = sourceInformation;
-        result.dataspaceAddress = validPath;
+        result.dataElement = new PackageableElementPointer(PackageableElementType.DATASPACE, validPath, sourceInformation);
         return result;
     }
 }
