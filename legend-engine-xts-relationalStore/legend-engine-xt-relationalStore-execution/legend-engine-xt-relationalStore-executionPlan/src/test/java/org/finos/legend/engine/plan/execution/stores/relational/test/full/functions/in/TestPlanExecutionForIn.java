@@ -296,15 +296,19 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
         HashMap queryParameters = new HashMap();
         queryParameters.put("names", org.eclipse.collections.impl.factory.Lists.mutable.with("user1", "user2", "user3"));
-        queryParameters.put("firmName", "abcd<@efg");
+        queryParameters.put("firmName", "firmA");
 
         //executePlan with freemarker placeholders in sql Query
-        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where ((\\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'abcd<@efg') and (\\\"root\\\".birthTime is null))\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where ((\\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'firmA') and (\\\"root\\\".birthTime is null))\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
 
         //check if old flow works as expected
         System.setProperty("overrideTemplateModel", "true");
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
+
+        //in old flow, processing "<@" would fail ideally (this wasour status quo)
+        queryParameters.replace("firmName", "abcd<@efg");
+        Assert.assertThrows(RuntimeException.class, () -> RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
         System.clearProperty("overrideTemplateModel");
         
         //process freemarker via processRecurisvely call directly
