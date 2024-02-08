@@ -269,6 +269,11 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where \\\"root\\\".fullName in (select \\\"temptableforin_names_0\\\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_names as \\\"temptableforin_names_0\\\")\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParam)));
 
+        //check if old flow works as expected
+        System.setProperty("overrideTemplateModel", "true");
+        Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParam)));
+        System.clearProperty("overrideTemplateModel");
+
         String sqlQuery = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where \"root\".fullName in (${inFilterClause_names})";
         Map rootMap = new HashMap();
         rootMap.put("inFilterClause_names", "select \"temptableforin_names_0\".ColumnForStoringInCollection as ColumnForStoringInCollection from tempTableForIn_names as \"temptableforin_names_0\"");
@@ -293,11 +298,15 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         queryParameters.put("names", org.eclipse.collections.impl.factory.Lists.mutable.with("user1", "user2", "user3"));
         queryParameters.put("firmName", "abcd<@efg");
 
-
         //executePlan with freemarker placeholders in sql Query
         String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where ((\\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'abcd<@efg') and (\\\"root\\\".birthTime is null))\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
 
+        //check if old flow works as expected
+        System.setProperty("overrideTemplateModel", "true");
+        Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
+        System.clearProperty("overrideTemplateModel");
+        
         //process freemarker via processRecurisvely call directly
         ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
         String sql = ((SQLExecutionNode)sqlNode).sqlQuery;
