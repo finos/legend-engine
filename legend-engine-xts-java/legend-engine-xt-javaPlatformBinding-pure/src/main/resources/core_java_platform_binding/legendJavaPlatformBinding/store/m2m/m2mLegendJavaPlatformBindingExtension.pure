@@ -138,8 +138,8 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
             ],
 
             dataRecordTreeFromConnectionExtractors = [
-               json : JsonModelConnection[1] | #{JsonDataRecord {number, record}}#,
-               xml  : XmlModelConnection[1]  | #{XmlDataRecord {number, record}}#
+               json : JsonModelConnection[1] | #{meta::pure::mapping::modelToModel::JsonDataRecord {number, record}}#,
+               xml  : XmlModelConnection[1]  | #{meta::pure::mapping::modelToModel::XmlDataRecord {number, record}}#
             ],
 
             streamReaderMethodCodeGenerators = {conventions: Conventions[1], path: String[1], pureClass: meta::pure::metamodel::type::Class<Any>[1], storeStreamReadingContext: Code[1] |

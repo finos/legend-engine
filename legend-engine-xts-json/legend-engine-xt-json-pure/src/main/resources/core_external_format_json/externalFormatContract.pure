@@ -43,7 +43,7 @@ function meta::external::format::json::contract::jsonSchemaFormatContract(): Ext
       internalizeConfig                = JsonSchemaInternalizeConfig,
 
       internalizeReturnsChecked        = true,
-      sourceRecordSerializeTree        = #{JsonDataRecord {number, record}}#
+      sourceRecordSerializeTree        = #{meta::pure::mapping::modelToModel::JsonDataRecord {number, record}}#
    )
 }
 

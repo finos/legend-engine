@@ -170,7 +170,7 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::json::executionPlan::test::simple::testM2MChainingWithJsonAndCompleteCheckedTree(): Boolean[1]
 {
   let binding = getTestBinding();
-  let query   = {data:String[1]| TargetPerson.all()->graphFetchChecked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, checked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#, defaultDefectTree(), checked(#{Person{firstName, lastName}}#, defaultDefectTree(),  #{JsonDataRecord {number, record}}#)))};
+  let query   = {data:String[1]| TargetPerson.all()->graphFetchChecked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#)->from(M2MMapping1, getRuntimeWithModelQueryConnection(Person, $binding, $data))->externalize($binding, checked(#{TargetPerson{fullName, firm {legalName}, addresses{street}}}#, defaultDefectTree(), checked(#{Person{firstName, lastName}}#, defaultDefectTree(),  #{meta::pure::mapping::modelToModel::JsonDataRecord {number, record}}#)))};
 
   let result  = meta::external::format::json::executionPlan::test::executeJsonSchemaBindingQuery($query, pair('data', '{"firstName": "John", "lastName":"Doe", "firm": {"legalName": "Firm A"}}'));
 
