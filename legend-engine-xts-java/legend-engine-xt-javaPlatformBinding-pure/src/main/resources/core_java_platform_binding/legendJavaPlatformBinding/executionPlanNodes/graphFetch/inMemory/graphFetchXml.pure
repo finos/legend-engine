@@ -584,7 +584,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let ioEx            = j_parameter(javaIOException(), 'e');
    let xmlStreamEx     = j_parameter(xmlStreamException(), 'e');
    let jThis           = j_this($fetchClass);
-   let recordType      = $conv->className(XmlDataRecord);
+   let recordType      = $conv->className(meta::pure::mapping::modelToModel::XmlDataRecord);
    let xml             = j_variable(javaString(), 'xml');
    let recordNumber    = j_variable(javaLong(), 'recordNumber');
    let source          = j_variable($recordType, 'source');

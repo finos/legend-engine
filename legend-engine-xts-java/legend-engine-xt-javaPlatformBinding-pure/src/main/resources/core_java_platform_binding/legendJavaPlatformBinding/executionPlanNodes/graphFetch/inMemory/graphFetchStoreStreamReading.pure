@@ -54,9 +54,9 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       ->map(ti| if($node.enableConstraints, |$ti->addConstraintsForGraphFetchTree($node.graphFetchTree), |$ti))
       ->addForClassesWithAllProperties($node.connection->map({c |
          $c->match([
-            json : JsonModelConnection[1] | JsonDataRecord,
-            xml  : XmlModelConnection[1]  | XmlDataRecord,
-            a    : Any[1]                 | JsonDataRecord
+            json : JsonModelConnection[1] | meta::pure::mapping::modelToModel::JsonDataRecord,
+            xml  : XmlModelConnection[1]  | meta::pure::mapping::modelToModel::XmlDataRecord,
+            a    : Any[1]                 | meta::pure::mapping::modelToModel::JsonDataRecord
          ])
       })->removeDuplicates());
 

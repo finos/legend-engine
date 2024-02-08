@@ -382,7 +382,7 @@ function <<access.private>> meta::external::format::json::executionPlan::platfor
   let checked         = j_variable($checkedSource, 'object');
   let sourceRead      = $pureClass->readMethodName($conventions);
   let jThis           = j_this($proto);
-  let recordType      = $conventions->className(JsonDataRecord);
+  let recordType      = $conventions->className(meta::pure::mapping::modelToModel::JsonDataRecord);
   let source          = j_parameter($recordType, 'source');
 
   $proto->addMethod(

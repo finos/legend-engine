@@ -105,8 +105,8 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
          ^LegendJavaDataRecordClassesExtension
          (
             dataRecordClasses = [
-               JsonDataRecord,
-               XmlDataRecord
+               meta::pure::mapping::modelToModel::JsonDataRecord,
+               meta::pure::mapping::modelToModel::XmlDataRecord
             ]
          ),
 
@@ -133,8 +133,8 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
          ^LegendJavaGraphFetchStoreStreamReadingExtension
          (
             dataRecordClassFromConnectionExtractors = [
-               j : JsonModelConnection[1] | JsonDataRecord,
-               x : XmlModelConnection[1]  | XmlDataRecord
+               j : JsonModelConnection[1] | meta::pure::mapping::modelToModel::JsonDataRecord,
+               x : XmlModelConnection[1]  | meta::pure::mapping::modelToModel::XmlDataRecord
             ],
 
             dataRecordTreeFromConnectionExtractors = [
