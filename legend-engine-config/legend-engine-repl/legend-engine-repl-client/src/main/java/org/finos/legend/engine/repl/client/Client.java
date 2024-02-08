@@ -19,6 +19,8 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.factory.Predicates;
+import org.eclipse.collections.impl.block.function.checked.CheckedFunction;
+import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
@@ -35,6 +37,7 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.repl.client.commands.*;
 import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
 import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
 import org.finos.legend.engine.repl.REPLInterface;
@@ -87,17 +90,29 @@ public class Client
     }
 
 
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args) throws Exception
+    {
+        new Client().loop();
+    }
+
+    public LineReader reader;
+
+    public MutableList<Command> commands;
+
+    public Client() throws Exception
     {
         terminal = TerminalBuilder.terminal();
 
         terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
-        LineReader reader = LineReaderBuilder.builder()
+        this.commands = Lists.mutable.with(new DB(this), new Debug(this), new Graph(this), new Load(this), new Execute(this));
+        this.commands.add(0, new Doc(this, this.commands));
+
+        reader = LineReaderBuilder.builder()
                 .terminal(terminal)
                 .highlighter(new JLine3Highlighter())
                 .parser(new JLine3Parser())//new DefaultParser().quoteChars(new char[]{'"'}))
-                .completer(new JLine3Completer())
+                .completer(new JLine3Completer(this.commands))
                 .build();
 
         terminal.writer().println("Warming up...");
@@ -105,94 +120,31 @@ public class Client
         execute("1+1");
         terminal.writer().println("Ready!\n");
 
+
+    }
+
+    public void loop()
+    {
         while (true)
         {
-            String line = reader.readLine("> ");
+            String line = this.reader.readLine("> ");
             if (line == null || line.equalsIgnoreCase("exit"))
             {
                 break;
             }
 
-            reader.getHistory().add(line);
+            this.reader.getHistory().add(line);
 
             try
             {
-                if (line.isEmpty())
+                commands.detect(new CheckedPredicate<Command>()
                 {
-                    terminal.writer().println("Commands:");
-                    terminal.writer().println("  load <path> <destination>");
-                    terminal.writer().println("  db");
-                    terminal.writer().println("  graph [<packagePath>]");
-                    terminal.writer().println("  debug");
-                }
-                else if (line.startsWith("debug"))
-                {
-                    String[] cmd = line.split(" ");
-                    if (cmd.length == 1)
+                    @Override
+                    public boolean safeAccept(Command c) throws Exception
                     {
-                        debug = !debug;
+                        return c.process(line);
                     }
-                    else
-                    {
-                        debug = Boolean.parseBoolean(cmd[1]);
-                    }
-                    terminal.writer().println("debug: " + debug);
-                }
-                else if (line.startsWith("load "))
-                {
-                    String path = line.substring("load ".length()).trim();
-
-                    String tableName = "test" + count++;
-
-                    try (Connection connection = getConnection())
-                    {
-                        try (Statement statement = connection.createStatement())
-                        {
-                            statement.executeUpdate("CREATE TABLE " + tableName + " AS SELECT * FROM CSVREAD('" + path + "');");
-                        }
-                    }
-                }
-                else if (line.startsWith("graph"))
-                {
-                    MutableList<String> all = Lists.mutable.with(line.split(" "));
-                    MutableList<String> showArgs = all.subList(1, all.size());
-                    if (showArgs.isEmpty())
-                    {
-                        PureModelContextData d = replInterface.parse(buildState().makeString("\n"));
-                        ListIterate.forEach(
-                                ListIterate.collect(
-                                        ListIterate.select(d.getElements(), c -> !c._package.equals("__internal__")),
-                                        c ->
-                                        {
-                                            AttributedStringBuilder ab = new AttributedStringBuilder();
-                                            ab.append("   ");
-                                            drawPath(ab, c._package, c.name);
-                                            return ab.toAnsi();
-                                        }
-                                ),
-                                e -> terminal.writer().println(e));
-                    }
-                    else
-                    {
-                        PureModelContextData d = replInterface.parse(buildState().makeString("\n"));
-                        PackageableElement element = ListIterate.select(d.getElements(), c -> c.getPath().equals(showArgs.getFirst())).getFirst();
-                        String result = ListIterate.flatCollect(loader, c -> c.getExtraPackageableElementComposers().collect(x -> x.apply(element, PureGrammarComposerContext.Builder.newInstance().build()))).select(Predicates.notNull()).getFirst();
-                        terminal.writer().println(result);
-                    }
-                }
-                else if (line.startsWith("db"))
-                {
-                    try (Connection connection = getConnection())
-                    {
-                        terminal.writer().println(
-                                getTables(connection).collect(c -> c.schema + "." + c.name + "(" + c.columns.collect(col -> col.name + " " + col.type).makeString(", ") + ")").makeString("\n")
-                        );
-                    }
-                }
-                else
-                {
-                    terminal.writer().println(execute(line));
-                }
+                });
             }
             catch (EngineException e)
             {
@@ -208,6 +160,7 @@ public class Client
             }
         }
     }
+
 
     public static void printError(EngineException e, String line)
     {
@@ -235,7 +188,7 @@ public class Client
         }
     }
 
-    private static Connection getConnection()
+    public static Connection getConnection()
     {
         RelationalStoreExecutor r = (RelationalStoreExecutor) planExecutor.getExecutorsOfType(StoreType.Relational).getFirst();
         return r.getStoreState().getRelationalExecutor().getConnectionManager().getTestDatabaseConnection();
