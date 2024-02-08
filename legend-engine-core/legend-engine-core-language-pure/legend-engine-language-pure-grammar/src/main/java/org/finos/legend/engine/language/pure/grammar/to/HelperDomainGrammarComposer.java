@@ -234,7 +234,7 @@ public class HelperDomainGrammarComposer
         if (embeddedData instanceof DataElementReference)
         {
             dataStrBuilder.append(" ");
-            dataStrBuilder.append(((DataElementReference) embeddedData).dataElement.path);
+            dataStrBuilder.append(((DataElementReference) embeddedData).dataElementPointer.path);
         }
         else if (embeddedData instanceof ExternalFormatData)
         {

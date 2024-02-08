@@ -62,7 +62,7 @@ public class TestRuntimeBuilder
                 {
                     if (connectionTestData.data instanceof DataElementReference)
                     {
-                        DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
+                        DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElementPointer.equals(e.getPath()));
                         data.add(dataElement.data);
                     }
                     else
@@ -96,7 +96,7 @@ public class TestRuntimeBuilder
                     {
                         if (connectionTestData.data instanceof DataElementReference)
                         {
-                            DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
+                            DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElementPointer.equals(e.getPath()));
                             embeddedData.add(dataElement.data);
                         }
                         else

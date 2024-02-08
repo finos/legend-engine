@@ -39,10 +39,9 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      mapping: model::String;\n" +
                 "      defaultRuntime: model::Runtime;\n" +
                 "      testData:\n" +
-                "        ExternalFormat\n" +
+                "        Reference\n" +
                 "        #{\n" +
-                "          contentType: 'test';\n" +
-                "          data: 'test';\n" +
+                "          com::model::someDataElement\n" +
                 "        }#;\n" +
                 "    }\n" +
                 "  ];\n" +

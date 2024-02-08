@@ -617,7 +617,7 @@ public class DomainParseTreeWalker
             if (dataValueContext.qualifiedName() != null)
             {
                 DataElementReference dataElementReference = new DataElementReference();
-                dataElementReference.dataElement = new PackageableElementPointer(
+                dataElementReference.dataElementPointer = new PackageableElementPointer(
                         PackageableElementType.DATA,
                         PureGrammarParserUtility.fromQualifiedName(dataValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : dataValueContext.qualifiedName().packagePath().identifier(), dataValueContext.qualifiedName().identifier()),
                         this.walkerSourceInformation.getSourceInformation(dataValueContext.qualifiedName())

@@ -195,16 +195,16 @@ public class DataSpaceCompilerExtension implements CompilerExtension
     private Root_meta_pure_data_EmbeddedData compileDataspaceDataElementReference(EmbeddedData embeddedData, CompileContext compileContext, ProcessingContext processingContext)
     {
         if (embeddedData instanceof DataElementReference
-                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
+                && ((DataElementReference) embeddedData).dataElementPointer.type.equals(PackageableElementType.DATASPACE))
         {
             DataElementReference data = (DataElementReference) embeddedData;
-            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataElement.path))
+            if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataElementPointer.path))
             {
                 return Optional
-                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataElement.path)._defaultExecutionContext()._testData())
-                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataElement.path + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
+                        .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataElementPointer.path)._defaultExecutionContext()._testData())
+                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataElementPointer.path + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
             }
-            throw new EngineException("Dataspace " + data.dataElement.path + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
+            throw new EngineException("Dataspace " + data.dataElementPointer.path + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
         }
         return null;
     }

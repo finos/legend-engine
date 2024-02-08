@@ -45,7 +45,7 @@ public class DataspaceDataElementReferenceParser implements EmbeddedDataParser
 
         DataElementReference result = new DataElementReference();
         result.sourceInformation = sourceInformation;
-        result.dataElement = new PackageableElementPointer(PackageableElementType.DATASPACE, validPath, sourceInformation);
+        result.dataElementPointer = new PackageableElementPointer(PackageableElementType.DATASPACE, validPath, sourceInformation);
         return result;
     }
 }

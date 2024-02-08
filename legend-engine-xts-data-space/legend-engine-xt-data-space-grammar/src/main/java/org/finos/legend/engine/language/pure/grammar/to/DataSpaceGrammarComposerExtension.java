@@ -196,9 +196,9 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
     private ContentWithType composeDataspaceDataElementReference(EmbeddedData embeddedData, PureGrammarComposerContext context)
     {
         if (embeddedData instanceof DataElementReference
-                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
+                && ((DataElementReference) embeddedData).dataElementPointer.type.equals(PackageableElementType.DATASPACE))
         {
-            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement.path);
+            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElementPointer.path);
             return new ContentWithType(DataspaceDataElementReferenceParser.TYPE, content);
         }
         return null;
