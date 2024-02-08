@@ -666,7 +666,6 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::FirmsAndEmployees
 import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;

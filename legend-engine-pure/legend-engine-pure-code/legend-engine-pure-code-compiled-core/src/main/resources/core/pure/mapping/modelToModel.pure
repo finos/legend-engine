@@ -23,7 +23,6 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::modelToModel::chain::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::core::runtime::*;
@@ -204,7 +203,6 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::xStore::*;
@@ -585,7 +583,7 @@ function meta::pure::mapping::modelToModel::graphFetch::executionPlan::generateP
 
 function <<access.private>> meta::pure::mapping::modelToModel::graphFetch::executionPlan::planInMemoryStoreMergeGraphFetchExecution(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], sets: InstanceSetImplementation[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): ExecutionNode[1]
 {
-   $mapping->validateMergeMapping();
+   $mapping->meta::pure::mapping::modelToModel::validateMergeMapping();
    let fe     = $sq.fe->evaluateAndDeactivate();
    let params = $fe.parametersValues->evaluateAndDeactivate();
    let p1     = $params->at(0);

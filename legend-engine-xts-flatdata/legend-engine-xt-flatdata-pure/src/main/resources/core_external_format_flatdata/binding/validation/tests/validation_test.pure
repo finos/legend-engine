@@ -10,7 +10,6 @@ import meta::external::format::shared::functions::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::executionPlan::toString::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::model::unit::*;
 import meta::core::runtime::*;

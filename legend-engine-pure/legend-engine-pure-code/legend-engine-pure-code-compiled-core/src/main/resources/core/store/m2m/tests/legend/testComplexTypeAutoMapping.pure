@@ -198,7 +198,6 @@ function <<test.Test>> meta::pure::mapping::modelToModel::test::alloy::autoMappi
 // ======================================================================================================
 
 ###Pure
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::*;

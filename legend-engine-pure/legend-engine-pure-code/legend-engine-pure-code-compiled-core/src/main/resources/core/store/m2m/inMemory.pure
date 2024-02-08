@@ -19,7 +19,6 @@ import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 Class meta::pure::mapping::modelToModel::inMemory::ModelPayload extends MappingInstanceData
@@ -357,7 +356,7 @@ function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:m
    let fd = ^LambdaFunction<{->Any[*]}>(expressionSequence = $fe);
 
    let possibleClass = $fe.genericType.rawType->toOne();
-   let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($fe); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
+   let class = if ($possibleClass == Any, | let getAllClass = meta::pure::mapping::modelToModel::findMainClassInGetAllExpression($fe); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
 
    assert(!$class->genericType().typeArguments->at(0)->instanceOf(TabularDataSet),'ExecutionPlan not supported for Alloy ModelToModel queries returning \'TabularDataSet\'');
 

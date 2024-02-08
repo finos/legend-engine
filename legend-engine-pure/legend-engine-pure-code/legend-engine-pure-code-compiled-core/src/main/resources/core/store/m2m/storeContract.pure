@@ -5,7 +5,6 @@ import meta::pure::router::systemMapping::tests::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::utils::*;
 import meta::pure::extension::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
@@ -16,7 +15,6 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::executionPlan::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::graphFetch::routing::*;
 

@@ -23,7 +23,6 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::metamodel::path::*;
 
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::executionContext::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;

@@ -18,7 +18,6 @@ import meta::relational::extension::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::clustering::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::relational::validation::functions::*;
 import meta::relational::metamodel::*;

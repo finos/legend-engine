@@ -16,7 +16,6 @@ import meta::core::runtime::*;
 import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 Class meta::core::runtime::EngineRuntime extends Runtime

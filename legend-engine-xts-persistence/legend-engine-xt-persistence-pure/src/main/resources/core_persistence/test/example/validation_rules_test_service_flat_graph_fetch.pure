@@ -40,7 +40,6 @@ import meta::legend::service::metamodel::*;
 import meta::pure::graphFetch::execution::*;
 
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 import meta::pure::persistence::metamodel::*;

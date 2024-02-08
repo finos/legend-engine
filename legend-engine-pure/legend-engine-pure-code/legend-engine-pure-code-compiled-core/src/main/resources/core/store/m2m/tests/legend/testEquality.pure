@@ -15,7 +15,6 @@
 import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::*;
 import meta::pure::runtime::*;

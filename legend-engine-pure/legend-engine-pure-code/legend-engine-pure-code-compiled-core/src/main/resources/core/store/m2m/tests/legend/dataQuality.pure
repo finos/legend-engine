@@ -24,7 +24,6 @@ import meta::pure::mapping::modelToModel::test::alloy::utils::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::core::runtime::*;
 import meta::pure::runtime::*;

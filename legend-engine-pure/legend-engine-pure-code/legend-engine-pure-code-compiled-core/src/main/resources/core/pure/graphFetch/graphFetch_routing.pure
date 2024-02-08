@@ -15,7 +15,6 @@
 import meta::pure::router::store::routing::*;
 import meta::pure::lineage::scanProperties::*;
 import meta::pure::milestoning::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::mapping::*;

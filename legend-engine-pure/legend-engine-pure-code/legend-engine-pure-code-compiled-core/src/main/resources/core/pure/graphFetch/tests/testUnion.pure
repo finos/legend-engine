@@ -1,7 +1,6 @@
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
 import meta::pure::runtime::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::executionPlan::*;
 import meta::pure::executionPlan::toString::*;

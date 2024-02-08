@@ -15,7 +15,6 @@
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::validation::functions::*;

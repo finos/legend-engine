@@ -1531,7 +1531,6 @@ import meta::json::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::objects::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::objects::dest::*;
