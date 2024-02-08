@@ -231,7 +231,7 @@ import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStoreUnion::inMemoryAndRelational::createTablesInDb():Boolean[1]
 {
-   let dbConn = ^TestDatabaseConnection(type=DatabaseType.H2);
+   let dbConn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
 
    dropAndCreateTableInDb(dbUnion, 'tradeTable', $dbConn);
    dropAndCreateTableInDb(dbUnion, 'productTable', $dbConn);

@@ -67,7 +67,7 @@ Class meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::
 
 function <<test.BeforePackage>> meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::setUp():Boolean[1]
 {
-  let connection = testRuntime(EmployeeDatabase).connectionByElement(EmployeeDatabase)->cast(@TestDatabaseConnection);
+  let connection = testRuntime(EmployeeDatabase).connectionByElement(EmployeeDatabase)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
   dropAndCreateTableInDb(EmployeeDatabase, 'EmployeeTable', $connection);
   executeInDb('insert into EmployeeTable (id, hireDate, hireType, fteFactor) values ( 1,\'2018-12-31\',\'Campus\' ,0.13);', $connection);

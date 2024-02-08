@@ -38,7 +38,7 @@ import meta::json::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::dataType::setUp():Boolean[1]
 {
-    let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+    let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
     dropAndCreateTableInDb(myDB, 'dataTable', $connection);
 

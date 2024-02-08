@@ -216,7 +216,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 function meta::relational::tests::milestoning::initDatabaseForCalendar():ConnectionStore[1]
 {
 
-   let connection = ^TestDatabaseConnection(type = DatabaseType.H2);
+   let connection = ^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.H2);
    let connectionStore = ^ConnectionStore(element = Calendardb,connection=$connection);
 
    executeInDb('drop table if exists CalendarTable;',$connection);

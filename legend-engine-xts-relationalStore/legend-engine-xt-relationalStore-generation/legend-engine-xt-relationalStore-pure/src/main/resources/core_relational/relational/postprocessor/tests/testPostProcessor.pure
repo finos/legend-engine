@@ -53,7 +53,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testReplaceTableM
       connectionStores =
       ^meta::core::runtime::ConnectionStore(
         element = db,
-        connection=^TestDatabaseConnection(
+        connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | replaceTables($query, pair($oldTable, $newTable)) }, {query:SelectSQLQuery[1] | replaceTables($query, pair($newTable, $oldTable))}]
                     )
@@ -108,7 +108,7 @@ function meta::relational::tests::postProcessor::runtimeWithTableReplace(oldToNe
       connectionStores =
       ^meta::core::runtime::ConnectionStore(
         element = db,
-        connection=^TestDatabaseConnection(
+        connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessorsConnectionAware = [{query:SelectSQLQuery[1],conn:DatabaseConnection[1] | replaceTables($query, $oldToNewPairs) }]
                     ))
@@ -136,7 +136,7 @@ function meta::relational::tests::postProcessor::nonExecutable::runtimeWithNonEx
     connectionStores =
       ^meta::core::runtime::ConnectionStore(
         element = db,
-        connection=^TestDatabaseConnection(
+        connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | nonExecutable($query, meta::relational::extension::relationalExtensions()) }]
                     ))
@@ -245,7 +245,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testSQLRealiasCas
 
 function <<test.Test>> meta::relational::tests::postProcessor::testDb2ColumnRename():Boolean[1]
 {
-   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type = DatabaseType.DB2)));
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::mapping::union::myDB, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.DB2)));
    let result = meta::relational::functions::sqlstring::toSQL(|Person.all()->project([p|$p.lastName], ['name']), meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.DB2, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "unionBase"."concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" as "name" from (select "root".ID as "pk_0_0", null as "pk_0_1", (\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' concat (\'ForTestPurposesOnly\' concat "root".lastName_s1)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", (\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\' concat (\'ForTestPurposesOnly\' concat "root".lastName_s2)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_Perso_0" from PersonSet2 as "root") as "unionBase"',$result);
 }
@@ -254,7 +254,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::testPostProcessTr
 {
    let runtime = meta::external::store::relational::tests::testRuntime();
    let connectionStore = $runtime.connectionStores->at(0);
-   let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let conn = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    let runtimeWithPostProcessor = ^$runtime(connectionStores = ^$connectionStore(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel->match([t:TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Integer), | ^Literal(value=2), |$t ) , r:RelationalOperationElement[1] |$r])}) }])));
 
    let result = meta::relational::functions::sqlstring::toSQL(|Trade.all()->project([x|$x.id, x|$x.initiator.name], ['TradeID', 'Initiator']), simpleRelationalMapping, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.H2, '', [], meta::relational::extension::relationalExtensions());

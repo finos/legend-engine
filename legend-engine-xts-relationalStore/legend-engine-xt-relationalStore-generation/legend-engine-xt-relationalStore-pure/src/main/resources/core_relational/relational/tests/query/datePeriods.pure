@@ -552,7 +552,7 @@ function meta::relational::tests::groupBy::datePeriods::testRuntime():Runtime[1]
 
 function meta::relational::tests::groupBy::datePeriods::createTablesAndFillDb():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'INCOME_FUNCTION', $connection);
 

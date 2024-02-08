@@ -1028,10 +1028,10 @@ function meta::relational::tests::tds::tdsJoin::twoDBRunTime():	meta::core::runt
    ^meta::core::runtime::Runtime
    (
       connectionStores = [
-        ^meta::core::runtime::ConnectionStore(element=dbInc,connection=^TestDatabaseConnection(
+        ^meta::core::runtime::ConnectionStore(element=dbInc,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2
                     )),
-                    ^meta::core::runtime::ConnectionStore(element=database2, connection=^TestDatabaseConnection(
+                    ^meta::core::runtime::ConnectionStore(element=database2, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2
                     ))]
    );
@@ -1040,7 +1040,7 @@ function meta::relational::tests::tds::tdsJoin::twoDBRunTime():	meta::core::runt
 
 function <<test.BeforePackage>> meta::relational::tests::tds::tdsJoin::alloy::createAndFillDatabaseForMultiDBJoins():Boolean[1]
 {
-   let connection2 = meta::relational::tests::tds::tdsJoin::twoDBRunTime().connectionByElement(database2)->cast(@TestDatabaseConnection);
+   let connection2 = meta::relational::tests::tds::tdsJoin::twoDBRunTime().connectionByElement(database2)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    meta::relational::functions::toDDL::dropAndCreateTableInDb(dbInc, 'firmTable', $connection2);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(dbInc, 'addressTable', $connection2);

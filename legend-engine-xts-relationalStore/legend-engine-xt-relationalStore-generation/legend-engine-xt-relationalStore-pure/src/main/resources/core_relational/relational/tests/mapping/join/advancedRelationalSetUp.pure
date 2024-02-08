@@ -468,7 +468,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::join::setUp():
 
 function meta::relational::tests::mapping::join::model::store::createTablesAndFillDb():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateSchemaInDb('schemaB', $connection);
 

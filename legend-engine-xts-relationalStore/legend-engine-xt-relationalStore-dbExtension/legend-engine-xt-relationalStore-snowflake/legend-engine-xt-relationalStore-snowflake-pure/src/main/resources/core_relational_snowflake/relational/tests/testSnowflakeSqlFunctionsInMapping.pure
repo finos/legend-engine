@@ -37,7 +37,7 @@ import meta::relational::runtime::authentication::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::function::snowflake::setUp():Boolean[1]
 {
-    let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+    let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
     dropAndCreateTableInDb(myDB, 'dataTable', $connection);
 

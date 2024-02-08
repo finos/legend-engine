@@ -21,7 +21,7 @@ import meta::relational::metamodel::*;
 
 function <<test.Test>> meta::relational::tests::loadCsv::testLoadCsv():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime(db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime(db).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'personCsvTable', $connection);
    loadCsvToDbTable('/core_relational/relational/functions/tests/loadCsvToDbTable/employees.csv', db->schema('default')->toOne()->table('personCsvTable')->toOne(),
                      $connection);

@@ -167,7 +167,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::testExistsWit
 {
    let runtime = testDataTypeMappingRuntime();
    let connectionStore = $runtime.connectionStores->at(0);
-   let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let conn = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    let runtimeWithPostProcessor = ^$runtime(connectionStores = ^$connectionStore(connection=^$conn(sqlQueryPostProcessors= [{query:meta::relational::metamodel::relation::SelectSQLQuery[1] | $query->meta::relational::postProcessor::postprocess({rel | $rel}) }])));
    let result = execute(|Firm.all()->filter(f | ! $f.employees->exists(p | $p.firstName == 'John'))->project([p|$p.legalName],['Name']), testMappingEmbeddedWithFirmDistinct, $runtimeWithPostProcessor, meta::relational::extension::relationalExtensions());
 

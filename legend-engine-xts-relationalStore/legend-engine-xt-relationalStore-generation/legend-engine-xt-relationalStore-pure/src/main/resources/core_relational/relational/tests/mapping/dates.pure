@@ -24,7 +24,7 @@ import meta::pure::profiles::*;
 function <<test.BeforePackage>> meta::relational::tests::mapping::dates::setUp():Boolean[1]
 {
     meta::relational::tests::createTablesAndFillDb();
-    let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+    let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
     executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (12, 3, 2, 45, \'2016-02-04\', \'2016-02-05T21:00:00.123456789\');', $connection);//winter datetime in UTC format
     executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (13, 3, 2, 45, \'2016-03-28\', \'2016-03-29T21:00:00.123456789\');', $connection);//summer datetime in UTC format
     executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (14, 3, 2, 45, \'2016-03-28\', \'2016-03-29 21:00:00.123456789\');', $connection);//summer datetime in EST fomrat

@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::mapping::inheritance::relational
 
 function meta::relational::tests::mapping::inheritance::relational::multiJoins::createTablesAndFillDb():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop table if exists Person;', $connection);
    executeInDb('Create Table Person (id INT, name VARCHAR(200));', $connection);

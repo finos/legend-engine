@@ -25,7 +25,7 @@ import meta::relational::tests::model::simple::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::subType::setUp():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
     meta::relational::tests::createTablesAndFillDb();
    meta::relational::functions::toDDL::dropAndCreateTableInDb(MyDb, 'PRODUCT_RATING', $connection);
 

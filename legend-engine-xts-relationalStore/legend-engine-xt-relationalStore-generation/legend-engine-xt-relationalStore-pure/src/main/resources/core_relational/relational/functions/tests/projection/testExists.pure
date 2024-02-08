@@ -93,7 +93,7 @@ function <<test.BeforePackage>> meta::relational::tests::projection::exists::set
 {
    meta::relational::tests::projection::setUp();
 
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'main', $connection);
 

@@ -210,7 +210,7 @@ import meta::core::runtime::*;
 function <<test.BeforePackage>> meta::relational::tests::mapping::union::partialForeignKeyUsage::initDatabase():Runtime[1]
 {
    let connectionStore = meta::external::store::relational::tests::testRuntime(relationalStore).connectionStores->toOne();
-   let connection = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('drop table if exists A1;', $connection);
    executeInDb('create table A1 (pk INTEGER PRIMARY KEY, fk1 INTEGER, fk2 INTEGER)', $connection);

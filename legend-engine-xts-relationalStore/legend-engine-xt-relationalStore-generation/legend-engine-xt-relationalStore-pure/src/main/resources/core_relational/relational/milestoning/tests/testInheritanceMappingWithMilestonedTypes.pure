@@ -89,7 +89,7 @@ function <<test.BeforePackage>> meta::relational::tests::milestoning::inheritanc
 {
   let runtime = meta::relational::tests::milestoning::initDatabase();
 
-  let connection = $runtime.connectionStores.connection->at(0)->cast(@TestDatabaseConnection);
+  let connection = $runtime.connectionStores.connection->at(0)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
   executeInDb('Drop table if exists productSynonymIntermediate;', $connection);
   executeInDb('Create Table productSynonymIntermediate (prodId INT, synProdId INT);', $connection);

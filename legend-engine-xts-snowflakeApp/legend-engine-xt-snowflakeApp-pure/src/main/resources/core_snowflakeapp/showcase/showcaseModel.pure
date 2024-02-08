@@ -47,7 +47,7 @@ function <<access.private>> meta::external::function::activator::snowflakeApp::t
     ^ConnectionStore(
         element = $db,
         connection=
-    ^TestDatabaseConnection(
+    ^meta::external::store::relational::runtime::TestDatabaseConnection(
         type = DatabaseType.H2,
         timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
     ));

@@ -162,7 +162,7 @@ function meta::relational::tests::aggregationAware::runtime(): Runtime[1]
 
 function <<test.BeforePackage>> meta::relational::tests::aggregationAware::setUp():Any[*]
 {
-   let connection = runtime().connectionByElement(aggregationAwareStore)->cast(@TestDatabaseConnection);
+   let connection = runtime().connectionByElement(aggregationAwareStore)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    [
       dropSchemaStatement('base_view'),
       dropSchemaStatement('user_view_agg'),

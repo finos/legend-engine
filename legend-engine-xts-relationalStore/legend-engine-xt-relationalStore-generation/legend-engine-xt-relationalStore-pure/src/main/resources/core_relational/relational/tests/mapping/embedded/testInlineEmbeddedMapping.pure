@@ -140,7 +140,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::embedded::adva
 
 function meta::relational::tests::mapping::embedded::advanced::store::createTablesAndFillDb():Boolean[1]
 {
-  let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(eDB)->cast(@TestDatabaseConnection);
+  let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(eDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'PRODUCT_DENORM', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BOND_DETAIL', $connection);

@@ -24,7 +24,7 @@ function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[
 {
    createTablesAndFillDb();
 
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    //firm with no people
    executeInDb('insert into FirmTable (id, legalName, addressId) values (8, \'No Employees\', 11);', $connection);
 

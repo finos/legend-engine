@@ -76,7 +76,7 @@ function <<test.Test>> meta::relational::tests::advanced::contractmoneyscenario:
 
 function meta::relational::tests::advanced::contractmoneyscenario::createDatabase():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'Contract', $connection);
    executeInDb('insert into Contract (id, Price, Currency) values (1, 5, \'EUR\');', $connection);
@@ -92,7 +92,7 @@ function meta::relational::tests::advanced::contractmoneyscenario::testRuntime()
 
 function meta::relational::tests::advanced::contractmoneyscenario::createTablesAndFillDb():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'Contract', $connection);
 //   executeInDb2('insert into productTable (id, name) values (1, \'Firm X\');', $connection);

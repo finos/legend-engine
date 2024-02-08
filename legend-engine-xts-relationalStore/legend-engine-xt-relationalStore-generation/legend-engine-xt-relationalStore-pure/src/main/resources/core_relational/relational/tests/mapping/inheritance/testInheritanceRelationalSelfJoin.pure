@@ -38,7 +38,7 @@ function <<test.Test>> meta::relational::tests::mapping::inheritance::relational
 
 function meta::relational::tests::mapping::inheritance::createTablesAndFillDbSelfJoin():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop table if exists OneTable;', $connection);
    executeInDb('Create Table OneTable (id INT, type INT, vid INT, name VARCHAR(200), wheelCount INT, engineType INT, description VARCHAR(200), personId INT);', $connection);

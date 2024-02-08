@@ -198,7 +198,7 @@ function <<test.Test>> meta::relational::tests::projection::function::concatenat
 
 function <<test.BeforePackage>> meta::relational::tests::projection::function::concatenate::setUp():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    let schema = 'CONCATENATE';
 

@@ -817,7 +817,7 @@ import meta::core::runtime::*;
 function <<test.BeforePackage>> meta::relational::tests::mapping::union::multipleChainedJoins::setup():Runtime[1]
 {
    let connectionStore = meta::external::store::relational::tests::testRuntime(multipleChainedJoinsDB).connectionStores->toOne();
-   let connection = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('drop table if exists X0;', $connection);
    executeInDb('create table X0 (pk INTEGER, fk INTEGER, from_z DATE, thru_z DATE)', $connection);

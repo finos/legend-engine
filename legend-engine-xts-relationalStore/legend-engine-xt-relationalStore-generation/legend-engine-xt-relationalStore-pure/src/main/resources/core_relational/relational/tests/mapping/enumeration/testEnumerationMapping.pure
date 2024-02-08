@@ -43,7 +43,7 @@ import meta::external::store::relational::runtime::authentication::*;
 
 function meta::relational::tests::mapping::enumeration::createTablesAndFillDb():Boolean[1]
 {
-   let connection = enumTestRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = enumTestRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
     dropAndCreateTableInDb(myDB, 'employeeTable', $connection);
 

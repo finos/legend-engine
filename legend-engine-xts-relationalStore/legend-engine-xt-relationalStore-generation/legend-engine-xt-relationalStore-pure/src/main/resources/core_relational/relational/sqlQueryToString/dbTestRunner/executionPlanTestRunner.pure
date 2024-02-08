@@ -98,7 +98,7 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
   let pureRuntime = if($config.connection->isEmpty(),
      |
        println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
-       ^Runtime(connectionStores= ^ConnectionStore(element = $db, connection=^TestDatabaseConnection(type= $config.dbType)));,
+       ^Runtime(connectionStores= ^ConnectionStore(element = $db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type= $config.dbType)));,
      |
        let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
        ^Runtime(connectionStores=^ConnectionStore(element=$db, connection=$conn));

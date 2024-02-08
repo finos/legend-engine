@@ -24,7 +24,7 @@ function meta::pure::mapping::modelToModel::test::shared::getConnection():Connec
 {
   ^ConnectionStore(
     element = relationalDB,
-    connection=^TestDatabaseConnection(
+    connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
       type=DatabaseType.H2
    ));
 }

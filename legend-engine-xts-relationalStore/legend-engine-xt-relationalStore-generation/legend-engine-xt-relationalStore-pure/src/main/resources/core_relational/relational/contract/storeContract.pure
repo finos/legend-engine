@@ -157,8 +157,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                        ]},
       printConnectionToString = {extensions:meta::pure::extension::Extension[*]|
                                        [
-                                           testDatabase:TestDatabaseConnection[1]|databaseConnectionTypeToString($testDatabase),
-                                           db:DatabaseConnection[1]|  databaseConnectionTypeToString($db)
+                                           testDatabase:meta::external::store::relational::runtime::TestDatabaseConnection[1]|databaseConnectionTypeToString($testDatabase),
+                                           db:meta::external::store::relational::runtime::DatabaseConnection[1]|  databaseConnectionTypeToString($db)
                                        ]},
       printTypeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
                                        [
