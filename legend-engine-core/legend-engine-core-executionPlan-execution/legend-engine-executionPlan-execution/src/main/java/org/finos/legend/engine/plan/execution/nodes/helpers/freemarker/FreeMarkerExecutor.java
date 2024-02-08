@@ -108,10 +108,9 @@ public class FreeMarkerExecutor
         {
             Object result = map.get(s);
             boolean isResultUnchanged = false;
-            String lastProcessedResult = "";
             while (!isResultUnchanged && isPlaceHolder(result))
             {
-                lastProcessedResult = (String) result;
+                String lastProcessedResult = (String) result;
                 result = process((String) result, map, templateFunctions);
                 isResultUnchanged = lastProcessedResult.equals(((String) result).replace("\\\"", "\""));
             }
@@ -143,7 +142,7 @@ public class FreeMarkerExecutor
         String result = process(input, variableMap, templateFunctions);
         if (!result.equals(input.replace("\\\"", "\"")))
         {
-            return processRecursively(result, variableMap, templateFunctions);
+            return recur(result, variableMap, templateFunctions);
         }
         return result;
     }
