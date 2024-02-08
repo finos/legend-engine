@@ -52,7 +52,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
 
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
@@ -103,7 +103,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
                         ->sort([desc('Sales Division'), desc('Income Function')]);
    };
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
@@ -153,7 +153,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::groupBy::datePer
                         ->sort([desc('Sales Division'), desc('Income Function')]);
    };
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
@@ -205,7 +205,7 @@ function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testGroupB
    };
 
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
@@ -260,7 +260,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
 
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
@@ -319,7 +319,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
 
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -365,7 +365,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
 
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -414,7 +414,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
    };
 
 
-   let result = execute($fn,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertEqualsH2Compatible(
     'select "root"."date" as "pk_0", "root"."calendar name" as "pk_1", "root"."date" as "date", "root"."fiscal week start" as "weekStart", "root"."fiscal week end" as "weekEnd", "root"."fiscal day" as "day", "root"."fiscal week" as "week", "root"."fiscal day of week" as "dayOfWeekNumber", "root"."fiscal year end" as "yearEnd", "root"."fiscal year start" as "yearStart" from calendar as "root" where "root"."date" = \'2015-02-25\'',
@@ -469,7 +469,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::groupBy::date
                                        [agg('YTD Gross Credits', r | $r.getFloat('isYtd') * $r.getFloat('credits'), x | $x->sum()),
                                        agg('WTD Gross Credits', r | $r.getFloat('isWtd') * $r.getFloat('credits'), x | $x->sum())])
                         ->sort([desc('Sales Division'), desc('Income Function')])
-                         ,myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+                         ,myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values;
 
    assertEquals('Sales Division,Income Function,YTD Gross Credits,WTD Gross Credits\n' +
@@ -493,7 +493,7 @@ function <<test.Test>> meta::relational::tests::groupBy::datePeriods::testDayOfW
                             ->filter(gc | $gc->meta::relational::tests::groupBy::datePeriods::filterReportDates($startDate, $endDate, #/meta::relational::tests::groupBy::datePeriods::domain::SalesCredit/tradeDate/date#))
                             ->project([#/meta::relational::tests::groupBy::datePeriods::domain::SalesCredit/salesDivision/name#],'name');,
                        meta::relational::tests::groupBy::datePeriods::mapping::myMapping,
-                       meta::external::store::relational::tests::testRuntime(),
+                       testRuntime(),
                        meta::relational::extension::relationalExtensions());
 
    assertEqualsH2Compatible(
@@ -517,7 +517,7 @@ function meta::relational::tests::groupBy::datePeriods::wtd(value:Float[1], repo
 function meta::relational::tests::groupBy::datePeriods::getReportingEndDateAsFiscalDate():FiscalCalendarDate[1]
 {
    let endDate = getReportingEndDate();
-   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    $reportDate.values->first()->toOne();
 }
 
@@ -525,7 +525,7 @@ function meta::relational::tests::groupBy::datePeriods::getReportingEndDateAsFis
 function meta::relational::tests::groupBy::datePeriods::getReportingStartDateAsFiscalDate():FiscalCalendarDate[1]
 {
    let endDate = getReportingStartDate();
-   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let reportDate = execute(|FiscalCalendarDate.all()->filter(d | $d.date == $endDate),myMapping,testRuntime(), meta::relational::extension::relationalExtensions());
    $reportDate.values->first()->toOne();
 }
 
@@ -552,7 +552,7 @@ function meta::relational::tests::groupBy::datePeriods::testRuntime():Runtime[1]
 
 function meta::relational::tests::groupBy::datePeriods::createTablesAndFillDb():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'INCOME_FUNCTION', $connection);
 

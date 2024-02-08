@@ -44,7 +44,7 @@ import meta::relational::graphFetch::domain::tests::*;
 //                         )
 //                       );
 
-//   let plans =  meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(Domain, TestMapping, meta::external::store::relational::tests::testRuntime(), $graphQLQuery, meta::relational::extension::relationalExtensions());
+//   let plans =  meta::external::query::graphQL::transformation::queryToPure::getPlansFromGraphQL(Domain, TestMapping, testRuntime(), $graphQLQuery, meta::relational::extension::relationalExtensions());
 
 //   checkPlans($plans.second);
 // }
@@ -77,7 +77,7 @@ function <<test.Test>> meta::relational::graphFetch::domain::tests::testGraphFet
               meta::pure::executionPlan::executionPlan(
                 $r.second,
                 TestMapping,
-                meta::external::store::relational::tests::testRuntime(),
+                testRuntime(),
                 meta::relational::extension::relationalExtensions()
               );
         );
