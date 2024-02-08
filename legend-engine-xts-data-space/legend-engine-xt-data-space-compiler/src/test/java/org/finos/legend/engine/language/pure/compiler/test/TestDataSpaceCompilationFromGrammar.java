@@ -59,6 +59,17 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "}\n" +
                 "\n" +
                 "\n" +
+                "###Data\n" +
+                "Data com::model::someDataElement\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'test';\n" +
+                "    data: 'test';\n" +
+                "  }#;\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
                 "###DataSpace\n" +
                 "DataSpace model::dataSpace" +
                 "{\n" +
@@ -70,10 +81,9 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      mapping: model::dummyMapping;\n" +
                 "      defaultRuntime: model::dummyRuntime;\n" +
                 "      testData:\n" +
-                "        ExternalFormat\n" +
+                "        Reference\n" +
                 "        #{\n" +
-                "          contentType: 'test';\n" +
-                "          data: 'test';\n" +
+                "          com::model::someDataElement\n" +
                 "        }#;\n" +
                 "    }\n" +
                 "  ];\n" +
