@@ -22,30 +22,30 @@ import meta::relational::tests::model::simple::*;
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testSimpleQueryTo():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+   let result1 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Wright')), unionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(1, $result1->size());
    assertSameElements('Firm X', $result1.legalName);
-   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+   let result2 = execute(|Firm.all()->filter(f|$f.employees->exists(e|$e.lastName == 'Roberts')), unionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
    assertEquals(0, $result2->size());
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testProject():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName)], ['legalName', 'name']), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName)], ['legalName', 'name']), unionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Taylor Firm X', 'Wright Firm X', 'TDSNull Firm A'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.getString('legalName')));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testProjectShareSet():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName), f|$f.employees->map(l|$l.lastName)], ['legalName', 'firstName', 'lastName']), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees->map(l|$l.lastName), f|$f.employees->map(l|$l.lastName)], ['legalName', 'firstName', 'lastName']), unionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Taylor Firm X', 'Wright Firm X', 'TDSNull Firm A'], $result1.rows->map(r|$r.get('lastName')->toString()+' '+$r.getString('legalName')));
 }
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testProjectAutoMap():Boolean[1]
 {
-   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName', 'name']), unionMapping, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
+   let result1 = execute(|Firm.all()->project([f|$f.legalName, f|$f.employees.lastName], ['legalName', 'name']), unionMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(3, $result1.rows->size());
    assertSameElements(['Taylor Firm X', 'Wright Firm X', 'TDSNull Firm A'], $result1.rows->map(r|$r.get('name')->toString()+' '+$r.getString('legalName')));
 }
@@ -55,7 +55,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::partial::testPar
    let result = execute(
       |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName, f|$f.employees.address.name], ['firmName', 'employeeName', 'addressName']),
       partialUnionMappingOfAddressWithManyPropertyMappings_AddressIdKey,
-      testRuntime(),
+      meta::external::store::relational::tests::testRuntime(),
       meta::relational::extension::relationalExtensions()
    );
 
@@ -70,7 +70,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::partial::testPar
    let result = execute(
       |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName, f|$f.employees.address.name], ['firmName', 'employeeName', 'addressName']),
       partialUnionMappingOfAddressWithManyPropertyMappings_FirmIdKey_Unmapped,
-      testRuntime(),
+      meta::external::store::relational::tests::testRuntime(),
       meta::relational::extension::relationalExtensions()
    );
 
@@ -85,7 +85,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::partial::testPar
    let result = execute(
       |Firm.all()->project([f|$f.legalName, f|$f.employees.lastName, f|$f.employees.address.name], ['firmName', 'employeeName', 'addressName']),
       partialUnionMappingOfAddressWithManyPropertyMappings_FirmIdKey_Mapped,
-      testRuntime(),
+      meta::external::store::relational::tests::testRuntime(),
       meta::relational::extension::relationalExtensions()
    );
 
@@ -97,7 +97,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::partial::testPar
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testPartialUnionMappingOfSubTypePrimitiveProperties_MappingToColumn():Boolean[1]
 {
-   let result = execute(|PersonBase.all()->project([p|$p.lastName, p|$p->subType(@PersonExt1).ext1LastName, p|$p->subType(@PersonExt2).ext2LastName], ['lastName', 'ext1LastName', 'ext2LastName']), partialUnionMappingOfSubTypePrimitiveProperties, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|PersonBase.all()->project([p|$p.lastName, p|$p->subType(@PersonExt1).ext1LastName, p|$p->subType(@PersonExt2).ext2LastName], ['lastName', 'ext1LastName', 'ext2LastName']), partialUnionMappingOfSubTypePrimitiveProperties, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('lastName,ext1LastName,ext2LastName\nScott,Scott,\nAnand,Anand,\nRoberts,Roberts,\nScott,,Scott\nAnand,,Anand\nRoberts,,Roberts\n', $result.values->at(0)->meta::relational::tests::csv::toCSV());
 
    meta::relational::functions::asserts::assertSameSQL(
@@ -108,7 +108,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::partial::testPar
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testPartialUnionMappingOfSubTypePrimitiveProperties_MappingToRelationalOperation():Boolean[1]
 {
-   let result = execute(|PersonBase.all()->project([p|$p.lastName, p|$p->subType(@PersonExt1).ext1LastNameUpperCase, p|$p->subType(@PersonExt2).ext2LastNameUpperCase], ['lastName', 'ext1LastName', 'ext2LastName']), partialUnionMappingOfSubTypePrimitiveProperties, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|PersonBase.all()->project([p|$p.lastName, p|$p->subType(@PersonExt1).ext1LastNameUpperCase, p|$p->subType(@PersonExt2).ext2LastNameUpperCase], ['lastName', 'ext1LastName', 'ext2LastName']), partialUnionMappingOfSubTypePrimitiveProperties, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('lastName,ext1LastName,ext2LastName\nScott,SCOTT,\nAnand,ANAND,\nRoberts,ROBERTS,\nScott,,SCOTT\nAnand,,ANAND\nRoberts,,ROBERTS\n', $result.values->at(0)->meta::relational::tests::csv::toCSV());
 
    meta::relational::functions::asserts::assertSameSQL(
@@ -119,7 +119,7 @@ function <<test.Test>> meta::relational::tests::mapping::union::partial::testPar
 
 function <<test.Test>> meta::relational::tests::mapping::union::partial::testPartialUnionMappingOfSubTypePrimitiveProperties_EmbeddedMapping():Boolean[1]
 {
-   let result = execute(|PersonBase.all()->project([p|$p.lastName, p|$p->subType(@PersonExt1).ext1Address.name, p|$p->subType(@PersonExt2).ext2Address.name], ['lastName', 'ext1Address', 'ext2Address']), partialUnionMappingOfSubTypePrimitiveProperties, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|PersonBase.all()->project([p|$p.lastName, p|$p->subType(@PersonExt1).ext1Address.name, p|$p->subType(@PersonExt2).ext2Address.name], ['lastName', 'ext1Address', 'ext2Address']), partialUnionMappingOfSubTypePrimitiveProperties, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('lastName,ext1Address,ext2Address\nScott,New York,\nAnand,New York,\nRoberts,,\nScott,,New York\nAnand,,New York\nRoberts,,\n', $result.values->at(0)->meta::relational::tests::csv::toCSV());
 
    meta::relational::functions::asserts::assertSameSQL(

@@ -42,7 +42,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testSn
 
 function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPostProcessingOfGroupByAndHavingOp():Boolean[1]
 {
-   let runtime = testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let connectionStore = $runtime.connectionStores->at(0);
    let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
    let postProcessFunction = {rel: RelationalOperationElement[1] |
@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPo
 
 function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPostProcessingOfGroupByAndHavingOpCachedTransform():Boolean[1]
 {
-   let runtime = testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let connectionStore = $runtime.connectionStores->at(0);
    let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
    let postProcessFunction = {rel: RelationalOperationElement[1] |

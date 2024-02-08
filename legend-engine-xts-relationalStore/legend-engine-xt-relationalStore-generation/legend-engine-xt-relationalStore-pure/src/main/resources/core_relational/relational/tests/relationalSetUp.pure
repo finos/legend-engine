@@ -1198,7 +1198,7 @@ function meta::relational::tests::createProductSchemaTablesAndFillDb(connection 
 
 function meta::relational::tests::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
 
    executeInDb('Drop table if exists PersonNameParameter;', $connection);
    executeInDb('Create Table PersonNameParameter(id INT, lastNameFirst VARCHAR(200), title VARCHAR(200));', $connection);

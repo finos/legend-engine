@@ -209,7 +209,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::milestoning::
 
 // function <<test.Test>> meta::relational::tests::milestoning::temporalProjectionQuery::testProcessingTemporalQueryWithListOfDates():Boolean[1]
 // {
-//    let result = execute(|Product->getAllForEachDate([%2020-05-10,%2020-06-10,%2019-02-15]), milestoningmap, testRuntime()), meta::relational::extension::relationalExtensions());
+//    let result = execute(|Product->getAllForEachDate([%2020-05-10,%2020-06-10,%2019-02-15]), milestoningmap, meta::external::store::relational::tests::testRuntime()), meta::relational::extension::relationalExtensions());
 //    assertSameSQL();
 // }
 

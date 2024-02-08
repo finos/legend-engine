@@ -395,6 +395,7 @@ import meta::relational::tests::milestoning::*;
 import meta::relational::tests::functions::objectReferenceIn::*;
 import meta::pure::mapping::modelToModel::test::milestoning::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
+import blah::*;
 
 Mapping meta::relational::tests::functions::objectReferenceIn::simpleModelMapping
 (
