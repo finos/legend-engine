@@ -12,16 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.hostedService.metamodel.control;
 
-import com.fasterxml.jackson.annotation.JsonSubTypes;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+package org.finos.legend.engine.protocol.functionActivator.metamodel;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = UserList.class)
-@JsonSubTypes({
-        @JsonSubTypes.Type(value = UserList.class, name = "userList"),
-        @JsonSubTypes.Type(value = Deployment.class, name = "deployment")
-})
-public abstract class Ownership
+public class DeploymentOwner extends Ownership
 {
+    public String id;
+
+    public DeploymentOwner()
+    {
+        //jackson
+    }
+
+    public DeploymentOwner(String id)
+    {
+        this.id = id;
+    }
 }

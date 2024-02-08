@@ -28,7 +28,7 @@ public class TestHostedServiceCompilationFromGrammar extends TestCompilationFrom
         "###HostedService\n" +
         "HostedService anything::Name\n" +
         "{" +
-        "   ownership : 17;\n" +
+        "   ownership :Deployment { identifier: '17'};\n" +
         "   pattern : '/a/b';" +
         "   documentation : 'blah';" +
         "   function : a::f():String[1];" +
