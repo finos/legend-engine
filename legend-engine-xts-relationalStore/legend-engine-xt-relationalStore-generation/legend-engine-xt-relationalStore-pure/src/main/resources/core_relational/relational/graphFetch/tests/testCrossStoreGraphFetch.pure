@@ -340,7 +340,6 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::mapping::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;

@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;

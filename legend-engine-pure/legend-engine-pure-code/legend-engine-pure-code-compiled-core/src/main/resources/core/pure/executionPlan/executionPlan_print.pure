@@ -21,7 +21,6 @@ import meta::pure::metamodel::treepath::*;
 import meta::pure::extension::*;
 import meta::pure::router::printer::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
 

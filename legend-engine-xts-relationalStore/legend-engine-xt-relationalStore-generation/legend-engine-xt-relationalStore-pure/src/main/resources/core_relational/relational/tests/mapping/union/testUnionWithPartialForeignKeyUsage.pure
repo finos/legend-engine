@@ -207,8 +207,6 @@ import meta::relational::tests::mapping::union::partialForeignKeyUsage::store::*
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<test.BeforePackage>> meta::relational::tests::mapping::union::partialForeignKeyUsage::initDatabase():Runtime[1]
 {
    let connectionStore = meta::external::store::relational::tests::testRuntime(relationalStore).connectionStores->toOne();

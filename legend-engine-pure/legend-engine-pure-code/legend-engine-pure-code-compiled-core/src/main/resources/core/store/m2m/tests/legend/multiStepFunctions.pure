@@ -22,8 +22,6 @@ import meta::pure::mapping::modelToModel::test::multiStep::src::*;
 import meta::pure::mapping::modelToModel::test::multiStep::bridge::*;
 import meta::pure::mapping::modelToModel::test::multiStep::dest::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {
    serverVersion.start='v1_19_0',

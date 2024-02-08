@@ -22,8 +22,6 @@ import meta::pure::mapping::modelToModel::test::alloy::chain::parameters::src::*
 import meta::pure::mapping::modelToModel::test::alloy::chain::parameters::bridge::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::parameters::dest::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
 meta::pure::mapping::modelToModel::test::alloy::chain::parameters::qualifiedPropertyAccessWithConstantParameter(): Boolean[1]
 {

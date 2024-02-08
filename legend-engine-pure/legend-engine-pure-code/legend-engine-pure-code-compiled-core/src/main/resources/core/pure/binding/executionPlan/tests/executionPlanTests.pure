@@ -27,7 +27,6 @@ import meta::pure::mapping::*;
 import meta::external::store::model::*;
 import meta::pure::model::unit::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::extension::*;
 
 Class meta::external::format::shared::executionPlan::tests::Person
@@ -586,7 +585,7 @@ function meta::external::format::shared::executionPlan::tests::buildPlan(query:F
 
 function meta::external::format::shared::executionPlan::tests::buildPlan(query:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]): ExecutionPlan[1]
 {
-   executionPlan($query, ^ExecutionContext(), $extensions, noDebug());
+   executionPlan($query, ^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
 }
 
 

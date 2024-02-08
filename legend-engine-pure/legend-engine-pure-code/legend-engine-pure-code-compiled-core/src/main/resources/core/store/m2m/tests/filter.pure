@@ -21,8 +21,6 @@ import meta::pure::mapping::modelToModel::test::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::filter::testTypeFilterThoughGetter():Any[*]
 {
     let res = execute(

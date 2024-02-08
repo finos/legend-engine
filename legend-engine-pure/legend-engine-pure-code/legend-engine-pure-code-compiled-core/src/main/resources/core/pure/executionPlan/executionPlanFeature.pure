@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::pure::executionPlan::*;
-import meta::pure::runtime::*;
 import meta::pure::router::routing::*;
 import meta::pure::extension::*;
 import meta::pure::executionPlan::featureFlag::*;
@@ -35,12 +34,12 @@ Class meta::pure::executionPlan::featureFlag::FeatureFlagOption  extends meta::p
 }
 
 
-function meta::pure::executionPlan::featureFlag::contextHasFlag(context:ExecutionContext[1],flag:Enum[1]) : Boolean[1]
+function meta::pure::executionPlan::featureFlag::contextHasFlag(context:meta::pure::runtime::ExecutionContext[1],flag:Enum[1]) : Boolean[1]
 {
   $context ->getContexts()->filter(c|$c->instanceOf(ExecutionOptionContext))->cast(@ExecutionOptionContext)->map(c| $c.executionOptions->filter(f| $f->instanceOf(FeatureFlagOption))->cast(@FeatureFlagOption).flags)->contains($flag);
 }
 
-function meta::pure::executionPlan::featureFlag::addFlagToContext(context:ExecutionContext[1],flag:Enum[*]) : ExecutionContext[1]
+function meta::pure::executionPlan::featureFlag::addFlagToContext(context:meta::pure::runtime::ExecutionContext[1],flag:Enum[*]) : meta::pure::runtime::ExecutionContext[1]
 {
  let flagOption =^FeatureFlagOption(flags = $flag);
     if($context->instanceOf(ExecutionOptionContext),
@@ -70,7 +69,7 @@ function meta::pure::executionPlan::featureFlag::ExecutionPlanFeatureFlagExtensi
                                      routeFunctionExpressions = [
                                                             pair(
                                                                 fe:FunctionExpression[1] | $fe.func == meta::pure::executionPlan::featureFlag::withFeatureFlags_T_MANY__Enum_MANY__T_MANY_,
-                                                                {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                                                                {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
                        
                                                                  let flags = $fe.parametersValues->at(1)->match([  s: SimpleFunctionExpression[1] | $s->at(0)->cast(@SimpleFunctionExpression)->reactivate()->cast(@Enum);,
                                                                                                                       i :InstanceValue[*] |  $i.values->map(v|$v->cast(@SimpleFunctionExpression)->reactivate()->cast(@Enum));,

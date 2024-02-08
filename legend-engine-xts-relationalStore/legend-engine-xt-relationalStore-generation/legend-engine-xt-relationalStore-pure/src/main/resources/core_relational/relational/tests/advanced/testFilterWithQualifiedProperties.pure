@@ -22,11 +22,6 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
-
-
-
 function meta::relational::tests::query::qualifier::advanced::conditionRightTable(f:Firm[1],s:String[1]):Person[0..1]
 {
    $f.employees->filter(e|$e.lastName == $s)->toOne();

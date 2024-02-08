@@ -13,7 +13,6 @@ import meta::pure::executionPlan::toString::*;
 import meta::external::store::model::*;
 import meta::pure::model::unit::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::format::flatdata::binding::validation::test::*;
 
 Class meta::external::format::flatdata::binding::validation::test::WholeFile {}

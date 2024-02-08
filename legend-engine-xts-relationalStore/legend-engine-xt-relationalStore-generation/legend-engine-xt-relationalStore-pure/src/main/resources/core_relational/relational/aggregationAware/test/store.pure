@@ -148,7 +148,6 @@ Database meta::relational::tests::aggregationAware::store::aggregationAwareStore
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::aggregationAware::store::*;
 import meta::relational::tests::aggregationAware::*;
 import meta::external::store::relational::runtime::*;

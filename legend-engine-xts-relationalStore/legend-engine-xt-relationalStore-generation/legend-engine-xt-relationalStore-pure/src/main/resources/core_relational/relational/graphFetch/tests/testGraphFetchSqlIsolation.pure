@@ -15,7 +15,6 @@
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::graphFetch::tests::isolation::*;
 import meta::relational::metamodel::*;

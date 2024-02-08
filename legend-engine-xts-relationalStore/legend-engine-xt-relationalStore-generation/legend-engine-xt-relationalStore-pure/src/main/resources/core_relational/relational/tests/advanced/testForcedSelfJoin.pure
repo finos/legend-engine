@@ -69,7 +69,6 @@ import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::advanced::forcedselfjoin::*;
 
 function meta::relational::tests::advanced::forcedselfjoin::testRuntime():Runtime[1]

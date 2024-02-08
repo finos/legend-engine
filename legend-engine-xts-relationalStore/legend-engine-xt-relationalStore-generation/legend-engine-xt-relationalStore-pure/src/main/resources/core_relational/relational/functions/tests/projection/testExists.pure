@@ -16,7 +16,6 @@ import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::projection::exists::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;

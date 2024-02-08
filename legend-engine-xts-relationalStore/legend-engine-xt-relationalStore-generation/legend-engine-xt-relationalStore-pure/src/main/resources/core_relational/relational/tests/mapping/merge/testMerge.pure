@@ -16,7 +16,6 @@ import meta::relational::tests::mapping::merge::*;
 import meta::relational::tests::csv::*;
 import meta::relational::metamodel::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::mapping::union::*;
 import meta::external::store::relational::runtime::*;

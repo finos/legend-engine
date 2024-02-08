@@ -15,7 +15,6 @@
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::delta::v1::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::delta::*;
 
 function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::delta::testSimpleDelta():Any[*]

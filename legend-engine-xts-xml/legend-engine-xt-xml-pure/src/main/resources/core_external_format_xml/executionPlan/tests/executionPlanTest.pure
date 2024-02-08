@@ -26,8 +26,6 @@ import meta::pure::graphFetch::execution::*;
 import meta::external::store::model::*;
 import meta::pure::model::unit::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::external::format::xml::executionPlan::test::Person
 {
   firstName : String[1];

@@ -15,7 +15,6 @@
 import meta::json::*;
 import meta::alloy::objectReference::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
 function meta::alloy::objectReference::generateObjectReferences(clientVersion:String[1], pathToMappingElement:String[1], rootSetId:String[1], pathToRuntimeFunction:String[1], pkMaps:Map<String, Any>[*], extensions:meta::pure::extension::Extension[*]):String[1]

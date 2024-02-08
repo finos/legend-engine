@@ -61,8 +61,6 @@ import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::persistence::test::example::*;
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 import meta::pure::test::assertion::*;
 
 function meta::pure::persistence::test::example::FlatM2mRuntime(): Runtime[1]

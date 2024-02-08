@@ -1540,8 +1540,6 @@ import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::pure::mapping::modelToModel::test::simple::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::alloy::simple::sourceTreeCalc::simpleObjectWithSingleSubTypeOnRoot() : Boolean[1]
 {
    let tree = #{ Person {firstName,lastName} }#;

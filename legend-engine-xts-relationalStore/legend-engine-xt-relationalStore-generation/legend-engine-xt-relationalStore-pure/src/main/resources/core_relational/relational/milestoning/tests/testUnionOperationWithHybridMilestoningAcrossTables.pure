@@ -15,7 +15,6 @@
 ###Pure
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::*;

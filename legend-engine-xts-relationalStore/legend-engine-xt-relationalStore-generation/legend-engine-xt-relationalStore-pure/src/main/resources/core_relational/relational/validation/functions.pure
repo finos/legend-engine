@@ -30,7 +30,6 @@ import meta::relational::validation::utils::*;
 import meta::relational::validation::*;
 import meta::pure::constraints::functions::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::mapping::*;
 import meta::relational::validation::functions::*;

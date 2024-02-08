@@ -15,7 +15,6 @@
 ###Pure
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::metamodel::constraint::*;
 import meta::protocols::pure::v1_25_0::transformation::fromPureGraph::*;
 import meta::protocols::pure::v1_25_0::transformation::fromPureGraph::model::*;

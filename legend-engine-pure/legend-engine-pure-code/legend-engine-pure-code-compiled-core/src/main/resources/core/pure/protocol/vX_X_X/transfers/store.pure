@@ -15,8 +15,6 @@
 import meta::pure::extension::*;
 import meta::json::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::protocols::pure::vX_X_X::transformation::fromPureGraph::runtime::transformRuntime(pureRuntime:Runtime[1], extensions:Extension[*]):meta::protocols::pure::vX_X_X::metamodel::Runtime[1]
 {
    $pureRuntime->match([

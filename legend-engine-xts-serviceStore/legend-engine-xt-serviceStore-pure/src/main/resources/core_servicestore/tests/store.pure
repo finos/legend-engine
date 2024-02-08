@@ -103,7 +103,6 @@ function meta::external::store::service::tests::store::TradeProductServiceStore(
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::model::*;
 
 import meta::external::store::service::metamodel::runtime::*;

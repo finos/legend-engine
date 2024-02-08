@@ -15,7 +15,6 @@
 ###Pure
 import meta::pure::executionPlan::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::database::*;

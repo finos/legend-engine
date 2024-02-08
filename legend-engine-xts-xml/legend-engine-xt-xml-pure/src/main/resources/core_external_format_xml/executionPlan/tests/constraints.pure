@@ -26,7 +26,6 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::graphFetch::execution::*;
 import meta::external::store::model::*;
 import meta::pure::model::unit::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::legend::*;
 import meta::pure::dataQuality::*;

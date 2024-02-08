@@ -451,7 +451,6 @@ Mapping meta::relational::tests::mapping::join::model::mapping::MappingWithLiter
 import meta::relational::tests::mapping::join::model::store::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;

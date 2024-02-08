@@ -5,7 +5,6 @@ import meta::pure::router::printer::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::aggregationAware::mapping::*;
 import meta::relational::tests::aggregationAware::domain::*;
 import meta::relational::tests::aggregationAware::*;

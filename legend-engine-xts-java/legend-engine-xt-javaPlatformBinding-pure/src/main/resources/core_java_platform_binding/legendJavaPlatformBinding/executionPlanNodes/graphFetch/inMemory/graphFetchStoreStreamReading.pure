@@ -32,8 +32,6 @@ import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 // To be removed when external format is ready
 Class <<doc.deprecated>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::LegendJavaGraphFetchStoreStreamReadingExtension extends LegendJavaPlatformBindingAdhocExtension
 {

@@ -176,7 +176,6 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::SameStoreMapping2
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -427,7 +426,6 @@ Mapping meta::relational::graphFetch::tests::union::rootLevel::CrossStoreMapping
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -670,7 +668,6 @@ import meta::external::store::model::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::relational::graphFetch::tests::union::rootLevel::*;
 
