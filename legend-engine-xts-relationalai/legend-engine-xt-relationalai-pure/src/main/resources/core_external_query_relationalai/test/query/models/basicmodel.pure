@@ -1,5 +1,6 @@
+import meta::external::store::rel::mapping::schema::*;
 import meta::external::store::rel::test::query::models::basicmodel::*;
-import meta::external::store::rel::mapping::frontend::*;
+import meta::external::store::rel::test::query::util::*;
 
 Class meta::external::store::rel::test::query::models::basicmodel::Person {
   firstName: String[1];
@@ -20,7 +21,7 @@ Association meta::external::store::rel::test::query::models::basicmodel::Employm
 }
 
 function meta::external::store::rel::test::query::models::basicmodel::schema(): RAISchema[1] {
-  RAISchema('meta::external::store::rel::test::query::models::basicmodel')
+  RAITestSchema()
     ->includeClass(Person)
     ->includeClass(Employee)
     ->includeClass(Firm);

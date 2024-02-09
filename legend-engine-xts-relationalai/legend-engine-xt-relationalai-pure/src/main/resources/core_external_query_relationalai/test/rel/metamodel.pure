@@ -2,19 +2,19 @@ import meta::external::store::rel::metamodel::*;
 
 function <<test.Test>> meta::external::store::rel::test::metamodel::testIdentifier(): Any[*] {
   assertEquals(
-    'output', 
+    'output',
     rel('output')->identifier()
   );
-  
+
   assertEquals(
-    'output', 
+    'output',
     rel('output')
       ->appl([var('x'), var('y')])
       ->identifier()
   );
 
   assertEquals(
-    'output', 
+    'output',
     rel('output')
       ->appl([var('x'), var('y')])
       ->appl([label('test')])

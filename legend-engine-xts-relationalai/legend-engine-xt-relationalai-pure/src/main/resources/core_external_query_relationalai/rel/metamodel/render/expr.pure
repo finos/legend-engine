@@ -1,10 +1,10 @@
-import meta::pure::functions::collection::*;
 import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::metamodel::render::binding::*;
 import meta::external::store::rel::metamodel::render::buffer::*;
 import meta::external::store::rel::metamodel::render::constant::*;
 import meta::external::store::rel::metamodel::render::expr::*;
 import meta::external::store::rel::utils::*;
+import meta::pure::functions::collection::*;
 
 
 ////////////////////////////////////////
@@ -85,6 +85,10 @@ function meta::external::store::rel::metamodel::render::expr::render(buffer: Rel
   $buffer->append('not ')->render($not.inner)
 }
 
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], empty: Empty[1]): RelQueryBuffer[1] {
+  $buffer->append('empty(')->render($empty.inner)->append(')')
+}
+
 function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], implies: Implies[1]): RelQueryBuffer[1] {
   $buffer->render($implies.antecedence)->append(' implies ')->render($implies.consequence)
 }
@@ -147,9 +151,17 @@ function meta::external::store::rel::metamodel::render::expr::render(buffer: Rel
   $buffer->append($union.exprs, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, '; ')
 }
 
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], intersection: Intersection[1]): RelQueryBuffer[1] {
+  $buffer->append('Intersect[')->render($intersection.left)->append(', ')->render($intersection.right)->append(']')
+}
+
 function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], ifThenElse: IfThenElse[1]): RelQueryBuffer[1] {
-  $buffer->append('if ')->render($ifThenElse.condition)->append(' then ')->render($ifThenElse.then)
-         ->append(' else ')->render($ifThenElse.else);
+  $buffer
+    ->newline()->append('if ')->render($ifThenElse.condition)->append(' then')
+    ->newline()->indent()->render($ifThenElse.then)
+    ->newline()->unindent()->append('else')
+    ->newline()->indent()->render($ifThenElse.else)
+    ->newline()->unindent()->append('end');
 }
 
 function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], expr: Expr[1]): RelQueryBuffer[1] {
@@ -161,7 +173,7 @@ function meta::external::store::rel::metamodel::render::expr::render(buffer: Rel
     e: Atom[1]             | $buffer->render($e),
     e: Composition[1]      | $buffer->render($e),
     e: Constant[1]         | $buffer->append($e->toRelLiteral()),
-    e: DontCare[1]         | $buffer->append('_'),
+    e: DontCare[1]         | $buffer->append('_'), // FIXME
     e: Equals[1]           | $buffer->render($e),
     e: Exists[1]           | $buffer->render($e),
     e: ExprGroup[1]        | $buffer->render($e),
@@ -174,11 +186,13 @@ function meta::external::store::rel::metamodel::render::expr::render(buffer: Rel
     e: NamedApplication[1] | $buffer->render($e),
     e: NamedAtom[1]        | $buffer->render($e),
     e: Not[1]              | $buffer->render($e),
+    e: Empty[1]            | $buffer->render($e),
     e: Or[1]               | $buffer->render($e),
     e: Product[1]          | $buffer->render($e),
     e: RelationCons[1]     | $buffer->render($e),
     e: Tuple[1]            | $buffer->render($e),
     e: Union[1]            | $buffer->render($e),
+    e: Intersection[1]     | $buffer->render($e),
     e: Variable[1]         | $buffer->renderBinding($e),
     e: Variables[1]        | $buffer->renderBinding($e)
   ]);
@@ -222,6 +236,7 @@ function <<access.private>> meta::external::store::rel::metamodel::render::expr:
     e: RelationCons[1]     | true,
     e: Tuple[1]            | true,
     e: Union[1]            | true,
+    e: Intersection[1]     | true,
     e: Variable[1]         | true,
     e: Variables[1]        | true,
     e: For[1]              | false,

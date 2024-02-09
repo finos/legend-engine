@@ -1,8 +1,8 @@
 import meta::external::store::rel::mapping::*;
-import meta::pure::mapping::*;
-import meta::pure::store::*;
 import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::utils::*;
+import meta::pure::mapping::*;
+import meta::pure::store::*;
 
 
 Class meta::external::store::rel::mapping::RelSetImplementation extends InstanceSetImplementation {
@@ -12,7 +12,7 @@ Class meta::external::store::rel::mapping::RelSetImplementation extends Instance
 
 function meta::external::store::rel::mapping::relInstanceSet<T>(
   owner: Mapping[1],
-  sourceClass: Class<T>[1], 
+  sourceClass: Class<T>[1],
   classExpr: Expr[1]
 ): RelSetImplementation[1] {
   ^RelSetImplementation(
@@ -34,21 +34,21 @@ Class meta::external::store::rel::mapping::RelPropertyMapping extends PropertyMa
 /////////////////////////
 
 function <<access.private>> meta::external::store::rel::mapping::propertyMapping(
-  property: Property<Nil,Any|*>[1], 
+  property: Property<Nil,Any|*>[1],
   target: Expr[1],
   owner: RelSetImplementation[0..1],
   store: Store[0..1]
 ): RelPropertyMapping[1] {
-  let targetSetImplementationId = 
-    if ($property->isPrimitiveValueProperty(), 
+  let targetSetImplementationId =
+    if ($property->isPrimitiveValueProperty(),
       | [],
       | $property.name
           ->map(n: String[1] |
-            if ($property.owner->instanceOf(Association), {| 
+            if ($property.owner->instanceOf(Association), {|
               $property.owner
                   ->cast(@Association)
                   ->propertyByName($n)
-                  ->map(property | 
+                  ->map(property |
                     $property.genericType.rawType
                       ->map(type | $type->elementToPath('_')));
             },
@@ -70,15 +70,15 @@ function <<access.private>> meta::external::store::rel::mapping::propertyMapping
 }
 
 function meta::external::store::rel::mapping::propertyMapping<T>(
-  sourceClass: Class<T>[1], 
-  property: String[1], 
+  sourceClass: Class<T>[1],
+  property: String[1],
   target: Expr[1],
   owner: RelSetImplementation[0..1],
   store: Store[0..1]
 ): RelPropertyMapping[0..1] {
   $sourceClass
     ->propertyByName($property)
-    ->map(prop | 
+    ->map(prop |
       propertyMapping(
         $prop->cast(@Property<Nil,Any|*>),
         $target,
@@ -105,7 +105,7 @@ function <<access.private>> meta::external::store::rel::mapping::withPropertyMap
 
 function meta::external::store::rel::mapping::withPropertyMapping(
   setImpl: RelSetImplementation[1],
-  source: Property<Nil,Any|*>[1], 
+  source: Property<Nil,Any|*>[1],
   target: Expr[1],
   store: Store[0..1]
 ): RelSetImplementation[1] {

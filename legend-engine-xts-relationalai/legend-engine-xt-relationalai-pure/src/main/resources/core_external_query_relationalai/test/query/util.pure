@@ -1,0 +1,6 @@
+import meta::external::store::rel::mapping::schema::*;
+import meta::external::store::rel::metamodel::store::*;
+
+function meta::external::store::rel::test::query::util::RAITestSchema(): RAISchema[1] {
+  RAISchema('test', ^RAITranspilerConfig(configNoIndent=true))
+}

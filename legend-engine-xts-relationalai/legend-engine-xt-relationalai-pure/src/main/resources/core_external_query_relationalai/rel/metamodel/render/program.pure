@@ -1,34 +1,35 @@
-import meta::pure::functions::collection::*;
 import meta::external::store::rel::metamodel::*;
 import meta::external::store::rel::metamodel::render::buffer::*;
 import meta::external::store::rel::metamodel::render::expr::*;
 import meta::external::store::rel::metamodel::render::program::*;
 import meta::external::store::rel::utils::*;
+import meta::pure::functions::collection::*;
 
 
-function meta::external::store::rel::metamodel::render::program::render(element: ProgramElement[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(element: ProgramElement[1], configNoIndent: Boolean[1]): String[1] {
   $element->match([
-    r: Rule[1]    | $r->render(),
+    r: Rule[1]    | $r->render($configNoIndent),
     c: Comment[1] | $c->render()
   ])
 }
 
-function meta::external::store::rel::metamodel::render::program::render(elements: ProgramElement[*]): String[1] {
-  $elements->map(e: ProgramElement[1] | $e->render())->makeString('', '\n', '\n')
+function meta::external::store::rel::metamodel::render::program::render(elements: ProgramElement[*], configNoIndent: Boolean[1]): String[1] {
+  $elements->map(e: ProgramElement[1] | $e->render($configNoIndent))->makeString('', '\n', '\n')
 }
 
-function meta::external::store::rel::metamodel::render::program::render(program: Program[1]): String[1] {
-  $program.elements->render()
+function meta::external::store::rel::metamodel::render::program::render(program: Program[1], configNoIndent: Boolean[1]): String[1] {
+  $program.elements->render($configNoIndent)
 }
 
-function meta::external::store::rel::metamodel::render::program::render(rule: Rule[1]): String[1] {
+function meta::external::store::rel::metamodel::render::program::render(rule: Rule[1], configNoIndent: Boolean[1]): String[1] {
   $rule->match([
     r: EntityDef[1] | $r->render(),
     r: IC[1]        | $r->render(),
     r: Rule[1]      |
       let annotation = if ($r.inline, | '@inline\n', | '');
-      let renderedBody = emptyBuffer()->render($r.body)->toString();
-      $annotation + format('def %s = %s', [$r.head->renderExpr(), $renderedBody]);
+      let buffer =
+        emptyBuffer($configNoIndent)->append('def ')->render($r.head)->append(' =')->newline()->indent()->render($r.body);
+      $annotation + $buffer->toString();
   ])
 }
 

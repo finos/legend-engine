@@ -3,9 +3,9 @@ import meta::external::store::rel::utils::collection::*;
 
 function <<test.Test>> meta::external::store::rel::test::utils::testResult(): Any[*] {
   assertEquals(ok(1), ok(1));
-  
+
   assertEquals(1, ok(1)->unwrap());
-  
+
   assertEquals(
     2,
     ok(1)->then(v | $v + 1)->unwrap()
@@ -19,7 +19,7 @@ function <<test.Test>> meta::external::store::rel::test::utils::testResult(): An
   assertEquals(
     ok(2),
     // I do not know why I have to specify a type parameter here.
-    ok(1)->andThen(v: Integer[1] | ok($v + 1)) 
+    ok(1)->andThen(v: Integer[1] | ok($v + 1))
   );
 
   assertEquals(

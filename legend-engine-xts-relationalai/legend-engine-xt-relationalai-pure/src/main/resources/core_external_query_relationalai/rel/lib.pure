@@ -58,18 +58,18 @@ function meta::external::store::rel::lib::minus(exprs: Expr[*]): Expr[1] {
 }
 
 function meta::external::store::rel::lib::concat(exprs: Expr[*]): Expr[1] {
-  if ($exprs->size() == 0, 
+  if ($exprs->size() == 0,
     | const(''),
     {|
       let init = $exprs->at(0);
       $exprs
         ->slice(1, $exprs->size())
-        ->fold({expr, accum | 
+        ->fold({expr, accum |
           rel('concat')->appl([$accum, $expr]);
         }, $init)
         ->parenthesise();
     }
-  )  
+  )
 }
 
 function meta::external::store::rel::lib::divide(left: Expr[1], right: Expr[1]): Expr[1] {

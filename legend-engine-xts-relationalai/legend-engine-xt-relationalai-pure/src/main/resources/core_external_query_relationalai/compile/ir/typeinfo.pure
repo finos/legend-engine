@@ -1,0 +1,71 @@
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::typeinfo::*;
+import meta::external::store::rel::mapping::*;
+import meta::pure::router::store::metamodel::*;
+
+Class meta::external::store::rel::compile::ir::typeinfo::TranspileTypeInfo {
+  sets: RelSetImplementation[*];
+}
+
+function meta::external::store::rel::compile::ir::typeinfo::emptyTypeInfo(): TranspileTypeInfo[1] {
+  ^TranspileTypeInfo()
+}
+
+function meta::external::store::rel::compile::ir::typeinfo::constructTypeInfo(
+  valueSpec: StoreMappingRoutedValueSpecification[1]
+): TranspileTypeInfo[1] {
+  let sets =
+    $valueSpec.mapping.classMappings->map(s | $s->match([
+      set: RelSetImplementation[1]                     | $set,
+      other: meta::pure::mapping::SetImplementation[1] | []
+    ]));
+  ^TranspileTypeInfo(sets=$sets);
+}
+
+function meta::external::store::rel::compile::ir::typeinfo::union(
+  x: TranspileTypeInfo[1],
+  y: TranspileTypeInfo[1]
+): TranspileTypeInfo[1] {
+  ^TranspileTypeInfo(sets=$x.sets->union($y.sets));
+}
+
+/**
+  * Return the set implementation id (i.e., the class name) for each set implementation held in the type info.
+  */
+function meta::external::store::rel::compile::ir::typeinfo::describe(
+  typeInfo: TranspileTypeInfo[1]
+): String[1] {
+  if ( $typeInfo.sets->isEmpty(),
+     | '(no set implemtations)',
+     | $typeInfo.sets->map(s: RelSetImplementation[1] | $s.id)->makeString('[', ', ',']')
+     )
+}
+
+/**
+  * Returns the sets from the type info for the given class.
+  */
+function meta::external::store::rel::compile::ir::typeinfo::setForClass(
+  typeInfo: TranspileTypeInfo[1],
+  class: Class<Any>[1]
+): RelSetImplementation[0..1] {
+  $typeInfo.sets->filter(set: RelSetImplementation[1] |
+    $set.class == $class
+  )->first()
+}
+
+
+/**
+  * Construct a P-Expression type from the given type.
+  */
+function meta::external::store::rel::compile::ir::typeinfo::exprType(
+  typeInfo: TranspileTypeInfo[1],
+  type: Type[1]
+): PExprType[0..1] {
+  $type->match([
+    t: PrimitiveType[1]    | exprTypePrimitive($t),
+    c: Class<Any>[1]       | $typeInfo->setForClass($c)->map(set: RelSetImplementation[1] | $set->exprTypeClass()),
+    e: Enumeration<Any>[1] | [],
+    u: Unit[1]             | [],
+    m: Measure[1]          | []
+  ]);
+}

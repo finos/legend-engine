@@ -4,7 +4,7 @@ import meta::pure::functions::collection::*;
 
 function meta::external::store::rel::metamodel::utils::with(program: Program[1], elements: ProgramElement[*]): Program[1] {
   //TODO: In general, room for improvement by adding some indexed structure to programs.
-  let concat = 
+  let concat =
     $elements->fold({e, acc |
       if (!$e->in($acc), | $acc->concatenate($e), | $acc);
     }, $program.elements);
@@ -13,7 +13,7 @@ function meta::external::store::rel::metamodel::utils::with(program: Program[1],
 }
 
 function meta::external::store::rel::metamodel::utils::combine(programs: Program[*]): Program[1] {
-  $programs->fold({p, acc | 
+  $programs->fold({p, acc |
     $acc->with($p.elements);
   }, program());
 }
