@@ -18,10 +18,9 @@ import org.jline.reader.Highlighter;
 import org.jline.reader.LineReader;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
+import org.jline.utils.AttributedStyle;
 
 import java.util.regex.Pattern;
-
-import static org.finos.legend.engine.repl.client.Client.drawCommand;
 
 public class JLine3Highlighter implements Highlighter
 {
@@ -43,5 +42,11 @@ public class JLine3Highlighter implements Highlighter
     public void setErrorIndex(int i)
     {
 
+    }
+
+    public static void drawCommand(AttributedStringBuilder ab, String command)
+    {
+        ab.style(new AttributedStyle().foreground(0, 200, 0).italic());
+        ab.append(command);
     }
 }

@@ -7,12 +7,12 @@ import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
 
-public class Doc implements Command
+public class Help implements Command
 {
     MutableList<Command> commands;
     Client client;
 
-    public Doc(Client client, MutableList<Command> commands)
+    public Help(Client client, MutableList<Command> commands)
     {
         this.commands = commands;
         this.client = client;
@@ -21,13 +21,13 @@ public class Doc implements Command
     @Override
     public String documentation()
     {
-        return "doc";
+        return "help";
     }
 
     @Override
     public boolean process(String cmd) throws Exception
     {
-        if (cmd.isEmpty())
+        if (cmd.isEmpty() || cmd.equals("help"))
         {
             client.terminal.writer().println(commands.collect(c -> "   "+c.documentation()).makeString("\n"));
             return true;

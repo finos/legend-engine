@@ -15,11 +15,12 @@ import java.io.File;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import static org.finos.legend.engine.repl.database.MetadataReader.getTables;
+
 public class Load implements Command
 {
     private Client client;
     private Completers.FilesCompleter completer = new Completers.FilesCompleter(new File("/"));
-
 
     public Load(Client client)
     {
@@ -39,7 +40,7 @@ public class Load implements Command
         {
             String path = line.substring("load ".length()).trim();
 
-            String tableName = "test" + client.count++;
+            String tableName = "test" + getTables(client.getConnection()).size() + 1;
 
             try (Connection connection = client.getConnection())
             {
