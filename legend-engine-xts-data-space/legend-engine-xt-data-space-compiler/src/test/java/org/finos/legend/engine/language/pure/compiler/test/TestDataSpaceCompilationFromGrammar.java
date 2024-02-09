@@ -66,7 +66,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  #{\n" +
                 "    contentType: 'test';\n" +
                 "    data: 'test';\n" +
-                "  }#;\n" +
+                "  }#\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
