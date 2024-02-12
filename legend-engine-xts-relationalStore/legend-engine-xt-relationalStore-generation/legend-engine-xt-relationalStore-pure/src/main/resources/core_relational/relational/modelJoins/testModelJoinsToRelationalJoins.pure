@@ -170,7 +170,7 @@ Database meta::external::store::relational::modelJoins::test::LocalTradesDatabas
   )
 
   Join Entity_Trade(
-    toString(toString(Trades.Trade.ENTITY_ID_FK)) = Entity.LegalEntity.ENTITY_ID and Trades.Trade.ENTITY_NAME_FK = Entity.LegalEntity.name
+    case(isNull(toString(toString(Trades.Trade.ENTITY_ID_FK))), toString(Trades.Trade.ENTITY_ID_FK), toString(Trades.Trade.ENTITY_ID_FK)) = Entity.LegalEntity.ENTITY_ID and case(isNull(Trades.Trade.ENTITY_NAME_FK),'Unknown',Trades.Trade.ENTITY_NAME_FK) = Entity.LegalEntity.name
   )
 )
 
@@ -205,12 +205,6 @@ Mapping meta::external::store::relational::modelJoins::test::LegalEntityMapping
     ~mainTable [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity
     entityId: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity.ENTITY_ID,
     name: [meta::external::store::relational::modelJoins::test::EntityDatabase]Entity.LegalEntity.name
-  }
-
-  OtherEntity[otherEntity]: Pure
-  {
-    ~src LegalEntity
-    idPlusName: toString($src.entityId)+$src.name
   }
 )
 
@@ -261,8 +255,8 @@ Mapping meta::external::store::relational::modelJoins::test::XStoreTradesMapping
     ~mainTable [XStoreTradesDatabase]Trades.Trade
     id: [XStoreTradesDatabase]Trades.Trade.id,
     value: [XStoreTradesDatabase]Trades.Trade.value,
-    +entityIdFk: String[1]: toString(toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK)),
-    +entityNameFk: String[1]: [XStoreTradesDatabase]Trades.Trade.ENTITY_NAME_FK
+    +entityIdFk: String[1]: case(isNull(toString(toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK))), toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK), toString([XStoreTradesDatabase]Trades.Trade.ENTITY_ID_FK)),
+    +entityNameFk: String[1]: case(isNull([LocalTradesDatabase]Trades.Trade.ENTITY_NAME_FK), 'Unknown', [LocalTradesDatabase]Trades.Trade.ENTITY_NAME_FK)
   }
 
   meta::external::store::relational::modelJoins::test::Trade_LegalEntity: XStore
