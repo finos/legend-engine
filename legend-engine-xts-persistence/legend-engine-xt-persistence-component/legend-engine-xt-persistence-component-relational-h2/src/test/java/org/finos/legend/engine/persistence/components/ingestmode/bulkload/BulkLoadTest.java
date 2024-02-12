@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.bulkload;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
@@ -764,25 +766,34 @@ public class BulkLoadTest extends BaseTest
                 .build();
     }
 
-    private void verifyBulkLoadMetadata(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> eventId, Optional<Map<String, Object>> additionalMetadata)
+    private void verifyBulkLoadMetadata(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> eventId, Optional<Map<String, Object>> additionalMetadata) throws JsonProcessingException
     {
         Assertions.assertEquals(batchId, appendMetadata.get("table_batch_id"));
         Assertions.assertEquals("SUCCEEDED", appendMetadata.get("batch_status"));
         Assertions.assertEquals("main", appendMetadata.get("table_name"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_start_ts_utc").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_end_ts_utc").toString());
-        Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
+        String batchSourceInfoStr = (String) appendMetadata.get("batch_source_info");
+        HashMap<String,Object> batchSourceInfoMap = new ObjectMapper().readValue(batchSourceInfoStr, HashMap.class);
+        Assertions.assertEquals(batchSourceInfoMap.get("file_paths").toString(), String.format("[%s]", fileName));
+
         if (eventId.isPresent())
         {
-            Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"event_id\":\"%s\"", eventId.get())));
+            Assertions.assertEquals(batchSourceInfoMap.get("event_id"), eventId.get());
         }
         else
         {
-            Assertions.assertFalse(appendMetadata.get("batch_source_info").toString().contains("\"event_id\""));
+            Assertions.assertFalse(batchSourceInfoMap.containsKey("event_id"));
         }
         if (additionalMetadata.isPresent())
         {
-            Assertions.assertNotNull(appendMetadata.get("additional_metadata"));
+            String additionalMetaStr = (String) appendMetadata.get("additional_metadata");
+            Assertions.assertNotNull(additionalMetaStr);
+            HashMap<String,Object> additionalMetaMap = new ObjectMapper().readValue(additionalMetaStr, HashMap.class);
+            for (Map.Entry<String, Object> entry :additionalMetadata.get().entrySet())
+            {
+                Assertions.assertEquals(additionalMetaMap.get(entry.getKey()), entry.getValue());
+            }
         }
         else
         {

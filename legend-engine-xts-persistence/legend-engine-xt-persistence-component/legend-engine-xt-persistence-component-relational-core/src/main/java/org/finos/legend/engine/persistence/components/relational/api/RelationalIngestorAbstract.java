@@ -80,7 +80,7 @@ public abstract class RelationalIngestorAbstract
     private static final String BATCH_END_TS_PATTERN = "{BATCH_END_TIMESTAMP_PLACEHOLDER}";
     private static final String ADDITIONAL_METADATA_KEY_PATTERN = "{ADDITIONAL_METADATA_KEY_PLACEHOLDER}";
     private static final String ADDITIONAL_METADATA_VALUE_PATTERN = "{ADDITIONAL_METADATA_VALUE_PLACEHOLDER}";
-    private static final String ADDITIONAL_METADATA_PLACEHOLDER_KEY_PATTERN = "{\"" + ADDITIONAL_METADATA_KEY_PATTERN + "\":\"" + ADDITIONAL_METADATA_VALUE_PATTERN + "\"}";
+    private static final String ADDITIONAL_METADATA_PLACEHOLDER_PATTERN = "{\"" + ADDITIONAL_METADATA_KEY_PATTERN + "\":\"" + ADDITIONAL_METADATA_VALUE_PATTERN + "\"}";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationalIngestor.class);
 
@@ -829,7 +829,7 @@ public abstract class RelationalIngestorAbstract
         {
             ObjectMapper objectMapper = new ObjectMapper();
             String additionalMetadataString = objectMapper.writeValueAsString(additionalMetadata());
-            placeHolderKeyValues.put(ADDITIONAL_METADATA_PLACEHOLDER_KEY_PATTERN, PlaceholderValue.of(additionalMetadataString, true));
+            placeHolderKeyValues.put(ADDITIONAL_METADATA_PLACEHOLDER_PATTERN, PlaceholderValue.of(additionalMetadataString, true));
         }
         catch (JsonProcessingException e)
         {

@@ -52,11 +52,14 @@ public class SqlUtils
             case MASKED:
                 String maskedSql = getEnrichedSqlWithMasking(placeholderKeyValues, sqlBeforeReplacingPlaceholders);
                 logger.info(maskedSql);
-                return;
+                break;
             case UNMASKED:
                 logger.info(sqlAfterReplacingPlaceholders);
-                return;
+                break;
             case DISABLED:
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported sqlLogging: " + sqlLogging);
         }
     }
 
