@@ -80,7 +80,7 @@ Mapping execution::FirmMapping
     )
     ~mainTable [store::FirmDB]FirmTable
     legalName: [store::FirmDB]FirmTable.legal_name,
-    +id: Integer[1]: [store::FirmDB] FirmTable.id
+    +id: String[1]: toString([store::FirmDB] FirmTable.id)
   }
 
   model::Person_Firm: XStore
@@ -101,7 +101,7 @@ Mapping execution::PersonMapping
     firstName: [store::PersonDB]PersonTable.firstName,
     lastName: [store::PersonDB]PersonTable.lastName,
     employeeType: EnumerationMapping EmployeeTypeMapping: [store::PersonDB] PersonTable.employeeType,
-    +firmIdFK: Integer[1]: [store::PersonDB] PersonTable.firm_id
+    +firmIdFK: String[1]: toString(toString([store::PersonDB] PersonTable.firm_id))
   }
 
   model::EmployeeType: EnumerationMapping EmployeeTypeMapping

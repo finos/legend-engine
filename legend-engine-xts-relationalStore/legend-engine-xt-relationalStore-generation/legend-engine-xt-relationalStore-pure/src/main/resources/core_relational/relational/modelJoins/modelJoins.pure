@@ -62,12 +62,20 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
   let r = ^RelationalPropertyMapping(sourceSetImplementationId=$sourceId,property=$xstoreProperty.property->toOne(),relationalOperationElement=$ro,targetSetImplementationId=$targetId);
 }
 
-function <<access.private>> meta::external::store::relational::modelJoins::getTableAliasColumn(propertyImplementations:SimpleFunctionExpression[*], thisOrThat:String[1], id:String[1], classMappings:RootRelationalInstanceSetImplementation[*]):TableAliasColumn[1]
+function <<access.private>> meta::external::store::relational::modelJoins::getAttributeRelationalOperationElement(propertyImplementations:SimpleFunctionExpression[*], thisOrThat:String[1], id:String[1], classMappings:RootRelationalInstanceSetImplementation[*]):RelationalOperationElement[1]
 {
   let propertyImplementation = $propertyImplementations->filter(p|$p.parametersValues->cast(@VariableExpression).name->toOne()==$thisOrThat).func->toOne();
   let classMapping = $classMappings->filter(c| $c.id == $id)->toOne();
   let relationalPropertyMapping = $classMapping.propertyMappings->filter(p|$p.property==$propertyImplementation)->cast(@RelationalPropertyMapping)->toOne();
-  let tableAliasColumn = $relationalPropertyMapping.relationalOperationElement->cast(@TableAliasColumn)->toOne();
+  $relationalPropertyMapping.relationalOperationElement->toOne();
+}
+
+function <<access.private>> meta::external::store::relational::modelJoins::getTableAliasColumn(relationalOperationElement: RelationalOperationElement[1]):TableAliasColumn[1]
+{
+  $relationalOperationElement->match([
+    table:TableAliasColumn[1] | $table,
+    function:DynaFunction[1]  | getTableAliasColumn($function.parameters->at(0))
+  ])
 }
 
 function <<access.private>> meta::external::store::relational::modelJoins::transformExpressionSequenceIntoJoin(expressionSequence: SimpleFunctionExpression[1], sourceId:String[1], targetId:String[1], classMappings:RootRelationalInstanceSetImplementation[*]): Join[1]
@@ -86,13 +94,15 @@ function <<access.private>> meta::external::store::relational::modelJoins::trans
     $functionOperator=='equal' || $functionOperator=='not',
     | let propertyImplementations = $expressionSequence.parametersValues->cast(@SimpleFunctionExpression)->evaluateAndDeactivate();
 
-      let sourceTableAliasColumn = getTableAliasColumn($propertyImplementations, 'this', $sourceId, $classMappings);
+      let sourceRelationalOperationElement = getAttributeRelationalOperationElement($propertyImplementations, 'this', $sourceId, $classMappings);
+      let sourceTableAliasColumn = getTableAliasColumn($sourceRelationalOperationElement);
       let sourceTableAlias = $sourceTableAliasColumn.alias->cast(@TableAlias)->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
 
-      let targetTableAliasColumn = getTableAliasColumn($propertyImplementations, 'that', $targetId, $classMappings);
+      let targetRelationalOperationElement = getAttributeRelationalOperationElement($propertyImplementations, 'that', $targetId, $classMappings);
+      let targetTableAliasColumn = getTableAliasColumn($targetRelationalOperationElement);
       let targetTableAlias = $targetTableAliasColumn.alias->cast(@TableAlias)->map(alias|^$alias(name=$alias.relation->cast(@Table).name));
 
-      let parameters = $sourceTableAliasColumn->concatenate($targetTableAliasColumn);
+      let parameters = $sourceRelationalOperationElement->concatenate($targetRelationalOperationElement);
       let operation = ^DynaFunction(name=$functionOperator, parameters=$parameters);
       ^Join(
         name=$joinName,
