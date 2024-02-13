@@ -247,7 +247,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
 
     
     @Test
-    public void TestFreeMarkerProcessingForTempTable() throws Exception
+    public void testFreeMarkerProcessingForSingularPlaceholderinTempTablePlan() throws Exception
     {
         String fetchFunction = "###Pure\n" +
                 "function test::fetch(): Any[1]\n" +
@@ -283,7 +283,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
     }
 
     @Test
-    public void testFreeMarkerProcessingForPlanExecution() throws Exception
+    public void testFreeMarkerProcessingForCombinationalPlaceholdersInPlan() throws Exception
     {
         String fetchFunction = "###Pure\n" +
                 "function test::fetch(): Any[1]\n" +
