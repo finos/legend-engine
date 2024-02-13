@@ -30,7 +30,7 @@ public class TestSnowflakeAppCompilationFromGrammar extends TestCompilationFromG
                 "{" +
                 "   applicationName : 'name';\n" +
                 "   function : a::f():String[1];" +
-                "   ownership : 'MyAppOwnership';\n" +
+                "   ownership : Deployment { identifier: 'MyAppOwnership'};\n" +
                 "}\n";
     }
 
@@ -50,7 +50,7 @@ public class TestSnowflakeAppCompilationFromGrammar extends TestCompilationFromG
                     "{" +
                     "   applicationName : 'name';\n" +
                     "   function : a::f():String[1];" +
-                    "   ownership : 'MyAppOwnership';\n" +
+                    "   ownership : Deployment { identifier: 'MyAppOwnership'};\n" +
                     "}\n", null);
     }
 
@@ -64,7 +64,7 @@ public class TestSnowflakeAppCompilationFromGrammar extends TestCompilationFromG
                         "{" +
                         "   applicationName : 'name';\n" +
                         "   function : a::fz():String[1];" +
-                        "   ownership : 'MyAppOwnership';\n" +
+                        "   ownership : Deployment { identifier: 'MyAppOwnership'};\n" +
                         "}\n", " at [3:1-6:1]: Error in 'app::pack::MyApp': org.finos.legend.engine.shared.core.operational.errorManagement.EngineException: Can't find the packageable element 'a::fz__String_1_'");
     }
 }
