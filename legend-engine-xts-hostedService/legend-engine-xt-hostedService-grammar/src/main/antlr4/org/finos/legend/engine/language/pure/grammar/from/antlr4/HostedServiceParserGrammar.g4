@@ -20,7 +20,8 @@ identifier:                             VALID_STRING | STRING
                                         | SERVICE_TEST_SUITES | SERVICE_TEST_DATA | SERVICE_TEST_CONNECTION_DATA | SERVICE_TEST_TESTS | SERVICE_TEST_ASSERTS | SERVICE_TEST_PARAMETERS
                                         | SERVICE_TEST_SERIALIZATION_FORMAT  | PARAM_GROUP | ASSERT_FOR_KEYS | SERVICE_POST_VALIDATION | SERVICE_POST_VALIDATION_DESCRIPTION
                                         | SERVICE_POST_VALIDATION_PARAMETERS | SERVICE_POST_VALIDATION_ASSERTIONS
-                                        | EXEC_ENV| SERVICE_EXECUTION_EXECUTIONS
+                                        | EXEC_ENV| SERVICE_EXECUTION_EXECUTIONS | SERVICE_OWNERSHIP_USERLIST |SERVICE_OWNERSHIP_USERLIST_USERS
+                                        | SERVICE_OWNERSHIP_DEPLOYMENT | SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER
 
 ;
 
@@ -70,11 +71,19 @@ serviceOwnership:                          SERVICE_OWNERSHIP COLON
                                             (userList| deployment)
                                         SEMI_COLON
 ;
-userList:                               BRACKET_OPEN
-                                             (STRING (COMMA STRING)*)?
-                                         BRACKET_CLOSE
+userList:                               SERVICE_OWNERSHIP_USERLIST
+                                            BRACE_OPEN
+                                                SERVICE_OWNERSHIP_USERLIST_USERS COLON
+                                                    BRACKET_OPEN
+                                                         (STRING (COMMA STRING)*)?
+                                                    BRACKET_CLOSE
+                                            BRACE_CLOSE
+
 ;
-deployment:                             INTEGER
+deployment:                             SERVICE_OWNERSHIP_DEPLOYMENT
+                                            BRACE_OPEN
+                                                SERVICE_OWNERSHIP_DEPLOYMENT_IDENTIFIER COLON STRING
+                                            BRACE_CLOSE
 ;
 
 serviceBindingOrContent:                (serviceBinding|serviceContentType) SEMI_COLON

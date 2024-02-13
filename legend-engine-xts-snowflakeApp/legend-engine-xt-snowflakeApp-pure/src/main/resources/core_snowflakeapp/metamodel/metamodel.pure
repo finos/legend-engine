@@ -5,7 +5,6 @@ Class meta::external::function::activator::snowflakeApp::SnowflakeApp extends Fu
 {
   applicationName : String[1];
   description : String[0..1];
-  owner : String[0..1];
 }
 
  Class meta::external::function::activator::snowflakeApp::SnowflakeDeploymentConfiguration extends DeploymentConfiguration

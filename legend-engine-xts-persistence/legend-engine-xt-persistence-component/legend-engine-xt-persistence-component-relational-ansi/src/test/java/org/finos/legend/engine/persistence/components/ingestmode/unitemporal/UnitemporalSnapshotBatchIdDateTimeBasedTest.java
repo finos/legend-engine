@@ -143,7 +143,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase(), metadataIngestSql.get(0));
     }
 
     @Override
@@ -172,7 +172,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadata(), metadataIngestSql.get(0));
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }
@@ -314,6 +314,21 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadata()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessWithUpperCase;
     }
 
     protected String getExpectedMetadataTableCreateQuery()

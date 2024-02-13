@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.testcases.ingestmode.nontemporal;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
@@ -63,6 +64,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -243,6 +245,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
                 .cleanupStagingData(false)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -261,6 +264,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .cleanupStagingData(false)
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());

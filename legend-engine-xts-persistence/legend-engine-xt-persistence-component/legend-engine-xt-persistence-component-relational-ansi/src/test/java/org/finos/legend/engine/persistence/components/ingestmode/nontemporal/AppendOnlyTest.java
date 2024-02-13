@@ -163,7 +163,7 @@ public class AppendOnlyTest extends AppendOnlyTestCases
         Assertions.assertEquals(enrichSqlWithDataSplits(insertSql, dataSplitRanges.get(1)), operations.get(1).ingestSql().get(0));
         Assertions.assertEquals(2, operations.size());
 
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), operations.get(0).metadataIngestSql().get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadata(), operations.get(0).metadataIngestSql().get(0));
 
         // Stats
         String incomingRecordCount = "SELECT COALESCE(SUM(stage.\"legend_persistence_count\"),0) as \"incomingRecordCount\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
@@ -309,6 +309,16 @@ public class AppendOnlyTest extends AppendOnlyTestCases
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadata()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
     }
 
     protected String getExpectedMetadataTableCreateQuery()

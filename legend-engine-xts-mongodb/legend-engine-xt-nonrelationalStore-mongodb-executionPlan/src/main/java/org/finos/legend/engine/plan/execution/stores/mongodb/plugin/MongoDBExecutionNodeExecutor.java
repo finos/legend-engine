@@ -28,6 +28,7 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementL
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -107,11 +108,12 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             DatabaseCommand dbCommand = objectMapper.readValue(databaseCommand, DatabaseCommand.class);
             MongoDBQueryJsonComposer mongoDBQueryJsonComposer = new MongoDBQueryJsonComposer(false);
             String composedDbCommand = mongoDBQueryJsonComposer.parseDatabaseCommand(dbCommand);
+            String placeholderReplacedDbCommand = FreeMarkerExecutor.process(composedDbCommand, this.executionState);
 
             CredentialProviderProvider credentialProviderProvider = this.executionState.getCredentialProviderProvider();
             Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
 
-            return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(composedDbCommand, mongoDBConnection, identity);
+            return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(placeholderReplacedDbCommand, mongoDBConnection, identity);
         }
         catch (IOException e)
         {

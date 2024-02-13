@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components;
 
-import com.opencsv.CSVReader;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
@@ -40,6 +39,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StringV
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -49,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -114,6 +115,7 @@ public class TestUtils
     public static String dataSplitName = "data_split";
     public static String batchName = "batch";
     public static String ratingName = "rating";
+    public static String COMMA_DELIMITER = ",";
 
     public static HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
@@ -1497,9 +1499,16 @@ public class TestUtils
 
     private static List<String[]> readCsvData(String path) throws IOException
     {
-        FileReader fileReader = new FileReader(path);
-        CSVReader csvReader = new CSVReader(fileReader);
-        List<String[]> lines = csvReader.readAll();
+        List<String[]> lines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(path)))
+        {
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                String[] values = line.split(COMMA_DELIMITER);
+                lines.add(values);
+            }
+        }
         return lines;
     }
 

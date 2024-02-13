@@ -38,7 +38,7 @@ public class TestHostedServiceParsing extends TestGrammarParser.TestGrammarParse
                 "{\n" +
                 "   function : a::f():String[1];\n" +
                 "   pattern : 'sass';\n" +
-                "   ownership : ['user1'];\n" +
+                "   ownership : UserList {users: ['user1']};\n" +
                 "   documentation : 'sass';\n" +
                 "   autoActivateUpdates : true;\n" +
                 "}\n";

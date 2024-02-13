@@ -409,6 +409,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::BaseTypeValue
 {
 }
 
+Class meta::external::store::mongodb::metamodel::aggregation::VariableTypeValue extends BaseTypeValue
+{
+  value: String[1];
+}
+
 Class meta::external::store::mongodb::metamodel::aggregation::StringTypeValue extends BaseTypeValue
 {
   value: String[1];
@@ -431,6 +436,11 @@ Class meta::external::store::mongodb::metamodel::aggregation::NullTypeValue exte
 Class meta::external::store::mongodb::metamodel::aggregation::LongTypeValue extends BaseTypeValue
 {
   value: Integer[1];
+}
+
+Class meta::external::store::mongodb::metamodel::aggregation::FloatTypeValue extends BaseTypeValue
+{
+  value: Float[1];
 }
 
 Class meta::external::store::mongodb::metamodel::aggregation::DecimalTypeValue extends BaseTypeValue

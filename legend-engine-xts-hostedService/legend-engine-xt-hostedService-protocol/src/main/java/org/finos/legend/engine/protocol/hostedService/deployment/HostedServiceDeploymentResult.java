@@ -19,4 +19,25 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentR
 public class HostedServiceDeploymentResult extends DeploymentResult
 {
     public String error;
+    public String deployed;
+    public String generationId;
+
+    public HostedServiceDeploymentResult()
+    {
+        //jackson
+    }
+
+    public HostedServiceDeploymentResult(String error)
+    {
+        this.error = error;
+    }
+
+    public HostedServiceDeploymentResult(String deployed, String generationId)
+    {
+        this.successful = true;
+        this.deployed = deployed;
+        this.generationId = generationId;
+    }
+
+
 }

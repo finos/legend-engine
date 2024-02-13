@@ -33,7 +33,7 @@ snowflakeApp:                   SNOWFLAKE_APP stereotypes? taggedValues? qualifi
                                                 applicationName
                                                 | description
                                                 | function
-                                                | owner
+                                                | ownership
                                                 | activation
                                             )*
                                         BRACE_CLOSE;
@@ -49,7 +49,7 @@ description:                    SNOWFLAKE_APP__DESCRIPTION COLON STRING SEMI_COL
 
 function:                       SNOWFLAKE_APP__FUNCTION COLON functionIdentifier SEMI_COLON;
 
-owner :                         SNOWFLAKE_APP__OWNER COLON STRING SEMI_COLON;
+ownership :                         SNOWFLAKE_APP__OWNER COLON STRING SEMI_COLON;
 
 activation:                     SNOWFLAKE_APP__ACTIVATION COLON qualifiedName SEMI_COLON ;
 

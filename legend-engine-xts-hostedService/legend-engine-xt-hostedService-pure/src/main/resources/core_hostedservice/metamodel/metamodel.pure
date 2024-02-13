@@ -6,7 +6,7 @@ Class meta::external::function::activator::hostedService::HostedService extends 
 {
   pattern : String[1];
   documentation : String[0..1];
-  ownership : meta::external::function::activator::hostedService::Ownership[1];
+  ownership : meta::external::function::activator::Ownership[1];
   binding: Binding[0..1];
   contentType : String[0..1];
   autoActivateUpdates : Boolean[1];
@@ -15,20 +15,13 @@ Class meta::external::function::activator::hostedService::HostedService extends 
 }
 
 
-//ownership
-Class <<typemodifiers.abstract>> meta::external::function::activator::hostedService::Ownership
-{ 
-}
 
-Class meta::external::function::activator::hostedService::UserList extends meta::external::function::activator::hostedService::Ownership
+
+Class meta::external::function::activator::hostedService::UserList extends meta::external::function::activator::Ownership
 {
   users: String[*];
 }
 
-Class meta::external::function::activator::hostedService::Deployment extends meta::external::function::activator::hostedService::Ownership
-{
-  id: Integer[1];
-}
 
  //Deployment config
 

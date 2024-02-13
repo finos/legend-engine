@@ -4,7 +4,7 @@ Class meta::external::function::activator::bigQueryFunction::BigQueryFunction ex
 {
   functionName : String[1];
   description : String[0..1];
-  owner : String[0..1];
+  //owner : String[0..1];
 }
 
 Class meta::external::function::activator::bigQueryFunction::BigQueryFunctionDeploymentConfiguration extends DeploymentConfiguration
