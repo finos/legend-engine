@@ -41,7 +41,8 @@ public class FreeMarkerExecutor
     private static Map<String, TemplateDateFormatFactory> customDateFormats = Maps.mutable.with("alloyDate", PlanDateParameterDateFormatFactory.INSTANCE);
     public static Pattern pattern = Pattern.compile("(\\$)[\\{](?:[^\\{\\}]+|[\\{][^\\{\\}]*[\\}])*[\\}]");
     private static ObjectWrapper objectWrapper = FreeMarkerExecutor.freemarkerConfig.getObjectWrapper();
-    
+    public static String overridePropertyForTemplateModel = "overrideTemplateModel";
+
     static
     {
         freemarkerConfig.setNumberFormat("computer");
@@ -85,8 +86,7 @@ public class FreeMarkerExecutor
 
         return StringUtils.isBlank(templateFunctions) ? process(input, variableMap, templateFunctions) : processRecursively(input, variableMap, templateFunctions);
     }
-
-
+    
     private static boolean isPlaceHolder(Object object)
     {
         return object instanceof String && pattern.matcher((String)object).find();
@@ -126,18 +126,18 @@ public class FreeMarkerExecutor
 
     public static String processRecursively(String input, Map<String, ?> variableMap, String templateFunctions)
     {
-        boolean overrideTemplateModelFlag = Boolean.valueOf(System.getProperty("overrideTemplateModel"));
+        boolean overrideTemplateModelFlag = Boolean.valueOf(System.getProperty(overridePropertyForTemplateModel));
         if (!overrideTemplateModelFlag)
         {
             return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);
         }
         else
         {
-           return recur(input, variableMap, templateFunctions);
+            return recur(input, variableMap, templateFunctions);
         }
     }
 
-    private static String recur(String input, Map<String, ?> variableMap, String templateFunctions)
+    private static String recur(String input, Map<String,?> variableMap, String templateFunctions)
     {
         String result = process(input, variableMap, templateFunctions);
         if (!result.equals(input.replace("\\\"", "\"")))
@@ -147,7 +147,12 @@ public class FreeMarkerExecutor
         return result;
     }
 
-    private static String process(String input, Object variableMap, String templateFunctions)
+    private static String process(String input, Map<String, ?> variableMap, String templateFunctions)
+    {
+        return process(input, new TemplateHashModelOverride(variableMap, templateFunctions), templateFunctions);
+    }
+
+    private static String process(String input, TemplateHashModelOverride variableMap, String templateFunctions)
     {
         StringWriter stringWriter = new StringWriter();
         try
