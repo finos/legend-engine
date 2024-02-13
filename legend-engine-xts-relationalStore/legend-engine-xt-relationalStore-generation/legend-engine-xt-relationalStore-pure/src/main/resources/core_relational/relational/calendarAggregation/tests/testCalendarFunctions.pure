@@ -67,7 +67,7 @@ Class meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::
 
 function <<test.BeforePackage>> meta::relational::tests::functions::pureToSqlQuery::calendarAggregations::setUp():Boolean[1]
 {
-  let connection = testRuntime(EmployeeDatabase).connectionByElement(EmployeeDatabase)->cast(@TestDatabaseConnection);
+  let connection = testRuntime(EmployeeDatabase).connectionByElement(EmployeeDatabase)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
   dropAndCreateTableInDb(EmployeeDatabase, 'EmployeeTable', $connection);
   executeInDb('insert into EmployeeTable (id, hireDate, hireType, fteFactor) values ( 1,\'2018-12-31\',\'Campus\' ,0.13);', $connection);
@@ -217,7 +217,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','annualized'])
      ->filter(x | isNotEmpty($x.getNumber('annualized')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -235,7 +235,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','cme'])
      ->filter(x | isNotEmpty($x.getNumber('cme')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -253,7 +253,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','cw'])
      ->filter(x | isNotEmpty($x.getNumber('cw')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -271,7 +271,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','cw_fm'])
      ->filter(x | isNotEmpty($x.getNumber('cw_fm')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -289,7 +289,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','CYMinus2'])
      ->filter(x | isNotEmpty($x.getNumber('CYMinus2')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -307,7 +307,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','CYMinus3'])
      ->filter(x | isNotEmpty($x.getNumber('CYMinus3')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -325,7 +325,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','mtd'])
      ->filter(x | isNotEmpty($x.getNumber('mtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -343,7 +343,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','p12wa'])
      ->filter(x | isNotEmpty($x.getNumber('p12wa')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -361,7 +361,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','p12wtd'])
      ->filter(x | isNotEmpty($x.getNumber('p12wtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -379,7 +379,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','p4wa'])
      ->filter(x | isNotEmpty($x.getNumber('p4wa')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -397,7 +397,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','p4wtd'])
      ->filter(x | isNotEmpty($x.getNumber('p4wtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -415,7 +415,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','p52wtd'])
      ->filter(x | isNotEmpty($x.getNumber('p52wtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -433,7 +433,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','p52wa'])
      ->filter(x | isNotEmpty($x.getNumber('p52wa')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -451,7 +451,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','p12mtd'])
      ->filter(x | isNotEmpty($x.getNumber('p12mtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -469,7 +469,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pma'])
      ->filter(x | isNotEmpty($x.getNumber('pma')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -487,7 +487,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pmtd'])
      ->filter(x | isNotEmpty($x.getNumber('pmtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -505,7 +505,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pqtd'])
      ->filter(x | isNotEmpty($x.getNumber('pqtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -523,7 +523,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','priorDay'])
      ->filter(x | isNotEmpty($x.getNumber('priorDay')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -541,7 +541,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','priorYear'])
      ->filter(x | isNotEmpty($x.getNumber('priorYear')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -559,7 +559,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pw'])
      ->filter(x | isNotEmpty($x.getNumber('pw')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -577,7 +577,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pw_fm'])
      ->filter(x | isNotEmpty($x.getNumber('pw_fm')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -595,7 +595,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pwa'])
      ->filter(x | isNotEmpty($x.getNumber('pwa')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -613,7 +613,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pwtd'])
      ->filter(x | isNotEmpty($x.getNumber('pwtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -631,7 +631,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pymtd'])
      ->filter(x | isNotEmpty($x.getNumber('pymtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -649,7 +649,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pyqtd'])
      ->filter(x | isNotEmpty($x.getNumber('pyqtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -667,7 +667,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pytd'])
      ->filter(x | isNotEmpty($x.getNumber('pytd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -685,7 +685,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pywa'])
      ->filter(x | isNotEmpty($x.getNumber('pywa')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   assertEquals([], $result.values.rows);
 }
@@ -700,7 +700,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pywtd'])
      ->filter(x | isNotEmpty($x.getNumber('pywtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -718,7 +718,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','qtd'])
      ->filter(x | isNotEmpty($x.getNumber('qtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -736,7 +736,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','reportEndDay'])
      ->filter(x | isNotEmpty($x.getNumber('reportEndDay')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -754,7 +754,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','wtd'])
      ->filter(x | isNotEmpty($x.getNumber('wtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -772,7 +772,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','ytd'])
      ->filter(x | isNotEmpty($x.getNumber('ytd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -788,7 +788,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | annualized($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','annualized'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear then ((1.0 * "root".fteFactor) / ((1.0 * "ny_calendar_1".fiscalDay) / "ny_calendar_1".numberOfFiscalDaysInYear)) else null end) as "annualized" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,annualized,Campus,9.812850678733032,Lateral,9.267692307692307,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -801,7 +801,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | cme($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','cme'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum then ((1.0 * "root".fteFactor) / ((1.0 * "ny_calendar_1".fiscalDay) / "ny_calendar_1".numberOfFiscalDaysInMonth)) else null end) as "cme" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,cme,Campus,0.5131221719457013,Lateral,0.5644343891402714,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -814,7 +814,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | cw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','cw'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 1 else 0 end) then "root".fteFactor else null end) as "cw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 1 else 0 end) then "root".fteFactor else null end) as "cw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -831,7 +831,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | cw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','cw_fm'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = "ny_calendar_1".fiscalWeekOffset then "root".fteFactor else null end) as "cw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = "ny_calendar_1".fiscalWeekOffset then "root".fteFactor else null end) as "cw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -848,7 +848,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | CYMinus2($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','CYMinus2'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 1) then "root".fteFactor else null end) as "CYMinus2" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 1) then "root".fteFactor else null end) as "CYMinus2" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -865,7 +865,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | CYMinus3($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','CYMinus3'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 2) then "root".fteFactor else null end) as "CYMinus3" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = ("ny_calendar_1".previousFiscalYear - 2) then "root".fteFactor else null end) as "CYMinus3" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -882,7 +882,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','mtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -899,7 +899,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | p12wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p12wa'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior12WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 12) else null end) as "p12wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p12wa,Campus,0.383333333333,Lateral,0.391666666667,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -912,7 +912,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | p12wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p12wtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior12WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p12wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p12wtd,Campus,4.6,Lateral,4.7,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -925,7 +925,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | p4wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p4wa'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior4WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 4) else null end) as "p4wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p4wa,Campus,0.8575,Lateral,0.98,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -938,7 +938,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | p4wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p4wtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior4WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p4wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p4wtd,Campus,3.43,Lateral,3.92,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -951,7 +951,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | p52wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p52wtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior52WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then "root".fteFactor else null end) as "p52wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p52wtd,Campus,6.84,Lateral,6.98,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -964,7 +964,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | p52wa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p52wa'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date >= "ny_calendar_1".prior52WeekDate and "ny_calendar_0".date <= case when "ny_calendar_1".date = "ny_calendar_1".adjustedDate then "ny_calendar_1".adjustedDate else "ny_calendar_1".previousBusinessDay end then ((1.0 * "root".fteFactor) / 52) else null end) as "p52wa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p52wa,Campus,0.131538461538,Lateral,0.134230769231,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -977,7 +977,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | p12mtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','p12mtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".date > dateadd(YEAR, -1, "ny_calendar_1".date) and "ny_calendar_0".date <= "ny_calendar_1".date then "root".fteFactor else null end) as "p12mtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,p12mtd,Campus,6.84,Lateral,7.24,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -991,7 +991,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pma($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pma'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentMonthNum = 1 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then ((1.0 * "root".fteFactor) / 12) else case when "ny_calendar_1".currentMonthNum > 1 and "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentMonthNum <= "ny_calendar_1".previousFiscalMonth then ((1.0 * "root".fteFactor) / "ny_calendar_1".previousFiscalMonth) else null end end) as "pma" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pma,Campus,0.259,Lateral,0.222,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1004,7 +1004,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pmtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pmtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentMonthNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentMonthNum = "ny_calendar_1".previousFiscalMonth and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pmtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentMonthNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentMonthNum = "ny_calendar_1".previousFiscalMonth and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pmtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1021,7 +1021,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pqtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentQuarterNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".previousFiscalQuarter and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = case when "ny_calendar_1".currentQuarterNum = 1 then "ny_calendar_1".previousFiscalYear else "ny_calendar_1".currentYear end and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".previousFiscalQuarter and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1038,7 +1038,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | priorDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','priorDay'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".previousBusinessDay then "root".fteFactor else null end) as "priorDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".previousBusinessDay then "root".fteFactor else null end) as "priorDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1055,7 +1055,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | priorYear($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','priorYear'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then "root".fteFactor else null end) as "priorYear" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,priorYear,Campus,2.84,Lateral,3.06,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1068,7 +1068,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pw($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pw'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 2 else 1 end) then "root".fteFactor else null end) as "pw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - case when "ny_calendar_1".shortNameWeekDay in (\'Sat\', \'Sun\') then 2 else 1 end) then "root".fteFactor else null end) as "pw" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1085,7 +1085,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pw_fm($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pw_fm'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) then "root".fteFactor else null end) as "pw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) then "root".fteFactor else null end) as "pw_fm" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1102,7 +1102,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pwa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pwa'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else case when "ny_calendar_1".currentWeek > 5 and "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= ("ny_calendar_1".fiscalDay - "ny_calendar_1".fiscalDayOfWeek) then (((1.0 * "root".fteFactor) / ("ny_calendar_1".fiscalDay - "ny_calendar_1".fiscalDayOfWeek)) * 5) else null end end) as "pwa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pwa,Campus,0.103440366973,Lateral,0.0940366972485,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1115,7 +1115,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pwtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pwtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pwtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".fiscalWeekOffset = ("ny_calendar_1".fiscalWeekOffset - 1) and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pwtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1132,7 +1132,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pymtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pymtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentMonthNum = "ny_calendar_1".currentMonthNum and "ny_calendar_0".fiscalDayOfMonth <= "ny_calendar_1".fiscalDayOfMonth then "root".fteFactor else null end) as "pymtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pymtd,Campus,0.69,Lateral,0.46,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1145,7 +1145,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pyqtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pyqtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".currentQuarterNum and "ny_calendar_0".fiscalDayOfQuarter <= "ny_calendar_1".fiscalDayOfQuarter then "root".fteFactor else null end) as "pyqtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pyqtd,Campus,1.4,Lateral,1.36,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1158,7 +1158,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pytd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "pytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,pytd,Campus,1.59,Lateral,1.54,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1171,7 +1171,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pywa($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pywa'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else null end) as "pywa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_1".currentWeek <= 5 and "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear then (((1.0 * "root".fteFactor) / "ny_calendar_1".numberOfFiscalDaysInYear) * 5) else null end) as "pywa" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1188,7 +1188,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pywtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pywtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pywtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".previousFiscalYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".fiscalDayOfWeek <= "ny_calendar_1".fiscalDayOfWeek then "root".fteFactor else null end) as "pywtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1205,7 +1205,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | qtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','qtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentQuarterNum = "ny_calendar_1".currentQuarterNum and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "qtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,qtd,Campus,4.23,Lateral,4.32,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1218,7 +1218,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | reportEndDay($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','reportEndDay'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".date then "root".fteFactor else null end) as "reportEndDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".date = "ny_calendar_1".date then "root".fteFactor else null end) as "reportEndDay" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1235,7 +1235,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | wtd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','wtd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".dayOfCalendarYear <= "ny_calendar_1".dayOfCalendarYear then "root".fteFactor else null end) as "wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".currentWeek = "ny_calendar_1".currentWeek and "ny_calendar_0".dayOfCalendarYear <= "ny_calendar_1".dayOfCalendarYear then "root".fteFactor else null end) as "wtd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', 
@@ -1252,7 +1252,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','ytd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select "root".hireType as "hireType", sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) group by "hireType"', $result);
   assertEquals(['hireType,ytd,Campus,5.59,Lateral,5.72,'], toCSV($result.values)->replace('\n', ','));
 }
@@ -1267,7 +1267,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','cw'])
      ->filter(x | isNotEmpty($x.getNumber('cw')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1285,7 +1285,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','cw_fm'])
      ->filter(x | isNotEmpty($x.getNumber('cw_fm')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1303,7 +1303,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pw'])
      ->filter(x | isNotEmpty($x.getNumber('pw')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1321,7 +1321,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pw_fm'])
      ->filter(x | isNotEmpty($x.getNumber('pw_fm')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1339,7 +1339,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','cw'])
      ->filter(x | isNotEmpty($x.getNumber('cw')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1357,7 +1357,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','cw_fm'])
      ->filter(x | isNotEmpty($x.getNumber('cw_fm')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1375,7 +1375,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','priorDay'])
      ->filter(x | isNotEmpty($x.getNumber('priorDay')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1393,7 +1393,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pw'])
      ->filter(x | isNotEmpty($x.getNumber('pw')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1411,7 +1411,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pw_fm'])
      ->filter(x | isNotEmpty($x.getNumber('pw_fm')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1429,7 +1429,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pma'])
      ->filter(x | isNotEmpty($x.getNumber('pma')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1447,7 +1447,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pmtd'])
      ->filter(x | isNotEmpty($x.getNumber('pmtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1465,7 +1465,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pqtd'])
      ->filter(x | isNotEmpty($x.getNumber('pqtd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1483,7 +1483,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pwa'])
      ->filter(x | isNotEmpty($x.getNumber('pwa')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1501,7 +1501,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','pywa'])
      ->filter(x | isNotEmpty($x.getNumber('pywa')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1517,7 +1517,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pma($p.hireDate, 'NY', %2022-01-15, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pma'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEquals(['hireType,pma,Campus,0.236666666667,Lateral,0.255,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1530,7 +1530,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pwa($p.hireDate, 'NY', %2022-01-15, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pwa'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEquals(['hireType,pwa,Campus,0.05657370518,Lateral,0.0609561752985,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1542,7 +1542,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | pywa($p.hireDate, 'NY', %2022-01-15, $p.fteFactor), y | $y->sum()) ],
        ['hireType','pywa'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEquals(['hireType,pywa,Campus,0.05657370518,Lateral,0.0609561752985,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1557,7 +1557,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        ['includedDate','ytd'])
      ->filter(x | isNotEmpty($x.getNumber('ytd')))
      ->restrict(['includedDate'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
 
   let dateRange = [$result.values.rows->map(x|$x.values->cast(@StrictDate))->min()->toOne()->toString(),
                    $result.values.rows->map(x|$x.values->cast(@StrictDate))->max()->toOne()->toString()];
@@ -1572,7 +1572,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
      ->filter(x | isNotEmpty($x.getNumber('sumFTE')))
      ->meta::pure::tds::groupBy('hireType',agg('cnt', x|$x, y| $y->count()))
      ->restrict(['cnt'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEquals(['cnt,13,13,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1588,7 +1588,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
      ->join(Employee.all()->project([col(x | $x.id, 'id'), col(x | 'dummyValue', 'newColFromJoin')]), meta::relational::metamodel::join::JoinType.LEFT_OUTER, ['id'])
      ->restrict(['newColFromJoin'])
      ->distinct()
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEquals(['newColFromJoin,dummyValue,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1601,7 +1601,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['firm','ytd'])
      ->filter(x | isNotEmpty($x.getString('firm')))
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEquals(['firm,ytd,GS,0.31,JP,0.32,'], toCSV($result.values)->replace('\n', ','));
 }
 
@@ -1613,7 +1613,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [p|$p.hireType],
        [ agg(p | ytd($p.hireDate, 'London', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['hireType','ytd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "london_calendar_0".currentYear = "london_calendar_1".currentYear and "london_calendar_0".fiscalDay <= "london_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on ("root".hireDate = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on (\'2022-11-16\' = "london_calendar_1".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "london_calendar_0".currentYear = "london_calendar_1".currentYear and "london_calendar_0".fiscalDay <= "london_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on ("root".hireDate = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on (DATE\'2022-11-16\' = "london_calendar_1".date) group by "hireType"', 
@@ -1630,7 +1630,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [ agg(p | ytd($p.hireDate, 'London', %2022-11-16, $p.fteFactor), y | $y->sum()),
          agg(p | ytd($p.hireDate, 'London', %2022-11-17, $p.fteFactor), y | $y->sum()) ],
        ['hireType','ytd16', 'ytd17'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select "root".hireType as "hireType", sum(case when "london_calendar_1".currentYear = "london_calendar_0".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_0".fiscalDay then "root".fteFactor else null end) as "ytd16", sum(case when "london_calendar_1".currentYear = "london_calendar_2".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_2".fiscalDay then "root".fteFactor else null end) as "ytd17" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on (\'2022-11-16\' = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on ("root".hireDate = "london_calendar_1".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_2" on (\'2022-11-17\' = "london_calendar_2".date) group by "hireType"', 
     'select "root".hireType as "hireType", sum(case when "london_calendar_1".currentYear = "london_calendar_0".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_0".fiscalDay then "root".fteFactor else null end) as "ytd16", sum(case when "london_calendar_1".currentYear = "london_calendar_2".currentYear and "london_calendar_1".fiscalDay <= "london_calendar_2".fiscalDay then "root".fteFactor else null end) as "ytd17" from EmployeeTable as "root" left outer join LegendCalendarSchema.London_Calendar as "london_calendar_0" on (DATE\'2022-11-16\' = "london_calendar_0".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_1" on ("root".hireDate = "london_calendar_1".date) left outer join LegendCalendarSchema.London_Calendar as "london_calendar_2" on (DATE\'2022-11-17\' = "london_calendar_2".date) group by "hireType"', 
@@ -1647,7 +1647,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [],
        [ agg(p | ytd($p.employeeDetails.birthDate, 'NY', %2022-11-16, $p.fteFactor), y | $y->sum()) ],
        ['ytd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("employeedetailstable_0".birthDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date)', 
     'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("employeedetailstable_0".birthDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date)', 
@@ -1664,7 +1664,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [],
        [ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.employeeDetails.yearsOfExperience), y | $y->sum()) ],
        ['ytd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "employeedetailstable_0".yearsOfExperience else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date) left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id)', 
     'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "employeedetailstable_0".yearsOfExperience else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date) left outer join EmployeeDetailsTable as "employeedetailstable_0" on ("root".id = "employeedetailstable_0".id)', 
@@ -1681,7 +1681,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [],
        [ agg(p | ytd($p.hireDate, 'NY', today(), $p.fteFactor), y | $y->sum()) ],
        ['ytd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertSameSQL('select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then "root".fteFactor else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (current_date() = "ny_calendar_1".date)', $result);
 }
 
@@ -1693,7 +1693,7 @@ function <<test.Test>> meta::relational::tests::functions::pureToSqlQuery::calen
        [],
        [ agg(p | ytd($p.hireDate, 'NY', %2022-11-16, $p.fteFactorDyna()), y | $y->sum()) ],
        ['ytd'])
-   ,EmployeeMapping, testRuntime(), relationalExtensions(), noDebug());
+   ,EmployeeMapping, meta::external::store::relational::tests::testRuntime(), relationalExtensions(), noDebug());
   assertEqualsH2Compatible(
     'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then ((1.0 * "root".fteFactor) / 2) else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (\'2022-11-16\' = "ny_calendar_1".date)', 
     'select sum(case when "ny_calendar_0".currentYear = "ny_calendar_1".currentYear and "ny_calendar_0".fiscalDay <= "ny_calendar_1".fiscalDay then ((1.0 * "root".fteFactor) / 2) else null end) as "ytd" from EmployeeTable as "root" left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_0" on ("root".hireDate = "ny_calendar_0".date) left outer join LegendCalendarSchema.NY_Calendar as "ny_calendar_1" on (DATE\'2022-11-16\' = "ny_calendar_1".date)', 

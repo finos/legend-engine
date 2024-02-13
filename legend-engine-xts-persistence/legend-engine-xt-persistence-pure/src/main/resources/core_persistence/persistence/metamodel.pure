@@ -38,8 +38,6 @@ import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::persistence::metamodel::persistenceTest::*;
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 import meta::relational::metamodel::*;
 
 /**********

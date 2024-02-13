@@ -451,7 +451,6 @@ Mapping meta::relational::tests::mapping::join::model::mapping::MappingWithLiter
 import meta::relational::tests::mapping::join::model::store::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
@@ -469,7 +468,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::join::setUp():
 
 function meta::relational::tests::mapping::join::model::store::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateSchemaInDb('schemaB', $connection);
 

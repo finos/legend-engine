@@ -17,7 +17,6 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
 Profile meta::pure::executionPlan::profiles::serverVersion

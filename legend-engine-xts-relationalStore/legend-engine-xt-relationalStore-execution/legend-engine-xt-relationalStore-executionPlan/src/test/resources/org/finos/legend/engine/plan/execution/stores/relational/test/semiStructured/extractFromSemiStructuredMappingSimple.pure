@@ -18,6 +18,7 @@ Class simple::model::Firm
   ID: Integer[1];
   legalName: String[1];
   employeeCount: Integer[1];
+  revenue: Float[1];
   mnc: Boolean[1];
   estDate: StrictDate[1];
   lastUpdate: DateTime[1];
@@ -107,6 +108,7 @@ Mapping simple::mapping::MemSQLMapping
     ID: [simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.ID,
     legalName: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR'),
     employeeCount: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'employeeCount', 'INTEGER'),
+    revenue: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'revenue', 'FLOAT'),
     mnc: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'mnc', 'BOOLEAN'),
     estDate: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'dates.estDate', 'DATE'),
     lastUpdate: extractFromSemiStructured([simple::store::MemSQLDB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, '["dates"]["last Update"]', 'TIMESTAMP'),
@@ -133,6 +135,7 @@ Mapping simple::mapping::H2Mapping
     ID: [simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.ID,
     legalName: extractFromSemiStructured([simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'legalName', 'VARCHAR'),
     employeeCount: extractFromSemiStructured([simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'employeeCount', 'INTEGER'),
+    revenue: extractFromSemiStructured([simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'revenue', 'FLOAT'),
     mnc: extractFromSemiStructured([simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'mnc', 'BOOLEAN'),
     estDate: extractFromSemiStructured([simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, 'dates.estDate', 'DATE'),
     lastUpdate: extractFromSemiStructured([simple::store::H2DB]FIRM_SCHEMA.FIRM_TABLE.FIRM_DETAILS, '["dates"]["last Update"]', 'TIMESTAMP'),
@@ -193,9 +196,9 @@ Runtime simple::runtime::H2Runtime
               'DROP SCHEMA IF EXISTS FIRM_SCHEMA CASCADE;',
               'CREATE SCHEMA FIRM_SCHEMA;',
               'CREATE TABLE FIRM_SCHEMA.FIRM_TABLE(ID INT PRIMARY KEY, FIRM_DETAILS VARCHAR(1000));',
-              'INSERT INTO FIRM_SCHEMA.FIRM_TABLE(ID, FIRM_DETAILS) VALUES(1, \'{"legalName": "Firm X", "employeeCount": 4, "mnc": true, "dates": {"estDate": "2010-03-04", "last Update": "2022-01-16T01:00:00"}, "entity": {"entityType":"O"}, "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\');',
-              'INSERT INTO FIRM_SCHEMA.FIRM_TABLE(ID, FIRM_DETAILS) VALUES(2, \'{"legalName": "Firm A", "employeeCount": 1, "mnc": false, "dates": {"estDate": "2012-11-13", "last Update": "2022-02-14T03:00:00"}, "entity": {"entityType":"O"}, "otherNames": ["O3", "O4"], "address": {"name": "A2", "lines": [{"details": "D4"}, {"details": "D5"}]}}\' );',
-              'INSERT INTO FIRM_SCHEMA.FIRM_TABLE(ID, FIRM_DETAILS) VALUES(3, \'{"legalName": "Firm B", "employeeCount": 2, "mnc": true, "dates": {"estDate": "2017-7-7", "last Update": "2022-9-01T06:00:00"}, "entity": {"entityType":"C"}, "otherNames": ["O5", "O6"], "address": {"name": "A3", "lines": [{"details": "D5"},{"details": "D6"}]}}\');'
+              'INSERT INTO FIRM_SCHEMA.FIRM_TABLE(ID, FIRM_DETAILS) VALUES(1, \'{"legalName": "Firm X", "employeeCount": 4, "revenue": 5.0, "mnc": true, "dates": {"estDate": "2010-03-04", "last Update": "2022-01-16T01:00:00"}, "entity": {"entityType":"O"}, "otherNames": ["O1", "O2"], "address": {"name": "A1", "street": "S1", "lines": [{"details": "D1"}, {"details": "D2"}, {"details": "D3"}]}}\');',
+              'INSERT INTO FIRM_SCHEMA.FIRM_TABLE(ID, FIRM_DETAILS) VALUES(2, \'{"legalName": "Firm A", "employeeCount": 1, "revenue": 2000.5, "mnc": false, "dates": {"estDate": "2012-11-13", "last Update": "2022-02-14T03:00:00"}, "entity": {"entityType":"O"}, "otherNames": ["O3", "O4"], "address": {"name": "A2", "lines": [{"details": "D4"}, {"details": "D5"}]}}\' );',
+              'INSERT INTO FIRM_SCHEMA.FIRM_TABLE(ID, FIRM_DETAILS) VALUES(3, \'{"legalName": "Firm B", "employeeCount": 2, "revenue": 0.1, "mnc": true, "dates": {"estDate": "2017-7-7", "last Update": "2022-9-01T06:00:00"}, "entity": {"entityType":"C"}, "otherNames": ["O5", "O6"], "address": {"name": "A3", "lines": [{"details": "D5"},{"details": "D6"}]}}\');'
               ];
           };
           auth: DefaultH2;
@@ -223,5 +226,5 @@ function simple::extractEnumProperty():TabularDataSet[1]
 
 function simple::allDataTypesAccess():TabularDataSet[1]
 {
-    simple::model::Firm.all()->project([x|$x.ID, x|$x.legalName, x|$x.estDate, x|$x.mnc, x|$x.employeeCount, x|$x.lastUpdate], ['Id', 'Legal Name', 'Est Date', 'Mnc', 'Employee Count', 'Last Update']);
+    simple::model::Firm.all()->project([x|$x.ID, x|$x.legalName, x|$x.estDate, x|$x.mnc, x|$x.employeeCount, x|$x.revenue, x|$x.lastUpdate], ['Id', 'Legal Name', 'Est Date', 'Mnc', 'Employee Count', 'Revenue', 'Last Update']);
 }

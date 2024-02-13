@@ -80,7 +80,6 @@ import meta::relational::functions::sqlstring::*;
 import meta::relational::tests::mapping::sqlFunction::model::domain::*;
 import meta::relational::tests::mapping::sqlFunction::model::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::profiles::*;
 
 function <<test.BeforePackage>> meta::relational::bigQuery::tests::setUp():Boolean[1]

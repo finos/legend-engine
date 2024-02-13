@@ -19,7 +19,6 @@ import meta::pure::router::systemMapping::tests::*;
 import meta::relational::mapping::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
@@ -84,7 +83,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                      ])},
      routeFunctionExpressions = pair(
             fe:FunctionExpression[1] | $fe->evaluateAndDeactivate().genericType.rawType == meta::relational::mapping::TableTDS,
-            {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+            {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
               let mapping = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).mapping;
               let runtime = $state.routingStrategy->cast(@meta::pure::router::store::metamodel::StoreMappingRoutingStrategy).runtime;
               let name = $fe.parametersValues->at(0)->cast(@FunctionExpression).functionName;
@@ -158,8 +157,8 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
                                        ]},
       printConnectionToString = {extensions:meta::pure::extension::Extension[*]|
                                        [
-                                           testDatabase:TestDatabaseConnection[1]|databaseConnectionTypeToString($testDatabase),
-                                           db:DatabaseConnection[1]|  databaseConnectionTypeToString($db)
+                                           testDatabase:meta::external::store::relational::runtime::TestDatabaseConnection[1]|databaseConnectionTypeToString($testDatabase),
+                                           db:meta::external::store::relational::runtime::DatabaseConnection[1]|  databaseConnectionTypeToString($db)
                                        ]},
       printTypeToString = {space : String[1], extensions:meta::pure::extension::Extension[*]|
                                        [
@@ -183,7 +182,7 @@ function meta::relational::contract::relationalStoreContract():StoreContract[1]
 }
 
 // Execution flow
-function meta::relational::contract::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::relational::contract::execution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    execution($sq.store->cast(@Database), $sq.fe, $ext, $m, $runtime, $sq.inScopeVars, $exeCtx, $extensions, $debug);
 }
@@ -218,7 +217,7 @@ function meta::relational::contract::supportsStream(f:FunctionExpression[1]):Boo
 }
 
 // Execution Plan
-function meta::relational::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function meta::relational::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let store = $sq.store->cast(@Database);
    let fe = $sq.fe->evaluateAndDeactivate();

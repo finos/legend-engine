@@ -22,7 +22,6 @@ import meta::pure::graphFetch::*;
 import meta::pure::mapping::modelToModel::test::milestoning::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::functions::objectReferenceIn::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::json::*;

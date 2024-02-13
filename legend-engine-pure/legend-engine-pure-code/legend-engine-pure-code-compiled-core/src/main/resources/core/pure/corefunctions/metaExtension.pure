@@ -18,8 +18,6 @@ import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::pure::functions::meta::forgivingPathToElement(path:String[1]):PackageableElement[0..1]
 {
     if($path == '::',

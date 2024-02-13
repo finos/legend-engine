@@ -1,7 +1,6 @@
 
 import meta::external::function::activator::snowflakeApp::tests::*;
 import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
@@ -48,7 +47,7 @@ function <<access.private>> meta::external::function::activator::snowflakeApp::t
     ^ConnectionStore(
         element = $db,
         connection=
-    ^TestDatabaseConnection(
+    ^meta::external::store::relational::runtime::TestDatabaseConnection(
         type = DatabaseType.H2,
         timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
     ));

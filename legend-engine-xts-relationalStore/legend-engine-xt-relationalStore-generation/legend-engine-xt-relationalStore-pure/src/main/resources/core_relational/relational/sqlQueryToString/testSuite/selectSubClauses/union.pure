@@ -20,8 +20,6 @@ import meta::external::store::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::union::testSimpleConcatenate(config:DbTestConfig[1]):Boolean[1]
 {
    let result = executeViaPlan(

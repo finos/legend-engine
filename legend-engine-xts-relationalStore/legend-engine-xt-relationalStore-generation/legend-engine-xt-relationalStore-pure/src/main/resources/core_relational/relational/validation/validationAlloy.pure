@@ -15,7 +15,6 @@
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::validation::functions::*;
@@ -24,8 +23,6 @@ import meta::pure::metamodel::constraint::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::relational::validation::alloy::ClassValidationException
 {
    constraintName : String[1];
@@ -39,13 +36,13 @@ Class meta::relational::validation::alloy::ClassValidationException
 function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidation<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:Extension[*]):Result<String|1>[1]
 {
    let fd = alloyClassValidationFunction($classToValidate, $constraintName, $sourceMapping, $sourceRuntime, $exceptionMapping, $execptionTree);
-   execute($fd, ^Mapping(), ^Runtime(), ^ExecutionContext(enableConstraints=false), $extensions);
+   execute($fd, ^Mapping(), ^Runtime(), ^meta::pure::runtime::ExecutionContext(enableConstraints=false), $extensions);
 }
 
 function <<doc.deprecated>> meta::relational::validation::alloy::alloyClassValidationExecutionPlan<T, U>(classToValidate:Class<T>[1], constraintName:String[1], sourceMapping:Mapping[1], sourceRuntime:Runtime[1], exceptionMapping:Mapping[1], execptionTree:RootGraphFetchTree<U>[1], extensions:Extension[*]):ExecutionPlan[1]
 {
    let fd = alloyClassValidationFunction($classToValidate, $constraintName, $sourceMapping, $sourceRuntime, $exceptionMapping, $execptionTree);
-   executionPlan($fd, ^ExecutionContext(enableConstraints=false), $extensions);
+   executionPlan($fd, ^meta::pure::runtime::ExecutionContext(enableConstraints=false), $extensions);
 }
 
 function <<access.private>> meta::relational::validation::alloy::createGetAll<T>(c: Class<T>[1]):FunctionExpression[1]

@@ -149,11 +149,8 @@ Mapping meta::pure::graphFetch::tests::XStore::inMemory::JsonCrossStoreMapping
 )
 
 ###Pure
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::pure::graphFetch::tests::XStore::inMemory::jsonConnectionTrade():JsonModelConnection[1]
 {
    ^JsonModelConnection(class = meta::pure::graphFetch::tests::XStore::inMemory::S_Trade,

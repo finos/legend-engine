@@ -156,9 +156,6 @@ import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::tests::XStore::milestoning::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
-
 function meta::pure::graphFetch::tests::XStore::milestoning::runtime():Runtime[1]
 {
   let csvData = 'Create Schema if not exists Entity;\n' +
