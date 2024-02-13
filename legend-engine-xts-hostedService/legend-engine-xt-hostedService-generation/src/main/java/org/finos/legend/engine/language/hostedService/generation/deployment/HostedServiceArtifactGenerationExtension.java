@@ -28,8 +28,7 @@ import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
-import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.*;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_HostedService;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
@@ -77,12 +76,24 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
             Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions = (PureModel p) -> PureCoreExtensionLoader.extensions().flatCollect(e -> e.extraPureCoreExtensions(p.getExecutionSupport()));
             GenerationInfoData info = HostedServiceArtifactGenerator.renderArtifact(pureModel, activator, data, clientVersion, routerExtensions);
             PureModelContextData s = HostedServiceArtifactGenerator.fetchHostedService(activator, data, pureModel);
-            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, s, (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
+            result.add(new Artifact(mapper.writeValueAsString(new HostedServiceArtifact(activator._pattern(), info, generatePointerForActivator(s, data), (AlloySDLC) data.origin.sdlcInfo)), FILE_NAME, "json"));
         }
         catch (Exception e)
         {
             LOGGER.error("Error generating Hosted Service ", e);
         }
         return result;
+    }
+
+    public PureModelContextPointer generatePointerForActivator(PureModelContextData activator, PureModelContextData originalModel)
+    {
+        PureModelContextPointer origin = originalModel.getOrigin();
+        origin.sdlcInfo.packageableElementPointers = Lists.mutable.with(new PackageableElementPointer(PackageableElementType.SERVICE, elementName(activator.getElementsOfType(HostedService.class).get(0))));
+        return origin;
+    }
+
+    public String elementName(HostedService service)
+    {
+        return service._package + "::" + service.name;
     }
 }

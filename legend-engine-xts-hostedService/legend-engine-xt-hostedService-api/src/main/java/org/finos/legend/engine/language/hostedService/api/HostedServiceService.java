@@ -108,21 +108,5 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
         return this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
     }
 
-//    public static PureModelContextData fetchHostedService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContextData data, PureModel pureModel)
-//    {
-//        return PureModelContextData.newBuilder()
-//                .withElements(org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements()).select(e -> e instanceof HostedService && elementToPath(activator, pureModel).equals(fullName(e))))
-//                .withOrigin(data.origin).build();
-//    }
-//
-//    public static String elementToPath(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element, PureModel pureModel)
-//    {
-//        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, pureModel.getExecutionSupport());
-//    }
-//
-//    public static String fullName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement e)
-//    {
-//        return e._package + "::" + e.name;
-//    }
 
 }
