@@ -29,7 +29,7 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
     public String functionArguments;
     public String applicationName;
     public String description;
-    public List<String> owners;
+    public String ownership;
     public String creationTime;
 
     public SnowflakeAppContent()
@@ -46,11 +46,11 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 
     }
 
-    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String description, String functionArguments, List<String> owners, AlloySDLC sdlc)
+    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String description, String functionArguments, String ownership, AlloySDLC sdlc)
     {
         this(applicationName, sqlExpressions, functionArguments, sdlc);
         this.description = description;
-        this.owners = owners;
+        this.ownership = ownership;
 
     }
 

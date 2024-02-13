@@ -28,6 +28,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Dige
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 
+import java.util.Arrays;
+
 public class AppendOnlyScenarios extends BaseTest
 {
 
@@ -255,7 +257,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .filterExistingRecords(false)
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).addAllFieldsToExcludeFromDigest(Arrays.asList(id.name(), amount.name())).build())
             .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchema, ingestMode);
     }

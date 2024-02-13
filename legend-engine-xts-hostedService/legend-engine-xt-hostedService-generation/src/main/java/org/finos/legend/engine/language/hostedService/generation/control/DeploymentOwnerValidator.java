@@ -15,21 +15,21 @@
 package org.finos.legend.engine.language.hostedService.generation.control;
 
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Deployment;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Ownership;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_DeploymentOwnership;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 
-public class DeploymentOwnerValidator implements HostedServiceOwnerValidator<Root_meta_external_function_activator_hostedService_Deployment>
+public class DeploymentOwnerValidator implements HostedServiceOwnerValidator<Root_meta_external_function_activator_DeploymentOwnership>
 {
     @Override
-    public boolean isOwner(Identity identity, Root_meta_external_function_activator_hostedService_Deployment ownershipModel)
+    public boolean isOwner(Identity identity, Root_meta_external_function_activator_DeploymentOwnership ownershipModel)
     {
-        return ownershipModel._id() > 10;
+        return ownershipModel._id().equals("testId");
     }
 
     @Override
-    public boolean supports(Root_meta_external_function_activator_hostedService_Ownership ownershipModel)
+    public boolean supports(Root_meta_external_function_activator_Ownership ownershipModel)
     {
-        return ownershipModel instanceof Root_meta_external_function_activator_hostedService_Deployment;
+        return ownershipModel instanceof Root_meta_external_function_activator_DeploymentOwnership;
     }
 
 }

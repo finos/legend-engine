@@ -28,9 +28,9 @@ public class TestHostedServiceRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "HostedService <<a::A.test>> {a::A.val = 'ok'} package1::MyHostedService\n" +
                 "{\n" +
                 "   pattern : '/a/b/{integer1}';\n" +
-                "   ownership : [\n" +
+                "   ownership : UserList { users: [\n" +
                 "    'user1'\n" +
-                "    ];\n" +
+                "    ] };\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
                 "   documentation : 'My hosted service';\n" +
                 "   autoActivateUpdates : true;\n" +
@@ -44,7 +44,7 @@ public class TestHostedServiceRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "HostedService <<a::A.test>> {a::A.val = 'ok'} package1::MyHostedService\n" +
                 "{\n" +
                 "   pattern : '/a/b/{integer1}';\n" +
-                "   ownership : 17;\n" +
+                "   ownership : Deployment { identifier: '17' };\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
                 "   documentation : 'My hosted service';\n" +
                 "   autoActivateUpdates : true;\n" +

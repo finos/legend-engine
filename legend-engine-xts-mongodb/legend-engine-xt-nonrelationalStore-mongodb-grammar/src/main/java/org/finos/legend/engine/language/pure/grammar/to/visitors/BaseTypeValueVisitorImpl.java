@@ -20,12 +20,14 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.Bas
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.BoolTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DateTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.DecimalTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.FloatTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.IntTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.KeyValuePair;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.LongTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.NullTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.ObjectTypeValue;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.StringTypeValue;
+import org.finos.legend.engine.protocol.mongodb.schema.metamodel.aggregation.VariableTypeValue;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,6 +70,12 @@ public class BaseTypeValueVisitorImpl implements BaseTypeValueVisitor<String>
     }
 
     @Override
+    public String visit(FloatTypeValue val)
+    {
+        return String.valueOf(val.value);
+    }
+
+    @Override
     public String visit(NullTypeValue val)
     {
         return null;
@@ -85,6 +93,12 @@ public class BaseTypeValueVisitorImpl implements BaseTypeValueVisitor<String>
     public String visit(StringTypeValue val)
     {
         return convertToStringWithQuotes(String.valueOf(val.value));
+    }
+
+    @Override
+    public String visit(VariableTypeValue val)
+    {
+        return String.valueOf(val.value);
     }
 
     @Override

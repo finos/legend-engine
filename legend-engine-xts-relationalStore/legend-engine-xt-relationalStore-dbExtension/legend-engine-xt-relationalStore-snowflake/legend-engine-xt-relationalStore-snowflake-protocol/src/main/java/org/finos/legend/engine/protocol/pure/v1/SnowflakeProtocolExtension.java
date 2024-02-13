@@ -16,8 +16,6 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.impl.factory.Lists;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
-import org.finos.legend.engine.protocol.pure.v1.connection.SnowflakeConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -40,10 +38,6 @@ public class SnowflakeProtocolExtension implements PureProtocolExtension
                 // AuthenticationStrategy
                 ProtocolSubTypeInfo.newBuilder(AuthenticationStrategy.class)
                         .withSubtype(SnowflakePublicAuthenticationStrategy.class, "snowflakePublic")
-                        .build(),
-                // ConnectionSpecification
-                ProtocolSubTypeInfo.newBuilder(ConnectionSpecification.class)
-                        .withSubtype(SnowflakeConnectionSpecification.class, "snowflake")
                         .build()
         ));
     }

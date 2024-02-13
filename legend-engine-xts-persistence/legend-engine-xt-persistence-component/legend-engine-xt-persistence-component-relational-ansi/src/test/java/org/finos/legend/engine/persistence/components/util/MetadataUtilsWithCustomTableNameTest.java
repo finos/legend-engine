@@ -55,7 +55,7 @@ public class MetadataUtilsWithCustomTableNameTest extends MetadataUtilsTest
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
         String expectedSql = "CREATE TABLE IF NOT EXISTS \"custom_db\".\"custom_schema\".\"" + lowerCaseTableName() +
-            "\"(\"table_name\" VARCHAR(255),\"batch_start_ts_utc\" DATETIME,\"batch_end_ts_utc\" DATETIME,\"batch_status\" VARCHAR(32),\"table_batch_id\" INTEGER,\"staging_filters\" JSON)";
+            "\"(\"table_name\" VARCHAR(255),\"batch_start_ts_utc\" DATETIME,\"batch_end_ts_utc\" DATETIME,\"batch_status\" VARCHAR(32),\"table_batch_id\" INTEGER,\"batch_source_info\" JSON,\"additional_metadata\" JSON)";
         Assertions.assertEquals(expectedSql, list.get(0));
     }
 

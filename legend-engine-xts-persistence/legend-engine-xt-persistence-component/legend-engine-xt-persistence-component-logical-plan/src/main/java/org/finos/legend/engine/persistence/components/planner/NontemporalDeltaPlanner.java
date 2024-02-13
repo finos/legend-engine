@@ -189,6 +189,7 @@ class NontemporalDeltaPlanner extends Planner
             .addAllUnmatchedKeyValuePairs(keyValuePairs)
             .onCondition(this.pkMatchCondition)
             .matchedCondition(versioningCondition)
+            .notMatchedCondition(this.deleteIndicatorIsNotSetCondition)
             .build();
 
         return merge;
@@ -205,7 +206,15 @@ class NontemporalDeltaPlanner extends Planner
      */
     private Update getUpdateOperation()
     {
-        Condition joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition).build();
+        Condition joinCondition;
+        if (this.deleteIndicatorIsNotSetCondition.isPresent())
+        {
+            joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition, this.deleteIndicatorIsNotSetCondition.get()).build();
+        }
+        else
+        {
+            joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition).build();
+        }
         Dataset stagingDataset = stagingDataset();
         List<Pair<FieldValue, Value>> keyValuePairs = getKeyValuePairs();
 
@@ -270,7 +279,11 @@ class NontemporalDeltaPlanner extends Planner
         Condition selectCondition = notExistInSinkCondition;
         if (ingestMode().dataSplitField().isPresent())
         {
-            selectCondition = And.builder().addConditions(this.dataSplitInRangeCondition.get(), notExistInSinkCondition).build();
+            selectCondition = And.builder().addConditions(this.dataSplitInRangeCondition.get(), selectCondition).build();
+        }
+        if (deleteIndicatorIsNotSetCondition.isPresent())
+        {
+            selectCondition = And.builder().addConditions(this.deleteIndicatorIsNotSetCondition.get(), selectCondition).build();
         }
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))

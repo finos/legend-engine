@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.38.2-SNAPSHOT</version>
+    <version>4.38.3-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -92,7 +92,9 @@
 
         <!-- Misc -->
         <module>legend-engine-xts-authentication</module>
+        <!--
         <module>legend-engine-xts-connection</module>
+        -->
         <module>legend-engine-config</module>
 
         <!-- Analytics -->
@@ -101,7 +103,9 @@
         <!-- Application -->
         <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
+        <!--
         <module>legend-engine-xts-data-push</module>
+        -->
     </modules>
 
     <properties>

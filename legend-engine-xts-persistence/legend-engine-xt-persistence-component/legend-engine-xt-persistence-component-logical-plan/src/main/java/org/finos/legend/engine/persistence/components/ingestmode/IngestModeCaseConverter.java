@@ -244,6 +244,7 @@ public class IngestModeCaseConverter implements IngestModeVisitor<IngestMode>
             return UDFBasedDigestGenStrategy.builder()
                     .digestUdfName(udfBasedDigestGenStrategy.digestUdfName())
                     .digestField(applyCase(udfBasedDigestGenStrategy.digestField()))
+                    .addAllFieldsToExcludeFromDigest(udfBasedDigestGenStrategy.fieldsToExcludeFromDigest().stream().map(name -> applyCase(name)).collect(Collectors.toSet()))
                     .build();
         }
 

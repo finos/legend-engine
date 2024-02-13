@@ -18,7 +18,6 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
@@ -47,7 +46,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
@@ -117,7 +115,15 @@ public abstract class Planner
             return false;
         }
 
+        Map<String, Object> additionalMetadata();
+
         Optional<String> bulkLoadEventIdValue();
+
+        @Default
+        default String batchSuccessStatusValue()
+        {
+            return MetadataUtils.MetaTableStatus.DONE.toString();
+        }
     }
 
     private final Datasets datasets;
@@ -233,11 +239,6 @@ public abstract class Planner
         return datasets.metadataDataset();
     }
 
-    protected Optional<BulkLoadMetadataDataset> bulkLoadMetadataDataset()
-    {
-        return datasets.bulkLoadMetadataDataset();
-    }
-
     protected Optional<LockInfoDataset> lockInfoDataset()
     {
         return datasets.lockInfoDataset();
@@ -257,8 +258,22 @@ public abstract class Planner
 
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
-        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(originalStagingDataset());
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
+        // Save staging filters into batch_source_info column
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
+        if (originalStagingDataset() instanceof DerivedDataset)
+        {
+            DerivedDataset derivedDataset = (DerivedDataset) originalStagingDataset();
+            batchSourceInfoMap = LogicalPlanUtils.jsonifyStagingFilters(derivedDataset.datasetFilters());
+        }
+        Optional<StringValue> batchSourceInfo = LogicalPlanUtils.getStringValueFromMap(batchSourceInfoMap);
+
+        // Save additional metadata into additional_metadata column
+        Optional<StringValue> additionalMetadata = LogicalPlanUtils.getStringValueFromMap(options().additionalMetadata());
+
+        // Save success status into status column
+        StringValue status = StringValue.of(options().batchSuccessStatusValue());
+
+        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, status, batchSourceInfo, additionalMetadata)));
     }
 
     public LogicalPlan buildLogicalPlanForInitializeLock(Resources resources)

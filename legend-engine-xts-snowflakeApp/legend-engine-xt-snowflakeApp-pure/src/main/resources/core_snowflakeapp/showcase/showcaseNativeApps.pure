@@ -4,6 +4,7 @@ import meta::pure::mapping::*;
 import meta::external::function::activator::snowflakeApp::tests::model::simple::*;
 import meta::external::function::activator::snowflakeApp::tests::*;
 import meta::external::function::activator::snowflakeApp::*;
+import meta::external::function::activator::*;
 
 function meta::external::function::activator::snowflakeApp::tests::defaultConfig():SnowflakeDeploymentConfiguration[1]
 {
@@ -15,7 +16,7 @@ function meta::external::function::activator::snowflakeApp::tests::simpleApp():A
   let app =  ^SnowflakeApp
    (
       applicationName = 'App1',
-      owner = 'owner1',
+      ownership = ^DeploymentOwnership(id = 'owner1'),
       description = 'bla bla',
       activationConfiguration = defaultConfig() ,
       function = meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunction__TabularDataSet_1_
