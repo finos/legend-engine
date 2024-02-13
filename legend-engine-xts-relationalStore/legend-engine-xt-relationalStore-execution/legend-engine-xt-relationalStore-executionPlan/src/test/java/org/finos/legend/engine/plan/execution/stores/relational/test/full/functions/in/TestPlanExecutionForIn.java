@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor.overridePropertyForTemplateModel;
 import static org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor.processRecursively;
 
 public class TestPlanExecutionForIn extends AlloyTestServer
@@ -270,9 +271,9 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParam)));
 
         //check if old flow works as expected
-        System.setProperty("overrideTemplateModel", "true");
+        System.setProperty(overridePropertyForTemplateModel, "true");
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParam)));
-        System.clearProperty("overrideTemplateModel");
+        System.clearProperty(overridePropertyForTemplateModel);
 
         String sqlQuery = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where \"root\".fullName in (${inFilterClause_names})";
         Map rootMap = new HashMap();
@@ -303,13 +304,13 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
 
         //check if old flow works as expected
-        System.setProperty("overrideTemplateModel", "true");
+        System.setProperty(overridePropertyForTemplateModel, "true");
         Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
 
         //in old flow, processing "<@" would fail ideally (this wasour status quo)
         queryParameters.replace("firmName", "abcd<@efg");
         Assert.assertThrows(RuntimeException.class, () -> RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
-        System.clearProperty("overrideTemplateModel");
+        System.clearProperty(overridePropertyForTemplateModel);
         
         //process freemarker via processRecurisvely call directly
         ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
