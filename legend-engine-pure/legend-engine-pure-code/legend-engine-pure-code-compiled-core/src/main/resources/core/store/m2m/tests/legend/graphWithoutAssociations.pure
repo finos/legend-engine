@@ -16,14 +16,11 @@ import meta::pure::executionPlan::engine::java::roadmap::*;
 import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithoutAssociations::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithoutAssociations::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::graphWithoutAssociations::dest::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.M2MBasics>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a simple graph using direct (not via association) relationship',

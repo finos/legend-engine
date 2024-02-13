@@ -15,7 +15,6 @@
 ###Pure
 import meta::pure::executionPlan::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::database::*;
@@ -35,7 +34,7 @@ import meta::relational::tests::model::simple::*;
 
 function <<test.BeforePackage>> meta::relational::graphFetch::tests::union::propertyLevel::setup(): Boolean[1]
 {
-  let runtime =  ^Runtime(connectionStores = [^ConnectionStore(element=meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+  let runtime =  ^Runtime(connectionStores = [^ConnectionStore(element=meta::relational::tests::mapping::union::myDB, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))]);
   let connection  = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
 
   executeInDb('Drop table if exists PersonSet1;', $connection);
@@ -113,7 +112,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                 }
               }#;
 
-  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping1, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping1, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
   '[{"legalName":"Firm X","employees":[{"lastName":"Scott","address":{"name":"New York"}},{"lastName":"Anand","address":{"name":"Hoboken"}},{"lastName":"Taylor","address":{"name":"New York"}},{"lastName":"Wright","address":{"name":"Hoboken"}}]},' +
   '{"legalName":"Firm A","employees":[{"lastName":"Roberts","address":{"name":"Hoboken"}},{"lastName":"David","address":{"name":"New York"}},{"lastName":"Mark","address":{"name":"New York"}},{"lastName":"Allen","address":{"name":"Hoboken"}}]}]',
@@ -135,7 +134,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                 }
              }#;
 
-  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping2, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping2, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
   '[{"legalName":"Firm X","employees":[{"lastName":"Scott","address":{"name":"New York"}},{"lastName":"Anand","address":null},{"lastName":"Taylor","address":null},{"lastName":"Wright","address":{"name":"Hoboken"}}]},' +
   '{"legalName":"Firm A","employees":[{"lastName":"Roberts","address":null},{"lastName":"David","address":{"name":"New York"}},{"lastName":"Mark","address":null},{"lastName":"Allen","address":{"name":"Hoboken"}}]}]',
@@ -158,7 +157,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                 }
              }#;
 
-  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping3, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping3, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
   '[{"legalName":"Firm X","employees":[{"lastName":"Scott","address":{"name":"New York"}},{"lastName":"Anand","address":{"name":"Hoboken"}},{"lastName":"Taylor","address":{"name":"New York"}},{"lastName":"Wright","address":{"name":"Hoboken"}}]},' +
   '{"legalName":"Firm A","employees":[{"lastName":"Roberts","address":{"name":"Hoboken"}},{"lastName":"David","address":{"name":"New York"}},{"lastName":"Mark","address":{"name":"New York"}},{"lastName":"Allen","address":{"name":"Hoboken"}}]}]',
@@ -180,7 +179,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                 }
              }#;
 
-  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping4, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping4, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
   '[{"legalName":"Firm X","employees":[{"lastName":"Scott","address":{"name":"New York"}},{"lastName":"Anand","address":{"name":"Hoboken"}}]},' +
   '{"legalName":"Firm A","employees":[{"lastName":"Mark","address":{"name":"New York"}},{"lastName":"Allen","address":{"name":"Hoboken"}}]}]',
@@ -202,7 +201,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                 }
              }#;
 
-  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping5, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping5, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
   '[{"legalName":"Firm X","employees":[{"lastName":"Scott","address":{"name":"New York"}},{"lastName":"Anand","address":null},{"lastName":"Taylor","address":null},{"lastName":"Wright","address":{"name":"Hoboken"}}]},' +
   '{"legalName":"Firm A","employees":[{"lastName":"Roberts","address":null},{"lastName":"David","address":{"name":"New York"}},{"lastName":"Mark","address":null},{"lastName":"Allen","address":{"name":"Hoboken"}}]}]' ,
@@ -224,7 +223,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                 }
               }#;
 
-  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping6, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping6, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
   '[{"legalName":"Firm B","employees":[{"lastName":"Bala","address":{"name":"New York"}},{"lastName":"Raman","address":{"name":"Hoboken"}},{"lastName":"Bark","address":{"name":"New York"}},{"lastName":"Simon","address":{"name":"Hoboken"}},{"lastName":"Rock","address":{"name":"New York"}},{"lastName":"Smith","address":{"name":"Hoboken"}},{"lastName":"Cook","address":{"name":"Dalas"}}]},' +
   '{"legalName":"Firm X","employees":[{"lastName":"Scott","address":{"name":"New York"}},{"lastName":"Anand","address":{"name":"Hoboken"}},{"lastName":"Taylor","address":{"name":"New York"}},{"lastName":"Wright","address":{"name":"Hoboken"}},{"lastName":"Rafael","address":{"name":"New York"}},{"lastName":"wick","address":{"name":"Hoboken"}},{"lastName":"root","address":{"name":"Dalas"}}]},' +
@@ -247,7 +246,7 @@ function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_32_0'} meta::rel
                 }
               }#;
 
-  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping1, testRuntime(), meta::relational::extension::relationalExtensions()).values;
+  let result = execute(|Firm.all()->graphFetch($tree)->serialize($tree), meta::relational::graphFetch::tests::union::propertyLevel::Mapping1, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values;
   assertJsonStringsEqual(
   '[{"legalName":"Firm X","isFirmX()":"Yes","employeeByLastNameFirstName(\'Scott\')":"Bran","employees":[{"lastName":"Scott","firstName":"Bran"},{"lastName":"Anand","firstName":"Ravi"},{"lastName":"Taylor","firstName":"Rahul"},{"lastName":"Wright","firstName":"Pranay"}]},' +
   '{"legalName":"Firm A","isFirmX()":"No","employeeByLastNameFirstName(\'Scott\')":null,"employees":[{"lastName":"Roberts","firstName":"Sam"},{"lastName":"David","firstName":"Novel"},{"lastName":"Mark","firstName":"Nitin"},{"lastName":"Allen","firstName":"Atul"}]}]',

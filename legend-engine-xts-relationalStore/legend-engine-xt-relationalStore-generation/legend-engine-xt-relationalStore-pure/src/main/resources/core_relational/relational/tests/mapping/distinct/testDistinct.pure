@@ -18,7 +18,6 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::csv::*;
@@ -190,7 +189,7 @@ function meta::relational::tests::mapping::distinct::model::store::testDataTypeM
 
 function meta::relational::tests::mapping::distinct::model::store::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'ACCOUNT_INFO', $connection);
 

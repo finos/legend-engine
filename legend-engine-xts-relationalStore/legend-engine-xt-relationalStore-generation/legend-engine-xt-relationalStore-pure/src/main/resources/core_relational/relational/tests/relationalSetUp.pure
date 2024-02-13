@@ -1062,7 +1062,6 @@ import meta::external::store::relational::tests::*;
 import meta::pure::profiles::*;
 import meta::relational::metamodel::execute::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 
@@ -1095,7 +1094,7 @@ function meta::external::store::relational::tests::testRuntime(testConnection:Co
 function meta::external::store::relational::tests::testDatabaseConnection(db:Database[1], timeZone:String[0..1]):ConnectionStore[1]
 {
   ^ConnectionStore(
-    connection=^TestDatabaseConnection(
+    connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
         type = DatabaseType.H2,
         timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
     ),
@@ -1199,7 +1198,7 @@ function meta::relational::tests::createProductSchemaTablesAndFillDb(connection 
 
 function meta::relational::tests::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop table if exists PersonNameParameter;', $connection);
    executeInDb('Create Table PersonNameParameter(id INT, lastNameFirst VARCHAR(200), title VARCHAR(200));', $connection);

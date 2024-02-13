@@ -15,7 +15,6 @@
 import meta::relational::tests::query::paginate::helper::*;
 import meta::json::*;
 import meta::pure::mapping::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::relational::mapping::*;
@@ -69,14 +68,14 @@ function meta::relational::tests::query::paginate::helper::resultObjectsCount(re
 
 function meta::relational::tests::query::paginate::helper::runTest(f: FunctionDefinition<Any>[1], expectedSql: String[1], expectedObjectCount:Integer[1]): Boolean[1]
 {
-  let result = meta::legend::executeLegendQuery($f,[], ^ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = meta::legend::executeLegendQuery($f,[], ^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
   assertEquals($expectedSql,resultSQL($result));
   assertEquals($expectedObjectCount,resultObjectsCount($result,'objects'));
 }
 
 function meta::relational::tests::query::paginate::helper::runGraphFetchTest(f: FunctionDefinition<Any>[1], expectedObjectCount:Integer[1]): Boolean[1]
 {
-  let result = meta::legend::executeLegendQuery($f,[], ^ExecutionContext(),meta::relational::extension::relationalExtensions());
+  let result = meta::legend::executeLegendQuery($f,[], ^meta::pure::runtime::ExecutionContext(),meta::relational::extension::relationalExtensions());
   assertEquals($expectedObjectCount,resultObjectsCount($result,'values'));
 }
 

@@ -15,14 +15,13 @@
 import meta::relational::metamodel::relation::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::typeInference::*;
 
-Class meta::relational::runtime::RelationalExecutionContext extends ExecutionContext
+Class meta::relational::runtime::RelationalExecutionContext extends meta::pure::runtime::ExecutionContext
 {
    addDriverTablePkForProject : Boolean[0..1];
    insertDriverTablePkInTempTable : String[0..1];

@@ -60,7 +60,6 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::mapping::embedded::model::*;
 import meta::relational::tests::mapping::embedded::model::store::*;

@@ -37,7 +37,7 @@ function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindo
                                                  , [ 'Contract ID' , 'Amount' , 'Rate' , 'Value' , 'Amount-Sum' , 'Rate-Average']                  
                                                  , [ 'Amount'  ]
                                                  ,[ 'Amount-Sum' ]                                                                  
-                                                 ) , ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
+                                                 ) , ContractMoney, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
       
    assertEquals( 'select "root".price as "Amount", sum("root".price) as "Amount-Sum" from Contract as "root" group by "Amount"' , $results->sqlRemoveFormatting() ) ;
    assertEquals( $results.values.rows->filter ( x| $x.getFloat('Amount-Sum') == 10.0 )->size() , 1 );
@@ -58,7 +58,7 @@ function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindo
                                                  , [ 'Contract ID' , 'Amount' , 'Rate' , 'Value' , 'Amount-Sum' , 'Rate-Average']                  
                                                  , [ 'Amount' , 'Rate' ]
                                                  ,[  'Amount-Sum', 'Rate-Average' ]                                                                  
-                                                 ) , ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
+                                                 ) , ContractMoney, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    //check for base table attributes are being selected only 
    assertEqualsH2Compatible(
@@ -84,7 +84,7 @@ function <<test.Test>> meta::relational::tests::projection::testGroupByWithWindo
                                                  , [ 'Contract ID' , 'Amount' , 'Rate' , 'Value' , 'Amount-Sum' , 'Rate-Average']                  
                                                  , [  'Rate', 'Amount'  ]
                                                  , ['Rate-Average',  'Amount-Sum'  ]                                                                  
-                                                 ) , ContractMoney, testRuntime(), meta::relational::extension::relationalExtensions());
+                                                 ) , ContractMoney, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    //check for attributes that are in different order than the input parmeters    
    assertEqualsH2Compatible(

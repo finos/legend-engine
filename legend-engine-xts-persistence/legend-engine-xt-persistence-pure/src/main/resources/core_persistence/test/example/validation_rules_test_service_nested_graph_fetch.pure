@@ -47,7 +47,6 @@ import meta::legend::service::metamodel::*;
 import meta::pure::graphFetch::execution::*;
 
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 import meta::pure::persistence::metamodel::*;
@@ -69,8 +68,6 @@ import meta::pure::persistence::metamodel::trigger::*;
 import meta::pure::persistence::test::example::*;
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 import meta::pure::test::assertion::*;
 
 function meta::pure::persistence::test::example::NestedM2mRuntime(): Runtime[1]

@@ -22,12 +22,10 @@ import meta::pure::router::metamodel::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::platform::metamodel::clustering::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::pure::platform::executionPlan::generation::PlatformPlanGenerationState
 {
    inScopeVars     : Map<String, List<Any>>[1];
-   exeCtx          : ExecutionContext[1];
+   exeCtx          : meta::pure::runtime::ExecutionContext[1];
 }
 
 Class meta::pure::platform::executionPlan::generation::PureFunctionToProcessFunctionPair extends Pair<Function<Any>, Function<{FunctionExpression[1], PlatformPlanGenerationState[1], Extension[*], DebugContext[1] -> ExecutionNode[1]}>>

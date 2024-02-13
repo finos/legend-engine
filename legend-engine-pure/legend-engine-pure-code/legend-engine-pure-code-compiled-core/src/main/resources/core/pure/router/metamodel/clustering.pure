@@ -13,12 +13,10 @@
 // limitations under the License.
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::pure::router::metamodel::clustering::ClusteredValueSpecification extends ValueSpecification
 {
    executable   : Boolean[1];
-   exeCtx       : ExecutionContext[0..1];    //TODO: This should be made mandatory
+   exeCtx       : meta::pure::runtime::ExecutionContext[0..1];    //TODO: This should be made mandatory
    openVars     : Map<String, List<Any>>[1];
    val          : ValueSpecification[1];
 }
@@ -40,9 +38,7 @@ import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::store::clustering::*;
 import meta::pure::router::utils::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
-function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
   let fe = $cluster.val->byPassValueSpecificationWrapper()->cast(@FunctionExpression);
 
@@ -64,7 +60,7 @@ function meta::pure::router::clustering::generateExecutionNodeFromCluster(cluste
   ]);
 }
 
-function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], fe:FunctionExpression[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+function meta::pure::router::clustering::buildExecutionNodeForStoreClusteredVS(sc:StoreClusteredValueSpecification[1], fe:FunctionExpression[1], mapping:meta::pure::mapping::Mapping[0..1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
     //This is required to populate the setup sql for test connections where csv data has been supplied. It is done here to ensure that the plan generation is always
     //the only place where sql is generated for this case.
@@ -168,13 +164,11 @@ function meta::pure::router::clustering::toString(cluster:ClusteredValueSpecific
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class <<typemodifiers.abstract>> meta::pure::graphFetch::routing::ClusteredGraphFetchTree extends GraphFetchTree
 {
    tree     : RoutedGraphFetchTree[1];
    openVars : Map<String, List<Any>>[1];
-   exeCtx   : ExecutionContext[0..1];
+   exeCtx   : meta::pure::runtime::ExecutionContext[0..1];
 }
 
 function meta::pure::graphFetch::routing::clusteredGraphFetchTreeToString(c: ClusteredGraphFetchTree[1], spaceString: String[1], multiLine: Boolean[1]): String[1]

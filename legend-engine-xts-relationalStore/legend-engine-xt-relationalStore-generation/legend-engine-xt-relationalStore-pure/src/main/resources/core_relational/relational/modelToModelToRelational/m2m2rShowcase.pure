@@ -1,12 +1,10 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::pure::executionPlan::toString::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 function <<meta::pure::profiles::test.Test>> meta::relational::tests::m2m2r::testProp1():Boolean[1]

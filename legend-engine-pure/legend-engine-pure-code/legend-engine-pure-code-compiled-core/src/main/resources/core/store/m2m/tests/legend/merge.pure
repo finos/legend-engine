@@ -14,10 +14,8 @@
 
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::profiles::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::json::*;
 import meta::pure::mapping::modelToModel::test::alloy::utils::*;
 import meta::pure::graphFetch::execution::*;
@@ -191,7 +189,7 @@ meta::pure::mapping::modelToModel::test::alloy::merge::testPartialMerge():Any[*]
                 element=^ModelStore()
               )
             ]
-          )),[],^ExecutionContext(),
+          )),[],^meta::pure::runtime::ExecutionContext(),
 
       meta::pure::extension::defaultExtensions()
    );

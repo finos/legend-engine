@@ -18,14 +18,12 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
-function meta::relational::mapping::userPlanPostProcessors(result:PostProcessorResult[1], runtime:Runtime[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], store:Database[0..1], exeCtx:ExecutionContext[1]): PostProcessorResult[1]
+function meta::relational::mapping::userPlanPostProcessors(result:PostProcessorResult[1], runtime:Runtime[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], store:Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1]): PostProcessorResult[1]
 {
    let postProcessorsWithParameters = $runtime.connectionStores->filter(c|$c.connection->instanceOf(DatabaseConnection)).connection->cast(@DatabaseConnection).queryPostProcessorsWithParameter;
    let postProcessorResult = if($postProcessorsWithParameters->isNotEmpty(),
                                 | $postProcessorsWithParameters->fold({i, prevResult|let struct = $i.postProcessor->cast(@ConcreteFunctionDefinition<{->PostProcessor[1]}>)->eval();
-                                                                       let res = $struct.sqlQueryPostProcessorForPlan->cast(@ConcreteFunctionDefinition<{SQLQuery[1], Mapping[0..1], Runtime[1], Database[0..1], ExecutionContext[1], PostProcessorParameter[*]->PostProcessorResult[1]}>)->toOne()->eval($prevResult.query,$m,$runtime->toOne(),$store,$exeCtx,$i.parameters)->toOne();
+                                                                       let res = $struct.sqlQueryPostProcessorForPlan->cast(@ConcreteFunctionDefinition<{SQLQuery[1], Mapping[0..1], Runtime[1], Database[0..1], meta::pure::runtime::ExecutionContext[1], PostProcessorParameter[*]->PostProcessorResult[1]}>)->toOne()->eval($prevResult.query,$m,$runtime->toOne(),$store,$exeCtx,$i.parameters)->toOne();
                                                                        ^$prevResult(query = $res.query, templateFunctions = $prevResult.templateFunctions->concatenate($res.templateFunctions),executionNodes =$prevResult.executionNodes->concatenate( $res.executionNodes), postExecutionNodes=$prevResult.postExecutionNodes->concatenate($res.postExecutionNodes));},
                                                                        $result),
                                 |$result;

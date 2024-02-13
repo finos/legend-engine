@@ -26,8 +26,6 @@ import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::utils::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::pure::router::RoutedVariablePlaceHolder
 {
    name : String[1];
@@ -35,10 +33,10 @@ Class meta::pure::router::RoutedVariablePlaceHolder
 
 function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], extensions:Extension[*]):FunctionDefinition<Any>[1]
 {
-   $f->routeFunction(^ExecutionContext(), $extensions, noDebug());
+   $f->routeFunction(^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx: ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
    let expressions = $f.expressionSequence->evaluateAndDeactivate();
    assert($expressions->init()->forAll(vs| $vs->isLetFunction()), 'In FunctionDefinition with many expressions, all except last should be let expressions');  //validate ::execute(..) not present
@@ -111,12 +109,12 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], exeCtx:
   ^$routed(expressionSequence = $initStatements.first.expressionSequence->tail()->concatenate($routed.expressionSequence)->evaluateAndDeactivate()->toOneMany())->cast(@FunctionDefinition<Any>);
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
   routeFunction($f, $routingStrategy, $exeCtx, $inScopeVars, false, $extensions, $debug);
 }
 
-function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
+function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routingStrategy:RoutingStrategy[1], exeCtx: meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[0..1], graphFetchFlow:Boolean[0..1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
    let fOpenVariables      = $f->openVariableValues();
    let openVariables       = if($inScopeVars->isNotEmpty(),
@@ -145,7 +143,7 @@ function meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], routing
    $result;
 }
 
-function meta::pure::router::enrichExpressionWithStrategyBasedEnrichment(vs: ExtendedRoutedValueSpecification[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]): ExtendedRoutedValueSpecification[1]
+function meta::pure::router::enrichExpressionWithStrategyBasedEnrichment(vs: ExtendedRoutedValueSpecification[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]): ExtendedRoutedValueSpecification[1]
 {
    $vs->match([
      sm: StoreMappingRoutedValueSpecification[1]   | $sm->enrichStoreMappingRoutedValueSpecification($exeCtx, $extensions, $debug),
@@ -156,7 +154,7 @@ function meta::pure::router::enrichExpressionWithStrategyBasedEnrichment(vs: Ext
    ])
 }
 
-function meta::pure::router::clusterFunctionExpressions(vs:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusteredValueSpecification[*]
+function meta::pure::router::clusterFunctionExpressions(vs:ExtendedRoutedValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ClusteredValueSpecification[*]
 {
    print(if($debug.debug,|'\n'+$vs->asString()->debug($debug.space+'Processing: '),|''));
 

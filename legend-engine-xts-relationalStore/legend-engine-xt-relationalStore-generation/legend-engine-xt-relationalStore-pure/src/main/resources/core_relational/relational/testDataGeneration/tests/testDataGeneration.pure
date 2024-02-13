@@ -25,7 +25,6 @@ import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::lineage::scanTables::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::testDataGeneration::*;
@@ -877,7 +876,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let query = {|Person.all()->project([p|$p.lastName, p|$p.firm.legalName, p|$p.firm.employees.lastName, p|$p.address.name], ['Person','Firm','Colleague','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -938,7 +937,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['id'], [2])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTable\n' +
@@ -970,7 +969,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['kerberos'], ['ggekko'])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'TraderTable\n' +
@@ -1000,7 +999,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
          meta::relational::testDataGeneration::createRowIdentifier(['id'], ['3'])
       ])
    ];
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTableWithBusinessSnapshotMilestoning\n' +
@@ -1035,7 +1034,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-30, [], []);
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTable\n' +
@@ -1052,7 +1051,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
 
    meta::relational::testDataGeneration::tests::initDatabase();
    let milestoningDates2 = createTemporalMilestoningDates(%2015-10-15, [], []);
-   let testData2 = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates2, meta::relational::extension::relationalExtensions())->toOne();
+   let testData2 = generateTestData($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates2, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTable\n' +
@@ -1082,7 +1081,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-01, %9999-12-30, []);
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'TraderTable\n' +
@@ -1112,7 +1111,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates([], [], %2015-8-26);
-   let testData = generateTestData($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
+   let testData = generateTestData($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions())->toOne();
 
    assertTestData( 'default\n' +
                    'ProductTableWithBusinessSnapshotMilestoning\n' +
@@ -1466,7 +1465,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
    let db = meta::relational::tests::dbInc;
    meta::relational::tests::createTablesAndFillDb();
 
-   let seedDataString = meta::relational::testDataGeneration::generateSeedDataString($query, $mapping, $runtime, ^ExecutionContext(), [], meta::relational::extension::relationalExtensions());
+   let seedDataString = meta::relational::testDataGeneration::generateSeedDataString($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), [], meta::relational::extension::relationalExtensions());
 
    assertEquals( '\n'+
                  'meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::tests::db, \'default\', \'tableWithQuotedColumns\', [\n'+
@@ -1531,7 +1530,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
 function <<access.protected>> meta::relational::testDataGeneration::tests::initDatabase():Runtime[1]
 {
    let connectionStore = meta::external::store::relational::tests::testRuntime(meta::relational::tests::milestoning::db).connectionStores->toOne();
-   let connection = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('drop table if exists OrderTable;',$connection);
    executeInDb('create table OrderTable (orderDate DATE, id Integer, prodFk Integer)',$connection);
@@ -1814,7 +1813,7 @@ function meta::relational::testDataGeneration::tests::assertTestData(s1 : String
 
 function <<access.private>> meta::relational::testDataGeneration::tests::loadAndTestExecution(query: FunctionDefinition<Any>[1], parametersValues:Any[*], mapping: meta::pure::mapping::Mapping[1], runtime: Runtime[1], data:String[1], db: Database[1]):Boolean[1]
 {
-   let testConnection = $runtime.connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+   let testConnection = $runtime.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    let setUpSQLs = meta::alloy::service::execution::setUpDataSQLs($data, $db);
    $setUpSQLs->map(sql | executeInDb($sql, $testConnection));
    let plan = executionPlan($query, $mapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -1838,7 +1837,6 @@ import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::lineage::scanTables::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::testDataGeneration::*;
@@ -1849,11 +1847,11 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|'constant'], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
 
    assertEquals(
       'MultiResultSequence\n'+
@@ -1881,7 +1879,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
       ')\n', $plan->meta::pure::executionPlan::toString::planToString(meta::relational::extension::relationalExtensions()));
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'Person\n' +
                       'ID\n' +
@@ -1896,13 +1894,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'Person\n' +
                       'ID,name\n' +
@@ -1917,13 +1915,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.bicycles.id], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['Atul Anand']));
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'Bicycle\n' +
                       'ID,b_PersonID\n' +
@@ -1943,13 +1941,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.bicycles.id], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'Bicycle\n' +
                       'ID,b_PersonID\n' +
@@ -1971,13 +1969,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', createRowIdentifier(['name'], ['No Name']));
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
 
       assertTestData( 'default\n' +
                       'Person\n' +
@@ -1992,13 +1990,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name, f|$f.vehicles.description], ['col1', 'col2'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'Bicycle\n' +
                       'ID,b_Description,b_PersonID\n' +
@@ -2030,13 +2028,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                                                                           ['Person','Engine Type','Bicycle Person'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'Person', [createRowIdentifier(['name'], ['Atul Anand']), createRowIdentifier(['ID'], ['1']) ]);
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'Bicycle\n' +
                       'ID,b_PersonID\n' +
@@ -2065,13 +2063,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Trade.all()->project([t|$t.product.name, t|$t.product->toOne().synonymByType(ProductSynonymType.CUSIP).name],['prodName', 'synName'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'tradeTable', [createRowIdentifier(['prodId'], [2]), createRowIdentifier(['tradeDate'], [%2014-12-04]) ]);
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'tradeTable\n' +
                       'ID,prodId\n' +
@@ -2105,13 +2103,13 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Person.all()->project([t|$t.name, t|$t.manager.name, t|$t.manager.manager.name],['1', '2', '3'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = createTableRowIdentifiers($db, 'default', 'personTable', [createRowIdentifier(['ID'], [1]), createRowIdentifier(['ID'], 5)]);
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'personTable\n' +
                       'FIRSTNAME,ID,LASTNAME,MANAGERID\n' +
@@ -2129,7 +2127,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Person.all()->project([p|$p.lastName, p|$p.firm.legalName, p|$p.firm.employees.lastName, p|$p.address.name], ['Person','Firm','Colleague','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2138,7 +2136,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    ];
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'AddressSet1\n' +
                       'ID,name\n' +
@@ -2181,7 +2179,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Order.all()->project([o|$o.id, o|$o.pnlContact.firm.legalName], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2198,7 +2196,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    ];
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n'+
                       'firmTable\n'+
                       'ID,LEGALNAME\n'+
@@ -2231,7 +2229,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|OrderPnl.all()->project([#/OrderPnl/pnl#, #/OrderPnl/order/settlementDateTime#])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2242,7 +2240,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    ];
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'accountTable\n' +
                       'ID\n' +
@@ -2276,7 +2274,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Order.all()->project([o|$o.id, o|$o.pnl], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2287,7 +2285,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    ];
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'accountTable\n' +
                       'ID\n' +
@@ -2320,7 +2318,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Person.all()->project([p|$p.lastName, p|$p.firm.legalName, p|$p.firm.employees.lastName, p|$p.address.name], ['Person','Firm','Colleague','Employee'])};
    let mapping = meta::relational::tests::mapping::union::unionToUnionMapping;
    let db = meta::relational::tests::mapping::union::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::union::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2329,7 +2327,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    ];
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(true), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(true), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'AddressSet1\n' +
                       'ID,name\n' +
@@ -2372,12 +2370,12 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|meta::relational::tests::model::inheritance::Person.all()->project([f|$f.name], ['col'])};
    let mapping = meta::relational::tests::mapping::inheritance::relational::inheritanceMappingDB;
    let db = meta::relational::tests::mapping::inheritance::myDB;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::mapping::inheritance::createTablesAndFillDb();
 
    let tableRowIdentifiers = [];
 
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
    assertEquals(
       'MultiResultSequence\n'+
       '(\n'+
@@ -2408,11 +2406,11 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|OrderPnl.all()->project([#/OrderPnl/pnl#, #/OrderPnl/order/settlementDateTime#])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n'+
                       'accountTable\n'+
                       'ID\n'+
@@ -2447,7 +2445,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Order.all()->project([o|$o.id, o|$o.pnlContact.firm.legalName], ['ID', 'PNL'])};
    let mapping = meta::relational::tests::MappingWithInnerJoinAndEmbeddedMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    let tableRowIdentifiers = [
@@ -2457,10 +2455,10 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
       ])
    ];
 
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n'+
                       'firmTable\n'+
                       'ID,LEGALNAME\n'+
@@ -2492,11 +2490,11 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|AccountPnl.all()->project([o|$o.pnl, o|$o.account.name], ['Pnl', 'Acct'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n'+
                       'accountTable\n'+
                       'ID,name\n'+
@@ -2527,11 +2525,11 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let query = {|Account.all()->project([o|$o.accountPnl.pnl, o|$o.name], ['Pnl', 'Acct'])};
    let mapping = meta::relational::tests::simpleRelationalMapping;
    let db = meta::relational::tests::db;
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^TestDatabaseConnection(type=DatabaseType.H2)));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element=$db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)));
    meta::relational::tests::createTablesAndFillDb();
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n'+
                       'accountTable\n'+
                       'ID,name\n'+
@@ -2572,7 +2570,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-30, [], []);
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
       'MultiResultSequence\n' +
       '(\n' +
@@ -2672,7 +2670,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates(%9999-12-01, %9999-12-30, []);
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
       'MultiResultSequence\n' +
       '(\n' +
@@ -2773,7 +2771,7 @@ function <<meta::pure::profiles::test.Test>> meta::relational::testDataGeneratio
       ])
    ];
    let milestoningDates = createTemporalMilestoningDates([], [], %2015-8-26);
-   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
+   let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, $milestoningDates, meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
       'MultiResultSequence\n' +
       '(\n' +
@@ -2868,7 +2866,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    meta::relational::tests::createTablesAndFillDb();
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'personTable\n' +
                       'ADDRESSID,AGE,FIRMID,FIRSTNAME,ID,LASTNAME,MANAGERID\n' +
@@ -2895,7 +2893,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    meta::relational::tests::createTablesAndFillDb();
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'personTable\n' +
                       'FIRSTNAME,ID,LASTNAME\n' +
@@ -2928,7 +2926,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                              ];
 
     meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                    'firmTable\n' +
                    'ID,LEGALNAME\n' +
@@ -2962,7 +2960,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    let tableRowIdentifiers = meta::relational::testDataGeneration::createTableRowIdentifiers(meta::relational::tests::db, 'default', 'personTable', [meta::relational::testDataGeneration::createRowIdentifier(['ID'], [1]),
                                                                                                                                                      meta::relational::testDataGeneration::createRowIdentifier(['ID'], [2])]);
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'personTable\n' +
                       'ID\n' +
@@ -3016,7 +3014,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
                              ];
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
       assertTestData( 'default\n' +
                       'firmTable\n' +
                       'ID\n' +
@@ -3055,7 +3053,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
    meta::relational::tests::createTablesAndFillDb();
 
    meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+      let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
       assertTestData('default\n'+
                      'tableWithQuotedColumns\n'+
                      '"FIRST NAME","LAST NAME",ID\n'+
@@ -3086,7 +3084,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
 ];
 
   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
+    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithSeedInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__TableRowIdentifiers_MANY__Boolean_$0_1$__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],TableRowIdentifiers[*],Boolean[0..1],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list($tableRowIdentifiers), list(false), list($host), list($port), list($serverVersion)]);
     assertTestData('default\n'+
                 'StudentTable\n'+
                 'ID,SCHOOL_ID\n'+
@@ -3111,7 +3109,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
   meta::relational::tests::createTablesAndFillDb();
 
   meta::alloy::test::mayExecuteAlloyTest({clientVersion, serverVersion, host, port |
-    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
+    let result = pathToElement('meta::protocols::pure::' + $clientVersion + '::invocation::execution::testDataGeneration::alloyGenerateTestDataWithDefaultSeedSemiInteractive_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__Boolean_$0_1$__Any_MANY__String_1__Integer_1__String_1__String_1_')->cast(@Function<{FunctionDefinition<Any>[1],meta::pure::mapping::Mapping[1],Runtime[1],meta::pure::runtime::ExecutionContext[0..1],Boolean[0..1],Any[*],String[1],Integer[1],String[1]->String[1]}>)->evaluate([list($query), list($mapping), list($runtime), list(^meta::pure::runtime::ExecutionContext()), list(false), list([]), list($host), list($port), list($serverVersion)]);
     assertTestData('default\n' +
                   'accountTable\n' +
                   'ID\n' +
@@ -3156,7 +3154,7 @@ function <<meta::pure::profiles::test.Test>> {serverVersion.start='V1_5_0'} meta
     ])
   ];
 
-  let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
+  let plan =  meta::relational::testDataGeneration::executionPlan::planTestDataGeneration($query, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $tableRowIdentifiers, false, meta::relational::extension::relationalExtensions());
   assertEquals(
     'MultiResultSequence\n' +
     '(\n' +

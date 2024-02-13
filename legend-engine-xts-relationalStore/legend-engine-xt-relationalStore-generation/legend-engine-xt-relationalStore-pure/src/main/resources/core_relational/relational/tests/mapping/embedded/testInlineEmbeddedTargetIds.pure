@@ -25,7 +25,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 
 
   let result = execute(|BondDetail.all()->project([p| $p.type, p | $p.issuer.name,p| $p.holder.name], ['type', 'i','h'])
-                        , testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions(), debug());
+                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), debug());
 
  assertEquals('type,i,h\n' + '5 years,issuer1,holder1\n' + '5 years,issuer2,holder1\n' + '7 weeks,issuer3,holder3\n', $result.values->toOne()->toCSV());
  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".HOLDER as "h" from PRODUCT_DENORM as "root"', $result);
@@ -36,7 +36,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testSubType():Boolean[1]
 {
   let result = execute(|BondDetail.all()->project([p| $p.type, p| $p.issuer->subType(@Party).name], ['type', 'i'])
-                        , testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions());
+                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('type,i\n5 years,issuer1\n5 years,issuer2\n7 weeks,issuer3\n', $result.values->toOne()->toCSV());
   assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i" from PRODUCT_DENORM as "root"', $result);
@@ -48,7 +48,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 function <<test.Test, test.ToFix>> meta::relational::tests::mapping::embedded::advanced::inline::targetid::testSubTypeOnPropertyMappedToNonRootInlineSetImpl():Boolean[1]
 {
   let result = execute(|BondDetail.all()->project([p| $p.type, p| $p.holder->subType(@Party).name], ['type', 'h'])
-                        , testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions());
+                        , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('type,h\n5 years,holder1\n5 years,holder2\n7 weeks,holder3\n', $result.values->toOne()->toCSV());
   assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i" from PRODUCT_DENORM as "root"', $result);
@@ -59,14 +59,14 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
    
     let result1 = execute(|BondDetail.all()->filter(b | $b.issuer.name == 'issuer3' )
                                     ->project( [p | $p.type, p | $p.issuer.name], ['type','i'])
-                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions());
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('type,i\n' + '7 weeks,issuer3\n', $result1.values->toOne()->toCSV());
   assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i" from PRODUCT_DENORM as "root" where "root".ISSUER = \'issuer3\'', $result1);
 
    let result = execute(|BondDetail.all()->filter(b | $b.holder.name == 'holder3' )
                                     ->project( [p | $p.type, p | $p.issuer.name,p | $p.holder.name], ['type','i','h'])
-                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions());
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('type,i,h\n' + '7 weeks,issuer3,holder3\n', $result.values->toOne()->toCSV());
   assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".HOLDER as "h" from PRODUCT_DENORM as "root" where "root".HOLDER = \'holder3\'', $result);
@@ -78,7 +78,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
   //filter with two embedded properties in the filter
   let result = execute(|BondDetail.all()->filter(p | $p.holder.name->startsWith('holder3') && $p.description->startsWith('Super'))
                                     ->project( [p | $p.description,p | $p.issuer.name, p | $p.holder.name], ['name','issuer', 'holder'])
-                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions());
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
 
   assertEquals('name,issuer,holder\n' + 'SuperBond 3 super,issuer3,holder3\n' , $result.values->toOne()->toCSV());
@@ -93,7 +93,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
                                       y|$y->sum()
                                       )],
                                  ['holder', 'Profit']
-                                 ), testMappingEmbeddedTargetIds,testRuntime(), meta::relational::extension::relationalExtensions());
+                                 ), testMappingEmbeddedTargetIds,meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('holder,Profit\n' + 'holder1,10.0\n' + 'holder3,1.0\n', $result.values->toOne()->toCSV());
   assertEqualsH2Compatible(
@@ -110,7 +110,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
                                       y|$y->sum()
                                       )],
                                  ['c1', 'sum']
-                                 ), testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions());
+                                 ), testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('c1,sum\n' + 'holder1,2.0\n' + 'holder3,5.0\n', $result.values->toOne()->toCSV());
   assertEqualsH2Compatible(
@@ -124,7 +124,7 @@ function <<test.Test>> meta::relational::tests::mapping::embedded::advanced::inl
 {
    let result = execute(|BondDetail.all()->filter(p | $p.issuer.description->startsWith('issuer1') )
                                       ->project( [p | $p.description, p | $p.issuer.description,p | $p.holder.description], ['name', 'c2','c3'])
-                                    , testMappingEmbeddedTargetIds, testRuntime(), meta::relational::extension::relationalExtensions());
+                                    , testMappingEmbeddedTargetIds, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   assertEquals('name,c2,c3\n' + 'Bond 1,issuer1,holder1\n' , $result.values->toOne()->toCSV());
   assertSameSQL('select "root".BOND_DETAILS as "name", concat("root".ISSUER, cast("root".ISSUER_TYPE as varchar)) as "c2", concat("root".HOLDER, cast("root".HOLDER_TYPE as varchar)) as "c3" from PRODUCT_DENORM as "root" where concat("root".ISSUER, cast("root".ISSUER_TYPE as varchar)) like \'issuer1%\'', $result);
@@ -137,7 +137,7 @@ function <<test.ToFix>> meta::relational::tests::mapping::embedded::advanced::in
 
 
   let result = execute(|BondDetail.all()->project([p| $p.type, p | $p.issuer.name,p| $p.holder.name], ['type', 'i','h'])
-                        , testMappingEmbeddedTargetIdsWithIncludes, testRuntime(), meta::relational::extension::relationalExtensions());
+                        , testMappingEmbeddedTargetIdsWithIncludes, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
  assertEquals('type,i,h\n' + '5 years,issuer1,holder1\n' + '5 years,issuer2,holder1\n' + '7 weeks,issuer3,holder3\n', $result.values->toOne()->toCSV());
  assertSameSQL('select "root".BOND_TYPE as "type", "root".ISSUER as "i", "root".HOLDER as "h" from PRODUCT_DENORM as "root"', $result);
