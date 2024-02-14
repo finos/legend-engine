@@ -16,4 +16,10 @@ package org.finos.legend.engine.shared.core.extension;
 
 public interface LegendGenerationExtension extends LegendExtension
 {
+    @Override
+    default String group()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
 }

@@ -27,4 +27,10 @@ public class ServiceLegendPureCoreExtension implements FeatureLegendPureCoreExte
     {
         return "meta::legend::service::serviceExtension__Extension_1_";
     }
+
+    @Override
+    public String group()
+    {
+        return "PE_Service";
+    }
 }

@@ -29,6 +29,12 @@ import java.util.List;
 public class PersistenceRelationalCompilerExtension implements IPersistenceCompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Persistence_Relational";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new PersistenceRelationalCompilerExtension();

@@ -14,10 +14,16 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.pure.code.core.BindingLegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
 
-public class XMLJavaBindingLegendPureCoreExtension implements BindingLegendPureCoreExtension
+public class XMLJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
 {
+    @Override
+    public String group()
+    {
+        return "EF_XML";
+    }
+
     @Override
     public String functionFile()
     {

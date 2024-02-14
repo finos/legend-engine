@@ -58,6 +58,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class RelationalGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_Relational";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
     {
         if (element instanceof Database)

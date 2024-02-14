@@ -43,6 +43,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class ServiceStoreGrammarComposerExtension implements IServiceStoreGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
     {
         if (element instanceof ServiceStore)

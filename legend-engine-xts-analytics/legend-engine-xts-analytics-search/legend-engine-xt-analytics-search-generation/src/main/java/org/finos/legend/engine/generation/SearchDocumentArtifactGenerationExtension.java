@@ -39,6 +39,12 @@ public class SearchDocumentArtifactGenerationExtension implements ArtifactGenera
     public final String ROOT_PATH = "searchDocuments";
     public static final String FILE_NAME = "SearchDocumentResult.json";
 
+    @Override
+    public String group()
+    {
+        return "GEN_AR_Search_Documents";
+    }
+
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SearchDocumentArtifactGenerationExtension.class);
 
     @Override

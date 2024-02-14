@@ -25,6 +25,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 public class SpannerProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Spanner";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

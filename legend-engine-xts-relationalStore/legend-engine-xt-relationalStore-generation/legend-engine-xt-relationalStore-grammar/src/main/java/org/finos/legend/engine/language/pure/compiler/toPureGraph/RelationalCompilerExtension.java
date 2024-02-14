@@ -113,6 +113,12 @@ import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperM
 public class RelationalCompilerExtension implements IRelationalCompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new RelationalCompilerExtension();

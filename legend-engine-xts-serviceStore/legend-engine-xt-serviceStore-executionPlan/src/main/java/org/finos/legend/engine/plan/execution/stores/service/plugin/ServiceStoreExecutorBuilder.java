@@ -23,6 +23,12 @@ import org.finos.legend.engine.plan.execution.stores.service.auth.ServiceStoreCo
 public class ServiceStoreExecutorBuilder implements StoreExecutorBuilder
 {
     @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
+
+    @Override
     public StoreType getStoreType()
     {
         return StoreType.Service;

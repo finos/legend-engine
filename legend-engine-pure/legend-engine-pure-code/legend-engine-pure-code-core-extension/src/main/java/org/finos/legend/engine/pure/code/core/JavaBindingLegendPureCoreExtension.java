@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.pure.code.core;
 
-public interface StoreLegendPureCoreExtension extends LegendPureCoreExtension
+public interface JavaBindingLegendPureCoreExtension extends BindingLegendPureCoreExtension
 {
     @Override
     default String type()
     {
-        return "Store";
+        return "(Plan)Binding_Generation_Java";
     }
 }

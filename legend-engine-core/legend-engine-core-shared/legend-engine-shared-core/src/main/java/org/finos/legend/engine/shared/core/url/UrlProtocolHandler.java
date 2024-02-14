@@ -20,6 +20,18 @@ import java.net.URLStreamHandler;
 
 public interface UrlProtocolHandler extends LegendExtension
 {
+    @Override
+    default String type()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
+    @Override
+    default String group()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
     boolean handles(String protocol);
 
     URLStreamHandler getHandler(String protocol);

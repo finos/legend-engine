@@ -36,6 +36,12 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
     final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationConfiguration> fileConfigurationsIndex = Maps.mutable.empty();
 
     @Override
+    public String group()
+    {
+        return "GEN_Generation";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new GenerationCompilerExtensionImpl();

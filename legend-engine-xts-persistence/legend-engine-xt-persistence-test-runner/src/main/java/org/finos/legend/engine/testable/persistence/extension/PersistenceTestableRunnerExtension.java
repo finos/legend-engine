@@ -31,6 +31,12 @@ public class PersistenceTestableRunnerExtension implements TestableRunnerExtensi
     private String pureVersion = PureClientVersions.production;
 
     @Override
+    public String group()
+    {
+        return "PE_Persistence";
+    }
+
+    @Override
     public String getSupportedClassifierPath()
     {
         return PersistenceProtocolExtension.PERSISTENCE_CLASSIFIER_PATH;

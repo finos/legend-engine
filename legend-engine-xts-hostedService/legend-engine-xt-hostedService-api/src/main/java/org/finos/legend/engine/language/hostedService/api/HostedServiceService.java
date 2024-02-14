@@ -54,6 +54,12 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     }
 
     @Override
+    public String group()
+    {
+        return "FA_Hosted_Service";
+    }
+
+    @Override
     public FunctionActivatorInfo info(PureModel pureModel, String version)
     {
         return new FunctionActivatorInfo(

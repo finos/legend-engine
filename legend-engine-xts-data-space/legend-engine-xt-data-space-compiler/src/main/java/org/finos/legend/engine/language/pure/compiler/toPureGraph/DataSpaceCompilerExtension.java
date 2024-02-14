@@ -43,6 +43,12 @@ import java.util.*;
 
 public class DataSpaceCompilerExtension implements CompilerExtension
 {
+    @Override
+    public String group()
+    {
+        return "PE_DataSpace";
+    }
+
     static final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();
 
     @Override

@@ -30,6 +30,12 @@ import java.util.Map;
 public class GraphQLCompilerExtension implements CompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "QU_GraphQL";
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Lists.mutable.empty();

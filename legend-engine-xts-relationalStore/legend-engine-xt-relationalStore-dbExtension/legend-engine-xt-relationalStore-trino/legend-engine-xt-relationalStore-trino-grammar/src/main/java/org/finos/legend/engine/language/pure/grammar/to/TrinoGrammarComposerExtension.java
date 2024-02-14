@@ -29,6 +29,11 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class TrinoGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_Relational_Trino";
+    }
 
     @Override
     public List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers()

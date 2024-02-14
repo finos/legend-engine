@@ -23,6 +23,12 @@ import java.util.Map;
 public class GraphQLPureProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "QU_GraphQL";
+    }
+
+    @Override
     public Map<String, Class> getExtraClassInstanceTypeMappings()
     {
         return Maps.mutable.with("GQL", Document.class);

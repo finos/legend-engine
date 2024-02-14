@@ -37,6 +37,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class BigQueryFunctionGrammarComposer implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "FA_BigQuery";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = org.eclipse.collections.impl.factory.Lists.mutable.with((element, context) ->
     {
         if (element instanceof BigQueryFunction)

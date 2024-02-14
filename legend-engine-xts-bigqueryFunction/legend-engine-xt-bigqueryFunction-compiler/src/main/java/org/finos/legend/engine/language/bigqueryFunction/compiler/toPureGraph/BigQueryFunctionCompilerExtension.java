@@ -34,6 +34,12 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
     CoreFunctionActivatorCodeRepositoryProvider forDependencies;
 
     @Override
+    public String group()
+    {
+        return "FA_BigQuery";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new BigQueryFunctionCompilerExtension();
