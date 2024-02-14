@@ -94,7 +94,7 @@ public class FreeMarkerExecutor
 
     private static class TemplateHashModelOverride implements TemplateHashModel
     {
-        private Map map;
+        private Map<String,?> map;
         private String templateFunctions;
 
         TemplateHashModelOverride(Map map, String templateFunctions)
@@ -111,7 +111,7 @@ public class FreeMarkerExecutor
             while (!isResultUnchanged && isPlaceHolder(result))
             {
                 String lastProcessedResult = (String) result;
-                result = process((String) result, map, templateFunctions);
+                result = process(lastProcessedResult, map, templateFunctions);
                 isResultUnchanged = lastProcessedResult.equals(((String) result).replace("\\\"", "\""));
             }
             return objectWrapper.wrap(result);
