@@ -15,43 +15,43 @@
 import meta::json::*;
 import meta::pure::changetoken::cast_generation::collapse::*;
 
-function meta::pure::changetoken::cast_generation::collapse::collapse(input: JSONElement[1]): JSONElement[1]
+function meta::pure::changetoken::cast_generation::collapse::collapse(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
 {
     let o = $input->cast(@JSONObject);
-    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'versions', | $kv.value->collapseVersions(), | $kv.value))));
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'versions', | $kv.value->collapseVersions($typeKeyName), | $kv.value))));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseVersions(input: JSONElement[1]): JSONElement[1]
+function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseVersions(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
 {
     let a = $input->cast(@JSONArray);
-    ^JSONArray(values = $a.values->map(o | $o->collapseVersion()));
+    ^JSONArray(values = $a.values->map(o | $o->collapseVersion($typeKeyName)));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseVersion(input: JSONElement[1]): JSONElement[1]
+function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseVersion(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
 {
     let o = $input->cast(@JSONObject);
-    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'changeTokens', | $kv.value->collapseChangeTokens(), | $kv.value))));
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'changeTokens', | $kv.value->collapseChangeTokens($typeKeyName), | $kv.value))));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseChangeTokens(input: JSONElement[1]): JSONElement[1]
+function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseChangeTokens(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
 {
     let a = $input->cast(@JSONArray);
-    ^JSONArray(values = $a.values->map(o | $o->collapseChangeToken()));
+    ^JSONArray(values = $a.values->map(o | $o->collapseChangeToken($typeKeyName)));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseChangeToken(input: JSONElement[1]): JSONElement[1]
+function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseChangeToken(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
 {
     let o = $input->cast(@JSONObject);
-    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'defaultValue', | $kv.value->collapseDefaultValue(), | $kv.value))));
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'defaultValue', | $kv.value->collapseDefaultValue($typeKeyName), | $kv.value))));
 }
 
-function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseDefaultValue(input: JSONElement[1]): JSONElement[1]
+function <<access.private>> meta::pure::changetoken::cast_generation::collapse::collapseDefaultValue(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
 {
     let o = $input->cast(@JSONObject);
-    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'value', | $kv.value->collapseValue(), | $kv.value))));
+    newJSONObject($o.keyValuePairs->map(kv | ^JSONKeyValue(key = $kv.key, value = if($kv.key.value == 'value', | $kv.value->collapseValue($typeKeyName), | $kv.value))));
 }
 
-function meta::pure::changetoken::cast_generation::collapse::collapseValue(input: JSONElement[1]): JSONElement[1]
+function meta::pure::changetoken::cast_generation::collapse::collapseValue(input: JSONElement[1], typeKeyName: String[1]): JSONElement[1]
 {
-    $input->fromJSON(JSONElement, ^JSONDeserializationConfig(typeKeyName = '@type', failOnUnknownProperties = true))->cast(@JSONElement)->toOne();
+    $input->fromJSON(JSONElement, ^JSONDeserializationConfig(typeKeyName = $typeKeyName, failOnUnknownProperties = true))->cast(@JSONElement)->toOne();
 }
