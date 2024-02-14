@@ -22,8 +22,6 @@ import meta::pure::router::platform::metamodel::clustering::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 // =========================================================================================
 // Platform Routing Strategy Builder Helper
 // =========================================================================================
@@ -36,13 +34,13 @@ function meta::pure::router::platform::routing::getPlatformRoutingStrategy():Pla
                            toString        = {strategy:RoutingStrategy[1] | 'PlatformRoutingStrategy'});
 }
 
-function <<access.private>> meta::pure::router::platform::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
+function <<access.private>> meta::pure::router::platform::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
 {
    print(if($debug.debug,|$debug.space+'~>C) (PlatformRoutingStrategy) '+$state.value->toOne()->toString()+'\n',|''));
    $state;
 }
 
-function <<access.private>> meta::pure::router::platform::routing::processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+function <<access.private>> meta::pure::router::platform::routing::processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    let results = $state->processCollection($fe.parametersValues->evaluateAndDeactivate(), $executionContext, $vars, $inScopeVars, v:Any[1]|true, $extensions, $debug)->evaluateAndDeactivate();
    let newPV   = $results.value->cast(@ValueSpecification)->toOneMany();
@@ -58,7 +56,7 @@ function <<access.private>> meta::pure::router::platform::routing::processProper
    $res;
 }
 
-function <<access.private>> meta::pure::router::platform::routing::wrapValueSpecification(value:ValueSpecification[1], routingStrategy:RoutingStrategy[1], id:String[1], executionContext:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[1]
+function <<access.private>> meta::pure::router::platform::routing::wrapValueSpecification(value:ValueSpecification[1], routingStrategy:RoutingStrategy[1], id:String[1], executionContext:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[1]
 {
    ^PlatformRoutedValueSpecification
    (
@@ -75,7 +73,7 @@ function <<access.private>> meta::pure::router::platform::routing::wrapValueSpec
 // PlatformRoutedValueSpecification enrichment Strategy
 // =========================================================================================
 
-function meta::pure::router::platform::routing::enrichPlatformRoutedValueSpecification(v:ValueSpecification[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function meta::pure::router::platform::routing::enrichPlatformRoutedValueSpecification(v:ValueSpecification[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
    $v->match([f:FunctionExpression[1]                | ^$f(parametersValues = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->enrichPlatformRoutedValueSpecification($exeCtx, $extensions, $debug))),
               i:InstanceValue[1]                     | let updatedValues = $i.values->map(val | $val->match([
@@ -94,7 +92,7 @@ function meta::pure::router::platform::routing::enrichPlatformRoutedValueSpecifi
 // PlatformRoutedValueSpecification clustering Strategy
 // =========================================================================================
 
-function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[*]
+function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[*]
 {
    $v->match([f:FunctionExpression[1]                | let params         = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));
                                                        let uniqueClusters = $params->filter(p | $p->instanceOf(ClusteredValueSpecification))->cast(@ClusteredValueSpecification)->removeDuplicates({x, y | areClustersCompatible($x, $y, $extensions)});
@@ -155,7 +153,7 @@ function meta::pure::router::platform::clustering::cluster(v:ValueSpecification[
    );
 }
 
-function meta::pure::router::platform::clustering::wrapValueSpecByPlatformCluster(vs:ValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1]):PlatformClusteredValueSpecification[1]
+function meta::pure::router::platform::clustering::wrapValueSpecByPlatformCluster(vs:ValueSpecification[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1]):PlatformClusteredValueSpecification[1]
 {
   ^PlatformClusteredValueSpecification
   (

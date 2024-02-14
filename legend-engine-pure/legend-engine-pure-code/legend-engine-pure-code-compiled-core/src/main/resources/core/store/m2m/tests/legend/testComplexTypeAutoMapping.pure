@@ -21,7 +21,6 @@ import meta::pure::graphFetch::*;
 import meta::pure::mapping::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::alloy::autoMapping::helper::*;
 import meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::autoMapping::mapping::*;
@@ -198,7 +197,6 @@ function <<test.Test>> meta::pure::mapping::modelToModel::test::alloy::autoMappi
 // ======================================================================================================
 
 ###Pure
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::test::alloy::autoMapping::model::*;
@@ -426,9 +424,7 @@ Mapping meta::pure::mapping::modelToModel::test::alloy::autoMapping::mapping::te
 ###Pure
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::pure::mapping::modelToModel::test::alloy::autoMapping::helper::executeReflectively(f: FunctionDefinition<Any>[1]): String[1]
 {
-  meta::legend::executeLegendQuery($f, [], ^ExecutionContext(), meta::pure::extension::defaultExtensions());
+  meta::legend::executeLegendQuery($f, [], ^meta::pure::runtime::ExecutionContext(), meta::pure::extension::defaultExtensions());
 }

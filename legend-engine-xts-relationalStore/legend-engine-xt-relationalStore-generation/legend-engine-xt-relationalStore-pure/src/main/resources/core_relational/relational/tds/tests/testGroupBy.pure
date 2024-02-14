@@ -26,11 +26,11 @@ import meta::pure::metamodel::tds::*;
 
 function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy::testValidateTdsGroupByWithIsNotEmpty():Boolean[1]
 {
-   let runtime = testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let connection = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
    meta::relational::metamodel::execute::executeInDb('insert into tradeTable (id, prodid, accountId, quantity, tradeDate, settlementDateTime) values (9, 3, 2, 45, \'2014-12-04\', \'2014-12-05 22:00:00\');', $connection);
 
-   let result = validate(|AccountWithConstraints.all(), simpleRelationalMappingWithConstraints, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = validate(|AccountWithConstraints.all(), simpleRelationalMappingWithConstraints, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(1, $tds.rows->size());
    assertEquals(['tradesNotDoubleBooked', 'Error', 'Account has more than one trade with the same id', 2], $tds.rows->at(0).values);
@@ -43,7 +43,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupCount()
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('cnt', x|$x, y| $y->count()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals([String, Integer], $result.values.columns.type);
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
@@ -62,7 +62,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy($columnName, $aggFunc)
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 2], $tds.rows->at(0).values);
@@ -75,7 +75,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
 
 function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupDistinctCount():Boolean[1]
 {
-   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!myId#])->groupBy(['sourceName'], agg('count', a|$a.getInteger('myId'), b|$b->distinct()->count()))->sort([desc('count'), asc('sourceName')]), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Interaction.all()->project([#/Interaction/source/name!sourceName#, #/Interaction/id!myId#])->groupBy(['sourceName'], agg('count', a|$a.getInteger('myId'), b|$b->distinct()->count()))->sort([desc('count'), asc('sourceName')]), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertSize($tds.rows, 4);
    assertEquals(['Anthony Allen', 3], $tds.rows->at(0).values);
@@ -93,7 +93,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleFilterWithGr
                         ->project([ x | $x.quantity ],['quantity' ])
                         ->meta::pure::tds::distinct()
                         ->meta::pure::tds::groupBy(['quantity'], [agg( 'qty',  x | $x.getString('quantity'), y | $y->count())])
-                        ,simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                        ,simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
   let tds = $result.values->at(0);
   assertEquals(2, $tds.rows->size());
@@ -108,7 +108,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupBySum()
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('sum', x|$x.getFloat('quantity'), y| $y->sum()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
@@ -126,7 +126,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupConstan
                           agg('sum', x|1, y| $y->sum()),
                           agg('count', x|$x, y| $y->count())
                          ])
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 2, 2], $tds.rows->at(0).values);
@@ -143,7 +143,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', $aggFunc)
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
@@ -160,7 +160,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
               Trade.all()->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', $aggFunc)
                          ->sort(desc('prodName'));};
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
@@ -178,7 +178,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAggFu
                          ->sort(desc('prodName'))
                          ->take(100)
                          ;};
-   let result = execute($fn, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
@@ -194,7 +194,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAvera
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!qty#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('avg', x|$x.getFloat('qty'), y| $y->average()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 172.5], $tds.rows->at(0).values);
@@ -211,7 +211,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByTwo()
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', [agg('count', x|$x, y| $y->count()), agg('sum', x|$x.getFloat('quantity'), y| $y->sum())])
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 2, 345.0], $tds.rows->at(0).values);
@@ -227,7 +227,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMax()
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('max', x|$x.getFloat('quantity'), y| $y->max()->toOne()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 320.0], $tds.rows->at(0).values);
@@ -242,7 +242,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByMin()
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('min', x|$x.getFloat('quantity'), y| $y->min()->toOne()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 25.0], $tds.rows->at(0).values);
@@ -260,7 +260,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByAnd()
                             agg('and', x|$x.getFloat('quantity') > 20, y| $y->and())
                          ])
                          ->sort(desc('prodName')), 
-                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', true], $tds.rows->at(0).values);
@@ -279,7 +279,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByOr():
                             agg('or', x|$x.getFloat('quantity') > 50, y| $y->or())
                          ])
                          ->sort(desc('prodName')), 
-                         simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', true], $tds.rows->at(0).values);
@@ -294,7 +294,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnCo
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('sum', x|$x.getFloat('quantity')*3, y| $y->sum()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 1035.0], $tds.rows->at(0).values);
@@ -309,7 +309,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithMapFnCo
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('sum', x|$x.getFloat('quantity')*$x.getInteger('quantity'), y| $y->sum()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 103025.0], $tds.rows->at(0).values);
@@ -324,7 +324,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::GroupByWithIfInMap
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', agg('sum', x|if($x.getFloat('quantity') > 2.0,|$x.getFloat('quantity'),|$x.getFloat('quantity')/2), y| $y->sum()))
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 345.0], $tds.rows->at(0).values);
@@ -342,7 +342,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByWithJ
 {
    let result = execute(|Person.all()
                          ->project([#/Person/firstName!firstName#,#/Person/lastName!lastName#])
-                         ->groupBy('firstName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->groupBy('firstName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(6, $tds.rows->size());
    assertEquals(['Smith'], $tds.rows->filter(p | $p.getString('firstName') == 'Peter')->first()->toOne().getString('lastNames'));
@@ -355,7 +355,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::simpleGroupByWithA
 {
    let result = execute(|Firm.all()
                          ->project([#/Firm/legalName!legalName#,#/Firm/employees/lastName!lastName#])
-                         ->groupBy('legalName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->groupBy('legalName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Smith*Johnson*Hill*Allen'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getString('lastNames'));
@@ -368,7 +368,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterASortO
    let result = execute(|Firm.all()
                          ->project([#/Firm/legalName!legalName#,#/Firm/employees/lastName!lastName#])
                          ->sort('legalName')
-                         ->groupBy('legalName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->groupBy('legalName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Smith*Johnson*Hill*Allen'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getString('lastNames'));
@@ -382,7 +382,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterASortO
    let result = execute(|Firm.all()
                          ->project([#/Firm/legalName!legalName#,#/Firm/employees/lastName!lastName#])
                          ->sort('lastName')
-                         ->groupBy('legalName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->groupBy('legalName', agg('lastNames', x|$x.getString('lastName'), y|$y->joinStrings('*'))), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Allen*Hill*Johnson*Smith'], $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getString('lastNames'));
@@ -398,7 +398,7 @@ function <<test.Test, test.ExcludeAlloy>> meta::relational::tests::tds::groupBy:
    let result = execute(|Trade.all()
                          ->project([#/Trade/product/name!prodName#])
                          ->groupBy('prodName', $aggFunc)
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(['Firm X', 'Firm X'], $tds.rows->at(0).values);
@@ -417,7 +417,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::groupByAfterConcat
                                ->project([#/Firm/legalName!legalName#,#/Firm/employees/lastName!lastName#])
                          )
                          ->distinct()
-                         ->groupBy('legalName', agg('lastNamesCount', x|$x.getString('lastName'), y|$y->distinct()->count())), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->groupBy('legalName', agg('lastNamesCount', x|$x.getString('lastName'), y|$y->distinct()->count())), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(4, $tds.rows->size());
    assertEquals(4, $result.values->first().rows->filter(r | $r.getString('legalName') == 'Firm X')->first()->toOne().getInteger('lastNamesCount')->sort());
@@ -468,7 +468,7 @@ function <<test.Test, test.AlloyOnly>> meta::relational::tests::tds::groupBy::te
    let result = execute(|Trade.all()
                          ->project([#/Trade/quantity!quantity#, #/Trade/product/name!prodName#])
                          ->groupBy('prodName', [agg('p1', x|$x.getFloat('quantity')+2, y|$y->percentile(0.9)->toOne()), agg('p2', x|$x.getFloat('quantity')+2, y|$y->percentile(0.5, false, false)->toOne()), agg('p3', x|$x.getFloat('quantity')+2, y|$y->percentile(0.75, true, true)->toOne())])
-                         ->sort(desc('prodName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('prodName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Firm X|292.5|322.0|248.25', 'Firm C|46.6|40.0|46.0', 'Firm A|32.2|25.0|29.5', 'TDSNull|7.0|7.0|7.0'], $result.values.rows->map(r|$r.values->makeString('|')));
    meta::relational::functions::asserts::assertSameSQL('select "producttable_0".NAME as "prodName", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by ("root".quantity + 2) asc) as "p1", percentile_disc(CAST(0.5 AS FLOAT)) within group (order by ("root".quantity + 2) desc) as "p2", percentile_cont(CAST(0.75 AS FLOAT)) within group (order by ("root".quantity + 2) asc) as "p3" from tradeTable as "root" left outer join productSchema.productTable as "producttable_0" on ("root".prodId = "producttable_0".ID) group by "prodName" order by "prodName" desc', $result);
 }
@@ -478,7 +478,7 @@ function <<test.Test>> meta::relational::tests::tds::groupBy::testTDSGroupByIsDi
    let result = execute(|Firm.all()
                          ->project([#/Firm/legalName!LegalName#, #/Firm/employees/firstName!firstName#, #/Firm/employees/lastName!lastName#])
                          ->groupBy('LegalName', [agg('FirstNameIsDistinct', x|$x.getString('firstName'), y|$y->isDistinct()), agg('LastNameIsDistinct', x|$x.getString('lastName'), y|$y->isDistinct())])
-                         ->sort(desc('LegalName')), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+                         ->sort(desc('LegalName')), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals(['Firm X|false|true', 'Firm C|true|true', 'Firm B|true|true', 'Firm A|true|true'], $result.values.rows->map(r|$r.values->makeString('|')));
    meta::relational::functions::asserts::assertSameSQL('select "root".LEGALNAME as "LegalName", count(distinct("persontable_0".FIRSTNAME)) = count("persontable_0".FIRSTNAME) as "FirstNameIsDistinct", count(distinct("persontable_0".LASTNAME)) = count("persontable_0".LASTNAME) as "LastNameIsDistinct" from firmTable as "root" left outer join personTable as "persontable_0" on ("root".ID = "persontable_0".FIRMID) group by "LegalName" order by "LegalName" desc', $result);
 }

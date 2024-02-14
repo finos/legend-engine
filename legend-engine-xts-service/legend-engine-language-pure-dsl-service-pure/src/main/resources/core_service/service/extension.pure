@@ -1,7 +1,6 @@
 import meta::pure::extension::*;
 import meta::pure::router::routing::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::router::store::routing::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::mapping::*;
@@ -24,7 +23,7 @@ function meta::legend::service::serviceExtension() : Extension[1]
                                      routeFunctionExpressions =
                                      [
                                          pair(fe:FunctionExpression[1] | $fe.func->in([meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_]),
-                                             {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                                             {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
                                                      let resolvedParameters = $fe.parametersValues->tail()->map(p|$p->evaluateAndDeactivate()->match([v:VariableExpression[1] |let iv = meta::pure::functions::meta::resolve($v, $vars, $inScopeVars)->cast(@InstanceValue).values,
                                                                                                                                                       f:FunctionExpression[1] |let r = $f->meta::pure::router::preeval::preval($inScopeVars, $extensions, $debug);
                                                                                                                                                                                $r->reactivate($inScopeVars);,

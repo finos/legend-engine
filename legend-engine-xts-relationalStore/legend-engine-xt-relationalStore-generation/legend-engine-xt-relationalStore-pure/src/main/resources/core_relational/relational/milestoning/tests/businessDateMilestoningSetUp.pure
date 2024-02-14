@@ -17,13 +17,10 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
-
 function meta::relational::tests::milestoning::initSimpleRelationalDbWithMilestoningColumns():Any[0..1]
 {
    let connectionStore = meta::external::store::relational::tests::testRuntime(db).connectionStores->toOne();
-   let connection = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop schema if exists productSchema cascade;', $connection);
    executeInDb('Create schema productSchema;', $connection);
@@ -46,7 +43,7 @@ function meta::relational::tests::milestoning::initSimpleRelationalDbWithMilesto
 function meta::relational::tests::milestoning::initDatabase():Runtime[1]
 {
    let connectionStore = meta::external::store::relational::tests::testRuntime(db).connectionStores->toOne();
-   let connection = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let connection = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('drop table if exists OrderTable;',$connection);
    executeInDb('create table OrderTable (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);

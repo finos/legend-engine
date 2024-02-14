@@ -13,10 +13,8 @@
 // limitations under the License.
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::csv::*;
 import meta::pure::graphFetch::execution::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::external::store::relational::runtime::*;
@@ -45,9 +43,9 @@ Class meta::relational::graphFetch::tests::resultSourcing::_SettlementDateClass
 function meta::relational::graphFetch::tests::resultSourcing::createDbAndGetConnection():ConnectionStore[1]
 {
    let connection = meta::external::store::relational::tests::testRuntime().connectionStores->filter(c|$c.element==meta::relational::tests::db)->toOne();
-   meta::relational::tests::createPersonTableAndFillDb($connection.connection->cast(@TestDatabaseConnection));
-   meta::relational::tests::createFirmTableAndFillDb($connection.connection->cast(@TestDatabaseConnection));
-   meta::relational::tests::createTradeTableAndFillDb($connection.connection->cast(@TestDatabaseConnection));
+   meta::relational::tests::createPersonTableAndFillDb($connection.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection));
+   meta::relational::tests::createFirmTableAndFillDb($connection.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection));
+   meta::relational::tests::createTradeTableAndFillDb($connection.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection));
    $connection;
  }
 

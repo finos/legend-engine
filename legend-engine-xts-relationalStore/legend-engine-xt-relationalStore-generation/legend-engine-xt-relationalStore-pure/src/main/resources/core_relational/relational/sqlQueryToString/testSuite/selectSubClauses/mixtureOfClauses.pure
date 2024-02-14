@@ -22,8 +22,6 @@ import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
 import meta::relational::tests::dbSpecificTests::shared::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::mixtureOfCluases::testFilterAfterJoinInner(config:DbTestConfig[1]):Boolean[1]
 {
    let type = JoinType.INNER;

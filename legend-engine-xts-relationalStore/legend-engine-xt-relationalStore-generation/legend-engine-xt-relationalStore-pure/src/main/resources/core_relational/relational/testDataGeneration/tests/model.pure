@@ -22,8 +22,7 @@
  import meta::relational::metamodel::*;
  import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::*;
- import meta::pure::runtime::*;
-import meta::core::runtime::*;
+ import meta::core::runtime::*;
  import meta::pure::lineage::scanTables::*;
  import meta::relational::tests::model::simple::*;
  import meta::relational::testDataGeneration::*;
@@ -46,7 +45,7 @@ Association meta::relational::testDataGeneration::tests::model::Student_School
 
 function meta::relational::testDataGeneration::tests::model::setUp():Runtime[1]
 {
-  let connection = meta::external::store::relational::tests::testRuntime(meta::relational::testDataGeneration::tests::model::db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+  let connection = meta::external::store::relational::tests::testRuntime(meta::relational::testDataGeneration::tests::model::db).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
   executeInDb('Drop table if exists StudentTable;', $connection);
   executeInDb('Create Table StudentTable(id VARCHAR(60), name VARCHAR(60), school_id VARCHAR(60));', $connection);
   executeInDb('insert into StudentTable(id, name, school_id) values (\'1\', \'SURAJ\', \'sc1\');', $connection);

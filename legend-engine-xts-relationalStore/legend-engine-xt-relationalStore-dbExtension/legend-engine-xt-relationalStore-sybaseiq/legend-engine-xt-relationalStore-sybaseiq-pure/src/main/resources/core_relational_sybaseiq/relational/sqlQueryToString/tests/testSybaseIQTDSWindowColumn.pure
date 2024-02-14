@@ -216,7 +216,7 @@ meta::relational::tests::tds::sybaseIQ::testSingleWindowWithSortWithDenseRankAll
                             ->olapGroupBy(['firstName'],desc('lastName'), func(y|$y->denseRank()),'testCol1')
    };
    let sqlResult =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   let result = execute($func, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", dense_rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "testCol1" from personTable as "root"', $sqlResult);
    assertSameElements(['Anthony|Allen|22|1', 'David|Harris|35|1', 'Fabrice|Roberts|34|1', 'John|Hill|12|2', 'John|Johnson|22|1', 'Oliver|Hill|32|1', 'Peter|Smith|23|1'], $result.values.rows->map(r|$r.values->makeString('|')));
@@ -230,7 +230,7 @@ meta::relational::tests::tds::sybaseIQ::testSingleWindowWithSortWithRankAlloyOnl
                             ->olapGroupBy(['firstName'],desc('lastName'), func(y|$y->rank()),'testCol1')
    };
    let sqlResult =  toSQLString($func, simpleRelationalMapping, DatabaseType.SybaseIQ, meta::relational::extension::relationalExtensions());
-   let result = execute($func, simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute($func, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertEquals('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", rank() OVER (Partition By "root".FIRSTNAME Order By "root".LASTNAME DESC) as "testCol1" from personTable as "root"', $sqlResult);
    assertSameElements(['Anthony|Allen|22|1', 'David|Harris|35|1', 'Fabrice|Roberts|34|1', 'John|Hill|12|2', 'John|Johnson|22|1', 'Oliver|Hill|32|1', 'Peter|Smith|23|1'], $result.values.rows->map(r|$r.values->makeString('|')));

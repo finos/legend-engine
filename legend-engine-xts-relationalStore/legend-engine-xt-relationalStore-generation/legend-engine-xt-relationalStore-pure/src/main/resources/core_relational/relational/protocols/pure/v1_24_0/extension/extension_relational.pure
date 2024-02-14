@@ -19,7 +19,6 @@ import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::store::*;
 import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::store::relational::*;
 import meta::protocols::pure::v1_24_0::transformation::fromPureGraph::context::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::protocols::pure::v1_24_0::invocation::execution::execute::*;
 import meta::relational::mapping::*;
 import meta::pure::mapping::*;
@@ -233,20 +232,20 @@ function meta::protocols::pure::v1_24_0::extension::getRelationalExtension():met
       scan_buildBasePureModel_buildPureModelFromMapping1 = {d:meta::relational::metamodel::Database[1]|$d.joins->map(j|$j.operation->meta::relational::functions::pureToSqlQuery::extractStore())},
       invocation_execution_execute2_pre2 = {extensions:meta::pure::extension::Extension[*] | [
                pair ( builderType:String[1]| $builderType->isNotEmpty() && $builderType->toOne()=='tdsBuilder',
-                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
+                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:meta::pure::runtime::ExecutionContext[0..1]|
                             let rv = $resultJSON->fromJSON(meta::protocols::pure::v1_24_0::metamodel::invocation::execution::execute::RelationalTDSResult, $extendedJSONDeserializationConfig);
                             $rv->cast(@meta::protocols::pure::v1_24_0::metamodel::invocation::execution::execute::RelationalTDSResult)->toOne()->processTDSResult($extensions);}
                     ),
 
                pair (builderType:String[1]| $builderType->isNotEmpty() && $builderType->toOne()=='classBuilder',
-                     {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], pureRuntime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
+                     {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], pureRuntime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:meta::pure::runtime::ExecutionContext[0..1]|
                             let r = $resultJSON->fromJSON(meta::protocols::pure::v1_24_0::metamodel::invocation::execution::execute::RelationalClassResult, $extendedJSONDeserializationConfig);
                             processRelationalClassResult($r, $m, $pureRuntime, $context, $extensions);}
                     )
       ]},
       invocation_execution_execute2_post2 = {extensions:meta::pure::extension::Extension[*] | [
                pair(builderType:String[1]|true,
-                    {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], runtime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:ExecutionContext[0..1]|
+                    {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], runtime:Runtime[1],extendedJSONDeserializationConfig:ExtendedJSONDeserializationConfig[1], context:meta::pure::runtime::ExecutionContext[0..1]|
                             let r = $resultJSON->fromJSON(meta::protocols::pure::v1_24_0::metamodel::invocation::execution::execute::RelationalDataTypeResult, $extendedJSONDeserializationConfig); // Assume dataTypeBuilder is resultType
                             processDataTypeResult($r, $extensions);}
                     )

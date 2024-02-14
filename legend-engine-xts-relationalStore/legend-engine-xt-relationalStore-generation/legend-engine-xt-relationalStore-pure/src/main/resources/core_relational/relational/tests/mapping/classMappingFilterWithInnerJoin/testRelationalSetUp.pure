@@ -687,7 +687,7 @@ import meta::relational::runtime::*;
 
 function meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::initDatabase():Boolean[1]
 {
-  let connection = meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+  let connection = meta::external::store::relational::tests::testRuntime(meta::relational::tests::mapping::classMappingFilterWithInnerJoin::mapping::store::TestClassMappingsWithInnerFilterJoinedByChainOfJoinsStore).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
   executeInDb('drop table if exists ProductClassificationFilterTable;',$connection);
   executeInDb('create table ProductClassificationFilterTable (type VARCHAR(200),type_description VARCHAR(400),system VARCHAR(200), exchange VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);

@@ -15,7 +15,6 @@
 import meta::pure::alloy::connections::*;
 import meta::external::store::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
