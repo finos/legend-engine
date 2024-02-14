@@ -100,7 +100,7 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
             if (vs instanceof PackageableElementPtr)
             {
                 DataElementReference reference = new DataElementReference();
-                reference.dataElementPointer = new PackageableElementPointer(
+                reference.dataElement = new PackageableElementPointer(
                         PackageableElementType.DATA,
                         ((PackageableElementPtr) vs).fullPath,
                         data.sourceInformation

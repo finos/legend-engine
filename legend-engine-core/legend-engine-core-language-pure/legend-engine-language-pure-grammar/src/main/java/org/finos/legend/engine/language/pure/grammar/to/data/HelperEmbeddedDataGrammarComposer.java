@@ -59,9 +59,9 @@ public class HelperEmbeddedDataGrammarComposer
 
             return new ContentWithType(ExternalFormatEmbeddedDataParser.TYPE, content);
         }
-        else if (embeddedData instanceof DataElementReference && ((DataElementReference) embeddedData).dataElementPointer.type.equals(PackageableElementType.DATA))
+        else if (embeddedData instanceof DataElementReference && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATA))
         {
-            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElementPointer.path);
+            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement.path);
 
             return new ContentWithType(ReferenceEmbeddedDataParser.TYPE, content);
         }

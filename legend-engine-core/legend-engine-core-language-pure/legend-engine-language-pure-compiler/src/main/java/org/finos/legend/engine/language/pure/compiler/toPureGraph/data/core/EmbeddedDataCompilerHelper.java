@@ -103,11 +103,11 @@ public class EmbeddedDataCompilerHelper
             return metamodelModelStoreData;
         }
         else if (embeddedData instanceof DataElementReference
-                && ((DataElementReference) embeddedData).dataElementPointer.type.equals(PackageableElementType.DATA)
+                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATA)
         )
         {
             DataElementReference dataElementReference = (DataElementReference) embeddedData;
-            PackageableElement element = context.pureModel.getPackageableElement(dataElementReference.dataElementPointer.path, dataElementReference.sourceInformation);
+            PackageableElement element = context.pureModel.getPackageableElement(dataElementReference.dataElement.path, dataElementReference.sourceInformation);
             if (!(element instanceof Root_meta_pure_data_DataElement))
             {
                 throw new EngineException("Can only reference a Data element", dataElementReference.sourceInformation, EngineErrorType.COMPILATION);

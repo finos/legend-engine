@@ -47,7 +47,7 @@ public class ReferenceEmbeddedDataParser implements EmbeddedDataParser
 
         DataElementReference result = new DataElementReference();
         result.sourceInformation = sourceInformation;
-        result.dataElementPointer = new PackageableElementPointer(PackageableElementType.DATA, validPath,sourceInformation);
+        result.dataElement = new PackageableElementPointer(PackageableElementType.DATA, validPath,sourceInformation);
         return result;
     }
 }
