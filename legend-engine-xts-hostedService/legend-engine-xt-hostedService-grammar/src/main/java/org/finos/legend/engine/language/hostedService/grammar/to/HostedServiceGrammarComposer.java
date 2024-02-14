@@ -95,7 +95,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
         }
         else if (owner instanceof DeploymentOwner)
         {
-            return "Deployment { identifier: " + ((DeploymentOwner)owner).id + " };\n";
+            return "Deployment { identifier: '" + ((DeploymentOwner)owner).id + "' };\n";
         }
         throw new RuntimeException("Owner type invalid");
     }
