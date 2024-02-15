@@ -90,7 +90,13 @@ public abstract class TestGraphQLApiAbstract
                 buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/models/versions/2.0.1/pureModelContextData","/org/finos/legend/engine/query/graphQL/api/test/Project4_Version_2.0.1.pure",new Protocol("pure", PureClientVersions.production),new PureModelContextPointer()),
 
                 buildPMCDMetadataHandler("/api/projects/Project5/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project5_Workspace1.pure"),
-                buildJsonHandler("/api/projects/Project5/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]")
+                buildJsonHandler("/api/projects/Project5/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]"),
+
+                buildJsonHandler("/api/projects/p3/workspaces/ws1/pureModelContextData", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/pmcd_p3_ws1.json")),
+                buildJsonHandler("/api/projects/p3/workspaces/ws1/revisions/HEAD/upstreamProjects", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/p3_ws1_upstream_projects.json")),
+                buildJsonHandler("/projects/org.finos.legend.abhishoya/first-project/versions/1.0.2/pureModelContextData", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/pmcd_p1_1.0.2.json")),
+                buildJsonHandler("/projects/org.finos.legend.abhishoya/second-project/versions/1.0.1/pureModelContextData", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/pmcd_p2_1.0.1.json"))
+
         });
         server.setHandler(handlerCollection);
         server.start();
