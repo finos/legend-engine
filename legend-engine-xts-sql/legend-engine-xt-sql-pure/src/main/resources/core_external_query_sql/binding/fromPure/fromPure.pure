@@ -14,7 +14,6 @@
 
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::query::sql::metamodel::*;
 import meta::external::query::sql::transformation::queryToPure::*;
 import meta::legend::service::metamodel::*;
@@ -40,7 +39,7 @@ Class meta::external::query::sql::transformation::queryToPure::SQLSource
   mapping: meta::pure::mapping::Mapping[0..1];
   runtime: meta::core::runtime::Runtime[0..1];
   executionOptions: ExecutionOption[*];
-  executionContext: ExecutionContext[0..1];
+  executionContext: meta::pure::runtime::ExecutionContext[0..1];
   key: SQLSourceArgument[*];
 
   matches(type:String[1], arguments:SQLSourceArgument[*]) {

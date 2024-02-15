@@ -38,7 +38,7 @@ function meta::relational::functions::sqlQueryToString::h2::assertEqualsH2Compat
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::h2::getH2Versions(): Any[*]
 {
-  let conn = ^TestDatabaseConnection(type=DatabaseType.H2);
+  let conn = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
   let results = executeInDb('SELECT H2VERSION();', $conn);
   $results.rows.values;
 }

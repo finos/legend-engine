@@ -29,7 +29,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'hello', second = 'Other')])
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -54,7 +54,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name'), ^Pair<String,String>(first = 'count', second = 'People Count')])
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 2);
 
@@ -76,7 +76,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsProject::testRenameColum
          ->renameColumns([^Pair<String,String>(first = 'firstName', second = 'First Name')])
          ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($result.values.columns, 1);
 

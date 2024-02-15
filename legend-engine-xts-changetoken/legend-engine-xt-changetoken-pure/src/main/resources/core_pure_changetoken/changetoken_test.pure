@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -36,20 +36,20 @@ function <<test.Test>> meta::pure::changetoken::tests::testConstraint():Boolean[
 function <<test.Test>> meta::pure::changetoken::tests::testParse():Boolean[1]
 {
     let jsonString = '{"@type":"meta::pure::changetoken::Versions","versions":[{"@type":"meta::pure::changetoken::Version","version":"ftdm:abcdefg123"}]}';
-    let versions = $jsonString->jsonToVersions();
+    let versions = $jsonString->jsonToVersions('@type');
     assertEquals($versions.versions->at(0).version, 'ftdm:abcdefg123');
-    let jsonOutput = $versions->versionsToJson();
-    let jsonCheck = $jsonOutput->jsonToVersions();
+    let jsonOutput = $versions->versionsToJson('@type');
+    let jsonCheck = $jsonOutput->jsonToVersions('@type');
     assertEquals($jsonCheck.versions->at(0).version, 'ftdm:abcdefg123');
 }
 
-Class meta::pure::changetoken::tests::SampleClass
+Class <<access.private>> meta::pure::changetoken::tests::SampleClass
 {
   abc : Integer[1];  
 }
 
 // This is test Versions: AddField with ConstValue(^Map<String, Any>()->put('@type', 'Custom')->put('restricted', true)->put('value', 0)->put('range', ^Map<String, Any>()->put('@type', 'intMinMax')->put('min', -1)->put('max', 1)->put('round', 0.5)))
-function meta::pure::changetoken::tests::getVersionsCustomMap():Versions[1]
+function <<access.private>> meta::pure::changetoken::tests::getVersionsCustomMap():Versions[1]
 {
     ^Versions(
             versions=[

@@ -20,7 +20,6 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
 
@@ -125,7 +124,7 @@ function meta::relational::tests::mapping::filter::model::store::testDataTypeMap
 
 function meta::relational::tests::mapping::filter::model::store::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop table if exists orgTable;', $connection);
    executeInDb('Create Table orgTable(id INT, filterVal INT, parentId INT, name VARCHAR(200));', $connection);

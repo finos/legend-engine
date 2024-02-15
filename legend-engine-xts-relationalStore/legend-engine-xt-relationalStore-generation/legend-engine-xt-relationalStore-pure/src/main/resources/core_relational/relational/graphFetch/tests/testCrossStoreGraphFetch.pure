@@ -340,7 +340,6 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::mapping::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -358,15 +357,15 @@ function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::inMemoryA
     ^ConnectionStore(
       element=db1,
       connection=
-      ^TestDatabaseConnection(type=DatabaseType.H2)),
+      ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)),
     ^ConnectionStore(
       element=db2,
       connection=
-      ^TestDatabaseConnection(type=DatabaseType.H2)),
+      ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)),
     ^ConnectionStore(
       element=db3,
       connection=
-      ^TestDatabaseConnection(type=DatabaseType.H2))]);
+      ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))]);
    let dbConn1 = $runtime.connectionStores->at(0).connection->cast(@DatabaseConnection);
    let dbConn2 = $runtime.connectionStores->at(1).connection->cast(@DatabaseConnection);
    let dbConn3 = $runtime.connectionStores->at(2).connection->cast(@DatabaseConnection);

@@ -104,7 +104,6 @@ import meta::external::store::relational::runtime::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::legend::service::metamodel::*;
 import meta::pure::mapping::*;

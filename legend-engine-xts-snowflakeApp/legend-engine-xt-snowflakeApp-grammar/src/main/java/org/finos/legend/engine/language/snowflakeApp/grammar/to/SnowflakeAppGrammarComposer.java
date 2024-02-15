@@ -53,7 +53,7 @@ public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
                 "{\n" +
                 "   applicationName : '" + app.applicationName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
-                "   ownership : '" + ((DeploymentOwner)app.ownership).id + "';\n" +
+                "   ownership : Deployment { identifier: '" + ((DeploymentOwner)app.ownership).id + "'};\n" +
                 (app.description == null ? "" : "   description : '" + app.description + "';\n") +
                 (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((SnowflakeAppDeploymentConfiguration)app.activationConfiguration).activationConnection.connection + ";\n") +
                 "}";

@@ -107,7 +107,7 @@ public class HostedServiceTreeWalker
             else
             {
                 HostedServiceParserGrammar.DeploymentContext deploymentOwnerContext = ownerContext.deployment();
-                hostedService.ownership = new DeploymentOwner((deploymentOwnerContext.STRING().getText()));
+                hostedService.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(deploymentOwnerContext.STRING().getText(), true));
             }
         }
         HostedServiceParserGrammar.ServiceDocumentationContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.serviceDocumentation(), "documentation", hostedService.sourceInformation);

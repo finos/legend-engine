@@ -17,24 +17,22 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::functions::tracing::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*]):Result<T|y>[1]
 {
-  execute($f, $m, $runtime, ^ExecutionContext(), $extensions);
+  execute($f, $m, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions);
 }
 
-function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):Result<T|y>[1]
+function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:Mapping[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):Result<T|y>[1]
 {
    traceSpan(
      |meta::legend::test::mayExecuteLegendTest(
        {clientVersion, serverVersion, serializationKind, host, port |
            if($serializationKind == 'json',
             | let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::alloyExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__Extension_MANY__Result_1_';
-              let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],ExecutionContext[1], String[1], Integer[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
+              let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],meta::pure::runtime::ExecutionContext[1], String[1], Integer[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
               $xf->evaluate([$f, $m, $runtime, $exeCtx, $host, $port, $serverVersion, 'SEMI_INTERACTIVE']->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<T|y>);,
             | let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::legendExecute_FunctionDefinition_1__Mapping_1__Runtime_1__ExecutionContext_$0_1$__String_1__Integer_1__String_1__String_1__String_1__Extension_MANY__Result_1_';
-              let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],ExecutionContext[1], String[1], Integer[1], String[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
+              let xf = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<{->T[y]}>[1], Mapping[1], Runtime[1],meta::pure::runtime::ExecutionContext[1], String[1], Integer[1], String[1], String[1], String[1], meta::pure::extension::Extension[*]->Result<T|y>[1]}>);
               $xf->evaluate([$f, $m, $runtime, $exeCtx, $host, $port, $serverVersion, $serializationKind, 'FULL_INTERACTIVE']->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<T|y>);
            )
        },
@@ -48,23 +46,23 @@ function meta::pure::router::execute<T|y>(f:FunctionDefinition<{->T[y]}>[1], m:M
 
 function meta::pure::router::execute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<T|m>[1]
 {
-    $f->meta::pure::router::execute($m, $runtime, ^ExecutionContext(), $extensions, $debug);
+    $f->meta::pure::router::execute($m, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions, $debug);
 }
 
 //meant for legend engine execution only
 function meta::pure::router::executePlan(plan:ExecutionPlan[1],extensions:meta::pure::extension::Extension[*]):Result<Any|*>[0..1]
 {
-  meta::pure::router::executePlan($plan, ^ExecutionContext(), $extensions);
+  meta::pure::router::executePlan($plan, ^meta::pure::runtime::ExecutionContext(), $extensions);
 }
 
-function meta::pure::router::executePlan(plan:ExecutionPlan[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):Result<Any|*>[0..1]
+function meta::pure::router::executePlan(plan:ExecutionPlan[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):Result<Any|*>[0..1]
 {
   traceSpan(|
   (meta::legend::test::mayExecuteLegendTest
      (
        {clientVersion, serverVersion, serializationKind, host, port |
          let fStr = 'meta::protocols::pure::'+$clientVersion+'::invocation::execution::execute::executePlan_ExecutionPlan_1__ExecutionContext_$0_1$__String_1__Integer_1__Extension_MANY__Result_1_';
-         let xf = $fStr->pathToElement()->cast(@Function<{ExecutionPlan[1],ExecutionContext[1], String[1], Integer[1],meta::pure::extension::Extension[*]->Result<Any|*>[1]}>);
+         let xf = $fStr->pathToElement()->cast(@Function<{ExecutionPlan[1],meta::pure::runtime::ExecutionContext[1], String[1], Integer[1],meta::pure::extension::Extension[*]->Result<Any|*>[1]}>);
          $xf->evaluate([$plan,$exeCtx, $host, $port]->map(v|list($v))->concatenate(list($extensions)))->toOne()->cast(@Result<Any|*>);
          },
        { |

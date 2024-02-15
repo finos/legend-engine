@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2024 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.finos.legend.pure.generated.Root_meta_pure_changetoken_Versions;
+import org.finos.legend.pure.generated.core_pure_changetoken_changetoken_test;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,7 +28,8 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
     @BeforeClass
     public static void setupSuite() throws IOException, ClassNotFoundException
     {
-        setupSuite("meta::pure::changetoken::tests::getVersionsCustomMap");
+        Root_meta_pure_changetoken_Versions versions = core_pure_changetoken_changetoken_test.Root_meta_pure_changetoken_tests_getVersionsCustomMap__Versions_1_(null);
+        setupSuiteFromVersions(versions);
     }
 
     @Test

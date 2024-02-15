@@ -13,10 +13,8 @@
 // limitations under the License.
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 Class meta::core::runtime::EngineRuntime extends Runtime
@@ -67,7 +65,7 @@ function meta::core::runtime::connectionEquality(a:Connection[1], b:Connection[1
    );
 }
 
-function meta::core::runtime::getConstraintsManager(exeCtx:ExecutionContext[1]):Function<{Any[1]->Any[1]}>[0..1]
+function meta::core::runtime::getConstraintsManager(exeCtx:meta::pure::runtime::ExecutionContext[1]):Function<{Any[1]->Any[1]}>[0..1]
 {
    if ($exeCtx.enableConstraints->isNotEmpty() && $exeCtx.enableConstraints == false,
        |meta::pure::constraints::functions::noOpConstraintHandler_Any_1__Any_1_,
@@ -146,7 +144,7 @@ function meta::core::runtime::getRuntimeWithModelQueryConnection(sourceClass:Cla
 // Function signature takes Any to incorporate both Runtime & PackageableRuntime
 function meta::core::runtime::mergeRuntimes(runtimes:Any[1..*]):Runtime[1]
 {
-  $runtimes->forAll(r | $r->instanceOf(PackageableRuntime) || $r->instanceOf(Runtime));
-  let updatedRuntimes = $runtimes->filter(r | $r->instanceOf(Runtime))->concatenate($runtimes->filter(r | $r->instanceOf(PackageableRuntime))->cast(@PackageableRuntime).runtimeValue)->cast(@Runtime);
+  $runtimes->forAll(r | $r->instanceOf(meta::pure::runtime::PackageableRuntime) || $r->instanceOf(Runtime));
+  let updatedRuntimes = $runtimes->filter(r | $r->instanceOf(Runtime))->concatenate($runtimes->filter(r | $r->instanceOf(meta::pure::runtime::PackageableRuntime))->cast(@meta::pure::runtime::PackageableRuntime).runtimeValue)->cast(@Runtime);
   ^Runtime(connectionStores = $updatedRuntimes.connectionStores);
 }

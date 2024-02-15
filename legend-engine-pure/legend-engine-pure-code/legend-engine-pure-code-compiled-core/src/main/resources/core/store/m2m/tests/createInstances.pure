@@ -14,11 +14,9 @@
 
 import meta::pure::mapping::modelToModel::test::createInstances::*;
 import meta::pure::mapping::modelToModel::test::filter::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 
@@ -178,7 +176,6 @@ Mapping meta::pure::mapping::modelToModel::test::createInstances::createInstance
 
 
 ###Mapping
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::createInstances::*;
 import meta::pure::mapping::modelToModel::test::union::*;
@@ -201,7 +198,6 @@ Mapping meta::pure::mapping::modelToModel::test::createInstances::createInstance
 
 
 ###Mapping
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::union::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;

@@ -21,7 +21,6 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
 import meta::relational::metamodel::relation::*;
@@ -234,7 +233,7 @@ function <<test.Test, test.ExcludeAlloy>>  meta::relational::tests::mapping::tre
 
    let runtime = ^Runtime(connectionStores= ^ConnectionStore(
     element = myDB,
-    connection=^TestDatabaseConnection(
+    connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2,
                         sqlQueryPostProcessors = [{query:SelectSQLQuery[1] | meta::relational::postProcessor::replaceTables($query, pair($oldTable, $newTable)) }]
                     ))
@@ -298,7 +297,7 @@ function meta::relational::tests::mapping::tree::model::store::testDataTypeMappi
 {
    ^Runtime(connectionStores= ^ConnectionStore(
     element = myDB,
-    connection=^TestDatabaseConnection(
+    connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.H2
                     ))
    );
@@ -307,7 +306,7 @@ function meta::relational::tests::mapping::tree::model::store::testDataTypeMappi
 
 function meta::relational::tests::mapping::tree::model::store::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'orgTable', $connection);
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'otherOrgTable', $connection);

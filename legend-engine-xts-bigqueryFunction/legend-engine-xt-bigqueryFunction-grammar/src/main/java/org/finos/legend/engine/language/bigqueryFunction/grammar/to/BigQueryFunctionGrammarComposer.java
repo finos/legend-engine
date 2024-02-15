@@ -75,7 +75,7 @@ public class BigQueryFunctionGrammarComposer implements PureGrammarComposerExten
                 "{\n" +
                 "   functionName : '" + app.functionName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
-                (app.ownership == null ? "" : "   ownership : '" + ((DeploymentOwner)app.ownership).id + "';\n") +
+                "   ownership : Deployment { identifier: '" + ((DeploymentOwner)app.ownership).id + "' };\n" +
                 (app.description == null ? "" : "   description : '" + app.description + "';\n") +
                 (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((BigQueryFunctionDeploymentConfiguration) app.activationConfiguration).activationConnection.connection + ";\n") +
                 "}";

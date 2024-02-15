@@ -15,7 +15,6 @@
 import meta::pure::lineage::scanExecutes::*;
 import meta::pure::lineage::scanMapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
 function <<meta::pure::profiles::test.Test>> meta::pure::lineage::scanExecutes::test::testAnalytics():Boolean[1]
@@ -51,7 +50,6 @@ Mapping meta::pure::lineage::scanExecutes::test::MyMapping
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::lineage::scanProperties::propertyTree::*;
 import meta::pure::lineage::scanProperties::*;
 import meta::pure::lineage::scanExecutes::*;

@@ -29,7 +29,6 @@ import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legend
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::execution::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::metamodel::serialization::grammar::*;
 
@@ -81,7 +80,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
    let conventions = $context.conventions;
    let jsonToken   = javaClass('com.fasterxml.jackson.core.JsonToken')->typeToString($proto);
    let baos        = javaClass('java.io.ByteArrayOutputStream');
-   let recordType  = $context.conventions->className(JsonDataRecord);
+   let recordType  = $context.conventions->className(meta::pure::mapping::modelToModel::JsonDataRecord);
    let unitTypes   = $context.typeInfos->allUnitInfos()->map(uti | $uti.unit());
 
    $proto
@@ -500,7 +499,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let sourceRead      = $pureClass->readMethodName($conv);
    let ioEx            = j_parameter(javaIOException(), 'e');
    let jThis           = j_this($proto);
-   let recordType      = $conv->className(JsonDataRecord);
+   let recordType      = $conv->className(meta::pure::mapping::modelToModel::JsonDataRecord);
    let json            = j_variable(javaString(), 'json');
    let recordNumber    = j_variable(javaLong(), 'recordNumber');
    let source          = j_variable($recordType, 'source');
