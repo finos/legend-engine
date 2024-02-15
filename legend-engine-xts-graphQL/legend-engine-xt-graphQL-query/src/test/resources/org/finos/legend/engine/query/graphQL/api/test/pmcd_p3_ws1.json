@@ -1,0 +1,564 @@
+{
+  "_type": "data",
+  "serializer": {
+    "name": "pure",
+    "version": "v1_33_0"
+  },
+  "origin": {
+    "_type": "pointer",
+    "serializer": {
+      "name": "pure",
+      "version": "v1_33_0"
+    },
+    "sdlcInfo": {
+      "_type": "alloy",
+      "baseVersion": "2833b4cad370bbff18104a466b1c1a1f7bfd0e2d",
+      "version": "none",
+      "packageableElementPointers": [],
+      "project": "PROD-54896141",
+      "groupId": null,
+      "artifactId": null
+    }
+  },
+  "elements": [
+    {
+      "_type": "relational",
+      "name": "extendedDb",
+      "sourceInformation": null,
+      "includedStores": [
+        "demo::db"
+      ],
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "name": "Address",
+              "columns": [
+                {
+                  "name": "id",
+                  "type": {
+                    "_type": "Integer"
+                  },
+                  "nullable": false,
+                  "sourceInformation": null
+                },
+                {
+                  "name": "street",
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  },
+                  "nullable": true,
+                  "sourceInformation": null
+                },
+                {
+                  "name": "firm_id",
+                  "type": {
+                    "_type": "Integer"
+                  },
+                  "nullable": true,
+                  "sourceInformation": null
+                }
+              ],
+              "primaryKey": [
+                "id"
+              ],
+              "milestoning": [],
+              "sourceInformation": null
+            }
+          ],
+          "views": [],
+          "sourceInformation": null
+        }
+      ],
+      "joins": [
+        {
+          "name": "Firm_Address",
+          "target": null,
+          "operation": {
+            "_type": "dynaFunc",
+            "sourceInformation": null,
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "sourceInformation": null,
+                "table": {
+                  "_type": "Table",
+                  "table": "Address",
+                  "schema": "default",
+                  "database": "demo::extendedDb",
+                  "mainTableDb": "demo::extendedDb",
+                  "sourceInformation": null
+                },
+                "tableAlias": "Address",
+                "column": "firm_id"
+              },
+              {
+                "_type": "column",
+                "sourceInformation": null,
+                "table": {
+                  "_type": "Table",
+                  "table": "Firm",
+                  "schema": "default",
+                  "database": "demo::extendedDb",
+                  "mainTableDb": "demo::extendedDb",
+                  "sourceInformation": null
+                },
+                "tableAlias": "Firm",
+                "column": "id"
+              }
+            ]
+          },
+          "sourceInformation": null
+        }
+      ],
+      "filters": [],
+      "package": "demo"
+    },
+    {
+      "_type": "class",
+      "name": "Query",
+      "sourceInformation": null,
+      "superTypes": [],
+      "originalMilestonedProperties": [],
+      "properties": [],
+      "qualifiedProperties": [
+        {
+          "name": "firms",
+          "parameters": [],
+          "returnType": "demo::model::Firm",
+          "returnMultiplicity": {
+            "lowerBound": 0,
+            "upperBound": null
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "body": [
+            {
+              "_type": "func",
+              "sourceInformation": null,
+              "function": "getAll",
+              "fControl": null,
+              "parameters": [
+                {
+                  "_type": "packageableElementPtr",
+                  "sourceInformation": null,
+                  "fullPath": "demo::model::Firm"
+                }
+              ]
+            }
+          ],
+          "sourceInformation": null
+        },
+        {
+          "name": "persons",
+          "parameters": [],
+          "returnType": "demo::model::Person",
+          "returnMultiplicity": {
+            "lowerBound": 0,
+            "upperBound": null
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "body": [
+            {
+              "_type": "func",
+              "sourceInformation": null,
+              "function": "getAll",
+              "fControl": null,
+              "parameters": [
+                {
+                  "_type": "packageableElementPtr",
+                  "sourceInformation": null,
+                  "fullPath": "demo::model::Person"
+                }
+              ]
+            }
+          ],
+          "sourceInformation": null
+        },
+        {
+          "name": "addresses",
+          "parameters": [],
+          "returnType": "demo::model::Address",
+          "returnMultiplicity": {
+            "lowerBound": 0,
+            "upperBound": null
+          },
+          "stereotypes": [],
+          "taggedValues": [],
+          "body": [
+            {
+              "_type": "func",
+              "sourceInformation": null,
+              "function": "getAll",
+              "fControl": null,
+              "parameters": [
+                {
+                  "_type": "packageableElementPtr",
+                  "sourceInformation": null,
+                  "fullPath": "demo::model::Address"
+                }
+              ]
+            }
+          ],
+          "sourceInformation": null
+        }
+      ],
+      "stereotypes": [],
+      "taggedValues": [],
+      "constraints": [],
+      "package": "demo"
+    },
+    {
+      "_type": "connection",
+      "name": "conn",
+      "sourceInformation": null,
+      "connectionValue": {
+        "_type": "RelationalDatabaseConnection",
+        "element": "demo::extendedDb",
+        "elementSourceInformation": null,
+        "sourceInformation": null,
+        "type": "H2",
+        "timeZone": null,
+        "quoteIdentifiers": null,
+        "postProcessorWithParameter": [],
+        "datasourceSpecification": {
+          "_type": "h2Local",
+          "sourceInformation": null,
+          "testDataSetupCsv": null,
+          "testDataSetupSqls": [
+            "DROP TABLE IF EXISTS FIRM;\nCREATE TABLE FIRM\n(\n  id INTEGER PRIMARY KEY,\n  legal_name VARCHAR(200)\n);\nINSERT INTO FIRM(id, legal_name) VALUES(1, 'Dunder Mifflin');\n\nDROP TABLE IF EXISTS PERSON;\nCREATE TABLE PERSON\n(\n  id INTEGER PRIMARY KEY,\n  first_name VARCHAR(200),\n  firm_id INTEGER\n);\nINSERT INTO PERSON(id, first_name, firm_id) VALUES(1, 'Michael Scott', 1);\n\nDROP TABLE IF EXISTS ADDRESS;\nCREATE TABLE ADDRESS\n(\n  id INTEGER PRIMARY KEY,\n  street VARCHAR(200),\n  firm_id INTEGER\n);\nINSERT INTO ADDRESS(id, street, firm_id) VALUES (1, '1725 Slough Avenue', 1);\n\n"
+          ]
+        },
+        "authenticationStrategy": {
+          "_type": "h2Default",
+          "sourceInformation": null
+        },
+        "databaseType": "H2",
+        "postProcessors": [],
+        "localMode": null
+      },
+      "package": "demo"
+    },
+    {
+      "_type": "association",
+      "name": "Firm_Address",
+      "sourceInformation": null,
+      "properties": [
+        {
+          "name": "firm",
+          "type": "demo::model::Firm",
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "defaultValue": null,
+          "stereotypes": [],
+          "taggedValues": [],
+          "sourceInformation": null,
+          "propertyTypeSourceInformation": null,
+          "aggregation": null
+        },
+        {
+          "name": "addresses",
+          "type": "demo::model::Address",
+          "multiplicity": {
+            "lowerBound": 0,
+            "upperBound": null
+          },
+          "defaultValue": null,
+          "stereotypes": [],
+          "taggedValues": [],
+          "sourceInformation": null,
+          "propertyTypeSourceInformation": null,
+          "aggregation": null
+        }
+      ],
+      "originalMilestonedProperties": [],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "taggedValues": [],
+      "package": "demo"
+    },
+    {
+      "_type": "mapping",
+      "name": "extendedMapping",
+      "sourceInformation": null,
+      "classMappings": [
+        {
+          "_type": "relational",
+          "id": null,
+          "mappingClass": null,
+          "extendsClassMappingId": null,
+          "root": true,
+          "sourceInformation": null,
+          "classSourceInformation": null,
+          "primaryKey": [
+            {
+              "_type": "column",
+              "sourceInformation": null,
+              "table": {
+                "_type": "Table",
+                "table": "Address",
+                "schema": "default",
+                "database": "demo::extendedDb",
+                "mainTableDb": "demo::extendedDb",
+                "sourceInformation": null
+              },
+              "tableAlias": "Address",
+              "column": "id"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "street",
+                "sourceInformation": null,
+                "class": "demo::model::Address"
+              },
+              "source": null,
+              "target": null,
+              "localMappingProperty": null,
+              "sourceInformation": null,
+              "enumMappingId": null,
+              "relationalOperation": {
+                "_type": "column",
+                "sourceInformation": null,
+                "table": {
+                  "_type": "Table",
+                  "table": "Address",
+                  "schema": "default",
+                  "database": "demo::extendedDb",
+                  "mainTableDb": "demo::extendedDb",
+                  "sourceInformation": null
+                },
+                "tableAlias": "Address",
+                "column": "street"
+              },
+              "bindingTransformer": null
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "firm",
+                "sourceInformation": null,
+                "class": "demo::model::Address"
+              },
+              "source": null,
+              "target": "demo_model_Firm",
+              "localMappingProperty": null,
+              "sourceInformation": null,
+              "enumMappingId": null,
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "sourceInformation": null,
+                "joins": [
+                  {
+                    "db": "demo::extendedDb",
+                    "name": "Firm_Address",
+                    "joinType": null,
+                    "sourceInformation": null
+                  }
+                ],
+                "relationalElement": null
+              },
+              "bindingTransformer": null
+            }
+          ],
+          "mainTable": {
+            "_type": "Table",
+            "table": "Address",
+            "schema": "default",
+            "database": "demo::extendedDb",
+            "mainTableDb": "demo::extendedDb",
+            "sourceInformation": null
+          },
+          "distinct": false,
+          "groupBy": [],
+          "filter": null,
+          "class": "demo::model::Address"
+        },
+        {
+          "_type": "relational",
+          "id": "extendedFirm",
+          "mappingClass": null,
+          "extendsClassMappingId": "demo_model_Firm",
+          "root": true,
+          "sourceInformation": null,
+          "classSourceInformation": null,
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "addresses",
+                "sourceInformation": null,
+                "class": "demo::model::Firm"
+              },
+              "source": "extendedFirm",
+              "target": null,
+              "localMappingProperty": null,
+              "sourceInformation": null,
+              "enumMappingId": null,
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "sourceInformation": null,
+                "joins": [
+                  {
+                    "db": "demo::extendedDb",
+                    "name": "Firm_Address",
+                    "joinType": null,
+                    "sourceInformation": null
+                  }
+                ],
+                "relationalElement": null
+              },
+              "bindingTransformer": null
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "employees",
+                "sourceInformation": null,
+                "class": "demo::model::Firm"
+              },
+              "source": "extendedFirm",
+              "target": "extendedPerson",
+              "localMappingProperty": null,
+              "sourceInformation": null,
+              "enumMappingId": null,
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "sourceInformation": null,
+                "joins": [
+                  {
+                    "db": "demo::extendedDb",
+                    "name": "person_firm",
+                    "joinType": null,
+                    "sourceInformation": null
+                  }
+                ],
+                "relationalElement": null
+              },
+              "bindingTransformer": null
+            }
+          ],
+          "mainTable": {
+            "_type": "Table",
+            "table": "Firm",
+            "schema": "default",
+            "database": "demo::extendedDb",
+            "mainTableDb": "demo::extendedDb",
+            "sourceInformation": null
+          },
+          "distinct": false,
+          "groupBy": [],
+          "filter": null,
+          "class": "demo::model::Firm"
+        },
+        {
+          "_type": "relational",
+          "id": "extendedPerson",
+          "mappingClass": null,
+          "extendsClassMappingId": "demo_model_Person",
+          "root": true,
+          "sourceInformation": null,
+          "classSourceInformation": null,
+          "primaryKey": [],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "property": "lastName",
+                "sourceInformation": null,
+                "class": "demo::model::Person"
+              },
+              "source": "extendedPerson",
+              "target": null,
+              "localMappingProperty": null,
+              "sourceInformation": null,
+              "enumMappingId": null,
+              "relationalOperation": {
+                "_type": "literal",
+                "sourceInformation": null,
+                "value": "LastName"
+              },
+              "bindingTransformer": null
+            }
+          ],
+          "mainTable": {
+            "_type": "Table",
+            "table": "Person",
+            "schema": "default",
+            "database": "demo::extendedDb",
+            "mainTableDb": "demo::extendedDb",
+            "sourceInformation": null
+          },
+          "distinct": false,
+          "groupBy": [],
+          "filter": null,
+          "class": "demo::model::Person"
+        }
+      ],
+      "includedMappings": [
+        {
+          "_type": "mappingIncludeMapping",
+          "sourceInformation": null,
+          "includedMapping": "demo::mapping",
+          "sourceDatabasePath": "demo::extendedDb",
+          "targetDatabasePath": "demo::db"
+        }
+      ],
+      "associationMappings": [],
+      "enumerationMappings": [],
+      "tests": [],
+      "testSuites": null,
+      "package": "demo"
+    },
+    {
+      "_type": "runtime",
+      "name": "runtime",
+      "sourceInformation": null,
+      "runtimeValue": {
+        "_type": "engineRuntime",
+        "sourceInformation": null,
+        "mappings": [
+          {
+            "type": "MAPPING",
+            "path": "demo::extendedMapping",
+            "sourceInformation": null
+          }
+        ],
+        "connections": [
+          {
+            "store": {
+              "type": "STORE",
+              "path": "demo::extendedDb",
+              "sourceInformation": null
+            },
+            "storeConnections": [
+              {
+                "id": "connection_1",
+                "connection": {
+                  "_type": "connectionPointer",
+                  "element": null,
+                  "elementSourceInformation": null,
+                  "sourceInformation": null,
+                  "connection": "demo::conn"
+                },
+                "sourceInformation": null
+              }
+            ],
+            "sourceInformation": null
+          }
+        ],
+        "connectionStores": []
+      },
+      "package": "demo"
+    }
+  ]
+}

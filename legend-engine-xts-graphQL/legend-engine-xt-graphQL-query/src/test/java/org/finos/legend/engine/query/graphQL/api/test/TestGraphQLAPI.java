@@ -646,4 +646,30 @@ public class TestGraphQLAPI extends TestGraphQLApiAbstract
         Assert.assertEquals(1, graphQLPlanCache.getCache().stats().hitCount(), 0);
         Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0);
     }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_SDLCDependencies() throws Exception
+    {
+        GraphQLPlanCache graphQLPlanCache = new GraphQLPlanCache(getExecutionCacheInstance());
+        GraphQLExecute graphQLExecute = getGraphQLExecuteWithCache(graphQLPlanCache);
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  firms {\n" +
+                "      legalName\n" +
+                "    }\n" +
+                "  }";
+        String expected = "{" +
+                "\"data\":{" +
+                    "\"firms\":" +
+                        "{\"legalName\":\"Dunder Mifflin\"}" +
+                "}" +
+            "}";
+
+        Response response = graphQLExecute.executeDev(mockRequest, "p3", "ws1", "demo::Query", "demo::extendedMapping", "demo::runtime", query, null);
+        Assert.assertEquals(expected, responseAsString(response));
+        Assert.assertEquals(0, graphQLPlanCache.getCache().stats().hitCount(), 0);
+        Assert.assertEquals(1, graphQLPlanCache.getCache().stats().missCount(), 0);
+    }
 }

@@ -1,0 +1,10 @@
+[
+  {
+    "projectId": "org.finos.legend.abhishoya:second-project",
+    "versionId": "1.0.1"
+  },
+  {
+    "projectId": "org.finos.legend.abhishoya:first-project",
+    "versionId": "1.0.2"
+  }
+]

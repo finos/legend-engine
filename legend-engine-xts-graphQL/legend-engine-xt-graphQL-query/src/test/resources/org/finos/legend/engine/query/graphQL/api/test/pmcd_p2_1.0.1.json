@@ -1,0 +1,360 @@
+{
+  "_type": "data",
+  "elements": [
+    {
+      "_type": "association",
+      "name": "Firm_Person",
+      "originalMilestonedProperties": [],
+      "package": "demo",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firm",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "demo::model::Firm"
+        },
+        {
+          "multiplicity": {
+            "lowerBound": 0
+          },
+          "name": "employees",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "demo::model::Person"
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "relational",
+      "filters": [],
+      "includedStores": [],
+      "joins": [
+        {
+          "name": "person_firm",
+          "operation": {
+            "_type": "dynaFunc",
+            "funcName": "equal",
+            "parameters": [
+              {
+                "_type": "column",
+                "column": "id",
+                "table": {
+                  "_type": "Table",
+                  "database": "demo::db",
+                  "mainTableDb": "demo::db",
+                  "schema": "default",
+                  "table": "Firm"
+                },
+                "tableAlias": "Firm"
+              },
+              {
+                "_type": "column",
+                "column": "firm_id",
+                "table": {
+                  "_type": "Table",
+                  "database": "demo::db",
+                  "mainTableDb": "demo::db",
+                  "schema": "default",
+                  "table": "Person"
+                },
+                "tableAlias": "Person"
+              }
+            ]
+          }
+        }
+      ],
+      "name": "db",
+      "package": "demo",
+      "schemas": [
+        {
+          "name": "default",
+          "tables": [
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "legal_name",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "Firm",
+              "primaryKey": [
+                "id"
+              ]
+            },
+            {
+              "columns": [
+                {
+                  "name": "id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                },
+                {
+                  "name": "first_name",
+                  "nullable": true,
+                  "type": {
+                    "_type": "Varchar",
+                    "size": 200
+                  }
+                },
+                {
+                  "name": "firm_id",
+                  "nullable": false,
+                  "type": {
+                    "_type": "Integer"
+                  }
+                }
+              ],
+              "milestoning": [],
+              "name": "Person",
+              "primaryKey": [
+                "id",
+                "firm_id"
+              ]
+            }
+          ],
+          "views": []
+        }
+      ]
+    },
+    {
+      "_type": "mapping",
+      "associationMappings": [],
+      "classMappings": [
+        {
+          "_type": "relational",
+          "class": "demo::model::Firm",
+          "distinct": false,
+          "groupBy": [],
+          "mainTable": {
+            "_type": "Table",
+            "database": "demo::db",
+            "mainTableDb": "demo::db",
+            "schema": "default",
+            "table": "Firm"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "demo::db",
+                "mainTableDb": "demo::db",
+                "schema": "default",
+                "table": "Firm"
+              },
+              "tableAlias": "Firm"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "demo::model::Firm",
+                "property": "legalName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "legal_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "demo::db",
+                  "mainTableDb": "demo::db",
+                  "schema": "default",
+                  "table": "Firm"
+                },
+                "tableAlias": "Firm"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "demo::model::Firm",
+                "property": "employees"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "demo::db",
+                    "name": "person_firm"
+                  }
+                ]
+              },
+              "target": "demo_model_Person"
+            }
+          ],
+          "root": true
+        },
+        {
+          "_type": "relational",
+          "class": "demo::model::Person",
+          "distinct": false,
+          "groupBy": [],
+          "mainTable": {
+            "_type": "Table",
+            "database": "demo::db",
+            "mainTableDb": "demo::db",
+            "schema": "default",
+            "table": "Person"
+          },
+          "primaryKey": [
+            {
+              "_type": "column",
+              "column": "id",
+              "table": {
+                "_type": "Table",
+                "database": "demo::db",
+                "mainTableDb": "demo::db",
+                "schema": "default",
+                "table": "Person"
+              },
+              "tableAlias": "Person"
+            },
+            {
+              "_type": "column",
+              "column": "firm_id",
+              "table": {
+                "_type": "Table",
+                "database": "demo::db",
+                "mainTableDb": "demo::db",
+                "schema": "default",
+                "table": "Person"
+              },
+              "tableAlias": "Person"
+            }
+          ],
+          "propertyMappings": [
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "demo::model::Person",
+                "property": "firstName"
+              },
+              "relationalOperation": {
+                "_type": "column",
+                "column": "first_name",
+                "table": {
+                  "_type": "Table",
+                  "database": "demo::db",
+                  "mainTableDb": "demo::db",
+                  "schema": "default",
+                  "table": "Person"
+                },
+                "tableAlias": "Person"
+              }
+            },
+            {
+              "_type": "relationalPropertyMapping",
+              "property": {
+                "class": "demo::model::Person",
+                "property": "firm"
+              },
+              "relationalOperation": {
+                "_type": "elemtWithJoins",
+                "joins": [
+                  {
+                    "db": "demo::db",
+                    "name": "person_firm"
+                  }
+                ]
+              },
+              "target": "demo_model_Firm"
+            }
+          ],
+          "root": true
+        }
+      ],
+      "enumerationMappings": [],
+      "includedMappings": [],
+      "name": "mapping",
+      "package": "demo",
+      "tests": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Firm",
+      "originalMilestonedProperties": [],
+      "package": "demo::model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "legalName",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    },
+    {
+      "_type": "class",
+      "constraints": [],
+      "name": "Person",
+      "originalMilestonedProperties": [],
+      "package": "demo::model",
+      "properties": [
+        {
+          "multiplicity": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "name": "firstName",
+          "stereotypes": [],
+          "taggedValues": [],
+          "type": "String"
+        }
+      ],
+      "qualifiedProperties": [],
+      "stereotypes": [],
+      "superTypes": [],
+      "taggedValues": []
+    }
+  ],
+  "origin": {
+    "_type": "pointer",
+    "sdlcInfo": {
+      "_type": "alloy",
+      "baseVersion": "1.0.1",
+      "packageableElementPointers": [],
+      "project": "org.finos.legend.abhishoya:second-project",
+      "version": "none"
+    },
+    "serializer": {
+      "name": "pure",
+      "version": "v1_33_0"
+    }
+  },
+  "serializer": {
+    "name": "pure",
+    "version": "v1_33_0"
+  }
+}
