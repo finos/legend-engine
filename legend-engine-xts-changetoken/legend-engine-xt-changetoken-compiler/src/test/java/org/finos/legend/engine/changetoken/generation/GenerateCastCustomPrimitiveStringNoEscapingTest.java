@@ -15,21 +15,45 @@
 package org.finos.legend.engine.changetoken.generation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.finos.legend.pure.generated.Root_meta_pure_changetoken_Versions;
-import org.finos.legend.pure.generated.core_pure_changetoken_changetoken_test;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
-public class GenerateCastCustomMapTest extends GenerateCastTestBase
+public class GenerateCastCustomPrimitiveStringNoEscapingTest extends GenerateCastTestBase
 {
     @BeforeClass
     public static void setupSuite() throws IOException, ClassNotFoundException
     {
-        Root_meta_pure_changetoken_Versions versions = core_pure_changetoken_changetoken_test.Root_meta_pure_changetoken_tests_getVersionsCustomMap__Versions_1_(null);
-        setupSuiteFromVersions(versions);
+        setupSuiteFromJson("{\n" +
+                "  \"@type\": \"meta::pure::changetoken::Versions\",\n" +
+                "  \"versions\": [\n" +
+                "    {\n" +
+                "      \"@type\": \"meta::pure::changetoken::Version\",\n" +
+                "      \"version\": \"ftdm:abcdefg123\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "      \"@type\": \"meta::pure::changetoken::Version\",\n" +
+                "      \"version\": \"ftdm:abcdefg456\",\n" +
+                "      \"prevVersion\": \"ftdm:abcdefg123\",\n" +
+                "      \"changeTokens\": [\n" +
+                "        {\n" +
+                "          \"@type\": \"meta::pure::changetoken::AddField\",\n" +
+                "          \"fieldName\": \"abc\",\n" +
+                "          \"fieldType\": \"Custom[1]\",\n" +
+                "          \"defaultValue\": {\n" +
+                "            \"@type\": \"meta::pure::changetoken::ConstValue\",\n" +
+                "            \"value\": \"\\\"1970-01-01T00:00:01Z\\\"\"\n" +
+                "          },\n" +
+                "          \"safeCast\": true,\n" +
+                "          \"class\": \"meta::pure::changetoken::tests::SampleClass\"\n" +
+                "        }\n" +
+                "      ]\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n",
+                true, false, false);
     }
 
     @Test
@@ -47,12 +71,12 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}\n" +
+                        "  \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"\n" +
                         "}\n");
     }
 
@@ -62,12 +86,12 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
         expect(downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}\n" +
+                        "  \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"\n" +
                         "}", "ftdm:abcdefg123"),
                 "{\n" +
                         "  \"version\":\"ftdm:abcdefg123\", \n" +
@@ -86,13 +110,13 @@ public class GenerateCastCustomMapTest extends GenerateCastTestBase
         exception(() -> downcast("{\n" +
                         "  \"version\":\"ftdm:abcdefg456\",\n" +
                         "  \"@type\": \"meta::pure::changetoken::tests::SampleClass\",\n" +
-                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
+                        "  \"innerObject\": {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"},\n" +
                         "  \"innerNestedArray\":[\n" +
-                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}},\n" +
-                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.5}, \"value\":0}}]\n" +
+                        "    {\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"},\n" +
+                        "    [{\"@type\": \"meta::pure::changetoken::tests::SampleClass\", \"abc\": \"\\\"1970-01-01T00:00:01Z\\\"\"}]\n" +
                         "  ],\n" +
-                        "  \"abc\": {\"@type\":\"Custom\", \"restricted\":true, \"range\":{\"min\":-1, \"max\":1, \"@type\":\"intMinMax\", \"round\":0.0}, \"value\":1}}\n" +
+                        "  \"abc\": \"2023-06-22T18:30:01Z\"\n" +
                         "}", "ftdm:abcdefg123"),
-                "Cannot remove non-default value:{@type=Custom, restricted=true, range={min=-1, round=0.0, max=1, @type=intMinMax}, value=1}");
+                "Cannot remove non-default value:2023-06-22T18:30:01Z");
     }
 }

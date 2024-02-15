@@ -272,20 +272,17 @@ function meta::external::query::graphQL::transformation::queryToPure::getPlanFor
                                                                           extensions:meta::pure::extension::Extension[*]
                                                                       ):meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan[*]
 {
-  let tree = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($query, $cl);
-  let res = $tree->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
-
-  $res->map(r|
+  meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery($cl, $query)->map(r|
     ^meta::external::query::graphQL::transformation::queryToPure::NamedExecutionPlan(
       name = $r.propertyName + '@totalCount',
       plan =  meta::pure::executionPlan::executionPlan(
-                meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($tree, $r, $query),
+                meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($r, $query),
                 $mapping,
                 $runtime,
                 $extensions
               )
-  ));
-
+    )
+  );
 }
 
 function meta::external::query::graphQL::transformation::queryToPure::isASortingFunction(func: Function<Any>[1]): Boolean[1]
@@ -310,9 +307,9 @@ function meta::external::query::graphQL::transformation::queryToPure::isALimitin
   )
 }
 
-function meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective(tree: RootGraphFetchTree<Any>[1], r: meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[1], query: meta::external::query::graphQL::metamodel::sdl::Document[1]): FunctionDefinition<Any>[1]
+function meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective(r: meta::pure::graphFetch::domain::ExtractedDomainClassWithParameters[1], query: meta::external::query::graphQL::metamodel::sdl::Document[1]): FunctionDefinition<Any>[1]
 {
-  let parameters = $tree.subTrees->cast(@meta::pure::graphFetch::PropertyGraphFetchTree)->evaluateAndDeactivate()->at(0).property.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->tail()->evaluateAndDeactivate();
+  let parameters = $r.functionDef.classifierGenericType.typeArguments.rawType->cast(@FunctionType).parameters->evaluateAndDeactivate();
   let expressionSequence = $r.functionDef.expressionSequence;
   let getAll = $expressionSequence->last()->toOne()->cast(@SimpleFunctionExpression);
   let funcWithoutGraphFetchSerialize = $expressionSequence->last()->toOne()

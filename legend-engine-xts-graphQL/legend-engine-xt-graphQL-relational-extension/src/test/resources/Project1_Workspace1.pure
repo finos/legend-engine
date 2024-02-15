@@ -23,7 +23,17 @@ Class simple::model::Query
                                                            let end = $start + $limit;
                                                            Person.all()->slice($start, $end);
                                                          }: simple::model::Person[*];
-  
+  employees(firstNameContains: String[1], offset: Integer[1], limit: Integer[1]) {
+    let start = $offset - 1;
+    let end = $start + $limit;
+    Person.all()->filter(p|$p.firstName->contains($firstNameContains))->slice($start, $end);
+  }: Person[*];
+  allEmployees(offset: Integer[1],limit: Integer[1])  {
+    let start = $offset - 1;
+    let end = $start + $limit;
+    Person.all()->sortBy(p|$p.firstName + $p.lastName)->slice($start, $end);
+  }: simple::model::Person[*];
+
 }
 
 Class simple::model::Firm

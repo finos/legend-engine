@@ -22,6 +22,8 @@ function <<access.private>> meta::pure::changetoken::cast_generation::handleAddF
     token: AddRemoveField[1],
     objVar: Code[1],
     typeVar: Code[1],
+    typeKeyName: String[1],
+    obsoleteJsonAsString: Boolean[1],
     version: String[1],
     pathVar: Code[1],
     rootObjVar: Code[1],
@@ -32,7 +34,7 @@ function <<access.private>> meta::pure::changetoken::cast_generation::handleAddF
         $token.defaultValue->match([
             df: ConstValue[1] |
             [
-                $valVar->j_declare(getValueAsFieldType($token.fieldType, $df.value)),
+                $valVar->j_declare(getValueAsFieldType($token.fieldType, $df.value, $typeKeyName, $obsoleteJsonAsString)),
                 j_if($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
                     javaRuntimeException()->j_new([j_string('Cannot overwrite existing non-default value:')->j_plus($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
                 $resVar->j_invoke('put', [j_string($token.fieldName), $valVar], javaVoid())
