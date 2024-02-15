@@ -99,7 +99,6 @@ Mapping meta::relational::graphFetch::tests::crossDatabase::CrossMappingWithRelO
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::graphFetch::tests::crossDatabase::*;
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;

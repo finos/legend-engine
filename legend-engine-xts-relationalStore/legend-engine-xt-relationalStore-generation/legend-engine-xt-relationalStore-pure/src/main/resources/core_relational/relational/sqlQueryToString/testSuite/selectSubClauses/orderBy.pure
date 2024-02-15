@@ -18,8 +18,6 @@ import meta::external::store::relational::tests::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::orderBy::testSimpleSortAsc(config:DbTestConfig[1]):Boolean[1]
 {
   let result = executeViaPlan(|Person.all()->project([#/Person/firstName!name#])->sort('name'), simpleRelationalMapping, meta::relational::tests::db, $config, meta::relational::extension::relationalExtensions());

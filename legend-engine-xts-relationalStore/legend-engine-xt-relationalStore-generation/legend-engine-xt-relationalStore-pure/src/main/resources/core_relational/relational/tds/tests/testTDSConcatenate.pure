@@ -30,7 +30,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testSimpleC
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -55,7 +55,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testMultiCo
             ])
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -77,7 +77,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -98,7 +98,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')])->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello'))
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -120,7 +120,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')]))
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -141,7 +141,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->concatenate(Person.all()->project([col(p|$p.lastName, 'lastName')])->filter(row:TDSRow[1]| $row.getString('lastName') == 'hello'))
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -163,7 +163,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->filter(row:TDSRow[1]| $row.getString('lastName') != 'hello')
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -185,7 +185,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsConcatenate::testConcate
          ->filter(row:TDSRow[1]| $row.getString('lastName') == 'hello')
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 
@@ -209,7 +209,7 @@ function <<test.Test, test.ToFix>> meta::relational::tests::tds::tdsConcatenate:
          ->restrict(['lhs_lastName', 'rhs_firstName'])
       ,
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    let tds = $result.values->toOne()->sort([asc('lastName')]);
 

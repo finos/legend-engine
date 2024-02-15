@@ -26,7 +26,7 @@ import meta::external::store::relational::tests::*;
 
 function <<test.BeforePackage>> meta::relational::tests::milestoning::distinct::setUp():Any[0..1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime(milestoningdistinctdb).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime(milestoningdistinctdb).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('drop table if exists ProductTable;',$connection);
    executeInDb('create table ProductTable (id Integer, name VARCHAR(200),type VARCHAR(200), from_z TIMESTAMP, thru_z TIMESTAMP);',$connection);
@@ -39,7 +39,7 @@ function <<test.BeforePackage>> meta::relational::tests::milestoning::distinct::
 function <<test.Test>> meta::relational::tests::milestoning::distinct::testDistinctUsageAtRootOfMilestonedQuery():Boolean[1]
 {
    let busDate = %2015-10-16;
-   let result = execute(|Product.all(%2015-8-16)->project([p|$p.id, p|$p.name, p|$p.type],['id','name', 'type']), milestoningdistinctmapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Product.all(%2015-8-16)->project([p|$p.id, p|$p.name, p|$p.type],['id','name', 'type']), milestoningdistinctmapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->at(0);
    assertEquals(['1,ProductName,STOCK', '2,ProductName1,STOCK'], $tds.rows->map(r|$r.values->makeString(','))->sort());
    assertEqualsH2Compatible(

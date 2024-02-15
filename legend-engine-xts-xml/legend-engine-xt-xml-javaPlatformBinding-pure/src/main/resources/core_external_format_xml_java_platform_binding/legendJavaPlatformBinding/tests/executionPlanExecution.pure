@@ -21,8 +21,6 @@ import meta::legend::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> meta::external::format::xml::executionPlan::platformBinding::legendJava::test::testInternalizeExternalizeSimple(): Boolean[1]
 {
   let binding = getTestBinding();
@@ -54,5 +52,5 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 
 function meta::external::format::xml::executionPlan::platformBinding::legendJava::test::executeXSDBindingQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): String[1]
 {
-  meta::legend::executeLegendQuery($f, $vars, ^ExecutionContext(), getExtensions());
+  meta::legend::executeLegendQuery($f, $vars, ^meta::pure::runtime::ExecutionContext(), getExtensions());
 }

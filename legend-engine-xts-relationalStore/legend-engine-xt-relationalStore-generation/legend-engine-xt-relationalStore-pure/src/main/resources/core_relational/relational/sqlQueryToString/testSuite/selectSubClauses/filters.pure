@@ -19,7 +19,6 @@ import meta::relational::tests::model::simple::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::router::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::filters::testSelectEqual(config:DbTestConfig[1]):Boolean[1]

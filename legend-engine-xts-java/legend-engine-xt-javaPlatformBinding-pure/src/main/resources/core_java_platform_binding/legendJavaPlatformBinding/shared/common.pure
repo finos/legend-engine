@@ -32,7 +32,6 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::metamodel::constraint::*;
 import meta::pure::graphFetch::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::milestoning::*;

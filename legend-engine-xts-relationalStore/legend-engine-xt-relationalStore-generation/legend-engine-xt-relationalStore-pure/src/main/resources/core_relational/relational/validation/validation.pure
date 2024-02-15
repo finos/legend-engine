@@ -18,7 +18,6 @@ import meta::relational::extension::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::execution::*;
 import meta::pure::router::clustering::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::relational::validation::functions::*;
 import meta::relational::metamodel::*;
@@ -29,7 +28,6 @@ import meta::pure::metamodel::constraint::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
 function meta::relational::validation::validate<T>(func: FunctionDefinition<{->T[*]}>[1], m:Mapping[1], runtime:Runtime[1], extensions: Extension[*]):Result<TabularDataSet|1>[1]

@@ -28,12 +28,10 @@ import meta::pure::mapping::modelToModel::test::simple::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<test.Test>> meta::pure::router::preeval::tests::testPrerouting41():Boolean[1]
 {
   let runtime = ^Runtime();
-  let context = ^ExecutionContext();
+  let context = ^meta::pure::runtime::ExecutionContext();
 
   let input = {|
        meta::pure::router::preeval::tests::Person.all()

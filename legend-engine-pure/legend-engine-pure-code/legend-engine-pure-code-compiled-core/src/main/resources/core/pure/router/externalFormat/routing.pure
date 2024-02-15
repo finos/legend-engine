@@ -23,8 +23,6 @@ import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::printer::*;
 import meta::pure::router::routing::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 // =========================================================================================
 // ExternalFormat Routing Strategy Builder Helper
 // =========================================================================================
@@ -38,19 +36,19 @@ function meta::pure::router::externalFormat::routing::getExternalFormatRoutingSt
                                  toString        = {strategy:RoutingStrategy[1] | 'ExternalFormatRoutingStrategy'});
 }
 
-function <<access.private>> meta::pure::router::externalFormat::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
+function <<access.private>> meta::pure::router::externalFormat::routing::processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1]):RoutingState[1]
 {
    print(if($debug.debug,|$debug.space+'~>C) (ExternalFormatRoutingStrategy) '+$state.value->toOne()->toString()+'\n',|''));
    $state;
 }
 
-function <<access.private>> meta::pure::router::externalFormat::routing::processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
+function <<access.private>> meta::pure::router::externalFormat::routing::processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):RoutingState[1]
 {
    fail('Property processing not supported by ExternalFormatRoutingStrategy!!');
    $state;
 }
 
-function <<access.private>> meta::pure::router::externalFormat::routing::wrapValueSpecification(value:ValueSpecification[1], routingStrategy:RoutingStrategy[1], id:String[1], executionContext:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[1]
+function <<access.private>> meta::pure::router::externalFormat::routing::wrapValueSpecification(value:ValueSpecification[1], routingStrategy:RoutingStrategy[1], id:String[1], executionContext:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExtendedRoutedValueSpecification[1]
 {
    ^ExternalFormatRoutedValueSpecification
    (
@@ -68,11 +66,11 @@ function <<access.private>> meta::pure::router::externalFormat::routing::wrapVal
 // Special Functions
 // ===================================================================================
 
-function meta::pure::router::externalFormat::routing::specializedFunctionExpressionRouterProcessorForExternalFormat():Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
+function meta::pure::router::externalFormat::routing::specializedFunctionExpressionRouterProcessorForExternalFormat():Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*]
 {
   [
     pair(fe:FunctionExpression[1] | $fe.func->in(meta::external::format::shared::functions::externalizeFunctions()),
-        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
             let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->match([
                                                                       b:meta::external::format::shared::binding::Binding[1] | $b,
                                                                       s:String[1] | ^meta::external::format::shared::binding::Binding(name = 'generatedBinding', package = meta::pure::router::externalFormat::routing, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = $fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)))
@@ -98,7 +96,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
         }
     ),
     pair(fe:FunctionExpression[1] | $fe.func->in(meta::external::format::shared::functions::externalizeTDSFunctions()),
-        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
             let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->match([
                                                                       b:meta::external::format::shared::binding::Binding[1] | $b,
                                                                       s:String[1] | ^meta::external::format::shared::binding::Binding(name = 'generatedBinding', package = meta::pure::router::externalFormat::routing, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = $fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)))
@@ -130,7 +128,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
         }
     ),
     pair(fe:FunctionExpression[1] | $fe.func->in(meta::external::format::shared::functions::internalizeFunctions()),
-        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+        {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
             let binding              = $fe.parametersValues->at(1)->cast(@InstanceValue).values->at(0)->match([
                                                                       b:meta::external::format::shared::binding::Binding[1] | $b,
                                                                       s:String[1] | ^meta::external::format::shared::binding::Binding(name = 'generatedBinding', package = meta::pure::router::externalFormat::routing, contentType = $s, modelUnit = ^meta::pure::model::unit::ModelUnit(packageableElementIncludes = $fe.parametersValues->at(0).genericType.rawType->cast(@Class<Any>)))
@@ -160,7 +158,7 @@ function meta::pure::router::externalFormat::routing::specializedFunctionExpress
 // ExternalFormatRoutedValueSpecification enrichment Strategy
 // =========================================================================================
 
-function meta::pure::router::externalFormat::routing::enrichExternalFormatRoutedValueSpecification(v:ValueSpecification[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
+function meta::pure::router::externalFormat::routing::enrichExternalFormatRoutedValueSpecification(v:ValueSpecification[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[1]
 {
    $v->match([f:FunctionExpression[1]                | ^$f(parametersValues = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->enrichExternalFormatRoutedValueSpecification($exeCtx, $extensions, $debug))),
               i:InstanceValue[1]                     | let updatedValues = $i.values->map(val | $val->match([
@@ -179,7 +177,7 @@ function meta::pure::router::externalFormat::routing::enrichExternalFormatRouted
 // ExternalFormatRoutedValueSpecification clustering Strategy
 // =========================================================================================
 
-function meta::pure::router::externalFormat::clustering::cluster(v:ValueSpecification[1], binding:meta::external::format::shared::binding::Binding[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[*]
+function meta::pure::router::externalFormat::clustering::cluster(v:ValueSpecification[1], binding:meta::external::format::shared::binding::Binding[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ValueSpecification[*]
 {
    $v->match([f:FunctionExpression[1]                | let params = $f.parametersValues->evaluateAndDeactivate()->map(v|$v->cluster($binding, $openVariables, $exeCtx, $extensions, ^$debug(space = $debug.space+'   ')));
                                                        if($f->externalFormatSupportsFunction(),
@@ -233,7 +231,7 @@ function meta::pure::router::externalFormat::clustering::cluster(v:ValueSpecific
    );
 }
 
-function meta::pure::router::externalFormat::clustering::wrapValueSpecByExternalFormatCluster(vs:ValueSpecification[1], binding:meta::external::format::shared::binding::Binding[1], openVariables:Map<String, List<Any>>[1], exeCtx:ExecutionContext[1]):ExternalFormatClusteredValueSpecification[1]
+function meta::pure::router::externalFormat::clustering::wrapValueSpecByExternalFormatCluster(vs:ValueSpecification[1], binding:meta::external::format::shared::binding::Binding[1], openVariables:Map<String, List<Any>>[1], exeCtx:meta::pure::runtime::ExecutionContext[1]):ExternalFormatClusteredValueSpecification[1]
 {
   ^ExternalFormatClusteredValueSpecification
   (

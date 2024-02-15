@@ -24,7 +24,7 @@ function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[
 {
    createTablesAndFillDb();
 
-   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    //firm with no people
    executeInDb('insert into FirmTable (id, legalName, addressId) values (8, \'No Employees\', 11);', $connection);
 
@@ -43,14 +43,14 @@ function <<test.BeforePackage>> meta::relational::tests::query::setUp():Boolean[
 
 function <<test.Test>> meta::relational::tests::query::simple::testAll():Boolean[1]
 {
-   let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Person.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values, 12);
    assertEquals('select "root".ID as "pk_0", "root".FIRSTNAME as "firstName", "root".AGE as "age", "root".LASTNAME as "lastName" from personTable as "root"', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_32_0'} meta::relational::tests::query::simple::testSQLComments():Boolean[1]
 {
-   let result = execute(|Person.all(), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Person.all(), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assert($result.activities->at(0)->cast(@RelationalActivity).comment->toOne()->meta::pure::functions::string::matches('-- \"executionTraceID\" : \"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\"'));
 }
 

@@ -234,8 +234,6 @@ import meta::relational::tests::csv::*;
 import meta::relational::validation::*;
 import meta::relational::metamodel::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<test.BeforePackage>> meta::relational::validation::complex::createTablesInDb():Boolean[1]
 {
    let runtime    = getRuntime();

@@ -24,7 +24,6 @@ import meta::relational::functions::pureToSqlQuery::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::relational::functions::sqlstring::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::metamodel::*;

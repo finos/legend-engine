@@ -16,14 +16,12 @@ import meta::pure::mapping::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::routing::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<doc.deprecated>> meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
-   routeFunction($f, $mapping, $runtime, ^ExecutionContext(), $extensions, $debug);
+   routeFunction($f, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions, $debug);
 }
 
-function <<doc.deprecated>> meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
+function <<doc.deprecated>> meta::pure::router::routeFunction(f:FunctionDefinition<Any>[1], mapping:Mapping[1], runtime:Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):FunctionDefinition<Any>[1]
 {
    routeFunction($f, getRoutingStrategyFromMappingAndRuntime($mapping, $runtime, $extensions), $exeCtx, [], $extensions, $debug)
 }

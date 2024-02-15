@@ -16,7 +16,6 @@ import meta::relational::tests::mapping::merge::*;
 import meta::relational::tests::csv::*;
 import meta::relational::metamodel::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::model::simple::*;
 import meta::relational::tests::mapping::union::*;
 import meta::external::store::relational::runtime::*;
@@ -41,7 +40,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::merge::setUp()
 
 function meta::relational::tests::mapping::merge::createTables():Boolean[1]
 {
-   let connection = createRuntime(MergeAliasDb).connectionByElement(MergeAliasDb)->cast(@TestDatabaseConnection);
+   let connection = createRuntime(MergeAliasDb).connectionByElement(MergeAliasDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop table if exists AddressSet;', $connection);
    executeInDb('Create Table AddressSet (ownerName VARCHAR(200), name VARCHAR(200));', $connection);

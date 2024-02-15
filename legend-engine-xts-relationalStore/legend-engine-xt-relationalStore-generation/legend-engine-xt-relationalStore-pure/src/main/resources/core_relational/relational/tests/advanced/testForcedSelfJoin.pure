@@ -69,7 +69,6 @@ import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::advanced::forcedselfjoin::*;
 
 function meta::relational::tests::advanced::forcedselfjoin::testRuntime():Runtime[1]
@@ -79,7 +78,7 @@ function meta::relational::tests::advanced::forcedselfjoin::testRuntime():Runtim
 
 function <<test.BeforePackage>> meta::relational::tests::advanced::forcedselfjoin::setUp(): Any[*]
 {
-   let connection = testRuntime().connectionByElement(IsolationTestDb)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(IsolationTestDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    executeInDb('Drop table if exists PersonTable;',$connection);
    executeInDb('Create Table PersonTable(id INT, firstName VARCHAR(200), lastName VARCHAR(200), orgId INT, addressId INT, firmId INT, managerId INT);', $connection);
    executeInDb('insert into PersonTable (id, firstName, lastName, orgId, addressId, firmId, managerId) values (1, \'Peter\', \'Smith\',17, 1,1,2);', $connection);
@@ -111,7 +110,7 @@ function <<test.BeforePackage>> meta::relational::tests::advanced::forcedselfjoi
 
 function <<test.AfterPackage>> meta::relational::tests::advanced::forcedselfjoin::TearDown(): Any[*]
 {
-   let connection = testRuntime().connectionByElement(IsolationTestDb)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(IsolationTestDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    executeInDb('Drop table if exists PersonTable;',$connection);
    executeInDb('Drop table if exists FirmTable;', $connection);
    executeInDb('Drop table if exists productTable;',$connection);
