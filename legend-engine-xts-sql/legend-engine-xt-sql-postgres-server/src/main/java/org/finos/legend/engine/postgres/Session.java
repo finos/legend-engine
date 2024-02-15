@@ -35,6 +35,7 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.utils.ExceptionUtil;
+import org.finos.legend.engine.postgres.utils.PrometheusCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +53,8 @@ public class Session implements AutoCloseable
     {
         this.executorService = executorService;
         this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
+        PrometheusCollector.ACTIVE_SESSIONS.inc();
+        PrometheusCollector.TOTAL_SESSIONS.inc();
     }
 
     public CompletableFuture<?> sync()
@@ -83,7 +86,7 @@ public class Session implements AutoCloseable
         Prepared p = new Prepared();
         p.name = statementName;
         p.sql = query;
-        p.paramType = paramTypes.toArray(new Integer[]{});
+        p.paramType = paramTypes.toArray(new Integer[] {});
 
         if (query != null)
         {
@@ -247,6 +250,7 @@ public class Session implements AutoCloseable
     public void close()
     {
         clearState();
+        PrometheusCollector.ACTIVE_SESSIONS.dec();
     }
 
     public void close(char type, String name)
@@ -495,6 +499,9 @@ public class Session implements AutoCloseable
         @Override
         public Boolean call() throws Exception
         {
+            PrometheusCollector.TOTAL_EXECUTE.inc();
+            PrometheusCollector.ACTIVE_EXECUTE.inc();
+            long startTime = System.currentTimeMillis();
             try
             {
                 boolean results = statement.execute(query);
@@ -508,10 +515,17 @@ public class Session implements AutoCloseable
                     resultSetReceiver.sendResultSet(rs);
                     resultSetReceiver.allFinished();
                 }
+                PrometheusCollector.TOTAL_SUCCESS_EXECUTE.inc();
+                PrometheusCollector.EXECUTE_DURATION.observe(System.currentTimeMillis() - startTime);
             }
             catch (Exception e)
             {
                 resultSetReceiver.fail(e);
+                PrometheusCollector.TOTAL_FAILURE_EXECUTE.inc();
+            }
+            finally
+            {
+                PrometheusCollector.ACTIVE_EXECUTE.dec();
             }
             return true;
         }
@@ -531,6 +545,9 @@ public class Session implements AutoCloseable
         @Override
         public Boolean call() throws Exception
         {
+            PrometheusCollector.TOTAL_EXECUTE.inc();
+            PrometheusCollector.ACTIVE_EXECUTE.inc();
+            long startTime = System.currentTimeMillis();
             try
             {
                 boolean results = preparedStatement.execute();
@@ -544,10 +561,18 @@ public class Session implements AutoCloseable
                     resultSetReceiver.sendResultSet(rs);
                     resultSetReceiver.allFinished();
                 }
+                PrometheusCollector.TOTAL_SUCCESS_EXECUTE.inc();
             }
             catch (Exception e)
             {
                 resultSetReceiver.fail(e);
+                PrometheusCollector.TOTAL_FAILURE_EXECUTE.inc();
+                PrometheusCollector.EXECUTE_DURATION.observe(System.currentTimeMillis() - startTime);
+
+            }
+            finally
+            {
+                PrometheusCollector.ACTIVE_EXECUTE.dec();
             }
             return true;
         }

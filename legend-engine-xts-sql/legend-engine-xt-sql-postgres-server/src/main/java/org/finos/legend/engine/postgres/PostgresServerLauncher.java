@@ -16,6 +16,10 @@ package org.finos.legend.engine.postgres;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.prometheus.metrics.core.metrics.Counter;
+import io.prometheus.metrics.exporter.httpserver.HTTPServer;
+import io.prometheus.metrics.instrumentation.jvm.JvmMetrics;
+import io.prometheus.metrics.model.snapshots.Unit;
 import java.io.File;
 
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
@@ -62,6 +66,15 @@ public class PostgresServerLauncher
         AuthenticationMethod authenticationMethod = serverConfig.buildAuthenticationMethod();
 
         logger.info("Starting server in port: " + serverConfig.getPort());
+
+
+        JvmMetrics.builder().register();
+
+        HTTPServer server = HTTPServer.builder().port(serverConfig.getMetricsPort()).buildAndStart();
+
+        System.out.println("HTTPServer listening on port http://localhost:" + server.getPort() + "/metrics");
+
+
         new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod).run();
     }
 

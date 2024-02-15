@@ -39,6 +39,7 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.postgres.utils.ExceptionUtil;
+import org.finos.legend.engine.postgres.utils.PrometheusCollector;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.ietf.jgss.GSSContext;
@@ -807,24 +808,41 @@ public class PostgresWireProtocol
      */
     private void handleDescribeMessage(ByteBuf buffer, Channel channel) throws Exception
     {
-        byte type = buffer.readByte();
-        String portalOrStatement = readCString(buffer);
-        DescribeResult describeResult = session.describe((char) type, portalOrStatement);
-        PostgresResultSetMetaData fields = describeResult.getFields();
-        if (type == 'S')
+        PrometheusCollector.TOTAL_METADATA.inc();
+        PrometheusCollector.ACTIVE_METADATA.inc();
+        long startTime = System.currentTimeMillis();
+        try
         {
-            ParameterMetaData parameters = describeResult.getParameters();
-            Messages.sendParameterDescription(channel, parameters);
+            byte type = buffer.readByte();
+            String portalOrStatement = readCString(buffer);
+            DescribeResult describeResult = session.describe((char) type, portalOrStatement);
+            PostgresResultSetMetaData fields = describeResult.getFields();
+            if (type == 'S')
+            {
+                ParameterMetaData parameters = describeResult.getParameters();
+                Messages.sendParameterDescription(channel, parameters);
+            }
+            if (fields == null)
+            {
+                Messages.sendNoData(channel);
+            }
+            else
+            {
+                FormatCodes.FormatCode[] resultFormatCodes =
+                        type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
+                Messages.sendRowDescription(channel, fields, resultFormatCodes);
+            }
+            PrometheusCollector.TOTAL_SUCCESS_METADATA.inc();
+            PrometheusCollector.METADATA_DURATION.observe(System.currentTimeMillis() - startTime);
         }
-        if (fields == null)
+        catch (Exception e)
         {
-            Messages.sendNoData(channel);
+            PrometheusCollector.TOTAL_FAILURE_METADATA.inc();
+            throw e;
         }
-        else
+        finally
         {
-            FormatCodes.FormatCode[] resultFormatCodes =
-                    type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
-            Messages.sendRowDescription(channel, fields, resultFormatCodes);
+            PrometheusCollector.ACTIVE_METADATA.dec();
         }
     }
 
@@ -1054,7 +1072,7 @@ public class PostgresWireProtocol
         {
             final GSSName gssName = manager.createName(this.accountPrincipal, GSSName.NT_USER_NAME);
             return manager
-                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[]{
+                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[] {
                             new Oid("1.2.840.113554.1.2.2"),    // Kerberos v5
                             new Oid("1.3.6.1.5.5.2")            // SPNEGO
                     }, GSSCredential.ACCEPT_ONLY);

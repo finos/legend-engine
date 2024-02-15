@@ -1,5 +1,6 @@
 {
   "port": 9998,
+  "metricsPort" : 8802,
   "authenticationMethod": "NO_PASSWORD",
   "identityType": "ANONYMOUS",
   "handler": {
