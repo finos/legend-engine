@@ -38,6 +38,11 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      description: 'some information about the context';\n" +
                 "      mapping: model::String;\n" +
                 "      defaultRuntime: model::Runtime;\n" +
+                "      testData:\n" +
+                "        Reference\n" +
+                "        #{\n" +
+                "          com::model::someDataElement\n" +
+                "        }#;\n" +
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
@@ -86,6 +91,28 @@ public class TestDataSpaceGrammarRoundtrip extends TestGrammarRoundtrip.TestGram
                 "      'someEmail2@test.org'\n" +
                 "    ];\n" +
                 "  };\n" +
+                "}\n");
+
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace\n" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "      testData:\n" +
+                "        DataspaceTestData\n" +
+                "        #{\n" +
+                "          com::test::aDifferentDataspace\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  title: 'some title';\n" +
+                "  description: 'some description';\n" +
                 "}\n");
     }
 

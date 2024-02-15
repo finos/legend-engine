@@ -14,15 +14,20 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core;
 
-import java.util.Objects;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.*;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelEmbeddedTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData;
@@ -40,6 +45,8 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
+
+import java.util.Objects;
 
 public class EmbeddedDataCompilerHelper
 {
@@ -95,10 +102,12 @@ public class EmbeddedDataCompilerHelper
             }
             return metamodelModelStoreData;
         }
-        else if (embeddedData instanceof DataElementReference)
+        else if (embeddedData instanceof DataElementReference
+                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATA)
+        )
         {
             DataElementReference dataElementReference = (DataElementReference) embeddedData;
-            PackageableElement element = context.pureModel.getPackageableElement(dataElementReference.dataElement, dataElementReference.sourceInformation);
+            PackageableElement element = context.pureModel.getPackageableElement(dataElementReference.dataElement.path, dataElementReference.sourceInformation);
             if (!(element instanceof Root_meta_pure_data_DataElement))
             {
                 throw new EngineException("Can only reference a Data element", dataElementReference.sourceInformation, EngineErrorType.COMPILATION);

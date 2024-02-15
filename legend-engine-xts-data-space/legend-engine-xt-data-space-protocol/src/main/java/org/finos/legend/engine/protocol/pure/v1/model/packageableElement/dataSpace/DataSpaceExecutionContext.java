@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSp
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 
 public class DataSpaceExecutionContext
 {
@@ -24,5 +25,6 @@ public class DataSpaceExecutionContext
     public String description;
     public PackageableElementPointer mapping;
     public PackageableElementPointer defaultRuntime;
+    public DataElementReference testData;
     public SourceInformation sourceInformation;
 }

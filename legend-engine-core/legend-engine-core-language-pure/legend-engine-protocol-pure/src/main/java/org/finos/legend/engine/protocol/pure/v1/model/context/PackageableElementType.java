@@ -31,5 +31,7 @@ public enum PackageableElementType
     FLATTEN,
     DATASTORESPEC,
     DIAGRAM,
-    FILE_GENERATION
+    FILE_GENERATION,
+    DATA,
+    DATASPACE
 }

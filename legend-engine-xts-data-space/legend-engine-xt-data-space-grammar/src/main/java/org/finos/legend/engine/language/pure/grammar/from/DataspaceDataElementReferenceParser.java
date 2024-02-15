@@ -12,10 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.language.pure.grammar.from.data.embedded;
+package org.finos.legend.engine.language.pure.grammar.from;
 
-import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
-import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -26,9 +24,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
-public class ReferenceEmbeddedDataParser implements EmbeddedDataParser
+public class DataspaceDataElementReferenceParser implements EmbeddedDataParser
 {
-    public static final String TYPE = "Reference";
+    public static final String TYPE = "DataspaceTestData";
 
     @Override
     public String getType()
@@ -41,13 +39,13 @@ public class ReferenceEmbeddedDataParser implements EmbeddedDataParser
     {
         if ("".equals(code.trim()))
         {
-            throw new EngineException("Path should be provided for DataElementReference", sourceInformation, EngineErrorType.PARSER);
+            throw new EngineException("Path should be provided for DataspaceDataElementReference", sourceInformation, EngineErrorType.PARSER);
         }
         String validPath = PureGrammarParserUtility.validatePath(code.trim(), sourceInformation);
 
         DataElementReference result = new DataElementReference();
         result.sourceInformation = sourceInformation;
-        result.dataElement = new PackageableElementPointer(PackageableElementType.DATA, validPath,sourceInformation);
+        result.dataElement = new PackageableElementPointer(PackageableElementType.DATASPACE, validPath, sourceInformation);
         return result;
     }
 }
