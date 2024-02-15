@@ -744,7 +744,7 @@ function meta::relational::mapping::getPropertyTargetSetImplementation(sourceSet
    ]);
 }
 
-function meta::relational::mapping::pureTypeToDataTypeMap(): Map<Type, meta::relational::metamodel::datatype::DataType>[1]
+function meta::relational::mapping::pureTypeToRelationalTypeMap(): Map<Type, meta::relational::metamodel::datatype::DataType>[1]
 {
   meta::relational::transform::fromPure::pureTypeToDataTypeMap()
     ->put(String, ^meta::relational::metamodel::datatype::Varchar(size = 65536))
@@ -755,13 +755,13 @@ function meta::relational::mapping::inferSourceDataType(type: Any[1]): meta::rel
 {
   if ($type->instanceOf(PrimitiveType),
     | 
-      let inferedSourceDataType = meta::relational::mapping::pureTypeToDataTypeMap()->get($type);
+      let inferedSourceDataType = meta::relational::mapping::pureTypeToRelationalTypeMap()->get($type);
       if (
         $inferedSourceDataType->isEmpty(),
           | [],
           | $inferedSourceDataType->cast(@meta::relational::metamodel::datatype::DataType)->toOne());,
       | if ($type->instanceOf(EnumerationMapping),
-        | meta::relational::mapping::pureTypeToDataTypeMap()->get(String)->cast(@meta::relational::metamodel::datatype::DataType)->toOne(),
+        | meta::relational::mapping::pureTypeToRelationalTypeMap()->get(String)->cast(@meta::relational::metamodel::datatype::DataType)->toOne(),
         | []
       )
     );
