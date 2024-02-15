@@ -45,6 +45,18 @@ public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGene
     public static final String TYPE = flatDataContract._id();
 
     @Override
+    public String type()
+    {
+        return "MIX_External_Format_Model_Generation_&_External_Format_Schema_Generation";
+    }
+
+    @Override
+    public String group()
+    {
+        return "EF_FlatData";
+    }
+
+    @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> getExternalFormatContract()
     {
         return flatDataContract;

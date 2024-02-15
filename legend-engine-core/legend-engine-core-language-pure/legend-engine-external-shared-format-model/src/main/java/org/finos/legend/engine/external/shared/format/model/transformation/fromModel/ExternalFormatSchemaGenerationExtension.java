@@ -33,6 +33,13 @@ import org.finos.legend.pure.generated.*;
  */
 public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenConfig extends ModelToSchemaConfiguration> extends ExternalFormatExtension<Metamodel>
 {
+    @Override
+    default String type()
+    {
+        return "External_Format_Schema_Generation";
+    }
+
+
     /**
      * Called to compile an external format ModelToSchemaConfiguration.
      */

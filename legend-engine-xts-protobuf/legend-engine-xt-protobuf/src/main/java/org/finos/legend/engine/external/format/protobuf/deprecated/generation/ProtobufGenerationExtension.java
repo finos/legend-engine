@@ -41,7 +41,7 @@ public class ProtobufGenerationExtension implements GenerationExtension
     @Override
     public String group()
     {
-        return "GEN_Protobuf";
+        return "EF_Protobuf";
     }
 
     @Override

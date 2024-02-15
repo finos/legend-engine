@@ -34,6 +34,12 @@ public class XsdExternalFormatExtension implements ExternalFormatModelGeneration
     public static final String TYPE = xsdContract._id();
 
     @Override
+    public String group()
+    {
+        return "EF_XML";
+    }
+
+    @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> getExternalFormatContract()
     {
         return xsdContract;

@@ -40,7 +40,7 @@ public class DAMLGenerationExtension implements GenerationExtension
     @Override
     public String group()
     {
-        return "GEN_DAML";
+        return "EF_DAML";
     }
 
     @Override

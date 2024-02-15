@@ -19,6 +19,6 @@ public interface ExternalFormatLegendPureCoreExtension extends LegendPureCoreExt
     @Override
     default String type()
     {
-        return "External_Format";
+        return "External_Format_Pure";
     }
 }

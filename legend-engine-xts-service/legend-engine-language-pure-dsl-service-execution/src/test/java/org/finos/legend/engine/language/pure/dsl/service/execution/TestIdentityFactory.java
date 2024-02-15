@@ -37,6 +37,18 @@ public final class TestIdentityFactory implements IdentityFactory
     public static TestIdentityFactory INSTANCE = new TestIdentityFactory();
 
     @Override
+    public String group()
+    {
+        return "Unknown";
+    }
+
+    @Override
+    public String type()
+    {
+        return "Unknown";
+    }
+
+    @Override
     public Identity makeIdentity(Subject subject)
     {
         if (subject == null)

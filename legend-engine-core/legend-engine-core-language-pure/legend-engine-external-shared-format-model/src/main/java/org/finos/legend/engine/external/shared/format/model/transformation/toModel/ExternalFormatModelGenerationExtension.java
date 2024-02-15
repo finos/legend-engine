@@ -38,6 +38,12 @@ import java.util.List;
  */
 public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfig extends SchemaToModelConfiguration> extends ExternalFormatExtension<Metamodel>
 {
+    @Override
+    default String type()
+    {
+        return "External_Format_Model_Generation";
+    }
+
     /**
      * Called to compile an external format SchemaToModelConfiguration.
      */
