@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
-import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -67,7 +67,7 @@ public abstract class GeneratorResultAbstract
 
     public abstract Optional<SqlPlan> postCleanupSqlPlan();
 
-    public abstract Map<DedupAndVersionErrorStatistics, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan();
+    public abstract Map<DedupAndVersionErrorSqlType, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan();
 
     public abstract Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan();
 
@@ -141,7 +141,7 @@ public abstract class GeneratorResultAbstract
                 k -> preIngestStatisticsSqlPlan().get(k).getSql()));
     }
 
-    public Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql()
+    public Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql()
     {
         return deduplicationAndVersioningErrorChecksSqlPlan().keySet().stream()
                 .collect(Collectors.toMap(

@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
 import org.finos.legend.engine.persistence.components.relational.memsql.MemSqlSink;
@@ -23,6 +23,9 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 import java.util.Map;
+
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DUPLICATE_ROWS;
 
 public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDateTimeBasedTestCases
 {
@@ -70,7 +73,7 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink " +
                 "SET sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
@@ -97,8 +100,10 @@ public class UnitemporalSnapshotDateTimeBasedTest extends UnitmemporalSnapshotDa
         Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingPlusDigestWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
-        Assertions.assertEquals(MemsqlTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
-        Assertions.assertEquals(MemsqlTestArtifacts.dataErrorCheckSqlForBizDateAsVersion, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
+        Assertions.assertEquals(MemsqlTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DUPLICATES));
+        Assertions.assertEquals(MemsqlTestArtifacts.dataErrorCheckSqlForBizDateAsVersion, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(MemsqlTestArtifacts.dupRowsSql, deduplicationAndVersioningErrorChecksSql.get(DUPLICATE_ROWS));
+        Assertions.assertEquals(MemsqlTestArtifacts.dataErrorsSqlWithBizDateVersion, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
     }
 
     @Override

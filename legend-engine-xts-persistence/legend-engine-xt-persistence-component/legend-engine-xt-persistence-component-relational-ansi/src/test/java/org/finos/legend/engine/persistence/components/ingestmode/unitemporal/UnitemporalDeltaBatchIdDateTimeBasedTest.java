@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
-import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DATA_ERRORS;
-import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.*;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
 
 public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaBatchIdDateTimeBasedTestCases
 {
@@ -240,6 +240,8 @@ public class UnitemporalDeltaBatchIdDateTimeBasedTest extends UnitmemporalDeltaB
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(maxDupsErrorCheckSql, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DUPLICATES));
         Assertions.assertEquals(dataErrorCheckSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(dupRowsSql, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DUPLICATE_ROWS));
+        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedUpsertQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));

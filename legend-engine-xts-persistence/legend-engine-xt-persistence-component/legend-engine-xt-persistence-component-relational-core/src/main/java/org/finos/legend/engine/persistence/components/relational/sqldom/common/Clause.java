@@ -31,6 +31,7 @@ public enum Clause
     MERGE_INTO("MERGE INTO"),
     USING("USING"),
     WHERE("WHERE"),
+    HAVING("HAVING"),
     SET("SET"),
     EXISTS("EXISTS"),
     WHEN_MATCHED("WHEN MATCHED"),

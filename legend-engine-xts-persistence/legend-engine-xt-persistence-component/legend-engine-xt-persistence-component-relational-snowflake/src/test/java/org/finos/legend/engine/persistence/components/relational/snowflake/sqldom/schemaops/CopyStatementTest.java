@@ -47,7 +47,7 @@ public class CopyStatementTest
                 new StagedFilesField(QUOTE_IDENTIFIER, 3, "t", "field3"),
                 new StagedFilesField(QUOTE_IDENTIFIER, 4, "t", "field4")
         );
-        SelectStatement selectStatement = new SelectStatement(null, selectItems, Arrays.asList(stagedFiles), null, null);
+        SelectStatement selectStatement = new SelectStatement(null, selectItems, Arrays.asList(stagedFiles), null);
 
         Table table = new Table("mydb", null, "mytable1", "sink", QUOTE_IDENTIFIER);
         List<Field> columns = Arrays.asList(
@@ -89,7 +89,7 @@ public class CopyStatementTest
                 new StagedFilesField(QUOTE_IDENTIFIER, 1, "t", "field4","field4")
         );
 
-        SelectStatement selectStatement = new SelectStatement(null, selectItems, Arrays.asList(stagedFiles), null, null);
+        SelectStatement selectStatement = new SelectStatement(null, selectItems, Arrays.asList(stagedFiles), null);
 
         Table table = new Table("mydb", null, "mytable1", "sink", QUOTE_IDENTIFIER);
         List<Field> columns = Arrays.asList(

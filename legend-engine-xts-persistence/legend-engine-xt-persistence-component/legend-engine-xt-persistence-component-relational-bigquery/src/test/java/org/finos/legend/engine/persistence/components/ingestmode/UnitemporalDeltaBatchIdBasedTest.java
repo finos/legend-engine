@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
@@ -23,7 +24,8 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.List;
 
-import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DATA_ERRORS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.MAX_DATA_ERRORS;
 
 public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBasedTestCases
 {
@@ -386,6 +388,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSqlForVersionAsVersion, operations.deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorsSql, operations.deduplicationAndVersioningErrorChecksSql().get(DedupAndVersionErrorSqlType.DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -431,6 +434,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(BigQueryTestArtifacts.dataErrorCheckSqlForVersionAsVersion, operations.deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(BigQueryTestArtifacts.dataErrorsSql, operations.deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));

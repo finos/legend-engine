@@ -14,7 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
-import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -26,6 +26,9 @@ import org.junit.jupiter.api.Assertions;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DATA_ERROR_ROWS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.DUPLICATE_ROWS;
 
 public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
 {
@@ -81,7 +84,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> metaIngestSqlList = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`, `batch_id`) " +
@@ -93,6 +96,10 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "(SELECT COUNT(DISTINCT(`amount`)) as `legend_persistence_distinct_rows` " +
                 "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `biz_date`) as stage";
 
+        String dataErrorsSqlWithBizDateVersion = "SELECT `id`,`name`,`biz_date`,COUNT(DISTINCT(`amount`)) as `legend_persistence_error_count` " +
+                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "GROUP BY `id`, `name`, `biz_date` HAVING `legend_persistence_error_count` > 1 LIMIT 20";
+
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(2));
@@ -103,8 +110,10 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         Assertions.assertEquals(MemsqlTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
 
-        Assertions.assertEquals(MemsqlTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
-        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
+        Assertions.assertEquals(MemsqlTestArtifacts.maxDupsErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DUPLICATES));
+        Assertions.assertEquals(maxDataErrorCheckSql, deduplicationAndVersioningErrorChecksSql.get(DedupAndVersionErrorSqlType.MAX_DATA_ERRORS));
+        Assertions.assertEquals(MemsqlTestArtifacts.dupRowsSql, deduplicationAndVersioningErrorChecksSql.get(DUPLICATE_ROWS));
+        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, deduplicationAndVersioningErrorChecksSql.get(DATA_ERROR_ROWS));
 
         // Stats
         verifyStats(operations, "staging");

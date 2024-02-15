@@ -33,12 +33,15 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxV
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
+import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -174,9 +177,17 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+            row1.put("legend_persistence_error_count", 2);
+            expectedSampleRows.add(row1);
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -230,9 +241,17 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+            row1.put("legend_persistence_error_count", 2);
+            expectedSampleRows.add(row1);
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -309,9 +328,17 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+            row1.put("legend_persistence_error_count", 2);
+            expectedSampleRows.add(row1);
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -372,9 +399,17 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row1 = new HashMap<>();
+            row1.put("name", "Cathy");
+            row1.put("id", 3);
+            row1.put("version", 1);
+            row1.put("legend_persistence_error_count", 2);
+            expectedSampleRows.add(row1);
+            Assertions.assertEquals("Encountered Data errors (same PK, same version but different data), hence failing the batch", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -398,9 +433,21 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row1  = new HashMap<>();
+            row1.put("name", "Andy");
+            row1.put("id", 1);
+            row1.put("legend_persistence_count", 3);
+            Map<String, Object> row2  = new HashMap<>();
+            row2.put("name", "Becky");
+            row2.put("id", 2);
+            row2.put("legend_persistence_count", 2);
+            expectedSampleRows.add(row1);
+            expectedSampleRows.add(row2);
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -436,9 +483,16 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+            row.put("legend_persistence_count", 2);
+            expectedSampleRows.add(row);
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -474,9 +528,16 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+            row.put("legend_persistence_count", 2);
+            expectedSampleRows.add(row);
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -515,9 +576,16 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+            row.put("legend_persistence_count", 2);
+            expectedSampleRows.add(row);
             Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 
@@ -555,9 +623,16 @@ public class TestDedupAndVersioning extends BaseTest
             performDedupAndVersioining(datasets, ingestMode);
             Assertions.fail("Should not succeed");
         }
-        catch (Exception e)
+        catch (DataQualityException e)
         {
-            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy",e.getMessage());
+            List<Map<String, Object>> expectedSampleRows = new ArrayList<>();
+            Map<String, Object> row  = new HashMap<>();
+            row.put("name", "Becky");
+            row.put("id", 2);
+            row.put("legend_persistence_count", 2);
+            expectedSampleRows.add(row);
+            Assertions.assertEquals("Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy", e.getMessage());
+            TestUtils.assertEquals(expectedSampleRows, e.getSampleRows());
         }
     }
 

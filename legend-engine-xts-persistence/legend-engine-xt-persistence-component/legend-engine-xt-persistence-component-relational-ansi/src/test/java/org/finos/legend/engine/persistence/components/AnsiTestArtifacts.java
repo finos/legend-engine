@@ -605,6 +605,9 @@ public class AnsiTestArtifacts
     public static String maxDupsErrorCheckSql = "SELECT MAX(stage.\"legend_persistence_count\") as \"MAX_DUPLICATES\" FROM " +
             "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage";
 
+    public static String dupRowsSql = "SELECT \"id\",\"name\",\"legend_persistence_count\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+            "WHERE stage.\"legend_persistence_count\" > 1 LIMIT 20";
+
     public static String dataErrorCheckSqlWithBizDateVersion = "SELECT MAX(\"legend_persistence_distinct_rows\") as \"MAX_DATA_ERRORS\" FROM " +
         "(SELECT COUNT(DISTINCT(\"digest\")) as \"legend_persistence_distinct_rows\" FROM " +
         "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage GROUP BY \"id\", \"name\", \"biz_date\") as stage";
@@ -620,4 +623,17 @@ public class AnsiTestArtifacts
     public static String dataErrorCheckSqlWithBizDateAsVersionUpperCase = "SELECT MAX(\"LEGEND_PERSISTENCE_DISTINCT_ROWS\") as \"MAX_DATA_ERRORS\" " +
             "FROM (SELECT COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_DISTINCT_ROWS\" FROM " +
             "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage GROUP BY \"ID\", \"NAME\", \"BIZ_DATE\") as stage";
+
+    public static String dataErrorsSqlWithBizDateVersion = "SELECT \"id\",\"name\",\"biz_date\",COUNT(DISTINCT(\"digest\")) as \"legend_persistence_error_count\" FROM " +
+            "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage GROUP BY \"id\", \"name\", \"biz_date\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
+
+    public static String dataErrorsSqlWithBizDateVersionUpperCase = "SELECT \"ID\",\"NAME\",\"BIZ_DATE\",COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_ERROR_COUNT\" FROM \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" " +
+            "as stage GROUP BY \"ID\", \"NAME\", \"BIZ_DATE\" HAVING \"LEGEND_PERSISTENCE_ERROR_COUNT\" > 1 LIMIT 20";
+
+    public static String dataErrorsSqlUpperCase = "SELECT \"ID\",\"NAME\",\"VERSION\",COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_ERROR_COUNT\" FROM \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" " +
+            "as stage GROUP BY \"ID\", \"NAME\", \"VERSION\" HAVING \"LEGEND_PERSISTENCE_ERROR_COUNT\" > 1 LIMIT 20";
+
+    public static String dataErrorsSql = "SELECT \"id\",\"name\",\"version\",COUNT(DISTINCT(\"digest\")) as \"legend_persistence_error_count\" FROM " +
+            "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage GROUP BY \"id\", \"name\", \"version\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
+
 }

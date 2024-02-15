@@ -22,13 +22,13 @@ import org.finos.legend.engine.persistence.components.relational.api.GeneratorRe
 import org.finos.legend.engine.persistence.components.testcases.ingestmode.unitemporal.UnitmemporalDeltaDateTimeBasedTestCases;
 import org.junit.jupiter.api.Assertions;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion;
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.maxDupsErrorCheckSql;
-import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DATA_ERRORS;
-import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DUPLICATES;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.dupRowsSql;
+import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.dataErrorsSqlWithBizDateVersion;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.*;
 
 public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTimeBasedTestCases
 {
@@ -113,6 +113,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(maxDupsErrorCheckSql, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DUPLICATES));
+        Assertions.assertEquals(dupRowsSql, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DUPLICATE_ROWS));
 
         // Stats
         String incomingRecordCount = "SELECT COALESCE(SUM(stage.\"legend_persistence_count\"),0) as \"incomingRecordCount\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
@@ -201,6 +202,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndFilterDuplicates, operations.get(0).deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(dataErrorCheckSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedMilestoneQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(0));
         Assertions.assertEquals(enrichSqlWithDataSplits(expectedUpsertQuery, dataSplitRanges.get(0)), operations.get(0).ingestSql().get(1));

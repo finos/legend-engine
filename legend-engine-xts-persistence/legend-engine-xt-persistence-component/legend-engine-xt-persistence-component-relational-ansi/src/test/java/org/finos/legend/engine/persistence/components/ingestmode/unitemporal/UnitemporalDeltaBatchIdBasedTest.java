@@ -15,7 +15,7 @@
 package org.finos.legend.engine.persistence.components.ingestmode.unitemporal;
 
 import org.finos.legend.engine.persistence.components.AnsiTestArtifacts;
-import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataSplitRange;
@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.finos.legend.engine.persistence.components.AnsiTestArtifacts.*;
-import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics.MAX_DATA_ERRORS;
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.*;
 
 public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBasedTestCases
 {
@@ -128,7 +128,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         List<String> milestoningSql = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
-        Map<DedupAndVersionErrorStatistics, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
+        Map<DedupAndVersionErrorSqlType, String> deduplicationAndVersioningErrorChecksSql = operations.deduplicationAndVersioningErrorChecksSql();
 
         String expectedMilestoneQuery = "UPDATE \"mydb\".\"main\" as sink SET sink.\"batch_id_out\" = " +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1 " +
@@ -214,6 +214,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.get(0).deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingPlusDigestWithAllVersionAndAllowDups, operations.get(0).deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(AnsiTestArtifacts.dataErrorCheckSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSqlWithBizDateVersion, operations.get(0).deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsUpdated = "SELECT COUNT(*) as \"rowsUpdated\" FROM \"mydb\".\"main\" as sink WHERE (sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1) AND (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink2 WHERE ((sink2.\"id\" = sink.\"id\") AND (sink2.\"name\" = sink.\"name\")) AND (sink2.\"batch_id_in\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'))))";
@@ -367,6 +368,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(dataErrorCheckSql, operations.deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSql, operations.deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -413,6 +415,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(dataErrorCheckSql, operations.deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSql, operations.deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -492,7 +495,8 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithFilterDuplicates, operations.deduplicationAndVersioningSql().get(1));
-        Assertions.assertEquals(AnsiTestArtifacts.maxDupsErrorCheckSql, operations.deduplicationAndVersioningErrorChecksSql().get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
+        Assertions.assertEquals(AnsiTestArtifacts.maxDupsErrorCheckSql, operations.deduplicationAndVersioningErrorChecksSql().get(DedupAndVersionErrorSqlType.MAX_DUPLICATES));
+        Assertions.assertEquals(dupRowsSql, operations.deduplicationAndVersioningErrorChecksSql().get(DUPLICATE_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
@@ -533,6 +537,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         Assertions.assertEquals(expectedTempStagingCleanupQueryInUpperCase, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoTempStagingMaxVersion, operations.deduplicationAndVersioningSql().get(1));
         Assertions.assertEquals(dataErrorCheckSqlUpperCase, operations.deduplicationAndVersioningErrorChecksSql().get(MAX_DATA_ERRORS));
+        Assertions.assertEquals(dataErrorsSqlUpperCase, operations.deduplicationAndVersioningErrorChecksSql().get(DATA_ERROR_ROWS));
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));

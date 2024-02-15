@@ -32,6 +32,7 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -56,8 +57,10 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.*;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.*;
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.retrieveValueAsLong;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.BULK_LOAD_BATCH_STATUS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
@@ -427,24 +430,39 @@ public abstract class RelationalIngestorAbstract
         {
             LOGGER.info("Executing Deduplication and Versioning");
             executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
-            Map<DedupAndVersionErrorStatistics, Object> errorStatistics = executeDeduplicationAndVersioningErrorChecks(executor, generatorResult.deduplicationAndVersioningErrorChecksSqlPlan());
-            /* Error Checks
-            1. if Dedup = fail on dups, Fail the job if count > 1
-            2. If versioining = Max Version/ All Versioin, Check for data error
-            */
-            Optional<Long> maxDuplicatesValue = retrieveValueAsLong(errorStatistics.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
-            Optional<Long> maxDataErrorsValue = retrieveValueAsLong(errorStatistics.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
-            if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
+
+            Map<DedupAndVersionErrorSqlType, SqlPlan> dedupAndVersionErrorSqlTypeSqlPlanMap = generatorResult.deduplicationAndVersioningErrorChecksSqlPlan();
+
+            // Error Check for Duplicates: if Dedup = fail on dups, Fail the job if count > 1
+            if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DUPLICATES))
             {
-                String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
-                LOGGER.error(errorMessage);
-                throw new RuntimeException(errorMessage);
+                List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DUPLICATES));
+                Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+                Optional<Long> maxDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
+                if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
+                {
+                    // Find the duplicate rows
+                    TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS)).get(0);
+                    String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
+                    LOGGER.error(errorMessage);
+                    throw new DataQualityException(errorMessage, duplicateRows.getData());
+                }
             }
-            if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
+
+            // Error Check for Data Error: If versioning = Max Version/ All Versioning, Check for data error
+            if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DATA_ERRORS))
             {
-                String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
-                LOGGER.error(errorMessage);
-                throw new RuntimeException(errorMessage);
+                List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DATA_ERRORS));
+                Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+                Optional<Long> maxDataErrorsValue = retrieveValueAsLong(obj.orElse(null));
+                if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
+                {
+                    // Find the data errors
+                    TabularData dataErrors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS)).get(0);
+                    String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
+                    LOGGER.error(errorMessage);
+                    throw new DataQualityException(errorMessage, dataErrors.getData());
+                }
             }
         }
     }
@@ -788,11 +806,11 @@ public abstract class RelationalIngestorAbstract
         return results;
     }
 
-    private Map<DedupAndVersionErrorStatistics, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                                                                     Map<DedupAndVersionErrorStatistics, SqlPlan> errorChecksPlan)
+    private Map<DedupAndVersionErrorSqlType, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
+                                                                                                  Map<DedupAndVersionErrorSqlType, SqlPlan> errorChecksPlan)
     {
-        Map<DedupAndVersionErrorStatistics, Object> results = new HashMap<>();
-        for (Map.Entry<DedupAndVersionErrorStatistics, SqlPlan> entry: errorChecksPlan.entrySet())
+        Map<DedupAndVersionErrorSqlType, Object> results = new HashMap<>();
+        for (Map.Entry<DedupAndVersionErrorSqlType, SqlPlan> entry: errorChecksPlan.entrySet())
         {
             List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue());
             Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));

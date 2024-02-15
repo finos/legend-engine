@@ -556,6 +556,18 @@ public class BigQueryTestArtifacts
             "OVER (PARTITION BY stage.`id`,stage.`name` ORDER BY stage.`biz_date` DESC) as `legend_persistence_rank` " +
             "FROM `mydb`.`staging` as stage) as stage WHERE stage.`legend_persistence_rank` = 1)";
 
+    public static String dupRowsSql = "SELECT `id`,`name`,`legend_persistence_count` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "WHERE stage.`legend_persistence_count` > 1 LIMIT 20";
+
+    public static String dataErrorsSqlWithBizDateVersion = "SELECT `id`,`name`,`biz_date`,COUNT(DISTINCT(`digest`)) as `legend_persistence_error_count` FROM " +
+            "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `biz_date` HAVING `legend_persistence_error_count` > 1 LIMIT 20";
+
+    public static String dataErrorsSqlWithBizDateVersionUpperCase = "SELECT `ID`,`NAME`,`BIZ_DATE`,COUNT(DISTINCT(`DIGEST`)) as `LEGEND_PERSISTENCE_ERROR_COUNT` FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` " +
+            "as stage GROUP BY `ID`, `NAME`, `BIZ_DATE` HAVING `LEGEND_PERSISTENCE_ERROR_COUNT` > 1 LIMIT 20";
+
+    public static String dataErrorsSql = "SELECT `id`,`name`,`version`,COUNT(DISTINCT(`digest`)) as `legend_persistence_error_count` FROM " +
+            "`mydb`.`staging_legend_persistence_temp_staging` as stage GROUP BY `id`, `name`, `version` HAVING `legend_persistence_error_count` > 1 LIMIT 20";
+
     public static String getDropTempTableQuery(String tableName)
     {
         return String.format("DROP TABLE IF EXISTS %s", tableName);

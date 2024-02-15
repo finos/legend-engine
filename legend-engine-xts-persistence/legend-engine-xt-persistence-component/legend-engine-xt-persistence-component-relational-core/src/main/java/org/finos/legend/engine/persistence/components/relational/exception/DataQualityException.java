@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.relational.exception;
 
-public enum DedupAndVersionErrorStatistics
+import java.util.List;
+import java.util.Map;
+
+public class DataQualityException extends RuntimeException
 {
-    MAX_DUPLICATES,
-    MAX_DATA_ERRORS;
+    private List<Map<String, Object>> sampleRows;
+
+    public List<Map<String, Object>> getSampleRows()
+    {
+        return sampleRows;
+    }
+
+    public DataQualityException(String message, List<Map<String, Object>> sampleRows)
+    {
+        super(message);
+        this.sampleRows = sampleRows;
+    }
 }
