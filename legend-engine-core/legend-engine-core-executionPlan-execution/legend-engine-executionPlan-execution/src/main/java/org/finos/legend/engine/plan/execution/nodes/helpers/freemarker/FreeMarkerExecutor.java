@@ -97,7 +97,7 @@ public class FreeMarkerExecutor
         private Map<String,?> map;
         private String templateFunctions;
 
-        TemplateHashModelOverride(Map map, String templateFunctions)
+        TemplateHashModelOverride(Map<String,?> map, String templateFunctions)
         {
             this.map = map;
             this.templateFunctions = templateFunctions;
