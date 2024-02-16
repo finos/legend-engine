@@ -101,18 +101,4 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
     {
         return org.eclipse.collections.api.factory.Lists.immutable.with(new DataspaceDataElementReferenceParser());
     }
-
-    @Override
-    public Iterable<? extends Function2<DataElementReference, PureModelContextData, List<EmbeddedData>>> getExtraDataReferenceParsers()
-    {
-        return org.eclipse.collections.api.factory.Lists.immutable.with(DataSpaceParserExtension::getDataElementFromDataReference);
-    }
-
-    private static List<EmbeddedData> getDataElementFromDataReference(DataElementReference dataElementReference, PureModelContextData pureModelContextData)
-    {
-        return ListIterate
-                .select(pureModelContextData.getElementsOfType(DataSpace.class), e -> dataElementReference.dataElement.path.equals(e.getPath()))
-                .collect(d -> Iterate.detect(d.executionContexts, e -> e.name.equals(d.defaultExecutionContext)).testData)
-                .collect(d -> PureGrammarParserExtensions.fromAvailableExtensions().getEmbeddedDataFromDataElement(d, pureModelContextData));
-    }
 }

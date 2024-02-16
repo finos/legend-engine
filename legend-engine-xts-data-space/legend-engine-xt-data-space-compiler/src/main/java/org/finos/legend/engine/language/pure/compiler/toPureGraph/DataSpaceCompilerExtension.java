@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
@@ -21,13 +22,16 @@ import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
+import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
@@ -41,7 +45,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 
 import java.util.*;
 
-public class DataSpaceCompilerExtension implements CompilerExtension
+public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension
 {
     static final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();
 
@@ -207,5 +211,20 @@ public class DataSpaceCompilerExtension implements CompilerExtension
             throw new EngineException("Dataspace " + data.dataElement.path + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
         }
         return null;
+    }
+
+
+    @Override
+    public Iterable<? extends Function2<DataElementReference, PureModelContextData, List<EmbeddedData>>> getExtraDataElementReferencePMCDTraversers()
+    {
+        return org.eclipse.collections.api.factory.Lists.immutable.with(DataSpaceCompilerExtension::getDataFromDataReferencePMCD);
+    }
+
+    private static List<EmbeddedData> getDataFromDataReferencePMCD(DataElementReference dataElementReference, PureModelContextData pureModelContextData)
+    {
+        return ListIterate
+                .select(pureModelContextData.getElementsOfType(DataSpace.class), e -> dataElementReference.dataElement.path.equals(e.getPath()))
+                .collect(d -> Iterate.detect(d.executionContexts, e -> e.name.equals(d.defaultExecutionContext)).testData)
+                .collect(d -> EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement(d, pureModelContextData));
     }
 }

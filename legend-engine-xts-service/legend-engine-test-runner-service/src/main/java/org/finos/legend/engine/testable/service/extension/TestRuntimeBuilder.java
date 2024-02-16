@@ -19,20 +19,14 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.ConnectionStores;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestData;
 import org.finos.legend.engine.testable.connection.TestConnectionBuilder;
@@ -68,7 +62,7 @@ public class TestRuntimeBuilder
                 {
                     if (connectionTestData.data instanceof DataElementReference)
                     {
-                        EmbeddedData embeddedData = PureGrammarParserExtensions.fromAvailableExtensions().getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
+                        EmbeddedData embeddedData = EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
                         data.add(embeddedData);
                     }
                     else
@@ -102,7 +96,7 @@ public class TestRuntimeBuilder
                     {
                         if (connectionTestData.data instanceof DataElementReference)
                         {
-                            EmbeddedData d = PureGrammarParserExtensions.fromAvailableExtensions().getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
+                            EmbeddedData d = EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
                             embeddedData.add(d);
                         }
                         else
