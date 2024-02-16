@@ -336,6 +336,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
             .caseConversion(CaseConversion.TO_UPPER)
+            .sampleRowCount(10)
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());

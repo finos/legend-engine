@@ -131,6 +131,12 @@ public abstract class RelationalGeneratorAbstract
         return MetadataUtils.MetaTableStatus.DONE.toString();
     }
 
+    @Default
+    public int sampleRowCount()
+    {
+        return 20;
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -149,6 +155,7 @@ public abstract class RelationalGeneratorAbstract
             .putAllAdditionalMetadata(additionalMetadata())
             .bulkLoadEventIdValue(bulkLoadEventIdValue())
             .batchSuccessStatusValue(batchSuccessStatusValue())
+            .sampleRowCount(sampleRowCount())
             .build();
     }
 

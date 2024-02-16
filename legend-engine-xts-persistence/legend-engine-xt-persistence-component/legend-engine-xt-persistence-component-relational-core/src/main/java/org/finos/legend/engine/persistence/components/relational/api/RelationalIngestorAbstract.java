@@ -165,6 +165,12 @@ public abstract class RelationalIngestorAbstract
         return MetadataUtils.MetaTableStatus.DONE.toString();
     }
 
+    @Default
+    public int sampleRowCount()
+    {
+        return 20;
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();

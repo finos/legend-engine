@@ -377,6 +377,7 @@ public abstract class UnitmemporalDeltaBatchIdBasedTestCases extends BaseTest
                 .cleanupStagingData(true)
                 .caseConversion(CaseConversion.TO_UPPER)
                 .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
+                .sampleRowCount(10)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         this.verifyUnitemporalDeltaWithNoDedupMaxVersioningAndUpperCaseWithoutStagingFilters(operations);

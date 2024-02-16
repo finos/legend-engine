@@ -631,7 +631,7 @@ public class AnsiTestArtifacts
             "as stage GROUP BY \"ID\", \"NAME\", \"BIZ_DATE\" HAVING \"LEGEND_PERSISTENCE_ERROR_COUNT\" > 1 LIMIT 20";
 
     public static String dataErrorsSqlUpperCase = "SELECT \"ID\",\"NAME\",\"VERSION\",COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_ERROR_COUNT\" FROM \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" " +
-            "as stage GROUP BY \"ID\", \"NAME\", \"VERSION\" HAVING \"LEGEND_PERSISTENCE_ERROR_COUNT\" > 1 LIMIT 20";
+            "as stage GROUP BY \"ID\", \"NAME\", \"VERSION\" HAVING \"LEGEND_PERSISTENCE_ERROR_COUNT\" > 1 LIMIT 10";
 
     public static String dataErrorsSql = "SELECT \"id\",\"name\",\"version\",COUNT(DISTINCT(\"digest\")) as \"legend_persistence_error_count\" FROM " +
             "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage GROUP BY \"id\", \"name\", \"version\" HAVING \"legend_persistence_error_count\" > 1 LIMIT 20";
