@@ -27,6 +27,7 @@ public class Query
     public String groupId;
     public String artifactId;
     public String versionId;
+    public String originalVersionId;
     public String mapping;
     public String runtime;
     public String content;

@@ -65,7 +65,7 @@ public class QueryStoreManager
     // so that it records the dataSpace it is created from
     private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
     private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
-    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
+    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "originalVersionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
     private static final int GET_QUERIES_LIMIT = 50;
     private final MongoClient mongoClient;
 
@@ -110,6 +110,7 @@ public class QueryStoreManager
         query.groupId = document.getString("groupId");
         query.artifactId = document.getString("artifactId");
         query.versionId = document.getString("versionId");
+        query.originalVersionId = document.getString("originalVersionId");
         query.mapping = document.getString("mapping");
         query.runtime = document.getString("runtime");
         query.content = document.getString("content");
@@ -386,11 +387,48 @@ public class QueryStoreManager
         query.owner = currentUser;
         query.createdAt = currentQuery.createdAt;
         query.lastUpdatedAt = Instant.now().toEpochMilli();
+        query.originalVersionId = currentQuery.originalVersionId;
         this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(query));
         QueryEvent updatedEvent = createEvent(query.id, QueryEvent.QueryEventType.UPDATED);
         updatedEvent.timestamp = query.lastUpdatedAt;
         this.getQueryEventCollection().insertOne(queryEventToDocument(updatedEvent));
         return query;
+    }
+
+    public Query updateQuerySelectedFields(String queryId, Query updatedQuery, String currentUser) throws JsonProcessingException
+    {
+        Query currentQuery = this.getQuery(queryId);
+        // Make sure only the owner can update the query
+        // NOTE: if the query is created by an anonymous user previously, set the current user as the owner
+        if (currentQuery.owner != null && !currentQuery.owner.equals(currentUser))
+        {
+            throw new ApplicationQueryException("Only owner can update the query", Response.Status.FORBIDDEN);
+        }
+
+        Class<? extends Query> queryClazz = currentQuery.getClass();
+        for (java.lang.reflect.Field field : queryClazz.getDeclaredFields())
+        {
+            try
+            {
+                field.setAccessible(true);
+                Object updatedValue = field.get(updatedQuery);
+                if (updatedValue != null)
+                {
+                    field.set(currentQuery, updatedValue);
+                }
+            }
+            catch (IllegalAccessException e)
+            {
+                throw new ApplicationQueryException("Can't modify query field" + field.getName(), Response.Status.BAD_REQUEST);
+            }
+        }
+        currentQuery.owner = currentUser;
+        currentQuery.lastUpdatedAt = Instant.now().toEpochMilli();
+        this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(currentQuery));
+        QueryEvent updatedEvent = createEvent(queryId, QueryEvent.QueryEventType.UPDATED);
+        updatedEvent.timestamp = currentQuery.lastUpdatedAt;
+        this.getQueryEventCollection().insertOne(queryEventToDocument(updatedEvent));
+        return currentQuery;
     }
 
     public void deleteQuery(String queryId, String currentUser) throws JsonProcessingException

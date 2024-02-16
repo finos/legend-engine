@@ -187,6 +187,26 @@ public class ApplicationQuery
         }
     }
 
+    @PUT
+    @Path("{queryId}/updateSelectedFields")
+    @ApiOperation(value = "Update query versionId")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response updateQuerySelectedFields(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    {
+        try (Scope scope = GlobalTracer.get().buildSpan("Query: Update Query Version Id").startActive(true))
+        {
+            return Response.ok().entity(this.queryStoreManager.updateQuerySelectedFields(queryId, query, getCurrentUser(profileManager))).build();
+        }
+        catch (Exception e)
+        {
+            if (e instanceof ApplicationQueryException)
+            {
+                return ((ApplicationQueryException) e).toResponse();
+            }
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+        }
+    }
+
     @DELETE
     @Path("{queryId}")
     @ApiOperation(value = "Delete the query with specified ID")
