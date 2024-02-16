@@ -127,18 +127,17 @@ public interface EmbeddedDataCompilerExtension
     static EmbeddedData getEmbeddedDataFromDataElement(DataElementReference dataElementReference, PureModelContextData pureModelContextData)
     {
         List<EmbeddedData> dataList = ListIterate
-                .select(CompilerExtensions.fromAvailableExtensions().getExtensions(), e -> e instanceof EmbeddedDataCompilerExtension)
-                .collect(e -> (EmbeddedDataCompilerExtension) e)
+                .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), EmbeddedDataCompilerExtension.class)
                 .flatCollect(EmbeddedDataCompilerExtension::getExtraDataElementReferencePMCDTraversers)
                 .flatCollect(f -> f.apply(dataElementReference, pureModelContextData))
                 .select(Objects::nonNull);
         if (dataList.size() > 1)
         {
-            throw new EngineException("More than one data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.PARSER);
+            throw new EngineException("More than one data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
         }
         else if (dataList.isEmpty())
         {
-            throw new EngineException("No data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.PARSER);
+            throw new EngineException("No data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
         }
         else
         {
