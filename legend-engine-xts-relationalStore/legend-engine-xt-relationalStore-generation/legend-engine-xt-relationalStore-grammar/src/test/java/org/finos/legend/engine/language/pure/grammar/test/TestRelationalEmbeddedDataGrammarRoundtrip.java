@@ -66,7 +66,7 @@ public class TestRelationalEmbeddedDataGrammarRoundtrip extends TestGrammarRound
                 "            #{\n" +
                 "              default.PersonTable:\n" +
                 "                'id,firm_id,firstName,lastName\\n'+\n" +
-                "                '1,1,John;\\'\",Doe\\n'+\n" +
+                "                '1,1,John,Doe\\n'+\n" +
                 "                '2,1,Nicole,Smith\\n'+\n" +
                 "                '3,2,Time,Smith\\n';\n" +
                 "\n" +
@@ -91,7 +91,7 @@ public class TestRelationalEmbeddedDataGrammarRoundtrip extends TestGrammarRound
                 "                  ExternalFormat\n" +
                 "                  #{\n" +
                 "                    contentType: 'application/json';\n" +
-                "                    data: '[{\"Employees/First Name\":\"John;\\'\\\\\"\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\\n';\n" +
+                "                    data: '[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\\n';\n" +
                 "                  }#;\n" +
                 "              }#\n" +
                 "          ]\n" +

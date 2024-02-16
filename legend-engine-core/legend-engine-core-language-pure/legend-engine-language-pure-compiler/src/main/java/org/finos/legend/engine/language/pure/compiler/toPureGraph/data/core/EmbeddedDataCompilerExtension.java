@@ -14,43 +14,33 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
-import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelEmbeddedTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelStoreData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ModelTestData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData;
-import org.finos.legend.pure.generated.Root_meta_external_format_shared_metamodel_data_ExternalFormatData_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
-import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_data_ModelEmbeddedData;
-import org.finos.legend.pure.generated.Root_meta_pure_data_ModelEmbeddedData_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_data_ModelInstanceData;
-import org.finos.legend.pure.generated.Root_meta_pure_data_ModelInstanceData_Impl;
-import org.finos.legend.pure.generated.Root_meta_pure_data_ModelStoreData;
-import org.finos.legend.pure.generated.Root_meta_pure_data_ModelStoreData_Impl;
+import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-public class EmbeddedDataCompilerHelper
+public interface EmbeddedDataCompilerExtension
 {
-    public static Root_meta_pure_data_EmbeddedData compileCoreEmbeddedDataTypes(EmbeddedData embeddedData, CompileContext context, ProcessingContext processingContext)
+    static Root_meta_pure_data_EmbeddedData compileCoreEmbeddedDataTypes(EmbeddedData embeddedData, CompileContext context, ProcessingContext processingContext)
     {
         SourceInformation m3SourceInformation = SourceInformationHelper.toM3SourceInformation(embeddedData.sourceInformation);
 
@@ -122,10 +112,36 @@ public class EmbeddedDataCompilerHelper
         }
     }
 
-    private static boolean validatePairForModelStoreData(PackageableElementPtr value, CompileContext context)
+    static boolean validatePairForModelStoreData(PackageableElementPtr value, CompileContext context)
     {
         return (context.pureModel.getPackageableElement(value.fullPath) instanceof Root_meta_pure_data_DataElement &&
                 ((Root_meta_pure_data_DataElement) context.pureModel.getPackageableElement(value.fullPath))._data() instanceof Root_meta_external_format_shared_metamodel_data_ExternalFormatData
         );
+    }
+    
+    default Iterable<? extends Function2<DataElementReference, PureModelContextData, List<EmbeddedData>>> getExtraDataElementReferencePMCDTraversers()
+    {
+        return Collections.emptyList();
+    }
+    
+    static EmbeddedData getEmbeddedDataFromDataElement(DataElementReference dataElementReference, PureModelContextData pureModelContextData)
+    {
+        List<EmbeddedData> dataList = ListIterate
+                .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), EmbeddedDataCompilerExtension.class)
+                .flatCollect(EmbeddedDataCompilerExtension::getExtraDataElementReferencePMCDTraversers)
+                .flatCollect(f -> f.apply(dataElementReference, pureModelContextData))
+                .select(Objects::nonNull);
+        if (dataList.size() > 1)
+        {
+            throw new EngineException("More than one data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        else if (dataList.isEmpty())
+        {
+            throw new EngineException("No data element found at the address " + dataElementReference.dataElement.path, dataElementReference.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        else
+        {
+            return dataList.get(0);
+        }
     }
 }
