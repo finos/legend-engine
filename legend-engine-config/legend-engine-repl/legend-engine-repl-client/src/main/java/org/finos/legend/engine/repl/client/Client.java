@@ -25,7 +25,7 @@ import org.finos.legend.engine.repl.client.jline3.JLine3Completer;
 import org.finos.legend.engine.repl.client.jline3.JLine3Highlighter;
 import org.finos.legend.engine.repl.REPLInterface;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
-import org.finos.legend.engine.repl.local.LocalREPL;
+import org.finos.legend.engine.repl.LocalREPL;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -173,7 +173,7 @@ public class Client
                 ")\n");
 
         res.add("###Connection\n" +
-                "RelationalDatabaseConnection test::testConnection\n" +
+                "RelationalDatabaseConnection test::TestConnection\n" +
                 "{\n" +
                 "   store: test::TestDatabase;" +
                 "   specification: LocalH2{};" +
@@ -182,12 +182,12 @@ public class Client
                 "}\n");
 
         res.add("###Runtime\n" +
-                "Runtime test::test\n" +
+                "Runtime test::TestRuntime\n" +
                 "{\n" +
                 "   mappings : [];" +
                 "   connections:\n" +
                 "   [\n" +
-                "       test::TestDatabase : [connection: test::testConnection]\n" +
+                "       test::TestDatabase : [connection: test::TestConnection]\n" +
                 "   ];\n" +
                 "}\n");
 

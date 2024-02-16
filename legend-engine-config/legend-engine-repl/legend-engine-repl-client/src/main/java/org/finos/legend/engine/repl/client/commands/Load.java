@@ -17,6 +17,9 @@ package org.finos.legend.engine.repl.client.commands;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.client.Command;
 import org.finos.legend.engine.repl.client.jline3.JLine3Parser;
@@ -50,17 +53,20 @@ public class Load implements Command
     @Override
     public boolean process(String line) throws Exception
     {
-        if (line.startsWith("load "))
+        if (line.startsWith("load"))
         {
-            String path = line.substring("load ".length()).trim();
-
+            String[] tokens = line.split(" ");
+            if (tokens.length != 3)
+            {
+                throw new RuntimeException("Error, load should be used as 'load <path> <connection>'");
+            }
             String tableName = "test" + getTables(client.getConnection()).size() + 1;
 
             try (Connection connection = client.getConnection())
             {
                 try (Statement statement = connection.createStatement())
                 {
-                    statement.executeUpdate("CREATE TABLE " + tableName + " AS SELECT * FROM CSVREAD('" + path + "');");
+                    statement.executeUpdate("CREATE TABLE " + tableName + " AS SELECT * FROM CSVREAD('" + tokens[1] + "');");
                 }
             }
 
@@ -69,14 +75,13 @@ public class Load implements Command
         return false;
     }
 
-
     @Override
     public MutableList<Candidate> complete(String inScope, LineReader lineReader, ParsedLine parsedLine)
     {
         if (inScope.startsWith("load "))
         {
             MutableList<String> words = Lists.mutable.withAll(parsedLine.words()).drop(2);
-            if (words.detect(" "::equals) == null)
+            if (!words.contains(" "))
             {
                 String compressed = words.makeString("");
                 MutableList<Candidate> list = Lists.mutable.empty();
@@ -92,7 +97,13 @@ public class Load implements Command
             }
             else
             {
-                // Connection?!
+                String start = words.subList(words.indexOf(" ") + 1, words.size()).get(0);
+                PureModelContextData d = Client.replInterface.parse(client.buildState().makeString("\n"));
+                return
+                        ListIterate.select(d.getElementsOfType(PackageableConnection.class), c -> !c._package.equals("__internal__"))
+                                .collect(c -> PureGrammarComposerUtility.convertPath(c.getPath()))
+                                .select(c -> c.startsWith(start))
+                                .collect(Candidate::new);
             }
         }
         return null;

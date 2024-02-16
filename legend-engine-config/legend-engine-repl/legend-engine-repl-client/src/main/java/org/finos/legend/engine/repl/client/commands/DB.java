@@ -15,6 +15,11 @@
 package org.finos.legend.engine.repl.client.commands;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.repl.client.Command;
 import org.jline.reader.Candidate;
@@ -45,6 +50,11 @@ public class DB implements Command
     {
         if (line.startsWith("db"))
         {
+            String[] tokens = line.split(" ");
+            if (tokens.length != 2)
+            {
+                throw new RuntimeException("Error, load should be used as 'db <connection>'");
+            }
             try (Connection connection = client.getConnection())
             {
                 client.terminal.writer().println(
@@ -57,8 +67,19 @@ public class DB implements Command
     }
 
     @Override
-    public MutableList<Candidate> complete(String cmd, LineReader lineReader, ParsedLine parsedLine)
+    public MutableList<Candidate> complete(String inScope, LineReader lineReader, ParsedLine parsedLine)
     {
+        if (inScope.startsWith("db "))
+        {
+            MutableList<String> words = Lists.mutable.withAll(parsedLine.words()).drop(2);
+            String start = words.get(0);
+            PureModelContextData d = Client.replInterface.parse(client.buildState().makeString("\n"));
+            return
+                    ListIterate.select(d.getElementsOfType(PackageableConnection.class), c -> !c._package.equals("__internal__"))
+                            .collect(c -> PureGrammarComposerUtility.convertPath(c.getPath()))
+                            .select(c -> c.startsWith(start))
+                            .collect(Candidate::new);
+        }
         return null;
     }
 }
