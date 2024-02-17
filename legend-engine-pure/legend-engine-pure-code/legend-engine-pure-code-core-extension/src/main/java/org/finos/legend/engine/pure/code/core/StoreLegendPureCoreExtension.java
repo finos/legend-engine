@@ -16,4 +16,9 @@ package org.finos.legend.engine.pure.code.core;
 
 public interface StoreLegendPureCoreExtension extends LegendPureCoreExtension
 {
+    @Override
+    default String type()
+    {
+        return "Store";
+    }
 }

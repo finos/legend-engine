@@ -38,6 +38,12 @@ import java.util.List;
 public class DAMLGenerationExtension implements GenerationExtension
 {
     @Override
+    public String group()
+    {
+        return "EF_DAML";
+    }
+
+    @Override
     public String getLabel()
     {
         return "DAML";

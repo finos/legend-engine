@@ -29,5 +29,11 @@ public class RelationalLegendPureCoreExtension implements StoreLegendPureCoreExt
     {
         return "meta::relational::extension::relationalExtension__Extension_1_";
     }
+
+    @Override
+    public String group()
+    {
+        return "ST_Relational";
+    }
 }
 

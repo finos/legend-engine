@@ -33,6 +33,11 @@ import java.util.Optional;
  */
 public interface ConnectionFactoryExtension extends LegendConnectionExtension
 {
+    @Override
+    default String type()
+    {
+        return "Connection_Factory";
+    }
 
     /**
      * Deprecated as part of deprecated of Legacy Mapping Test

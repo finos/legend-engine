@@ -30,6 +30,12 @@ public class DiagramCompilerExtension implements CompilerExtension
     protected final MutableMap<String, Root_meta_pure_metamodel_diagram_Diagram> diagramsIndex = Maps.mutable.empty();
 
     @Override
+    public String group()
+    {
+        return "PE_Diagram";
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(Diagram.class,

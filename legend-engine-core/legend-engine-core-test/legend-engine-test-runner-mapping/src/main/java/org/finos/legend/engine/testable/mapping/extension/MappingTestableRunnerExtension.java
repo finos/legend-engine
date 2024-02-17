@@ -32,6 +32,12 @@ public class MappingTestableRunnerExtension implements TestableRunnerExtension
     private String pureVersion;
 
     @Override
+    public String group()
+    {
+        return "PE_Mapping";
+    }
+
+    @Override
     public String getSupportedClassifierPath()
     {
         return CorePureProtocolExtension.MAPPING_CLASSIFIER_PATH;

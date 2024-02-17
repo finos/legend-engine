@@ -29,6 +29,12 @@ import java.util.function.Function;
 public class DatabricksGrammarParserExtension implements IRelationalGrammarParserExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Databricks";
+    }
+
+    @Override
     public List<Function<AuthenticationStrategySourceCode, AuthenticationStrategy>> getExtraAuthenticationStrategyParsers()
     {
         return Collections.singletonList(code -> null);

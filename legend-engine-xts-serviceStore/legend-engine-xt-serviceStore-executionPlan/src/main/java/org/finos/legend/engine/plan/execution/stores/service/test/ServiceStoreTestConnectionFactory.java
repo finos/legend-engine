@@ -39,6 +39,12 @@ import java.util.Optional;
 public class ServiceStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
+
+    @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data)
     {
         List<ServiceStoreEmbeddedData> serviceStoreDataList = ListIterate.selectInstancesOf(data, ServiceStoreEmbeddedData.class);

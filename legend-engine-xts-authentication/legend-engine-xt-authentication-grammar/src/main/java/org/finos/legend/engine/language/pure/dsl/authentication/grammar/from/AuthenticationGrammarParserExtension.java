@@ -30,6 +30,12 @@ import java.util.List;
 
 public class AuthenticationGrammarParserExtension implements IAuthenticationGrammarParserExtension
 {
+    @Override
+    public String group()
+    {
+        return "PE_Authentication";
+    }
+
     public List<Function<PureIslandGrammarSourceCode, AuthenticationSpecification>> getExtraAuthenticationParsers()
     {
         return Collections.singletonList(code ->

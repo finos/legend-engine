@@ -42,6 +42,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "PE_DataSpace";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = org.eclipse.collections.impl.factory.Lists.mutable.with((element, context) ->
     {
         if (element instanceof DataSpace)

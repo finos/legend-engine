@@ -29,5 +29,11 @@ public class JSONLegendPureCoreExtension implements ExternalFormatLegendPureCore
     {
         return "meta::external::format::json::extension::jsonSchemaFormatExtension__Extension_1_";
     }
+
+    @Override
+    public String group()
+    {
+        return "EF_JSON";
+    }
 }
 

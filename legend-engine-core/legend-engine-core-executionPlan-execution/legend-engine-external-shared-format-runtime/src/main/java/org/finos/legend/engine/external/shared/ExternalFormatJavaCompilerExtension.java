@@ -47,6 +47,12 @@ public class ExternalFormatJavaCompilerExtension implements ExecutionPlanJavaCom
     }
 
     @Override
+    public String group()
+    {
+        return "EF_External_Format";
+    }
+
+    @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
         return ClassPathFilters.fromClasses(DEPENDENCIES.values());

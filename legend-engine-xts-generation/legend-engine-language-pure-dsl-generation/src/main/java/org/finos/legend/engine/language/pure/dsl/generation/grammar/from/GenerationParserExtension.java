@@ -40,6 +40,12 @@ public class GenerationParserExtension implements PureGrammarParserExtension
     public static final String GENERATION_SPECIFICATION_SECTION_NAME = "GenerationSpecification";
 
     @Override
+    public String group()
+    {
+        return "GEN_Generation";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.immutable.with(

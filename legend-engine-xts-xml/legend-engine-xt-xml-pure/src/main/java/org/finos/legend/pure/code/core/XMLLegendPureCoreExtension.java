@@ -29,4 +29,10 @@ public class XMLLegendPureCoreExtension implements ExternalFormatLegendPureCoreE
     {
         return "meta::external::format::xml::extension::xsdFormatExtension__Extension_1_";
     }
+
+    @Override
+    public String group()
+    {
+        return "EF_XML";
+    }
 }

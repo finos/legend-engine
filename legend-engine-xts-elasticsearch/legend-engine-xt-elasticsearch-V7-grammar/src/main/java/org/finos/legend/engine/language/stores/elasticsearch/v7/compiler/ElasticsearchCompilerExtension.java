@@ -40,6 +40,12 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 public class ElasticsearchCompilerExtension implements CompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Elastic";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return this;

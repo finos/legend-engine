@@ -28,6 +28,12 @@ import java.util.Map;
 public class DiagramProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Diagram";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

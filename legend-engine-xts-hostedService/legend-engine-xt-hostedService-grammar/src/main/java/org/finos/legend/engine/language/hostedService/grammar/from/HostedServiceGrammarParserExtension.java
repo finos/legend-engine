@@ -37,6 +37,12 @@ public class HostedServiceGrammarParserExtension implements PureGrammarParserExt
     public static final String NAME = "HostedService";
 
     @Override
+    public String group()
+    {
+        return "FA_Hosted_Service";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, HostedServiceGrammarParserExtension::parseSection));

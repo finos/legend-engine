@@ -21,6 +21,12 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 public class GraphQLGrammarParserExtension implements PureGrammarParserExtension
 {
     @Override
+    public String group()
+    {
+        return "QU_GraphQL";
+    }
+
+    @Override
     public Iterable<? extends EmbeddedPureParser> getExtraEmbeddedPureParsers()
     {
         return Lists.mutable.with(new GraphQLEmbeddedPureParser());

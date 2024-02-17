@@ -34,6 +34,12 @@ public class BigQueryFunctionProtocolExtension implements PureProtocolExtension
     public static String packageJSONType = "bigQueryFunction";
 
     @Override
+    public String group()
+    {
+        return "FA_BigQuery";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.mutable.with(

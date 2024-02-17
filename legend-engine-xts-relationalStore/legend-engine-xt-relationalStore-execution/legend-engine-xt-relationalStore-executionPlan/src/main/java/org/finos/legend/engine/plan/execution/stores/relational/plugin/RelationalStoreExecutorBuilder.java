@@ -32,6 +32,13 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
     public static final String DEFAULT_TEMP_PATH = "/tmp/";
 
     @Override
+    public String group()
+    {
+        return "ST_Relational";
+    }
+
+
+    @Override
     public StoreType getStoreType()
     {
         return StoreType.Relational;

@@ -48,6 +48,12 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
     public static final String NAME = "DataSpace";
 
     @Override
+    public String group()
+    {
+        return "PE_DataSpace";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.immutable.with(SectionParser.newParser(NAME, DataSpaceParserExtension::parseSection));

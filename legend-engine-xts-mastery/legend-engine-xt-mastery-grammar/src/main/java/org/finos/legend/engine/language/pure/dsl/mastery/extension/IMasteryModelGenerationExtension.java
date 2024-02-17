@@ -36,7 +36,7 @@ public interface IMasteryModelGenerationExtension extends ModelGenerationExtensi
     static PureModelContextData generate(Root_meta_pure_mastery_metamodel_MasterRecordDefinition item, List<Function3<Root_meta_pure_mastery_metamodel_MasterRecordDefinition, CompileContext, String, PureModelContextData>> generators, CompileContext context, String version)
     {
         PureModelContextData.Builder builder = PureModelContextData.newBuilder().withSerializer(new Protocol("pure", version));
-        for (Function3<Root_meta_pure_mastery_metamodel_MasterRecordDefinition, CompileContext, String, PureModelContextData> generator: generators)
+        for (Function3<Root_meta_pure_mastery_metamodel_MasterRecordDefinition, CompileContext, String, PureModelContextData> generator : generators)
         {
             PureModelContextData pureModelContextData = generator.value(item, context, version);
             builder.addPureModelContextData(pureModelContextData);

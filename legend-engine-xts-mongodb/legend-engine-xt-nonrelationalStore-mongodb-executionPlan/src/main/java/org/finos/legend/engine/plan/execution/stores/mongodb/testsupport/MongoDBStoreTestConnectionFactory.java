@@ -35,6 +35,12 @@ import java.util.*;
 public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Mongo";
+    }
+
+    @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data)
     {
         List<MongoDBStoreEmbeddedData> mongoDBStoreEmbeddedDataList = ListIterate.selectInstancesOf(data, MongoDBStoreEmbeddedData.class);

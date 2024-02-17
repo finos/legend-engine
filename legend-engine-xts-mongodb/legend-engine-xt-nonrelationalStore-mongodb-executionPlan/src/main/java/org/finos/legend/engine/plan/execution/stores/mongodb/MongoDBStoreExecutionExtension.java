@@ -29,6 +29,12 @@ import java.util.List;
 
 public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_Mongo";
+    }
+
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList(((executionNode, profiles, executionState) ->

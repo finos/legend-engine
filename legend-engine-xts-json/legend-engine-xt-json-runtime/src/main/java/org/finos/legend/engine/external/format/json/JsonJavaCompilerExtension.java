@@ -47,6 +47,12 @@ public class JsonJavaCompilerExtension implements ExecutionPlanJavaCompilerExten
     }
 
     @Override
+    public String group()
+    {
+        return "EF_JSON";
+    }
+
+    @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
         return ClassPathFilters.fromClasses(DEPENDENCIES.values());

@@ -14,10 +14,16 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.pure.code.core.BindingLegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
 
-public class RelationalJavaBindingLegendPureCoreExtension implements BindingLegendPureCoreExtension
+public class RelationalJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_Relational";
+    }
+
     @Override
     public String functionFile()
     {

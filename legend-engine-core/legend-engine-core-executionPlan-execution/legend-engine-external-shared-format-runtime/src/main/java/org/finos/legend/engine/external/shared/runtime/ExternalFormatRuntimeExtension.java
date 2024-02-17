@@ -30,6 +30,12 @@ import java.util.List;
 
 public interface ExternalFormatRuntimeExtension extends LegendExternalFormatExtension
 {
+    @Override
+    default String type()
+    {
+        return "External_Format_Runtime";
+    }
+
     List<String> getContentTypes();
 
     default StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)

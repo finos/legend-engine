@@ -40,6 +40,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class DiagramGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "PE_Diagram";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
     {
         if (element instanceof Diagram)

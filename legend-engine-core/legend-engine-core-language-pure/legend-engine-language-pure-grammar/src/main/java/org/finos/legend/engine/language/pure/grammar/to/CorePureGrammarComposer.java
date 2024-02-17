@@ -39,6 +39,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class CorePureGrammarComposer implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "Core";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
     {
         if (element instanceof DataElement)

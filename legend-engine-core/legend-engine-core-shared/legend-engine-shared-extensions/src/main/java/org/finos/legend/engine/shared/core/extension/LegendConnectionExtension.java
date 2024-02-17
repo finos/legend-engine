@@ -16,4 +16,16 @@ package org.finos.legend.engine.shared.core.extension;
 
 public interface LegendConnectionExtension extends LegendExtension
 {
+    @Override
+    default String type()
+    {
+        return "Unknown";
+    }
+
+    @Override
+    default String group()
+    {
+        return "Unknown";
+    }
+
 }

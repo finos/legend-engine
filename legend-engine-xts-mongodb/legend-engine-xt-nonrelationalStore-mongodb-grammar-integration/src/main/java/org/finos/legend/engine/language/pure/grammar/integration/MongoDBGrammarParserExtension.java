@@ -50,6 +50,12 @@ public class MongoDBGrammarParserExtension implements IMongoDBGrammarParserExten
     public static final String MONGO_DB_MAPPING_ELEMENT_TYPE = "MongoDB";
     public static final String MONGO_DB_CONNECTION_TYPE = "MongoDBConnection";
 
+    @Override
+    public String group()
+    {
+        return "ST_Mongo";
+    }
+
     private static SourceCodeParserInfo getMongoDBParserInfo(SectionSourceCode sectionSourceCode)
     {
         CharStream input = CharStreams.fromString(sectionSourceCode.code);

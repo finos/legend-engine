@@ -33,6 +33,12 @@ public class GraphQLSDLFormatExtension implements ExternalFormatSchemaGeneration
     public static final String TYPE = contract._id();
 
     @Override
+    public String group()
+    {
+        return "QU_GraphQL";
+    }
+
+    @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_metamodel_sdl_GraphQLSDLContainer> getExternalFormatContract()
     {
         return contract;

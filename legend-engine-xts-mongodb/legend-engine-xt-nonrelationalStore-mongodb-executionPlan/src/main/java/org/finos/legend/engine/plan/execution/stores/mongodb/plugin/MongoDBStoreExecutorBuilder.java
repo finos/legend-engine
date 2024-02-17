@@ -22,6 +22,12 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 public class MongoDBStoreExecutorBuilder implements StoreExecutorBuilder
 {
     @Override
+    public String group()
+    {
+        return "ST_Mongo";
+    }
+
+    @Override
     public StoreType getStoreType()
     {
         return StoreType.NonRelational_MongoDB;
