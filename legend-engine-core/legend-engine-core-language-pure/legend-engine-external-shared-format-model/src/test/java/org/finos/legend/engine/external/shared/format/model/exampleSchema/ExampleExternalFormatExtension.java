@@ -29,6 +29,18 @@ import org.finos.legend.pure.generated.core_pure_binding_transformation_tests_ex
 
 public class ExampleExternalFormatExtension implements ExternalFormatSchemaGenerationExtension<Root_meta_external_format_shared_transformation_tests_ExampleSchema, ModelToExampleSchemaConfiguration>, ExternalFormatModelGenerationExtension<Root_meta_external_format_shared_transformation_tests_ExampleSchema, ExampleSchemaToModelConfiguration>
 {
+    @Override
+    public String type()
+    {
+        return "MIX_External_Format_Model_Generation_&_External_Format_Schema_Generation";
+    }
+
+    @Override
+    public String group()
+    {
+        return "TEST";
+    }
+
     private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_shared_transformation_tests_ExampleSchema> externalFormatContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_shared_transformation_tests_ExampleSchema>) core_pure_binding_transformation_tests_externalFormatContract.Root_meta_external_format_shared_transformation_tests_exampleFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
 
     public static final String TYPE = externalFormatContract._id();

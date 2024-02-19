@@ -34,6 +34,12 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.E
 public class ElasticsearchV7ProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Elastic";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

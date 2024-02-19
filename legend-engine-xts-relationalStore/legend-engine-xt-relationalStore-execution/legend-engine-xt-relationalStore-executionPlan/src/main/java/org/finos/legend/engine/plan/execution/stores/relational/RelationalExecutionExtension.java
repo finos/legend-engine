@@ -36,6 +36,12 @@ import java.util.List;
 public class RelationalExecutionExtension implements ExecutionExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational";
+    }
+
+    @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList(((executionNode, profiles, executionState) ->

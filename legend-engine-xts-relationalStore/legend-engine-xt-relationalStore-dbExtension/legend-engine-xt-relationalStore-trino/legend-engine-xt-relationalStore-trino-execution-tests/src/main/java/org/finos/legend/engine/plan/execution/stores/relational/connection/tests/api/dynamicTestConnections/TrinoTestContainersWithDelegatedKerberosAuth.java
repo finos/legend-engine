@@ -29,6 +29,18 @@ public class TrinoTestContainersWithDelegatedKerberosAuth
         implements DynamicTestConnection
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Trino";
+    }
+
+    @Override
+    public String type()
+    {
+        return "Test_Connection_Delegated_Kerberos";
+    }
+
+    @Override
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.Trino;

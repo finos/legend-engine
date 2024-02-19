@@ -88,6 +88,12 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     private static RelationStoreAccessorPureParser relationStoreAccessorPureParser = new RelationStoreAccessorPureParser();
 
     @Override
+    public String group()
+    {
+        return "Core";
+    }
+
+    @Override
     public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
     {
         return Lists.immutable.with(

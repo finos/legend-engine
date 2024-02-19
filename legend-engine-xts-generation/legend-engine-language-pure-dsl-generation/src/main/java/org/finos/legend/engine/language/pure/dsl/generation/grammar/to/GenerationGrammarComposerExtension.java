@@ -37,6 +37,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class GenerationGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "GEN_Generation";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderersFile = Lists.mutable.with((element, context) ->
     {
         if (element instanceof FileGenerationSpecification)

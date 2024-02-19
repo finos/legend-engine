@@ -29,4 +29,10 @@ public class MongoDBLegendPureCoreExtension implements StoreLegendPureCoreExtens
     {
         return "meta::external::store::mongodb::executionPlan::platformBinding::legendJava::mongoDBOnlyLegendJavaPlatformBindingExtensions__Extension_MANY_";
     }
+
+    @Override
+    public String group()
+    {
+        return "ST_Mongo";
+    }
 }

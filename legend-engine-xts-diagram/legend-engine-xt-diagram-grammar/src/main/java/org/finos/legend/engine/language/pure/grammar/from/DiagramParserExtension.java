@@ -33,6 +33,12 @@ public class DiagramParserExtension implements PureGrammarParserExtension
     public static final String NAME = "Diagram";
 
     @Override
+    public String group()
+    {
+        return "PE_Diagram";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.immutable.with(SectionParser.newParser(NAME, DiagramParserExtension::parseSection));

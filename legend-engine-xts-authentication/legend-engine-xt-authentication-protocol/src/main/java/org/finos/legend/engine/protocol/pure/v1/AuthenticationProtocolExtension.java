@@ -45,6 +45,12 @@ public class AuthenticationProtocolExtension implements PureProtocolExtension
     public static final String AUTHENTICATION_DEMO_CLASSIFIER_PATH = "meta::pure::runtime::connection::authentication::demo::AuthenticationDemo";
 
     @Override
+    public String group()
+    {
+        return "PE_Authentication";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(

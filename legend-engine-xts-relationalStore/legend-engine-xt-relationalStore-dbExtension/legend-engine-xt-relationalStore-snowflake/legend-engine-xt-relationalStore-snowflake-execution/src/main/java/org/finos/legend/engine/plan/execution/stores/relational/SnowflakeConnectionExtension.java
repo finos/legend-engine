@@ -60,6 +60,18 @@ import java.util.stream.Collectors;
 public class SnowflakeConnectionExtension implements RelationalConnectionExtension, StrategicConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+    }
+
+    @Override
+    public String group()
+    {
+        return "ST_Relational_Snowflake";
+    }
+
+    @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new SnowflakeManager());

@@ -26,6 +26,12 @@ import java.util.List;
 public class PersistenceCloudComposerExtension implements IPersistenceComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Persistence_Cloud";
+    }
+
+    @Override
     public List<Function3<PersistencePlatform, Integer, PureGrammarComposerContext, String>> getExtraPersistencePlatformComposers()
     {
         return Collections.singletonList(((persistencePlatform, indentLevel, context) ->

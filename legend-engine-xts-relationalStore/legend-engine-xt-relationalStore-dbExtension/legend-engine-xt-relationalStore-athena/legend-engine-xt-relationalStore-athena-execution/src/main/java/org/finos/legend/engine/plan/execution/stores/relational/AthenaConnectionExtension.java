@@ -39,6 +39,18 @@ import java.util.function.Function;
 public class AthenaConnectionExtension implements RelationalConnectionExtension, StrategicConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+    }
+
+    @Override
+    public String group()
+    {
+        return "ST_Relational_Athena";
+    }
+
+    @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new AthenaManager());

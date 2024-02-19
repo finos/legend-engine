@@ -26,6 +26,12 @@ import java.util.List;
 public class BigQueryProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_BigQuery";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

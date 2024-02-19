@@ -31,6 +31,12 @@ import java.util.List;
 public class Elasticsearch7ExecutionExtension implements ExecutionExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Elastic";
+    }
+
+    @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList(((executionNode, profiles, executionState) ->

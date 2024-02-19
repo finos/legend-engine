@@ -37,7 +37,7 @@ public class EmbeddedDataHelper
     {
         if (embeddedData instanceof DataElementReference)
         {
-            DataElement dataElement = resolveDataElementInPMCDWithPath(pureModelContextData, ((DataElementReference)embeddedData).dataElement);
+            DataElement dataElement = resolveDataElementInPMCDWithPath(pureModelContextData, ((DataElementReference)embeddedData).dataElement.path);
             return dataElement.data;
         }
         return embeddedData;
@@ -57,7 +57,7 @@ public class EmbeddedDataHelper
     {
         if (embeddedData instanceof DataElementReference)
         {
-            DataElement dataElement = findDataElement(dataElementList, ((DataElementReference)embeddedData).dataElement);
+            DataElement dataElement = findDataElement(dataElementList, ((DataElementReference)embeddedData).dataElement.path);
             return dataElement.data;
         }
         return embeddedData;

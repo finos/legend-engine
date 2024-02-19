@@ -26,6 +26,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class SpannerGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Spanner";
+    }
+
+    @Override
     public List<Function2<DatasourceSpecification, PureGrammarComposerContext, String>> getExtraDataSourceSpecificationComposers()
     {
         return Lists.mutable.with((_spec, context) ->

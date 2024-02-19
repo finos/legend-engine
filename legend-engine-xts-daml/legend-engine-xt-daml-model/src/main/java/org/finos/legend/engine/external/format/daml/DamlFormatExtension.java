@@ -36,6 +36,11 @@ public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtens
 
     public static final String TYPE = damlContract._id();
 
+    @Override
+    public String group()
+    {
+        return "EF_DAML";
+    }
 
     @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema> getExternalFormatContract()

@@ -37,6 +37,12 @@ public class SnowflakeAppGrammarParserExtension implements PureGrammarParserExte
     public static final String NAME = "Snowflake";
 
     @Override
+    public String group()
+    {
+        return "FA_Snowflake";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, SnowflakeAppGrammarParserExtension::parseSection));

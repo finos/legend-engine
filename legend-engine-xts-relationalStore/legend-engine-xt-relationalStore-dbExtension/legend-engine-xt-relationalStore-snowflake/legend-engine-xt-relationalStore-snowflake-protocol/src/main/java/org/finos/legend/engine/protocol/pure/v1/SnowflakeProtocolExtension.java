@@ -28,6 +28,12 @@ import java.util.List;
 public class SnowflakeProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Snowflake";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

@@ -26,6 +26,18 @@ import java.util.Properties;
 public class DefaultVaultExtension implements VaultExtension
 {
     @Override
+    public String type()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
+    @Override
+    public String group()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
+    @Override
     public List<Pair<String, Class<? extends VaultConfiguration>>> getExtraVaultConfigurationSubTypes()
     {
         return Lists.mutable.with(Tuples.pair("property", PropertyVaultConfiguration.class));

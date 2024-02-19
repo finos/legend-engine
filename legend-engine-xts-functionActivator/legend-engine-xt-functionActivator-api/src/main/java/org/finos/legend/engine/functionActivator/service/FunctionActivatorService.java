@@ -32,6 +32,12 @@ import java.util.List;
 
 public interface FunctionActivatorService<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorDeploymentConfiguration, V extends DeploymentResult> extends LegendExtension
 {
+    @Override
+    default String type()
+    {
+        return "Function_Activator";
+    }
+
     FunctionActivatorInfo info(PureModel pureModel, String version);
 
     boolean supports(Root_meta_external_function_activator_FunctionActivator packageableElement);

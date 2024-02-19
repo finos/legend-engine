@@ -29,4 +29,10 @@ public class FlatDataLegendPureCoreExtension implements ExternalFormatLegendPure
     {
         return "meta::external::format::flatdata::extension::flatDataFormatExtension__Extension_1_";
     }
+
+    @Override
+    public String group()
+    {
+        return "EF_FlatData";
+    }
 }

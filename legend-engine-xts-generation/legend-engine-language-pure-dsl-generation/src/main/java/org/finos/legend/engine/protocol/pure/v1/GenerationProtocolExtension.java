@@ -29,6 +29,12 @@ import java.util.Map;
 public class GenerationProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "GEN_Generation";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

@@ -17,25 +17,41 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.mapping.MappingParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtensions;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
+import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class DataSpaceParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "DataSpace";
+
+    @Override
+    public String group()
+    {
+        return "PE_DataSpace";
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
@@ -49,7 +65,7 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
         DefaultCodeSection section = new DefaultCodeSection();
         section.parserName = sectionSourceCode.sectionType;
         section.sourceInformation = parserInfo.sourceInformation;
-        DataSpaceParseTreeWalker walker = new DataSpaceParseTreeWalker(parserInfo.input, parserInfo.walkerSourceInformation, elementConsumer, section);
+        DataSpaceParseTreeWalker walker = new DataSpaceParseTreeWalker(parserInfo.input, parserInfo.walkerSourceInformation, elementConsumer, section, pureGrammarParserContext);
         walker.visit((DataSpaceParserGrammar.DefinitionContext) parserInfo.rootContext);
         return section;
     }
@@ -84,5 +100,11 @@ public class DataSpaceParserExtension implements PureGrammarParserExtension
         mappingIncludeDataSpace.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
 
         return mappingIncludeDataSpace;
+    }
+
+    @Override
+    public Iterable<? extends EmbeddedDataParser> getExtraEmbeddedDataParsers()
+    {
+        return org.eclipse.collections.api.factory.Lists.immutable.with(new DataspaceDataElementReferenceParser());
     }
 }

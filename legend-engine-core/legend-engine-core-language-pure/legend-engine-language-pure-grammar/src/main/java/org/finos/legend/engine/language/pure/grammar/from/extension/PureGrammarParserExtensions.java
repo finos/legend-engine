@@ -24,7 +24,6 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 
 import java.util.List;
 import java.util.ServiceLoader;
@@ -82,6 +81,7 @@ public class PureGrammarParserExtensions
     {
         return this.mappingIncludeParsers.get(type);
     }
+
 
     public MappingTestInputDataParser getExtraMappingTestInputDataParser(String type)
     {

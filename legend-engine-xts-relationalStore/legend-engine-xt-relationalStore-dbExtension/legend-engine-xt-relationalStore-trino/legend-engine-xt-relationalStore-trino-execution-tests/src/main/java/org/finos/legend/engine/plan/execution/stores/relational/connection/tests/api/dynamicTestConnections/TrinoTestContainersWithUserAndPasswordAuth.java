@@ -33,6 +33,18 @@ public class TrinoTestContainersWithUserAndPasswordAuth
         implements DynamicTestConnection
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Trino";
+    }
+
+    @Override
+    public String type()
+    {
+        return "Test_Connection_User_Password";
+    }
+
+    @Override
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.Trino;

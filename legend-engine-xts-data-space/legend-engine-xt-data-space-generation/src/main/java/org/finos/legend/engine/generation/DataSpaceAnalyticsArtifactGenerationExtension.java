@@ -39,6 +39,12 @@ public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGe
     public static ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getNewObjectMapper();
 
     @Override
+    public String group()
+    {
+        return "PE_DataSpace";
+    }
+
+    @Override
     public String getKey()
     {
         return ROOT_PATH;

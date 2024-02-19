@@ -24,6 +24,12 @@ import java.util.Collections;
 public class TextCompilerExtension implements CompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Text";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new TextCompilerExtension();

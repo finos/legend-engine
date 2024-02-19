@@ -33,6 +33,12 @@ public class ServiceTestableRunnerExtension implements TestableRunnerExtension
     private String pureVersion = PureClientVersions.production;
 
     @Override
+    public String group()
+    {
+        return "PE_Service";
+    }
+
+    @Override
     public String getSupportedClassifierPath()
     {
         return ServiceProtocolExtension.SERVICE_CLASSIFIER_PATH;

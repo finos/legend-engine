@@ -34,6 +34,11 @@ public class SqlServerTestContainers implements DynamicTestConnection
         return DatabaseType.SqlServer;
     }
 
+    @Override
+    public String group()
+    {
+        return "ST_Relational_SQLServer";
+    }
 
     public MSSQLServerContainer mssqlserver = new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2019-latest")
             .acceptLicense();
