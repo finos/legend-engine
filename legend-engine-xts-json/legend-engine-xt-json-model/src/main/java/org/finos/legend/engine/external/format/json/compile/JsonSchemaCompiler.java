@@ -32,12 +32,6 @@ import java.util.List;
 
 public class JsonSchemaCompiler implements CompilerExtension
 {
-    @Override
-    public String group()
-    {
-        return "EF_JSON";
-    }
-
     public Root_meta_external_format_json_metamodel_JsonSchema compile(ExternalSchemaCompileContext context)
     {
         String content = context.getContent();

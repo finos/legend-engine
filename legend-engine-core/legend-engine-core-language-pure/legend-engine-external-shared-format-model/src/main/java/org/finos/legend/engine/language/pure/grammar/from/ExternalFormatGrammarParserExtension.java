@@ -33,12 +33,6 @@ public class ExternalFormatGrammarParserExtension implements PureGrammarParserEx
 {
     public static final String NAME = "ExternalFormat";
 
-    @Override
-    public String group()
-    {
-        return "EF_External_Format";
-    }
-
     public List<SectionParser> getExtraSectionParsers()
     {
         return Collections.singletonList(SectionParser.newParser(NAME, ExternalFormatGrammarParserExtension::parse));

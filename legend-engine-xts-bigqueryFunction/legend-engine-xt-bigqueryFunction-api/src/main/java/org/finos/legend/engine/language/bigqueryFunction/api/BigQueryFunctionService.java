@@ -45,12 +45,6 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     }
 
     @Override
-    public String group()
-    {
-        return "FA_BigQuery";
-    }
-
-    @Override
     public FunctionActivatorInfo info(PureModel pureModel, String version)
     {
         return new FunctionActivatorInfo(

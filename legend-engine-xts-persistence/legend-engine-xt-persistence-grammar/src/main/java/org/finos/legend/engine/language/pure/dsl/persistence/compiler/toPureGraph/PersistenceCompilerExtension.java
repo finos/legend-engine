@@ -69,12 +69,6 @@ import static org.finos.legend.pure.generated.core_persistence_persistence_valid
 public class PersistenceCompilerExtension implements IPersistenceCompilerExtension
 {
     @Override
-    public String group()
-    {
-        return "PE_Persistence";
-    }
-
-    @Override
     public CompilerExtension build()
     {
         return new PersistenceCompilerExtension();

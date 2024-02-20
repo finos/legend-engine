@@ -35,12 +35,6 @@ public class SnowflakeAppProtocolExtension implements PureProtocolExtension
     public static String packageJSONType = "snowflakeApp";
 
     @Override
-    public String group()
-    {
-        return "FA_Snowflake";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.mutable.with(

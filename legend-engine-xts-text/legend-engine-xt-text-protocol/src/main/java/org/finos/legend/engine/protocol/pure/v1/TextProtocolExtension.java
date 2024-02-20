@@ -28,12 +28,6 @@ import java.util.Map;
 public class TextProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
-    {
-        return "PE_Text";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

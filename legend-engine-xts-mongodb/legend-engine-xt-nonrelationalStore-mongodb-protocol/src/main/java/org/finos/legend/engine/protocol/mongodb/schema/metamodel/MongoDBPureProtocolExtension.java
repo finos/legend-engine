@@ -35,12 +35,6 @@ import java.util.Map;
 public class MongoDBPureProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
-    {
-        return "ST_Mongo";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

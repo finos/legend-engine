@@ -39,12 +39,6 @@ import java.util.List;
 public class ProtobufGenerationExtension implements GenerationExtension
 {
     @Override
-    public String group()
-    {
-        return "EF_Protobuf";
-    }
-
-    @Override
     public String getLabel()
     {
         return "Protobuf";

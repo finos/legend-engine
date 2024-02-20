@@ -72,12 +72,6 @@ public class MasteryParserExtension implements IMasteryParserExtension
     private static final String REST_ACQUISITION = "REST";
 
     @Override
-    public String group()
-    {
-        return "PE_Mastery";
-    }
-
-    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, MasteryParserExtension::parseSection));

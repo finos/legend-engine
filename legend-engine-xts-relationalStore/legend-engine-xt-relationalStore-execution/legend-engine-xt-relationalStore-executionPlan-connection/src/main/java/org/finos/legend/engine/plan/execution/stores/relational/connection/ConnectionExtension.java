@@ -20,11 +20,5 @@ import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
 
 public interface ConnectionExtension extends LegendConnectionExtension
 {
-    @Override
-    default String type()
-    {
-        return "Connection_Extension";
-    }
-
     MutableList<DatabaseManager> getAdditionalDatabaseManager();
 }

@@ -40,6 +40,7 @@ public class FromHandler extends FunctionHandler
     public MutableList<CompletionItem> proposedParameters(AppliedFunction currentFunc, GenericType leftType, PureModel pureModel, Completer completer, ProcessingContext processingContext, ValueSpecification currentVS)
     {
         RichIterable<Root_meta_pure_runtime_PackageableRuntime> runtimes;
+
         if (currentFunc.parameters.size() == 1)
         {
             runtimes = pureModel.getAllRuntimes();
@@ -48,6 +49,7 @@ public class FromHandler extends FunctionHandler
         {
             String path = ((PackageableElementPtr) currentFunc.parameters.get(1)).fullPath;
             runtimes = pureModel.getAllRuntimes().select(c -> PackageableElement.getUserPathForPackageableElement(c).startsWith(path));
+
         }
         return runtimes.collect(c -> new CompletionItem(PackageableElement.getUserPathForPackageableElement(c), PackageableElement.getUserPathForPackageableElement(c) + ")")).toList();
     }

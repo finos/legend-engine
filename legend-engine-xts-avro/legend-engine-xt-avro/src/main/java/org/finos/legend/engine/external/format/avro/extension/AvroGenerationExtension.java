@@ -39,12 +39,6 @@ import java.util.List;
 public class AvroGenerationExtension implements GenerationExtension
 {
     @Override
-    public String group()
-    {
-        return "GEN_Avro";
-    }
-
-    @Override
     public String getLabel()
     {
         return "Avro";

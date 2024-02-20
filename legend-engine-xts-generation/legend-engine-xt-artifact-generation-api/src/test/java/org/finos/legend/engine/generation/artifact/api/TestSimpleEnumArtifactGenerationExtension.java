@@ -33,13 +33,6 @@ public class TestSimpleEnumArtifactGenerationExtension implements ArtifactGenera
     }
 
     @Override
-    public String group()
-    {
-        return "Test";
-    }
-
-
-    @Override
     public boolean canGenerate(PackageableElement packageableElement)
     {
         return packageableElement instanceof Enumeration;

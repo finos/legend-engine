@@ -78,12 +78,6 @@ public class CorePureProtocolExtension implements PureProtocolExtension
     public static final String FUNCTION_CLASSIFIER_PATH = "meta::pure::metamodel::function::ConcreteFunctionDefinition";
 
     @Override
-    public String group()
-    {
-        return "Core";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

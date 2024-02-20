@@ -36,12 +36,6 @@ public class AuthenticationDemoParserExtension implements IAuthenticationDemoPar
     public static final String NAME = "AuthenticationDemo";
 
     @Override
-    public String group()
-    {
-        return "Test";
-    }
-
-    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, AuthenticationDemoParserExtension::parseSection));

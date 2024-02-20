@@ -34,12 +34,6 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
     CoreFunctionActivatorCodeRepositoryProvider forDependencies;
 
     @Override
-    public String group()
-    {
-        return "FA_Snowflake";
-    }
-
-    @Override
     public CompilerExtension build()
     {
         return new SnowflakeAppCompilerExtension();

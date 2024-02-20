@@ -16,9 +16,4 @@ package org.finos.legend.engine.pure.code.core;
 
 public interface FeatureLegendPureCoreExtension extends LegendPureCoreExtension
 {
-    @Override
-    default String type()
-    {
-        return "Feature";
-    }
 }

@@ -16,15 +16,4 @@ package org.finos.legend.engine.pure.code.core;
 
 public interface TestLegendPureCoreExtension extends LegendPureCoreExtension
 {
-    @Override
-    default String type()
-    {
-        return "Test";
-    }
-
-    @Override
-    default String group()
-    {
-        return "Test";
-    }
 }

@@ -28,11 +28,6 @@ import org.pac4j.core.profile.CommonProfile;
 
 public class FakeServiceStoreExecutorBuilder implements StoreExecutorBuilder
 {
-    @Override
-    public String group()
-    {
-        return "TEST-FakeServiceStore";
-    }
 
     @Override
     public StoreType getStoreType()

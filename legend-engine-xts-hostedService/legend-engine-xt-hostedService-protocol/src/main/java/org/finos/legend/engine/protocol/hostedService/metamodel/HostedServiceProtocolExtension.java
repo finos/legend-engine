@@ -38,12 +38,6 @@ public class HostedServiceProtocolExtension implements PureProtocolExtension
     public static String packageJSONType = "hostedService";
 
     @Override
-    public String group()
-    {
-        return "FA_Hosted_Service";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.mutable.with(

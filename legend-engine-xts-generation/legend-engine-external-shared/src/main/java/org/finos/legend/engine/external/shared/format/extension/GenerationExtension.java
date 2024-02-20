@@ -27,12 +27,6 @@ import java.util.List;
 
 public interface GenerationExtension extends LegendGenerationExtension
 {
-    @Override
-    default String type()
-    {
-        return "Generation";
-    }
-
     String getLabel();
 
     String getKey();

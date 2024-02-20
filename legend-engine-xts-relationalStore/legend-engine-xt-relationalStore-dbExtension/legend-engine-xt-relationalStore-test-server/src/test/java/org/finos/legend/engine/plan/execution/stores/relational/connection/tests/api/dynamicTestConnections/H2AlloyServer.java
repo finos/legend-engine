@@ -33,12 +33,6 @@ public class H2AlloyServer implements DynamicTestConnection
     private org.h2.tools.Server h2Server;
 
     @Override
-    public String group()
-    {
-        return "ST_Relational_H2";
-    }
-
-    @Override
     public void setup()
     {
         long start = System.currentTimeMillis();

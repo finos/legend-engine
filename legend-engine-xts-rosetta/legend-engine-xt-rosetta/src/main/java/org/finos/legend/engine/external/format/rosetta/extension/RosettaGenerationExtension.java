@@ -39,12 +39,6 @@ import java.util.List;
 public class RosettaGenerationExtension implements GenerationExtension
 {
     @Override
-    public String group()
-    {
-        return "GEN_Rosetta";
-    }
-
-    @Override
     public String getLabel()
     {
         return "Rosetta";

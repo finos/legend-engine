@@ -33,12 +33,6 @@ import java.util.Objects;
 public class AuthenticationCompilerExtension implements IAuthenticationCompilerExtension
 {
     @Override
-    public String group()
-    {
-        return "PE_Authentication";
-    }
-
-    @Override
     public CompilerExtension build()
     {
         return new AuthenticationCompilerExtension();

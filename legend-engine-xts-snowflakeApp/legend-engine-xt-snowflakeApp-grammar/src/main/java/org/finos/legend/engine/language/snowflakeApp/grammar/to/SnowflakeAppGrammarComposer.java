@@ -36,12 +36,6 @@ import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGramm
 
 public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
 {
-    @Override
-    public String group()
-    {
-        return "FA_Snowflake";
-    }
-
     private static String renderElement(PackageableElement element)
     {
         if (element instanceof SnowflakeApp)

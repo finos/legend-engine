@@ -29,10 +29,4 @@ public class ArrowLegendPureCoreExtension implements ExternalFormatLegendPureCor
     {
         return "meta::external::format::arrow::extension::arrowFormatExtension__Extension_1_";
     }
-
-    @Override
-    public String group()
-    {
-        return "EF_Arrow";
-    }
 }

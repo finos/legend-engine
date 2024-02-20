@@ -32,12 +32,6 @@ import java.util.List;
 public class BigQueryCompilerExtension implements IRelationalCompilerExtension
 {
     @Override
-    public String group()
-    {
-        return "ST_Relational_BigQuery";
-    }
-
-    @Override
     public List<Function2<DatasourceSpecification, CompileContext, Root_meta_pure_alloy_connections_alloy_specification_DatasourceSpecification>> getExtraDataSourceSpecificationProcessors()
     {
         return Lists.mutable.with((datasourceSpecification, context) ->

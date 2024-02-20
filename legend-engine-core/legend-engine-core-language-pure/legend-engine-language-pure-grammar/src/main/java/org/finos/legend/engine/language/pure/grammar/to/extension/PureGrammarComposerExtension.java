@@ -50,12 +50,6 @@ public interface PureGrammarComposerExtension extends LegendLanguageExtension
         return new ArrayList<>();
     }
 
-    @Override
-    default String type()
-    {
-        return "(Lang)Composer";
-    }
-
     class PureFreeSectionGrammarComposerResult
     {
         public final String value;

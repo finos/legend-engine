@@ -43,12 +43,6 @@ import java.util.Optional;
 public class RelationalConnectionFactory implements ConnectionFactoryExtension
 {
     @Override
-    public String group()
-    {
-        return "ST_Relational";
-    }
-
-    @Override
     public Optional<Connection> tryBuildFromInputData(InputData inputData)
     {
         if (inputData instanceof RelationalInputData)

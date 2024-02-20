@@ -38,12 +38,6 @@ public class MemSQLTestContainer implements DynamicTestConnection
     private TestVaultImplementation vault;
 
     @Override
-    public String group()
-    {
-        return "ST_Relational_MemSQL";
-    }
-
-    @Override
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.MemSQL;

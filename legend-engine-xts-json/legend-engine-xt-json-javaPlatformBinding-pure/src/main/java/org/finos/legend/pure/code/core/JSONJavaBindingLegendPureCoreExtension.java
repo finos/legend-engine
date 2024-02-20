@@ -14,16 +14,10 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.BindingLegendPureCoreExtension;
 
-public class JSONJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
+public class JSONJavaBindingLegendPureCoreExtension implements BindingLegendPureCoreExtension
 {
-    @Override
-    public String group()
-    {
-        return "EF_JSON";
-    }
-
     @Override
     public String functionFile()
     {

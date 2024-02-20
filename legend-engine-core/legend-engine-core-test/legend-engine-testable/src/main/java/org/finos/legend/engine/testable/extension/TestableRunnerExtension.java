@@ -19,12 +19,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
 public interface TestableRunnerExtension extends LegendExtension
 {
-    @Override
-    default String type()
-    {
-        return "Testable";
-    }
-
     String getSupportedClassifierPath();
 
     TestRunner getTestRunner(Testable testable);
