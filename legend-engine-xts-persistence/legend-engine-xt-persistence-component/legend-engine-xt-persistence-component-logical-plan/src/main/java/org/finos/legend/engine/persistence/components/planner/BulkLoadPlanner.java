@@ -119,7 +119,7 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        if (capabilities.contains(Capability.DRY_RUN))
+        if (capabilities.contains(Capability.DRY_RUN) && stagedFilesDataset.stagedFilesDatasetProperties().dryRunSupported())
         {
             Dataset validationDataset = getValidationDataset();
             Copy copy = Copy.builder()
@@ -207,7 +207,7 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        if (capabilities.contains(Capability.DRY_RUN))
+        if (capabilities.contains(Capability.DRY_RUN) && stagedFilesDataset.stagedFilesDatasetProperties().dryRunSupported())
         {
             operations.add(Create.of(true, getValidationDataset()));
         }
@@ -294,7 +294,7 @@ class BulkLoadPlanner extends Planner
                 .schema(stagedFilesDataset.schema())
                 .database(mainDataset().datasetReference().database())
                 .group(mainDataset().datasetReference().group())
-                .name(tableName + UNDERSCORE + "validation")
+                .name(tableName + UNDERSCORE + "validation") // TODO legend_persistence
                 .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
                 .build();
     }

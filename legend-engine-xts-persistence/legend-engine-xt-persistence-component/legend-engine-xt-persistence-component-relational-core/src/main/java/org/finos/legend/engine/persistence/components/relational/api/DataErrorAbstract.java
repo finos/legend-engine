@@ -16,7 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.immutables.value.Value;
 
-import java.util.List;
+import java.util.Optional;
 
 @Value.Immutable
 @Value.Style(
@@ -26,9 +26,23 @@ import java.util.List;
         optionalAcceptNullable = true,
         strictBuilder = true
 )
-public abstract class DryRunResultAbstract
+public interface DataErrorAbstract
 {
-    public abstract IngestStatus status();
+    String errorMessage();
 
-    public abstract List<DataError> errorRecords();
+    String file();
+
+    String errorCategory();
+
+    String columnName();
+
+    Optional<Long> lineNumber();
+
+    Optional<Long> characterPosition();
+
+    Optional<Long> rowNumber();
+
+    Optional<Long> rowStartLineNumber();
+
+    Optional<String> rejectedRecord();
 }

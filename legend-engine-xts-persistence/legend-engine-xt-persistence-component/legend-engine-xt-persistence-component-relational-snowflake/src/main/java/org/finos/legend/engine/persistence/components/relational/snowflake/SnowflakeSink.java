@@ -41,6 +41,7 @@ import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
@@ -246,25 +247,36 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    public void performDryRun(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan)
+    public List<DataError> performDryRun(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount)
     {
-        List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunSqlPlan, 25);
-        List<Map<String, Object>> resultSets = results.get(0).getData();
-        for (Map<String, Object> row: resultSets)
+        if (dryRunSqlPlan == null || dryRunSqlPlan.getSqlList().isEmpty())
         {
-            Object error = row.get(ERROR);
-            Object file = row.get(FILE_WITH_ERROR);
-            Object line = row.get(LINE);
-            Object character = row.get(CHARACTER);
-            Object byteOffset = row.get(BYTE_OFFSET);
-            Object category = row.get(CATEGORY);
-            Object columnName = row.get(COLUMN_NAME);
-            Object rowNumber = row.get(ROW_NUMBER);
-            Object rowStartLine = row.get(ROW_START_LINE);
-            Object rejectedRecord = row.get(REJECTED_RECORD);
+            throw new RuntimeException("DryRun supported for this ingest");
         }
-    }
+        List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunSqlPlan, sampleRowCount);
+        List<DataError> dataErrors = new ArrayList<>();
 
+        if (!results.isEmpty())
+        {
+            List<Map<String, Object>> resultSets = results.get(0).getData();
+            for (Map<String, Object> row : resultSets)
+            {
+                DataError dataError = DataError.builder()
+                        .errorMessage(getString(row, ERROR))
+                        .file(getString(row, FILE_WITH_ERROR))
+                        .errorCategory(getString(row, CATEGORY))
+                        .columnName(getString(row, COLUMN_NAME))
+                        .lineNumber(getLong(row, LINE))
+                        .characterPosition(getLong(row, CHARACTER))
+                        .rowNumber(getLong(row, ROW_NUMBER))
+                        .rowStartLineNumber(getLong(row, ROW_START_LINE))
+                        .rejectedRecord(getString(row, REJECTED_RECORD))
+                        .build();
+                dataErrors.add(dataError);
+            }
+        }
+        return dataErrors;
+    }
 
     @Override
     public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
@@ -363,4 +375,17 @@ public class SnowflakeSink extends AnsiSqlSink
             throw new RuntimeException(e);
         }
     }
+
+    private String getString(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        return value == null ? null : (String) value;
+    }
+
+    private Long getLong(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        return value == null ? null : (Long) value;
+    }
+
 }

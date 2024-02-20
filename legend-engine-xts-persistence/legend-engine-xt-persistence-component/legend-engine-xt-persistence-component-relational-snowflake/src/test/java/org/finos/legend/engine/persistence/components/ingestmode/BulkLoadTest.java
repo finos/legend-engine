@@ -192,9 +192,7 @@ public class BulkLoadTest
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
-        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
-        List<String> dryRunSql = operations.dryRunSql();
         List<String> metaIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
@@ -212,19 +210,10 @@ public class BulkLoadTest
                 "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}'," +
                 "PARSE_JSON('{\"event_id\":\"task123\",\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}')," +
                 "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
-        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation\"" +
-                "(\"col_bigint\" BIGINT,\"col_variant\" VARIANT)";
-        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation\"  FROM my_location " +
-                "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
-                "FILE_FORMAT = (TYPE = 'AVRO') " +
-                "ON_ERROR = 'ABORT_STATEMENT' " +
-                "VALIDATION_MODE = 'RETURN_ERRORS'";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetaIngestSql, metaIngestSql.get(0));
-        Assertions.assertEquals(expectedDryRunPreActionsSql, dryRunPreActionsSql.get(0));
-        Assertions.assertEquals(expectedDryRunSql, dryRunSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
@@ -266,9 +255,7 @@ public class BulkLoadTest
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
 
         List<String> preActionsSql = operations.preActionsSql();
-        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
-        List<String> dryRunSql = operations.dryRunSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
@@ -289,19 +276,9 @@ public class BulkLoadTest
             "(SELECT 'MY_NAME',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MY_NAME')," +
             "'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"file_paths\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
-        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME_VALIDATION\"" +
-                "(\"COL_INT\" INTEGER,\"COL_INTEGER\" INTEGER)";
-        String expectedDryRunSql = "COPY INTO \"MY_DB\".\"MY_NAME_VALIDATION\"  FROM my_location " +
-                "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +
-                "FILE_FORMAT = (FORMAT_NAME = 'my_file_format') " +
-                "ON_ERROR = 'ABORT_STATEMENT' " +
-                "VALIDATION_MODE = 'RETURN_ERRORS'";
-
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
-        Assertions.assertEquals(expectedDryRunPreActionsSql, dryRunPreActionsSql.get(0));
-        Assertions.assertEquals(expectedDryRunSql, dryRunSql.get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
@@ -629,8 +606,18 @@ public class BulkLoadTest
             "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV') " +
             "ON_ERROR = 'SKIP_FILE'";
 
+        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation\"" +
+                "(\"col_int\" INTEGER,\"col_integer\" INTEGER)";
+        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation\"  FROM my_location " +
+                "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
+                "FILE_FORMAT = (ERROR_ON_COLUMN_COUNT_MISMATCH = false, FIELD_DELIMITER = ',', TYPE = 'CSV') " +
+                "ON_ERROR = 'SKIP_FILE' " +
+                "VALIDATION_MODE = 'RETURN_ERRORS'";
+
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals(expectedDryRunPreActionsSql, operations.dryRunPreActionsSql().get(0));
+        Assertions.assertEquals(expectedDryRunSql, operations.dryRunSql().get(0));
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));

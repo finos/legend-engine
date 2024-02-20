@@ -269,14 +269,17 @@ public abstract class RelationalIngestorAbstract
     }
 
     /*
-    - Perform dry run of Ingestion - only supported for Bulk Load atm
+    - Perform dry run of Ingestion - only supported for Bulk Load
     */
-    public void dryRun()
+    public DryRunResult dryRun()
     {
         LOGGER.info("Invoked dryRun method, will perform the dryRun");
         validateDatasetsInitialization();
-        // TODO invoke dry run
+        List<DataError> dataErrors = performDryRun();
+        IngestStatus ingestStatus = dataErrors.isEmpty() ? IngestStatus.SUCCEEDED : IngestStatus.FAILED;
+        DryRunResult dryRunResult = DryRunResult.builder().status(ingestStatus).addAllErrorRecords(dataErrors).build();
         LOGGER.info("DryRun completed");
+        return dryRunResult;
     }
 
 
@@ -526,15 +529,15 @@ public abstract class RelationalIngestorAbstract
         }
     }
 
-    private void performDryRun()
+    private List<DataError> performDryRun()
     {
         if (enrichedIngestMode instanceof BulkLoad)
         {
-            relationalSink().performDryRun(executor, generatorResult.ingestSqlPlan());
+            return relationalSink().performDryRun(executor, generatorResult.dryRunSqlPlan(), sampleRowCount());
         }
         else
         {
-            throw new RuntimeException("dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
+            throw new RuntimeException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
         }
     }
 
