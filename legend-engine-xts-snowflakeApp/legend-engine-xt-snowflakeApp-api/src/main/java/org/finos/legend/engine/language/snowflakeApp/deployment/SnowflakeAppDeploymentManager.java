@@ -146,7 +146,7 @@ public class SnowflakeAppDeploymentManager implements DeploymentManager<Snowflak
     public MutableList<String> generateStatements(String catalogName, SnowflakeAppContent content)
     {
         MutableList<String> statements = Lists.mutable.empty();
-        statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s() RETURNS TABLE (%s) as $$ %s $$;", catalogName, deploymentSchema, content.applicationName, content.functionArguments, content.sqlExpressions.getFirst(), content.description));
+        statements.add(String.format("CREATE OR REPLACE SECURE FUNCTION %S.%S.%s", catalogName, deploymentSchema, content.sqlExpressions.getFirst()));
         return statements;
     }
 

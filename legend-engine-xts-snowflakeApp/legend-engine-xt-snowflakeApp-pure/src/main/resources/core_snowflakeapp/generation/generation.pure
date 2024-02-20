@@ -25,7 +25,7 @@ function  meta::external::function::activator::snowflakeApp::generation::generat
   let resultStub = generateResultTypeStub($plan.rootExecutionNode.resultType->cast(@TDSResultType), $extensions);
   let generatedQuery = $plan.rootExecutionNode->allNodes($extensions)->filter(n|$n->instanceOf(SQLExecutionNode))->last()->cast(@SQLExecutionNode).sqlQuery->toOne('candidate query not found');
   
-  'CREATE OR REPLACE SECURE FUNCTION '+ $s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS \''+ $generatedQuery +'\';';
+  $s.applicationName->toUpper() + $inputParamsStub + ' RETURNS TABLE ('+ $resultStub+ ') LANGUAGE SQL AS \''+ $generatedQuery +'\';';
 }
 
 function  meta::external::function::activator::snowflakeApp::generation::generateResultTypeStub(r: TDSResultType[1], extensions:meta::pure::extension::Extension[*]):String[1]
