@@ -262,9 +262,9 @@ public class SnowflakeSink extends AnsiSqlSink
             for (Map<String, Object> row : resultSets)
             {
                 DataError dataError = DataError.builder()
-                        .errorMessage(getString(row, ERROR))
-                        .file(getString(row, FILE_WITH_ERROR))
-                        .errorCategory(getString(row, CATEGORY))
+                        .errorMessage(getString(row, ERROR).orElseThrow(IllegalStateException::new))
+                        .file(getString(row, FILE_WITH_ERROR).orElseThrow(IllegalStateException::new))
+                        .errorCategory(getString(row, CATEGORY).orElseThrow(IllegalStateException::new))
                         .columnName(getString(row, COLUMN_NAME))
                         .lineNumber(getLong(row, LINE))
                         .characterPosition(getLong(row, CHARACTER))
@@ -292,32 +292,32 @@ public class SnowflakeSink extends AnsiSqlSink
 
         for (Map<String, Object> row: resultSets)
         {
-            Object bulkLoadStatus = row.get(BULK_LOAD_STATUS);
-            Object filePath = row.get(FILE);
-            if (Objects.nonNull(bulkLoadStatus) && Objects.nonNull(filePath))
+            Optional<String> bulkLoadStatus = getString(row, BULK_LOAD_STATUS);
+            Optional<String> filePath = getString(row, FILE);
+            if (bulkLoadStatus.isPresent() && filePath.isPresent())
             {
-                if (bulkLoadStatus.equals(LOADED))
+                if (bulkLoadStatus.get().equals(LOADED))
                 {
                     totalFilesLoaded++;
                 }
                 else
                 {
                     // if partially loaded or load failed
-                    dataFilePathsWithErrors.add(filePath.toString());
+                    dataFilePathsWithErrors.add(filePath.get());
                     errorMessages.add(getErrorMessage(row));
                 }
             }
 
-            Object rowsWithError = row.get(ERRORS_SEEN);
-            if (Objects.nonNull(rowsWithError))
+            Optional<Long> rowsWithError = getLong(row, ERRORS_SEEN);
+            if (rowsWithError.isPresent())
             {
-                totalRowsWithError += (Long) row.get(ERRORS_SEEN);
+                totalRowsWithError += rowsWithError.get();
             }
 
-            Object rowsLoaded = row.get(ROWS_LOADED);
-            if (Objects.nonNull(rowsLoaded))
+            Optional<Long> rowsLoaded = getLong(row, ROWS_LOADED);
+            if (rowsLoaded.isPresent())
             {
-                totalRowsLoaded += (Long) row.get(ROWS_LOADED);
+                totalRowsLoaded += rowsLoaded.get();
             }
         }
 
@@ -354,16 +354,11 @@ public class SnowflakeSink extends AnsiSqlSink
     private String getErrorMessage(Map<String, Object> row)
     {
         Map<String, Object> errorInfoMap = new HashMap<>();
-        Object filePath = row.get(FILE);
-        Object bulkLoadStatus = row.get(BULK_LOAD_STATUS);
-        Object errorsSeen = row.get(ERRORS_SEEN);
-        Object firstError = row.get(FIRST_ERROR);
-        Object firstErrorColumnName = row.get(FIRST_ERROR_COLUMN_NAME);
-        errorInfoMap.put(FILE, filePath);
-        errorInfoMap.put(BULK_LOAD_STATUS, bulkLoadStatus);
-        errorInfoMap.put(ERRORS_SEEN, errorsSeen);
-        errorInfoMap.put(FIRST_ERROR, firstError);
-        errorInfoMap.put(FIRST_ERROR_COLUMN_NAME, firstErrorColumnName);
+        errorInfoMap.put(FILE, row.get(FILE));
+        errorInfoMap.put(BULK_LOAD_STATUS, row.get(BULK_LOAD_STATUS));
+        errorInfoMap.put(ERRORS_SEEN, row.get(ERRORS_SEEN));
+        errorInfoMap.put(FIRST_ERROR, row.get(FIRST_ERROR));
+        errorInfoMap.put(FIRST_ERROR_COLUMN_NAME, row.get(FIRST_ERROR_COLUMN_NAME));
 
         ObjectMapper objectMapper = new ObjectMapper();
         try
@@ -376,16 +371,18 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    private String getString(Map<String, Object> row, String key)
+    private Optional<String> getString(Map<String, Object> row, String key)
     {
         Object value = row.get(key);
-        return value == null ? null : (String) value;
+        String strValue = value == null ? null : (String) value;
+        return Optional.ofNullable(strValue);
     }
 
-    private Long getLong(Map<String, Object> row, String key)
+    private Optional<Long> getLong(Map<String, Object> row, String key)
     {
         Object value = row.get(key);
-        return value == null ? null : (Long) value;
+        Long longValue = value == null ? null : (Long) value;
+        return Optional.ofNullable(longValue);
     }
 
 }

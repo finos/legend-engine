@@ -34,7 +34,7 @@ public interface DataErrorAbstract
 
     String errorCategory();
 
-    String columnName();
+    Optional<String> columnName();
 
     Optional<Long> lineNumber();
 
