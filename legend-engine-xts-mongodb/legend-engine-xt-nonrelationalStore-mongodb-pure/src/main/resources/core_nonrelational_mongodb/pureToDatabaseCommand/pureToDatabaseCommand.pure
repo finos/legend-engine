@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::executionPlan::*;
 import meta::json::*;
 import meta::pure::router::printer::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -20,7 +21,6 @@ import meta::pure::router::metamodel::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::functions::meta::*;
 import meta::external::store::mongodb::metamodel::pure::*;
@@ -30,7 +30,7 @@ import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 
-Class meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext extends ExecutionContext
+Class meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext extends meta::pure::runtime::ExecutionContext
 {
 }
 
@@ -134,7 +134,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   let fieldPath = '$' + $path;
 
   let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
-  let rightSide = processValueSpecification($functionExpression.parametersValues->at(1)->cast(@InstanceValue), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
+  let rightSide = processValueSpecification($functionExpression.parametersValues->at(1), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
   ^EqOperatorExpression(expressions=[$leftSide, $rightSide]);
 }
 
@@ -169,7 +169,7 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   let fieldPath = '$' + $path->toOne();
 
   let leftSide = ^FieldPathExpression(fieldPath=$fieldPath);
-  let rightSide = processValueSpecification($functionExpression.parametersValues->at(1)->cast(@InstanceValue), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
+  let rightSide = processValueSpecification($functionExpression.parametersValues->at(1), $databaseCommand, $mapping, $inScopeVars, $debug)->cast(@LiteralValue);
   meta::external::store::mongodb::functions::pureToDatabaseCommand::processComparisonFunction($functionExpression, $leftSide, $rightSide);
 }
 
@@ -188,12 +188,39 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
   $i.values->match([
     s: String[1]      | ^LiteralValue(value=^StringTypeValue(value=$s)),
     i: Integer[1]     | ^LiteralValue(value=^IntTypeValue(value=$i)),
-    sd :StrictDate[1] | ^LiteralValue(value=^DateTypeValue(value=meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0)->toString()));,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
+    b: Boolean[1]     | ^LiteralValue(value=^BoolTypeValue(value=$b)),
+    f: Float[1]       | ^LiteralValue(value=^FloatTypeValue(value=$f)),
+    d: Decimal[1]     | ^LiteralValue(value=^DecimalTypeValue(value=$d)),
+    sd: StrictDate[1] | ^LiteralValue(value=^DateTypeValue(value=meta::pure::functions::date::date(year($sd), monthNumber($sd), dayOfMonth($sd), 0, 0 ,0)->toString()));,                 // type cast StrictDate to dateTime,(as strictdates in expected value are converted to datetime,to retain timezone info)
     dt: DateTime[1]   | ^LiteralValue(value=^DateTypeValue(value=$dt->toString()));,
     l: LambdaFunction<Any>[1] |
-      let fe = $i.values->cast(@LambdaFunction<Any>).expressionSequence->cast(@SimpleFunctionExpression);
-      processFunctionExpression($fe->toOne(), $databaseCommand, $mapping, $inScopeVars, $debug);
+      $i.values->cast(@LambdaFunction<Any>).expressionSequence->match(
+          [
+              s:StoreMappingRoutedValueSpecification[1] | $s.value->cast(@SimpleFunctionExpression)->toOne()->processFunctionExpression($databaseCommand, $mapping, $inScopeVars, $debug),
+              f:SimpleFunctionExpression[1]             | $f->toOne()->processFunctionExpression($databaseCommand, $mapping, $inScopeVars, $debug)
+          ]);
   ]);
+}
+
+function meta::external::store::mongodb::functions::pureToDatabaseCommand::processVariableExpression(v: VariableExpression[1], databaseCommand: DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
+{
+  let var = $inScopeVars->get($v.name->toOne()).values->cast(@PlanVarPlaceHolder)->toOne();
+  let varType = $var.type;
+
+  if($varType == String,                                    | ^LiteralValue(value=^VariableTypeValue(value='\"${'+$var->toOne().name+'}\"')),
+  | if($varType == Boolean,                                 | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'?c}')),
+      | if($varType->in([Integer, Float, Number, Decimal]), | ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'}')),
+        | if($varType == StrictDate,                        | ^LiteralValue(value=^VariableTypeValue(value='new ISODate(\"${'+$var->toOne().name+'}\")')),
+          | if($varType->in([Date, DateTime]),              | ^LiteralValue(value=^VariableTypeValue(value='new ISODate(\"${'+$var->toOne().name+'}Z\")')),
+            {|
+              fail('Type of variable \'%s: %s[%s]\' not supported'->format([$var.name, $var.type->printType(), $var.multiplicity->toOne()->printMultiplicity()]));
+              ^LiteralValue(value=^VariableTypeValue(value='${'+$var->toOne().name+'}'));
+            }
+          )
+        )
+      )
+    )
+  );
 }
 
 function meta::external::store::mongodb::functions::pureToDatabaseCommand::processValueSpecification(vs:ValueSpecification[1], databaseCommand:DatabaseCommand[1], mapping: Mapping[1], inScopeVars:Map<String, List<Any>>[1], debug:DebugContext[1]): MongoDBOperationElement[1]
@@ -204,7 +231,8 @@ function meta::external::store::mongodb::functions::pureToDatabaseCommand::proce
                  r:ExtendedRoutedValueSpecification[1]     | $r.value->processValueSpecification($databaseCommand, $mapping, $inScopeVars, $debug),
                  r:FunctionRoutedValueSpecification[1]     | $r.value->processValueSpecification($databaseCommand, $mapping, $inScopeVars, $debug),
                  f:FunctionExpression[1]                   | $f->processFunctionExpression($databaseCommand, $mapping, $inScopeVars, $debug),
-                 i:InstanceValue[1]                        | $i->processInstanceValue($databaseCommand, $mapping, $inScopeVars, $debug)
+                 i:InstanceValue[1]                        | $i->processInstanceValue($databaseCommand, $mapping, $inScopeVars, $debug),
+                 v:VariableExpression[1]                   | $v->processVariableExpression($databaseCommand, $mapping, $inScopeVars, $debug)
              ]);
 }
 

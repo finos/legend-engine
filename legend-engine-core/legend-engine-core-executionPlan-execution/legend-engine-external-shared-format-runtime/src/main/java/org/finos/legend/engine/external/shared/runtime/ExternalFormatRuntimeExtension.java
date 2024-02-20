@@ -21,13 +21,21 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+import org.finos.legend.engine.shared.core.extension.LegendExternalFormatExtension;
 import org.pac4j.core.profile.CommonProfile;
 
 import java.io.InputStream;
 import java.util.List;
 
-public interface ExternalFormatRuntimeExtension
+public interface ExternalFormatRuntimeExtension extends LegendExternalFormatExtension
 {
+    @Override
+    default String type()
+    {
+        return "External_Format_Runtime";
+    }
+
     List<String> getContentTypes();
 
     default StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)

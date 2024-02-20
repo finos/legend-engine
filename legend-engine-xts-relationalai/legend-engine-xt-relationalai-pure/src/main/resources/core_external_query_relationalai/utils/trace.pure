@@ -1,24 +1,24 @@
-import meta::rel::trace::*;
+import meta::external::store::rel::trace::*;
 
 /**
   * A traced computation.
   */
-Class meta::rel::trace::Trace { 
+Class meta::external::store::rel::trace::Trace {
   <<equality.Key>> stages: String[*];
 }
 
-function meta::rel::trace::emptyTrace(): Trace[1] {
+function meta::external::store::rel::trace::emptyTrace(): Trace[1] {
   ^Trace(stages=[])
 }
 
 /**
   * Append a named staged to the traced computation. 
   */
-function meta::rel::utils::stage(trace: Trace[1], stageName: String[1]): Trace[1] {
+function meta::external::store::rel::utils::stage(trace: Trace[1], stageName: String[1]): Trace[1] {
   ^$trace(stages=$trace.stages->add($stageName))
 }
 
-function meta::rel::utils::traceLog(trace: Trace[0..1]): String[*] {
+function meta::external::store::rel::utils::traceLog(trace: Trace[0..1]): String[*] {
   if($trace->isEmpty(),
     | ['(no trace)'],
     | if($trace.stages->isEmpty(),

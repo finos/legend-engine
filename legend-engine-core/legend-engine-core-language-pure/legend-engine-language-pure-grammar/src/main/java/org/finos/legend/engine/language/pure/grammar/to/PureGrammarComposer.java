@@ -18,6 +18,7 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.block.factory.Predicates;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.connection.ConnectionParser;
@@ -155,5 +156,47 @@ public class PureGrammarComposer
     private String DEPRECATED_renderElement(PackageableElement element)
     {
         return element.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(this.context).build());
+    }
+
+    public String render(PackageableElement element)
+    {
+        return DEPRECATED_renderElement(element);
+    }
+
+    public String render(PackageableElement element, String parser)
+    {
+        return this.context.extraSectionComposers.stream().map(composer -> composer.value(Lists.mutable.with(element), this.context, parser)).filter(Objects::nonNull).findFirst()
+                // NOTE: this is the old way (no-plugin) way to render section elements, this approach is not great since it does not enforce
+                // the types of elements a section can have, the newer approach does the check and compose unsupported message when such violations occur
+                // TO BE REMOVED when we moved everything to extensions
+                .orElseGet(() -> LazyIterate.collect(Lists.mutable.with(element), this::DEPRECATED_renderElement).makeString("\n\n"));
+    }
+
+    static String processReturn(PackageableElement element, MutableList<String> select)
+    {
+        if (select.size() == 1)
+        {
+            return select.getFirst();
+        }
+        else if (select.isEmpty())
+        {
+            return "/* Can't transform element '" + element.getPath() + "' in this section */";
+        }
+        else
+        {
+            return "Found " + select.size() + " composers for the Element " + element.getPath();
+        }
+    }
+
+    public static Function3<List<PackageableElement>, PureGrammarComposerContext, String, String> buildSectionComposer(String theSectionName, MutableList<org.eclipse.collections.api.block.function.Function2<PackageableElement, PureGrammarComposerContext, String>> renderers)
+    {
+        return (elements, context, sectionName) ->
+        {
+            if (!theSectionName.equals(sectionName))
+            {
+                return null;
+            }
+            return ListIterate.collect(elements, element -> processReturn(element, renderers.collect(r -> r.apply(element, context)).select(Predicates.notNull()))).makeString("\n\n");
+        };
     }
 }

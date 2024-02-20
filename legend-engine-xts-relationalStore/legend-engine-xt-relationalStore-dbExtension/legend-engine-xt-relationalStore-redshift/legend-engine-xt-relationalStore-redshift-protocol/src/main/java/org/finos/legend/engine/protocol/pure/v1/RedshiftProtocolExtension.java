@@ -26,6 +26,12 @@ import java.util.List;
 public class RedshiftProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Redshift";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

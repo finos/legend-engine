@@ -19,7 +19,6 @@ import meta::relational::extension::*;
 import meta::relational::tests::milestoning::multi::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::milestoning::temporalpostprocessor::*;
 import meta::relational::postProcessor::*;
 import meta::relational::functions::database::*;

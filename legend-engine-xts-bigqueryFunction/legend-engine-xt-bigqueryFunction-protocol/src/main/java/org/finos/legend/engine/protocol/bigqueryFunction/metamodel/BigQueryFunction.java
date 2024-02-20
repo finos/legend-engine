@@ -23,5 +23,4 @@ public class BigQueryFunction extends FunctionActivator
 {
     public String functionName;
     public String description;
-    public String owner;
 }

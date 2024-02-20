@@ -21,6 +21,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunction;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
@@ -31,6 +32,12 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
 {
     // Here only for dependency check error ...
     CoreFunctionActivatorCodeRepositoryProvider forDependencies;
+
+    @Override
+    public String group()
+    {
+        return "FA_BigQuery";
+    }
 
     @Override
     public CompilerExtension build()
@@ -66,7 +73,7 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
                     ._functionName(bigQueryFunction.functionName)
                     ._function(func)
                     ._description(bigQueryFunction.description)
-                    ._owner(bigQueryFunction.owner)
+                    ._ownership(new Root_meta_external_function_activator_DeploymentOwnership_Impl("")._id(((DeploymentOwner)bigQueryFunction.ownership).id))
                     ._activationConfiguration(bigQueryFunction.activationConfiguration != null ? buildDeploymentConfig((BigQueryFunctionDeploymentConfiguration) bigQueryFunction.activationConfiguration, context) : null);
         }
         catch (Exception e)

@@ -17,13 +17,19 @@ package org.finos.legend.engine.language.pure.dsl.generation.extension;
 import org.eclipse.collections.api.block.function.Function3;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.extension.LegendGenerationExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
 import java.util.Collections;
 import java.util.List;
 
-public interface ModelGenerationExtension
+public interface ModelGenerationExtension extends LegendGenerationExtension
 {
+    @Override
+    default String type()
+    {
+        return "Generation_Model";
+    }
 
     default List<Function3<PackageableElement, CompileContext, String, PureModelContextData>> getPureModelContextDataGenerators()
     {

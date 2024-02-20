@@ -28,6 +28,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class RedshiftGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Redshift";
+    }
+
+    @Override
     public List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers()
     {
         return Lists.mutable.with((_strategy, context) -> null);

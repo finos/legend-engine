@@ -20,12 +20,11 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { persons @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
 
   assertEquals(
     '| Class Person.all() -> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');',
-    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($graphFetch, $res->at(0), $graphQLDocument)
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0), $graphQLDocument)
     ->meta::pure::router::printer::asString()
     ->trim()
   );
@@ -35,12 +34,11 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { personByName(name: "Abhishoya") @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
 
   assertEquals(
     'name:String[1] | Class Person.all() -> filter(p:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p -> fullName(){ [$this.firstName, \' \', $this.lastName] -> plus() } == $name;) -> first() -> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');',
-    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($graphFetch, $res->at(0), $graphQLDocument)
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0), $graphQLDocument)
     ->meta::pure::router::printer::asString()
     ->trim()
   );
@@ -50,12 +48,11 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { personsPaginated(pageNumber: 1) @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
 
   assertEquals(
     'pageNumber:Integer[1] | Class Person.all() -> sortBy(#/Person/fullName#) -> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');',
-    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($graphFetch, $res->at(0), $graphQLDocument)
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0), $graphQLDocument)
     ->meta::pure::router::printer::asString()
     ->trim()
   );
@@ -65,13 +62,12 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { personsWithSlice(limit: 1, offset: 0) @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
 
   assertEquals(
     ['limit:Integer[1],offset:Integer[1] | let end = [$limit, $offset] -> plus();',
     'Class Person.all() -> sortBy(#/Person/fullName#) -> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');'],
-    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($graphFetch, $res->at(0), $graphQLDocument)
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0), $graphQLDocument)
     ->meta::pure::router::printer::asString()
     ->split('\n')
     ->map(s|$s->trim())
@@ -82,12 +78,11 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { personsWithLimit(limit: 1) @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
 
   assertEquals(
     'limit:Integer[1] | Class Person.all() -> sortBy(#/Person/fullName#) -> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');',
-    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($graphFetch, $res->at(0), $graphQLDocument)
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0), $graphQLDocument)
     ->meta::pure::router::printer::asString()
     ->trim()
   );
@@ -97,12 +92,11 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { personsWithDrop(limit: 1) @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
 
   assertEquals(
     'offset:Integer[1] | Class Person.all() -> sortBy(#/Person/fullName#) -> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');',
-    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($graphFetch, $res->at(0), $graphQLDocument)
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0), $graphQLDocument)
     ->meta::pure::router::printer::asString()
     ->trim()
   );
@@ -112,12 +106,29 @@ function <<test.Test>> meta::external::query::graphQL::transformation::queryToPu
 {
   let graphQLDocument = meta::legend::compileVS('#GQL{ query { personsWithTake(limit: 1) @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
   
-  let graphFetch = meta::external::query::graphQL::transformation::queryToPure::graphQLExecutableToPure($graphQLDocument, Query);
-  let res = $graphFetch->meta::pure::graphFetch::domain::extractDomainTypeClassFromGraphFetchTree(true);
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
 
   assertEquals(
     'take:Integer[1] | Class Person.all() -> sortBy(#/Person/fullName#) -> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');',
-    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($graphFetch, $res->at(0), $graphQLDocument)
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0), $graphQLDocument)
+    ->meta::pure::router::printer::asString()
+    ->trim()
+  );
+}
+
+function <<test.Test>> meta::external::query::graphQL::transformation::queryToPure::tests::directives::totalCount::testFunctionDefWithDynamicFilters(): Boolean[1]
+{
+  let graphQLDocument = meta::legend::compileVS('#GQL{ query { personsWithTake(limit: 1, where: { fullName: { _eq: "John" } }) @totalCount { fullName } } }#')->cast(@meta::external::query::graphQL::metamodel::sdl::Document);
+  
+  let res = meta::external::query::graphQL::transformation::queryToPure::extractLambdaFromQuery(Query, $graphQLDocument);
+
+  assertEquals(
+    'take:Integer[1],where_fullName__eq:String[1] | '+
+    'Class Person.all() '+
+    '-> filter(p_0:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | $p_0 -> fullName(){ [$this.firstName, \' \', $this.lastName] -> plus() } == $where_fullName__eq;) '+
+    '-> sortBy(#/Person/fullName#) '+
+    '-> groupBy(, x:meta::external::query::graphQL::transformation::queryToPure::tests::model::Person[1] | 1; -> agg(y:Integer[*] | $y -> count();), \'count\');',
+    meta::external::query::graphQL::transformation::queryToPure::functionDefForTotalCountDirective($res->at(0)->evaluateAndDeactivate(), $graphQLDocument)
     ->meta::pure::router::printer::asString()
     ->trim()
   );

@@ -27,7 +27,7 @@ public class TestSnowflakeAppRoundtrip extends TestGrammarRoundtrip.TestGrammarR
                 "{\n" +
                 "   applicationName : 'MyApp';\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
-                "   owner : 'pierre';\n" +
+                "   ownership : Deployment { identifier: 'pierre'};\n" +
                 "   description : 'A super nice app!';\n" +
                 "   activationConfiguration : a::b::connection;\n" +
                 "}\n");
@@ -41,6 +41,7 @@ public class TestSnowflakeAppRoundtrip extends TestGrammarRoundtrip.TestGrammarR
                 "{\n" +
                 "   applicationName : 'MyApp';\n" +
                 "   function : zxx(Integer[1]):String[1];\n" +
+                "   ownership : Deployment { identifier: 'MyAppOwnership'};\n" +
                 "}\n");
     }
 }

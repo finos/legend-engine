@@ -736,6 +736,13 @@ public class MasteryParseTreeWalker
         MasteryParserGrammar.ResolutionQueryPrecedenceContext resolutionQueryPrecedenceContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.resolutionQueryPrecedence(), "precedence", sourceInformation);
         resolutionQuery.precedence = Integer.parseInt(resolutionQueryPrecedenceContext.INTEGER().getText());
 
+        //filter
+        MasteryParserGrammar.ResolutionQueryFilterContext resolutionQueryFilterContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.resolutionQueryFilter(), "filter", sourceInformation);
+        if (resolutionQueryFilterContext != null)
+        {
+            resolutionQuery.filter = visitLambda(resolutionQueryFilterContext.lambdaFunction());
+        }
+
         return resolutionQuery;
     }
 

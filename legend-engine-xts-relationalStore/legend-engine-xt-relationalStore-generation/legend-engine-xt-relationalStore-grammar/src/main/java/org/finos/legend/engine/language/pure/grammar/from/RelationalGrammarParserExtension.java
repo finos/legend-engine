@@ -77,6 +77,12 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
     public static final String RELATIONAL_DATABASE_CONNECTION_TYPE = "RelationalDatabaseConnection";
 
     @Override
+    public String group()
+    {
+        return "ST_Relational";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Collections.singletonList(SectionParser.newParser(NAME, (sectionSourceCode, elementConsumer, context) ->

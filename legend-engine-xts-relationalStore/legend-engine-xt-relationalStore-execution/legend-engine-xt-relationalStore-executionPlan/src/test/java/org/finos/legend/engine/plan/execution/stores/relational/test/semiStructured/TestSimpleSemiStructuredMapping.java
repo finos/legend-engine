@@ -365,21 +365,21 @@ public class TestSimpleSemiStructuredMapping extends AbstractTestSemiStructured
         String memSQLExpected =
                 "Relational\n" +
                 "(\n" +
-                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\"), (Firm Employee Count, Integer, \"\", \"\"), (Firm MNC, Boolean, \"\", \"\"), (Firm Est Date, StrictDate, \"\", \"\"), (Firm Last Update, DateTime, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n" +
-                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\"), (\"Firm Employee Count\", \"\"), (\"Firm MNC\", \"\"), (\"Firm Est Date\", \"\"), (\"Firm Last Update\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Entity Type\", \"\")]\n" +
-                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::$legalName as `Firm Legal Name`, `root`.FIRM_DETAILS::%employeeCount as `Firm Employee Count`, `root`.FIRM_DETAILS::mnc as `Firm MNC`, date(`root`.FIRM_DETAILS::$estDate) as `Firm Est Date`, timestamp(`root`.FIRM_DETAILS::$lastUpdate) as `Firm Last Update`, `root`.FIRM_DETAILS::address::$street as `Firm Address Street`, `root`.FIRM_DETAILS::$entityType as `Firm Entity Type` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Legal Name, String, \"\", \"\"), (Firm Employee Count, Integer, \"\", \"\"), (Firm Revenue, Float, \"\", \"\"), (Firm MNC, Boolean, \"\", \"\"), (Firm Est Date, StrictDate, \"\", \"\"), (Firm Last Update, DateTime, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Entity Type, simple::model::EntityType, \"\", \"\")]\n" +
+                "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Legal Name\", \"\"), (\"Firm Employee Count\", \"\"), (\"Firm Revenue\", \"\"), (\"Firm MNC\", \"\"), (\"Firm Est Date\", \"\"), (\"Firm Last Update\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Entity Type\", \"\")]\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::$legalName as `Firm Legal Name`, `root`.FIRM_DETAILS::employeeCount !:> bigint as `Firm Employee Count`, `root`.FIRM_DETAILS::%revenue as `Firm Revenue`, `root`.FIRM_DETAILS::mnc as `Firm MNC`, date(`root`.FIRM_DETAILS::$estDate) as `Firm Est Date`, timestamp(`root`.FIRM_DETAILS::$lastUpdate) as `Firm Last Update`, `root`.FIRM_DETAILS::address::$street as `Firm Address Street`, `root`.FIRM_DETAILS::$entityType as `Firm Entity Type` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
                 ")\n";
         Assert.assertEquals(memSQLExpected, memSQLPlan);
 
         String h2Result = this.executeFunction(queryFunction, h2Mapping, h2Runtime);
-        Assert.assertEquals("Peter,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "John,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "Anthony,Firm X,4,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
-                "Fabrice,Firm A,1,false,2012-11-13,2022-02-14 03:00:00.0,,\n" +
-                "Oliver,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,S2,Company\n" +
-                "David,Firm B,2,true,2017-07-07,2022-09-01 06:00:00.0,,Company\n", h2Result.replace("\r\n", "\n"));
+        Assert.assertEquals("Peter,Firm X,4,0.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "John,Firm X,4,5.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "John,Firm X,4,55.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "Anthony,Firm X,4,5555.5,true,2010-03-04,2022-01-16 01:00:00.0,S1,Organization\n" +
+                "Fabrice,Firm A,1,0.5,false,2012-11-13,2022-02-14 03:00:00.0,,\n" +
+                "Oliver,Firm B,2,5.5,true,2017-07-07,2022-09-01 06:00:00.0,S2,Company\n" +
+                "David,Firm B,2,55.5,true,2017-07-07,2022-09-01 06:00:00.0,,Company\n", h2Result.replace("\r\n", "\n"));
 
         Assert.assertEquals("[PERSON_TABLE.FIRM_DETAILS <TableAliasColumn>, PERSON_TABLE.FIRSTNAME <TableAliasColumn>]", this.scanColumns(queryFunction, h2Mapping));
     }

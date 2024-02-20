@@ -14,10 +14,24 @@
 
 package org.finos.legend.engine.shared.core.url;
 
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+
 import java.net.URLStreamHandler;
 
-public interface UrlProtocolHandler
+public interface UrlProtocolHandler extends LegendExtension
 {
+    @Override
+    default String type()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
+    @Override
+    default String group()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
     boolean handles(String protocol);
 
     URLStreamHandler getHandler(String protocol);

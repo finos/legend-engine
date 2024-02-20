@@ -17,7 +17,6 @@ import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 Class meta::relational::tests::mapping::innerjoin::isolation::Car
 {
    type: String[1];
@@ -63,7 +62,7 @@ function meta::relational::tests::mapping::innerjoin::isolation::autoMobileRunti
 
 function meta::relational::tests::mapping::innerjoin::isolation::initAutomobileDb(): Boolean[1]
 {
-   let connection = autoMobileRuntime().connectionByElement(AutomobileDb)->cast(@TestDatabaseConnection);
+   let connection = autoMobileRuntime().connectionByElement(AutomobileDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    executeInDb('Drop table if exists AutomobileTable;', $connection);
    executeInDb('Create Table AutomobileTable (vehicleId INT, type VARCHAR(20),orgId INT, orgName VARCHAR(40),orgtype VARCHAR(40));', $connection);
    executeInDb('insert into AutomobileTable (vehicleId, type, orgId,orgName,orgType) values (1, \'Mercedes1\',17,\'GSorgtoReturn\' ,\'private\');', $connection);

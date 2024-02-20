@@ -37,6 +37,12 @@ public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationEx
     public static final String TYPE = protobufContract._id();
 
     @Override
+    public String group()
+    {
+        return "EF_Protobuf";
+    }
+
+    @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> getExternalFormatContract()
     {
         return protobufContract;

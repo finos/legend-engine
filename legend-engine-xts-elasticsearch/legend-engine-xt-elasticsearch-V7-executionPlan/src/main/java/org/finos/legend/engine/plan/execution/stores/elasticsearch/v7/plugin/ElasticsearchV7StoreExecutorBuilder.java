@@ -23,6 +23,12 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 public class ElasticsearchV7StoreExecutorBuilder implements StoreExecutorBuilder
 {
     @Override
+    public String group()
+    {
+        return "ST_Elastic";
+    }
+
+    @Override
     public StoreType getStoreType()
     {
         return StoreType.ESv7;

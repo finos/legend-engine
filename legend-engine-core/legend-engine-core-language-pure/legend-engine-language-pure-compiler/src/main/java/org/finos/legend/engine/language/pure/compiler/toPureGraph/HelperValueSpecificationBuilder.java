@@ -30,13 +30,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.CSt
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Enum;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.AnalyticsExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.BaseExecutionContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.graphFetch.GraphFetchTree;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
@@ -44,15 +45,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Lambda
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.AbstractProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relation.RelationType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.FunctionExpression;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpressionAccessor;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.*;
+import org.finos.legend.pure.m3.navigation.relation._RelationType;
 
 import java.util.HashSet;
 import java.util.List;
@@ -161,27 +160,41 @@ public class HelperValueSpecificationBuilder
 
             Type inferredType = inferredVariable._genericType()._rawType();
 
-            if (!(inferredType instanceof Class)) //is an enum
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function<?> foundFunction;
+            if (inferredType instanceof RelationType)
             {
-                inferredType = context.pureModel.getType("meta::pure::metamodel::type::Enum");
-            }
-
-            AbstractProperty<?> foundProperty = findProperty(context, (Class<?>) inferredType, parameters, property, sourceInformation);
-
-            if (foundProperty instanceof Property)
-            {
-                genericType = (foundProperty._classifierGenericType()._typeArguments()).getLast();
-                multiplicity = foundProperty._multiplicity();
-            }
-            else if (foundProperty instanceof QualifiedProperty)
-            {
-                FunctionType fType = (FunctionType) foundProperty._classifierGenericType()._typeArguments().getFirst()._rawType();
-                genericType = fType._returnType();
-                multiplicity = fType._returnMultiplicity();
+                foundFunction = ((RelationType<?>) inferredType)._columns().detect(c -> c._name().equals(property));
+                if (foundFunction == null)
+                {
+                    throw new EngineException("The column '" + property + "' can't be found in the relation " + _RelationType.print(inferredType, context.pureModel.getExecutionSupport().getProcessorSupport()), sourceInformation, EngineErrorType.COMPILATION);
+                }
+                genericType = (foundFunction._classifierGenericType()._typeArguments()).getLast();
+                multiplicity = context.pureModel.getMultiplicity("one");
             }
             else
             {
-                throw new UnsupportedOperationException("Unhandled property: " + foundProperty);
+                if (!(inferredType instanceof Class)) //is an enum
+                {
+                    inferredType = context.pureModel.getType("meta::pure::metamodel::type::Enum");
+                }
+
+                foundFunction = findProperty(context, (Class<?>) inferredType, parameters, property, sourceInformation);
+
+                if (foundFunction instanceof Property)
+                {
+                    genericType = (foundFunction._classifierGenericType()._typeArguments()).getLast();
+                    multiplicity = ((Property<?, ?>) foundFunction)._multiplicity();
+                }
+                else if (foundFunction instanceof QualifiedProperty)
+                {
+                    FunctionType fType = (FunctionType) foundFunction._classifierGenericType()._typeArguments().getFirst()._rawType();
+                    genericType = fType._returnType();
+                    multiplicity = fType._returnMultiplicity();
+                }
+                else
+                {
+                    throw new UnsupportedOperationException("Unhandled property: " + foundFunction);
+                }
             }
 
             if (!inferredVariable._multiplicity().getName().equals("PureOne")) // autoMap
@@ -219,16 +232,20 @@ public class HelperValueSpecificationBuilder
             else
             {
                 result = new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", SourceInformationHelper.toM3SourceInformation(sourceInformation), context.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
-                        ._func(foundProperty)
-                        ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.fixedSize.of(foundProperty.getName())))
+                        ._func(foundFunction)
+                        ._propertyName(new Root_meta_pure_metamodel_valuespecification_InstanceValue_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::InstanceValue"))._values(Lists.fixedSize.of(foundFunction.getName())))
                         ._genericType(genericType)
                         ._multiplicity(multiplicity)
                         ._parametersValues(processedParameters);
-                if (MilestoningDatePropagationHelper.isGeneratedMilestonedQualifiedPropertyWithMissingDates(foundProperty, context, parameters.size()))
+
+                if (foundFunction instanceof AbstractProperty)
                 {
-                    MilestoningDatePropagationHelper.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression) result, foundProperty, sourceInformation, processingContext);
+                    if (MilestoningDatePropagationHelper.isGeneratedMilestonedQualifiedPropertyWithMissingDates((AbstractProperty<?>) foundFunction, context, parameters.size()))
+                    {
+                        MilestoningDatePropagationHelper.updateFunctionExpressionWithMilestoningDateParams((FunctionExpression) result, (AbstractProperty<?>) foundFunction, sourceInformation, processingContext);
+                    }
+                    MilestoningDatePropagationHelper.updateMilestoningContext((AbstractProperty<?>) foundFunction, (ListIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>) ((SimpleFunctionExpression) result)._parametersValues(), processingContext, context);
                 }
-                MilestoningDatePropagationHelper.updateMilestoningContext(foundProperty, (ListIterable<? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>) ((SimpleFunctionExpression) result)._parametersValues(),processingContext, context);
             }
         }
         processingContext.pop();

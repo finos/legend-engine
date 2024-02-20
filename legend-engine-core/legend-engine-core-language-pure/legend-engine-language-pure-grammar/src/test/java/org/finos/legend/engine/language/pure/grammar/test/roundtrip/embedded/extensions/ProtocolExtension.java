@@ -22,6 +22,12 @@ import java.util.Map;
 public class ProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "Test";
+    }
+
+    @Override
     public Map<String, Class> getExtraClassInstanceTypeMappings()
     {
         return Maps.mutable.of(NewValueSpecificationForTest.KEY, NewValueSpecificationForTest.class);

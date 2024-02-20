@@ -1,0 +1,68 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::generateMainUpcast(
+    class: meta::external::language::java::metamodel::Class[1],
+    alwaysStampAtRootVersion: Boolean[1],
+    optionalStampAllVersions: Boolean[1],
+    obsoleteJsonAsString: Boolean[1],
+    typeKeyName: String[1],
+    versionKeyName: String[0..1],
+    versions: Versions[1]): meta::external::language::java::metamodel::Class[1]
+{
+    let paramCurrentVersion = j_parameter(javaString(), 'currentVersion');
+    let paramNode = j_parameter(objectNode(), 'objectNode');
+    let codeAndClass = $versions.versions->fold(
+        {
+            ver, resP |
+            if($ver.prevVersion->size() != 0,
+            { |
+                let p = $resP.second->generateVersionUpcast(
+                    $alwaysStampAtRootVersion, $optionalStampAllVersions,
+                    $obsoleteJsonAsString,
+                    $typeKeyName, $versionKeyName,
+                    $ver);
+                let resPF = $resP.first;
+                pair(^$resPF(values += $p.first), $p.second);
+            },
+        | $resP
+            );
+        },
+        pair(^List<Code>(), $class)
+    );
+    let verVar = j_variable(javaString(), 'version');
+    let upcastMethod = javaMethod(['public', 'static'], objectNode(), 'upcast', [$paramNode]->concatenate(if($versionKeyName->size() == 1, | [], | $paramCurrentVersion)),
+        j_block(
+            [
+                if($versionKeyName->size() == 1, | j_if(
+                    $paramNode->j_invoke('get', [j_string($versionKeyName->toOne())], javaObject())->j_eq(j_null()),
+                    javaRuntimeException()->j_new([j_string('Missing ' + $versionKeyName->toOne())])->j_throw()), | [])
+            ]->concatenate([
+                $verVar->j_declare(if($versionKeyName->size() == 1, | $paramNode->j_invoke('get', [j_string($versionKeyName->toOne())], javaVoid()), | $paramCurrentVersion)->j_cast(javaString()))
+            ])
+            ->concatenate($codeAndClass.first.values)
+            ->concatenate([
+                j_if(
+                    j_not($verVar->j_invoke('equals', j_string($versions.versions->at($versions.versions->size()-1).version))),
+                    javaRuntimeException()->j_new(j_plus(j_string('Unexpected version: '), $verVar))->j_throw()
+                )
+            ])
+            ->concatenate([j_return($paramNode)])));
+    $codeAndClass.second->addMethod($upcastMethod);
+}

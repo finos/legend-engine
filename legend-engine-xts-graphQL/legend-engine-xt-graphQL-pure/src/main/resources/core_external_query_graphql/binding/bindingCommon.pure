@@ -56,6 +56,21 @@ function meta::external::query::graphQL::binding::purePrimitivesToAllGraphQLScal
   ]
 }
 
+function meta::external::query::graphQL::binding::customGraphQLScalarsToPrimitiveMappingForInput(): Map<String, String>[1]
+{
+  newMap([
+    pair('Int', 'Int'),
+    pair('String', 'String'),
+    pair('Float', 'Float'),
+    pair('Boolean', 'Boolean'),
+    pair('Date', 'String'),
+    pair('StrictDate', 'String'),
+    pair('DateTime', 'String'),
+    pair('BigDecimal', 'Float'),
+    pair('Number', 'Float')
+  ])
+}
+
 function meta::external::query::graphQL::binding::builtInGraphQLScalars(): String[*]
 {
   ['Int', 'Float', 'String', 'Boolean', 'ID'];
@@ -100,4 +115,12 @@ function meta::external::query::graphQL::binding::temporalityToDirectives(): Map
 function meta::external::query::graphQL::binding::hierarchyDirective(): DirectiveDefinition[1]
 {
   ^DirectiveDefinition(name = 'extends', argumentDefinitions = [^InputValueDefinition(name = 'class', type = ^NamedTypeReference(nullable = false, name = 'String'))], typeSystemLocation = [TypeSystemDirectiveLocation.OBJECT, TypeSystemDirectiveLocation.INPUT_OBJECT]);
+}
+
+function meta::external::query::graphQL::binding::hasGraphQLStereotype(t: Any[1], s: String[1]): Boolean[1]
+{
+  if ($t->instanceOf(ElementWithStereotypes),
+      | $t->cast(@ElementWithStereotypes)->hasStereotype($s, GraphQL),
+      | false
+  )
 }

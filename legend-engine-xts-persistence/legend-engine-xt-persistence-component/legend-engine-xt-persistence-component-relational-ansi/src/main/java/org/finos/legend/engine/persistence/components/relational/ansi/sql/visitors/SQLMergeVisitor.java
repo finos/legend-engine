@@ -40,6 +40,7 @@ public class SQLMergeVisitor implements LogicalPlanVisitor<Merge>
 
         current.onCondition().ifPresent(logicalPlanNodeList::add);
         current.matchedCondition().ifPresent(logicalPlanNodeList::add);
+        current.notMatchedCondition().ifPresent(logicalPlanNodeList::add);
 
         logicalPlanNodeList.add(NumericalValue.of((long) current.matchedKeyValuePairs().size()));
         logicalPlanNodeList.addAll(current.matchedKeyValuePairs());

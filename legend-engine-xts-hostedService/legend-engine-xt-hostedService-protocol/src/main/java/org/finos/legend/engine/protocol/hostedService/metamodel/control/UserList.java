@@ -15,6 +15,7 @@
 package org.finos.legend.engine.protocol.hostedService.metamodel.control;
 
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 
 import java.util.List;
 

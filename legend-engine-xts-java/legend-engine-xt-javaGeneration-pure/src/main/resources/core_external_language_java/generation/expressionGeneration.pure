@@ -23,7 +23,6 @@ import meta::external::language::java::transform::*;
 import meta::pure::executionPlan::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::router::metamodel::*;
 
 function meta::external::language::java::transform::generateJavaMethodBody(vses:ValueSpecification[*], conventions: Conventions[1]):Code[1]
@@ -272,18 +271,21 @@ function <<access.private>> meta::external::language::java::transform::processCo
       let dependency = newDependency(
         $name,
         {state|
-        print(if($debug.debug,|$debug.space+'Implementation of: \''+$fe.func->elementToPath()+'\'\n',|''));
+        if(!$state.visitedFunctions->contains($fe.func->elementToPath()),
+           |print(if($debug.debug,|$debug.space+'Implementation of: \''+$fe.func->elementToPath()+'\'\n',|''));
+           let updatedState = $state->addDependencyVisitedFunction($fe.func->elementToPath());
 
-        let implBody    = $fe.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($newCon, $debug->indent());
-        let classesUsed = $signature.method->typesUsed()->concatenate($implBody->typesUsed())->typesToClasses();
-        let withImports = javaClass('public', $signature.class)
-                ->usingKnownPackages($conventions->knownPackages())
-                ->imports($conventions->standardImports());
-        let impl             = $withImports->addMethod(javaMethod(['public', 'static'], $signature.method.returnType, $signature.method.name, $signature.method.parameters, $implBody));
-        let dependencies     = $implBody->dependencies()->removeDuplicates();
-        let withDependencies = $dependencies->resolveProjects($state);
-        let project          = mergeProjects(newProject()->addClass($impl)->concatenate($withDependencies->getProjects($dependencies))->toOneMany());
-        $withDependencies->addDependencyProject($name, $project);
+            let implBody    = $fe.func->cast(@ConcreteFunctionDefinition<Any>).expressionSequence->evaluateAndDeactivate()->generateJavaMethodBody($newCon, $debug->indent());
+            let classesUsed = $signature.method->typesUsed()->concatenate($implBody->typesUsed())->typesToClasses();
+            let withImports = javaClass('public', $signature.class)
+                    ->usingKnownPackages($conventions->knownPackages())
+                    ->imports($conventions->standardImports());
+            let impl             = $withImports->addMethod(javaMethod(['public', 'static'], $signature.method.returnType, $signature.method.name, $signature.method.parameters, $implBody));
+            let dependencies     = $implBody->dependencies()->removeDuplicates();
+            let withDependencies = $dependencies->resolveProjects($updatedState);
+            let project          = mergeProjects(newProject()->addClass($impl)->concatenate($withDependencies->getProjects($dependencies))->toOneMany());
+            $withDependencies->addDependencyProject($name, $project);
+          ,|$state);
         }
       );
 

@@ -20,7 +20,6 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::csv::*;
@@ -336,7 +335,7 @@ function meta::relational::tests::mapping::embedded::model::store::testDataTypeM
 
 function meta::relational::tests::mapping::embedded::model::store::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'PERSON_FIRM_DENORM', $connection);
 
@@ -374,7 +373,7 @@ function meta::relational::tests::mapping::embedded::model::store::createTablesA
 
 function meta::relational::tests::mapping::embedded::model::store::createTimeStamKeysTableAndFill():Boolean[1]
 {
-   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'DATA_WITH_TIMESTAMPS_KEYS', $connection);

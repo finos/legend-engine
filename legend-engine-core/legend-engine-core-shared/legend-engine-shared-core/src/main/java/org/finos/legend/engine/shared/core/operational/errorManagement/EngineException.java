@@ -136,4 +136,17 @@ public class EngineException extends RuntimeException
     {
         return (type == null ? "" : type + " error") + (sourceInformation == SourceInformation.getUnknownSourceInformation() || sourceInformation == null ? "" : " at " + sourceInformation.getMessage() + "") + (errorMessage == null ? "" : ": " + errorMessage);
     }
+
+    public String toPretty()
+    {
+        return buildPrettyErrorMessage(this.getMessage(), this.sourceInformation, this.errorType);
+    }
+
+    public void mayUpdateSourceInformation(SourceInformation sourceInformation)
+    {
+        if (this.sourceInformation == null || this.sourceInformation.equals(SourceInformation.getUnknownSourceInformation()))
+        {
+            this.sourceInformation = sourceInformation;
+        }
+    }
 }

@@ -30,13 +30,14 @@ public class TestSnowflakeAppCompilationFromGrammar extends TestCompilationFromG
                 "{" +
                 "   applicationName : 'name';\n" +
                 "   function : a::f():String[1];" +
+                "   ownership : Deployment { identifier: 'MyAppOwnership'};\n" +
                 "}\n";
     }
 
     @Override
     public String getDuplicatedElementTestExpectedErrorMessage()
     {
-        return "COMPILATION error at [5:1-7:32]: Duplicated element 'anything::Name'";
+        return "COMPILATION error at [5:1-8:1]: Duplicated element 'anything::Name'";
     }
 
     @Test
@@ -49,6 +50,7 @@ public class TestSnowflakeAppCompilationFromGrammar extends TestCompilationFromG
                     "{" +
                     "   applicationName : 'name';\n" +
                     "   function : a::f():String[1];" +
+                    "   ownership : Deployment { identifier: 'MyAppOwnership'};\n" +
                     "}\n", null);
     }
 
@@ -62,6 +64,7 @@ public class TestSnowflakeAppCompilationFromGrammar extends TestCompilationFromG
                         "{" +
                         "   applicationName : 'name';\n" +
                         "   function : a::fz():String[1];" +
-                        "}\n", " at [3:1-5:33]: Error in 'app::pack::MyApp': org.finos.legend.engine.shared.core.operational.errorManagement.EngineException: Can't find the packageable element 'a::fz__String_1_'");
+                        "   ownership : Deployment { identifier: 'MyAppOwnership'};\n" +
+                        "}\n", " at [3:1-6:1]: Error in 'app::pack::MyApp': org.finos.legend.engine.shared.core.operational.errorManagement.EngineException: Can't find the packageable element 'a::fz__String_1_'");
     }
 }

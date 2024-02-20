@@ -12,11 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::external::language::java::factory::packages::*;
 import meta::external::language::java::factory::*;
 import meta::external::language::java::factory::project::*;
 import meta::external::language::java::metamodel::*;
 import meta::external::language::java::metamodel::project::*;
 import meta::external::language::java::serialization::*;
+
+function meta::external::language::java::factory::packages::lang():meta::external::language::java::metamodel::Package[1]    {javaPackage('java.lang')}
+function meta::external::language::java::factory::packages::util():meta::external::language::java::metamodel::Package[1]    {javaPackage('java.util')}
+function meta::external::language::java::factory::packages::stream():meta::external::language::java::metamodel::Package[1]    {javaPackage('java.util.stream')}
+
+
 
 function meta::external::language::java::factory::javaIllegalArgumentException():      meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.IllegalArgumentException'); }
 function meta::external::language::java::factory::javaIllegalStateException():         meta::external::language::java::metamodel::Class[1] { javaClass('java.lang.IllegalStateException'); }
@@ -53,18 +60,18 @@ function meta::external::language::java::factory::javaURL():  meta::external::la
 function meta::external::language::java::factory::javaTemporal():  meta::external::language::java::metamodel::Class[1] { javaClass('java.time.temporal.Temporal'); }
 
 function meta::external::language::java::factory::javaNoSuchElementException(): meta::external::language::java::metamodel::Class[1] { javaClass('java.util.NoSuchElementException'); }
-function meta::external::language::java::factory::javaArrays():                 meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Arrays'); }
-function meta::external::language::java::factory::javaCollections():            meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Collections'); }
+function meta::external::language::java::factory::javaArrays():                 meta::external::language::java::metamodel::Class[1] { javaClass(util(),'Arrays'); }
+function meta::external::language::java::factory::javaCollections():            meta::external::language::java::metamodel::Class[1] { javaClass(util(),'Collections'); }
 function meta::external::language::java::factory::javaLocale():                 meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Locale'); }
 function meta::external::language::java::factory::javaObjects():                meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Objects'); }
-function meta::external::language::java::factory::javaList():                   meta::external::language::java::metamodel::Class[1] { javaClass('java.util.List'); }
-function meta::external::language::java::factory::javaArrayList():              meta::external::language::java::metamodel::Class[1] { javaClass('java.util.ArrayList'); }
+function meta::external::language::java::factory::javaList():                   meta::external::language::java::metamodel::Class[1] { javaClass(util(),'List'); }
+function meta::external::language::java::factory::javaArrayList():              meta::external::language::java::metamodel::Class[1] { javaClass(util(),'ArrayList'); }
 function meta::external::language::java::factory::javaLinkedList():             meta::external::language::java::metamodel::Class[1] { javaClass('java.util.LinkedList'); }
 function meta::external::language::java::factory::javaSet():                    meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Set'); }
 function meta::external::language::java::factory::javaEnumSet():                meta::external::language::java::metamodel::Class[1] { javaClass('java.util.EnumSet'); }
-function meta::external::language::java::factory::javaHashMap():                meta::external::language::java::metamodel::Class[1] { javaClass('java.util.HashMap'); }
+function meta::external::language::java::factory::javaHashMap():                meta::external::language::java::metamodel::Class[1] { javaClass(util(),'HashMap'); }
 function meta::external::language::java::factory::javaTreeMap():                meta::external::language::java::metamodel::Class[1] { javaClass('java.util.TreeMap'); }
-function meta::external::language::java::factory::javaCalendar():               meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Calendar'); }
+function meta::external::language::java::factory::javaCalendar():               meta::external::language::java::metamodel::Class[1] { javaClass(util(),'Calendar'); }
 function meta::external::language::java::factory::javaGregorianCalendar():      meta::external::language::java::metamodel::Class[1] { javaClass('java.util.GregorianCalendar'); }
 function meta::external::language::java::factory::javaSpliterator():            meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Spliterator'); }
 function meta::external::language::java::factory::javaSpliterators():           meta::external::language::java::metamodel::Class[1] { javaClass('java.util.Spliterators'); }
@@ -72,10 +79,10 @@ function meta::external::language::java::factory::javaSpliterators():           
 function meta::external::language::java::factory::javaInstant():                meta::external::language::java::metamodel::Class[1] { javaClass('java.time.Instant'); }
 function meta::external::language::java::factory::javaLocalDate():              meta::external::language::java::metamodel::Class[1] { javaClass('java.time.LocalDate'); }
 
-function meta::external::language::java::factory::javaCollector():              meta::external::language::java::metamodel::Class[1] { javaClass('java.util.stream.Collector'); }
-function meta::external::language::java::factory::javaCollectors():             meta::external::language::java::metamodel::Class[1] { javaClass('java.util.stream.Collectors'); }
-function meta::external::language::java::factory::javaLongStream():             meta::external::language::java::metamodel::Class[1] { javaClass('java.util.stream.LongStream'); }
-function meta::external::language::java::factory::javaStreamSupport():          meta::external::language::java::metamodel::Class[1] { javaClass('java.util.stream.StreamSupport'); }
+function meta::external::language::java::factory::javaCollector():              meta::external::language::java::metamodel::Class[1] { javaClass(stream(),'Collector'); }
+function meta::external::language::java::factory::javaCollectors():             meta::external::language::java::metamodel::Class[1] { javaClass(stream(),'Collectors'); }
+function meta::external::language::java::factory::javaLongStream():             meta::external::language::java::metamodel::Class[1] { javaClass(stream(),'LongStream'); }
+function meta::external::language::java::factory::javaStreamSupport():          meta::external::language::java::metamodel::Class[1] { javaClass(stream(),'StreamSupport'); }
 
 function meta::external::language::java::factory::javaConcurrentHashMap():      meta::external::language::java::metamodel::Class[1] { javaClass('java.util.concurrent.ConcurrentHashMap'); }
 
@@ -452,11 +459,27 @@ function meta::external::language::java::factory::javaBigDecimal() : meta::exter
 
 function meta::external::language::java::factory::javaPackage(package:String[1]):meta::external::language::java::metamodel::Package[1]
 {
-   let dotPos = $package->lastIndexOf('.');
-   if($dotPos == -1,
-      |^meta::external::language::java::metamodel::Package(name=$package),
-      |^meta::external::language::java::metamodel::Package(name=$package->substring($dotPos+1), parent=$package->substring(0, $dotPos)->javaPackage())
+   let split = $package->split('.');
+   let size = $split->size();
+   if($size<=1,
+       |^meta::external::language::java::metamodel::Package(name=$package,fullPath=$package),
+       |   $split->packageFromList($package);
+     );
+}
+
+function <<access.private>> meta::external::language::java::factory::packageFromList( names:String[*], fullPath:String[0..1]): meta::external::language::java::metamodel::Package[1]
+{
+   let size = $names->size();
+   if($size==0,
+      |^meta::external::language::java::metamodel::Package(name='', fullPath=''),
+      |  let path = if($fullPath->isEmpty(), |$names->joinStrings('.'),|$fullPath);
+         if($size==1,
+          | ^meta::external::language::java::metamodel::Package(fullPath=$path,name=$names->toOne()),
+          | let p =  $names->tail()->fold({cur, pack | ^meta::external::language::java::metamodel::Package(name=$cur,parent=$pack)  } , ^meta::external::language::java::metamodel::Package(name=$names->at(0)->toOne()));
+            ^$p(fullPath=$path);
+         );
    );
+
 }
 
 function meta::external::language::java::factory::javaEnum(pkg:meta::external::language::java::metamodel::Package[1], name:String[1]): meta::external::language::java::metamodel::Enumeration[1]
@@ -466,10 +489,10 @@ function meta::external::language::java::factory::javaEnum(pkg:meta::external::l
 
 function meta::external::language::java::factory::javaEnum(modifiers:String[*], qualifiedName:String[1]): meta::external::language::java::metamodel::Enumeration[1]
 {
-   let dotPos  = $qualifiedName->lastIndexOf('.');
-   let package = if($dotPos == -1, |^meta::external::language::java::metamodel::Package(name=''), |javaPackage($qualifiedName->substring(0, $dotPos)));
-   let name    = if($dotPos == -1, |$qualifiedName,                           |$qualifiedName->substring($dotPos+1));
-
+   let split =  $qualifiedName->split('.');
+   let size = $split->size();
+   let package =  packageFromList($split->take($size-1),[]);
+   let name    = if($size<=1, |$qualifiedName,|$split->at($size-1));
    javaEnum($modifiers, $package, $name);
 }
 
@@ -525,12 +548,14 @@ function meta::external::language::java::factory::javaClass(modifiers:String[*],
 
 function meta::external::language::java::factory::javaClass(modifiers:String[*], typeParams:meta::external::language::java::metamodel::TypeVariable[*], fullClassName:String[1]):meta::external::language::java::metamodel::Class[1]
 {
-   let dotPos  = $fullClassName->lastIndexOf('.');
-   let package = if($dotPos == -1, |^meta::external::language::java::metamodel::Package(name=''), |javaPackage($fullClassName->substring(0, $dotPos)));
-   let name    = if($dotPos == -1, |$fullClassName,                           |$fullClassName->substring($dotPos+1));
+   let split =  $fullClassName->split('.');
+   let size = $split->size();
+   let package = packageFromList($split->take($size-1),[]);
 
+   let name    = if($size<=1, |$fullClassName,|$split->at($size-1));
    javaClass($modifiers, $typeParams, $package, $name);
 }
+
 
 function meta::external::language::java::factory::javaClass(pkg:meta::external::language::java::metamodel::Package[1], name:String[1]):meta::external::language::java::metamodel::Class[1]
 {
@@ -584,10 +609,11 @@ function meta::external::language::java::factory::javaClass(modifiers:String[*],
 
 function meta::external::language::java::factory::javaClass(modifiers:String[*], typeParams:meta::external::language::java::metamodel::TypeVariable[*], fullClassName:String[1], fields:meta::external::language::java::metamodel::Field[*], methods:Pair<meta::external::language::java::metamodel::Method,Code>[*]):meta::external::language::java::metamodel::Class[1]
 {
-   let dotPos  = $fullClassName->lastIndexOf('.');
-   let package = if($dotPos == -1, |^meta::external::language::java::metamodel::Package(name=''), |javaPackage($fullClassName->substring(0, $dotPos)));
-   let name    = if($dotPos == -1, |$fullClassName,                           |$fullClassName->substring($dotPos+1));
 
+   let split =  $fullClassName->split('.');
+   let size = $split->size();
+   let package =  if($size<=1,|  ^meta::external::language::java::metamodel::Package(name='',fullPath=''),| $split->take($size-1)->packageFromList([]));
+   let name    = if($size==1, |$fullClassName,|$split->at($size-1));
    javaClass($modifiers, $typeParams, $package, $name, $fields, $methods);
 }
 
@@ -696,7 +722,7 @@ function meta::external::language::java::factory::usingKnownPackages(class:meta:
 }
 
 function meta::external::language::java::factory::imports(class:meta::external::language::java::metamodel::Class[1], imports:meta::external::language::java::metamodel::Importable[*]):meta::external::language::java::metamodel::Class[1]
-{
+{ // TODO: this can be skipped or simplified in fast mode
    let knownPackages = if($class->instanceOf(meta::external::language::java::factory::FactoryClass),
                           | $class->cast(@meta::external::language::java::factory::FactoryClass).knownPackages,
                           | meta::external::language::java::factory::knownPackage_Package_1__KnownPackage_1_
@@ -1023,7 +1049,7 @@ Class meta::external::language::java::factory::FactoryClass extends meta::extern
 
 
 function meta::external::language::java::factory::inferImports(class:meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
-{
+{   //TODO: This can be skipped in fast mode
    let allCodes  = $class.fields.valueCode->concatenate($class.constructors.bodyCode)->concatenate($class.methods.bodyCode);
    let canInfer  = $class.additionalImports->isEmpty() && !$allCodes->containsSimpleCode();
    if($canInfer,
@@ -2766,6 +2792,12 @@ function meta::external::language::java::factory::resolveProjects(dependencies:C
 {
    $dependencies->fold({d, s| $d.stateUpdater->eval($s)}, $state);
 }
+
+function meta::external::language::java::factory::addDependencyVisitedFunction(state:CodeDependencyResolutionState[1], visitedFunction:String[1]):CodeDependencyResolutionState[1]
+{
+   ^$state(visitedFunctions=$state.visitedFunctions->concatenate($visitedFunction));
+}
+
 
 function meta::external::language::java::factory::getProjects(state:CodeDependencyResolutionState[1], dependencies:CodeDependency[*]):Project[*]
 {

@@ -18,7 +18,6 @@ import meta::json::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::protocols::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::protocols::pure::v1_31_0::transformation::fromPureGraph::context::*;
 import meta::pure::router::routing::*;
@@ -27,7 +26,6 @@ import meta::protocols::pure::v1_31_0::transformation::fromPureGraph::*;
 import meta::protocols::pure::v1_31_0::transformation::fromPureGraph::runtime::*;
 import meta::pure::functions::io::http::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::milestoning::*;
 import meta::alloy::metadataServer::*;
@@ -82,7 +80,7 @@ function meta::protocols::pure::v1_31_0::invocation::execution::execute::process
 
 }
 
-function meta::protocols::pure::v1_31_0::invocation::execution::execute::processRelationalClassResult(r:meta::protocols::pure::v1_31_0::metamodel::invocation::execution::execute::RelationalClassResult[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], extensions:meta::pure::extension::Extension[*]) : Pair<List<Any>,List<Activity>>[1]
+function meta::protocols::pure::v1_31_0::invocation::execution::execute::processRelationalClassResult(r:meta::protocols::pure::v1_31_0::metamodel::invocation::execution::execute::RelationalClassResult[1], m:Mapping[1], pureRuntime:Runtime[1], context:meta::pure::runtime::ExecutionContext[0..1], extensions:meta::pure::extension::Extension[*]) : Pair<List<Any>,List<Activity>>[1]
 {
    let builder = $r.builder->cast(@ meta::protocols::pure::v1_31_0::metamodel::invocation::execution::execute::ClassBuilder);
 
@@ -94,7 +92,7 @@ function meta::protocols::pure::v1_31_0::invocation::execution::execute::process
 
    let setImplMap = $setImplementations->map(set | pair($set.id, pair($set, meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->isNotEmpty() && meta::pure::milestoning::getTemporalMilestoningStrategy($set.class)->toOne()->meta::pure::milestoning::expandToSingleTemporalStrategies()->forAll(s| $s->meta::relational::milestoning::relationalElementCanSupportStrategy($set->mainTable())))))->newMap();
 
-   let exeCtx = if($context->isEmpty(), | ^ExecutionContext(), | $context->toOne());
+   let exeCtx = if($context->isEmpty(), | ^meta::pure::runtime::ExecutionContext(), | $context->toOne());
    let precas =  $setImplementations->map(set | pair($set.id, precaForRelationalSetImpl($set, $m, $pureRuntime, $exeCtx, $extensions)))->newMap();
    let objects = $r.objects->map({obj |
    let reference = $obj->get('alloyStoreObjectReference$')->toOne()->cast(@String)->decodeAndParseAlloyObjectReference()->cast(@meta::protocols::pure::v1_31_0::metamodel::objectReference::AlloyRelationalStoreObjectReference);
@@ -251,7 +249,7 @@ function meta::protocols::pure::v1_31_0::invocation::execution::execute::transfo
    ]->concatenate($extensions.serializerExtension('v1_31_0')->cast(@meta::protocols::pure::v1_31_0::extension::SerializerExtension_v1_31_0).transfers_execute_transformActivity)->toOneMany()))
 }
 
-function <<access.private>> meta::protocols::pure::v1_31_0::invocation::execution::execute::precaForRelationalSetImpl(setImplementation:RootRelationalInstanceSetImplementation[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):RelationalSetImplPrecalc[1]
+function <<access.private>> meta::protocols::pure::v1_31_0::invocation::execution::execute::precaForRelationalSetImpl(setImplementation:RootRelationalInstanceSetImplementation[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):RelationalSetImplPrecalc[1]
 {
    let propertyMappings = $setImplementation->allPropertyMappings()
                                     ->filter(pm|$pm.localMappingProperty==false &&

@@ -23,8 +23,8 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceContent;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Deployment;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Ownership;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -38,6 +38,12 @@ public class HostedServiceProtocolExtension implements PureProtocolExtension
     public static String packageJSONType = "hostedService";
 
     @Override
+    public String group()
+    {
+        return "FA_Hosted_Service";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.mutable.with(
@@ -46,7 +52,7 @@ public class HostedServiceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Ownership.class)
                         .withSubtype(UserList.class, "userList")
-                        .withSubtype(Deployment.class, "deployment")
+//                        .withSubtype(Deployment.class, "deployment")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(DeploymentConfiguration.class)
                         .withSubtype(HostedServiceDeploymentConfiguration.class, "hostedServiceDeploymentConfiguration")

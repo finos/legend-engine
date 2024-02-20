@@ -511,7 +511,7 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                         "  'Hello ' + $name\n" +
                         "}\n" +
                         "{\n" +
-                        "  myTest | Hello('John',20) => 'Hello John!';\n" +
+                        "  myTest 'this is some documentation for the test' | Hello('John',20) => 'Hello John!';\n" +
                         "  myOtherTest | Hello('Nicole',20) => 'Hello Nicole!';\n" +
                         "}\n");
         test("function my::Hello(name: String[1]): String[1]\n" +
@@ -553,10 +553,10 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
                 "{\n" +
                 "  MySuite2\n" +
                 "  (\n" +
-                "    ModelStore: (JSON) '{}';\n" +
+                "    ModelStore: (JSON) '[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\\n';\n" +
                 "    store::MyStore: testing::MyReference;\n" +
                 "    myTest | Hello('John') => (XML) 'Hello John!';\n" +
-                "    myTest | Hello('Nicole') => (JSON) 'Hello Nicole!';\n" +
+                "    myTest | Hello('Nicole') => (JSON) '[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\\n';\n" +
                 "  )\n" +
                 "}\n");
 

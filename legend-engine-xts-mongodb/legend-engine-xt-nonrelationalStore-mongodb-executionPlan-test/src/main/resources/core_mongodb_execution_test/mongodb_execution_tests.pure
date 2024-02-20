@@ -20,7 +20,6 @@ import meta::pure::functions::io::http::*;
 import meta::pure::test::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::mongodb::executionTest::utils::*;
 
 import meta::external::store::mongodb::executionTest::*;
@@ -150,10 +149,32 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectEqualStringParam(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeFull();
+
+  let personQuery = {firstName:String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firstName == $firstName})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firstName', 'Gelya')], '/core_mongodb_execution_test/expected_execution_results/equal/testSelectEqualString.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectEqualNumber(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
 {
-  let filterLambda = { x: Person[1] |  $x.age == 45};
+  let filterLambda = { x: Person[1] | $x.age == 45};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/equal/testSelectEqualNumber.json');
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectEqualNumberParam(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeFull();
+
+  let personQuery = {age: Integer[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.age == $age})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('age', 45)], '/core_mongodb_execution_test/expected_execution_results/equal/testSelectEqualNumber.json');
 }
 
 
@@ -162,6 +183,17 @@ function <<paramTest.Test>>
 {
   let filterLambda = { x: Person[1] | $x.firm.legalName == 'Yodoo'};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/equal/testSelectEqualNested.json');
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::equal::testSelectEqualNestedParam(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeFull();
+
+  let personQuery = {firmLegalName: String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firm.legalName == 'Yodoo'})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firmLegalName', 'Yodoo')], '/core_mongodb_execution_test/expected_execution_results/equal/testSelectEqualNested.json');
 }
 
 
@@ -185,6 +217,17 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualStringParam(config:meta::external::store::mongodb::executionTest::TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {firstName:String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firstName != $firstName})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firstName', 'Coralie')], '/core_mongodb_execution_test/expected_execution_results/not_equal/testSelectNotEqualString.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age != 23};
@@ -192,10 +235,32 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualNumberParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {age:Integer[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.age != $age})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('age', 23)], '/core_mongodb_execution_test/expected_execution_results/not_equal/testSelectNotEqualNumber.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualAndString(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | !($x.firstName == 'Coralie' && $x.lastName == 'Batie')};
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/not_equal/testSelectNotEqualString.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::notEqual::testSelectNotEqualAndStringParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {firstName:String[1], lastName: String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| !($x.firstName == $firstName && $x.lastName == $lastName)})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firstName', 'Coralie'), pair('lastName', 'Batie')], '/core_mongodb_execution_test/expected_execution_results/not_equal/testSelectNotEqualString.json');
 }
 
 
@@ -209,10 +274,32 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThanEqual::testLessThanEqualStringParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {firstName:String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firstName <= $firstName})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firstName', 'Jefferey')], '/core_mongodb_execution_test/expected_execution_results/less_than_equal/testLessThanEqualString.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThanEqual::testLessThanEqualNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age <= 25 };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/less_than_equal/testLessThanEqualNumber.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThanEqual::testLessThanEqualNumberParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {age:Integer[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.age <= $age})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('age', 25)], '/core_mongodb_execution_test/expected_execution_results/less_than_equal/testLessThanEqualNumber.json');
 }
 
 // Filters - LessThan
@@ -225,10 +312,32 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThan::testLessThanNumberParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {age:Integer[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.age < $age})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('age', 25)], '/core_mongodb_execution_test/expected_execution_results/less_than/testLessThanNumber.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThan::testLessThanString(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firstName < 'Jefferey' };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/less_than/testLessThanString.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::lessThan::testLessThanStringParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {firstName:String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firstName < $firstName})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firstName', 'Jefferey')], '/core_mongodb_execution_test/expected_execution_results/less_than/testLessThanString.json');
 }
 
 function
@@ -250,12 +359,33 @@ function <<paramTest.Test>>
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than/testGreaterThanString.json', personTreeSmall());
 }
 
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThan::testGreaterThanStringParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {firstName:String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firstName > $firstName})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firstName', 'Coralie')], '/core_mongodb_execution_test/expected_execution_results/greater_than/testGreaterThanString.json');
+}
 
 function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThan::testGreaterThanNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age > 45 };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than/testGreaterThanNumber.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThan::testGreaterThanNumberParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {age:Integer[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.age > $age})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('age', 45)], '/core_mongodb_execution_test/expected_execution_results/greater_than/testGreaterThanNumber.json');
 }
 
 function
@@ -279,6 +409,17 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualStringParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {firstName:String[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firstName >= $firstName})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firstName', 'Coralie')], '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualString.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.age >= 45 };
@@ -286,10 +427,32 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualNumberParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {age:Integer[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.age >= $age})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('age', 45)], '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNumber.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualNestedNumber(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | $x.firm.numberOfEmployees >= 100 };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNestedNumber.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::greaterThanEqual::testGreaterThanEqualNestedNumberParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {firmNumberOfEmployees:Integer[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| $x.firm.numberOfEmployees >= $firmNumberOfEmployees})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('firmNumberOfEmployees', 100)], '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNestedNumber.json');
 }
 
 // Filters - Dates
@@ -302,6 +465,17 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testDateBetweenWithGTandLTParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {minBirthDate:StrictDate[1], maxBirthDate:DateTime[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| ($x.birthDate > $minBirthDate) && ($x.birthDate < $maxBirthDate)})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('minBirthDate', %1969-01-01), pair('maxBirthDate', %1971-04-04T18:09:35+0000)], '/core_mongodb_execution_test/expected_execution_results/combinations/testDatesBetweenWithGTandLT.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testDateBetweenWithGTEandLTE(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | ($x.birthDate >= %1980-04-04T07:12:12) && ($x.birthDate <= %1983-05-06T00:12:12)};
@@ -309,10 +483,32 @@ function <<paramTest.Test>>
 }
 
 function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testDateBetweenWithGTEandLTEParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {minBirthDate:DateTime[1], maxBirthDate:DateTime[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| ($x.birthDate >= $minBirthDate) && ($x.birthDate <= $maxBirthDate)})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('minBirthDate', %1980-04-04T07:12:12+0000), pair('maxBirthDate', %1983-05-06T00:12:12+0000)], '/core_mongodb_execution_test/expected_execution_results/combinations/testDatesBetweenWithGTEandLTE.json');
+}
+
+function <<paramTest.Test>>
  meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testNestedDateBetweenWithGTEandLTE(config:TestConfig[1]):Boolean[1]
 {
   let filterLambda = { x: Person[1] | ($x.firm.dateFounded >= %2014-04-04T07:12:12) };
   testFilterExecution($config, $filterLambda, '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNestedDate.json', personTreeSmall());
+}
+
+function <<paramTest.Test>>
+ meta::external::store::mongodb::executionTest::testCase::graphfetch::filter::dates::testNestedDateBetweenWithGTEandLTEParam(config:TestConfig[1]):Boolean[1]
+{
+  let mapping = $config.mapping;
+  let runtime = $config.runtime;
+  let graphFetch = personTreeSmall();
+
+  let personQuery = {minFoundingDate:DateTime[1] | Person.all()->from($mapping, $runtime)->filter({x:Person[1]| ($x.firm.dateFounded >= $minFoundingDate)})->graphFetch($graphFetch)->serialize($graphFetch)};
+  testFilterExecutionWithParam($config, $personQuery, [pair('minFoundingDate', %2014-04-04T07:12:12+0000)], '/core_mongodb_execution_test/expected_execution_results/greater_than_equal/testGreaterThanEqualNestedDate.json');
 }
 
 // GraphFetch
@@ -411,6 +607,11 @@ function <<paramTest.Test>>
 // UTILS
 
 function meta::external::store::mongodb::executionTest::executeAndAssert(f: FunctionDefinition<Any>[1], expectedResult: String[1]):Boolean[1]
+{
+  meta::external::store::mongodb::executionTest::executeAndAssert($f, $expectedResult, []);
+}
+
+function meta::external::store::mongodb::executionTest::executeAndAssert(f: FunctionDefinition<Any>[1], expectedResult: String[1], vars: Pair<String, Any>[*]):Boolean[1]
  {
   let extensions = [
     meta::external::store::mongodb::extension::mongoDBExtensions('mongoDB'),
@@ -421,7 +622,7 @@ function meta::external::store::mongodb::executionTest::executeAndAssert(f: Func
 
    let result = meta::legend::execute(
     $f,
-    [],
+    $vars,
     $executionContext,
     $extensions
   )->meta::json::parseJSON()->meta::json::toPrettyJSONString();
@@ -450,6 +651,11 @@ function meta::external::store::mongodb::executionTest::testCase::utils::testFil
   executeAndAssert($personQuery, $expectedResult);
 }
 
+function meta::external::store::mongodb::executionTest::testCase::utils::testFilterExecutionWithParam(config:TestConfig[1], query:FunctionDefinition<Any>[1], vars: Pair<String, Any>[*], expectedResultFileLoc: String[1]):Boolean[1]
+{
+  let expectedResult = readFile($expectedResultFileLoc)->toOne();
+  executeAndAssert($query, $expectedResult, $vars);
+}
 
 function <<paramTest.AfterPackage>> meta::external::store::mongodb::executionTest::testCase::cleanupTestSuite(config:TestConfig[1]):Boolean[1]
 {

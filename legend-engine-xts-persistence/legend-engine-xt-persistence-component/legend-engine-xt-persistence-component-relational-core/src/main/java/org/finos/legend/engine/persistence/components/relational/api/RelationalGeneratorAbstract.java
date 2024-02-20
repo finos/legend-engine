@@ -33,6 +33,7 @@ import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvol
 import org.finos.legend.engine.persistence.components.schemaevolution.SchemaEvolutionResult;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
+import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
@@ -114,12 +115,20 @@ public abstract class RelationalGeneratorAbstract
 
     public abstract Optional<Long> infiniteBatchIdValue();
 
+    public abstract Map<String, Object> additionalMetadata();
+
     public abstract Optional<String> bulkLoadEventIdValue();
 
     @Default
     public String bulkLoadBatchStatusPattern()
     {
         return BULK_LOAD_BATCH_STATUS_PATTERN;
+    }
+
+    @Default
+    public String batchSuccessStatusValue()
+    {
+        return MetadataUtils.MetaTableStatus.DONE.toString();
     }
 
     //---------- FIELDS ----------
@@ -137,7 +146,9 @@ public abstract class RelationalGeneratorAbstract
             .enableSchemaEvolution(enableSchemaEvolution())
             .createStagingDataset(createStagingDataset())
             .enableConcurrentSafety(enableConcurrentSafety())
+            .putAllAdditionalMetadata(additionalMetadata())
             .bulkLoadEventIdValue(bulkLoadEventIdValue())
+            .batchSuccessStatusValue(batchSuccessStatusValue())
             .build();
     }
 
@@ -261,13 +272,10 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan ingestLogicalPlan = planner.buildLogicalPlanForIngest(resources);
         SqlPlan ingestSqlPlan = transformer.generatePhysicalPlan(ingestLogicalPlan);
 
-        // metadata-ingest
+        // metadata ingest
         LogicalPlan metaDataIngestLogicalPlan = planner.buildLogicalPlanForMetadataIngest(resources);
-        Optional<SqlPlan> metaDataIngestSqlPlan = Optional.empty();
-        if (metaDataIngestLogicalPlan != null)
-        {
-            metaDataIngestSqlPlan = Optional.of(transformer.generatePhysicalPlan(metaDataIngestLogicalPlan));
-        }
+        SqlPlan metaDataIngestSqlPlan = transformer.generatePhysicalPlan(metaDataIngestLogicalPlan);
+
         // post-actions
         LogicalPlan postActionsLogicalPlan = planner.buildLogicalPlanForPostActions(resources);
         SqlPlan postActionsSqlPlan = transformer.generatePhysicalPlan(postActionsLogicalPlan);

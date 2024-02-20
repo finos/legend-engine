@@ -1,0 +1,80 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::generateVersionDowncast(
+    class: meta::external::language::java::metamodel::Class[1],
+    alwaysStampAtRootVersion: Boolean[1],
+    optionalStampAllVersions: Boolean[1],
+    obsoleteJsonAsString: Boolean[1],
+    typeKeyName: String[1],
+    versionKeyName: String[0..1],
+    version: Version[1],
+    paramVersion: Code[1]): Pair<Code, meta::external::language::java::metamodel::Class>[1]
+{
+    let mainFuncName = '_downcast_to_' + ($version.prevVersion->toOne()->replace(':', '_'));
+    let objRecurseFuncName = $mainFuncName + '_object';
+    let arrRecurseFuncName = $mainFuncName + '_array';
+    let objVar = j_parameter(objectNode(), 'objectNode');
+    let pathVar = j_parameter(javaList(javaObject()), 'path');
+    let rootObjVar = j_parameter(objectNode(), 'rootObjectNode');
+    let resVar = j_variable(objectNode(), 'res');
+    let class2 = $class->addMethod(javaMethod(['private', 'static'], objectNode(), $mainFuncName, [$objVar], [
+        $resVar->j_declare($class->j_invoke($objRecurseFuncName, [$objVar, j_emptyList(javaList(javaObject())), $objVar], objectNode()))
+        ]->concatenate([
+        if($alwaysStampAtRootVersion && $versionKeyName->size() == 1, | $resVar->j_invoke('put', [j_string($versionKeyName->toOne()), j_string($version.prevVersion->toOne())], javaVoid()), | [])
+        ])->concatenate([
+        j_return($resVar)
+    ])));
+    let typeVar = $resVar->j_invoke('get', [j_string($typeKeyName)], javaObject());
+    let changeTokenHandlers = $version.changeTokens->reverse()
+        ->map(t | $t->match([
+            t: AddField[1] | handleAddFieldDowncast($class2, $t, $objVar, $typeVar, $typeKeyName, $obsoleteJsonAsString, $version.version, $pathVar, $rootObjVar, $resVar),
+            t: RemoveField[1] | handleAddFieldUpcast($class2, $t, $objVar, $typeVar, $typeKeyName, $obsoleteJsonAsString, $version.version, $pathVar, $rootObjVar, $resVar),
+            t: RenameField[1] | handleRenameFieldDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar),
+            t: AddedClass[1] | [],
+            t: RemovedClass[1] | [],
+            t: RenamedClass[1] | handleRenamedClassDowncast($class2, $t, $objVar, $typeVar, $typeKeyName, $version.version, $pathVar, $rootObjVar, $resVar),
+            t: ChangeFieldType[1] | handleChangeFieldTypeDowncast($class2, $t, $objVar, $typeVar, $version.version, $pathVar, $rootObjVar, $resVar)
+        ]))
+        ->fold({t, res | $res->concatenate($t)}, []);
+    let class3 = $class2->addMethod(javaMethod(['private', 'static'], objectNode(), $objRecurseFuncName, [$rootObjVar, $pathVar, $objVar], j_block(
+        [
+            j_if(
+                j_eq($objVar->j_invoke('get', [j_string($typeKeyName)], javaObject()), j_null()),
+                javaRuntimeException()->j_new(j_string('Missing ' + $typeKeyName))->j_throw()
+            ),
+            $resVar->j_declare(javaHashMap()->j_new([]))
+        ]
+        ->concatenate($class2->generateRecurseObject($objRecurseFuncName, $arrRecurseFuncName, $objVar, $pathVar, $rootObjVar, $resVar))
+        ->concatenate($changeTokenHandlers)
+        ->concatenate(if($optionalStampAllVersions && $versionKeyName->size() == 1, | j_if(j_ne($resVar->j_invoke('get', [j_string($versionKeyName->toOne())], javaObject()), j_null()),
+            $resVar->j_invoke('put', [j_string($versionKeyName->toOne()), j_string($version.prevVersion->toOne())], javaVoid())), | []))
+        ->concatenate([
+            j_return($resVar)
+        ]))));
+    let verVar = j_variable(javaString(), 'version');
+    let ifCond = j_if($verVar->j_invoke('equals', [j_string($version.version)]),
+        [
+            j_if($paramVersion->j_invoke('equals', [$verVar]), j_return($objVar)),
+            $objVar->j_assign($class3->j_invoke($mainFuncName, $objVar)),
+            $verVar->j_assign(if($versionKeyName->size() == 1, | $objVar->j_invoke('get', [j_string($versionKeyName->toOne())], javaObject()), | j_string($version.prevVersion->toOne()))->j_cast(javaString()))
+        ]);
+    let class4 = $class3->addMethod($class3->generateRecurseArray($objRecurseFuncName, $arrRecurseFuncName));
+    pair($ifCond, $class4);
+}

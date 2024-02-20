@@ -1,32 +1,32 @@
-import meta::rel::utils::*;
-import meta::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::trace::*;
 
-Class meta::rel::utils::Result<T|n> { 
+Class meta::external::store::rel::utils::Result<T|n> {
   <<equality.Key>> values: T[n];
   <<equality.Key>> errors: QueryRewriteError[*];
 }
 
-Class meta::rel::utils::QueryRewriteError {
-  message: String[1];
-  trace: Trace[0..1];
+Class meta::external::store::rel::utils::QueryRewriteError {
+  <<equality.Key>> message: String[1];
+  <<equality.Key>> trace: Trace[0..1];
 }
 
-function meta::rel::utils::errorTrace(message: String[1], trace: Trace[0..1]): QueryRewriteError[1] {
+function meta::external::store::rel::utils::errorTrace(message: String[1], trace: Trace[0..1]): QueryRewriteError[1] {
   ^QueryRewriteError(message=$message, trace=$trace)
 }
 
-function meta::rel::utils::errorTrace(message: String[1]): QueryRewriteError[1] {
+function meta::external::store::rel::utils::errorTrace(message: String[1]): QueryRewriteError[1] {
   ^QueryRewriteError(message=$message)
 }
 
-function <<access.private>> meta::rel::utils::failMessage<T>(result: Result<T|*>[1]): String[1] {
+function <<access.private>> meta::external::store::rel::utils::failMessage<T>(result: Result<T|*>[1]): String[1] {
   $result.errors->map({e: QueryRewriteError[1] | 
     let stage = $e.trace->traceLog()->makeString('\n  ', '\n  ', '');
     '\nFailure at stage:' + $stage + '\n' + $e.message;
   })->joinStrings()
 }
 
-function meta::rel::utils::okOrElse<T|m>(value: T[m], else: FunctionDefinition<{->Result<T|m>[1]}>[1]): Result<T|m>[1] {
+function meta::external::store::rel::utils::okOrElse<T|m>(value: T[m], else: FunctionDefinition<{->Result<T|m>[1]}>[1]): Result<T|m>[1] {
   if ($value->isEmpty(), 
     | $else->eval(), 
     {|
@@ -37,97 +37,97 @@ function meta::rel::utils::okOrElse<T|m>(value: T[m], else: FunctionDefinition<{
   )
 }
 
-function meta::rel::utils::okOr<T|m>(value: T[m], error: FunctionDefinition<{->QueryRewriteError[1]}>[1]): Result<T|m>[1] {
+function meta::external::store::rel::utils::okOr<T|m>(value: T[m], error: FunctionDefinition<{->QueryRewriteError[1]}>[1]): Result<T|m>[1] {
   $value->okOrElse(|
     ^Result<T|m>(errors=[$error->eval()])
   )
 }
 
-function meta::rel::utils::ok<T>(value: T[1]): Result<T|0..1>[1] {
+function meta::external::store::rel::utils::ok<T>(value: T[1]): Result<T|0..1>[1] {
   ^Result<T|0..1>(values=$value)
 }
 
-function meta::rel::utils::okm<T>(values: T[*]): Result<T|*>[1] {
+function meta::external::store::rel::utils::okm<T>(values: T[*]): Result<T|*>[1] {
   ^Result<T|*>(values=$values)
 }
 
-function meta::rel::utils::error(message: String[1], trace: Trace[1]): Result<Nil|0..1>[1] {
+function meta::external::store::rel::utils::error(message: String[1], trace: Trace[1]): Result<Nil|0..1>[1] {
   ^Result<Nil|0..1>(errors=[errorTrace($message, $trace)])
 }
 
-function meta::rel::utils::andThen<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->Result<T|n>[1]}>[1]): Result<T|n>[1] {
+function meta::external::store::rel::utils::andThen<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->Result<T|n>[1]}>[1]): Result<T|n>[1] {
   if($result.errors->isEmpty(), 
     | $fn->eval($result.values->evaluateAndDeactivate()), 
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
-function meta::rel::utils::andMany<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->Result<T|n>[*]}>[1]): Result<T|n>[*] {
+function meta::external::store::rel::utils::andMany<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->Result<T|n>[*]}>[1]): Result<T|n>[*] {
   if($result.errors->isEmpty(), 
     | $fn->eval($result.values->evaluateAndDeactivate()), 
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
-function meta::rel::utils::andThem<S,T|n>(result: Result<S|*>[1], fn: FunctionDefinition<{S[*]->Result<T|n>[1]}>[1]): Result<T|n>[1] {
+function meta::external::store::rel::utils::andThem<S,T|n>(result: Result<S|*>[1], fn: FunctionDefinition<{S[*]->Result<T|n>[1]}>[1]): Result<T|n>[1] {
   if($result.errors->isEmpty(), 
     | $fn->eval($result.values->evaluateAndDeactivate()), 
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
-function meta::rel::utils::then<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->T[n]}>[1]): Result<T|n>[1] {
+function meta::external::store::rel::utils::then<S,T|n>(result: Result<S|0..1>[1], fn: FunctionDefinition<{S[1]->T[n]}>[1]): Result<T|n>[1] {
   if($result.errors->isEmpty(), 
     | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate()->toOne())), 
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
-function meta::rel::utils::them<S,T|n>(result: Result<S|*>[1], fn: FunctionDefinition<{S[*]->T[n]}>[1]): Result<T|n>[1] {
+function meta::external::store::rel::utils::them<S,T|n>(result: Result<S|*>[1], fn: FunctionDefinition<{S[*]->T[n]}>[1]): Result<T|n>[1] {
   if($result.errors->isEmpty(), 
     | ^Result<T|n>(values=$fn->eval($result.values->evaluateAndDeactivate())), 
     | ^Result<T|n>(errors=$result.errors)
   )
 }
 
-function meta::rel::utils::inspect<T|m>(result: Result<T|m>[1], fn: FunctionDefinition<{T[m]->Any[*]}>[1]): Result<T|m>[1] {
+function meta::external::store::rel::utils::inspect<T|m>(result: Result<T|m>[1], fn: FunctionDefinition<{T[m]->Any[*]}>[1]): Result<T|m>[1] {
   if($result.errors->isEmpty(), 
     {| $fn->eval($result.values->evaluateAndDeactivate()); $result;}, 
     | $result
   )
 }
 
-function meta::rel::utils::else<S|m>(result: Result<S|m>[1], else: FunctionDefinition<{Any[*]->Result<S|m>[1]}>[1]): Result<S|m>[1] {
+function meta::external::store::rel::utils::else<S|m>(result: Result<S|m>[1], else: FunctionDefinition<{Any[*]->Result<S|m>[1]}>[1]): Result<S|m>[1] {
   if($result.errors->isEmpty(), | $result, | $else->eval($result.errors));
 }
 
-function meta::rel::utils::orDefaultValue<T|m>(result: Result<T|m>[1], defaultValue: T[m]): Result<T|m>[1] {
+function meta::external::store::rel::utils::orDefaultValue<T|m>(result: Result<T|m>[1], defaultValue: T[m]): Result<T|m>[1] {
   if($result.errors->isEmpty(), | $result, | ^Result<T|m>(values=$defaultValue));
 }
 
-function meta::rel::utils::unwrap<T>(result: Result<T|0..1>[1]): T[1] {
+function meta::external::store::rel::utils::unwrap<T>(result: Result<T|0..1>[1]): T[1] {
   if($result.errors->isEmpty(), 
     | $result.values->toOne(), 
     | fail($result->failMessage())
   )
 }
 
-function meta::rel::utils::unwrapm<T>(result: Result<T|*>[1]): T[*] {
+function meta::external::store::rel::utils::unwrapm<T>(result: Result<T|*>[1]): T[*] {
   if($result.errors->isEmpty(), 
     | $result.values, 
     | fail($result->failMessage())
   )
 }
 
-function meta::rel::utils::isOk<T|n>(result: Result<T|n>[1]): Boolean[1] {
+function meta::external::store::rel::utils::isOk<T|n>(result: Result<T|n>[1]): Boolean[1] {
   $result.errors->isEmpty()
 }
 
-function meta::rel::utils::isErr<T|n>(result: Result<T|n>[1]): Boolean[1] {
+function meta::external::store::rel::utils::isErr<T|n>(result: Result<T|n>[1]): Boolean[1] {
   !$result->isOk()
 }
 
-function meta::rel::utils::collect<T>(results: Result<T|0..1>[*]): Result<T|*>[1] {
+function meta::external::store::rel::utils::collect<T>(results: Result<T|0..1>[*]): Result<T|*>[1] {
   $results->fold({r: Result<T|0..1>[1], accum: Result<T|*>[1] |
     if($r->isOk(), | 
       ^Result<T|*>(
@@ -140,7 +140,7 @@ function meta::rel::utils::collect<T>(results: Result<T|0..1>[*]): Result<T|*>[1
   }, okm([])->cast(@Result<T|*>))
 }
 
-function meta::rel::utils::tryCast<T>(source: Any[1], object: T[1], trace: Trace[1]): Result<T|0..1>[1] {
+function meta::external::store::rel::utils::tryCast<T>(source: Any[1], object: T[1], trace: Trace[1]): Result<T|0..1>[1] {
   if ($source->instanceOf($object->type()), 
     | ^Result<T|0..1>(values=$source->cast($object)), 
     {|
@@ -154,21 +154,21 @@ function meta::rel::utils::tryCast<T>(source: Any[1], object: T[1], trace: Trace
   )
 }
 
-function meta::rel::utils::tryCastm<T>(source: Any[*], object: T[1], trace: Trace[1]): Result<T|*>[1] {
+function meta::external::store::rel::utils::tryCastm<T>(source: Any[*], object: T[1], trace: Trace[1]): Result<T|*>[1] {
   $source
     ->map(o | $o->tryCast($object, $trace))
     ->collect()
 }
 
-function meta::rel::utils::tryCast<T>(result: Result<Any|0..1>[1], object: T[1], trace: Trace[1]): Result<T|0..1>[1] {
+function meta::external::store::rel::utils::tryCast<T>(result: Result<Any|0..1>[1], object: T[1], trace: Trace[1]): Result<T|0..1>[1] {
   $result->andThen(inner: Any[1] | $inner->tryCast($object, $trace))
 }
 
-function meta::rel::utils::tryCastm<T>(result: Result<Any|*>[1], object: T[1], trace: Trace[1]): Result<T|*>[1] {
+function meta::external::store::rel::utils::tryCastm<T>(result: Result<Any|*>[1], object: T[1], trace: Trace[1]): Result<T|*>[1] {
   $result->andThem(inner: Any[*] | $inner->tryCastm($object, $trace))
 }
 
-function meta::rel::utils::test<T>(
+function meta::external::store::rel::utils::test<T>(
   result: Result<T|0..1>[1], 
   check: FunctionDefinition<{T[1]->Boolean[1]}>[1],
   else: FunctionDefinition<{T[1]->Result<T|0..1>[1]}>[1]
@@ -178,7 +178,7 @@ function meta::rel::utils::test<T>(
   )
 }
 
-function meta::rel::utils::test<T>(
+function meta::external::store::rel::utils::test<T>(
   object: T[1], 
   check: FunctionDefinition<{T[1]->Boolean[1]}>[1],
   else: FunctionDefinition<{T[1]->Result<T|0..1>[1]}>[1]
@@ -186,7 +186,7 @@ function meta::rel::utils::test<T>(
   $object->ok()->test($check, $else)
 }
 
-function meta::rel::utils::testm<T>(
+function meta::external::store::rel::utils::testm<T>(
   result: Result<T|*>[1], 
   check: FunctionDefinition<{T[*]->Boolean[1]}>[1],
   else: FunctionDefinition<{->Result<T|*>[1]}>[1]

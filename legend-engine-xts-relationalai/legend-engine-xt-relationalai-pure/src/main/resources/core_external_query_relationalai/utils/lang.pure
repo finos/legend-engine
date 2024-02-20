@@ -1,18 +1,18 @@
-import meta::rel::utils::lang::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
+import meta::external::store::rel::utils::*;
 
-Class meta::rel::utils::lang::CaseExpr<T|m> {
+Class meta::external::store::rel::utils::lang::CaseExpr<T|m> {
   cond: Boolean[1];
   logic: FunctionDefinition<{->T[m]}>[1];
 }
 
-function meta::rel::utils::lang::case<T|m>(
+function meta::external::store::rel::utils::lang::case<T|m>(
   cond: Boolean[1], logic: FunctionDefinition<{->T[m]}>[1]
 ): CaseExpr<T|m>[1] {
   ^CaseExpr<T|m>(cond=$cond, logic=$logic);
 }
 
-function <<access.private>> meta::rel::utils::lang::switch<T|m>(
+function <<access.private>> meta::external::store::rel::utils::lang::switch<T|m>(
   from: Integer[1], 
   cases: CaseExpr<T|m>[*],
   default: FunctionDefinition<{->T[m]}>[1]
@@ -29,6 +29,6 @@ function <<access.private>> meta::rel::utils::lang::switch<T|m>(
   );
 }
 
-function meta::rel::utils::lang::switch<T|m>(cases: CaseExpr<T|m>[*], default: FunctionDefinition<{->T[m]}>[1]): T[m] {
+function meta::external::store::rel::utils::lang::switch<T|m>(cases: CaseExpr<T|m>[*], default: FunctionDefinition<{->T[m]}>[1]): T[m] {
   switch(0, $cases, $default);
 }

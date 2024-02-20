@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.integration;
 
+import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
@@ -37,28 +38,36 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class MongoDBGrammarComposerExtension implements IMongoDBGrammarComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Mongo";
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof MongoDatabase)
+        {
+            return MongoDBSchemaComposer.renderMongoDBStore((MongoDatabase) element);
+        }
+        return null;
+    });
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
+    @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with((elements, context, sectionName) ->
-        {
-            if (!MongoDBGrammarParserExtension.NAME.equals(sectionName))
-            {
-                return null;
-            }
-            return ListIterate.collect(elements, element ->
-            {
-                if (element instanceof MongoDatabase)
-                {
-                    return MongoDBSchemaComposer.renderMongoDBStore((MongoDatabase) element);
-                }
-                return "/* Can't transform element '" + element.getPath() + "' in this section */";
-            }).makeString("\n\n");
-        });
+        return Lists.mutable.with(buildSectionComposer(MongoDBGrammarParserExtension.NAME, renderers));
     }
 
     @Override

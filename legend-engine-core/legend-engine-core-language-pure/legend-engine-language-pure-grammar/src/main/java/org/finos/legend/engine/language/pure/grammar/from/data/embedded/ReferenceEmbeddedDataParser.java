@@ -20,6 +20,8 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarP
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
@@ -45,7 +47,7 @@ public class ReferenceEmbeddedDataParser implements EmbeddedDataParser
 
         DataElementReference result = new DataElementReference();
         result.sourceInformation = sourceInformation;
-        result.dataElement = validPath;
+        result.dataElement = new PackageableElementPointer(PackageableElementType.DATA, validPath,sourceInformation);
         return result;
     }
 }

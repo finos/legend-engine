@@ -44,6 +44,12 @@ import java.util.List;
 public class ServiceStoreCompilerExtension implements IServiceStoreCompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new ServiceStoreCompilerExtension();

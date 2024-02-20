@@ -234,7 +234,7 @@ public class HelperDomainGrammarComposer
         if (embeddedData instanceof DataElementReference)
         {
             dataStrBuilder.append(" ");
-            dataStrBuilder.append(((DataElementReference) embeddedData).dataElement);
+            dataStrBuilder.append(((DataElementReference) embeddedData).dataElement.path);
         }
         else if (embeddedData instanceof ExternalFormatData)
         {
@@ -254,7 +254,12 @@ public class HelperDomainGrammarComposer
     public static String renderFunctionTest(Function function, FunctionTest functionTest, int currentInt, PureGrammarComposerContext context)
     {
         StringBuilder str = new StringBuilder();
-        str.append(getTabString(currentInt)).append(functionTest.id).append(" | ").append(HelperValueSpecificationGrammarComposer.getFunctionNameWithNoPackage(function)).append("(");
+        str.append(getTabString(currentInt)).append(functionTest.id);
+        if (functionTest.doc != null)
+        {
+            str.append(" ").append(PureGrammarComposerUtility.convertString(functionTest.doc, true));
+        }
+        str.append(" | ").append(HelperValueSpecificationGrammarComposer.getFunctionNameWithNoPackage(function)).append("(");
         if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
         {
             str.append(LazyIterate.collect(functionTest.parameters, parameterValue -> parameterValue.value.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).build())).makeString(","));
@@ -294,15 +299,15 @@ public class HelperDomainGrammarComposer
     {
         if (externalFormatData.contentType.equals(APPLICATION_JSON))
         {
-            return "(JSON) " + "'" + externalFormatData.data + "'";
+            return "(JSON) " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
         }
         else if (externalFormatData.contentType.equals(APPLICATION_XML))
         {
-            return "(XML) " + "'" + externalFormatData.data + "'";
+            return "(XML) " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
         }
         else
         {
-            return "(" + externalFormatData.contentType + ") " + "'" + externalFormatData.data + "'";
+            return "(" + externalFormatData.contentType + ") " + PureGrammarComposerUtility.convertString(externalFormatData.data, true);
         }
     }
 

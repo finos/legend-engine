@@ -78,8 +78,6 @@ import meta::relational::functions::toDDL::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<test.BeforePackage>> meta::relational::tests::functions::fetchDbMetaData::setUp():Boolean[1]
 {
     createAndFillTestDb();
@@ -92,7 +90,7 @@ function meta::relational::tests::functions::fetchDbMetaData::testFetchDbMetaDat
 
 function  meta::relational::tests::functions::fetchDbMetaData::createAndFillTestDb():Boolean[1]
 {
-   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    dropAndCreateTableInDb(testFetchDbMetaDataDb, 'fetchDbMetaDataPersonTable1', $connection);
    dropAndCreateTableInDb(testFetchDbMetaDataDb, 'fetchDbMetaDataPersonTable2', $connection);
@@ -113,7 +111,7 @@ function  meta::relational::tests::functions::fetchDbMetaData::createAndFillTest
 function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbTablesMetaData():Boolean[1]
 {
    createAndFillTestDb();
-   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    let allTablesInDb = fetchDbTablesMetaData($connection, [], 'FETCHDBMETADATAPERSONTABLE1').rows->fold({a,b| concatenate($a.values->at(2), $b)}, []);   //TABLE_NAME
    assertContains($allTablesInDb, 'FETCHDBMETADATAPERSONTABLE1');
@@ -130,7 +128,7 @@ function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::test
 function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbColumnsMetaData():Boolean[1]
 {
    createAndFillTestDb();
-   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    let fetchDbColumnsMetaData = fetchDbColumnsMetaData($connection, [], 'FETCHDBMETADATAPERSONTABLE1', []);
    assertContains($fetchDbColumnsMetaData.columnNames, 'SQL_TYPE_NAME');
@@ -157,7 +155,7 @@ function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::test
 function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbSchemasMetaData():Boolean[1]
 {
    createAndFillTestDb();
-   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    let allSchemas = fetchDbSchemasMetaData($connection, []).rows->fold({a,b| concatenate($a.values->at(0), $b)}, []);   //TABLE_SCHEM
    assertContains($allSchemas, 'FETCHDBMETADATATESTSCHEMA1');
@@ -173,7 +171,7 @@ function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::test
 function <<test.Test>> meta::relational::tests::functions::fetchDbMetaData::testFetchDbPrimaryKeysMetaData():Boolean[1]
 {
    createAndFillTestDb();
-   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@TestDatabaseConnection);
+   let connection = testFetchDbMetaDataRuntime().connectionByElement(testFetchDbMetaDataDb)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    let primaryKeyInPersonTable = fetchDbPrimaryKeysMetaData($connection, [], 'FETCHDBMETADATAPERSONTABLE1').rows.values->at(3)->toOne()->toString();   //COLUMN_NAME
    assertEq($primaryKeyInPersonTable, 'ID');

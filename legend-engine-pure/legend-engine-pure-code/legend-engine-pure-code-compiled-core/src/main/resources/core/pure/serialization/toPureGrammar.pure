@@ -139,7 +139,11 @@ function meta::pure::metamodel::serialization::grammar::printFunctionExpression(
                   | $m->get($name)->toOne() + $functionExpression.parametersValues->at(0)->printValueSpecification($space),
                   | if ($name->in(['and', 'or']) && $vals->size() == 1,
                       | $name + '(' + $vals->at(0)->printValueSpecification($space) + ')',
-                      | '(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')')
+                      | if ($vals->size() > 1,
+                        |'(' + $vals->at(0)->printValueSpecification($space) + ' ' + $m->get($name)->toOne() + ' ' + $vals->at(1)->printValueSpecification($space) + ')',
+                        | $m->get($name)->toOne()+'('+$vals->at(0)->printValueSpecification($space)+')'
+                        )
+                    )
               );
          );
     );

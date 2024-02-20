@@ -165,6 +165,16 @@ public class TestFunctionTestSuite
     }
 
     @Test
+    public void testRelationalWithModelJoin()
+    {
+        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-join-relational.pure", "com::trade::TestFunction__TabularDataSet_1_");
+        Assert.assertEquals(1, inlineServiceStoreTestResults.size());
+        Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
     public void testRelationalPass()
     {
         List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonQuery__TabularDataSet_1_");

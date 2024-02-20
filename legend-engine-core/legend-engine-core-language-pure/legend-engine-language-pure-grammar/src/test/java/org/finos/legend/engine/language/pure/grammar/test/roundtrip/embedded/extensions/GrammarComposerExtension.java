@@ -24,6 +24,12 @@ import java.util.Map;
 public class GrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "Test";
+    }
+
+    @Override
     public Map<String, Function2<Object, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
     {
         return Maps.mutable.with(

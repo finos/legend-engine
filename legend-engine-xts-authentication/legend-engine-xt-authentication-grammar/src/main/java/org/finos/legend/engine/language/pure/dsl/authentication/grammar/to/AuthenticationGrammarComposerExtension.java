@@ -29,6 +29,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class AuthenticationGrammarComposerExtension implements IAuthenticationGrammarComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Authentication";
+    }
+
+    @Override
     public List<Function3<AuthenticationSpecification, Integer, PureGrammarComposerContext, String>> getExtraAuthenticationSpecificationComposers()
     {
         return Lists.fixedSize.with((authenticationSpec, indentLevel, context) ->

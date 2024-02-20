@@ -585,6 +585,13 @@ public class TestCompatibilityAndMigration
                 "    },\n" +
                 "    \"body\" : [ {\n" +
                 "      \"_type\" : \"classInstance\",\n" +
+                "      \"sourceInformation\" : {\n" +
+                "        \"sourceId\" : \"a::f\",\n" +
+                "        \"startLine\" : 1,\n" +
+                "        \"startColumn\" : 11,\n" +
+                "        \"endLine\" : 1,\n" +
+                "        \"endColumn\" : 22\n" +
+                "      },\n" +
                 "      \"type\" : \"path\",\n" +
                 "      \"value\" : {\n" +
                 "        \"sourceInformation\" : {\n" +
@@ -671,6 +678,13 @@ public class TestCompatibilityAndMigration
                 "    },\n" +
                 "    \"body\" : [ {\n" +
                 "      \"_type\" : \"classInstance\",\n" +
+                "      \"sourceInformation\" : {\n" +
+                "        \"sourceId\" : \"a::f\",\n" +
+                "        \"startLine\" : 1,\n" +
+                "        \"startColumn\" : 4,\n" +
+                "        \"endLine\" : 1,\n" +
+                "        \"endColumn\" : 4\n" +
+                "      },\n" +
                 "      \"type\" : \"rootGraphFetchTree\",\n" +
                 "      \"value\" : {\n" +
                 "        \"sourceInformation\" : {\n" +
@@ -742,6 +756,13 @@ public class TestCompatibilityAndMigration
                         "    },\n" +
                         "    \"body\" : [ {\n" +
                         "      \"_type\" : \"classInstance\",\n" +
+                        "      \"sourceInformation\" : {\n" +
+                        "        \"sourceId\" : \"a::a\",\n" +
+                        "        \"startLine\" : 1,\n" +
+                        "        \"startColumn\" : 2,\n" +
+                        "        \"endLine\" : 1,\n" +
+                        "        \"endColumn\" : 4\n" +
+                        "      },\n" +
                         "      \"type\" : \"listInstance\",\n" +
                         "      \"value\" : {\n" +
                         "        \"sourceInformation\" : {\n" +
@@ -1197,6 +1218,40 @@ public class TestCompatibilityAndMigration
                 "          }\n" +
                 "        ]\n" +
                 "      },\n" +
+                "      \"package\": \"my\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testDataElementReference() throws Exception
+    {
+        check(
+                "{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"reference\",\n" +
+                "        \"dataElement\": \"com::path::exampleReference\"\n" +
+                "      },\n" +
+                "      \"name\": \"dataElementReferenceExample\",\n" +
+                "      \"package\": \"my\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n",
+         "{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"reference\",\n" +
+                "        \"dataElement\":{\"path\":\"com::path::exampleReference\",\"type\":\"DATA\"}" +
+                "      },\n" +
+                "      \"name\": \"dataElementReferenceExample\",\n" +
                 "      \"package\": \"my\"\n" +
                 "    }\n" +
                 "  ]\n" +

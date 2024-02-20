@@ -14,8 +14,16 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
-public interface StoreExecutorBuilder
+import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
+
+public interface StoreExecutorBuilder extends LegendPlanExtension
 {
+    @Override
+    default String type()
+    {
+        return "StoreExecutorBuilder";
+    }
+
     StoreType getStoreType();
 
     StoreExecutor build();

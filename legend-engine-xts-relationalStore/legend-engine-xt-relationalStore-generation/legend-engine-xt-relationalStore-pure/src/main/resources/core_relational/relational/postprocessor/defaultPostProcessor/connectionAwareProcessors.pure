@@ -20,10 +20,9 @@ import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 
-function meta::relational::mapping::connectionAwareProcessors(query:SQLQuery[1], runtime:meta::core::runtime::Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
+function meta::relational::mapping::connectionAwareProcessors(query:SQLQuery[1], runtime:meta::core::runtime::Runtime[1], store:Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
    let connection = if($store->isNotEmpty(),|let connection =$runtime->connectionByElement($store->toOne()),|$runtime.connectionStores.connection->at(0));
    let connectionAwarePostProcessors =  if($connection->instanceOf(DatabaseConnection), | $connection->cast(@DatabaseConnection).sqlQueryPostProcessorsConnectionAware, | []);

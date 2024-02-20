@@ -50,6 +50,12 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
     public static final String TRIGGER_CRON = "Cron";
 
     @Override
+    public String group()
+    {
+        return "PE_Persistence";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, PersistenceParserExtension::parseSection));

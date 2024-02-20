@@ -27,7 +27,6 @@ import meta::pure::executionPlan::platformBinding::typeInfo::*;
 import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::metamodel::constraint::*;

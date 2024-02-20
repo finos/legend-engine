@@ -354,7 +354,7 @@ public class TestM2MGrammarCompileAndExecute
         RootGraphFetchTree fetchTree = new RootGraphFetchTree();
         fetchTree._class = clazz;
         fetchTree.subTrees = Arrays.asList(subTrees);
-        return new ClassInstance("rootGraphFetchTree", fetchTree);
+        return new ClassInstance("rootGraphFetchTree", fetchTree, fetchTree.sourceInformation);
     }
 
     private PropertyGraphFetchTree propertyGFT(String property, PropertyGraphFetchTree... subTrees)

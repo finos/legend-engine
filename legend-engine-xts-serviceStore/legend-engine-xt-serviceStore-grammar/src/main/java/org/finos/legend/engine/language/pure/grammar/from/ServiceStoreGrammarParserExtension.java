@@ -48,6 +48,12 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     public static final String SERVICE_STORE_CONNECTION_TYPE = "ServiceStoreConnection";
 
     @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Collections.singletonList(SectionParser.newParser(NAME, (sectionSourceCode, elementConsumer, context) ->

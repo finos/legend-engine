@@ -261,23 +261,24 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> metaIngestSqlList = operations.metadataIngestSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
-                "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
-                "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))," +
+                "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"name\" = (SELECT stage.\"name\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"amount\" = (SELECT stage.\"amount\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"biz_date\" = (SELECT stage.\"biz_date\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
+                "sink.\"digest\" = (SELECT stage.\"digest\" FROM \"mydb\".\"staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))," +
                 "sink.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
                 "WHERE EXISTS (SELECT * FROM \"mydb\".\"staging\" as stage WHERE " +
-                "((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\"))";
+                "((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\") AND (stage.\"delete_indicator\" NOT IN ('yes','1','true')))";
 
         String insertSql = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') FROM \"mydb\".\"staging\" as stage " +
-                "WHERE NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
-                "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\"))))";
+                "WHERE (stage.\"delete_indicator\" NOT IN ('yes','1','true')) AND (NOT (EXISTS (SELECT * FROM \"mydb\".\"main\" as sink " +
+                "WHERE (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")))))";
 
         String deleteSql = "DELETE FROM \"mydb\".\"main\" as sink " +
                 "WHERE EXISTS " +
@@ -288,6 +289,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
         Assertions.assertEquals(deleteSql, milestoningSqlList.get(2));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadata(), metaIngestSqlList.get(0));
 
         // Stats
         Assertions.assertEquals(incomingRecordCount, operations.postIngestStatisticsSql().get(StatisticName.INCOMING_RECORD_COUNT));
@@ -366,6 +368,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> metaIngestSqlList = operations.metadataIngestSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
             "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')))," +
@@ -385,6 +388,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFiltersAndAdditionalMetadata("{\"staging_filters\":{\"biz_date\":{\"LT\":\"2020-01-03\",\"GT\":\"2020-01-01\"}}}"), metaIngestSqlList.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-03')";
         // Stats
@@ -398,6 +402,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> metaIngestSqlList = operations.metadataIngestSql();
 
         String updateSql = "UPDATE \"mydb\".\"main\" as sink SET " +
             "sink.\"id\" = (SELECT stage.\"id\" FROM \"mydb\".\"staging\" as stage WHERE (((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" <> stage.\"digest\")) AND ((stage.\"biz_date\" > '2020-01-10') OR ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-05'))))," +
@@ -417,6 +422,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadata(), metaIngestSqlList.get(0));
 
         String incomingRecordCount = "SELECT COUNT(*) as \"incomingRecordCount\" FROM \"mydb\".\"staging\" as stage WHERE (stage.\"biz_date\" > '2020-01-10') OR ((stage.\"biz_date\" > '2020-01-01') AND (stage.\"biz_date\" < '2020-01-05'))";
         // Stats
@@ -463,7 +469,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTempStagingTableWithVersionAndCount, preActionsSqlList.get(2));
         Assertions.assertEquals(updateSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"snapshot_id\":{\"GT\":18972}}"), operations.metadataIngestSql().get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFilters("{\"staging_filters\":{\"snapshot_id\":{\"GT\":18972}}}"), operations.metadataIngestSql().get(0));
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedTempStagingCleanupQuery, operations.deduplicationAndVersioningSql().get(0));
         Assertions.assertEquals(expectedInsertIntoBaseTempStagingWithMaxVersionFilterDupsWithStagingFilters, operations.deduplicationAndVersioningSql().get(1));
@@ -603,6 +609,16 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
     }
 
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadata()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
+    {
+        return AnsiTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
+    }
+
     protected String getExpectedMetadataTableCreateQuery()
     {
         return AnsiTestArtifacts.expectedMetadataTableCreateQuery;
@@ -616,10 +632,21 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     protected String getExpectedMetadataTableIngestQueryWithStagingFilters(String stagingFilters)
     {
         return "INSERT INTO batch_metadata " +
-            "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"staging_filters\") " +
+            "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
             "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
             "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')," +
             "'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
             String.format("PARSE_JSON('%s'))", stagingFilters);
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithStagingFiltersAndAdditionalMetadata(String stagingFilters)
+    {
+        return "INSERT INTO batch_metadata " +
+            "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\", \"additional_metadata\") " +
+            "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')," +
+            "'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
+            String.format("PARSE_JSON('%s'),", stagingFilters) +
+            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
     }
 }

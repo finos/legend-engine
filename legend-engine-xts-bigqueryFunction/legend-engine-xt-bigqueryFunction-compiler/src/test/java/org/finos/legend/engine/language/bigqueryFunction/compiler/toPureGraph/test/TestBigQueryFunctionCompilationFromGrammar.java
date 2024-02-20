@@ -49,6 +49,7 @@ public class TestBigQueryFunctionCompilationFromGrammar extends TestCompilationF
                         "{" +
                         "   functionName : 'name';\n" +
                         "   function : a::f():String[1];" +
+                        "   ownership : Deployment { identifier: 'pierre' };\n" +
                         "}\n", null);
     }
 

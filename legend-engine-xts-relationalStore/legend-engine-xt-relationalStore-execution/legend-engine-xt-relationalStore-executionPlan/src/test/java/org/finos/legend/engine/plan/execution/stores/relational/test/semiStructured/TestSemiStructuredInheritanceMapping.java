@@ -62,7 +62,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\")]\n" +
-                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::%lineno as `Firm Address 0 Line No` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::lineno !:> bigint as `Firm Address 0 Line No` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
                 ")\n";
         Assert.assertEquals(memSQLExpected, memSQLPlan);
@@ -88,7 +88,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::%lineno as `Firm Address 0 Line No`, `root`.FIRM_DETAILS::address::`lines`::`0`::$street as `Firm Address Street`, `root`.FIRM_DETAILS::address::`lines`::`1`::$city as `Firm Address City`, `root`.FIRM_DETAILS::address::`lines`::`2`::$state as `Firm Address State` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::lineno !:> bigint as `Firm Address 0 Line No`, `root`.FIRM_DETAILS::address::`lines`::`0`::$street as `Firm Address Street`, `root`.FIRM_DETAILS::address::`lines`::`1`::$city as `Firm Address City`, `root`.FIRM_DETAILS::address::`lines`::`2`::$state as `Firm Address State` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
                 ")\n";
         Assert.assertEquals(memSQLExpected, memSQLPlan);
@@ -114,7 +114,7 @@ public class TestSemiStructuredInheritanceMapping extends AbstractTestSemiStruct
                 "(\n" +
                 "  type = TDS[(First Name, String, VARCHAR(100), \"\"), (Firm Address 0 Line No, Integer, \"\", \"\"), (Firm Address Street, String, \"\", \"\"), (Firm Address City, String, \"\", \"\"), (Firm Address State, String, \"\", \"\")]\n" +
                 "  resultColumns = [(\"First Name\", VARCHAR(100)), (\"Firm Address 0 Line No\", \"\"), (\"Firm Address Street\", \"\"), (\"Firm Address City\", \"\"), (\"Firm Address State\", \"\")]\n" +
-                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::%lineno as `Firm Address 0 Line No`, `root`.FIRM_DETAILS::address::`lines`::`0`::$street as `Firm Address Street`, `root`.FIRM_DETAILS::address::`lines`::`1`::$city as `Firm Address City`, `root`.FIRM_DETAILS::address::`lines`::`2`::$state as `Firm Address State` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
+                "  sql = select `root`.FIRSTNAME as `First Name`, `root`.FIRM_DETAILS::address::`lines`::`0`::lineno !:> bigint as `Firm Address 0 Line No`, `root`.FIRM_DETAILS::address::`lines`::`0`::$street as `Firm Address Street`, `root`.FIRM_DETAILS::address::`lines`::`1`::$city as `Firm Address City`, `root`.FIRM_DETAILS::address::`lines`::`2`::$state as `Firm Address State` from PERSON_SCHEMA.PERSON_TABLE as `root`\n" +
                 "  connection = RelationalDatabaseConnection(type = \"MemSQL\")\n" +
                 ")\n";
         Assert.assertEquals(memSQLExpected, memSQLPlan);

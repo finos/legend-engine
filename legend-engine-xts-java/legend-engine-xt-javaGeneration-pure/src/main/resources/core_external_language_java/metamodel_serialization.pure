@@ -85,10 +85,15 @@ function meta::external::language::java::serialization::enumToString(j:meta::ext
 
 function meta::external::language::java::serialization::packageToString(j:meta::external::language::java::metamodel::Package[1]):String[1]
 {
-   $j.parent->match([
-      p0:meta::external::language::java::metamodel::Package[0] | [],
-      p :meta::external::language::java::metamodel::Package[1] | $p->packageToString()
-   ])->concatenate($j.name)->joinStrings('.');
+ if($j.fullPath->isNotEmpty(),
+      | $j.fullPath->toOne(),
+ 
+      |  
+      $j.parent->match([
+           p0:meta::external::language::java::metamodel::Package[0] | [],
+            p :meta::external::language::java::metamodel::Package[1] | $p->packageToString()
+                   ])->concatenate($j.name)->joinStrings('.')
+ );
 }
 
 function meta::external::language::java::serialization::qualifiedClassName(j:meta::external::language::java::metamodel::Class[1]):String[1]
@@ -124,7 +129,7 @@ function <<access.private>> meta::external::language::java::serialization::class
 {
    if($sfer.imports->isNotEmpty(),
       | $sfer,
-      {|
+      {|  //TODO: Skip  when not on pretty mode as we don't need imports and can just inline  all the packages
          let classImports = $class.additionalImports->map(
             {imp|
                if($imp->endsWith('.*'),
@@ -668,14 +673,14 @@ function <<access.private>> meta::external::language::java::serialization::addTe
       | $sfer,
       {|
 
-         let lineEnded = if($sfer.pending->endsWith('\n'), |$sfer->finishLine(false), |$sfer);
+         let lineEnded = if($sfer.pending->endsWith('\n'), |$sfer->finishLine(false), |$sfer); //TODO: Skip newline checks for certain modes
 
-         ^$lineEnded(
+             ^$lineEnded(
             wipLine = $lineEnded.wipLine + $lineEnded.pending + $s,
             pending = ''
-         );
+                        );
       }
-   );
+    );
 }
 
 function <<access.private>> meta::external::language::java::serialization::finishLine(sfer:Stringifier[1], lastLine:Boolean[1]): Stringifier[1]
@@ -754,7 +759,7 @@ function <<access.private>> meta::external::language::java::serialization::close
 
 function <<access.private>> meta::external::language::java::serialization::space(sfer:Stringifier[1]): Stringifier[1]
 {
-   if( $sfer.pending->startsWith(' '),
+    if( $sfer.pending->startsWith(' '),   //TODO: Extra spaces are ok so this can be dropped
       | $sfer,
       | $sfer->pending(' ')
    );
@@ -762,7 +767,7 @@ function <<access.private>> meta::external::language::java::serialization::space
 
 function <<access.private>> meta::external::language::java::serialization::newLine(sfer:Stringifier[1]): Stringifier[1]
 {
-   if($sfer.pending->endsWith('\n'),
+   if($sfer.pending->endsWith('\n'), //  TODO: Extra new lines  are ok so this can be dropped
       | $sfer,
       | $sfer->pending('\n')
    );
@@ -778,18 +783,18 @@ function <<access.private>> meta::external::language::java::serialization::blank
 
 function <<access.private>> meta::external::language::java::serialization::blankLine(sfer:Stringifier[1]): Stringifier[1]
 {
-   if($sfer.pending->endsWith('\n\n') || $sfer.wipLine->matches(' *\\{'),
-      | $sfer,
-      |
-   if($sfer.pending->endsWith('\n'),
-      | $sfer->pending($sfer.pending+'\n'),
-      | $sfer->pending($sfer.pending+'\n\n')
+   if($sfer.pending->endsWith('\n\n') || $sfer.wipLine->matches(' *\\{'),  //  TODO: Extra new lines  are ok so this can be dropped
+          | $sfer,
+         |
+      if($sfer.pending->endsWith('\n'),
+          | $sfer->pending($sfer.pending+'\n'),
+          | $sfer->pending($sfer.pending+'\n\n')
    ));
 }
 
 function <<access.private>> meta::external::language::java::serialization::foldable(sfer:Stringifier[1]): Stringifier[1]
 {
-   if($sfer.foldLevel <= 99,
+   if($sfer.foldLevel <= 99,   //  TODO: function folding can be skipped unless in pretty mode
       | $sfer->addText(format('|FOLD%02d|', $sfer.foldLevel)),
       | $sfer
    );
@@ -886,7 +891,7 @@ function meta::external::language::java::serialization::getResult(sfer:Stringifi
 
 function <<access.private>> meta::external::language::java::serialization::applyFolds(s:String[1], level:Integer[1], maxLength:Integer[1]): String[1]
 {
-   let levelSplit = format('|FOLD%02d|', $level);
+   let levelSplit = format('|FOLD%02d|', $level); //TODO: Skip when not on pretty mode
 
    if($s == 'BLANKLINE',
      | '',

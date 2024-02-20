@@ -29,7 +29,7 @@ public class HelperRelationalCSVBuilder
 
     public String build()
     {
-        return ListIterate.collect(this.relationalData.tables, this::generateTableCSV).makeString("----\n");
+        return ListIterate.collect(this.relationalData.tables, this::generateTableCSV).collect(table -> table.endsWith("\n") ? table : table + "\n").makeString("----\n");
     }
 
     private String generateTableCSV(RelationalCSVTable table)

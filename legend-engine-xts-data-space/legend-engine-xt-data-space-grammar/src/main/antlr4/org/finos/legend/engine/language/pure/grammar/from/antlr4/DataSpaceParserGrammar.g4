@@ -19,6 +19,7 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_DEFAULT_EXECUTION_CONTEXT
                                     | DATA_SPACE_MAPPING
                                     | DATA_SPACE_DEFAULT_RUNTIME
+                                    | DATA_SPACE_TEST_DATA
                                     | DATA_SPACE_DIAGRAMS
                                     | DATA_SPACE_DIAGRAM
                                     | DATA_SPACE_ELEMENTS
@@ -89,6 +90,7 @@ executionContext:                   BRACE_OPEN
                                             | executionContextDescription
                                             | executionContextMapping
                                             | executionContextDefaultRuntime
+                                            | executionContextTestData
                                         )*
                                     BRACE_CLOSE
 ;
@@ -99,6 +101,12 @@ executionContextTitle:              DATA_SPACE__TITLE COLON STRING SEMI_COLON
 executionContextDescription:        DATA_SPACE__DESCRIPTION COLON STRING SEMI_COLON
 ;
 executionContextMapping:            DATA_SPACE_MAPPING COLON qualifiedName SEMI_COLON
+;
+executionContextTestData:           DATA_SPACE_TEST_DATA COLON embeddedData SEMI_COLON
+;
+embeddedData:                       identifier ISLAND_OPEN (embeddedDataContent)*
+;
+embeddedDataContent:                ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
 executionContextDefaultRuntime:     DATA_SPACE_DEFAULT_RUNTIME COLON qualifiedName SEMI_COLON
 ;

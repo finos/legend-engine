@@ -14,17 +14,25 @@
 
 package org.finos.legend.engine.language.pure.dsl.generation.extension;
 
-import java.util.List;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.extension.LegendGenerationExtension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+
+import java.util.List;
 
 /**
  * This interface provides the specification for generating artifacts driven by a
  * packageable element.
  */
-public interface ArtifactGenerationExtension
+public interface ArtifactGenerationExtension extends LegendGenerationExtension
 {
+    @Override
+    default String type()
+    {
+        return "Generation_Artifact";
+    }
+
     /**
      * Gives the key for the extension
      *

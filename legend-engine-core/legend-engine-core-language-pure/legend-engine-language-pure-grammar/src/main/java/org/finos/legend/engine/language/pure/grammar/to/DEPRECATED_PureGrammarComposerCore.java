@@ -96,6 +96,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.SubTypeGraphFetchTree;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.path.Path;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.RelationStoreAccessor;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 
 import java.nio.charset.StandardCharsets;
@@ -396,7 +399,7 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 + ": " + function.returnType + "[" + HelperDomainGrammarComposer.renderMultiplicity(function.returnMultiplicity) + "]\n" +
                 "{\n" +
                 LazyIterate.collect(function.body, b -> "  " + b.accept(Builder.newInstance(this).withIndentation(getTabSize(1)).build())).makeString(";\n") + (function.body.size() > 1 ? ";" : "") +
-                "\n}"  +
+                "\n}" +
                 renderFunctionTestSuites(function, toContext());
     }
 
@@ -707,6 +710,14 @@ public final class DEPRECATED_PureGrammarComposerCore implements
             case "rootGraphFetchTree":
                 RootGraphFetchTree rootGraphFetchTree = (RootGraphFetchTree) iv.value;
                 return processGraphFetchTree(rootGraphFetchTree);
+            case ">":
+                return "#>{" + Lists.mutable.withAll(((RelationStoreAccessor) iv.value).path).makeString(".") + "}#";
+            case "colSpec":
+                ColSpec col = (ColSpec) iv.value;
+                return "~" + printColSpec(col);
+            case "colSpecArray":
+                ColSpecArray colArray = (ColSpecArray) iv.value;
+                return "~[" + LazyIterate.collect(colArray.colSpecs, this::printColSpec).makeString(", ") + "]";
             case "keyExpression":
                 KeyExpression keyExpression = (KeyExpression) iv.value;
                 return PureGrammarParserUtility.removeQuotes(keyExpression.key.accept(this)) + "=" + keyExpression.expression.accept(this);
@@ -720,11 +731,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 AggregateValue aggregateValue = (AggregateValue) iv.value;
                 return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "agg" + (this.isRenderingHTML() ? "</span>" : "") + "(" + aggregateValue.mapFn.accept(this) + ", " + aggregateValue.aggregateFn.accept(this) + ")";
             case "tdsOlapRank":
-                TdsOlapRank tdsOlapRank = (TdsOlapRank)iv.value;
-                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapRank.function.accept(this)  + ")";
+                TdsOlapRank tdsOlapRank = (TdsOlapRank) iv.value;
+                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapRank.function.accept(this) + ")";
             case "tdsOlapAggregation":
-                TdsOlapAggregation tdsOlapAggregation = (TdsOlapAggregation)iv.value;
-                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapAggregation.function.accept(this)  + ")";
+                TdsOlapAggregation tdsOlapAggregation = (TdsOlapAggregation) iv.value;
+                return (this.isRenderingHTML() ? "<span class='pureGrammar-function'>" : "") + "olapGroupBy" + (this.isRenderingHTML() ? "</span>" : "") + "(" + tdsOlapAggregation.function.accept(this) + ")";
             default:
                 PureGrammarComposerContext context = this.toContext();
                 Function2<Object, PureGrammarComposerContext, String> val = context.extraEmbeddedPureComposers.get(iv.type);
@@ -734,6 +745,11 @@ public final class DEPRECATED_PureGrammarComposerCore implements
                 }
                 throw new RuntimeException("/* Unsupported instance value " + iv.type + " */");
         }
+    }
+
+    private String printColSpec(ColSpec col)
+    {
+        return (col.name.contains(" ") ? "'" + col.name + "'" : col.name) + (col.type != null ? ":" + col.type : "") + (col.function1 != null ? ":" + col.function1.accept(this) : "") + (col.function2 != null ? ":" + col.function2.accept(this) : "");
     }
 
     @Override

@@ -39,6 +39,12 @@ import java.util.*;
 // TO BE MOVED TO MODEL STORE MODULE ONCE CREATED
 public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_M2M";
+    }
+
     public static final String MODEL_STORE = "ModelStore";
     //TODO: after refactor use the already present variables
     //currently creates a circular dependency, hence cannot use the already present variables

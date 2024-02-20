@@ -37,14 +37,13 @@ import meta::relational::tests::mapping::enumeration::*;
 import meta::relational::tests::projection::enumeration::*;
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
 
 function meta::relational::tests::mapping::enumeration::createTablesAndFillDb():Boolean[1]
 {
-   let connection = enumTestRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = enumTestRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
     dropAndCreateTableInDb(myDB, 'employeeTable', $connection);
 

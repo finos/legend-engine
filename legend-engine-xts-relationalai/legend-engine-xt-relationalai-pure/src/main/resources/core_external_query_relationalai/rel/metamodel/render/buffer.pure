@@ -1,6 +1,6 @@
-import meta::rel::metamodel::render::buffer::*;
+import meta::external::store::rel::metamodel::render::buffer::*;
 
-Class meta::rel::metamodel::render::buffer::RelQueryBuffer {
+Class meta::external::store::rel::metamodel::render::buffer::RelQueryBuffer {
   /** The string used to indent, e.g., four spaces. */
   configIndentString: String[1];
   /** Set to true to suppress newlines in the output. */
@@ -13,31 +13,31 @@ Class meta::rel::metamodel::render::buffer::RelQueryBuffer {
   startNewLine: Boolean[1];
 }
 
-function meta::rel::metamodel::render::buffer::emptyBuffer(configNoIndent: Boolean[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::emptyBuffer(configNoIndent: Boolean[1]): RelQueryBuffer[1] {
   ^RelQueryBuffer(configIndentString='    ',configNoIndent=$configNoIndent,contents='',indentLevel=0,startNewLine=false)
 }
 
-function meta::rel::metamodel::render::buffer::emptyBuffer(): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::emptyBuffer(): RelQueryBuffer[1] {
   emptyBuffer(false)
 }
 
-function meta::rel::metamodel::render::buffer::emptyBufferSingleLine(): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::emptyBufferSingleLine(): RelQueryBuffer[1] {
   emptyBuffer(true)
 }
 
-function meta::rel::metamodel::render::buffer::toString(buffer: RelQueryBuffer[1]): String[1] {
+function meta::external::store::rel::metamodel::render::buffer::toString(buffer: RelQueryBuffer[1]): String[1] {
   $buffer.contents;
 }
 
-function meta::rel::metamodel::render::buffer::indent(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::indent(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
   ^$buffer(indentLevel=$buffer.indentLevel+1);
 }
 
-function meta::rel::metamodel::render::buffer::newline(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::newline(buffer: RelQueryBuffer[1]): RelQueryBuffer[1] {
   ^$buffer(startNewLine=!$buffer.configNoIndent);
 }
 
-function meta::rel::metamodel::render::buffer::append(buffer: RelQueryBuffer[1], string: String[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::append(buffer: RelQueryBuffer[1], string: String[1]): RelQueryBuffer[1] {
   let newContents =
     if ($buffer.startNewLine,
       | format('%s\n%s%s ', [$buffer.contents, $buffer.configIndentString->repeat($buffer.indentLevel)->joinStrings(), $string]),
@@ -46,7 +46,7 @@ function meta::rel::metamodel::render::buffer::append(buffer: RelQueryBuffer[1],
   ^$buffer(contents=$newContents,startNewLine=false);
 }
 
-function meta::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1], sep: String[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1], sep: String[1]): RelQueryBuffer[1] {
   let last = $elems->last()->toOne();
   let init = $elems->init();
   if ($elems->isEmpty(),
@@ -56,6 +56,6 @@ function meta::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[
     );
 }
 
-function meta::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1], begin: String[1], sep: String[1], end: String[1]): RelQueryBuffer[1] {
+function meta::external::store::rel::metamodel::render::buffer::append<T>(buffer: RelQueryBuffer[1], elems: T[*], f: FunctionDefinition<{RelQueryBuffer[1], T[1]->RelQueryBuffer[1]}>[1], begin: String[1], sep: String[1], end: String[1]): RelQueryBuffer[1] {
   $buffer->append($begin)->append($elems, $f, $sep)->append($end)
 }

@@ -35,6 +35,18 @@ public final class DefaultIdentityFactory implements IdentityFactory
     public static DefaultIdentityFactory INSTANCE = new DefaultIdentityFactory();
 
     @Override
+    public String group()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
+    @Override
+    public String type()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
+    @Override
     public Identity makeIdentity(Subject subject)
     {
         if (subject == null)

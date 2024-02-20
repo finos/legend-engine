@@ -22,6 +22,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
@@ -35,6 +36,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGramm
 
 public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "FA_Snowflake";
+    }
+
     private static String renderElement(PackageableElement element)
     {
         if (element instanceof SnowflakeApp)
@@ -52,7 +59,7 @@ public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
                 "{\n" +
                 "   applicationName : '" + app.applicationName + "';\n" +
                 "   function : " + app.function.path + ";\n" +
-                (app.owner == null ? "" : "   owner : '" + app.owner + "';\n") +
+                "   ownership : Deployment { identifier: '" + ((DeploymentOwner)app.ownership).id + "'};\n" +
                 (app.description == null ? "" : "   description : '" + app.description + "';\n") +
                 (app.activationConfiguration == null ? "" : "   activationConfiguration : " + ((SnowflakeAppDeploymentConfiguration)app.activationConfiguration).activationConnection.connection + ";\n") +
                 "}";

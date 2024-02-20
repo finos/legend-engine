@@ -48,7 +48,7 @@ public class TestBigQueryParsing extends TestGrammarParser.TestGrammarParserTest
                 "BigQueryFunction x::A\n" +
                 "{\n" +
                 "   functioName : 'sass';\n" +
-                "}\n", "PARSER error at [4:4-14]: Unexpected token 'functioName'. Valid alternatives: ['functionName', 'description', 'function', 'owner', 'activationConfiguration']");
+                "}\n", "PARSER error at [4:4-14]: Unexpected token 'functioName'. Valid alternatives: ['functionName', 'description', 'function', 'ownership', 'activationConfiguration']");
     }
 
     @Test
@@ -57,7 +57,7 @@ public class TestBigQueryParsing extends TestGrammarParser.TestGrammarParserTest
         test("###BigQuery\n" +
                 "BigQueryFunction x::A\n" +
                 "{\n" +
-                "   owner : 'pierre';\n" +
+                "   ownership : Deployment {identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-5:1]: Field 'functionName' is required");
     }
 
@@ -68,7 +68,7 @@ public class TestBigQueryParsing extends TestGrammarParser.TestGrammarParserTest
                 "BigQueryFunction x::A\n" +
                 "{\n" +
                 "   functionName : 'MyApp';\n" +
-                "   owner : 'pierre';\n" +
+                "   ownership : Deployment {identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-6:1]: Field 'function' is required");
     }
 }

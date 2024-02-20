@@ -3,19 +3,25 @@ Data data::RelationalData
 {
   Relational
   #{
+    default.FirmTable:
+          'id,legal_name\n' +
+          '1,Finos\n' +
+          '2,Apple';
+  }#
+}
+
+Data data::PersonData
+{
+  Relational
+  #{
     default.PersonTable:
               'id,firm_id,firstName,lastName,employeeType\n' +
               '1,1,John,Doe,FTO\n' +
               '2,1,Nicole,Smith,FTC\n' +
               '3,2,Time,Smith,FTE\n';
-
-    default.FirmTable:
-          'id,legal_name\n' +
-          '1,Finos\n' +
-          '2,Apple';
-
   }#
 }
+
 
 ###Relational
 Database store::FirmDB
@@ -70,7 +76,7 @@ Association model::Person_Firm
 ###Mapping
 Mapping execution::FirmMapping
 (
-  include execution::PersonMapping
+  include dataspace model::com::PersonDataspace
 
   *model::Firm: Relational
   {
@@ -80,7 +86,7 @@ Mapping execution::FirmMapping
     )
     ~mainTable [store::FirmDB]FirmTable
     legalName: [store::FirmDB]FirmTable.legal_name,
-    +id: Integer[1]: [store::FirmDB] FirmTable.id
+    +id: String[1]: toString([store::FirmDB] FirmTable.id)
   }
 
   model::Person_Firm: XStore
@@ -101,7 +107,7 @@ Mapping execution::PersonMapping
     firstName: [store::PersonDB]PersonTable.firstName,
     lastName: [store::PersonDB]PersonTable.lastName,
     employeeType: EnumerationMapping EmployeeTypeMapping: [store::PersonDB] PersonTable.employeeType,
-    +firmIdFK: Integer[1]: [store::PersonDB] PersonTable.firm_id
+    +firmIdFK: String[1]: toString(toString([store::PersonDB] PersonTable.firm_id))
   }
 
   model::EmployeeType: EnumerationMapping EmployeeTypeMapping
@@ -110,6 +116,27 @@ Mapping execution::PersonMapping
     FULL_TIME: 'FTE'
   }
 )
+
+
+###DataSpace
+DataSpace model::com::PersonDataspace
+{
+    executionContexts:
+    [
+        {
+            name:'default';
+            description:'asdfas';
+            mapping: execution::PersonMapping;
+            defaultRuntime: execution::Runtime2;
+            testData:
+                Reference
+                #{
+                    data::PersonData
+                }#;
+        }
+    ];
+    defaultExecutionContext: 'default';
+}
 
 
 ###Connection
@@ -136,6 +163,21 @@ Runtime execution::Runtime
     model::MyConnection:
     [
       store::FirmDB,
+      store::PersonDB
+    ]
+  ];
+}
+
+Runtime execution::Runtime2
+{
+  mappings:
+  [
+    execution::PersonMapping
+  ];
+  connectionStores:
+  [
+    model::MyConnection:
+    [
       store::PersonDB
     ]
   ];

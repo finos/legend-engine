@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.span
 
 import java.util.List;
 import java.util.function.Function;
+
 import org.eclipse.collections.api.block.function.Function2;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
@@ -35,6 +36,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 public class SpannerStrategicConnectionExtension implements StrategicConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "Strategic_Connection_Extension";
+    }
+
+    @Override
+    public String group()
+    {
+        return "ST_Relational_Spanner";
+    }
+
+    @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategyKey> getExtraAuthenticationKeyGenerators()
     {
         return authenticationStrategy -> null;
@@ -42,27 +55,27 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
 
     @Override
     public AuthenticationStrategyVisitor<AuthenticationStrategy> getExtraAuthenticationStrategyTransformGenerators(
-        List<OAuthProfile> oauthProfiles)
+            List<OAuthProfile> oauthProfiles)
     {
         return authenticationStrategy -> null;
     }
 
     @Override
     public Function<RelationalDatabaseConnection, DatasourceSpecificationVisitor<DataSourceSpecificationKey>> getExtraDataSourceSpecificationKeyGenerators(
-        int testDbPort)
+            int testDbPort)
     {
         return relationalDatabaseConnection -> (DatasourceSpecificationVisitor<DataSourceSpecificationKey>) datasourceSpecification ->
         {
             if (datasourceSpecification instanceof SpannerDatasourceSpecification)
             {
                 SpannerDatasourceSpecification spannerSpec =
-                    (SpannerDatasourceSpecification) datasourceSpecification;
+                        (SpannerDatasourceSpecification) datasourceSpecification;
                 return new SpannerDataSourceSpecificationKey(
-                    spannerSpec.projectId,
-                    spannerSpec.instanceId,
-                    spannerSpec.databaseId,
-                    spannerSpec.proxyHost,
-                    spannerSpec.proxyPort
+                        spannerSpec.projectId,
+                        spannerSpec.instanceId,
+                        spannerSpec.databaseId,
+                        spannerSpec.proxyHost,
+                        spannerSpec.proxyPort
                 );
             }
             return null;
@@ -71,8 +84,8 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
 
     @Override
     public Function2<RelationalDatabaseConnection, ConnectionKey,
-        DatasourceSpecificationVisitor<DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(
-        Function<RelationalDatabaseConnection, AuthenticationStrategy> authenticationStrategyProvider)
+            DatasourceSpecificationVisitor<DataSourceSpecification>> getExtraDataSourceSpecificationTransformerGenerators(
+            Function<RelationalDatabaseConnection, AuthenticationStrategy> authenticationStrategyProvider)
     {
         return (relationalDatabaseConnection, connectionKey) -> (DatasourceSpecificationVisitor<DataSourceSpecification>) datasourceSpecification ->
         {
@@ -81,9 +94,9 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
                 AuthenticationStrategy authenticationStrategy = authenticationStrategyProvider.apply(relationalDatabaseConnection);
 
                 return new SpannerDataSourceSpecification(
-                    (SpannerDataSourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
-                    new SpannerManager(),
-                    authenticationStrategy
+                        (SpannerDataSourceSpecificationKey) connectionKey.getDataSourceSpecificationKey(),
+                        new SpannerManager(),
+                        authenticationStrategy
                 );
             }
             return null;

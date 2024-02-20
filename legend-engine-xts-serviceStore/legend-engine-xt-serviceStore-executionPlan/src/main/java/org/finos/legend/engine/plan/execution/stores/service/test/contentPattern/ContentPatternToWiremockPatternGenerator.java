@@ -15,8 +15,10 @@
 package org.finos.legend.engine.plan.execution.stores.service.test.contentPattern;
 
 import org.finos.legend.engine.protocol.pure.v1.model.data.contentPattern.ContentPattern;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 
-public interface ContentPatternToWiremockPatternGenerator
+public interface ContentPatternToWiremockPatternGenerator extends LegendModuleSpecificExtension
 {
     boolean supports(ContentPattern contentPattern);
 

@@ -36,6 +36,12 @@ public class SQLCompilerExtension implements CompilerExtension
     }
 
     @Override
+    public String group()
+    {
+        return "QU_SQL";
+    }
+
+    @Override
     public Map<String, Function3<Object, CompileContext, ProcessingContext, ValueSpecification>> getExtraClassInstanceProcessors()
     {
         return Maps.mutable.with("SQL", (obj, context, processingContext) ->

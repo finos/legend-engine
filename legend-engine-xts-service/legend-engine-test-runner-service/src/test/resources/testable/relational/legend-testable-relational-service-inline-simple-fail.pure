@@ -20,6 +20,11 @@ Service service::SimpleRelationalPassFailing
             Reference
             #{
               data::RelationalData
+            }#,
+          model::MyConnection:
+            DataspaceTestData
+            #{
+              model::com::PersonDataspace
             }#
         ]
       ]

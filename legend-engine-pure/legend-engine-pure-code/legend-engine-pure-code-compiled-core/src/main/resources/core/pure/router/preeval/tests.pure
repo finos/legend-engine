@@ -27,8 +27,6 @@ import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::router::preeval::*;
 import meta::pure::router::preeval::tests::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::pure::router::preeval::tests::Person
 {
   firstName : String[1];

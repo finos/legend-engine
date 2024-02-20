@@ -43,7 +43,6 @@ import meta::pure::executionPlan::*;
 import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
@@ -126,11 +125,11 @@ function meta::pure::executionPlan::tests::sybaseIQ::twoDBRunTimeSybaseIQ():meta
    (
       connectionStores = [^meta::core::runtime::ConnectionStore(
                         element = dbInc,
-                        connection=^TestDatabaseConnection(
+                        connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.SybaseIQ
                     )),^meta::core::runtime::ConnectionStore(
                         element = database2,
-                        connection=^TestDatabaseConnection(
+                        connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                         type=DatabaseType.SybaseIQ
                     ))]
    );

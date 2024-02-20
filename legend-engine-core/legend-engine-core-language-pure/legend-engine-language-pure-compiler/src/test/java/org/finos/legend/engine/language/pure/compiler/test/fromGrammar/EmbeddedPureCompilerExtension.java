@@ -30,6 +30,12 @@ import java.util.Map;
 public class EmbeddedPureCompilerExtension implements CompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "Embedded";
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Lists.mutable.empty();

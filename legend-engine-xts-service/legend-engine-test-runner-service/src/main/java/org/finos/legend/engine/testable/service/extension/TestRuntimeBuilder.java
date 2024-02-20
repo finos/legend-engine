@@ -19,12 +19,12 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ConnectionTestData;
@@ -62,8 +62,8 @@ public class TestRuntimeBuilder
                 {
                     if (connectionTestData.data instanceof DataElementReference)
                     {
-                        DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
-                        data.add(dataElement.data);
+                        EmbeddedData embeddedData = EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
+                        data.add(embeddedData);
                     }
                     else
                     {
@@ -96,8 +96,8 @@ public class TestRuntimeBuilder
                     {
                         if (connectionTestData.data instanceof DataElementReference)
                         {
-                            DataElement dataElement = Iterate.detect(pureModelContextData.getElementsOfType(DataElement.class), e -> ((DataElementReference) connectionTestData.data).dataElement.equals(e.getPath()));
-                            embeddedData.add(dataElement.data);
+                            EmbeddedData d = EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
+                            embeddedData.add(d);
                         }
                         else
                         {

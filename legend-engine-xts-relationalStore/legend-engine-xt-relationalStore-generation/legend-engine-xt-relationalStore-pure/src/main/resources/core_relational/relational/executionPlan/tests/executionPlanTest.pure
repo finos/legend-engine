@@ -45,7 +45,6 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
@@ -988,7 +987,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanForDa
 
 function meta::pure::executionPlan::tests::datetime::executionPlanForQueryWithDateTimeVariableForDatabaseConnectionTimeZone(timeZone:String[0..1]):Pair<ExecutionPlan, String>[1]
 {
-    let connectionWithTimeZone = ^TestDatabaseConnection(type=DatabaseType.H2, timeZone=$timeZone);
+    let connectionWithTimeZone = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2, timeZone=$timeZone);
     let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = db, connection=$connectionWithTimeZone));
     let q = {dt:DateTime[1]|Order.all()->filter(o|$o.settlementDateTime == $dt)};
     let plan = executionPlan($q, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -997,7 +996,7 @@ function meta::pure::executionPlan::tests::datetime::executionPlanForQueryWithDa
 
 function meta::pure::executionPlan::tests::datetime::executionPlanForQueryWithDateTimeConstantForDatabaseConnectionTimeZone(dt:DateTime[1], timeZone:String[0..1]):Pair<ExecutionPlan, String>[1]
 {
-    let connectionEST = ^TestDatabaseConnection(type=DatabaseType.H2, timeZone=$timeZone);
+    let connectionEST = ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2, timeZone=$timeZone);
     let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = db, connection=$connectionEST));
     let q = {|Order.all()->filter(o|$o.settlementDateTime == $dt)};
     let plan = executionPlan($q, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
@@ -1494,8 +1493,8 @@ function <<test.Test>> meta::pure::executionPlan::tests::testRoutingContextBuild
 {
   let relationalStoreContract = meta::relational::contract::relationalStoreContract();
   let updatedRelationalStoreContract = ^$relationalStoreContract(routeFunctionExpressions += pair(fe:FunctionExpression[1] | $fe.func == meta::pure::executionPlan::tests::withContext_TabularDataSet_1__TabularDataSet_1_,
-                                                                                                  {f:Function<Any>[1], fe:FunctionExpression[1], state:meta::pure::router::routing::RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
-                                                                                                    meta::pure::router::routing::routeFunctionExpressionFunctionDefinition($f, $fe, $state, ^ExecutionContext(), $vars, $inScopeVars, $extensions, $debug);
+                                                                                                  {f:Function<Any>[1], fe:FunctionExpression[1], state:meta::pure::router::routing::RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                                                                                                    meta::pure::router::routing::routeFunctionExpressionFunctionDefinition($f, $fe, $state, ^meta::pure::runtime::ExecutionContext(), $vars, $inScopeVars, $extensions, $debug);
                                                                                                   }));
   let extensions = meta::relational::extension::relationalExtensions()->toOne();
   let updatedExtensions = ^$extensions(availableStores = $extensions.availableStores->filter(s | $s.id != $relationalStoreContract.id)->concatenate($updatedRelationalStoreContract));
@@ -1660,11 +1659,11 @@ function <<test.Test>> meta::pure::executionPlan::tests::withPlatform():Boolean[
 
 function <<test.Test>> meta::pure::executionPlan::tests::testDatabaseConnectionSQLPopulationLegacy():Boolean[1]
 {
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db, connection=^TestDatabaseConnection(type = DatabaseType.H2, testDataSetupCsv = '')));
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.H2, testDataSetupCsv = '')));
 
    let result = executionPlan({|Person.all()->project(c | $c.firstName, 'firstName')}, simpleRelationalMapping, $runtime, meta::relational::extension::relationalExtensions());
 
-   let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@TestDatabaseConnection);
+   let resultConnection = $result.rootExecutionNode->cast(@RelationalInstantiationExecutionNode).executionNodes->at(0)->cast(@SQLExecutionNode).connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    assertSize($resultConnection.testDataSetupSqls, 56);
 }
@@ -2199,7 +2198,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenera
 function <<test.Test>> meta::pure::executionPlan::tests::testExecutionPlanGenerationForInWithVarAndConstantInputs():Boolean[1]
 {
    let res = executionPlan({name:String[1] |_Person.all()->filter(x | $x.fullName->in([$name, 'John', 'Peter', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50']))->project([x | $x.fullName], ['fullName']);},
-                           meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionStores=^ConnectionStore(element=relationalDB, connection=^TestDatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions());
+                           meta::pure::mapping::modelToModel::test::shared::relationalMapping, ^Runtime(connectionStores=^ConnectionStore(element=relationalDB, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))), meta::relational::extension::relationalExtensions());
    let expected = 'RelationalBlockExecutionNode(type=TDS[(fullName,String,VARCHAR(1000),"")](FunctionParametersValidationNode(functionParameters=[name:String[1]])Allocation(type=meta::pure::functions::collection::Listname=tempVarForIn_4value=(Constant(type=meta::pure::functions::collection::Listvalues=[[[John,Peter,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50]]])))CreateAndPopulateTempTable(type=VoidinputVarNames=[name,tempVarForIn_4]tempTableName=tempTableForIn_4tempTableColumns=[(ColumnForStoringInCollection,VARCHAR(200))]connection=TestDatabaseConnection(type="H2"))Relational(type=TDS[(fullName,String,VARCHAR(1000),"")]resultColumns=[("fullName",VARCHAR(1000))]sql=select"root".fullnameas"fullName"fromPersonas"root"where"root".fullnamein(select"temptableforin_4_0".ColumnForStoringInCollectionasColumnForStoringInCollectionfromtempTableForIn_4as"temptableforin_4_0")connection=TestDatabaseConnection(type="H2"))))';
    assertEquals($expected, $res->planToStringWithoutFormatting(meta::relational::extension::relationalExtensions()));
 }
@@ -2407,7 +2406,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testSupportStreamFlagWi
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlag():Boolean[1]
 {
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
                                                              )));
@@ -2424,7 +2423,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlagInOrderByClause():Boolean[1]
 {
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
                                                              )));
@@ -2440,7 +2439,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlagInGroupBy():Boolean[1]
 {
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
                                                              )));
@@ -2456,7 +2455,7 @@ function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFla
 
 function <<test.Test>> meta::pure::executionPlan::tests::testQuoteIdentifiersFlagWithGraphFetch():Boolean[1]
 {
-   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
+   let runtime = ^Runtime(connectionStores= ^ConnectionStore(element = meta::relational::tests::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                                                                 type = DatabaseType.H2,
                                                                 quoteIdentifiers = true
                                                              )));
@@ -2500,6 +2499,31 @@ function <<test.Test>> meta::pure::executionPlan::tests::datetime::testPlanWithL
                '      type = TDS[(name, String, VARCHAR(200), "")]\n'+
                '      resultColumns = [("name", VARCHAR(200))]\n'+
                '      sql = select "root".NAME as "name" from productSchema.productTable as "root"\n'+
+               '      connection = TestDatabaseConnection(type = "H2")\n'+
+               '    )\n' +
+               '  )\n' +
+               ')\n', $result->planToString($extensions));
+ }
+
+
+ function <<test.Test>> meta::pure::executionPlan::tests::testEnumPushDownWithExternalFormat():Boolean[1]
+ {
+
+    let extensions =meta::relational::extension::relationalExtensions() ->concatenate(meta::external::format::shared::transformation::tests::exampleExternalFormatExtension()->concatenate(meta::pure::extension::configuration::coreExtensions()));
+    let result = executionPlan({|Synonym.all()->project(p|$p.type, 'name')->meta::external::format::shared::functions::externalize('text/example')}, simpleRelationalMapping,meta::external::store::relational::tests::testRuntime(), $extensions);
+    assertEquals (
+    'ExternalFormat_ExternalizeTDS\n' +
+               '(\n' +
+               '  type = String\n' +
+               '  resultSizeRange = 1\n' +
+               '  contentType = text/example\n' +
+               '\n' +
+               '  (\n' +
+               '    Relational\n' +
+               '    (\n' +
+               '      type = TDS[(name, String, VARCHAR(200), "")]\n'+
+               '      resultColumns = [("name", "")]\n'+
+               '      sql = select case when "root".TYPE = \'CUSIP\' then \'CUSIP\' when "root".TYPE = \'ISIN\' then \'ISIN\' else null end as "name" from productSchema.synonymTable as "root"\n'+
                '      connection = TestDatabaseConnection(type = "H2")\n'+
                '    )\n' +
                '  )\n' +

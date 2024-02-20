@@ -23,7 +23,7 @@ import meta::pure::graphFetch::execution::*;
 
 function <<meta::pure::profiles::test.BeforePackage>>  meta::relational::graphFetch::tests::union::relationalGraphFetchUnionWithMilestoning::setUp():Boolean[1]
 {
-   let connection = meta::external::store::relational::tests::testRuntime(db).connectionStores.connection->toOne()->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime(db).connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('drop table if exists OrderTable;',$connection);
    executeInDb('create table OrderTable (orderDate TIMESTAMP, id Integer, prodFk Integer)',$connection);

@@ -25,12 +25,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPla
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Execution;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.ServiceTest_Legacy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.TestContainer;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface ServiceExecutionExtension
+public interface ServiceExecutionExtension extends LegendModuleSpecificExtension
 {
     @Deprecated
     default Optional<Pair<ExecutionPlan, RichIterable<? extends String>>> tryToBuildTestExecutorContext(Execution execution, String testData, ObjectMapper objectMapper, PureModel pureModel, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, MutableList<PlanTransformer> transformers, String pureVersion)

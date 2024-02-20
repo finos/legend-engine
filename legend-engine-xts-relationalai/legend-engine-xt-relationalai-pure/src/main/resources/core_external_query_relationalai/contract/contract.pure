@@ -1,16 +1,15 @@
 import meta::pure::store::*;
 import meta::pure::mapping::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::pure::extension::*;
-import meta::rel::mapping::*;
+import meta::external::store::rel::mapping::*;
 
-function meta::rel::contract::contract(): StoreContract[1] {
+function meta::external::store::rel::contract::contract(): StoreContract[1] {
   ^StoreContract(
     id = 'relationalai',
 
     // Routing ------------------------------------------------------------------------------------------
-    supports = meta::rel::mapping::supports_FunctionExpression_1__Boolean_1_,
+    supports = meta::external::store::rel::mapping::supports_FunctionExpression_1__Boolean_1_,
     supportsNativeJoinAmongElements = true,
     shouldStopRouting = [
       meta::pure::tds::project_TableTDS_1__ColumnSpecification_MANY__TabularDataSet_1_,
@@ -24,18 +23,18 @@ function meta::rel::contract::contract(): StoreContract[1] {
     // ------------------------------------------------------------------------------------------ Routing
 
     // ExecutionPlan Generation -------------------------------------------------------------------------
-    supportsStreamFunction = meta::rel::mapping::supportsStream_FunctionExpression_1__Boolean_1_,
+    supportsStreamFunction = meta::external::store::rel::mapping::supportsStream_FunctionExpression_1__Boolean_1_,
     // ------------------------------------------------------------------------------------ ExecutionPlan
 
     // Core ---------------------------------------------------------------------------------------------
     supportsSetImplementation = s:SetImplementation[1]|$s->instanceOf(RelSetImplementation),
-    supportsStore = s:Store[1] | $s->instanceOf(meta::rel::metamodel::store::RAIDatabase),
+    supportsStore = s:Store[1] | $s->instanceOf(meta::external::store::rel::metamodel::store::RAIDatabase),
     resolveStoreFromSetImplementation = {s:InstanceSetImplementation[1] |
       $s.stores->toOne();
     },
     // --------------------------------------------------------------------------------------------- Core
 
     // DEPRECTAED AND TO BE REMOVED
-    executeStoreQuery = meta::rel::mapping::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_
+    executeStoreQuery = meta::external::store::rel::mapping::execution_StoreQuery_1__RoutedValueSpecification_$0_1$__Mapping_1__Runtime_1__ExecutionContext_1__Extension_MANY__DebugContext_1__Result_1_
   )
 }

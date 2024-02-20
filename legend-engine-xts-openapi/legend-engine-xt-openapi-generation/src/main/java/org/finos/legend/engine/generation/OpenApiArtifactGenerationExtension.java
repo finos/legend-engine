@@ -40,6 +40,12 @@ public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExt
 
 
     @Override
+    public String group()
+    {
+        return "GEN_AR_OpenAPI";
+    }
+
+    @Override
     public String getKey()
     {
         return ROOT_PATH;

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.hostedService.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
@@ -24,8 +26,8 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Deployment;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Ownership;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 
@@ -35,11 +37,39 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGrammarComposer.renderAnnotations;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class HostedServiceGrammarComposer implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "FA_Hosted_Service";
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof HostedService)
+        {
+            return renderHostedService((HostedService) element);
+        }
+        return null;
+    });
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
+    @Override
+    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
+    {
+        return Lists.mutable.with(buildSectionComposer(HostedServiceGrammarParserExtension.NAME, renderers));
+    }
+
     private static String renderElement(PackageableElement element)
     {
         if (element instanceof HostedService)
@@ -55,7 +85,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
 
         return "HostedService " + renderAnnotations(app.stereotypes, app.taggedValues) + packageName + "\n" +
                 "{\n" +
-                "   pattern : " + PureGrammarComposerUtility.convertString(app.pattern,true) + ";\n" +
+                "   pattern : " + PureGrammarComposerUtility.convertString(app.pattern, true) + ";\n" +
                 "   ownership : " + renderServiceOwner(app.ownership) +
                 "   function : " + app.function.path + ";\n" +
                 (app.documentation == null ? "" : "   documentation : '" + app.documentation + "';\n") +
@@ -67,33 +97,13 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
     {
         if (owner instanceof UserList)
         {
-            return "[\n" + LazyIterate.collect(((UserList) owner).users, o -> getTabString(2) + convertString(o, true)).makeString(",\n") + "\n" + getTabString(2) + "];\n";
+            return "UserList { users: [\n" + LazyIterate.collect(((UserList) owner).users, o -> getTabString(2) + convertString(o, true)).makeString(",\n") + "\n" + getTabString(2) + "] };\n";
         }
-        else if (owner instanceof Deployment)
+        else if (owner instanceof DeploymentOwner)
         {
-            return "" + ((Deployment)owner).id + ";\n";
+            return "Deployment { identifier: '" + ((DeploymentOwner)owner).id + "' };\n";
         }
         throw new RuntimeException("Owner type invalid");
-    }
-
-    @Override
-    public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
-    {
-        return Lists.fixedSize.with((elements, context, sectionName) ->
-        {
-            if (!HostedServiceGrammarParserExtension.NAME.equals(sectionName))
-            {
-                return null;
-            }
-            return ListIterate.collect(elements, element ->
-            {
-                if (element instanceof HostedService)
-                {
-                    return renderHostedService((HostedService) element);
-                }
-                return "/* Can't transform element '" + element.getPath() + "' in this section */";
-            }).makeString("\n\n");
-        });
     }
 
     @Override

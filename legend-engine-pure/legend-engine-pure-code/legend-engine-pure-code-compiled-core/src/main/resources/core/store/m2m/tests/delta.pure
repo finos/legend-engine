@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::delta::v1::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::delta::*;
 
 function <<meta::pure::profiles::test.Test>> meta::pure::mapping::modelToModel::test::delta::testSimpleDelta():Any[*]

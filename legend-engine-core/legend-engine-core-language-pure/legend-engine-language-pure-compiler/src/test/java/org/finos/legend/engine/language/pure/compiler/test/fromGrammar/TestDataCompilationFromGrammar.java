@@ -59,7 +59,7 @@ public class TestDataCompilationFromGrammar extends TestCompilationFromGrammar.T
                         "    meta::data::MyData\n" +
                         "  }#\n" +
                         "}\n",
-                "COMPILATION error at [4:3-7:4]: Cannot use Data element reference in a Data element"
+                "COMPILATION error at [2:1-8:1]: Error in 'meta::data::MyData': Cannot use Data element reference in a Data element"
         );
     }
 

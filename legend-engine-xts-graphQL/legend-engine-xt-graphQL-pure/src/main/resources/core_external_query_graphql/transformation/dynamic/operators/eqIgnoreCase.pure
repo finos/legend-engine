@@ -1,0 +1,66 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eqIgnoreCase::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::pure::functions::lang::*;
+import meta::pure::functions::multiplicity::*;
+
+Class meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::EqIgnoreCaseOperator extends meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::BooleanOperator
+{
+  value: Literal[1];
+}
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eqIgnoreCase::objectFieldToEqIgnoreCaseOperator(o: ObjectField[1], prefix: String[1], m: Map<String,Function<{ObjectField[1], String[1], Map<Any,Any>[1], DebugContext[1]->Node[*]}>>[1], debug: DebugContext[1]): Node[*]
+{
+  if($debug.debug, | println($debug.space + 'EqIgnoreCaseOperator'), |[]);
+  let value = $o.value->traverseValue($prefix + '__eqIgnoreCase', $m, ^$debug(space=$debug.space + ' '));
+  
+  assert($value->size() == 1, '_eqIgnoreCase should contain only one value');
+  assert($value->toOne()->instanceOf(Literal), '_eqIgnoreCase value should be a literal');
+  
+  ^EqIgnoreCaseOperator(value=$value->toOne()->cast(@Literal));
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eqIgnoreCase::processEqIgnoreCaseOperator(e: EqIgnoreCaseOperator[1], fieldNames: String[*], cl: Class<Any>[1], vars: VariableExpression[*], count: Integer[1]): IntermediateClass[1]
+{
+  let ic2 = $e.value->nodesToValueSpecification($fieldNames, $cl, $vars, $count);
+  ^IntermediateClass(
+    vars=$ic2.vars,
+    valueSpecifications=createEqualIgnoreCase(
+      createProperty($fieldNames, $cl, constructVarName($count)), 
+      $ic2.valueSpecifications->toOne()->evaluateAndDeactivate()
+    )
+  );
+}
+
+function <<access.private>> meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eqIgnoreCase::createEqualIgnoreCase(left: ValueSpecification[1], right: ValueSpecification[1]): SimpleFunctionExpression[1]
+{
+  assertEquals($left.genericType.rawType, String, '_eqIgnoreCase shall only be used on String properties');
+  assertEquals(
+    $left.genericType.rawType, 
+    $right.genericType.rawType, 
+    'Incorrect type of value provided for "' + $left->cast(@SimpleFunctionExpression).func->cast(@AbstractProperty<Any>).name->toOne() + '".' + 
+    'Expected: ' + $left.genericType.rawType->toOne()->toString() + ', Actual: ' + $right.genericType.rawType->toOne()->toString()
+  );
+  let leftLowerCase = sfe(meta::pure::functions::string::toLower_String_1__String_1_, ^GenericType(rawType=String), [], PureOne, [$left]);
+  let rightLowerCase = sfe(meta::pure::functions::string::toLower_String_1__String_1_, ^GenericType(rawType=String), [], PureOne, [$right]);
+  sfe(meta::pure::functions::boolean::equal_Any_MANY__Any_MANY__Boolean_1_, ^GenericType(rawType=Boolean), [], PureOne, [$leftLowerCase, $rightLowerCase]);
+}

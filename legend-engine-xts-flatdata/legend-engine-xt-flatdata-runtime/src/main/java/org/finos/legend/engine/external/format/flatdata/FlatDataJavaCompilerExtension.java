@@ -75,6 +75,12 @@ public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerE
     }
 
     @Override
+    public String group()
+    {
+        return "EF_FlatData";
+    }
+
+    @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
         return ClassPathFilters.fromClasses(DEPENDENCIES.values());

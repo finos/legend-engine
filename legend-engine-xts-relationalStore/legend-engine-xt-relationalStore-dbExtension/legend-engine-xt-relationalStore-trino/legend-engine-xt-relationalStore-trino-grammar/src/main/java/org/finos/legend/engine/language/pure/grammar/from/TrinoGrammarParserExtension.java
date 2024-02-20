@@ -31,6 +31,12 @@ import java.util.function.Function;
 public class TrinoGrammarParserExtension implements IRelationalGrammarParserExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_Trino";
+    }
+
+    @Override
     public List<Function<AuthenticationStrategySourceCode, AuthenticationStrategy>> getExtraAuthenticationStrategyParsers()
     {
         return Collections.singletonList(code ->
