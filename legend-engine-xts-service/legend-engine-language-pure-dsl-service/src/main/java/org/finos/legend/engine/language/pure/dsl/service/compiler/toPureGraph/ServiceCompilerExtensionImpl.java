@@ -62,12 +62,6 @@ import static org.finos.legend.engine.language.pure.dsl.service.compiler.toPureG
 public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
 {
     @Override
-    public String group()
-    {
-        return "PE_Service";
-    }
-
-    @Override
     public CompilerExtension build()
     {
         return new ServiceCompilerExtensionImpl();

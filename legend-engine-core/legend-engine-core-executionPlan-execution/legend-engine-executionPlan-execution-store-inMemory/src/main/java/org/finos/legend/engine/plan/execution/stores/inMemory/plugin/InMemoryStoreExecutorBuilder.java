@@ -22,12 +22,6 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 public class InMemoryStoreExecutorBuilder implements StoreExecutorBuilder
 {
     @Override
-    public String group()
-    {
-        return "ST_M2M";
-    }
-
-    @Override
     public StoreType getStoreType()
     {
         return StoreType.InMemory;

@@ -23,18 +23,13 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
 public class FunctionTestableRunnerExtension implements TestableRunnerExtension
 {
+
     private String pureVersion = PureClientVersions.production;
 
     @Override
     public String getSupportedClassifierPath()
     {
         return CorePureProtocolExtension.FUNCTION_CLASSIFIER_PATH;
-    }
-
-    @Override
-    public String group()
-    {
-        return "PE_Function";
     }
 
     @Override

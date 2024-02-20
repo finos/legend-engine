@@ -48,12 +48,6 @@ import java.util.Map;
 public class MasteryProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
-    {
-        return "PE_Mastery";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(

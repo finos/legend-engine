@@ -32,12 +32,6 @@ import java.util.function.Function;
 
 public class SnowflakeGrammarParserExtension implements IRelationalGrammarParserExtension
 {
-    @Override
-    public String group()
-    {
-        return "ST_Relational_Snowflake";
-    }
-
     private String normalizeName(String elementName, String localPrefix)
     {
         String normalized = elementName.replaceAll("::", "-");

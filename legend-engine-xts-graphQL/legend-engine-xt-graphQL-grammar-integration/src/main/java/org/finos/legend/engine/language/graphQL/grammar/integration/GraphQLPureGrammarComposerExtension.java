@@ -26,12 +26,6 @@ import java.util.Map;
 public class GraphQLPureGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
-    public String group()
-    {
-        return "QU_GraphQL";
-    }
-
-    @Override
     public Map<String, Function2<Object, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
     {
         return Maps.mutable.with(

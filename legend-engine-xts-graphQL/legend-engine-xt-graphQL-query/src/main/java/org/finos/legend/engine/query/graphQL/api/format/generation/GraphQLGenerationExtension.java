@@ -37,12 +37,6 @@ import java.util.List;
 public class GraphQLGenerationExtension implements GenerationExtension
 {
     @Override
-    public String group()
-    {
-        return "QU_GraphQL";
-    }
-
-    @Override
     public String getLabel()
     {
         return "GraphQL";

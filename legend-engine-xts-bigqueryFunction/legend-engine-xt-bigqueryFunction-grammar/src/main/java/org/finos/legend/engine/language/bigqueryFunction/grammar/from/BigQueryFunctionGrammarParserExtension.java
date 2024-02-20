@@ -37,12 +37,6 @@ public class BigQueryFunctionGrammarParserExtension implements PureGrammarParser
     public static final String NAME = "BigQuery";
 
     @Override
-    public String group()
-    {
-        return "FA_BigQuery";
-    }
-
-    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.fixedSize.of(SectionParser.newParser(NAME, BigQueryFunctionGrammarParserExtension::parseSection));

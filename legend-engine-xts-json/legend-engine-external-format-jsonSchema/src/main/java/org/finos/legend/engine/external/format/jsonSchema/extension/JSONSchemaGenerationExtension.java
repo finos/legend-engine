@@ -38,12 +38,6 @@ import java.util.List;
 public class JSONSchemaGenerationExtension implements GenerationExtension
 {
     @Override
-    public String group()
-    {
-        return "EF_JSON";
-    }
-
-    @Override
     public String getLabel()
     {
         return "JSON Schema";

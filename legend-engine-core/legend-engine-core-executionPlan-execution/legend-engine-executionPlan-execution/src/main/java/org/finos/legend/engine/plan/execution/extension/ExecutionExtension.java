@@ -36,10 +36,4 @@ public interface ExecutionExtension extends LegendPlanExtension
     {
         return Collections.emptyList();
     }
-
-    @Override
-    default String type()
-    {
-        return "(Plan)Execution";
-    }
 }

@@ -35,19 +35,6 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
     public static final String TYPE = jsonSchemaContract._id();
 
     @Override
-    public String type()
-    {
-        return "MIX_External_Format_Model_Generation_&_External_Format_Schema_Generation";
-    }
-
-    @Override
-    public String group()
-    {
-        return "EF_JSON";
-    }
-
-
-    @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_json_metamodel_JsonSchema> getExternalFormatContract()
     {
         return jsonSchemaContract;

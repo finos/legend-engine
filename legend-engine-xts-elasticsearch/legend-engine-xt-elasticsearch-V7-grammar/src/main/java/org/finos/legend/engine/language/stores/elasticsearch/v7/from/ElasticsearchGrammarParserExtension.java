@@ -51,12 +51,6 @@ public class ElasticsearchGrammarParserExtension implements PureGrammarParserExt
     }
 
     @Override
-    public String group()
-    {
-        return "ST_Elastic";
-    }
-
-    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return this.sectionParser;

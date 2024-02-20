@@ -14,6 +14,6 @@
 
 package org.finos.legend.engine.shared.core.extension;
 
-public interface LegendExternalFormatExtension extends LegendExtension
+public interface LegendExternalFormatExtension
 {
 }

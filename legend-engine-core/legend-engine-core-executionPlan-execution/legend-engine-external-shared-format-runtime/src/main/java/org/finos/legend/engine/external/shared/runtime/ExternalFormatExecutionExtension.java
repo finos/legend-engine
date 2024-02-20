@@ -55,12 +55,6 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
     private final Map<String, ExternalFormatRuntimeExtension> EXTENSIONS = ExternalFormatRuntimeExtensionLoader.extensions();
 
     @Override
-    public String group()
-    {
-        return "EF_External_Format";
-    }
-
-    @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList((executionNode, pm, executionState) ->

@@ -35,12 +35,6 @@ public class PersistenceCloudParserExtension implements IPersistenceParserExtens
     private static final String PERSISTENCE_PLATFORM_AWS_GLUE = "AwsGlue";
 
     @Override
-    public String group()
-    {
-        return "PE_Persistence_Cloud";
-    }
-
-    @Override
     public List<Function<PersistencePlatformSourceCode, PersistencePlatform>> getExtraPersistencePlatformParsers()
     {
         return Collections.singletonList(code ->

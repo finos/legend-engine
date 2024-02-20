@@ -27,13 +27,6 @@ public class BigQueryFunctionArtifactGenerationExtension implements ArtifactGene
     private static final String ROOT_PATH = "bigQueryFunction";
 
     @Override
-    public String group()
-    {
-        return "FA_BigQuery";
-    }
-
-
-    @Override
     public String getKey()
     {
         return ROOT_PATH;

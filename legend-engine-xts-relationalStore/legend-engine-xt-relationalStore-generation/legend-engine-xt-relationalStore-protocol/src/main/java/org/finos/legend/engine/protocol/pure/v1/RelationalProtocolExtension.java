@@ -87,12 +87,6 @@ import java.util.Map;
 public class RelationalProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
-    {
-        return "ST_Relational";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

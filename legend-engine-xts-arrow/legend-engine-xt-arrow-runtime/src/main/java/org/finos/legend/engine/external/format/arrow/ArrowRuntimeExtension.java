@@ -41,12 +41,6 @@ public class ArrowRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public String group()
-    {
-        return "EF_Arrow";
-    }
-
-    @Override
     public Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, Result result, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try

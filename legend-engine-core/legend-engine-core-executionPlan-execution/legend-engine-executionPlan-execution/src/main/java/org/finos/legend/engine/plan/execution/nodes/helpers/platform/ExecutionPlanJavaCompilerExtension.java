@@ -20,10 +20,4 @@ import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
 public interface ExecutionPlanJavaCompilerExtension extends LegendPlanExtension
 {
     ClassPathFilter getExtraClassPathFilter();
-
-    @Override
-    default String type()
-    {
-        return "(Plan)Java_Compiler_Class_Path_Extension";
-    }
 }

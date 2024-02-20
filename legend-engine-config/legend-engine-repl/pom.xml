@@ -27,6 +27,9 @@
     <name>Legend Engine - REPL</name>
 
     <modules>
+        <module>legend-engine-repl-light</module>
+        <module>legend-engine-repl-local</module>
         <module>legend-engine-repl-client</module>
+        <module>legend-engine-repl-interface</module>
     </modules>
 </project>

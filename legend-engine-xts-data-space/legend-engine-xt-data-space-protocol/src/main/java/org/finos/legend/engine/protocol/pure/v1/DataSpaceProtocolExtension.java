@@ -30,12 +30,6 @@ import java.util.Map;
 public class DataSpaceProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
-    {
-        return "PE_DataSpace";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.mutable.with(

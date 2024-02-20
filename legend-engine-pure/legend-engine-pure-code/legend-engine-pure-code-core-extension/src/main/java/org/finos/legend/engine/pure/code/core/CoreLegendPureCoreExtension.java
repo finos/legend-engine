@@ -17,19 +17,6 @@ package org.finos.legend.engine.pure.code.core;
 public class CoreLegendPureCoreExtension implements LegendPureCoreExtension
 {
     @Override
-    public String type()
-    {
-        return "PureExtension";
-    }
-
-    @Override
-    public String group()
-    {
-        return "Core";
-    }
-
-
-    @Override
     public String functionFile()
     {
         return "core/coreExtensions.pure";

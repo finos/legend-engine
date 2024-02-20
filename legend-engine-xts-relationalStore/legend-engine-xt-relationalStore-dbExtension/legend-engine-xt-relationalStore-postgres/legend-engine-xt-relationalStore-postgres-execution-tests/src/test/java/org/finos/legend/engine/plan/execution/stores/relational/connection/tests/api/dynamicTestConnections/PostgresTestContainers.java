@@ -29,12 +29,6 @@ import java.util.Properties;
 public class PostgresTestContainers implements DynamicTestConnection
 {
     @Override
-    public String group()
-    {
-        return "ST_Relational_Postgres";
-    }
-
-    @Override
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.Postgres;

@@ -30,10 +30,4 @@ public class ElasticsearchLegendPureCoreExtension implements StoreLegendPureCore
     {
         return "meta::external::store::elasticsearch::v7::extension::elasticsearchV7Extension__Extension_1_";
     }
-
-    @Override
-    public String group()
-    {
-        return "ST_Elastic";
-    }
 }

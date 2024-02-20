@@ -56,12 +56,6 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
     public static final String EXCHANGE = "Exchange";
 
     @Override
-    public String group()
-    {
-        return "PE_Mastery";
-    }
-
-    @Override
     public CompilerExtension build()
     {
         return new MasteryCompilerExtension();

@@ -39,12 +39,6 @@ import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 
 public class HostedServiceCompilerExtension implements CompilerExtension
 {
-    @Override
-    public String group()
-    {
-        return "FA_Hosted_Service";
-    }
-
     // Here only for dependency check error ...
     CoreFunctionActivatorCodeRepositoryProvider forDependencies;
 

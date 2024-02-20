@@ -44,12 +44,6 @@ public class XsdRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public String group()
-    {
-        return "EF_XML";
-    }
-
-    @Override
     public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try

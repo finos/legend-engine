@@ -44,12 +44,6 @@ public class MongoDBDocumentFormatJavaCompilerExtension implements ExecutionPlan
     }
 
     @Override
-    public String group()
-    {
-        return "ST_Mongo";
-    }
-
-    @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
         return ClassPathFilters.fromClasses(DEPENDENCIES.values());

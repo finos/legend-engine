@@ -46,12 +46,6 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
     }
 
     @Override
-    public String group()
-    {
-        return "EF_External_Format";
-    }
-
-    @Override
     public CompilerExtension build()
     {
         return new ExternalFormatCompilerExtension();

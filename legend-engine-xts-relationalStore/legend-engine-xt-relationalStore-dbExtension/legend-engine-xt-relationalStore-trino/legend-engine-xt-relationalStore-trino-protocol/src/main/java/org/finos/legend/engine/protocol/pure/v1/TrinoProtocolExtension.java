@@ -28,12 +28,6 @@ import java.util.List;
 public class TrinoProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
-    {
-        return "ST_Relational_Trino";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.fixedSize.with(

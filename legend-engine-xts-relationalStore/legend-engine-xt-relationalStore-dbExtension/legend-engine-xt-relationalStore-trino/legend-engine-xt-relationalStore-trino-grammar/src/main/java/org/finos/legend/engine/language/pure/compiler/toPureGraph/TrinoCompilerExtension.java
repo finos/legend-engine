@@ -37,12 +37,6 @@ import java.util.List;
 public class TrinoCompilerExtension implements IRelationalCompilerExtension
 {
     @Override
-    public String group()
-    {
-        return "ST_Relational_Trino";
-    }
-
-    @Override
     public List<Function2<AuthenticationStrategy, CompileContext, Root_meta_pure_alloy_connections_alloy_authentication_AuthenticationStrategy>> getExtraAuthenticationStrategyProcessors()
     {
         return Lists.mutable.with((authenticationStrategy, context) ->

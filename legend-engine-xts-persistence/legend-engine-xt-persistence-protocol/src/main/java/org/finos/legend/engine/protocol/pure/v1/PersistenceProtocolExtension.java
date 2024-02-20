@@ -39,12 +39,6 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
     public static final String PERSISTENCE_CONTEXT_CLASSIFIER_PATH = "meta::pure::persistence::metamodel::PersistenceContext";
 
     @Override
-    public String group()
-    {
-        return "PE_Persistence";
-    }
-
-    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(

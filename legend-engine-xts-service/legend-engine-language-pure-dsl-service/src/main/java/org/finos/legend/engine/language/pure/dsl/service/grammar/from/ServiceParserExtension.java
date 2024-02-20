@@ -33,12 +33,6 @@ public class ServiceParserExtension implements PureGrammarParserExtension
     public static final String NAME = "Service";
 
     @Override
-    public String group()
-    {
-        return "PE_Service";
-    }
-
-    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Collections.singletonList(SectionParser.newParser(NAME, (sectionSourceCode, elementConsumer, context) ->

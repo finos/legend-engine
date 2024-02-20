@@ -111,7 +111,6 @@ public class PackageableElementFourthPassBuilder implements PackageableElementVi
                 {
                     throw e;
                 }
-                e.printStackTrace();
                 throw new EngineException(e.getMessage(), property.sourceInformation, EngineErrorType.COMPILATION);
             }
             ctx.flushVariable("this");

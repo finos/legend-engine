@@ -38,12 +38,6 @@ import java.util.List;
 public class MorphirGenerationExtension implements GenerationExtension
 {
     @Override
-    public String group()
-    {
-        return "GEN_Morphir";
-    }
-
-    @Override
     public String getLabel()
     {
         return "Morphir";

@@ -38,12 +38,6 @@ import java.util.List;
  */
 public interface ExternalFormatExtension<Metamodel> extends LegendExternalFormatExtension
 {
-    @Override
-    default String type()
-    {
-        return "External_Format";
-    }
-
     /**
      * Returns the contract for this external format written in PURE
      */

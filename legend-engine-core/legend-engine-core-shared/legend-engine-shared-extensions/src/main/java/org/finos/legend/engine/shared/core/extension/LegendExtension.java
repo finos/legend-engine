@@ -16,7 +16,4 @@ package org.finos.legend.engine.shared.core.extension;
 
 public interface LegendExtension
 {
-    String group();
-
-    String type();
 }
