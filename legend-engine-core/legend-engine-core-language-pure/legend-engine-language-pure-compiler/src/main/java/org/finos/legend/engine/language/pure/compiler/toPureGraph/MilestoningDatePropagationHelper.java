@@ -159,6 +159,10 @@ public class MilestoningDatePropagationHelper
         if (!MILESTONING_DATE_SOURCE_TYPES.contains(appliedFunction.function) && !appliedFunction.parameters.isEmpty() && appliedFunction.parameters.get(0) instanceof AppliedFunction && ((AppliedFunction) appliedFunction.parameters.get(0)).function.equals("getAll"))
         {
             processingContext.isDatePropagationSupported = false;
+        } 
+            else
+        {
+            processingContext.isDatePropagationSupported = true;
         }
     }
 
