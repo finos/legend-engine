@@ -32,6 +32,9 @@ limitations under the License.
 		<maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<maven.compiler.source>11</maven.compiler.source>
+		<maven.compiler.target>11</maven.compiler.target>
+
 	</properties>
 
 	<build>
