@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.testData.generation.model.TestDataGenerationInput;
 import org.finos.legend.engine.testData.generation.service.TestDataGenerationService;
 import org.junit.Assert;
@@ -57,7 +58,7 @@ public class TestDataGenerationTest
     {
         String testGenerationInput = getResourceAsString(testGenerationInputPath);
         TestDataGenerationInput input = objectMapper.readValue(testGenerationInput, TestDataGenerationInput.class);
-        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, null, null);
+        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, Identity.getAnonymousIdentity(), null);
         List<EmbeddedData> testData = TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getMapping(input.mapping), pureModel);
         Assert.assertEquals(objectMapper.writeValueAsString(testData), expectedResult);
     }

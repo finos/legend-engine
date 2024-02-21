@@ -31,6 +31,7 @@ public class Identity
 {
     private String name;
     private final List<Credential> credentials = new ArrayList<>();
+    private static final Identity ANONYMOUS_IDENTITY = new Identity("Anonymous");
 
     public Identity(String name, Credential... credentials)
     {
@@ -108,13 +109,12 @@ public class Identity
     {
         return LazyIterate.selectInstancesOf(getCredentials(), LegendKerberosCredential.class)
                 .select(Objects::nonNull)
-                .select(LegendKerberosCredential::isValid)
                 .collect(LegendKerberosCredential::getSubject)
                 .getFirst();
     }
 
     public static Identity getAnonymousIdentity()
     {
-        return new Identity("Anonymous");
+        return ANONYMOUS_IDENTITY;
     }
 }

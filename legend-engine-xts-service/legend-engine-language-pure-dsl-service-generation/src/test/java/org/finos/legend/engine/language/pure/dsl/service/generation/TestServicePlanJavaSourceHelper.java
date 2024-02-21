@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -68,7 +69,7 @@ public class TestServicePlanJavaSourceHelper
                 .map(this::loadModelDataFromResource)
                 .flatMap(pureModelContextData ->
                 {
-                    PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.TEST);
+                    PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
                     return pureModelContextData.getElementsOfType(Service.class).stream().map(s -> ServicePlanGenerator.generateServiceExecutionPlan(s, null, pureModel, "vX_X_X", PlanPlatform.JAVA, core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers));
                 })
                 .collect(Collectors.toList());

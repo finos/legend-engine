@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.test.runner.shared.TestResult;
 import org.junit.Test;
 
@@ -46,7 +47,7 @@ public class TestMappingTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("modelToModelMappingTests1.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -67,7 +68,7 @@ public class TestMappingTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("modelToModelMappingTests2.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -97,6 +98,6 @@ public class TestMappingTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("modelToModelMappingTests1.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
     }
 }

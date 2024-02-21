@@ -60,7 +60,7 @@ public class TestMiddleTierUserNamePasswordFlow
                     "legend.resourceContext",
                     "resource1")
             );
-            flow.makeCredential(null, null, authenticationStrategy, context);
+            flow.makeCredential(Identity.getAnonymousIdentity(), null, authenticationStrategy, context);
             fail("failed to throw");
         }
         catch (Exception e)
@@ -79,7 +79,7 @@ public class TestMiddleTierUserNamePasswordFlow
                     "legend.usageContext",
                     "SERVICE_EXECUTION")
             );
-            flow.makeCredential(null, null, authenticationStrategy, context);
+            flow.makeCredential(Identity.getAnonymousIdentity(), null, authenticationStrategy, context);
             fail("failed to throw");
         }
         catch (Exception e)

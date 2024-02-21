@@ -164,6 +164,7 @@ public class PureModel implements IPureModel
 
     public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, Identity identity, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
+        identity = identity == null ? Identity.getAnonymousIdentity() : identity;
         long start = System.nanoTime();
 
         if (classLoader == null)

@@ -280,7 +280,7 @@ public class TestExecutionPlan extends AlloyTestServer
     private ConstantResult runJavaExecutionPlan(SingleExecutionPlan executionPlan) throws JavaCompileException
     {
         ExecutionState state = new ExecutionState(Maps.mutable.empty(), Lists.mutable.withAll(executionPlan.templateFunctions), Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(serverPort))));
-        EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(executionPlan, null);
+        EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(executionPlan, Identity.getAnonymousIdentity());
         if (engineJavaCompiler != null)
         {
             state.setJavaCompiler(engineJavaCompiler);

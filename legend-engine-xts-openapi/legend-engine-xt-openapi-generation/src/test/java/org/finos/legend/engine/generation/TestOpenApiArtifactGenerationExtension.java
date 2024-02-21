@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Test;
 
 import java.net.URL;
@@ -57,7 +58,7 @@ public class TestOpenApiArtifactGenerationExtension
     {
         String pureServiceString = getResourceAsString("testService.pure");
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureServiceString);
-        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, null);
+        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
         OpenApiArtifactGenerationExtension extension = new OpenApiArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("test::TestService");
         assertTrue(extension.canGenerate(packageableElement));
@@ -73,7 +74,7 @@ public class TestOpenApiArtifactGenerationExtension
     {
         String pureServiceString = getResourceAsString("TestServiceNoProfile.pure");
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureServiceString);
-        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, null);
+        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
         OpenApiArtifactGenerationExtension extension = new OpenApiArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("test::TestServiceNoProfile");
         assertFalse(extension.canGenerate(packageableElement));

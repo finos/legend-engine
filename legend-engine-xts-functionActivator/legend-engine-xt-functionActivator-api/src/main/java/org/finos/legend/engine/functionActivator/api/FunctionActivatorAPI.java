@@ -75,7 +75,7 @@ public class FunctionActivatorAPI
     {
         this.modelManager = modelManager;
         this.routerExtensions = routerExtensions;
-        this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, null);
+        this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, Identity.getAnonymousIdentity());
         this.identityFactory = new DefaultIdentityFactory();
     }
 
