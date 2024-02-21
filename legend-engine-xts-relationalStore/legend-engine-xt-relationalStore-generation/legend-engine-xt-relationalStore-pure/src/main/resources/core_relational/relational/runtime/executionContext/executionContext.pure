@@ -34,7 +34,7 @@ Class meta::relational::runtime::RelationalExecutionContext extends meta::pure::
    importDataFlowImplementationCount : Integer[0..1];
 }
 
-Class meta::relational::runtime::FunctionActivatorExecutionContext extends ExecutionContext 
+Class meta::relational::runtime::FunctionActivatorExecutionContext extends meta::pure::runtime::ExecutionContext
 {
   postProcessor:  ConcreteFunctionDefinition<Any>[1];
 }
