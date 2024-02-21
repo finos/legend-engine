@@ -81,7 +81,7 @@ public class ExternalFormats
     {
         try
         {
-            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, null, null).getTwo();
+            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity(), null).getTwo();
             List<ExternalFormatDescription> descriptions = extensions.values().stream()
                     .map(ext -> ExternalFormatDescription.newDescription(ext, pureModel))
                     .collect(Collectors.toList());

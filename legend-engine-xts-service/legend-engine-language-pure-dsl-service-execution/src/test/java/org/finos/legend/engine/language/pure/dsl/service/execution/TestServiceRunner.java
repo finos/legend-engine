@@ -1065,7 +1065,7 @@ public class TestServiceRunner
         AbstractXStoreServiceRunner(String servicePath, SingleExecutionPlan plan) throws JavaCompileException
         {
             super(servicePath, plan, false);
-            compiler = JavaHelper.compilePlan(plan, null);
+            compiler = JavaHelper.compilePlan(plan, Identity.getAnonymousIdentity());
         }
 
         @Override
@@ -1161,7 +1161,7 @@ public class TestServiceRunner
             InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(bufferedReader.lines().collect(Collectors.joining("\n")));
-            PureModel pureModel = Compiler.compile(contextData, null, null);
+            PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity());
 
             Function fetchFunction = contextData.getElementsOfType(Function.class).stream().filter(x -> fetchFunctionName.equals(x._package + "::" + x.name)).findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown function"));
 

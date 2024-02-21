@@ -60,6 +60,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestError;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -239,7 +240,7 @@ public class ServiceTestRunner implements TestRunner
                     try
                     {
                         SingleExecutionPlan execPlan = compositeExecutionPlan.executionPlans.get(key);
-                        JavaHelper.compilePlan(execPlan, null);
+                        JavaHelper.compilePlan(execPlan, Identity.getAnonymousIdentity());
                         org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult testResult = executeServiceTest((ServiceTest) test, execPlan);
                         testResult.testable = getElementFullPath(pureService, pureModel.getExecutionSupport());
                         testResult.testSuiteId = suite.id;
@@ -323,7 +324,7 @@ public class ServiceTestRunner implements TestRunner
 
             ExecutionPlan executionPlan = ServicePlanGenerator.generateExecutionPlan(testPureSingleExecution, null, pureModel, pureVersion, PlanPlatform.JAVA, null, routerExtensions, planTransformers);
             SingleExecutionPlan singleExecutionPlan = (SingleExecutionPlan) executionPlan;
-            JavaHelper.compilePlan(singleExecutionPlan, null);
+            JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
 
             for (Test test : suite.tests)
             {

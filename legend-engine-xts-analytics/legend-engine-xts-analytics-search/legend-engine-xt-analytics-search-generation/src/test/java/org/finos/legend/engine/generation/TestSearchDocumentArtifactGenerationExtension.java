@@ -29,6 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.junit.Assert;
@@ -60,7 +61,7 @@ public class TestSearchDocumentArtifactGenerationExtension
     {
         String pureModelString = getResourceAsString("models/Model.pure");
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
         SearchDocumentArtifactGenerationExtension extension = new SearchDocumentArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("test::Service");
         Root_meta_legend_service_metamodel_Service metamodelClass = (Root_meta_legend_service_metamodel_Service) packageableElement;
@@ -72,7 +73,7 @@ public class TestSearchDocumentArtifactGenerationExtension
     {
         String pureModelString = getResourceAsString("models/Model.pure");
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
         SearchDocumentArtifactGenerationExtension extension = new SearchDocumentArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("model::Person");
         Assert.assertTrue(packageableElement instanceof Class);
@@ -102,7 +103,7 @@ public class TestSearchDocumentArtifactGenerationExtension
         origin.serializer = new Protocol("pure", PureClientVersions.production);
         PureModelContextData pureModelContextDataWithOrigin = PureModelContextData.newBuilder().withPureModelContextData(pureModelContextData).withOrigin(origin).build();
 
-        PureModel pureModel = Compiler.compile(pureModelContextDataWithOrigin, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextDataWithOrigin, DeploymentMode.TEST, Identity.getAnonymousIdentity());
         SearchDocumentArtifactGenerationExtension extension = new SearchDocumentArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement("model::Person");
         Assert.assertTrue(packageableElement instanceof Class);

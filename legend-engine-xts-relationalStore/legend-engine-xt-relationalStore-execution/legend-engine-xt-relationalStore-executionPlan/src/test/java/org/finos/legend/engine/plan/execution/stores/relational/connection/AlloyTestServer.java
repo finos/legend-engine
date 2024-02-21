@@ -173,7 +173,7 @@ public abstract class AlloyTestServer
         {
             updateRuntimeWithTimeZone(contextData.getElementsOfType(PackageableRuntime.class).get(0), timeZone);
         }
-        PureModel pureModel = Compiler.compile(contextData, null, null);
+        PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity());
         Function fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
 
         return PlanGenerator.generateExecutionPlan(

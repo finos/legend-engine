@@ -110,7 +110,7 @@ public class TestRelationalExecutionStatistics extends AlloyTestServer
 
     public static String getPoolName()
     {
-        return "DBPool_Static_host:127.0.0.1_port:" + serverPort + "_db:testDB_type:DefaultH2__UNKNOWN__org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential";
+        return "DBPool_Static_host:127.0.0.1_port:" + serverPort + "_db:testDB_type:DefaultH2_Anonymous_org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential";
     }
 
     @Test

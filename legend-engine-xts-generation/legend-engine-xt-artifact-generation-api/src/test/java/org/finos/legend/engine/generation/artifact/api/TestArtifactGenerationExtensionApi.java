@@ -24,6 +24,7 @@ import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensi
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -38,7 +39,7 @@ public class TestArtifactGenerationExtensionApi
     public void testArtifactGenerationApi() throws IOException
     {
         ArtifactGenerationExtensionInput context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("org/finos/legend/engine/generation/artifact/api/SimpleModel.json")), ArtifactGenerationExtensionInput.class);
-        ArtifactGenerationExtensionOutput runnerResult = api.run(context, null);
+        ArtifactGenerationExtensionOutput runnerResult = api.run(context, Identity.getAnonymousIdentity());
         List<SerializedArtifactExtensionResult> values = runnerResult.values;
         Assert.assertEquals(1, values.size());
         SerializedArtifactExtensionResult value = values.get(0);

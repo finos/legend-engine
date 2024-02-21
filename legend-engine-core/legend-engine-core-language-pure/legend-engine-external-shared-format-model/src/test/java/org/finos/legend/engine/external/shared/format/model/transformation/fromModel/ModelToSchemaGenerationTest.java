@@ -22,6 +22,7 @@ import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
 
 import java.util.Map;
@@ -41,13 +42,13 @@ public class ModelToSchemaGenerationTest
         try
         {
             PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(modelCode);
-            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, null);
+            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
 
             PureModelContextData generated = new ModelToSchemaGenerator(pureModel, extensions).generate(config, modelUnit, generateBinding, targetBindingPath);
             PureModelContextData combined = modelData.combine(generated);
             try
             {
-                Compiler.compile(combined, DeploymentMode.TEST, null);
+                Compiler.compile(combined, DeploymentMode.TEST, Identity.getAnonymousIdentity());
             }
             catch (Exception e)
             {

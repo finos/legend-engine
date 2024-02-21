@@ -68,6 +68,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Collection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
@@ -246,7 +247,7 @@ public class ServiceTestRunner
     private void compilePlan(SingleExecutionPlan singleExecutionPlan) throws JavaCompileException
     {
         long start = System.currentTimeMillis();
-        JavaHelper.compilePlan(singleExecutionPlan, null);
+        JavaHelper.compilePlan(singleExecutionPlan, Identity.getAnonymousIdentity());
         long end = System.currentTimeMillis();
         MetricsHandler.observeServerOperation("compile_plan", metricsContext, start, end);
         MetricsHandler.observe("service test compile plan", start, System.currentTimeMillis());
@@ -347,7 +348,7 @@ public class ServiceTestRunner
                             Lists.mutable.withAll(executionPlan.templateFunctions),
                             Lists.mutable.with(new RelationalStoreExecutionState(new RelationalStoreState(execScope == null ? -1 : execScope.getPort())), new InMemoryStoreExecutionState(new InMemoryStoreState()), new ServiceStoreExecutionState(new ServiceStoreState()))
                     );
-                    Result result = this.executor.execute(executionPlan, testExecutionState, null, null);
+                    Result result = this.executor.execute(executionPlan, testExecutionState, null, Identity.getAnonymousIdentity());
 
                     Root_meta_pure_mapping_Result<Object> pureResult = result.accept(new ResultToPureResultVisitor());
 

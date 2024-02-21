@@ -309,7 +309,7 @@ public class PlanExecutor
         }
         if (state.authId == null)
         {
-            state.setAuthUser(Identity.getAnonymousIdentity().getName(), false);
+            state.setAuthUser(identity.getName(), false);
         }
         if ((state.getResult(USER_ID) == null))
         {
@@ -664,7 +664,7 @@ public class PlanExecutor
         private Map<StoreType, StoreExecutionState.RuntimeContext> storeRuntimeContexts = Maps.mutable.empty();
         private Map<String, Result> vars = Maps.mutable.empty();
         private Map<String, Object> params = Maps.mutable.empty();
-        private Identity identity = Identity.getAnonymousIdentity();
+        private Identity identity;
         private String user;
         private RequestContext requestContext;
 
@@ -679,7 +679,7 @@ public class PlanExecutor
             this.executionState = builder.executionState;
             this.vars.putAll(builder.vars);
             this.params.putAll(builder.params);
-            this.identity = identity;
+            this.identity = builder.identity == null ? Identity.getAnonymousIdentity() : builder.identity; // write a test case and merge it into engine
             this.user = builder.user;
             this.requestContext = builder.requestContext;
         }
