@@ -36,6 +36,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
@@ -154,7 +155,7 @@ public abstract class AlloyTestServer
 
     protected String executePlan(SingleExecutionPlan plan,String user)
     {
-        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user, null);
+        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user,Identity.getAnonymousIdentity());
         return result.flush(new RelationalResultToJsonDefaultSerializer(result));
     }
 

@@ -22,7 +22,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.map.mutable.UnifiedMap;
@@ -39,7 +38,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.DataType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Other;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -108,7 +107,7 @@ public class SchemaExportation
         return new SchemaExportation(storeBuilderInput);
     }
 
-    public Database build(ConnectionManagerSelector connectionManager, MutableList<CommonProfile> profiles) throws SQLException
+    public Database build(ConnectionManagerSelector connectionManager, Identity identity) throws SQLException
     {
         List<Predicate<String>> tableNameFilters = FastList.newList();
 
@@ -116,7 +115,7 @@ public class SchemaExportation
         List<Function<String, String>> schemaNameMappers = FastList.newList();
         List<Function<String, String>> columnNameMappers = FastList.newList();
 
-        try (Connection connection = connectionManager.getDatabaseConnection(profiles, databaseBuilderInput.connection))
+        try (Connection connection = connectionManager.getDatabaseConnection(identity, databaseBuilderInput.connection))
         {
             DatabaseMetaData metadata = connection.getMetaData();
             DatabaseBuilderConfig config = this.databaseBuilderInput.config;

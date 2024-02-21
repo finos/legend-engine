@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Compil
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaClass;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilters;
@@ -35,7 +36,6 @@ import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.finos.legend.engine.shared.javaCompiler.JavaVersion;
 import org.finos.legend.engine.shared.javaCompiler.SingleFileCompiler;
 import org.finos.legend.engine.shared.javaCompiler.StringJavaSource;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,12 +52,12 @@ public class JavaHelper
     {
     }
 
-    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, MutableList<CommonProfile> pm) throws JavaCompileException
+    public static EngineJavaCompiler compilePlan(SingleExecutionPlan singleExecutionPlan, Identity identity) throws JavaCompileException
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_START, "Compile Plan").toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.JAVA_COMPILATION_START, "Compile Plan").toString());
 
             EngineJavaCompiler compiler;
             try
@@ -70,13 +70,13 @@ public class JavaHelper
                 compiler = compilePlanSlow(singleExecutionPlan);
             }
 
-            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.JAVA_COMPILATION_STOP, (double) System.currentTimeMillis() - start).toString());
 
             return compiler;
         }
         catch (Exception e)
         {
-            LOGGER.info(new LogInfo(pm, LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, e).getMessage()).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.JAVA_COMPILATION_ERROR, new ErrorResult(1, e).getMessage()).toString());
             throw e;
         }
     }

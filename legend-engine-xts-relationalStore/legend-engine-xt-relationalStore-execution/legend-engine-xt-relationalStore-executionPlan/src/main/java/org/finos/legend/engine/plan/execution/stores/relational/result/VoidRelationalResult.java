@@ -22,9 +22,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.activity.Relatio
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
@@ -39,12 +39,12 @@ public class VoidRelationalResult extends Result
     private Statement statement;
 
     @Deprecated
-    public VoidRelationalResult(MutableList<ExecutionActivity> activities, Connection connection, MutableList<CommonProfile> profiles)
+    public VoidRelationalResult(MutableList<ExecutionActivity> activities, Connection connection, Identity identity)
     {
-        this(activities, null, connection, profiles, true);
+        this(activities, null, connection, identity, true);
     }
 
-    public VoidRelationalResult(MutableList<ExecutionActivity> activities, ExecutionNode node, Connection connection, MutableList<CommonProfile> profiles, boolean logSQLWithParamValues)
+    public VoidRelationalResult(MutableList<ExecutionActivity> activities, ExecutionNode node, Connection connection, Identity identity, boolean logSQLWithParamValues)
     {
         super("VOID");
 
@@ -64,9 +64,9 @@ public class VoidRelationalResult extends Result
                 nodeSql = ((SQLExecutionNode) node).sqlQuery;
             }
             String logMessage = logSQLWithParamValues ? sql : nodeSql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             this.statement.execute(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
         }
         catch (SQLException e)
         {

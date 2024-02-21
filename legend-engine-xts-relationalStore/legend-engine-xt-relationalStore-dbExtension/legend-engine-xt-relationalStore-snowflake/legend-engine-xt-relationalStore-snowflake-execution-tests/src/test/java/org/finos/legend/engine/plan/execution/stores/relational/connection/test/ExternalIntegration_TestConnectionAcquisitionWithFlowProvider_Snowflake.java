@@ -15,7 +15,6 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.LegendDefaultDatabaseAuthenticationFlowProvider;
@@ -33,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SnowflakeDatasourceSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
@@ -40,7 +40,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import java.io.ByteArrayOutputStream;
@@ -106,10 +105,10 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Snowf
     }
 
     @Test
-    public void testSnowflakePublicConnection_profile() throws Exception
+    public void testSnowflakePublicConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.snowflakeWithKeyPairSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, "select * from INTEGRATION_DB1.INTEGRATION_SCHEMA1.test");
     }
 

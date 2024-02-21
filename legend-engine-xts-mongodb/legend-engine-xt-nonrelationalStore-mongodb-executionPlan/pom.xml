@@ -160,13 +160,6 @@
         </dependency>
         <!-- OPEN TRACING -->
 
-        <!-- Authentication -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- Authentication -->
-
         <!-- Mongo DB-->
         <dependency>
             <groupId>org.mongodb</groupId>

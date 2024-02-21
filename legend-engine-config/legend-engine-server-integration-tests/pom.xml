@@ -119,13 +119,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- Authentication -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- Authentication -->
-
         <!-- LOG -->
         <dependency>
             <groupId>org.slf4j</groupId>

@@ -36,9 +36,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextTe
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.pac4j.core.profile.CommonProfile;
 
 public class ModelManager
 {
@@ -72,17 +72,17 @@ public class ModelManager
     }
 
     // Remove clientVersion
-    public PureModel loadModel(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
+    public PureModel loadModel(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
     {
         if (!(context instanceof PureModelContextData) && !(context instanceof PureModelContextText))
         {
             ModelLoader loader = this.modelLoaderForContext(context);
             if (loader.shouldCache(context))
             {
-                PureModelContext cacheKey = loader.cacheKey(context, pm);
+                PureModelContext cacheKey = loader.cacheKey(context, identity);
                 try
                 {
-                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, pm), this.deploymentMode, pm, packageOffset));
+                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity, packageOffset));
                 }
                 catch (ExecutionException e)
                 {
@@ -90,25 +90,25 @@ public class ModelManager
                 }
             }
         }
-        return Compiler.compile(this.loadData(context, clientVersion, pm), this.deploymentMode, pm, packageOffset);
+        return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity, packageOffset);
     }
 
     // Remove clientVersion
-    public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm, String packageOffset)
+    public Pair<PureModelContextData, PureModel> loadModelAndData(PureModelContext context, String clientVersion, Identity identity, String packageOffset)
     {
-        PureModelContextData data = this.loadData(context, clientVersion, pm);
-        return Tuples.pair(data, loadModel(data, clientVersion, pm, packageOffset));
+        PureModelContextData data = this.loadData(context, clientVersion, identity);
+        return Tuples.pair(data, loadModel(data, clientVersion, identity, packageOffset));
     }
 
     // Remove clientVersion
-    public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, MutableList<CommonProfile> pm)
+    public String getLambdaReturnType(Lambda lambda, PureModelContext context, String clientVersion, Identity identity)
     {
-        PureModel result = this.loadModel(context, clientVersion, pm, null);
+        PureModel result = this.loadModel(context, clientVersion, identity, null);
         return Compiler.getLambdaReturnType(lambda, result);
     }
 
     // Remove clientVersion
-    public PureModelContextData loadData(PureModelContext context, String clientVersion, MutableList<CommonProfile> pm)
+    public PureModelContextData loadData(PureModelContext context, String clientVersion, Identity identity)
     {
         try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
         {
@@ -124,7 +124,7 @@ public class ModelManager
             else
             {
                 ModelLoader loader = this.modelLoaderForContext(context);
-                return loader.load(pm, context, clientVersion, scope.span());
+                return loader.load(identity, context, clientVersion, scope.span());
             }
         }
     }

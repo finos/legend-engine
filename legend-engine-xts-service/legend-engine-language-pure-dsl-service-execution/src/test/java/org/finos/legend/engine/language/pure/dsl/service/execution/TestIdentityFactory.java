@@ -30,6 +30,7 @@ import org.pac4j.core.profile.CommonProfile;
 import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class TestIdentityFactory implements IdentityFactory

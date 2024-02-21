@@ -23,26 +23,26 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModelProce
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
-import org.pac4j.core.profile.CommonProfile;
 
 public class Compiler
 {
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Iterable<? extends CommonProfile> pm)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Identity identity)
     {
-        return compile(model, deploymentMode, pm, null, null);
+        return compile(model, deploymentMode, identity, null, null);
     }
 
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Iterable<? extends CommonProfile> pm, String packageOffset)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Identity identity, String packageOffset)
     {
-        return compile(model, deploymentMode, pm, packageOffset, null);
+        return compile(model, deploymentMode, identity, packageOffset, null);
     }
 
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Iterable<? extends CommonProfile> pm, String packageOffset, Metadata metaData)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Identity identity, String packageOffset, Metadata metaData)
     {
         PureModelProcessParameter pureModelProcessParameter = new PureModelProcessParameter(packageOffset);
-        return new PureModel(model, pm, deploymentMode, pureModelProcessParameter, metaData);
+        return new PureModel(model, identity, deploymentMode, pureModelProcessParameter, metaData);
     }
 
     public static String getLambdaReturnType(Lambda lambda, PureModel pureModel)

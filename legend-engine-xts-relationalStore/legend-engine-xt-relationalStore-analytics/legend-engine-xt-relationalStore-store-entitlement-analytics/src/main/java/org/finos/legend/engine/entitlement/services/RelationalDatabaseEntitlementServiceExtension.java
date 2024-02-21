@@ -16,7 +16,6 @@ package org.finos.legend.engine.entitlement.services;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function0;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitlementAccessGrantedReport;
 import org.finos.legend.engine.entitlement.model.entitlementReport.DatasetEntitlementReport;
@@ -34,7 +33,7 @@ import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_relational_store_entitlement_relational_relationalAnalyzer;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +59,7 @@ public class RelationalDatabaseEntitlementServiceExtension implements Entitlemen
     }
 
     @Override
-    public List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_core_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, MutableList<CommonProfile> profiles)
+    public List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_core_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, Identity identity)
     {
         return datasets.stream().filter(specification -> specification instanceof RelationalDatabaseTableSpecification).map(specification -> specification.getType().equals(DatabaseType.H2.name()) ? new DatasetEntitlementAccessGrantedReport(specification) : new DatasetEntitlementUnsupportedReport(specification)).collect(Collectors.toList());
     }

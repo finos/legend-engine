@@ -22,9 +22,8 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
-import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.engine.shared.core.extension.LegendExternalFormatExtension;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.io.InputStream;
 import java.util.List;
@@ -45,17 +44,17 @@ public interface ExternalFormatRuntimeExtension extends LegendExternalFormatExte
 
     List<String> getContentTypes();
 
-    default StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    default StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, Identity identity, ExecutionState executionState)
     {
         throw new UnsupportedOperationException("Internalize not supported by format - " + node.contentType);
     }
 
-    default Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, Result result, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    default Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, Result result, Identity identity, ExecutionState executionState)
     {
         throw new UnsupportedOperationException("Externalize not supported by format - " + node.contentType);
     }
 
-    default Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, Result result, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    default Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, Result result, Identity identity, ExecutionState executionState)
     {
         throw new UnsupportedOperationException("Externalize TDS not supported by format - " + node.contentType);
     }

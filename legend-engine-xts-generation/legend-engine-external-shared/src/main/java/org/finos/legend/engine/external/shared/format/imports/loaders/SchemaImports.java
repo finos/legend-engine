@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiOperation;
 import org.finos.legend.engine.external.shared.format.imports.description.ImportConfigurationDescription;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
@@ -54,7 +55,7 @@ public class SchemaImports
     {
         try
         {
-            return ManageConstantResult.manageResult(null, schemaConfigurationDescriptions);
+            return ManageConstantResult.manageResult(Identity.getAnonymousIdentity().getName(), schemaConfigurationDescriptions);
         }
         catch (Exception ex)
         {

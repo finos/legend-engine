@@ -63,13 +63,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- AUTHENTICATION -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- AUTHENTICATION -->
-
         <!-- TEST -->
         <dependency>
             <groupId>junit</groupId>

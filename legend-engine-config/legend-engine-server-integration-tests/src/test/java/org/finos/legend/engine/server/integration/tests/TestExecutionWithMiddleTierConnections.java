@@ -47,7 +47,7 @@ public class TestExecutionWithMiddleTierConnections extends AbstractMiddleTierEx
         RootMiddleTierPlanExecutionAuthorizer planExecutionAuthorizer = new RootMiddleTierPlanExecutionAuthorizer(Lists.immutable.of(relationalMiddleTierPlanExecutionAuthorizer));
 
         SingleExecutionPlan executionPlan = this.loadPlanFromFile("/plans/planWithSingleMiddleTierConnection.json", postgresTestContainerWrapper.getPort());
-        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer, new DefaultIdentityFactory()).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, profiles);
+        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer, new DefaultIdentityFactory()).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, identity);
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
 
@@ -64,7 +64,7 @@ public class TestExecutionWithMiddleTierConnections extends AbstractMiddleTierEx
         RootMiddleTierPlanExecutionAuthorizer planExecutionAuthorizer = new RootMiddleTierPlanExecutionAuthorizer(Lists.immutable.of(relationalMiddleTierPlanExecutionAuthorizer));
 
         SingleExecutionPlan executionPlan = this.loadPlanFromFile("/plans/planWithSingleMiddleTierConnection.json", postgresTestContainerWrapper.getPort());
-        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer, new DefaultIdentityFactory()).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, profiles);
+        Response response = new ExecutePlan(buildPlanExecutor(), planExecutionAuthorizer, new DefaultIdentityFactory()).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, identity);
 
         assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), response.getStatus());
 

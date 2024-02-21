@@ -15,22 +15,20 @@
 package org.finos.legend.engine.language.pure.modelManager;
 
 import io.opentracing.Span;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
-import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public interface ModelLoader
 {
     boolean supports(PureModelContext context);
 
-    PureModelContextData load(MutableList<CommonProfile> profiles, PureModelContext context, String clientVersion, Span parentSpan);
+    PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan);
 
     void setModelManager(ModelManager modelManager);
 
     // Caching
     boolean shouldCache(PureModelContext context);
 
-    PureModelContext cacheKey(PureModelContext context, MutableList<CommonProfile> pm);
+    PureModelContext cacheKey(PureModelContext context, Identity identity);
 }

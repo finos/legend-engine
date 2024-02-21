@@ -28,6 +28,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.ParserError;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -64,6 +66,7 @@ public class TransformRelationalOperationElementGrammarToJson
     public Response transformRelationalOperationElementGrammarToJson(RelationalOperationElementGrammarToJsonInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformRelationalOperationElementGrammarToJson").startActive(true))
         {
             PureGrammarParserExtensions.logExtensionList();
@@ -88,17 +91,17 @@ public class TransformRelationalOperationElementGrammarToJson
                         }
                         operationErrors.put(key, new ParserError(exception.getMessage(), exception.getSourceInformation()));
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_RELATIONAL_OPERATION_ELEMENT_JSON_TO_GRAMMAR_ERROR, profiles);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_RELATIONAL_OPERATION_ELEMENT_JSON_TO_GRAMMAR_ERROR, identity.getName());
                 }
             });
             RelationalOperationElementJsonToGrammarInput symmetricResult = new RelationalOperationElementJsonToGrammarInput();
             symmetricResult.operations = operations;
             symmetricResult.operationErrors = operationErrors.size() > 0 ? operationErrors : null; // only show object is errors exist
-            return ManageConstantResult.manageResult(profiles, symmetricResult, objectMapper);
+            return ManageConstantResult.manageResult(identity.getName(), symmetricResult, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_RELATIONAL_OPERATION_ELEMENT_JSON_TO_GRAMMAR_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_RELATIONAL_OPERATION_ELEMENT_JSON_TO_GRAMMAR_ERROR, identity.getName());
         }
     }
 }

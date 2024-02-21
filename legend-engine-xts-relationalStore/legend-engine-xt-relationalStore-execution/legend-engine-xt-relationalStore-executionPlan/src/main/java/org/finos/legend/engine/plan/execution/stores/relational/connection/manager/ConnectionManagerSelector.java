@@ -31,7 +31,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -62,18 +61,6 @@ public class ConnectionManagerSelector
     public Optional<DatabaseAuthenticationFlowProvider> getFlowProviderHolder()
     {
         return flowProviderHolder;
-    }
-
-    public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection)
-    {
-        return this.getDatabaseConnection(profiles, databaseConnection, StoreExecutionState.emptyRuntimeContext());
-    }
-
-    public Connection getDatabaseConnection(MutableList<CommonProfile> profiles, DatabaseConnection databaseConnection, StoreExecutionState.RuntimeContext runtimeContext)
-    {
-        DataSourceSpecification datasource = getDataSourceSpecification(databaseConnection);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
-        return this.getDatabaseConnectionImpl(identity, databaseConnection, datasource, runtimeContext);
     }
 
     public Connection getDatabaseConnection(Subject subject, DatabaseConnection databaseConnection)

@@ -14,19 +14,19 @@
 
 package org.finos.legend.engine.protocol.graphQL;
 
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.graphQL.grammar.from.GraphQLGrammarParser;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class GenerateTestQueryBuilder
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity(), DeploymentMode.TEST);
         String introspection = "query MyQuery {\n" +
                 "  firmByLegalName(legalName: \"ork\") {\n" +
                 "    legalName\n" +

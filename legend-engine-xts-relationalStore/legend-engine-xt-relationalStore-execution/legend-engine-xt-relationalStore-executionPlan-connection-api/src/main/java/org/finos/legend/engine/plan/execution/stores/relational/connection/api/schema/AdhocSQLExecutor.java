@@ -15,10 +15,9 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.api.schema;
 
 import com.opencsv.CSVWriter;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -31,9 +30,9 @@ public class AdhocSQLExecutor
 {
     private static final int PREVIEW_LIMIT = 1000;
 
-    public String executeRawSQL(ConnectionManagerSelector connectionManager, RelationalDatabaseConnection conn, String sqlQuery, MutableList<CommonProfile> profiles) throws SQLException, IOException
+    public String executeRawSQL(ConnectionManagerSelector connectionManager, RelationalDatabaseConnection conn, String sqlQuery, Identity identity) throws SQLException, IOException
     {
-        try (Connection connection = connectionManager.getDatabaseConnection(profiles, conn))
+        try (Connection connection = connectionManager.getDatabaseConnection(identity, conn))
         {
             Statement stmt = connection.createStatement();
             stmt.setMaxRows(PREVIEW_LIMIT);

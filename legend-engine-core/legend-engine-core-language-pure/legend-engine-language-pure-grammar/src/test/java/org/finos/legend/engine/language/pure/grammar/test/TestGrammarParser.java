@@ -25,6 +25,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerConte
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -101,7 +102,7 @@ public class TestGrammarParser
             }
             catch (Exception e)
             {
-                LogInfo errorResponse = new LogInfo(null, LoggingEventType.PARSE_ERROR, e);
+                LogInfo errorResponse = new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.PARSE_ERROR, e);
                 Assert.assertNotNull("No source information provided in error", errorResponse.sourceInformation);
                 MatcherAssert.assertThat(EngineException.buildPrettyErrorMessage(errorResponse.message, errorResponse.sourceInformation,
                         EngineErrorType.PARSER), CoreMatchers.startsWith(expectedErrorMsg));

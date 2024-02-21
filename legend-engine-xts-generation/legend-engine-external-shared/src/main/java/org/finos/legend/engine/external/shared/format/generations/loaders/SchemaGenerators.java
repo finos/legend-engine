@@ -22,6 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
@@ -61,7 +62,7 @@ public class SchemaGenerators
         {
             PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, null, null).getTwo();
             List<FileGenerationDescription> descriptions = schemaConfigurationDescriptions.stream().map(e -> FileGenerationDescription.newDescription(e, pureModel)).collect(Collectors.toList());
-            return ManageConstantResult.manageResult(null, descriptions);
+            return ManageConstantResult.manageResult(Identity.getAnonymousIdentity().getName(), descriptions);
         }
         catch (Exception ex)
         {

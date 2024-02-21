@@ -36,6 +36,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.result.TempTable
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RealizedRelationalResultCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToCSVSerializer;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.StreamingTempTableResultCSVSerializer;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -175,7 +176,7 @@ public class StreamResultToTempTableVisitor implements RelationalDatabaseCommand
     {
         try (Scope ignored = GlobalTracer.get().buildSpan("temp table sql execution").withTag("sql", sql).startActive(true))
         {
-            LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTION_RELATIONAL_COMMIT, sql, 0.0d).toString());
+            LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTION_RELATIONAL_COMMIT, sql, 0.0d).toString());
             return statement.execute(sql);
         }
         catch (SQLException e)

@@ -44,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Timestamp;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.TinyInt;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.VarChar;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -200,7 +201,7 @@ public class TestSchemaExploration
     private void test(DatabaseBuilderInput input, Database expected) throws Exception
     {
         SchemaExportation builder = SchemaExportation.newBuilder(input);
-        Database store = builder.build(this.connectionManager, null);
+        Database store = builder.build(this.connectionManager, Identity.getAnonymousIdentity());
 
         // Ignore the INFORMATION_SCHEMA that is added by new H2 for testing
         store.schemas.removeIf(s -> s.name.equals("INFORMATION_SCHEMA"));

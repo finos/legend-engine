@@ -101,13 +101,6 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
-        <!-- Authorization -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- Authorization -->
-
         <!-- JSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

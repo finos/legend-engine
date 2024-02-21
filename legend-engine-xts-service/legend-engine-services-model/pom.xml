@@ -114,13 +114,6 @@
         </dependency>
         <!-- JACKSON -->
 
-        <!-- ANNOTATIONS -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- ANNOTATIONS -->
-
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>

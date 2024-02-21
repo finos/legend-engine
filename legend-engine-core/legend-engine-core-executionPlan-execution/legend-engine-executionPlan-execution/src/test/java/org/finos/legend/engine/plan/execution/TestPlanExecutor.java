@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.plan.execution;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
@@ -23,9 +22,9 @@ import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Map;
 
@@ -38,20 +37,20 @@ public class TestPlanExecutor
         Map<String, Result> res = Maps.mutable.empty();
         res.put("execID", new ConstantResult("b26973f8-8857-4ece-bfdc-107176c9da8b"));
         res.put("userId", new ConstantResult("anumam"));
-        MutableList<CommonProfile> profile =  Lists.mutable.empty();
+        Identity identity = Identity.getAnonymousIdentity();
 
         ExecutionState state1 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, new RequestContext(session, "https://allo'y'.site.gs.com/"), null);
-        PlanExecutor.setUpState(new SingleExecutionPlan(), state1, profile, "anumam");
+        PlanExecutor.setUpState(new SingleExecutionPlan(), state1, identity, "anumam");
         String sqlQuery1 = FreeMarkerExecutor.process("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';", state1, "snowflake", null);
         Assert.assertEquals("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"b26973f8-8857-4ece-bfdc-107176c9da8b\", \"engineUser\" : \"anumam\", \"referer\" : \"https://allo''y''.site.gs.com/\"}';", sqlQuery1);
 
         ExecutionState state2 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, new RequestContext(session, null), null);
-        PlanExecutor.setUpState(new SingleExecutionPlan(), state2, profile, "anumam");
+        PlanExecutor.setUpState(new SingleExecutionPlan(), state2, identity, "anumam");
         String sqlQuery2 = FreeMarkerExecutor.process("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';", state2, "snowflake", null);
         Assert.assertEquals("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"b26973f8-8857-4ece-bfdc-107176c9da8b\", \"engineUser\" : \"anumam\", \"referer\" : \"null\"}';", sqlQuery2);
 
         ExecutionState state3 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, null, null);
-        PlanExecutor.setUpState(new SingleExecutionPlan(), state3, profile, "anumam");
+        PlanExecutor.setUpState(new SingleExecutionPlan(), state3, identity, "anumam");
         String sqlQuery3 = FreeMarkerExecutor.process("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"${execID}\", \"engineUser\" : \"${userId}\", \"referer\" : \"${referer}\"}';", state3, "snowflake", null);
         Assert.assertEquals("ALTER SESSION SET QUERY_TAG = '{\"executionTraceID\" : \"b26973f8-8857-4ece-bfdc-107176c9da8b\", \"engineUser\" : \"anumam\", \"referer\" : \"null\"}';", sqlQuery3);
     }

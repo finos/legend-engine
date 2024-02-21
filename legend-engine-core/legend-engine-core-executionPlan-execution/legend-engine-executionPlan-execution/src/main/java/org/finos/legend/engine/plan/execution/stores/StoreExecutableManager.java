@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.collections.impl.map.mutable.ConcurrentHashMap;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -100,7 +101,7 @@ public enum StoreExecutableManager
             }
             catch (Exception e)
             {
-                LOGGER.info(new LogInfo(null, LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
+                LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_REMOVE_ERROR, "Unable to remove executable for id " + id).toString());
             }
         }
     }
@@ -147,7 +148,7 @@ public enum StoreExecutableManager
                 }
                 catch (Exception e)
                 {
-                    LOGGER.error(new LogInfo(null, LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + ": " + e.getMessage()).toString());
+                    LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel executable for ID " + sessionID + ": " + e.getMessage()).toString());
                 }
             });
         }

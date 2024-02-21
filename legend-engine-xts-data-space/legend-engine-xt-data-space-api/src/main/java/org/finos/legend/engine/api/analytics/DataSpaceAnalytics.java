@@ -34,6 +34,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -85,8 +87,9 @@ public class DataSpaceAnalytics
     public Response analyzeDataSpace(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         PackageableElement dataSpaceProtocol = pureModelContextData.getElements().stream().filter(el -> input.dataSpace.equals(el.getPath())).findFirst().orElse(null);
         Assert.assertTrue(dataSpaceProtocol instanceof DataSpace, () -> "Can't find data space '" + input.dataSpace + "'");
         Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = HelperDataSpaceBuilder.getDataSpace(input.dataSpace, null, pureModel.getContext());
@@ -95,11 +98,11 @@ public class DataSpaceAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions, false), objectMapper);
+                return ManageConstantResult.manageResult(identity.getName(), DataSpaceAnalyticsHelper.analyzeDataSpace(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions, false), objectMapper);
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }
@@ -112,8 +115,9 @@ public class DataSpaceAnalytics
     public Response analyzeDataSpaceCoverage(DataSpaceAnalysisInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         PackageableElement dataSpaceProtocol = pureModelContextData.getElements().stream().filter(el -> input.dataSpace.equals(el.getPath())).findFirst().orElse(null);
         Assert.assertTrue(dataSpaceProtocol instanceof DataSpace, () -> "Can't find data space '" + input.dataSpace + "'");
         Root_meta_pure_metamodel_dataSpace_DataSpace dataSpace = HelperDataSpaceBuilder.getDataSpace(input.dataSpace, null, pureModel.getContext());
@@ -122,11 +126,11 @@ public class DataSpaceAnalytics
         {
             try
             {
-                return ManageConstantResult.manageResult(profiles, DataSpaceAnalyticsHelper.analyzeDataSpaceCoverage(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions, true), objectMapper);
+                return ManageConstantResult.manageResult(identity.getName(), DataSpaceAnalyticsHelper.analyzeDataSpaceCoverage(dataSpace, pureModel, (DataSpace) dataSpaceProtocol, pureModelContextData, input.clientVersion, this.generatorExtensions, this.entitlementServiceExtensions, true), objectMapper);
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }
