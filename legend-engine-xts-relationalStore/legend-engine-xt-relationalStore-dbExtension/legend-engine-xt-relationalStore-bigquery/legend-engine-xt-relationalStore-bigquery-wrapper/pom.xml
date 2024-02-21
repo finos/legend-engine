@@ -20,15 +20,17 @@ limitations under the License.
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<parent>
+		<groupId>org.finos.legend.engine</groupId>
+		<artifactId>legend-engine-xt-relationalStore-bigquery</artifactId>
+		<version>4.38.3-SNAPSHOT</version>
+	</parent>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>org.finos.legend.engine</groupId>
 	<artifactId>bigquery-wrapper</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<name>Legend Engine BigQuery Connector</name>
 	<description>BigQuery connector project for Legend Engine</description>
 
 	<properties>
-		<junit.version>4.13.2</junit.version>
 		<maven.plugin.puppycrawl.version>8.25</maven.plugin.puppycrawl.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -103,13 +105,11 @@ limitations under the License.
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.8.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
