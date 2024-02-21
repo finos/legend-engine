@@ -23,7 +23,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Comp
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.MappingIncludedMappingHandler;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderPointerHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.core.TestAssertionCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -31,19 +31,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.shared.core.function.Procedure3;
 import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
 import org.finos.legend.pure.generated.Root_meta_pure_test_assertion_TestAssertion;
 import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.SetImplementation;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class CoreCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension
+public class CoreCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension, StoreProviderCompilerExtension
 {
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
@@ -85,9 +87,14 @@ public class CoreCompilerExtension implements CompilerExtension, EmbeddedDataCom
     }
 
     @Override
-    public Map<PackageableElementType, StoreProviderPointerHandler> getExtraStoreProviderHandlers()
+    public Map<PackageableElementType, Function2<StoreProviderPointer, CompileContext, Store>> getExtraStoreProviderHandlers()
     {
-        return Maps.mutable.of(PackageableElementType.STORE, new StoreProviderPointerHandler());
+        return Maps.mutable.of(PackageableElementType.STORE, CoreCompilerExtension::resolveStore);
+    }
+
+    private static Store resolveStore(StoreProviderPointer storeProviderPointer, CompileContext context)
+    {
+        return context.resolveStore(storeProviderPointer.path, storeProviderPointer.sourceInformation);
     }
 
     @Override

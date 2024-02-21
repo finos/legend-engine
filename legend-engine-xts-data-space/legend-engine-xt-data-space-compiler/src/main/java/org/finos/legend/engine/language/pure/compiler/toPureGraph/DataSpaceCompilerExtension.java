@@ -19,6 +19,7 @@ import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.set.MutableSet;
@@ -29,7 +30,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.Embe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderPointerHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -43,6 +44,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
@@ -60,6 +62,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_Tagged
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -68,7 +71,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension
+import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
+
+public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension, StoreProviderCompilerExtension
 {
     static final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();
 
@@ -214,9 +219,38 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
     }
 
     @Override
-    public Map<PackageableElementType, StoreProviderPointerHandler> getExtraStoreProviderHandlers()
+    public Map<PackageableElementType, Function2<StoreProviderPointer, CompileContext, Store>> getExtraStoreProviderHandlers()
     {
-        return Maps.mutable.of(PackageableElementType.DATASPACE, new DataspaceStoreProviderPointerHandler());
+        return Maps.mutable.of(PackageableElementType.DATASPACE, DataSpaceCompilerExtension::resolveStore);
+    }
+
+    private static Store resolveStore(StoreProviderPointer storeProviderPointer, CompileContext context)
+    {
+        String packageAddress = storeProviderPointer.path;
+        if (!DataSpaceCompilerExtension.dataSpacesIndex.containsKey(packageAddress))
+        {
+            throw new EngineException("Dataspace " + packageAddress + " cannot be found.", storeProviderPointer.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        Root_meta_pure_metamodel_dataSpace_DataSpace dataspace =
+                DataSpaceCompilerExtension.dataSpacesIndex.get(packageAddress);
+        ImmutableList<Store> stores = HelperMappingBuilder.getStoresFromMappingIgnoringIncludedMappings(dataspace._defaultExecutionContext()._mapping(),context);
+        String dataspacePath = HelperModelBuilder.getElementFullPath(dataspace, context.pureModel.getExecutionSupport());
+        String mappingPath = HelperModelBuilder.getElementFullPath(dataspace._defaultExecutionContext()._mapping(), context.pureModel.getExecutionSupport());
+        if (stores.isEmpty())
+        {
+            throw new EngineException("Default mapping (" + mappingPath + ") in dataspace (" + dataspacePath + ") is not mapped to a store type supported by the ExtraSetImplementationSourceScanners.", storeProviderPointer.sourceInformation, EngineErrorType.COMPILATION);
+        }
+        else if (stores.size() > 1)
+        {
+            throw new EngineException("Default mapping (" + mappingPath + ") in dataspace (" + dataspacePath
+                    + ") cannot be resolved to a single store. Stores found : ["
+                    + stores.collect(s -> getElementFullPath(s, context.pureModel.getExecutionSupport())).makeString(",")
+                    + "]. Please notify dataspace owners that their dataspace cannot be used as a store interface.",
+                    storeProviderPointer.sourceInformation,
+                    EngineErrorType.COMPILATION
+            );
+        }
+        return stores.get(0);
     }
 
     @Override
