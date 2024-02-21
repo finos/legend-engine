@@ -29,21 +29,44 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.Embe
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderPointerHandler;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.MappingIncludeDataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.diagram.Diagram;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceDiagram_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutable_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportCombinedInfo_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportEmail_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceSupportInfo;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension
 {
@@ -191,6 +214,12 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
     }
 
     @Override
+    public Map<PackageableElementType, StoreProviderPointerHandler> getExtraStoreProviderHandlers()
+    {
+        return Maps.mutable.of(PackageableElementType.DATASPACE, new DataspaceStoreProviderPointerHandler());
+    }
+
+    @Override
     public List<Function3<EmbeddedData, CompileContext, ProcessingContext, Root_meta_pure_data_EmbeddedData>> getExtraEmbeddedDataProcessors()
     {
         return Collections.singletonList(this::compileDataspaceDataElementReference);
@@ -204,9 +233,10 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
             DataElementReference data = (DataElementReference) embeddedData;
             if (DataSpaceCompilerExtension.dataSpacesIndex.containsKey(data.dataElement.path))
             {
-                return Optional
+                return ((Root_meta_pure_data_DataElementReference) Optional
                         .ofNullable(DataSpaceCompilerExtension.dataSpacesIndex.get(data.dataElement.path)._defaultExecutionContext()._testData())
-                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataElement.path + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION));
+                        .orElseThrow(() -> new EngineException("Dataspace " + data.dataElement.path + " does not have test data in its default execution context.", data.sourceInformation, EngineErrorType.COMPILATION))
+                        )._dataElement()._data();
             }
             throw new EngineException("Dataspace " + data.dataElement.path + " cannot be found.", data.sourceInformation, EngineErrorType.COMPILATION);
         }

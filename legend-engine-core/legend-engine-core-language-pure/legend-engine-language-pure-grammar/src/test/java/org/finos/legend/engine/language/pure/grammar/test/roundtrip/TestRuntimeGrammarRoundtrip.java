@@ -97,8 +97,8 @@ public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGramma
                 "  [\n" +
                 "    test::connection:\n" +
                 "    [\n" +
-                "      test::store1,\n" +
-                "      test::store2\n" +
+                "      test::com::store1,\n" +
+                "      test::com::store2\n" +
                 "    ]\n" +
                 "  ];\n" +
                 "}\n");

@@ -25,7 +25,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.ConnectionStores;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
@@ -97,15 +101,10 @@ public class RuntimeParseTreeWalker
             connectionStores.connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext.connection().packageableElementPointer());
 
             connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(connectionStoresContext);
-            connectionStores.storePointers = connectionStoresContext.packageableElementPointer() == null ? Collections.emptyList() : ListIterate.collect(connectionStoresContext.packageableElementPointer(), packageableElementPointerContext ->
-            {
-                String store = packageableElementPointerContext.qualifiedName().getText().equals("ModelStore") ? "ModelStore" : PureGrammarParserUtility.fromQualifiedName(packageableElementPointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : packageableElementPointerContext.qualifiedName().packagePath().identifier(), packageableElementPointerContext.qualifiedName().identifier());
-                PackageableElementPointer storePointer = new PackageableElementPointer();
-                storePointer.type = PackageableElementType.STORE;
-                storePointer.path = store;
-                storePointer.sourceInformation = walkerSourceInformation.getSourceInformation(packageableElementPointerContext.qualifiedName());
-                return storePointer;
-            });
+            connectionStores.storePointers =
+                    connectionStoresContext.storeProviderPointer() == null
+                            ? Collections.emptyList()
+                            : ListIterate.collect(connectionStoresContext.storeProviderPointer(), ctx -> StoreProviderPointerFactory.create(ctx, walkerSourceInformation.getSourceInformation(ctx)));
             runtimeValue.connectionStores.add(connectionStores);
         });
     }

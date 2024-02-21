@@ -19,7 +19,7 @@ import org.junit.Test;
 public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
     @Test
-    public void testSuccessfulMappingIncludeDataspace()
+    public void testFailedRuntimeConnectionStoreDataspace()
     {
         String models = "Class test::A extends test::B {\n" +
                 "  prop1: String[1];\n" +
@@ -56,6 +56,164 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "  [\n" +
                 "    model::dummyMapping\n" +
                 "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           (dataspace) model::nonExistantDataspace\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n", "COMPILATION error at [39:12-50]: Dataspace model::nonExistantDataspace cannot be found.");
+    }
+
+    @Test
+    public void testSuccessfulMappingIncludeDataspace()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::M1\n" +
+                "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           (dataspace) model::dataSpace\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Data\n" +
+                "Data com::model::someDataElement\n" +
+                "{\n" +
+                "  ExternalFormat\n" +
+                "  #{\n" +
+                "    contentType: 'test';\n" +
+                "    data: 'test';\n" +
+                "  }#\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      description: 'some information about the context';\n" +
+                "      mapping: test::M1;\n" +
+                "      defaultRuntime: model::dummyRuntime;\n" +
+                "      testData:\n" +
+                "        Reference\n" +
+                "        #{\n" +
+                "          com::model::someDataElement\n" +
+                "        }#;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "}\n");
+    }
+
+    @Test
+    public void testRuntimeIncludeDataspace()
+    {
+        String models = "Class test::A extends test::B {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::S_A {\n" +
+                "  prop1: String[1];\n" +
+                "}\n" +
+                "\n" +
+                "Class test::B\n" +
+                "{\n" +
+                "  currency: String[*];\n" +
+                "}\n" +
+                "\n";
+        test(models +
+                "###Mapping\n" +
+                "Mapping model::dummyMapping\n" +
+                "(\n" +
+                ")\n" +
+                "\n" +
+                "Mapping test::M1 (\n" +
+                "   include dataspace model::dataSpace\n" +
+                "   test::A[1]: Pure {\n" +
+                "      ~src test::S_A\n" +
+                "      prop1: $src.prop1\n" +
+                "   }\n" +
+                ")\n" +
+                "\n" +
+                "\n" +
+                "###Runtime\n" +
+                "Runtime model::dummyRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    model::dummyMapping\n" +
+                "  ];\n" +
+                "   connectionStores:\n" +
+                "   [\n" +
+                "       model::connection:\n" +
+                "       [\n" +
+                "           ModelStore\n" +
+                "       ]\n" +
+                "   ];\n" +
+                "}\n" +
+                "\n" +
+                "\n" +
+                "###Connection\n" +
+                "JsonModelConnection model::connection\n" +
+                "{\n" +
+                "  class: test::B;\n" +
+                "  url: 'executor:default';\n" +
                 "}\n" +
                 "\n" +
                 "\n" +
