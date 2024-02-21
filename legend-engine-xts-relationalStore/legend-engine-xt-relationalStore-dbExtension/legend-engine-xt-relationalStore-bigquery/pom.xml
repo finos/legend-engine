@@ -32,5 +32,6 @@
         <module>legend-engine-xt-relationalStore-bigquery-grammar</module>
         <module>legend-engine-xt-relationalStore-bigquery-protocol</module>
         <module>legend-engine-xt-relationalStore-bigquery-pure</module>
+        <module>legend-engine-xt-relationalStore-bigquery-wrapper</module>
     </modules>
 </project>
