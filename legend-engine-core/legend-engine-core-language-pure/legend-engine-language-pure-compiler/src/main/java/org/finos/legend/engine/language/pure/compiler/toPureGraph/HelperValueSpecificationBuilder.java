@@ -14,8 +14,10 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -50,6 +52,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.TypeParameter;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.*;
 import org.finos.legend.pure.m3.navigation.relation._RelationType;
 
@@ -194,6 +197,32 @@ public class HelperValueSpecificationBuilder
                 else
                 {
                     throw new UnsupportedOperationException("Unhandled property: " + foundFunction);
+                }
+
+                if (genericType._typeParameter() != null)
+                {
+                    RichIterable<? extends Pair<? extends TypeParameter, ? extends GenericType>> zip = ((Class<?>) inferredType)._typeParameters().zip(inferredVariable._genericType()._typeArguments());
+                    for (Pair<? extends TypeParameter, ? extends GenericType> p : zip)
+                    {
+                        if (p.getOne()._name().equals(genericType._typeParameter()._name()))
+                        {
+                            genericType = p.getTwo();
+                            break;
+                        }
+                    }
+                }
+
+                if (multiplicity._multiplicityParameter() != null)
+                {
+                    RichIterable<? extends Pair<? extends InstanceValue, ? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity>> zip = ((Class<?>) inferredType)._multiplicityParameters().zip(inferredVariable._genericType()._multiplicityArguments());
+                    for (Pair<? extends InstanceValue, ? extends org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.multiplicity.Multiplicity> p : zip)
+                    {
+                        if (p.getOne()._values().getAny().equals(multiplicity._multiplicityParameter()))
+                        {
+                            multiplicity = p.getTwo();
+                            break;
+                        }
+                    }
                 }
             }
 
