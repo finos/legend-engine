@@ -16,6 +16,7 @@ package org.finos.legend.engine.plan.execution.result.serialization;
 
 import org.apache.commons.lang.SystemUtils;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
@@ -62,7 +63,7 @@ public class TemporaryFile implements Closeable
     public void writeFile(Serializer source) throws Exception
     {
 
-        LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_CREATED, fileName).toString());
+        LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.TEMP_FILE_CREATED, fileName).toString());
         MetricsHandler.observeCount("temp file created");
         MetricsHandler.incrementTempFileCount();
         try (OutputStream outputStream = new FileOutputStream(path.toString()))
@@ -88,13 +89,13 @@ public class TemporaryFile implements Closeable
         try
         {
             Files.deleteIfExists(path);
-            LOGGER.info(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETED, fileName).toString());
+            LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.TEMP_FILE_DELETED, fileName).toString());
             MetricsHandler.decrementTempFileCount();
             MetricsHandler.decrementCount("temp file created");
         }
         catch (Exception e)
         {
-            LOGGER.error(new LogInfo(null, LoggingEventType.TEMP_FILE_DELETE_ERROR, new ErrorResult(1, e).getMessage()).toString());
+            LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.TEMP_FILE_DELETE_ERROR, new ErrorResult(1, e).getMessage()).toString());
         }
     }
 

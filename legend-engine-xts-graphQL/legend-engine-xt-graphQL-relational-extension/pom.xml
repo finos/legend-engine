@@ -119,13 +119,6 @@
         </dependency>
         <!-- ANNOTATIONS -->
 
-        <!-- AUTHENTICATION -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- AUTHENTICATION -->
-
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>
             <groupId>org.eclipse.collections</groupId>

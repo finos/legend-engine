@@ -91,13 +91,6 @@
         </dependency>
         <!-- APACHE HTTP CLIENT -->
 
-        <!-- AUTHENTICATION -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- AUTHENTICATION -->
-
         <!-- JACKSON -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.blockConnection;
 
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -412,7 +413,7 @@ public class BlockConnection implements Connection
                 {
                     long executeSqlStart = System.currentTimeMillis();
                     statement.execute(sql);
-                    LOGGER.info(new LogInfo(null, loggingEventType, sql, (double) System.currentTimeMillis() - executeSqlStart).toString());
+                    LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), loggingEventType, sql, (double) System.currentTimeMillis() - executeSqlStart).toString());
                 }
             }
         }

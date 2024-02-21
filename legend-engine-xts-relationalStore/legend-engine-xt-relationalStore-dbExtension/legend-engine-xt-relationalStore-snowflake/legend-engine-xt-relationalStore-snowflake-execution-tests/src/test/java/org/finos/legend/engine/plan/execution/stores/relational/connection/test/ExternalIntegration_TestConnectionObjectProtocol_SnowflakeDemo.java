@@ -20,6 +20,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Ignore;
@@ -41,7 +42,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_SnowflakeDemo exte
     public void testUsingKeyPairWithSFWest() throws Exception
     {
         Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
-        testSnowflakePublicConnectionWithSFWest(c -> c.getConnectionUsingProfiles(null));
+        testSnowflakePublicConnectionWithSFWest(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
     }
 
     public void testSnowflakePublicConnectionWithSFWest(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
@@ -81,7 +82,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_SnowflakeDemo exte
     public void testUsingKeyPairWithSFEast() throws Exception
     {
         Class.forName("net.snowflake.client.jdbc.SnowflakeDriver");
-        testSnowflakePublicConnectionWithSFEast(c -> c.getConnectionUsingProfiles(null));
+        testSnowflakePublicConnectionWithSFEast(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
     }
 
     public void testSnowflakePublicConnectionWithSFEast(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception

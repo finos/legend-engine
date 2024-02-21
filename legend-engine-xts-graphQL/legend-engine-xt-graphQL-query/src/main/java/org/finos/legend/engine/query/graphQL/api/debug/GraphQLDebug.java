@@ -40,6 +40,8 @@ import org.finos.legend.engine.query.graphQL.api.debug.model.GraphFetchResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -154,13 +156,14 @@ public class GraphQLDebug extends GraphQL
     private Response generateGraphFetchDevImpl(HttpServletRequest request, String workspaceId, boolean isGroupWorkspace, String projectId, String queryClassPath, Query query, ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
-            return this.generateGraphFetch(queryClassPath, query, loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
+            return this.generateGraphFetch(queryClassPath, query, loadSDLCProjectModel(identity, request, projectId, workspaceId, isGroupWorkspace));
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, identity.getName());
         }
     }
 
@@ -172,13 +175,14 @@ public class GraphQLDebug extends GraphQL
     public Response generateGraphFetchProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Graph Fetch").startActive(true))
         {
-            return this.generateGraphFetch(queryClassPath, query, loadProjectModel(profiles, groupId, artifactId, versionId));
+            return this.generateGraphFetch(queryClassPath, query, loadProjectModel(identity, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, identity.getName());
         }
     }
 
@@ -196,15 +200,16 @@ public class GraphQLDebug extends GraphQL
     public Response generatePureInstanceBuilder(@Context HttpServletRequest request, String json, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Pure Instance Builder").startActive(true))
         {
             Document document = new ObjectMapper().readValue(json, ExecutableDocument.class);
-            PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), identity, DeploymentMode.TEST);
             return Response.ok(buildPureInstanceGeneration(toPureModel(document, pureModel), pureModel)).build();
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, identity.getName());
         }
     }
 

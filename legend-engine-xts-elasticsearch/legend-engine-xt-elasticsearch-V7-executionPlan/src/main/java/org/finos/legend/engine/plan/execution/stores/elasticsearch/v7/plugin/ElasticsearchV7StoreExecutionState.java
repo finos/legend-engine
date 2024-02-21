@@ -15,13 +15,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class ElasticsearchV7StoreExecutionState implements StoreExecutionState
 {
@@ -39,9 +37,9 @@ public class ElasticsearchV7StoreExecutionState implements StoreExecutionState
     }
 
     @Override
-    public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public ExecutionNodeVisitor<Result> getVisitor(Identity identity, ExecutionState executionState)
     {
-        return new ElasticsearchV7ExecutionNodeExecutor(IdentityFactoryProvider.getInstance().makeIdentity(profiles), executionState, this.state);
+        return new ElasticsearchV7ExecutionNodeExecutor(identity, executionState, this.state);
     }
 
     @Override

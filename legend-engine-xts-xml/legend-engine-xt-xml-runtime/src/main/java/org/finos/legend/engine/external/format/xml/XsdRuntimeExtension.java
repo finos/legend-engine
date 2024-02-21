@@ -27,7 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPl
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.VariableResolutionExecutionNode;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -50,12 +50,12 @@ public class XsdRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, Identity identity, ExecutionState executionState)
     {
         try
         {
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
-            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, identity);
             IXmlDeserializeExecutionNodeSpecifics specifics = (IXmlDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
             String location = idFromSourceNode(node.executionNodes().getFirst());

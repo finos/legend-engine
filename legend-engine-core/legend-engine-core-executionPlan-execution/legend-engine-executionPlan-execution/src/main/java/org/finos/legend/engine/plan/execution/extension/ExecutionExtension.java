@@ -21,19 +21,19 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Collections;
 import java.util.List;
 
 public interface ExecutionExtension extends LegendPlanExtension
 {
-    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
+    default List<Function3<ExecutionNode, Identity, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.emptyList();
     }
 
-    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraSequenceNodeExecutors()
+    default List<Function3<ExecutionNode, Identity, ExecutionState, Result>> getExtraSequenceNodeExecutors()
     {
         return Collections.emptyList();
     }

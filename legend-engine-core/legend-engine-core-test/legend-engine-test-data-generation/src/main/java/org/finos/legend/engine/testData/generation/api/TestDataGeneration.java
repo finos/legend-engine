@@ -25,6 +25,8 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -65,15 +67,16 @@ public class TestDataGeneration
     public Response generateTestData(TestDataGenerationInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
-        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModel pureModel = modelManager.loadModel(input.model, input.clientVersion == null ? PureClientVersions.production : input.clientVersion, identity, null);
         try
         {
             TestDataGenerationResult result = new TestDataGenerationResult(TestDataGenerationService.generateEmbeddedData(input.query, pureModel.getMapping(input.mapping), pureModel));
-            return ManageConstantResult.manageResult(profiles, result, objectMapper);
+            return ManageConstantResult.manageResult(identity.getName(), result, objectMapper);
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.TEST_DATA_GENERATION_ERROR,  Response.Status.BAD_REQUEST, profiles);
+            return ExceptionTool.exceptionManager(e, LoggingEventType.TEST_DATA_GENERATION_ERROR,  Response.Status.BAD_REQUEST, identity.getName());
         }
     }
 }

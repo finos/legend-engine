@@ -15,18 +15,17 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.AthenaTestDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.AthenaTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.config.TemporaryTestDbConfiguration;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -56,7 +55,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Athen
     public void testConnectivity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = getTestConnection();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select 1");
     }
 

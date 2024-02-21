@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Assert;
 
 public class TestTranslator extends TestGraphQLRoundtrip
@@ -29,7 +30,7 @@ public class TestTranslator extends TestGraphQLRoundtrip
     @Override
     protected void check(String value)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity(), DeploymentMode.TEST);
         GraphQLGrammarParser parser = GraphQLGrammarParser.newInstance();
         Document document = parser.parseDocument(value);
         Assert.assertEquals(value, org.finos.legend.pure.generated.core_external_query_graphql_serialization_serialization.Root_meta_external_query_graphQL_serialization_graphQLtoString_Document_1__String_1_(new ProtocolToMetamodelTranslator().translate(document, pureModel), pureModel.getExecutionSupport()));

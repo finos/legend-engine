@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.nodes;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.factory.Sets;
@@ -86,7 +85,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.applica
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.ClassInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.pac4j.core.profile.ProfileManager;
 
 import java.util.Arrays;
@@ -107,13 +106,13 @@ import java.util.stream.StreamSupport;
 
 public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    private final MutableList<CommonProfile> profiles;
     private final ExecutionState executionState;
+    private final Identity identity;
 
-    public ExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public ExecutionNodeExecutor(Identity identity, ExecutionState executionState)
     {
-        this.profiles = profiles;
         this.executionState = executionState;
+        this.identity = identity;
     }
 
     @Override
@@ -124,11 +123,11 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             List<StreamingObjectResult<?>> streamingObjectResults;
             if (this.executionState.getConcurrentExecutionNodeExecutorPool() != null && ((PlatformUnionExecutionNode) executionNode).isChildrenExecutionParallelizable)
             {
-                streamingObjectResults = (List<StreamingObjectResult<?>>) this.executionState.getConcurrentExecutionNodeExecutorPool().execute(executionNode.executionNodes, this.profiles, this.executionState);
+                streamingObjectResults = (List<StreamingObjectResult<?>>) this.executionState.getConcurrentExecutionNodeExecutorPool().execute(executionNode.executionNodes, this.identity, this.executionState);
             }
             else
             {
-                streamingObjectResults = ListIterate.collect(executionNode.executionNodes, node -> (StreamingObjectResult<?>) node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
+                streamingObjectResults = ListIterate.collect(executionNode.executionNodes, node -> (StreamingObjectResult<?>) node.accept(new ExecutionNodeExecutor(this.identity, this.executionState)));
             }
 
             Result childResult = new Result("success")
@@ -150,7 +149,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         }
         else if (executionNode instanceof PlatformMergeExecutionNode)
         {
-            return executionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            return executionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
         }
         else if (executionNode instanceof VariableResolutionExecutionNode)
         {
@@ -170,20 +169,21 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             return this.executePlatformPrimitiveQualifierLocalGraphFetchExecutionNode((PlatformPrimitiveQualifierLocalGraphFetchExecutionNode) executionNode);
         }
 
-        return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, profiles, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+        return this.executionState.extraNodeExecutors.stream().map(executor -> executor.value(executionNode, identity, executionState)).filter(Objects::nonNull).findFirst().orElseThrow(() -> new UnsupportedOperationException("Unsupported execution node type '" + executionNode.getClass().getSimpleName() + "'"));
+
     }
 
     @Deprecated
     @Override
     public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
     {
-        return graphFetchM2MExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
+        return graphFetchM2MExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.identity, this.executionState));
     }
 
     @Override
     public Result visit(ErrorExecutionNode errorExecutionNode)
     {
-        Result payload = (errorExecutionNode.executionNodes() == null || errorExecutionNode.executionNodes().isEmpty()) ? null : errorExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, this.executionState)).realizeInMemory();
+        Result payload = (errorExecutionNode.executionNodes() == null || errorExecutionNode.executionNodes().isEmpty()) ? null : errorExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.identity, this.executionState)).realizeInMemory();
         return new ErrorResult(1, errorExecutionNode.message, payload);
     }
 
@@ -194,7 +194,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         Result last = null;
         for (ExecutionNode n : multiResultSequenceExecutionNode.executionNodes())
         {
-            last = n.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            last = n.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
             if (n instanceof AllocationExecutionNode)
             {
                 subResults.put(((AllocationExecutionNode) n).varName, last);
@@ -222,7 +222,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     public Result visit(AllocationExecutionNode allocationExecutionNode)
     {
         String varName = allocationExecutionNode.varName;
-        Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.profiles, new ExecutionState(this.executionState).varName(varName).setRealizeInMemory(allocationExecutionNode.realizeInMemory)));
+        Result result = allocationExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(this.identity, new ExecutionState(this.executionState).varName(varName).setRealizeInMemory(allocationExecutionNode.realizeInMemory)));
 
         if (this.executionState.realizeAllocationResults)
         {
@@ -242,13 +242,13 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
         JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) pureExpressionPlatformExecutionNode.implementation;
         String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
-        Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(pureExpressionPlatformExecutionNode, executionClassName, this.executionState, this.profiles);
+        Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(pureExpressionPlatformExecutionNode, executionClassName, this.executionState, this.identity);
         if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeSerializeSpecifics.class))
         {
             try
             {
                 org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics nodeSpecifics = (org.finos.legend.engine.plan.dependencies.store.platform.IPlatformPureExpressionExecutionNodeSerializeSpecifics) clazz.newInstance();
-                Result childResult = pureExpressionPlatformExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, executionState));
+                Result childResult = pureExpressionPlatformExecutionNode.executionNodes().getFirst().accept(new ExecutionNodeExecutor(identity, executionState));
                 IExecutionNodeContext context = new DefaultExecutionNodeContext(this.executionState, childResult);
 
                 AppliedFunction f = (AppliedFunction) pureExpressionPlatformExecutionNode.pure;
@@ -263,7 +263,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         }
         if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeGraphFetchUnionSpecifics.class))
         {
-            List<StreamingObjectResult<?>> streamingObjectResults = ListIterate.collect(pureExpressionPlatformExecutionNode.executionNodes, node -> (StreamingObjectResult) node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState)));
+            List<StreamingObjectResult<?>> streamingObjectResults = ListIterate.collect(pureExpressionPlatformExecutionNode.executionNodes, node -> (StreamingObjectResult) node.accept(new ExecutionNodeExecutor(this.identity, this.executionState)));
 
             Result childResult = new Result("success")
             {
@@ -285,14 +285,14 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
         if (Arrays.asList(clazz.getInterfaces()).contains(IPlatformPureExpressionExecutionNodeGraphFetchMergeSpecifics.class))
         {
-            StreamingObjectResult<?> streamResult = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            StreamingObjectResult<?> streamResult = (StreamingObjectResult) pureExpressionPlatformExecutionNode.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
             return streamResult;
         }
 
         else
         {
-            return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(pureExpressionPlatformExecutionNode, DefaultExecutionNodeContext.factory(), this.profiles, this.executionState);
+            return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(pureExpressionPlatformExecutionNode, DefaultExecutionNodeContext.factory(), this.identity, this.executionState);
         }
     }
 
@@ -318,11 +318,11 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
         if (isConditionSatisfied)
         {
-            return freeMarkerConditionalExecutionNode.trueBlock.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            return freeMarkerConditionalExecutionNode.trueBlock.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
         }
         else if (freeMarkerConditionalExecutionNode.falseBlock != null)
         {
-            return freeMarkerConditionalExecutionNode.falseBlock.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            return freeMarkerConditionalExecutionNode.falseBlock.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
         }
         else
         {
@@ -333,7 +333,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(AggregationAwareExecutionNode aggregationAwareExecutionNode)
     {
-        return aggregationAwareExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.Relational).getVisitor(this.profiles, this.executionState));
+        return aggregationAwareExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.Relational).getVisitor(this.identity, this.executionState));
     }
 
     @Deprecated
@@ -346,7 +346,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             Result rootResult;
             try (Scope ignored2 = GlobalTracer.get().buildSpan("Graph Query: Execute Root").startActive(true))
             {
-                rootResult = graphFetchExecutionNode.rootExecutionNode.accept(new ExecutionNodeExecutor(profiles, executionState));
+                rootResult = graphFetchExecutionNode.rootExecutionNode.accept(new ExecutionNodeExecutor(identity, executionState));
             }
 
             if (graphFetchExecutionNode.implementation != null)
@@ -367,7 +367,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                     String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
                     String executionMethodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
 
-                    Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(graphFetchExecutionNode, executionClassName, executionMethodName, Arrays.asList(StreamingObjectResult.class, ExecutionNode.class, ExecutionState.class, ProfileManager.class), Arrays.asList(objectResult, graphFetchExecutionNode, this.executionState, this.profiles), this.executionState, this.profiles);
+                    Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(graphFetchExecutionNode, executionClassName, executionMethodName, Arrays.asList(StreamingObjectResult.class, ExecutionNode.class, ExecutionState.class, ProfileManager.class), Arrays.asList(objectResult, graphFetchExecutionNode, this.executionState, this.identity), this.executionState, this.identity);
                     return new StreamingObjectResult<>(transformedResult, objectResult.getResultBuilder(), objectResult);
                 }
                 catch (Exception e)
@@ -399,7 +399,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                                     try (Scope scope = GlobalTracer.get().buildSpan("Graph Query: Execute Batch " + currentBatch).startActive(true))
                                     {
                                         GraphExecutionState graphExecutionState = new GraphExecutionState(executionState, batchSize, rootResult, maxMemoryBytesForGraph);
-                                        ConstantResult constantResult = (ConstantResult) rootLocalNode.accept(new ExecutionNodeExecutor(ExecutionNodeExecutor.this.profiles, graphExecutionState));
+                                        ConstantResult constantResult = (ConstantResult) rootLocalNode.accept(new ExecutionNodeExecutor(ExecutionNodeExecutor.this.identity, graphExecutionState));
                                         List<?> objects = (List<?>) constantResult.getValue();
                                         boolean nonEmptyObjectList = !objects.isEmpty();
 
@@ -456,7 +456,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     {
         List<?> parentObjects = graphExecutionState.getObjectsForNodeIndex(globalGraphFetchExecutionNode.parentIndex);
         graphExecutionState.setObjectsToGraphFetch(parentObjects);
-        globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(profiles, graphExecutionState));
+        globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(identity, graphExecutionState));
 
         if (globalGraphFetchExecutionNode.children != null && (globalGraphFetchExecutionNode.children.size() > 0) && !parentObjects.isEmpty())
         {
@@ -488,7 +488,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
             final AtomicLong rowCount = new AtomicLong(0L);
             final AtomicLong objectCount = new AtomicLong(0L);
             final DoubleSummaryStatistics memoryStatistics = new DoubleSummaryStatistics();
-            GraphFetchResult graphFetchResult = (GraphFetchResult) globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            GraphFetchResult graphFetchResult = (GraphFetchResult) globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
             Stream<?> objectStream = graphFetchResult.getGraphObjectsBatchStream().map(batch ->
             {
@@ -564,7 +564,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 {
                     graphObjectsBatch.setXStorePropertyCachesForNodeIndex(globalGraphFetchExecutionNode.localGraphFetchExecutionNode.nodeIndex, findGraphFetchCacheByTargetCrossKeys(globalGraphFetchExecutionNode));
                 }
-                globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                globalGraphFetchExecutionNode.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
 
                 this.executeGlobalGraphChildren(globalGraphFetchExecutionNode, this.executionState);
             }
@@ -577,25 +577,25 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
     @Override
     public Result visit(StoreStreamReadingExecutionNode storeStreamReadingExecutionNode)
     {
-        return storeStreamReadingExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
+        return storeStreamReadingExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.identity, this.executionState));
     }
 
     @Override
     public Result visit(InMemoryRootGraphFetchExecutionNode inMemoryRootGraphFetchExecutionNode)
     {
-        return inMemoryRootGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
+        return inMemoryRootGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.identity, this.executionState));
     }
 
     @Override
     public Result visit(InMemoryCrossStoreGraphFetchExecutionNode inMemoryCrossStoreGraphFetchExecutionNode)
     {
-        return inMemoryCrossStoreGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
+        return inMemoryCrossStoreGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.identity, this.executionState));
     }
 
     @Override
     public Result visit(InMemoryPropertyGraphFetchExecutionNode inMemoryPropertyGraphFetchExecutionNode)
     {
-        return inMemoryPropertyGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.profiles, this.executionState));
+        return inMemoryPropertyGraphFetchExecutionNode.accept(this.executionState.getStoreExecutionState(StoreType.InMemory).getVisitor(this.identity, this.executionState));
     }
 
     @Override
@@ -610,10 +610,10 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
         Result last = null;
         for (ExecutionNode node : sequenceExecutionNode.executionNodes())
         {
-            Result temp = this.executionState.extraSequenceNodeExecutors.stream().map(executor -> executor.value(node, this.profiles, this.executionState)).filter(Objects::nonNull).findFirst().orElse(null);
+            Result temp =  this.executionState.extraSequenceNodeExecutors.stream().map(executor -> executor.value(node, this.identity, this.executionState)).filter(Objects::nonNull).findFirst().orElse(null);
             if (temp == null)
             {
-                last = node.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+                last = node.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
             }
         }
         return last;
@@ -651,7 +651,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
         if (parentObjects != null && !parentObjects.isEmpty())
         {
-            node.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.profiles, this.executionState));
+            node.localGraphFetchExecutionNode.accept(new ExecutionNodeExecutor(this.identity, this.executionState));
             this.executeGlobalGraphChildren(node, this.executionState);
         }
 
@@ -668,7 +668,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 
         if (parentObjects != null && !parentObjects.isEmpty())
         {
-            IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics specifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.profiles);
+            IPlatformPrimitiveQualifierLocalGraphFetchExecutionNodeSpecifics specifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
             Stream<IGraphInstance<?>> graphInstanceStream = specifics.executeQualifierExpression(parentObjects, DefaultExecutionNodeContext.factory().create(this.executionState, null));
             graphInstanceStream.filter(Objects::nonNull).forEach(graphInstance ->
             {
@@ -699,7 +699,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                 {
                     if (nextChild.dependencyIndices == null || processedIndices.containsAll(nextChild.dependencyIndices))
                     {
-                        nextChild.accept(new ExecutionNodeExecutor(this.profiles, state));
+                        nextChild.accept(new ExecutionNodeExecutor(this.identity, state));
                         this.updateProcessedIndicesRecursively(nextChild, processedIndices);
                         childrenToProcess.remove(nextChild);
                         anyChildProcessed = true;

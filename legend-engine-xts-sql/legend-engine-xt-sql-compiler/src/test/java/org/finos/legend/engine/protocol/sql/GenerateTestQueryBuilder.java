@@ -14,19 +14,19 @@
 
 package org.finos.legend.engine.protocol.sql;
 
-import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class GenerateTestQueryBuilder
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Lists.mutable.empty(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(),Identity.getAnonymousIdentity(), DeploymentMode.TEST);
         String query = "SELECT id FROM alloy.\"/alloy/bi/getTableauUsage\" LIMIT 1";
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(query);

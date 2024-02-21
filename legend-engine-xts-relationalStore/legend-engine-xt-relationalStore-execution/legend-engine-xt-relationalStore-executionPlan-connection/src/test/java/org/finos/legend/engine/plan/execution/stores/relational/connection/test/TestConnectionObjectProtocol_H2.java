@@ -22,6 +22,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.EmbeddedH2DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.LocalH2DataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.EmbeddedH2DataSourceSpecificationKey;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Test;
 
 import javax.security.auth.Subject;
@@ -42,9 +43,9 @@ public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
     }
 
     @Test
-    public void testLocalTestConnection_profile() throws Exception
+    public void testLocalTestConnection_identity() throws Exception
     {
-        testLocalTestConnection(c -> c.getConnectionUsingProfiles(null));
+        testLocalTestConnection(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
     }
 
     private void testLocalTestConnection(Function<DataSourceSpecification, Connection> toDBConnection, AuthenticationStrategy authenticationStrategy) throws Exception
@@ -81,9 +82,9 @@ public class TestConnectionObjectProtocol_H2 extends DbSpecificTests
     }
 
     @Test
-    public void testEmbeddedH2Connection_profile() throws Exception
+    public void testEmbeddedH2Connection_identity() throws Exception
     {
-        testEmbeddedH2Connection(c -> c.getConnectionUsingProfiles(null));
+        testEmbeddedH2Connection(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
     }
 
     private void testEmbeddedH2Connection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception

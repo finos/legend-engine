@@ -28,7 +28,7 @@ import java.util.Objects;
 public class ServiceRunnerInput
 {
     private List<Object> args = Collections.emptyList();
-    private Identity identity = null;
+    private Identity identity = Identity.getAnonymousIdentity();
     private OperationalContext operationalContext = OperationalContext.newInstance();
     private SerializationFormat serializationFormat = SerializationFormat.DEFAULT;
 

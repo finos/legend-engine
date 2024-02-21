@@ -235,13 +235,6 @@
         </dependency>
         <!-- FreeMarker -->
 
-        <!-- Authentication -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- Authentication -->
-
         <!-- LOGGING -->
         <dependency>
             <groupId>org.slf4j</groupId>

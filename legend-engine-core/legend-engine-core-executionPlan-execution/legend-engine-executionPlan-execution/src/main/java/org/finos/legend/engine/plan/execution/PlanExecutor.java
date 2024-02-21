@@ -41,14 +41,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPla
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.url.InputStreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -77,7 +76,7 @@ public class PlanExecutor
     private ConcurrentExecutionNodeExecutorPool concurrentExecutionNodeExecutorPool;
     private ParallelGraphFetchExecutionExecutorPool graphFetchExecutionNodeExecutorPool;
     private GraphFetchExecutionConfiguration graphFetchExecutionConfiguration;
-    private BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
+    private BiFunction<Identity, ExecutionState, ExecutionNodeExecutor> executionNodeExecutorBuilder;
     private final CredentialProviderProvider credentialProviderProvider;
     private final boolean logSQLWithParamValues;
 
@@ -192,21 +191,21 @@ public class PlanExecutor
     }
 
     @Deprecated
-    public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
+    public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, String user, Identity identity, PlanExecutionContext planExecutionContext)
     {
         Map<String, Result> vars = Maps.mutable.ofInitialCapacity(params.size());
         params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
-        return execute(executionPlan.getSingleExecutionPlan(params), vars, user, profiles, planExecutionContext);
+        return execute(executionPlan.getSingleExecutionPlan(params), vars, user, identity, planExecutionContext);
     }
 
     @Deprecated
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, PlanExecutionContext planExecutionContext)
     {
-        return execute(executionPlan, params, inputStreamProvider, null, planExecutionContext);
+        return execute(executionPlan, params, inputStreamProvider, Identity.getAnonymousIdentity(), planExecutionContext);
     }
 
     @Deprecated
-    public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
+    public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, Identity identity, PlanExecutionContext planExecutionContext)
     {
         SingleExecutionPlan singleExecutionPlan = executionPlan.getSingleExecutionPlan(params);
         try
@@ -217,7 +216,7 @@ public class PlanExecutor
             }
             Map<String, Result> vars = Maps.mutable.ofInitialCapacity(params.size());
             params.forEach((key, value) -> vars.put(key, new ConstantResult(value)));
-            return execute(singleExecutionPlan, vars, (String) null, profiles, planExecutionContext);
+            return execute(singleExecutionPlan, vars, (String) null, identity, planExecutionContext);
         }
         finally
         {
@@ -225,17 +224,17 @@ public class PlanExecutor
         }
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, Identity identity)
     {
-        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, profiles);
+        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars), user, identity);
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user,Identity identity, PlanExecutionContext planExecutionContext)
     {
-        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, profiles);
+        return execute(executionPlan, buildDefaultExecutionState(executionPlan, vars, planExecutionContext), user, identity);
     }
 
-    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, MutableList<CommonProfile> profiles, PlanExecutionContext planExecutionContext, RequestContext requestContext)
+    public Result execute(SingleExecutionPlan executionPlan, Map<String, Result> vars, String user, Identity identity, PlanExecutionContext planExecutionContext, RequestContext requestContext)
     {
         ExecutionState state = buildDefaultExecutionState(executionPlan, vars, planExecutionContext);
         if (requestContext != null)
@@ -243,20 +242,20 @@ public class PlanExecutor
             state.setRequestContext(requestContext);
         }
 
-        return execute(executionPlan, state, user, profiles);
+        return execute(executionPlan, state, user, identity);
     }
 
-    public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, MutableList<CommonProfile> profiles)
+    public Result execute(SingleExecutionPlan singleExecutionPlan, ExecutionState state, String user, Identity identity)
     {
-        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, profiles);
+        EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, identity);
         try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
         {
             // set up the state
-            setUpState(singleExecutionPlan, state, profiles, user);
+            setUpState(singleExecutionPlan, state, identity, user);
             singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
 
             // execute
-            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(profiles, state));
+            return singleExecutionPlan.rootExecutionNode.accept(new ExecutionNodeExecutor(identity, state));
         }
     }
 
@@ -280,7 +279,7 @@ public class PlanExecutor
                 state.getStoreExecutionState(storeType).setRuntimeContext(runtimeContext);
             }));
 
-            EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, executeArgs.profiles);
+            EngineJavaCompiler engineJavaCompiler = possiblyCompilePlan(singleExecutionPlan, state, executeArgs.identity);
             try (JavaHelper.ThreadContextClassLoaderScope scope = (engineJavaCompiler == null) ? null : JavaHelper.withCurrentThreadContextClassLoader(engineJavaCompiler.getClassLoader()))
             {
                 // set up the state
@@ -288,11 +287,11 @@ public class PlanExecutor
                 {
                     state.setRequestContext(executeArgs.requestContext);
                 }
-                setUpState(singleExecutionPlan, state, executeArgs.profiles, executeArgs.user);
+                setUpState(singleExecutionPlan, state, executeArgs.identity, executeArgs.user);
 
                 singleExecutionPlan.getExecutionStateParams(org.eclipse.collections.api.factory.Maps.mutable.empty()).forEach(state::addParameterValue);
                 // execute
-                ExecutionNodeExecutor executionNodeExecutor = this.buildExecutionNodeExecutor(executeArgs.profiles, state);
+                ExecutionNodeExecutor executionNodeExecutor = this.buildExecutionNodeExecutor(executeArgs.identity, state);
                 return singleExecutionPlan.rootExecutionNode.accept(executionNodeExecutor);
             }
         }
@@ -302,7 +301,7 @@ public class PlanExecutor
         }
     }
 
-    protected static void setUpState(SingleExecutionPlan singleExecutionPlan, ExecutionState state, MutableList<CommonProfile> profiles, String user)
+    protected static void setUpState(SingleExecutionPlan singleExecutionPlan, ExecutionState state, Identity identity, String user)
     {
         if (singleExecutionPlan.authDependent)
         {
@@ -310,7 +309,7 @@ public class PlanExecutor
         }
         if (state.authId == null)
         {
-            state.setAuthUser(IdentityFactoryProvider.getInstance().makeIdentity(profiles).getName(), false);
+            state.setAuthUser(Identity.getAnonymousIdentity().getName(), false);
         }
         if ((state.getResult(USER_ID) == null))
         {
@@ -341,7 +340,7 @@ public class PlanExecutor
         this.graphFetchExecutionNodeExecutorPool = graphFetchExecutionNodeExecutorPool;
     }
 
-    private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, MutableList<CommonProfile> profiles)
+    private EngineJavaCompiler possiblyCompilePlan(SingleExecutionPlan plan, ExecutionState state, Identity identity)
     {
         if (state.isJavaCompilationForbidden())
         {
@@ -353,7 +352,7 @@ public class PlanExecutor
         }
         try
         {
-            EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(plan, profiles);
+            EngineJavaCompiler engineJavaCompiler = JavaHelper.compilePlan(plan, identity);
             if (engineJavaCompiler != null)
             {
                 state.setJavaCompiler(engineJavaCompiler);
@@ -665,7 +664,7 @@ public class PlanExecutor
         private Map<StoreType, StoreExecutionState.RuntimeContext> storeRuntimeContexts = Maps.mutable.empty();
         private Map<String, Result> vars = Maps.mutable.empty();
         private Map<String, Object> params = Maps.mutable.empty();
-        private MutableList<CommonProfile> profiles = Lists.mutable.empty();
+        private Identity identity = Identity.getAnonymousIdentity();
         private String user;
         private RequestContext requestContext;
 
@@ -680,7 +679,7 @@ public class PlanExecutor
             this.executionState = builder.executionState;
             this.vars.putAll(builder.vars);
             this.params.putAll(builder.params);
-            this.profiles.addAll(builder.profiles);
+            this.identity = identity;
             this.user = builder.user;
             this.requestContext = builder.requestContext;
         }
@@ -700,7 +699,7 @@ public class PlanExecutor
         private Map<StoreType, StoreExecutionState.RuntimeContext> storeRuntimeContexts = Maps.mutable.empty();
         private Map<String, Result> vars = Maps.mutable.empty();
         private Map<String, Object> params = Maps.mutable.empty();
-        private MutableList<CommonProfile> profiles = Lists.mutable.empty();
+        private Identity identity = Identity.getAnonymousIdentity();
         private String user;
         private RequestContext requestContext;
 
@@ -774,13 +773,9 @@ public class PlanExecutor
             return this;
         }
 
-        public ExecuteArgsBuilder withProfiles(MutableList<CommonProfile> profiles)
+        public ExecuteArgsBuilder withIdentity(Identity identity)
         {
-            this.profiles.clear();
-            if (profiles != null)
-            {
-                this.profiles.addAll(profiles);
-            }
+           this.identity = identity;
             return this;
         }
 
@@ -826,20 +821,20 @@ public class PlanExecutor
         }
     }
 
-    public void setExecutionNodeExecutorBuilder(BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor> supplier)
+    public void setExecutionNodeExecutorBuilder(BiFunction<Identity, ExecutionState, ExecutionNodeExecutor> supplier)
     {
         this.executionNodeExecutorBuilder = supplier;
     }
 
-    private ExecutionNodeExecutor buildExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private ExecutionNodeExecutor buildExecutionNodeExecutor(Identity identity, ExecutionState executionState)
     {
         if (this.executionNodeExecutorBuilder == null)
         {
-            return new ExecutionNodeExecutor(profiles, executionState);
+            return new ExecutionNodeExecutor(identity, executionState);
         }
         else
         {
-            return executionNodeExecutorBuilder.apply(profiles, executionState);
+            return executionNodeExecutorBuilder.apply(identity, executionState);
         }
     }
 }

@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.pure.runtime.execution.shared;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.list.mutable.ListAdapter;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -26,7 +24,6 @@ import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,12 +42,11 @@ public class LegendExecute
         // run using current user credentials
         IdentityFactory instance = IdentityFactoryProvider.getInstance();
         Identity identity = instance.makeIdentity(SubjectTools.getCurrentSubject());
-        MutableList<CommonProfile> profiles = ListAdapter.adapt(instance.adapt(identity));
 
         PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.withArgs()
                 .withParams(variables)
                 .withPlanAsString(jsonPlan)
-                .withProfiles(profiles)
+                .withIdentity(identity)
                 .withUser(identity.getName())
                 .build();
 

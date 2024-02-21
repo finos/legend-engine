@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.connection.test
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.jsontype.NamedType;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.BigQueryTestDatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
@@ -27,12 +26,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
@@ -128,18 +127,18 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     }
 
     @Test
-    public void testBigQueryGCPADCConnection_profile() throws Exception
+    public void testBigQueryGCPADCConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
     @Test
-    public void testBigQueryGCPWIFConnection_profile() throws Exception
+    public void testBigQueryGCPWIFConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 

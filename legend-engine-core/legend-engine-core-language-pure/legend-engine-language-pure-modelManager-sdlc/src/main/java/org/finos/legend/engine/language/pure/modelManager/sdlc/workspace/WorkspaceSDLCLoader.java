@@ -29,7 +29,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetadataServerPrivateAccessTokenConfiguration;
@@ -40,11 +39,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.server.pac4j.gitlab.GitlabPersonalAccessTokenProfile;
-import org.pac4j.core.profile.CommonProfile;
 
 public class WorkspaceSDLCLoader
 {
@@ -62,12 +60,12 @@ public class WorkspaceSDLCLoader
         this.mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
     }
 
-    public PureModelContextData loadWorkspace(MutableList<CommonProfile> pm, WorkspaceSDLC sdlc, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    public PureModelContextData loadWorkspace(Identity identity, WorkspaceSDLC sdlc, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
-        return this.doAs(pm, () ->
+        return this.doAs(identity, () ->
         {
             String url = sdlcServerConnectionConfig.getBaseUrl() + "/api/projects/" + sdlc.project + (sdlc.isGroupWorkspace ? "/groupWorkspaces/" : "/workspaces/") + sdlc.getWorkspace() + "/pureModelContextData";
-            return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url, httpClientProvider, x -> prepareHttpRequest(pm, x));
+            return SDLCLoader.loadMetadataFromHTTPURL(identity, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, url, httpClientProvider, x -> prepareHttpRequest(identity, x));
         });
     }
 
@@ -76,15 +74,15 @@ public class WorkspaceSDLCLoader
         this.modelManager = modelManager;
     }
 
-    public PureModelContextData getSDLCDependenciesPMCD(MutableList<CommonProfile> pm, String clientVersion, WorkspaceSDLC sdlc, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    public PureModelContextData getSDLCDependenciesPMCD(Identity identity, String clientVersion, WorkspaceSDLC sdlc, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
-        return this.doAs(pm, () ->
+        return this.doAs(identity, () ->
         {
             CloseableHttpClient httpclient;
 
             if (httpClientProvider != null)
             {
-                httpclient = httpClientProvider.apply(pm);
+                httpclient = httpClientProvider.apply(identity);
             }
             else
             {
@@ -102,7 +100,7 @@ public class WorkspaceSDLCLoader
                         sdlc.isGroupWorkspace ? "groupWorkspaces" : "workspaces",
                         sdlc.getWorkspace());
 
-                HttpGet httpRequest = this.prepareHttpRequest(pm, url);
+                HttpGet httpRequest = this.prepareHttpRequest(identity, url);
                 HttpEntity entity = SDLCLoader.execHttpRequest(scope.span(), client, httpRequest);
 
                 try (InputStream content = entity.getContent())
@@ -113,7 +111,7 @@ public class WorkspaceSDLCLoader
 
                     dependencies.forEach(dependency ->
                     {
-                        builder.addPureModelContextData(this.loadDependencyData(pm, clientVersion, dependency));
+                        builder.addPureModelContextData(this.loadDependencyData(identity, clientVersion, dependency));
                     });
 
                     builder.removeDuplicates();
@@ -127,24 +125,24 @@ public class WorkspaceSDLCLoader
         });
     }
 
-    private PureModelContextData doAs(MutableList<CommonProfile> pm, PrivilegedAction<PureModelContextData> action)
+    private PureModelContextData doAs(Identity identity, PrivilegedAction<PureModelContextData> action)
     {
-        Subject kerberosCredential = ProfileManagerHelper.extractSubject(pm);
+        Subject kerberosCredential = identity.getSubjectFromIdentity();
         return kerberosCredential == null ? action.run() : Subject.doAs(kerberosCredential, action);
     }
 
-    private HttpGet prepareHttpRequest(MutableList<CommonProfile> pm, String url)
+    private HttpGet prepareHttpRequest(Identity identity, String url)
     {
         HttpGet httpRequest = null;
 
         if (this.sdlcServerConnectionConfig.pac4j != null && this.sdlcServerConnectionConfig.pac4j instanceof MetadataServerPrivateAccessTokenConfiguration)
         {
             String patHeaderName = ((MetadataServerPrivateAccessTokenConfiguration) this.sdlcServerConnectionConfig.pac4j).accessTokenHeaderName;
-            MutableList<GitlabPersonalAccessTokenProfile> patProfiles = pm.selectInstancesOf(GitlabPersonalAccessTokenProfile.class);
-            if (patProfiles.getFirst() != null)
+            //MutableList<GitlabPersonalAccessTokenProfile> patProfiles = pm.selectInstancesOf(GitlabPersonalAccessTokenProfile.class);
+            if (identity != null)
             {
-                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, patProfiles.getFirst().getClientName()));
-                httpRequest.addHeader(new BasicHeader(patHeaderName, patProfiles.getFirst().getPersonalAccessToken()));
+                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, identity.getName()));
+                //httpRequest.addHeader(new BasicHeader(patHeaderName, patProfiles.getFirst().getPersonalAccessToken()));
             }
         }
 
@@ -156,7 +154,7 @@ public class WorkspaceSDLCLoader
         return httpRequest;
     }
 
-    private PureModelContextData loadDependencyData(MutableList<CommonProfile> profiles, String clientVersion, SDLCProjectDependency dependency)
+    private PureModelContextData loadDependencyData(Identity profiles, String clientVersion, SDLCProjectDependency dependency)
     {
         PureModelContextPointer pointer = new PureModelContextPointer();
         AlloySDLC sdlcInfo = new AlloySDLC();

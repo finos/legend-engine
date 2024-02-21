@@ -32,6 +32,8 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -83,7 +85,7 @@ public class ExternalFormats
             List<ExternalFormatDescription> descriptions = extensions.values().stream()
                     .map(ext -> ExternalFormatDescription.newDescription(ext, pureModel))
                     .collect(Collectors.toList());
-            return ManageConstantResult.manageResult(null, descriptions);
+            return ManageConstantResult.manageResult(Identity.getAnonymousIdentity().getName(), descriptions);
         }
         catch (Exception ex)
         {
@@ -98,25 +100,26 @@ public class ExternalFormats
     public Response generateModel(GenerateModelInput generateModelInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         boolean interactive = generateModelInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Model From External Format Schema").startActive(true))
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_START : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_START).toString());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_START : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_START).toString());
             ExternalFormatExtension<?> extension = extensions.get(generateModelInput.config.format);
             if (!(extension instanceof ExternalFormatModelGenerationExtension))
             {
                 throw new UnsupportedOperationException("Model generation not supported for " + extension.getFormat());
             }
-            PureModel pureModel = this.modelManager.loadModel(generateModelInput.model, generateModelInput.clientVersion, profiles, null);
+            PureModel pureModel = this.modelManager.loadModel(generateModelInput.model, generateModelInput.clientVersion, identity, null);
             SchemaToModelGenerator generator = new SchemaToModelGenerator(pureModel, generateModelInput.clientVersion, extensions);
             PureModelContextData generated = generator.generate(generateModelInput.config, generateModelInput.sourceSchemaSet, generateModelInput.generateBinding, generateModelInput.targetBindingPath);
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_STOP, (double) System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(profiles, generated, objectMapper);
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_STOP, (double) System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(identity.getName(), generated, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_ERROR : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_INTERACTIVE_ERROR : LoggingEventType.GENERATE_EXTERNAL_FORMAT_MODEL_ERROR, identity.getName());
         }
     }
 
@@ -127,11 +130,12 @@ public class ExternalFormats
     public Response generateSchema(GenerateSchemaInput generateSchemaInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         boolean interactive = generateSchemaInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Model From External Format Schema").startActive(true))
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_START : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_START).toString());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_START : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_START).toString());
             if (generateSchemaInput.config == null || generateSchemaInput.config.format == null)
             {
                 throw new EngineException("Please provide a Format");
@@ -150,15 +154,15 @@ public class ExternalFormats
             {
                 throw new UnsupportedOperationException("Please provide a PureModelContext");
             }
-            PureModel pureModel = this.modelManager.loadModel(generateSchemaInput.model, generateSchemaInput.clientVersion, profiles, null);
+            PureModel pureModel = this.modelManager.loadModel(generateSchemaInput.model, generateSchemaInput.clientVersion, identity, null);
             ModelToSchemaGenerator generator = new ModelToSchemaGenerator(pureModel, extensions);
             PureModelContextData generated = generator.generate(generateSchemaInput.config, generateSchemaInput.sourceModelUnit, generateSchemaInput.generateBinding, generateSchemaInput.targetBindingPath);
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_STOP, (double) System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(profiles, generated, objectMapper);
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_STOP, (double) System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(identity.getName(), generated, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_EXTERNAL_FORMAT_SCHEMA_ERROR, identity.getName());
         }
     }
 }

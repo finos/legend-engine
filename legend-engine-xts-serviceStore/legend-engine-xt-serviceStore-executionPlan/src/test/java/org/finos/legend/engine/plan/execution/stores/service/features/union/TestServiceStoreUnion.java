@@ -24,6 +24,8 @@ import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestSuite;
 import org.finos.legend.engine.plan.execution.stores.service.utils.ServiceStoreTestUtils;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.finos.legend.server.pac4j.kerberos.LocalCredentials;
 import org.junit.Assert;
@@ -279,9 +281,10 @@ public class TestServiceStoreUnion extends ServiceStoreTestSuite
                 "}";
 
         SingleExecutionPlan plan = buildPlanForQuery(pureGrammar + "\n\n" + query, "meta::external::store::service::showcase::mapping::ServiceStoreMapping2", "meta::external::store::service::showcase::runtime::ServiceStoreRuntime2");
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)));
         PlanExecutor.ExecuteArgs executeArgs = PlanExecutor.ExecuteArgs.newArgs()
                 .withPlan(plan)
-                .withProfiles(Lists.mutable.with(new KerberosProfile(LocalCredentials.INSTANCE)))
+                .withIdentity(identity)
                 .build();
 
         String expectedRes = "{\"builder\":{\"_type\":\"json\"},\"values\":[{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"},{\"firstName\":\"FirstName ServiceStore\",\"lastName\":\"LastName ServiceStore\",\"firmId\":\"ServiceStore\"}]}";
