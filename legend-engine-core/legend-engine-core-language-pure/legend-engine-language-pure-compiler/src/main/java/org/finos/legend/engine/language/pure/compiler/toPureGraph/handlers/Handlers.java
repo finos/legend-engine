@@ -806,7 +806,7 @@ public class Handlers
                 ._rawType(this.pureModel.getType("meta::pure::functions::collection::Pair"))
                 ._typeArguments(Lists.fixedSize.ofAll(ps.stream().map(ValueSpecificationAccessor::_genericType).collect(Collectors.toList()))), "one"));
 
-        register("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"));
+        register(h("meta::pure::functions::multiplicity::toOne_T_MANY__T_1_", true, ps -> res(ps.get(0)._genericType(), "one"), ps -> Lists.mutable.with(ps.get(0)._genericType()), ps -> true));
 
         register(m(
                 m(h("meta::pure::functions::string::indexOf_String_1__String_1__Integer_1_", true, ps -> res("Integer", "one"), ps -> ps.size() == 2 && typeOne(ps.get(0), "String") && typeOne(ps.get(1), "String")),
