@@ -24,6 +24,6 @@ public interface ExecutionPlanJavaCompilerExtension extends LegendPlanExtension
     @Override
     default String type()
     {
-        return "(Plan)Java_Compiler_Class_Path_Extension";
+        return "(Plan)(Binding_Java)Class_Path_Extension";
     }
 }

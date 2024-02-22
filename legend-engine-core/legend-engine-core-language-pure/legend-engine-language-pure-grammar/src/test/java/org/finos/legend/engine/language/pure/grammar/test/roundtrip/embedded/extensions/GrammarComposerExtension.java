@@ -26,7 +26,7 @@ public class GrammarComposerExtension implements PureGrammarComposerExtension
     @Override
     public String group()
     {
-        return "Test";
+        return "__Test__";
     }
 
     @Override

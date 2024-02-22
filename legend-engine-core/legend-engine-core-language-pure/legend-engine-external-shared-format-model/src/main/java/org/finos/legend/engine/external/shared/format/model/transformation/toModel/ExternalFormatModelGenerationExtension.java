@@ -41,7 +41,7 @@ public interface ExternalFormatModelGenerationExtension<Metamodel, ModelGenConfi
     @Override
     default String type()
     {
-        return "External_Format_Model_Generation";
+        return "(External_Format)Model_Generation";
     }
 
     /**

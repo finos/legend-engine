@@ -19,6 +19,6 @@ public interface FeatureLegendPureCoreExtension extends LegendPureCoreExtension
     @Override
     default String type()
     {
-        return "Feature";
+        return "(Feature)Pure";
     }
 }

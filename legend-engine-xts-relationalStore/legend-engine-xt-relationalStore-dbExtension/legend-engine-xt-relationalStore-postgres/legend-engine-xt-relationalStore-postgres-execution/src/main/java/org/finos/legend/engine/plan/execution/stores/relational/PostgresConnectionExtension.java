@@ -26,7 +26,7 @@ public class PostgresConnectionExtension implements RelationalConnectionExtensio
     @Override
     public String type()
     {
-        return "ConnectionExtension";
+        return "(Connection)ConnectionExtension";
     }
 
     @Override

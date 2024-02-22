@@ -35,7 +35,7 @@ public class AuthenticationDemoComposerExtension implements IAuthenticationDemoC
     @Override
     public String group()
     {
-        return "Test";
+        return "__Test__";
     }
 
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->

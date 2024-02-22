@@ -19,6 +19,6 @@ public interface StoreLegendPureCoreExtension extends LegendPureCoreExtension
     @Override
     default String type()
     {
-        return "Store";
+        return "(Store)Pure";
     }
 }

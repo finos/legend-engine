@@ -36,7 +36,7 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
     @Override
     default String type()
     {
-        return "External_Format_Schema_Generation";
+        return "(External_Format)Schema_Generation";
     }
 
 

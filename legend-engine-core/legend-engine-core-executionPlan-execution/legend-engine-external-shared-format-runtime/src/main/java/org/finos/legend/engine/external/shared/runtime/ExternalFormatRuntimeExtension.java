@@ -33,7 +33,7 @@ public interface ExternalFormatRuntimeExtension extends LegendExternalFormatExte
     @Override
     default String type()
     {
-        return "External_Format_Runtime";
+        return "(External_Format)Runtime";
     }
 
     List<String> getContentTypes();

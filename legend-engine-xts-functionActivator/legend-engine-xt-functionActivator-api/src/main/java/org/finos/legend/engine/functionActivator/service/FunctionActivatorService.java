@@ -35,7 +35,7 @@ public interface FunctionActivatorService<T extends Root_meta_external_function_
     @Override
     default String type()
     {
-        return "Function_Activator";
+        return "(Function_Activator)Core";
     }
 
     FunctionActivatorInfo info(PureModel pureModel, String version);

@@ -26,7 +26,7 @@ public class AuthenticationDemoCompilerExtension implements IAuthenticationDemoC
     @Override
     public String group()
     {
-        return "Test";
+        return "__Test__";
     }
 
     @Override

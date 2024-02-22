@@ -41,7 +41,7 @@ public class AthenaConnectionExtension implements RelationalConnectionExtension,
     @Override
     public String type()
     {
-        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+        return "(Connection)MIX_ConnectionExtension_&_Strategic_Connection_Extension";
     }
 
     @Override

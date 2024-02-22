@@ -23,7 +23,7 @@ public interface ConnectionExtension extends LegendConnectionExtension
     @Override
     default String type()
     {
-        return "Connection_Extension";
+        return "(Connection)Connection_Extension";
     }
 
     MutableList<DatabaseManager> getAdditionalDatabaseManager();

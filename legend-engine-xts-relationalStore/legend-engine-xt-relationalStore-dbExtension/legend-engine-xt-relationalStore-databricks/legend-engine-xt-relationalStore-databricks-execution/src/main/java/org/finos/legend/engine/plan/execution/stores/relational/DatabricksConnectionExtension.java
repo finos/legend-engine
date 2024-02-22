@@ -43,7 +43,7 @@ public class DatabricksConnectionExtension implements RelationalConnectionExtens
     @Override
     public String type()
     {
-        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+        return "(Connection)MIX_ConnectionExtension_&_Strategic_Connection_Extension";
     }
 
     @Override

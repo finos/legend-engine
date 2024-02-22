@@ -21,7 +21,7 @@ public interface StoreExecutorBuilder extends LegendPlanExtension
     @Override
     default String type()
     {
-        return "StoreExecutorBuilder";
+        return "(Store)ExecutorBuilder";
     }
 
     StoreType getStoreType();

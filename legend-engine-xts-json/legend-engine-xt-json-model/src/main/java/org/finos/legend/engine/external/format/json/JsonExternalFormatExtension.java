@@ -37,7 +37,7 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
     @Override
     public String type()
     {
-        return "MIX_External_Format_Model_Generation_&_External_Format_Schema_Generation";
+        return "(External_Format)MIX_Model_Generation_&_Schema_Generation";
     }
 
     @Override

@@ -30,7 +30,7 @@ public interface GenerationExtension extends LegendGenerationExtension
     @Override
     default String type()
     {
-        return "Generation";
+        return "(Generation)!!MoveToArtifact!!";
     }
 
     String getLabel();

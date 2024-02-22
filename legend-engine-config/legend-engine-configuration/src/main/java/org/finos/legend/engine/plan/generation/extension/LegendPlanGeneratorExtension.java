@@ -25,7 +25,7 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
     @Override
     public String type()
     {
-        return "Plan_Transformer";
+        return "(Plan)Protocol_Version_Transformer";
     }
 
     @Override

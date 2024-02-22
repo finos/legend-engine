@@ -26,7 +26,7 @@ public class SqlServerConnectionExtension implements RelationalConnectionExtensi
     @Override
     public String type()
     {
-        return "ConnectionExtension";
+        return "(Connection)ConnectionExtension";
     }
 
     @Override

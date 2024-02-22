@@ -19,7 +19,7 @@ public class CoreLegendPureCoreExtension implements LegendPureCoreExtension
     @Override
     public String type()
     {
-        return "PureExtension";
+        return "(Core)Pure";
     }
 
     @Override

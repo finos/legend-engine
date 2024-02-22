@@ -38,7 +38,7 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
     @Override
     public String type()
     {
-        return "Strategic_Connection_Extension";
+        return "(Connection)Strategic_Connection_Extension";
     }
 
     @Override

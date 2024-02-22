@@ -26,7 +26,7 @@ public class MemSQLConnectionExtension implements RelationalConnectionExtension
     @Override
     public String type()
     {
-        return "ConnectionExtension";
+        return "(Connection)ConnectionExtension";
     }
 
     @Override

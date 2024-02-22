@@ -24,7 +24,7 @@ public class ProtocolExtension implements PureProtocolExtension
     @Override
     public String group()
     {
-        return "Test";
+        return "__Test__";
     }
 
     @Override

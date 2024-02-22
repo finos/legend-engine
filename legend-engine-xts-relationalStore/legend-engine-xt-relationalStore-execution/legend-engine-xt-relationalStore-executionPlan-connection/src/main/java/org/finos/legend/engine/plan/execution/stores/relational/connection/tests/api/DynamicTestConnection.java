@@ -25,7 +25,7 @@ public interface DynamicTestConnection extends LegendConnectionExtension
     @Override
     default String type()
     {
-        return "Test_Connection";
+        return "(Connection)Test_Connection";
     }
 
     DatabaseType getDatabaseType();

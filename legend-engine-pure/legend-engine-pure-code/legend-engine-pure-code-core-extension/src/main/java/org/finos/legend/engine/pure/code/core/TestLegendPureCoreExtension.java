@@ -19,12 +19,12 @@ public interface TestLegendPureCoreExtension extends LegendPureCoreExtension
     @Override
     default String type()
     {
-        return "Test";
+        return "__Test__";
     }
 
     @Override
     default String group()
     {
-        return "Test";
+        return "__Test__";
     }
 }

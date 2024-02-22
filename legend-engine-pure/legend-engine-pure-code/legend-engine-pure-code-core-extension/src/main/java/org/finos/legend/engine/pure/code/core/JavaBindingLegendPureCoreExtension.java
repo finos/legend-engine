@@ -19,6 +19,6 @@ public interface JavaBindingLegendPureCoreExtension extends BindingLegendPureCor
     @Override
     default String type()
     {
-        return "(Plan)Binding_Generation_Java";
+        return "(Plan)(Binding_Java)Pure";
     }
 }

@@ -22,7 +22,7 @@ public interface TestableRunnerExtension extends LegendExtension
     @Override
     default String type()
     {
-        return "Testable";
+        return "(Testable)Runner";
     }
 
     String getSupportedClassifierPath();
