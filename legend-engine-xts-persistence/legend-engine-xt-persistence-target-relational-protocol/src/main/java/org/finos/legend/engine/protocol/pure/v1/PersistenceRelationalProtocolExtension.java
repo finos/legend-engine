@@ -26,6 +26,12 @@ import java.util.List;
 public class PersistenceRelationalProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Persistence_Relational";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(

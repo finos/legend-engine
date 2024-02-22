@@ -47,6 +47,12 @@ public class ServiceProtocolExtension implements PureProtocolExtension
     public static final String SERVICE_CLASSIFIER_PATH = "meta::legend::service::metamodel::Service";
 
     @Override
+    public String group()
+    {
+        return "PE_Service";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.mutable.with(

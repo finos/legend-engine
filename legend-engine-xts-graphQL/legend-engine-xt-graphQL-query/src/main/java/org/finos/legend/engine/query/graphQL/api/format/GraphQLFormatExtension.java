@@ -31,6 +31,12 @@ import org.finos.legend.pure.generated.core_external_query_graphql_contract;
 
 public class GraphQLFormatExtension implements ExternalFormatModelGenerationExtension<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer, GraphQLSchemaToModelConfiguration>
 {
+    @Override
+    public String group()
+    {
+        return "QU_GraphQL";
+    }
+
     private final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer> graphQLIntrospectionContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_query_graphQL_binding_toPure_introspection_GraphQLIntrospectionContainer>) core_external_query_graphql_contract.Root_meta_external_query_graphQL_contract_graphQLIntrospectionContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
 
     @Override

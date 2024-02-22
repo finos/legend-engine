@@ -27,6 +27,12 @@ import java.util.List;
  */
 public interface ArtifactGenerationExtension extends LegendGenerationExtension
 {
+    @Override
+    default String type()
+    {
+        return "Generation_Artifact";
+    }
+
     /**
      * Gives the key for the extension
      *

@@ -35,6 +35,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class ExternalFormatGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "EF_External_Format";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) -> renderElement(element));
 
     @Override

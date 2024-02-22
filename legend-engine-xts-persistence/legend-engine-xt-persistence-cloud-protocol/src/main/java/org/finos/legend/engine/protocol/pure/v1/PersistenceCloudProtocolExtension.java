@@ -26,6 +26,12 @@ import java.util.List;
 public class PersistenceCloudProtocolExtension implements PureProtocolExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Persistence_Cloud";
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.of(() -> Lists.fixedSize.of(

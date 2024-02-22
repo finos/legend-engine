@@ -44,6 +44,12 @@ import java.util.List;
 public class ServiceStoreExecutionExtension implements IServiceStoreExecutionExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
+
+    @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList(((executionNode, profiles, executionState) ->

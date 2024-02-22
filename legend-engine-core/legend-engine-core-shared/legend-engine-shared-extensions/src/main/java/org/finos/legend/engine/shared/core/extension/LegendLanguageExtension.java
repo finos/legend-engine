@@ -16,4 +16,9 @@ package org.finos.legend.engine.shared.core.extension;
 
 public interface LegendLanguageExtension extends LegendExtension
 {
+    @Override
+    default String type()
+    {
+        return "LanguageExtension";
+    }
 }

@@ -21,6 +21,18 @@ import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
 
 public interface PlanGeneratorExtension extends LegendPlanExtension
 {
+    @Override
+    default String type()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
+    @Override
+    default String group()
+    {
+        return "Unknown " + this.getClass().getName();
+    }
+
     default MutableList<PlanTransformer> getExtraPlanTransformers()
     {
         return Lists.fixedSize.empty();

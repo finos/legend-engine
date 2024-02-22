@@ -29,5 +29,11 @@ public class ServiceStoreLegendPureCoreExtension implements StoreLegendPureCoreE
     {
         return "meta::external::store::service::extension::serviceStoreExtension__Extension_1_";
     }
+
+    @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
 }
 

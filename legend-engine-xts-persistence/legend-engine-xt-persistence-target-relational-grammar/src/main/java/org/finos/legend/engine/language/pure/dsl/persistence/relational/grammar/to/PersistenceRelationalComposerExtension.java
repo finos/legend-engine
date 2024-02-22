@@ -25,6 +25,11 @@ import java.util.List;
 
 public class PersistenceRelationalComposerExtension implements IPersistenceComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "PE_Persistence_Relational";
+    }
 
     @Override
     public List<Function3<PersistenceTarget, Integer, PureGrammarComposerContext, String>> getExtraPersistenceTargetComposers()

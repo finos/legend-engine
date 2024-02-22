@@ -14,10 +14,16 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.pure.code.core.BindingLegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
 
-public class ServiceStoreJavaBindingLegendPureCoreExtension implements BindingLegendPureCoreExtension
+public class ServiceStoreJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_ServiceStore";
+    }
+
     @Override
     public String functionFile()
     {

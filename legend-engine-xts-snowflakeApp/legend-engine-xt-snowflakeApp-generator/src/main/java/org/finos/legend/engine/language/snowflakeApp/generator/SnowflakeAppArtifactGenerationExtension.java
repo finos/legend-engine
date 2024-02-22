@@ -41,6 +41,12 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     private static final String FILE_NAME = "snowflakeAppArtifact.json";
 
     @Override
+    public String group()
+    {
+        return "FA_Snowflake";
+    }
+
+    @Override
     public String getKey()
     {
         return ROOT_PATH;

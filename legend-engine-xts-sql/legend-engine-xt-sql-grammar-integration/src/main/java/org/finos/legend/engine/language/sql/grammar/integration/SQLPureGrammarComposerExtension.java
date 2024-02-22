@@ -26,6 +26,12 @@ import java.util.Map;
 public class SQLPureGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "QU_SQL";
+    }
+
+    @Override
     public Map<String, Function2<Object, PureGrammarComposerContext, String>> getExtraEmbeddedPureComposers()
     {
         return Maps.mutable.with(

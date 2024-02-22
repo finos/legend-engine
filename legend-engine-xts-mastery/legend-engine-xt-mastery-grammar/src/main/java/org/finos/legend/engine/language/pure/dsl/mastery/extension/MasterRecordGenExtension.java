@@ -28,6 +28,12 @@ public class MasterRecordGenExtension implements IMasteryModelGenerationExtensio
 {
 
     @Override
+    public String group()
+    {
+        return "PE_Mastery";
+    }
+
+    @Override
     public List<Function3<PackageableElement, CompileContext, String, PureModelContextData>> getPureModelContextDataGenerators()
     {
         return Collections.singletonList((modelGenerationElement, compileContext, version) ->

@@ -24,6 +24,12 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authent
 public class AuthenticationDemoCompilerExtension implements IAuthenticationDemoCompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "Test";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new AuthenticationDemoCompilerExtension();

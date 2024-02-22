@@ -49,6 +49,12 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
+    public String group()
+    {
+        return "EF_FlatData";
+    }
+
+    @Override
     public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try

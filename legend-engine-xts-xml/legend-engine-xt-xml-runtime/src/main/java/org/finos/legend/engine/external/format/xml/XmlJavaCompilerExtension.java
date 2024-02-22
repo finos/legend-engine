@@ -83,6 +83,12 @@ public class XmlJavaCompilerExtension implements ExecutionPlanJavaCompilerExtens
     }
 
     @Override
+    public String group()
+    {
+        return "EF_XML";
+    }
+
+    @Override
     public ClassPathFilter getExtraClassPathFilter()
     {
         return ClassPathFilters.fromClasses(DEPENDENCIES.values());

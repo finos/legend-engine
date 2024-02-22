@@ -63,6 +63,12 @@ public interface CompilerExtension extends LegendLanguageExtension
 {
     Iterable<? extends Processor<?>> getExtraProcessors();
 
+    @Override
+    default String type()
+    {
+        return "(Lang)Compiler";
+    }
+
     @Deprecated
     default List<Function4<ValueSpecification, CompileContext, List<String>, ProcessingContext, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification>> getExtraValueSpecificationProcessors()
     {

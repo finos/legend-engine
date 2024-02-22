@@ -32,6 +32,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class AuthenticationDemoComposerExtension implements IAuthenticationDemoComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "Test";
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
     {
         if (element instanceof AuthenticationDemo)

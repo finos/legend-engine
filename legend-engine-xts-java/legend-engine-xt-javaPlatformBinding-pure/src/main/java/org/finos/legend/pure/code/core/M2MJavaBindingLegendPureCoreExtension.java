@@ -14,10 +14,16 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.pure.code.core.BindingLegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
 
-public class M2MJavaBindingLegendPureCoreExtension implements BindingLegendPureCoreExtension
+public class M2MJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_M2M";
+    }
+
     @Override
     public String functionFile()
     {

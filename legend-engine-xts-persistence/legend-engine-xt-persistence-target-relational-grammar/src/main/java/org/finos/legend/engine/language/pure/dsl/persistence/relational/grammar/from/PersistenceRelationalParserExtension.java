@@ -35,6 +35,12 @@ public class PersistenceRelationalParserExtension implements IPersistenceParserE
     private static final String PERSISTENCE_TARGET_RELATIONAL = "Relational";
 
     @Override
+    public String group()
+    {
+        return "PE_Persistence_Relational";
+    }
+
+    @Override
     public List<Function<PersistenceTargetSourceCode, PersistenceTarget>> getExtraPersistenceTargetParsers()
     {
         return Collections.singletonList(code ->

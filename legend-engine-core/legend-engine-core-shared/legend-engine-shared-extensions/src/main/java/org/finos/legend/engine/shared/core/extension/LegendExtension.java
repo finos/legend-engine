@@ -16,4 +16,13 @@ package org.finos.legend.engine.shared.core.extension;
 
 public interface LegendExtension
 {
+    default String group()
+    {
+        return "Unknown Group " + this.getClass().getName();
+    }
+
+    default String type()
+    {
+        return "Unknown Type " + this.getClass().getName();
+    }
 }

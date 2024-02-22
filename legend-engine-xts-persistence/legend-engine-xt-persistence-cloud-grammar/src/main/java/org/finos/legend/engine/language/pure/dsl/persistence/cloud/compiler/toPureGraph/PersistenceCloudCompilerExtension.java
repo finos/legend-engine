@@ -33,6 +33,12 @@ import java.util.List;
 public class PersistenceCloudCompilerExtension implements IPersistenceCompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "PE_Persistence_Cloud";
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new PersistenceCloudCompilerExtension();

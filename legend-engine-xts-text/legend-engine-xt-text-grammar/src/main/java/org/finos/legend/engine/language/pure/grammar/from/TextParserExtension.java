@@ -33,6 +33,12 @@ public class TextParserExtension implements PureGrammarParserExtension
     public static final String NAME = "Text";
 
     @Override
+    public String group()
+    {
+        return "PE_Text";
+    }
+
+    @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Lists.immutable.with(SectionParser.newParser(NAME, TextParserExtension::parseSection));

@@ -40,6 +40,12 @@ import java.util.Map;
 public class CoreCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension
 {
     @Override
+    public String group()
+    {
+        return "Core";
+    }
+
+    @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.emptyList();

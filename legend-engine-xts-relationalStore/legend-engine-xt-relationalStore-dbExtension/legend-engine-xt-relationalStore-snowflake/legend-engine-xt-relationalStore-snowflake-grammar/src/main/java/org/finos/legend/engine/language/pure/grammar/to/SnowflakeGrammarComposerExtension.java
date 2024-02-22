@@ -28,6 +28,11 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class SnowflakeGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
+    @Override
+    public String group()
+    {
+        return "ST_Relational_Snowflake";
+    }
 
     @Override
     public List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers()

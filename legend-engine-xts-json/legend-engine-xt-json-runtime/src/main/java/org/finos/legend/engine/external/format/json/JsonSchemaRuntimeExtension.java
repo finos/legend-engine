@@ -57,6 +57,12 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
     }
 
     @Override
+    public String group()
+    {
+        return "EF_JSON";
+    }
+
+    @Override
     public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try

@@ -28,6 +28,12 @@ import java.util.function.Function;
 public class BigQueryGrammarParserExtension implements IRelationalGrammarParserExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_BigQuery";
+    }
+
+    @Override
     public List<Function<DataSourceSpecificationSourceCode, DatasourceSpecification>> getExtraDataSourceSpecificationParsers()
     {
         return Collections.singletonList(code ->

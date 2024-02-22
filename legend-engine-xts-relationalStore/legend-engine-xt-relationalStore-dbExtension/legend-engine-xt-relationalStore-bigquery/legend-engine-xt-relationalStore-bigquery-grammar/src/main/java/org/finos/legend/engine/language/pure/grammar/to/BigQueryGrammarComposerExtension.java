@@ -27,6 +27,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class BigQueryGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
     @Override
+    public String group()
+    {
+        return "ST_Relational_BigQuery";
+    }
+
+    @Override
     public List<Function2<DatasourceSpecification, PureGrammarComposerContext, String>> getExtraDataSourceSpecificationComposers()
     {
         return Lists.mutable.with((_spec, context) ->

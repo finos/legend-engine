@@ -53,6 +53,13 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
     private static final String FILE_NAME = "hostedServiceArtifact.json";
 
     @Override
+    public String group()
+    {
+        return "FA_Hosted_Service";
+    }
+
+
+    @Override
     public String getKey()
     {
         return ROOT_PATH;

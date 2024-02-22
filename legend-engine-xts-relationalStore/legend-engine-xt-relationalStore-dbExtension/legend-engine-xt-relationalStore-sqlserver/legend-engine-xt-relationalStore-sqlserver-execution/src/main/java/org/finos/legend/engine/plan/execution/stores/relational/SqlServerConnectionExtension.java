@@ -24,6 +24,18 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 public class SqlServerConnectionExtension implements RelationalConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "ConnectionExtension";
+    }
+
+    @Override
+    public String group()
+    {
+        return "ST_Relational_SqlServer";
+    }
+
+    @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new SqlServerManager());
