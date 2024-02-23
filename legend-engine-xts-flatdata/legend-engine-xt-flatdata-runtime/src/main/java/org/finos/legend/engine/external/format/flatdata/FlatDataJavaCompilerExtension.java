@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.ObjectToParsedFlatData;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatData;
 import org.finos.legend.engine.external.format.flatdata.driver.spi.ParsedFlatDataToObject;
@@ -75,9 +76,9 @@ public class FlatDataJavaCompilerExtension implements ExecutionPlanJavaCompilerE
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_FlatData";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "FlatData");
     }
 
     @Override

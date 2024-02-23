@@ -20,6 +20,7 @@ import java.util.Map;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
@@ -34,9 +35,9 @@ import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.store.E
 public class ElasticsearchV7ProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Elastic";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Elastic");
     }
 
     @Override

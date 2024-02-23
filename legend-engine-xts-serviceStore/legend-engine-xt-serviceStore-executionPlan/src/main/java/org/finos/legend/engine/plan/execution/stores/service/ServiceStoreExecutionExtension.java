@@ -44,9 +44,9 @@ import java.util.List;
 public class ServiceStoreExecutionExtension implements IServiceStoreExecutionExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_ServiceStore";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Service");
     }
 
     @Override

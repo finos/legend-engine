@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.nodes.helpers.platform;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
 import org.finos.legend.engine.shared.javaCompiler.ClassPathFilter;
 
@@ -22,8 +24,14 @@ public interface ExecutionPlanJavaCompilerExtension extends LegendPlanExtension
     ClassPathFilter getExtraClassPathFilter();
 
     @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("Plan", "Generation", "Binding_Java");
+    }
+    
+    @Override
     default String type()
     {
-        return "(Plan)(Binding_Java)Class_Path_Extension";
+        return "Class_Path_Extension";
     }
 }

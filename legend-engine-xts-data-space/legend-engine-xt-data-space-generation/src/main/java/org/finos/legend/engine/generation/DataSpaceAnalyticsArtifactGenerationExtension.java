@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.generation.analytics.DataSpaceAnalyticsHelper;
 import org.finos.legend.engine.generation.analytics.model.DataSpaceAnalysisResult;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -39,9 +40,9 @@ public class DataSpaceAnalyticsArtifactGenerationExtension implements ArtifactGe
     public static ObjectMapper objectMapper = DataSpaceAnalyticsHelper.getNewObjectMapper();
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_DataSpace";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataSpace");
     }
 
     @Override

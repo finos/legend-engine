@@ -66,7 +66,7 @@ public interface CompilerExtension extends LegendLanguageExtension
     @Override
     default String type()
     {
-        return "(Lang)Compiler";
+        return "Compiler";
     }
 
     @Deprecated

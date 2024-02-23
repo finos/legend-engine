@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.IPersistenceComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.sink.RelationalPersistenceTarget;
@@ -26,9 +27,9 @@ import java.util.List;
 public class PersistenceRelationalComposerExtension implements IPersistenceComposerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Persistence_Relational";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence", "Relational");
     }
 
     @Override

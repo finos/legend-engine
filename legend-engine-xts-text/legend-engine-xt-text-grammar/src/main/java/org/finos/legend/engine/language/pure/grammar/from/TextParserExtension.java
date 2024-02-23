@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.TextParserGrammar;
@@ -33,9 +34,9 @@ public class TextParserExtension implements PureGrammarParserExtension
     public static final String NAME = "Text";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Text";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Text");
     }
 
     @Override

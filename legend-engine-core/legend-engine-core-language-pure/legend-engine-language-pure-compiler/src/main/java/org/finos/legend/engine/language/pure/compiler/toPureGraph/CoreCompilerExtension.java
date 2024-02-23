@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerExtension;
@@ -40,9 +41,9 @@ import java.util.Map;
 public class CoreCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "Core";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Core");
     }
 
     @Override

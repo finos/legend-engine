@@ -14,11 +14,21 @@
 
 package org.finos.legend.engine.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+
 public interface ExternalFormatLegendPureCoreExtension extends LegendPureCoreExtension
 {
     @Override
     default String type()
     {
-        return "(External_Format)Pure";
+        return "Pure-Contract";
     }
+
+    @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("Plan", "Generation");
+    }
+
 }

@@ -30,9 +30,9 @@ public class SqlServerConnectionExtension implements RelationalConnectionExtensi
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_SqlServer";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "SqlServer");
     }
 
     @Override

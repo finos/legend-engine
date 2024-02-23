@@ -57,9 +57,9 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_JSON";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
     }
 
     @Override

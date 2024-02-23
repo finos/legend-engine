@@ -62,13 +62,13 @@ public class SnowflakeConnectionExtension implements RelationalConnectionExtensi
     @Override
     public String type()
     {
-        return "(Connection)MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Snowflake";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Snowflake");
     }
 
     @Override

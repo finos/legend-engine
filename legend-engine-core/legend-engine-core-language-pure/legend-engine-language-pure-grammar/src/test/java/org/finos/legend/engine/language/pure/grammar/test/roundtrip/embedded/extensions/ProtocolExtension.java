@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 
@@ -22,9 +24,10 @@ import java.util.Map;
 public class ProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "__Test__";
+        return Lists.mutable.with("__Test__");
+
     }
 
     @Override

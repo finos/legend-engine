@@ -15,6 +15,7 @@
 package org.finos.legend.engine.generation;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
@@ -40,9 +41,9 @@ public class OpenApiArtifactGenerationExtension implements ArtifactGenerationExt
 
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "GEN_AR_OpenAPI";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "Artifact", "OpenAPI");
     }
 
     @Override

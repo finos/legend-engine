@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -48,9 +49,9 @@ import java.util.Map;
 public class MasteryProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Mastery";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mastery");
     }
 
     @Override

@@ -28,7 +28,7 @@ public interface PureProtocolExtension extends LegendLanguageExtension
     @Override
     default String type()
     {
-        return "(Lang)Protocol";
+        return "Protocol";
     }
 
     @Deprecated

@@ -30,9 +30,9 @@ public class MemSQLConnectionExtension implements RelationalConnectionExtension
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_MemSQL";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "MemSQL");
     }
 
     @Override

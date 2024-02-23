@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
+
 public class ServiceLegendPureCoreExtension implements FeatureLegendPureCoreExtension
 {
     @Override
@@ -29,8 +31,8 @@ public class ServiceLegendPureCoreExtension implements FeatureLegendPureCoreExte
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Service";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Service");
     }
 }

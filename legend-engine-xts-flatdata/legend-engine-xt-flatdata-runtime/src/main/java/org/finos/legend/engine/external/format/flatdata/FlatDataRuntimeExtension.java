@@ -49,9 +49,9 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_FlatData";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "FlatData");
     }
 
     @Override

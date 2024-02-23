@@ -23,6 +23,7 @@ import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
@@ -40,9 +41,9 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext;
 public class ElasticsearchCompilerExtension implements CompilerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Elastic";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Elastic");
     }
 
     @Override

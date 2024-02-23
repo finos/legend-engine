@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.from
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.IPersistenceParserExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistencePlatformSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
@@ -35,9 +36,9 @@ public class PersistenceCloudParserExtension implements IPersistenceParserExtens
     private static final String PERSISTENCE_PLATFORM_AWS_GLUE = "AwsGlue";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Persistence_Cloud";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence", "Cloud");
     }
 
     @Override

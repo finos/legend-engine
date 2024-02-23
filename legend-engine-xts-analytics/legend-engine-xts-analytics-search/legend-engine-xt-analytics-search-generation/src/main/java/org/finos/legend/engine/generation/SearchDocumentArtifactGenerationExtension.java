@@ -19,6 +19,7 @@ package org.finos.legend.engine.generation;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
@@ -40,9 +41,9 @@ public class SearchDocumentArtifactGenerationExtension implements ArtifactGenera
     public static final String FILE_NAME = "SearchDocumentResult.json";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "GEN_AR_Search_Documents";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "Artifact", "Search_Document");
     }
 
     private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(SearchDocumentArtifactGenerationExtension.class);

@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.acquisition.AcquisitionProtocolParseTreeWalker;
@@ -72,9 +73,9 @@ public class MasteryParserExtension implements IMasteryParserExtension
     private static final String REST_ACQUISITION = "REST";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Mastery";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mastery");
     }
 
     @Override

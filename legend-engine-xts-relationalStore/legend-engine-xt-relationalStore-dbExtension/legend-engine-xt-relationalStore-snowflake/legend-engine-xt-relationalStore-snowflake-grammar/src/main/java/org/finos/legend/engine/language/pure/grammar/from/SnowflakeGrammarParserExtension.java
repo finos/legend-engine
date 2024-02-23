@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.SnowflakeLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.SnowflakeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
@@ -33,9 +34,9 @@ import java.util.function.Function;
 public class SnowflakeGrammarParserExtension implements IRelationalGrammarParserExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Snowflake";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Snowflake");
     }
 
     private String normalizeName(String elementName, String localPrefix)

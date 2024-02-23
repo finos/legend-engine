@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.sql.grammar.integration;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -36,9 +37,9 @@ public class SQLCompilerExtension implements CompilerExtension
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "QU_SQL";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "SQL");
     }
 
     @Override

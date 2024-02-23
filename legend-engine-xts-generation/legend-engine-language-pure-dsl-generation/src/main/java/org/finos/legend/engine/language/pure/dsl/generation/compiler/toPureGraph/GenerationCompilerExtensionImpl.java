@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.generation.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -36,9 +37,9 @@ public class GenerationCompilerExtensionImpl implements GenerationCompilerExtens
     final MutableMap<String, Root_meta_pure_generation_metamodel_GenerationConfiguration> fileConfigurationsIndex = Maps.mutable.empty();
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "GEN_Generation";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "!!MoveToArtifact!!", "-Core");
     }
 
     @Override

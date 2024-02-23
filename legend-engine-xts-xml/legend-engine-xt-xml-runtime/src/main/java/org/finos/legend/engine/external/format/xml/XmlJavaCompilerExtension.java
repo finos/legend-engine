@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.xml;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
 import org.finos.legend.engine.external.format.xml.read.IXmlDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.xml.read.ReadHandler;
@@ -83,9 +84,9 @@ public class XmlJavaCompilerExtension implements ExecutionPlanJavaCompilerExtens
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_XML";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "XML");
     }
 
     @Override

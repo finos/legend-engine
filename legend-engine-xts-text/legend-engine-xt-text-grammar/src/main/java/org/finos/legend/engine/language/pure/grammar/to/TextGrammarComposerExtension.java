@@ -34,9 +34,9 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class TextGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Text";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Text");
     }
 
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->

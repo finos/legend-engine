@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.persistence.extension;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.PersistenceProtocolExtension;
@@ -31,9 +32,9 @@ public class PersistenceTestableRunnerExtension implements TestableRunnerExtensi
     private String pureVersion = PureClientVersions.production;
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Persistence";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence");
     }
 
     @Override

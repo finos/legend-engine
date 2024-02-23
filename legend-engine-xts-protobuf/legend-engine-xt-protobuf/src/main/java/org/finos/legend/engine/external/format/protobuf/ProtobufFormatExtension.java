@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.protobuf;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.protobuf.fromModel.ModelToProtobufConfiguration;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
@@ -37,9 +38,9 @@ public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationEx
     public static final String TYPE = protobufContract._id();
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_Protobuf";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "Protobuf");
     }
 
     @Override

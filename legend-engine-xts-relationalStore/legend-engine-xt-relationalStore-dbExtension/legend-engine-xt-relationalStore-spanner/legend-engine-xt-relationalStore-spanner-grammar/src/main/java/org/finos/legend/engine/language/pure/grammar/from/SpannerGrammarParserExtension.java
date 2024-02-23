@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.SpannerLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.SpannerParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
@@ -28,9 +29,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 public class SpannerGrammarParserExtension implements IRelationalGrammarParserExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Spanner";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Spanner");
     }
 
     @Override

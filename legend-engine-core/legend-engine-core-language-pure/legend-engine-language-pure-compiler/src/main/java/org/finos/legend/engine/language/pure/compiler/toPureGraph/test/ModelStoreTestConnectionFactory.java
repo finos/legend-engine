@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.test;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
@@ -40,9 +41,9 @@ import java.util.*;
 public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_M2M";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "M2M");
     }
 
     public static final String MODEL_STORE = "ModelStore";

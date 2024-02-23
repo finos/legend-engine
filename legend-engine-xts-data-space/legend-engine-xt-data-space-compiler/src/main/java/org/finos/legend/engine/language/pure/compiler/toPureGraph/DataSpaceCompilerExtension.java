@@ -48,9 +48,9 @@ import java.util.*;
 public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_DataSpace";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataSpace");
     }
 
     static final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();

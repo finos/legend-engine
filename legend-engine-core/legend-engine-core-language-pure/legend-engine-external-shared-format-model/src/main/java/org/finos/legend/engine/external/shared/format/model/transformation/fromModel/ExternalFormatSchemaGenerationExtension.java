@@ -16,6 +16,7 @@ package org.finos.legend.engine.external.shared.format.model.transformation.from
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -36,9 +37,8 @@ public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenCon
     @Override
     default String type()
     {
-        return "(External_Format)Schema_Generation";
+        return "Schema_Generation";
     }
-
 
     /**
      * Called to compile an external format ModelToSchemaConfiguration.

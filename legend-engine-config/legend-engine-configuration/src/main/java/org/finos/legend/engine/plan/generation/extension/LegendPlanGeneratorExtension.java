@@ -25,13 +25,13 @@ public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
     @Override
     public String type()
     {
-        return "(Plan)Protocol_Version_Transformer";
+        return "Protocol_Version_Transformer";
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "Version_Transformers";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Version_Transformer");
     }
 
     @Override

@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.stores.mongodb.compiler;
 import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionPlanJavaCompilerExtension;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.mongodb.result.MongoDBResult;
@@ -44,9 +45,9 @@ public class MongoDBDocumentFormatJavaCompilerExtension implements ExecutionPlan
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Mongo";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Mongo");
     }
 
     @Override

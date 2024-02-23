@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.bigqueryFunction.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionArtifact;
 import org.finos.legend.engine.protocol.bigqueryFunction.deployment.BigQueryFunctionContent;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
@@ -34,9 +35,9 @@ public class BigQueryFunctionProtocolExtension implements PureProtocolExtension
     public static String packageJSONType = "bigQueryFunction";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "FA_BigQuery";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "BigQuery");
     }
 
     @Override

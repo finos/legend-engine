@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.ExternalFormatLegendPureCoreExtension;
 
 public class FlatDataLegendPureCoreExtension implements ExternalFormatLegendPureCoreExtension
@@ -31,8 +32,8 @@ public class FlatDataLegendPureCoreExtension implements ExternalFormatLegendPure
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_FlatData";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "FlatData");
     }
 }

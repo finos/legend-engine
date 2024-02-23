@@ -26,7 +26,6 @@ import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceDeploymentManager;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentResult;
 import org.finos.legend.engine.language.hostedService.generation.HostedServiceArtifactGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -38,8 +37,6 @@ import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.*;
 
 import java.util.List;
-
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HostedServiceService implements FunctionActivatorService<Root_meta_external_function_activator_hostedService_HostedService, HostedServiceDeploymentConfiguration, HostedServiceDeploymentResult>
 {
@@ -54,9 +51,9 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "FA_Hosted_Service";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Hosted_Service");
     }
 
     @Override

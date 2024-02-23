@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.shared.runtime;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -33,7 +34,13 @@ public interface ExternalFormatRuntimeExtension extends LegendExternalFormatExte
     @Override
     default String type()
     {
-        return "(External_Format)Runtime";
+        return "Runtime";
+    }
+
+    @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("Plan", "Execution");
     }
 
     List<String> getContentTypes();

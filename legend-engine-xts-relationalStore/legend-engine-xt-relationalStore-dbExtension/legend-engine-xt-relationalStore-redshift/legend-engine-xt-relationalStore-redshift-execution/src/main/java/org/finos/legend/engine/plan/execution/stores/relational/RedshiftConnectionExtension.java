@@ -43,13 +43,13 @@ public class RedshiftConnectionExtension implements RelationalConnectionExtensio
     @Override
     public String type()
     {
-        return "(Connection)MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Redshift";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Redshift");
     }
 
     @Override

@@ -15,11 +15,11 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.cloud.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.IPersistenceCompilerExtension;
-import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.PersistenceCompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.toPureGraph.ValidationContext;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationResult;
 import org.finos.legend.engine.language.pure.dsl.persistence.compiler.validation.ValidationRuleSet;
@@ -33,9 +33,9 @@ import java.util.List;
 public class PersistenceCloudCompilerExtension implements IPersistenceCompilerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Persistence_Cloud";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence", "Cloud");
     }
 
     @Override

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.plugin;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -22,9 +23,9 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 public class MongoDBStoreExecutorBuilder implements StoreExecutorBuilder
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Mongo";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Mongo");
     }
 
     @Override

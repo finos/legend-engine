@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.plan.execution.stores;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
 
 public interface StoreExecutorBuilder extends LegendPlanExtension
@@ -21,7 +23,7 @@ public interface StoreExecutorBuilder extends LegendPlanExtension
     @Override
     default String type()
     {
-        return "(Store)ExecutorBuilder";
+        return "ExecutorBuilder";
     }
 
     StoreType getStoreType();

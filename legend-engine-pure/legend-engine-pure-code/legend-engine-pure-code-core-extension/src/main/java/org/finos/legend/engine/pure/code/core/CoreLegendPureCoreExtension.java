@@ -14,18 +14,27 @@
 
 package org.finos.legend.engine.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+
 public class CoreLegendPureCoreExtension implements LegendPureCoreExtension
 {
     @Override
     public String type()
     {
-        return "(Core)Pure";
+        return "Pure";
     }
 
     @Override
-    public String group()
+    public MutableList<String> typeGroup()
     {
-        return "Core";
+        return Lists.mutable.with("Plan", "Generation", "Platform");
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Core");
     }
 
 

@@ -45,7 +45,7 @@ public interface PureGrammarComposerExtension extends LegendLanguageExtension
     @Override
     default String type()
     {
-        return "(Lang)Composer";
+        return "Composer";
     }
 
     /**

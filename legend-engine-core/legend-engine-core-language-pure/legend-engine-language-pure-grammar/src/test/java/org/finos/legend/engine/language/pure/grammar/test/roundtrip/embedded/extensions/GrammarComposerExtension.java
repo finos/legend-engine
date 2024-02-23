@@ -15,7 +15,9 @@
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 
@@ -24,9 +26,10 @@ import java.util.Map;
 public class GrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "__Test__";
+        return Lists.mutable.with("__Test__");
+
     }
 
     @Override

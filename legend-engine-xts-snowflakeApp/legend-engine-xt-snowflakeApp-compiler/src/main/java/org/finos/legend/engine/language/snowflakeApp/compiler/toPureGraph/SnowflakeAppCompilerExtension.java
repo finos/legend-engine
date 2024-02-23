@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
@@ -34,9 +35,9 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
     CoreFunctionActivatorCodeRepositoryProvider forDependencies;
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "FA_Snowflake";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
     }
 
     @Override

@@ -18,6 +18,7 @@ package org.finos.legend.engine.language.snowflakeApp.generator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
@@ -41,9 +42,9 @@ public class SnowflakeAppArtifactGenerationExtension implements ArtifactGenerati
     private static final String FILE_NAME = "snowflakeAppArtifact.json";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "FA_Snowflake";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
     }
 
     @Override

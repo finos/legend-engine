@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.StoreLegendPureCoreExtension;
 
 public class MongoDBLegendPureCoreExtension implements StoreLegendPureCoreExtension
@@ -31,8 +32,8 @@ public class MongoDBLegendPureCoreExtension implements StoreLegendPureCoreExtens
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Mongo";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Mongo");
     }
 }

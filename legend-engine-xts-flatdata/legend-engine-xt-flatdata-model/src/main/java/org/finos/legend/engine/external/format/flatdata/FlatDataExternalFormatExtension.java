@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.flatdata.grammar.fromPure.FlatDataSchemaParseException;
 import org.finos.legend.engine.external.format.flatdata.grammar.fromPure.FlatDataSchemaParser;
 import org.finos.legend.engine.external.format.flatdata.grammar.toPure.FlatDataSchemaComposer;
@@ -47,13 +48,13 @@ public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGene
     @Override
     public String type()
     {
-        return "(External_Format)MIX_Model_Generation_&_Schema_Generation";
+        return "MIX_Model_Generation_&_Schema_Generation";
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_FlatData";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "FlatData");
     }
 
     @Override

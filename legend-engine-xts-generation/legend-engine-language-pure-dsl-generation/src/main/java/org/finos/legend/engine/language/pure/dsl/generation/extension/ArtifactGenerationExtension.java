@@ -30,7 +30,7 @@ public interface ArtifactGenerationExtension extends LegendGenerationExtension
     @Override
     default String type()
     {
-        return "(Generation)Artifact";
+        return "Generation_Artifact";
     }
 
     /**

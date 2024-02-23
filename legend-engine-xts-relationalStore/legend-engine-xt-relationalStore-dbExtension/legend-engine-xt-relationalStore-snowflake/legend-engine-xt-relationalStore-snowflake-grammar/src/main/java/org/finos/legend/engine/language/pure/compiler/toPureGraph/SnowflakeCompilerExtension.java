@@ -18,6 +18,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
@@ -36,9 +37,9 @@ import java.util.List;
 public class SnowflakeCompilerExtension implements IRelationalCompilerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Snowflake";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Snowflake");
     }
 
     @Override

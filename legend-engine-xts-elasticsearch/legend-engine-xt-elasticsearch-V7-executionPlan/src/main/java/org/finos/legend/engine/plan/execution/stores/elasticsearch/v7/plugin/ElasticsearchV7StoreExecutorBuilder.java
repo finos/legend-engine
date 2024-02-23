@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.elasticsearch.v7.plugin;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -23,9 +24,9 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 public class ElasticsearchV7StoreExecutorBuilder implements StoreExecutorBuilder
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Elastic";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Elastic");
     }
 
     @Override

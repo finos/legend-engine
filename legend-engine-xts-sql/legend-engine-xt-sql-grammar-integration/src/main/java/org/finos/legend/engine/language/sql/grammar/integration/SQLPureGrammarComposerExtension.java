@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.sql.grammar.integration;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.language.sql.grammar.to.SQLGrammarComposer;
@@ -26,9 +27,9 @@ import java.util.Map;
 public class SQLPureGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "QU_SQL";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "SQL");
     }
 
     @Override

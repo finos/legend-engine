@@ -45,9 +45,9 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "FA_BigQuery";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "BigQuery");
     }
 
     @Override

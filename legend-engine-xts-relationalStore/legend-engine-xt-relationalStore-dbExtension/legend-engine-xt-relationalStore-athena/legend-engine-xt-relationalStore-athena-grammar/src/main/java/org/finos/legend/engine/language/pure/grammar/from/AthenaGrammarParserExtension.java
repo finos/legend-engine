@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.AthenaLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.AthenaParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
@@ -29,9 +30,9 @@ import java.util.function.Function;
 public class AthenaGrammarParserExtension implements IRelationalGrammarParserExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Athena";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Athena");
     }
 
     @Override

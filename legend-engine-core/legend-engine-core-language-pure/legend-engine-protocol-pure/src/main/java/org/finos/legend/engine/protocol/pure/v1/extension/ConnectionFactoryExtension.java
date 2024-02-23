@@ -36,7 +36,7 @@ public interface ConnectionFactoryExtension extends LegendConnectionExtension
     @Override
     default String type()
     {
-        return "(Connection)Connection_Factory";
+        return "Connection_Factory";
     }
 
     /**

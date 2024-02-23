@@ -15,15 +15,16 @@
 package org.finos.legend.engine.language.sql.grammar.integration;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 
 public class SQLGrammarParserExtension implements PureGrammarParserExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "QU_SQL";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "SQL");
     }
 
     @Override

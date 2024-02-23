@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ServiceStoreParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.ServiceStoreConnectionLexerGrammar;
@@ -48,9 +49,9 @@ public class ServiceStoreGrammarParserExtension implements IServiceStoreGrammarP
     public static final String SERVICE_STORE_CONNECTION_TYPE = "ServiceStoreConnection";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_ServiceStore";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Service");
     }
 
     @Override

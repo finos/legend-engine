@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.BigQueryLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.BigQueryParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.datasource.DataSourceSpecificationSourceCode;
@@ -28,9 +29,9 @@ import java.util.function.Function;
 public class BigQueryGrammarParserExtension implements IRelationalGrammarParserExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_BigQuery";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "BigQuery");
     }
 
     @Override

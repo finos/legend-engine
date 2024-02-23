@@ -40,9 +40,9 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 public class CorePureGrammarComposer implements PureGrammarComposerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "Core";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Core");
     }
 
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->

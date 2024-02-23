@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.json;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.json.compile.JsonSchemaCompiler;
 import org.finos.legend.engine.external.format.json.fromModel.ModelToJsonSchemaConfiguration;
 import org.finos.legend.engine.external.format.json.toModel.JsonSchemaToModelConfiguration;
@@ -37,13 +38,13 @@ public class JsonExternalFormatExtension implements ExternalFormatSchemaGenerati
     @Override
     public String type()
     {
-        return "(External_Format)MIX_Model_Generation_&_Schema_Generation";
+        return "MIX_Model_Generation_&_Schema_Generation";
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_JSON";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
     }
 
 

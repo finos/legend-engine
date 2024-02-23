@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.ExternalFormatLegendPureCoreExtension;
 
 public class XMLLegendPureCoreExtension implements ExternalFormatLegendPureCoreExtension
@@ -31,8 +32,8 @@ public class XMLLegendPureCoreExtension implements ExternalFormatLegendPureCoreE
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_XML";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "XML");
     }
 }

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.function.extension;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -32,9 +33,9 @@ public class FunctionTestableRunnerExtension implements TestableRunnerExtension
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Function";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Function");
     }
 
     @Override

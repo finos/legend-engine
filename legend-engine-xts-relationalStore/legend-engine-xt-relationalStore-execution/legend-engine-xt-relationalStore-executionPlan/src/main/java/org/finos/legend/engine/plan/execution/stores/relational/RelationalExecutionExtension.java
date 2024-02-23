@@ -36,9 +36,9 @@ import java.util.List;
 public class RelationalExecutionExtension implements ExecutionExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
     }
 
     @Override

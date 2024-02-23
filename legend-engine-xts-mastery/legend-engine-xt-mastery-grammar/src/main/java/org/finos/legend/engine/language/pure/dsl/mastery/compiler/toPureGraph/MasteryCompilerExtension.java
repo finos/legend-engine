@@ -18,6 +18,7 @@ import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -56,9 +57,9 @@ public class MasteryCompilerExtension implements IMasteryCompilerExtension
     public static final String EXCHANGE = "Exchange";
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Mastery";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mastery");
     }
 
     @Override

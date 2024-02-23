@@ -48,9 +48,9 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
     private SnowflakeAppDeploymentManager snowflakeDeploymentManager;
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "FA_Snowflake";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
     }
 
     public SnowflakeAppService()

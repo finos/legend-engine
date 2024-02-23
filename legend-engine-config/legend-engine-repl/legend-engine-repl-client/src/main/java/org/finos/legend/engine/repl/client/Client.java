@@ -50,12 +50,10 @@ public class Client
 
     public static ObjectMapper objectMapper = new ObjectMapper();
 
-
     static
     {
         System.setProperty("legend.test.h2.port", "1975");
     }
-
 
     public static void main(String[] args) throws Exception
     {
@@ -72,7 +70,7 @@ public class Client
 
         terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
 
-        this.commands = Lists.mutable.with(new DB(this), new Debug(this), new Graph(this), new Load(this), new Execute(this));
+        this.commands = Lists.mutable.with(new DB(this), new Ext(this), new Debug(this), new Graph(this), new Load(this), new Execute(this));
         this.commands.add(0, new Help(this, this.commands));
 
         reader = LineReaderBuilder.builder()
@@ -84,7 +82,7 @@ public class Client
 
         terminal.writer().println("Warming up...");
         terminal.flush();
-        ((Execute)this.commands.getLast()).execute("1+1");
+        ((Execute) this.commands.getLast()).execute("1+1");
         terminal.writer().println("Ready!\n");
 
 
@@ -128,7 +126,6 @@ public class Client
         }
     }
 
-
     public static void printError(EngineException e, String line)
     {
         int e_start = e.getSourceInformation().startColumn;
@@ -157,10 +154,9 @@ public class Client
 
     public Connection getConnection()
     {
-        RelationalStoreExecutor r = (RelationalStoreExecutor) ((Execute)this.commands.getLast()).planExecutor.getExecutorsOfType(StoreType.Relational).getFirst();
+        RelationalStoreExecutor r = (RelationalStoreExecutor) ((Execute) this.commands.getLast()).planExecutor.getExecutorsOfType(StoreType.Relational).getFirst();
         return r.getStoreState().getRelationalExecutor().getConnectionManager().getTestDatabaseConnection();
     }
-
 
     public MutableList<String> buildState()
     {
@@ -193,8 +189,6 @@ public class Client
 
         return res;
     }
-
-
 
 
 }

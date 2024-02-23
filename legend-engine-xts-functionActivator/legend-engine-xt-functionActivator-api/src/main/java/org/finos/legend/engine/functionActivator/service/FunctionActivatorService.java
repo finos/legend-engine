@@ -16,6 +16,7 @@ package org.finos.legend.engine.functionActivator.service;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
@@ -35,7 +36,7 @@ public interface FunctionActivatorService<T extends Root_meta_external_function_
     @Override
     default String type()
     {
-        return "(Function_Activator)Core";
+        return "Function_Activator";
     }
 
     FunctionActivatorInfo info(PureModel pureModel, String version);

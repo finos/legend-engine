@@ -28,7 +28,7 @@ public interface ModelGenerationExtension extends LegendGenerationExtension
     @Override
     default String type()
     {
-        return "(Generation)Model";
+        return "Generation_Model";
     }
 
     default List<Function3<PackageableElement, CompileContext, String, PureModelContextData>> getPureModelContextDataGenerators()

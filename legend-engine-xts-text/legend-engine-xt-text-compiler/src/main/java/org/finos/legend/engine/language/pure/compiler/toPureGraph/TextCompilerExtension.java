@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
@@ -24,9 +25,9 @@ import java.util.Collections;
 public class TextCompilerExtension implements CompilerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "PE_Text";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Text");
     }
 
     @Override

@@ -32,9 +32,9 @@ public class SpannerConnectionExtension implements RelationalConnectionExtension
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Spanner";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Spanner");
     }
 
     @Override

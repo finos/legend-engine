@@ -16,6 +16,7 @@ package org.finos.legend.engine.generation.artifact.api;
 
 import java.util.List;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
@@ -33,9 +34,10 @@ public class TestSimpleEnumArtifactGenerationExtension implements ArtifactGenera
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "__Test__";
+        return Lists.mutable.with("__Test__");
+
     }
 
 

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
@@ -38,13 +39,13 @@ public class SpannerStrategicConnectionExtension implements StrategicConnectionE
     @Override
     public String type()
     {
-        return "(Connection)Strategic_Connection_Extension";
+        return "Strategic_Connection_Extension";
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Spanner";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Spanner");
     }
 
     @Override

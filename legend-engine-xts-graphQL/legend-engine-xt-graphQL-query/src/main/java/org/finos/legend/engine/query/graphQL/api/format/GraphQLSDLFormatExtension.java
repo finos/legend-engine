@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.query.graphQL.api.format;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -33,9 +34,9 @@ public class GraphQLSDLFormatExtension implements ExternalFormatSchemaGeneration
     public static final String TYPE = contract._id();
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "QU_GraphQL";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "GraphQL");
     }
 
     @Override

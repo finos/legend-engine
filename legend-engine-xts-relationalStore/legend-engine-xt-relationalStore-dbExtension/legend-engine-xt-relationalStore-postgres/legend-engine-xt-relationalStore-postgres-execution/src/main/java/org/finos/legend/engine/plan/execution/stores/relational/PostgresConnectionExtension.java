@@ -30,9 +30,9 @@ public class PostgresConnectionExtension implements RelationalConnectionExtensio
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Postgres";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Postgres");
     }
 
     @Override

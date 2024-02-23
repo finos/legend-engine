@@ -14,6 +14,8 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.pure.code.core.ExternalFormatLegendPureCoreExtension;
 
 public class ArrowLegendPureCoreExtension implements ExternalFormatLegendPureCoreExtension
@@ -31,8 +33,8 @@ public class ArrowLegendPureCoreExtension implements ExternalFormatLegendPureCor
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_Arrow";
+        return Lists.mutable.with("External_Format", "Arrow");
     }
 }

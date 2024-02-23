@@ -14,14 +14,15 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
 
 public class M2MJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_M2M";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "M2M");
     }
 
     @Override

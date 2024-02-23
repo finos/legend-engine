@@ -14,11 +14,20 @@
 
 package org.finos.legend.engine.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+
 public interface JavaBindingLegendPureCoreExtension extends BindingLegendPureCoreExtension
 {
     @Override
     default String type()
     {
-        return "(Plan)(Binding_Java)Pure";
+        return "Pure";
+    }
+
+    @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("Plan", "Generation", "Binding_Java");
     }
 }

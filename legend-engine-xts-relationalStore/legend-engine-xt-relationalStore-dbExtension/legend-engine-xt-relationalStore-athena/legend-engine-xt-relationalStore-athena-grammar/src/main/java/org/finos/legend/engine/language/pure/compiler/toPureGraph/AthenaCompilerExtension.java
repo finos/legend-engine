@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
@@ -29,9 +30,9 @@ import java.util.List;
 public class AthenaCompilerExtension implements IRelationalCompilerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Relational_Athena";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Athena");
     }
 
     @Override

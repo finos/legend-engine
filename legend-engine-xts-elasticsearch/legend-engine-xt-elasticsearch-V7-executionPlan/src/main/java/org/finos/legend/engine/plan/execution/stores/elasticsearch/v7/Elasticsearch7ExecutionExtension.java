@@ -31,9 +31,9 @@ import java.util.List;
 public class Elasticsearch7ExecutionExtension implements ExecutionExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "ST_Elastic";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Elastic");
     }
 
     @Override

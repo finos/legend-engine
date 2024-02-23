@@ -44,9 +44,9 @@ public class XsdRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_XML";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "XML");
     }
 
     @Override

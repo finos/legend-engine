@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -29,9 +30,9 @@ import java.util.Map;
 public class GenerationProtocolExtension implements PureProtocolExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "GEN_Generation";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "!!MoveToArtifact!!", "-Core");
     }
 
     @Override

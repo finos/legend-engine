@@ -15,6 +15,7 @@
 package org.finos.legend.engine.external.language.morphir.extension;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.language.morphir.MorphirGenerationService;
 import org.finos.legend.engine.external.language.morphir.model.MorphirGenerationConfig;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
@@ -38,9 +39,9 @@ import java.util.List;
 public class MorphirGenerationExtension implements GenerationExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "GEN_Morphir";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "!!MoveToArtifact!!", "Morphir");
     }
 
     @Override

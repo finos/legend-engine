@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.ExternalFormatLegendPureCoreExtension;
 
 public class JSONLegendPureCoreExtension implements ExternalFormatLegendPureCoreExtension
@@ -31,9 +32,9 @@ public class JSONLegendPureCoreExtension implements ExternalFormatLegendPureCore
     }
 
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "EF_JSON";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
     }
 }
 

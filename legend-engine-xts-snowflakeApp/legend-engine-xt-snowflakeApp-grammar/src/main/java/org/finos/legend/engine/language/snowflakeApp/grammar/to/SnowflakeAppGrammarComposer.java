@@ -24,8 +24,6 @@ import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarCom
 import org.finos.legend.engine.language.snowflakeApp.grammar.from.SnowflakeAppGrammarParserExtension;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.Binding;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
 
@@ -37,9 +35,9 @@ import static org.finos.legend.engine.language.pure.grammar.to.HelperDomainGramm
 public class SnowflakeAppGrammarComposer implements PureGrammarComposerExtension
 {
     @Override
-    public String group()
+    public MutableList<String> group()
     {
-        return "FA_Snowflake";
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
     }
 
     private static String renderElement(PackageableElement element)
