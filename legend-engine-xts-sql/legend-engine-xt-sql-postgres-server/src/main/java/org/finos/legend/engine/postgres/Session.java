@@ -21,6 +21,10 @@
 
 package org.finos.legend.engine.postgres;
 
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Context;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,9 +39,10 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.utils.ExceptionUtil;
-import org.finos.legend.engine.postgres.utils.PrometheusCollector;
+import org.finos.legend.engine.postgres.utils.OpenTelemetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 public class Session implements AutoCloseable
 {
@@ -53,8 +58,8 @@ public class Session implements AutoCloseable
     {
         this.executorService = executorService;
         this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
-        PrometheusCollector.ACTIVE_SESSIONS.inc();
-        PrometheusCollector.TOTAL_SESSIONS.inc();
+        OpenTelemetry.ACTIVE_SESSIONS.add(1);
+        OpenTelemetry.TOTAL_SESSIONS.add(1);
     }
 
     public CompletableFuture<?> sync()
@@ -180,54 +185,65 @@ public class Session implements AutoCloseable
         {
             LOGGER.debug("method=describe type={} portalOrStatement={}", type, portalOrStatement);
         }
-        switch (type)
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("ResultSetReceiver.allFinished").startSpan();
+        try (Scope scope = span.makeCurrent())
         {
-            case 'P':
-                Portal portal = getSafePortal(portalOrStatement);
-                return describe('S', portal.prep.name);
-            case 'S':
-                /*
-                 * describe might be called without prior bind call.
-                 *
-                 * If the client uses server-side prepared statements this is usually the case.
-                 *
-                 * E.g. the statement is first prepared:
-                 *
-                 *      parse stmtName=S_1 query=insert into t (x) values ($1) paramTypes=[integer]
-                 *      describe type=S portalOrStatement=S_1
-                 *      sync
-                 *
-                 * and then used with different bind calls:
-                 *
-                 *      bind portalName= statementName=S_1 params=[0]
-                 *      describe type=P portalOrStatement=
-                 *      execute
-                 *
-                 *      bind portalName= statementName=S_1 params=[1]
-                 *      describe type=P portalOrStatement=
-                 *      execute
-                 */
+            span.setAttribute("type", type);
+            span.setAttribute("name", portalOrStatement);
+            switch (type)
+            {
+                case 'P':
+                    Portal portal = getSafePortal(portalOrStatement);
+                    return describe('S', portal.prep.name);
+                case 'S':
+                    /*
+                     * describe might be called without prior bind call.
+                     *
+                     * If the client uses server-side prepared statements this is usually the case.
+                     *
+                     * E.g. the statement is first prepared:
+                     *
+                     *      parse stmtName=S_1 query=insert into t (x) values ($1) paramTypes=[integer]
+                     *      describe type=S portalOrStatement=S_1
+                     *      sync
+                     *
+                     * and then used with different bind calls:
+                     *
+                     *      bind portalName= statementName=S_1 params=[0]
+                     *      describe type=P portalOrStatement=
+                     *      execute
+                     *
+                     *      bind portalName= statementName=S_1 params=[1]
+                     *      describe type=P portalOrStatement=
+                     *      execute
+                     */
 
-                Prepared prepared = parsed.get(portalOrStatement);
-                try
-                {
-                    PostgresPreparedStatement preparedStatement = prepared.prep;
-                    if (portalOrStatement == null)
+                    Prepared prepared = parsed.get(portalOrStatement);
+                    try
                     {
-                        return new DescribeResult(null, null);
+                        PostgresPreparedStatement preparedStatement = prepared.prep;
+                        if (portalOrStatement == null)
+                        {
+                            return new DescribeResult(null, null);
+                        }
+                        else
+                        {
+                            return new DescribeResult(preparedStatement.getMetaData(),
+                                    preparedStatement.getParameterMetaData());
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        return new DescribeResult(preparedStatement.getMetaData(),
-                                preparedStatement.getParameterMetaData());
+                        throw ExceptionUtil.wrapException(e);
                     }
-                }
-                catch (Exception e)
-                {
-                    throw ExceptionUtil.wrapException(e);
-                }
-            default:
-                throw new AssertionError("Unsupported type: " + type);
+                default:
+                    throw new AssertionError("Unsupported type: " + type);
+            }
+        }
+        finally
+        {
+            span.end();
         }
     }
 
@@ -250,7 +266,7 @@ public class Session implements AutoCloseable
     public void close()
     {
         clearState();
-        PrometheusCollector.ACTIVE_SESSIONS.dec();
+        OpenTelemetry.ACTIVE_SESSIONS.add(-1);
     }
 
     public void close(char type, String name)
@@ -323,13 +339,16 @@ public class Session implements AutoCloseable
 
     public CompletableFuture<?> execute(String portalName, int maxRows, ResultSetReceiver resultSetReceiver)
     {
-        Portal portal = getSafePortal(portalName);
-        if (LOGGER.isDebugEnabled())
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("Session.execute").startSpan();
+        try (Scope scope = span.makeCurrent())
         {
-            LOGGER.debug("Executing query {}/{} ", portalName, portal.prep.sql);
-        }
-        try
-        {
+            Portal portal = getSafePortal(portalName);
+            if (LOGGER.isDebugEnabled())
+            {
+                LOGGER.debug("Executing query {}/{} ", portalName, portal.prep.sql);
+            }
+
             //TODO IDENTIFY THE USE CASE
             PostgresPreparedStatement preparedStatement = portal.prep.prep;
             if (preparedStatement == null)
@@ -354,22 +373,30 @@ public class Session implements AutoCloseable
         }
         catch (Exception e)
         {
+            span.recordException(e);
             throw ExceptionUtil.wrapException(e);
+        }
+        finally
+        {
+            span.end();
         }
     }
 
 
     public CompletableFuture<?> executeSimple(String query, ResultSetReceiver resultSetReceiver)
     {
+
         if (LOGGER.isDebugEnabled())
         {
             LOGGER.debug("Executing simple {} ", query);
         }
-        try
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("Session.executeSimple").startSpan();
+        try (Scope scope = span.makeCurrent())
         {
             PostgresStatement statement = getSessionHandler(query).createStatement();
-            executorService.submit(new StatementExecutionTask(statement, query, resultSetReceiver));
-
+            span.addEvent("submit StatementExecutionTask");
+            Context.taskWrapping(executorService).submit(new StatementExecutionTask(statement, query, resultSetReceiver));
             if (activeExecution == null)
             {
                 activeExecution = resultSetReceiver.completionFuture();
@@ -383,7 +410,12 @@ public class Session implements AutoCloseable
         }
         catch (Exception e)
         {
+            span.recordException(e);
             throw ExceptionUtil.wrapException(e);
+        }
+        finally
+        {
+            span.end();
         }
     }
 
@@ -499,12 +531,16 @@ public class Session implements AutoCloseable
         @Override
         public Boolean call() throws Exception
         {
-            PrometheusCollector.TOTAL_EXECUTE.inc();
-            PrometheusCollector.ACTIVE_EXECUTE.inc();
+            OpenTelemetry.TOTAL_EXECUTE.add(1);
+            OpenTelemetry.ACTIVE_EXECUTE.add(1);
             long startTime = System.currentTimeMillis();
-            try
+
+            Tracer tracer = OpenTelemetry.getTracer();
+            Span span = tracer.spanBuilder("StatementExecutionTask.call").startSpan();
+            try (Scope scope = span.makeCurrent())
             {
                 boolean results = statement.execute(query);
+                span.addEvent("receivedResults");
                 if (!results)
                 {
                     resultSetReceiver.allFinished();
@@ -515,17 +551,19 @@ public class Session implements AutoCloseable
                     resultSetReceiver.sendResultSet(rs);
                     resultSetReceiver.allFinished();
                 }
-                PrometheusCollector.TOTAL_SUCCESS_EXECUTE.inc();
-                PrometheusCollector.EXECUTE_DURATION.observe(System.currentTimeMillis() - startTime);
+                OpenTelemetry.TOTAL_SUCCESS_EXECUTE.add(1);
+                OpenTelemetry.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
             }
             catch (Exception e)
             {
+                span.recordException(e);
                 resultSetReceiver.fail(e);
-                PrometheusCollector.TOTAL_FAILURE_EXECUTE.inc();
+                OpenTelemetry.TOTAL_FAILURE_EXECUTE.add(1);
             }
             finally
             {
-                PrometheusCollector.ACTIVE_EXECUTE.dec();
+                span.end();
+                OpenTelemetry.ACTIVE_EXECUTE.add(-1);
             }
             return true;
         }
@@ -545,12 +583,16 @@ public class Session implements AutoCloseable
         @Override
         public Boolean call() throws Exception
         {
-            PrometheusCollector.TOTAL_EXECUTE.inc();
-            PrometheusCollector.ACTIVE_EXECUTE.inc();
+            OpenTelemetry.TOTAL_EXECUTE.add(1);
+            OpenTelemetry.ACTIVE_EXECUTE.add(1);
             long startTime = System.currentTimeMillis();
-            try
+
+            Tracer tracer = OpenTelemetry.getTracer();
+            Span span = tracer.spanBuilder("PreparedStatementExecutionTask.call").startSpan();
+            try (Scope scope = span.makeCurrent())
             {
                 boolean results = preparedStatement.execute();
+                span.addEvent("receivedResults");
                 if (!results)
                 {
                     resultSetReceiver.allFinished();
@@ -561,18 +603,20 @@ public class Session implements AutoCloseable
                     resultSetReceiver.sendResultSet(rs);
                     resultSetReceiver.allFinished();
                 }
-                PrometheusCollector.TOTAL_SUCCESS_EXECUTE.inc();
+                OpenTelemetry.TOTAL_SUCCESS_EXECUTE.add(1);
             }
             catch (Exception e)
             {
+                span.recordException(e);
                 resultSetReceiver.fail(e);
-                PrometheusCollector.TOTAL_FAILURE_EXECUTE.inc();
-                PrometheusCollector.EXECUTE_DURATION.observe(System.currentTimeMillis() - startTime);
+                OpenTelemetry.TOTAL_FAILURE_EXECUTE.add(1);
+                OpenTelemetry.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
 
             }
             finally
             {
-                PrometheusCollector.ACTIVE_EXECUTE.dec();
+                span.end();
+                OpenTelemetry.ACTIVE_EXECUTE.add(-1);
             }
             return true;
         }

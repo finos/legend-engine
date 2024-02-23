@@ -15,13 +15,14 @@
 
 package org.finos.legend.engine.postgres.utils;
 
-import io.prometheus.metrics.core.metrics.Counter;
+/*import io.prometheus.metrics.core.metrics.Counter;
 import io.prometheus.metrics.core.metrics.Gauge;
 import io.prometheus.metrics.core.metrics.Histogram;
-import io.prometheus.metrics.model.snapshots.Unit;
+import io.prometheus.metrics.model.snapshots.Unit;*/
 
 public class PrometheusCollector
 {
+/*
 
     public static final Gauge ACTIVE_SESSIONS = Gauge.builder()
             .name("current_active_sessions")
@@ -41,12 +42,12 @@ public class PrometheusCollector
             .help("Total of execute requests")
             .register();
     public static final Counter TOTAL_SUCCESS_EXECUTE = Counter.builder()
-            .name("total_failure_execute_requests")
-            .help("Total of failure execute requests")
-            .register();
-    public static final Counter TOTAL_FAILURE_EXECUTE = Counter.builder()
             .name("total_success_execute_requests")
             .help("Total of success execute requests")
+            .register();
+    public static final Counter TOTAL_FAILURE_EXECUTE = Counter.builder()
+            .name("total_failure_execute_requests")
+            .help("Total of failure execute requests")
             .register();
 
     public static final Histogram EXECUTE_DURATION = Histogram.builder()
@@ -77,6 +78,7 @@ public class PrometheusCollector
             .help("Execute duration")
             .unit(Unit.SECONDS)
             .register();
+*/
 
 
 }
