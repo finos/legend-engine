@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class MemSqlFunctionProtocolExtension implements PureProtocolExtension
                         .withSubtype(MemSqlFunctionDeploymentConfiguration.class, packageJSONType + "Config")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(FunctionActivatorDeploymentConfiguration.class)
-                        .withSubtype(org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration.class, "memSqlFunctionDeploymentConfig")
+                        .withSubtype(org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration.class, "memSqlFunctionDeploymentConfiguration")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(FunctionActivatorArtifact.class)
                         .withSubtype(MemSqlFunctionArtifact.class, "memSqlFunctionArtifact")

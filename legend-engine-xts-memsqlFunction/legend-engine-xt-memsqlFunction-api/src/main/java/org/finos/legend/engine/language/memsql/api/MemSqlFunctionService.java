@@ -24,6 +24,7 @@ import org.finos.legend.engine.functionActivator.service.FunctionActivatorServic
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionDeploymentManager;
 import org.finos.legend.engine.language.memsql.deployment.MemSqlFunctionGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
@@ -43,9 +44,9 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
 {
     private final MemSqlFunctionDeploymentManager memSqlFunctionDeploymentManager;
 
-    public MemSqlFunctionService()
+    public MemSqlFunctionService(PlanExecutor planExecutor)
     {
-        this.memSqlFunctionDeploymentManager = new MemSqlFunctionDeploymentManager();
+        this.memSqlFunctionDeploymentManager = new MemSqlFunctionDeploymentManager(planExecutor);
     }
 
     @Override
@@ -68,26 +69,26 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
     @Override
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
         return this.validateArtifact(artifact);
     }
 
     @Override
     public MemSqlFunctionDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, List<MemSqlFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
         MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact);
 
         Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration) activator._activationConfiguration());
         return validationErrors.notEmpty() ?
                 new MemSqlFunctionDeploymentResult(validationErrors.collect(e -> e.message)) :
-                this.memSqlFunctionDeploymentManager.deployImpl(artifact, deploymentConfiguration);
+                this.memSqlFunctionDeploymentManager.deploy(identity, artifact, runtimeConfigurations);
     }
 
     @Override
     public MemSqlFunctionArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return MemSqlFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        return MemSqlFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
     }
 
     @Override

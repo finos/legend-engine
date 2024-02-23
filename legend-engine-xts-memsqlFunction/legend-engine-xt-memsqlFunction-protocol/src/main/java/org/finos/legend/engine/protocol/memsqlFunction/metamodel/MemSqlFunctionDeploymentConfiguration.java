@@ -25,4 +25,9 @@ public class MemSqlFunctionDeploymentConfiguration extends DeploymentConfigurati
     {
 
     }
+
+    public MemSqlFunctionDeploymentConfiguration(ConnectionPointer cp)
+    {
+        activationConnection = cp;
+    }
 }

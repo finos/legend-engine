@@ -390,6 +390,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-memsqlFunction-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-memsql-grammar</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -653,6 +657,11 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-relationalStore-snowflake-execution</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-relationalStore-memsql-execution</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>

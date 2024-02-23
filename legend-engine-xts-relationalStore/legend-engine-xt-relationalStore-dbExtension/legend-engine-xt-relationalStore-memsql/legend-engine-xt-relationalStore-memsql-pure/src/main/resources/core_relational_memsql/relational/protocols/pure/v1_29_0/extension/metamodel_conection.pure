@@ -17,8 +17,7 @@ Class meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::
     host : String[1];
     port : Integer[1];
     databaseName : String[1];
-    username : String[1];
-    password : String[1];
+    useSsl : Boolean[1];
 }
 
 Class meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::alloy::authentication::MemsqlPublicAuthenticationStrategy extends meta::protocols::pure::v1_29_0::metamodel::store::relational::connection::alloy::authentication::AuthenticationStrategy

@@ -33,8 +33,7 @@ meta::protocols::pure::v1_26_0::transformation::fromPureGraph::connection::memsq
                      host = $s.host,
                      port = $s.port,
                      databaseName = $s.databaseName,
-                     username = $s.username,
-                     password = $s.password
+                     useSsl = $s.useSsl
                  )
     ]
   )

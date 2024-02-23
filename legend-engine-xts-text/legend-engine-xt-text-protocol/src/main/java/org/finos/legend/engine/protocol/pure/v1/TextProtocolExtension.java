@@ -40,6 +40,6 @@ public class TextProtocolExtension implements PureProtocolExtension
     @Override
     public Map<Class<? extends PackageableElement>, String> getExtraProtocolToClassifierPathMap()
     {
-        return Maps.mutable.with(Text.class, "meta::pure::metamodel::text::Text");
+        return Maps.mutable.with(Text.class, "meta::pure::metamodel::text: :Text");
     }
 }

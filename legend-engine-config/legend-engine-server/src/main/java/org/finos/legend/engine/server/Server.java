@@ -80,6 +80,7 @@ import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
+import org.finos.legend.engine.language.memsql.api.MemSqlFunctionService;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -387,7 +388,7 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new ExecutePlanLegacy(planExecutor));
 
         // Function Activator
-        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor), new HostedServiceService()), routerExtensions));
+        environment.jersey().register(new FunctionActivatorAPI(modelManager, Lists.mutable.empty(), Lists.mutable.with(new SnowflakeAppService(planExecutor), new HostedServiceService(),new MemSqlFunctionService(planExecutor)), routerExtensions));
 
         // GraphQL
         environment.jersey().register(new GraphQLGrammar());

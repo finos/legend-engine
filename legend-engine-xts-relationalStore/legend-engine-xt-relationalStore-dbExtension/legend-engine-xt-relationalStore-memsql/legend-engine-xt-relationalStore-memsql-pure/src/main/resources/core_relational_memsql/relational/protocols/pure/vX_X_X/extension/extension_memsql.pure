@@ -33,8 +33,7 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::memsql
                      host = $s.host,
                      port = $s.port,
                      databaseName = $s.databaseName,
-                     username = $s.username,
-                     password = $s.password
+                     useSsl = $s.useSsl
                  )
     ],
     reverse_transfers_typeLookups = [
@@ -55,8 +54,7 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::memsql
                      host = $s.host,
                      port = $s.port,
                      databaseName = $s.databaseName,
-                     username = $s.username,
-                     password = $s.password
+                     useSsl = $s.useSsl
             )
     ]
   )

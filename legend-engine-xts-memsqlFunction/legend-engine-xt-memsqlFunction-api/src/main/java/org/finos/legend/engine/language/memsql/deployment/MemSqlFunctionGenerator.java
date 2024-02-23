@@ -23,21 +23,44 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionArtifact;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionContent;
+import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunction;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 
 public class MemSqlFunctionGenerator
 {
-    public static MemSqlFunctionArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel,RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+
+    public static MemSqlFunctionArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel,RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification, RichIterable<String>> artifactDetails = extractArtifactDetails(pureModel, activator, routerExtensions);
-        Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification memSqlDatasourceSpecification = artifactDetails.getOne();
+        Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl, RichIterable<String>> artifactDetails = extractArtifactDetails(pureModel, activator, routerExtensions);
+        Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl memSqlDatasourceSpecification = artifactDetails.getOne();
         RichIterable<String> sqlExpressions = artifactDetails.getTwo();
+
+        RelationalDatabaseConnection connection;
+
+        if (activator._activationConfiguration() != null)
+        {
+            //identify connection
+            MemSqlFunction protocolActivator = org.eclipse.collections.impl.factory.Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(MemSqlFunction.class))
+                    .select(c -> c.getPath().equals(platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(activator, pureModel.getExecutionSupport())))
+                    .getFirst();
+            connection = (RelationalDatabaseConnection) org.eclipse.collections.impl.factory.Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
+                    .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration) protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
+            return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.withAll(sqlExpressions), new MemSqlFunctionDeploymentConfiguration(connection));
+        }
         return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.withAll(sqlExpressions));
     }
 
-    private static Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
+    private static Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         PackageableFunction<?> function = activator._function();
         Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
@@ -45,7 +68,7 @@ public class MemSqlFunctionGenerator
                 collectAllNodes(executionPlan._rootExecutionNode()).selectInstancesOf(Root_meta_relational_mapping_SQLExecutionNode.class);
 
         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection relationalDatabaseConnection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) sqlExecutionNodes.getAny()._connection();
-        Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification memSqlDatasourceSpecification = ((Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification) relationalDatabaseConnection._datasourceSpecification());
+        Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl memSqlDatasourceSpecification = ((Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl) relationalDatabaseConnection._datasourceSpecification());
 
         return Tuples.pair(
                 memSqlDatasourceSpecification,

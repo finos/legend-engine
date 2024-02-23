@@ -103,6 +103,7 @@
         <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
         <module>legend-engine-xts-data-push</module>
+
     </modules>
 
     <properties>
@@ -904,6 +905,16 @@
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-xt-relationalStore-memsql-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-protocol</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-xt-relationalStore-memsql-grammar</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
