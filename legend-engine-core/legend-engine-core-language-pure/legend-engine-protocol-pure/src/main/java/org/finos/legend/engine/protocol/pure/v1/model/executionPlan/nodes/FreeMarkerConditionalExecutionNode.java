@@ -14,6 +14,10 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.List;
+
 public class FreeMarkerConditionalExecutionNode extends ExecutionNode
 {
     public String freeMarkerBooleanExpression;
@@ -24,5 +28,21 @@ public class FreeMarkerConditionalExecutionNode extends ExecutionNode
     public <T> T accept(ExecutionNodeVisitor<T> executionNodeVisitor)
     {
         return executionNodeVisitor.visit(this);
+    }
+
+    @Override
+    @JsonIgnore
+    public List<ExecutionNode> childNodes()
+    {
+        List<ExecutionNode> result = this.executionNodes().toList();
+        if (this.trueBlock != null)
+        {
+            result.add(this.trueBlock);
+        }
+        if (this.falseBlock != null)
+        {
+            result.add(this.falseBlock);
+        }
+        return result;
     }
 }
