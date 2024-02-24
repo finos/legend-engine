@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.test;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
@@ -39,6 +40,12 @@ import java.util.*;
 // TO BE MOVED TO MODEL STORE MODULE ONCE CREATED
 public class ModelStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "M2M");
+    }
+
     public static final String MODEL_STORE = "ModelStore";
     //TODO: after refactor use the already present variables
     //currently creates a circular dependency, hence cannot use the already present variables

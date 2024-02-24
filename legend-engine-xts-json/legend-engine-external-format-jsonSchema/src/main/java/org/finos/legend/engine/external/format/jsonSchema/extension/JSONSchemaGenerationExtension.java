@@ -15,6 +15,7 @@
 package org.finos.legend.engine.external.format.jsonSchema.extension;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.jsonSchema.schema.generations.JSONSchemaConfig;
 import org.finos.legend.engine.external.format.jsonSchema.schema.generations.JSONSchemaGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
@@ -37,6 +38,18 @@ import java.util.List;
 
 public class JSONSchemaGenerationExtension implements GenerationExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
+    }
+
+    @Override
+    public String type()
+    {
+        return "Generation - To Delete?";
+    }
+
     @Override
     public String getLabel()
     {

@@ -25,6 +25,12 @@ import java.util.Map;
 
 public interface PureProtocolExtension extends LegendLanguageExtension
 {
+    @Override
+    default String type()
+    {
+        return "Protocol";
+    }
+
     @Deprecated
     default List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {

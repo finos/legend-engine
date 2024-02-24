@@ -41,6 +41,18 @@ import java.util.function.Function;
 public class BigQueryConnectionExtension implements RelationalConnectionExtension, StrategicConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("Store", "Relational", "BigQuery");
+    }
+
+    @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new BigQueryManager());

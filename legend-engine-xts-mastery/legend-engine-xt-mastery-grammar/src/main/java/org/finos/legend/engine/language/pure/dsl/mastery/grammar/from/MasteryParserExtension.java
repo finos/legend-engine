@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Sets;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.mastery.grammar.from.acquisition.AcquisitionProtocolParseTreeWalker;
@@ -70,6 +71,12 @@ public class MasteryParserExtension implements IMasteryParserExtension
     private static final String CRON_TRIGGER = "Cron";
     private static final String MANUAL_TRIGGER = "Manual";
     private static final String REST_ACQUISITION = "REST";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mastery");
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

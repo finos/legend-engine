@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.TrinoLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.TrinoParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
@@ -30,6 +31,12 @@ import java.util.function.Function;
 
 public class TrinoGrammarParserExtension implements IRelationalGrammarParserExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Trino");
+    }
+
     @Override
     public List<Function<AuthenticationStrategySourceCode, AuthenticationStrategy>> getExtraAuthenticationStrategyParsers()
     {

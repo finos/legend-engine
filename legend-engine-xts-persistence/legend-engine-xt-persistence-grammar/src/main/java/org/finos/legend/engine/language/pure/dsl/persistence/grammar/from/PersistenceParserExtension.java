@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.context.PersistenceContextParseTreeWalker;
@@ -48,6 +49,12 @@ public class PersistenceParserExtension implements IPersistenceParserExtension
     public static final String NAME = "Persistence";
     public static final String TRIGGER_MANUAL = "Manual";
     public static final String TRIGGER_CRON = "Cron";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence");
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

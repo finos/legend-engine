@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.function.extension;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension;
 import org.finos.legend.engine.testable.extension.TestRunner;
@@ -23,13 +24,18 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Testable;
 
 public class FunctionTestableRunnerExtension implements TestableRunnerExtension
 {
-
     private String pureVersion = PureClientVersions.production;
 
     @Override
     public String getSupportedClassifierPath()
     {
         return CorePureProtocolExtension.FUNCTION_CLASSIFIER_PATH;
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Function");
     }
 
     @Override

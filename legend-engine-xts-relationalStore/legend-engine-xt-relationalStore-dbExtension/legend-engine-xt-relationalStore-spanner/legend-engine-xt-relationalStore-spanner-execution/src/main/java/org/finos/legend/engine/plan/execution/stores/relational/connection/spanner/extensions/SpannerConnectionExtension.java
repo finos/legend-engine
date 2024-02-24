@@ -26,6 +26,18 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.spann
 public class SpannerConnectionExtension implements RelationalConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "(Connection)ConnectionExtension";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Spanner");
+    }
+
+    @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new SpannerManager());

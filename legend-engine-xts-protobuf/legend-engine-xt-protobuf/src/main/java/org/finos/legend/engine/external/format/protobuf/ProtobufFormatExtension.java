@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.protobuf;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.protobuf.fromModel.ModelToProtobufConfiguration;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
@@ -35,6 +36,12 @@ public class ProtobufFormatExtension implements ExternalFormatSchemaGenerationEx
 {
     private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> protobufContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema>) core_external_format_protobuf_externalFormatContract.Root_meta_external_format_protobuf_contract_protobufFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = protobufContract._id();
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "Protobuf");
+    }
 
     @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_protobuf_metamodel_ProtobufSchema> getExternalFormatContract()

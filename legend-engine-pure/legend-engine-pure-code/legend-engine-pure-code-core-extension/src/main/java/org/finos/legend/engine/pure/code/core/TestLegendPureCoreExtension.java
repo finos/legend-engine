@@ -14,6 +14,21 @@
 
 package org.finos.legend.engine.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+
 public interface TestLegendPureCoreExtension extends LegendPureCoreExtension
 {
+    @Override
+    default String type()
+    {
+        return "__Test__";
+
+    }
+
+    @Override
+    default MutableList<String> group()
+    {
+        return Lists.mutable.with("__Test__");
+    }
 }

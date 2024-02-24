@@ -16,6 +16,7 @@ package org.finos.legend.engine.external.shared.format.model.transformation.from
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
@@ -33,6 +34,12 @@ import org.finos.legend.pure.generated.*;
  */
 public interface ExternalFormatSchemaGenerationExtension<Metamodel, SchemaGenConfig extends ModelToSchemaConfiguration> extends ExternalFormatExtension<Metamodel>
 {
+    @Override
+    default String type()
+    {
+        return "Schema_Generation";
+    }
+
     /**
      * Called to compile an external format ModelToSchemaConfiguration.
      */

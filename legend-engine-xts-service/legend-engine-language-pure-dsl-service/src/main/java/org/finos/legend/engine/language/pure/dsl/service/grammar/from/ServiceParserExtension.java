@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.service.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.SourceCodeParserInfo;
@@ -31,6 +32,12 @@ import java.util.Collections;
 public class ServiceParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "Service";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Service");
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

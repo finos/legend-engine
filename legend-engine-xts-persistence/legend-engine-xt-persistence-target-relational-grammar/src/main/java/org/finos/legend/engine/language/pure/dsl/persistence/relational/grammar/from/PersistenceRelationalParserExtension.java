@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.persistence.relational.grammar
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.IPersistenceParserExtension;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.from.PersistenceTargetSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
@@ -33,6 +34,12 @@ import java.util.function.Function;
 public class PersistenceRelationalParserExtension implements IPersistenceParserExtension
 {
     private static final String PERSISTENCE_TARGET_RELATIONAL = "Relational";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence", "Relational");
+    }
 
     @Override
     public List<Function<PersistenceTargetSourceCode, PersistenceTarget>> getExtraPersistenceTargetParsers()

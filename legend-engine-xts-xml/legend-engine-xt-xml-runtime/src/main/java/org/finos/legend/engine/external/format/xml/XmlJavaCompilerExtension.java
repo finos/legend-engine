@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.xml;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.xml.read.DeserializeContext;
 import org.finos.legend.engine.external.format.xml.read.IXmlDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.xml.read.ReadHandler;
@@ -80,6 +81,12 @@ public class XmlJavaCompilerExtension implements ExecutionPlanJavaCompilerExtens
         DEPENDENCIES.put(PURE_PACKAGE + "h_Particle", Particle.class);
         DEPENDENCIES.put(PURE_PACKAGE + "h_Sequence", Sequence.class);
         DEPENDENCIES.put(PURE_PACKAGE + "h_TextContent", TextContent.class);
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "XML");
     }
 
     @Override

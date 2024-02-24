@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.authentication.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.authentication.demo.AuthenticationDemo;
@@ -23,6 +24,13 @@ import org.finos.legend.pure.generated.Root_meta_pure_runtime_connection_authent
 
 public class AuthenticationDemoCompilerExtension implements IAuthenticationDemoCompilerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("__Test__");
+
+    }
+
     @Override
     public CompilerExtension build()
     {

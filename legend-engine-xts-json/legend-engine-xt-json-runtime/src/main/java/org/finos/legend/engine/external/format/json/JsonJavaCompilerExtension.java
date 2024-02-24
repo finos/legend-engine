@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.json;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.json.read.IJsonDeserializeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.json.read.IJsonInternalizeExecutionNodeSpecifics;
 import org.finos.legend.engine.external.format.json.read.JsonDataReader;
@@ -44,6 +45,12 @@ public class JsonJavaCompilerExtension implements ExecutionPlanJavaCompilerExten
         DEPENDENCIES.put(PURE_PACKAGE + "_IJsonExternalizeExecutionNodeSpecifics", IJsonExternalizeExecutionNodeSpecifics.class);
         DEPENDENCIES.put(PURE_PACKAGE + "IJsonSerializer", IJsonSerializer.class);
         DEPENDENCIES.put(PURE_PACKAGE + "IJsonWriter", IJsonWriter.class);
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
     }
 
     @Override

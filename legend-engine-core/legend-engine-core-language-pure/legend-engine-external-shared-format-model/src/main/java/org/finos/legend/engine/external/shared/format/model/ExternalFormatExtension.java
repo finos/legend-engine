@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.external.shared.format.model;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -38,6 +40,18 @@ import java.util.List;
  */
 public interface ExternalFormatExtension<Metamodel> extends LegendExternalFormatExtension
 {
+    @Override
+    default String type()
+    {
+        return "External_Format";
+    }
+
+    @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("External_Format");
+    }
+
     /**
      * Returns the contract for this external format written in PURE
      */

@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ExternalFormatLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.ExternalFormatParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
@@ -32,6 +33,12 @@ import java.util.function.Consumer;
 public class ExternalFormatGrammarParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "ExternalFormat";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "-Core");
+    }
 
     public List<SectionParser> getExtraSectionParsers()
     {

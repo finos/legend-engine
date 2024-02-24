@@ -14,14 +14,20 @@
 
 package org.finos.legend.engine.plan.execution.stores.service.plugin;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
-import org.finos.legend.engine.plan.execution.stores.service.auth.ServiceStoreConnectionSpecification;
 
 public class ServiceStoreExecutorBuilder implements StoreExecutorBuilder
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Service");
+    }
+
     @Override
     public StoreType getStoreType()
     {

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.bigqueryFunction.deployment;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
@@ -25,6 +26,13 @@ import java.util.List;
 public class BigQueryFunctionArtifactGenerationExtension implements ArtifactGenerationExtension
 {
     private static final String ROOT_PATH = "bigQueryFunction";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "BigQuery");
+    }
+
 
     @Override
     public String getKey()

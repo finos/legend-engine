@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.dsl.authentication.grammar.to.demo;
 
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
@@ -32,6 +31,13 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class AuthenticationDemoComposerExtension implements IAuthenticationDemoComposerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("__Test__");
+
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
     {
         if (element instanceof AuthenticationDemo)

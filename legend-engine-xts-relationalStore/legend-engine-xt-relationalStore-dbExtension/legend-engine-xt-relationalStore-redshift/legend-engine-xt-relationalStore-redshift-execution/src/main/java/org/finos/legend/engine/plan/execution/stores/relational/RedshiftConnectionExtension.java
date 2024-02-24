@@ -41,6 +41,18 @@ import java.util.function.Function;
 public class RedshiftConnectionExtension implements RelationalConnectionExtension, StrategicConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Redshift");
+    }
+
+    @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new RedshiftManager());

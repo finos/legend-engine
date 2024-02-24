@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.snowflakeApp.api;
 
-import com.fasterxml.jackson.databind.jsontype.NamedType;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.list.MutableList;
@@ -47,6 +46,12 @@ public class SnowflakeAppService implements FunctionActivatorService<Root_meta_e
 {
     private ConnectionManagerSelector connectionManager;
     private SnowflakeAppDeploymentManager snowflakeDeploymentManager;
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
+    }
 
     public SnowflakeAppService()
     {

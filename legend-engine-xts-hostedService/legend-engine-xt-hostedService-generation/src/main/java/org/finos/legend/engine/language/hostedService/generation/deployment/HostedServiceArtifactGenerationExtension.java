@@ -26,7 +26,6 @@ import org.finos.legend.engine.protocol.hostedService.deployment.model.Generatio
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.Artifact;
 import org.finos.legend.engine.language.pure.dsl.generation.extension.ArtifactGenerationExtension;
-import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.pure.v1.model.context.*;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -37,10 +36,9 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElem
 import org.slf4j.Logger;
 
 import java.util.List;
-import java.util.ServiceLoader;
 
 //import static com.sun.tools.javac.tree.TreeInfo.fullName;
-import static org.finos.legend.pure.runtime.java.compiled.generation.processors.support.Pure.elementToPath;
+
 
 public class HostedServiceArtifactGenerationExtension implements ArtifactGenerationExtension
 {
@@ -51,6 +49,13 @@ public class HostedServiceArtifactGenerationExtension implements ArtifactGenerat
     public final String ROOT_PATH = "Hosted-Service-Artifact-Generation";
 
     private static final String FILE_NAME = "hostedServiceArtifact.json";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Hosted_Service");
+    }
+
 
     @Override
     public String getKey()

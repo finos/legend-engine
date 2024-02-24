@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.mastery.extension;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.dsl.mastery.compiler.toPureGraph.HelperMasterRecordDefinitionBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -26,6 +27,12 @@ import java.util.List;
 
 public class MasterRecordGenExtension implements IMasteryModelGenerationExtension
 {
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Mastery");
+    }
 
     @Override
     public List<Function3<PackageableElement, CompileContext, String, PureModelContextData>> getPureModelContextDataGenerators()

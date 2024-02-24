@@ -54,6 +54,12 @@ public class MongoDBCompilerExtension implements IMongoDBStoreCompilerExtension
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(MongoDBCompilerExtension.class);
 
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Mongo");
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new MongoDBCompilerExtension();

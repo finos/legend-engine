@@ -16,6 +16,7 @@
 package org.finos.legend.engine.external.format.daml.generation;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -37,6 +38,18 @@ import java.util.List;
 @Deprecated
 public class DAMLGenerationExtension implements GenerationExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "DAML");
+    }
+
+    @Override
+    public String type()
+    {
+        return "Generation - To Delete?";
+    }
+
     @Override
     public String getLabel()
     {

@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.flatdata;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.flatdata.grammar.fromPure.FlatDataSchemaParseException;
 import org.finos.legend.engine.external.format.flatdata.grammar.fromPure.FlatDataSchemaParser;
 import org.finos.legend.engine.external.format.flatdata.grammar.toPure.FlatDataSchemaComposer;
@@ -43,6 +44,18 @@ public class FlatDataExternalFormatExtension implements ExternalFormatSchemaGene
 {
     private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> flatDataContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData>) core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_contract_flatDataFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = flatDataContract._id();
+
+    @Override
+    public String type()
+    {
+        return "MIX_Model_Generation_&_Schema_Generation";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "FlatData");
+    }
 
     @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_flatdata_metamodel_FlatData> getExternalFormatContract()

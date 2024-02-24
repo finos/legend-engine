@@ -14,10 +14,17 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.pure.code.core.BindingLegendPureCoreExtension;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
 
-public class XMLJavaBindingLegendPureCoreExtension implements BindingLegendPureCoreExtension
+public class XMLJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "XML");
+    }
+
     @Override
     public String functionFile()
     {

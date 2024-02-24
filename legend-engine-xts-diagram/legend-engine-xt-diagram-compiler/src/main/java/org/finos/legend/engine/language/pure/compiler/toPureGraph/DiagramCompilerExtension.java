@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
@@ -28,6 +29,12 @@ import java.util.Collections;
 public class DiagramCompilerExtension implements CompilerExtension
 {
     protected final MutableMap<String, Root_meta_pure_metamodel_diagram_Diagram> diagramsIndex = Maps.mutable.empty();
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Diagram");
+    }
 
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()

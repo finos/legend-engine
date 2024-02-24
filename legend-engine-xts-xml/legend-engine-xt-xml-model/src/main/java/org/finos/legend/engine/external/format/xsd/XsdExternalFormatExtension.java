@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.xsd;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.xsd.compile.XsdCompiler;
 import org.finos.legend.engine.external.format.xsd.toModel.XsdToModelConfiguration;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
@@ -32,6 +33,12 @@ public class XsdExternalFormatExtension implements ExternalFormatModelGeneration
 {
     private static final Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> xsdContract = (Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema>) core_external_format_xml_externalFormatContract.Root_meta_external_format_xml_contract_xsdFormatContract__ExternalFormatContract_1_(PureModel.CORE_PURE_MODEL.getExecutionSupport());
     public static final String TYPE = xsdContract._id();
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "XML");
+    }
 
     @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_format_xml_metamodel_xsd_XsdSchema> getExternalFormatContract()

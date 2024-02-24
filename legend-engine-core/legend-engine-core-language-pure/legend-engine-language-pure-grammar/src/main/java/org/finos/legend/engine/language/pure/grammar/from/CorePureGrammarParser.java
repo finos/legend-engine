@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionLexerGrammar;
@@ -86,6 +87,12 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public static final String AGGREGATE_SPECIFICATION = "AggregateSpecification";
 
     private static RelationStoreAccessorPureParser relationStoreAccessorPureParser = new RelationStoreAccessorPureParser();
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Core");
+    }
 
     @Override
     public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()

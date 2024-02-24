@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
@@ -32,6 +33,18 @@ import java.util.Properties;
 public class TrinoTestContainersWithUserAndPasswordAuth
         implements DynamicTestConnection
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Trino");
+    }
+
+    @Override
+    public String type()
+    {
+        return "Test_Connection_User_Password";
+    }
+
     @Override
     public DatabaseType getDatabaseType()
     {

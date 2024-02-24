@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.StoreLegendPureCoreExtension;
 
 public class ServiceStoreLegendPureCoreExtension implements StoreLegendPureCoreExtension
@@ -28,6 +29,12 @@ public class ServiceStoreLegendPureCoreExtension implements StoreLegendPureCoreE
     public String functionSignature()
     {
         return "meta::external::store::service::extension::serviceStoreExtension__Extension_1_";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Service");
     }
 }
 

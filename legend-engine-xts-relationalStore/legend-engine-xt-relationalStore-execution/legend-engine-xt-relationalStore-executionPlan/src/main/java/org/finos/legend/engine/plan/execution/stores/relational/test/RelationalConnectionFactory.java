@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.test;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -42,6 +43,12 @@ import java.util.Optional;
 
 public class RelationalConnectionFactory implements ConnectionFactoryExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
+    }
+
     @Override
     public Optional<Connection> tryBuildFromInputData(InputData inputData)
     {

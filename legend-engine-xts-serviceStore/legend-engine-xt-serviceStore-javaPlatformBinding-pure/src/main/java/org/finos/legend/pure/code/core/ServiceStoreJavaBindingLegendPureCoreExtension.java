@@ -14,10 +14,17 @@
 
 package org.finos.legend.pure.code.core;
 
-import org.finos.legend.engine.pure.code.core.BindingLegendPureCoreExtension;
+import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.pure.code.core.JavaBindingLegendPureCoreExtension;
 
-public class ServiceStoreJavaBindingLegendPureCoreExtension implements BindingLegendPureCoreExtension
+public class ServiceStoreJavaBindingLegendPureCoreExtension implements JavaBindingLegendPureCoreExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Service");
+    }
+
     @Override
     public String functionFile()
     {
