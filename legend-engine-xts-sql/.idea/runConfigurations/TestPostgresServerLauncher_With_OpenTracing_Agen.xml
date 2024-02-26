@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="TestPostgresServerLauncher With OpenTracing Agen" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.finos.legend.engine.postgres.TestPostgresServerLauncher" />
+    <module name="legend-engine-xt-sql-postgres-server" />
+    <option name="PROGRAM_PARAMETERS" value="$PROJECT_DIR$/legend-engine-xt-sql-postgres-server/src/test/resources/staticConfig.json" />
+    <option name="VM_PARAMETERS" value="-javaagent:$MAVEN_REPOSITORY$/io/opentelemetry/javaagent/opentelemetry-javaagent/2.0.0/opentelemetry-javaagent-2.0.0.jar -Dotel.service.name=legend-engine-xts-sql -Dotel.metrics.exporter=prometheus -Dotel.sdk.disabled=false -Dotel.traces.exporter=otlp -Dotel.exporter.otlp.traces.endpoint=http://localhost:8080/otlp-http/v1/traces -Dotel.metrics.exporter=none -Dotel.logs.exporter=none -Dotel.metrics.exporter=prometheus" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.finos.legend.engine.postgres.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
