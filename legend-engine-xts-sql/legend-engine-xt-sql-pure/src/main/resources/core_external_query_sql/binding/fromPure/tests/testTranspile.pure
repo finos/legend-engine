@@ -24,7 +24,7 @@ import meta::legend::service::metamodel::*;
 import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
-
+import meta::external::query::sql::transformation::compile::utils::*;
 
 //SELECT
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStar():Boolean[1]
@@ -492,7 +492,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       ->extend([
         col(row:TDSRow[1] | $row.getInteger('Calc'), 'Calc2')
       ])
-      ->restrict(['Calc', 'Calc2'])
       ->distinct()
       ->sort([asc('Calc'), asc('Calc2')])
       })
@@ -1459,7 +1458,6 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
               ->restrict('measure')
               ->renameColumns(pair('measure', 'measure_t1')),
               meta::relational::metamodel::join::JoinType.INNER, {row1:TDSRow[1], row2:TDSRow[1] | true})
-        ->restrict(['String_t0', 'measure_t1'])
         ->renameColumns([
           pair('String_t0', 'String'),
           pair('measure_t1', 'sum')
@@ -1588,6 +1586,26 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarWithExpressionsFromSubselect():Boolean[1]
+{
+  test(
+    'select *, String as "abc" from (select Integer, String from service."/service/service1" UNION ALL select Integer, String from service."/service/service1")',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict(['Integer', 'String'])->concatenate(
+          FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->restrict(['Integer', 'String'])
+        )->project([
+          col(row:TDSRow[1] | $row.getInteger('Integer'), 'Integer'),
+          col(row:TDSRow[1] | $row.getString('String'), 'String'),
+          col(row:TDSRow[1] | $row.getString('String'), 'abc')
+        ])
+      }
+  )
+}
+
 //CURRENT TIME
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testCurrentTime():Boolean[1]
 {
@@ -1614,7 +1632,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
     'SELECT ' +
     'localtimestamp() AS "LOCALTIMESTAMP", ' +
     'make_date(2023, 01, 02) AS "MAKEDATE", ' +
-    'make_timestamp(2023, 01, 02, 12, 11, 10.5) AS "MAKETIMESTAMP" ' +
+    'make_timestamp(2023, 01, 02, 12, 11, 10.5) AS "MAKETIMESTAMP", ' +
+    'date(\'2023-01-01\') AS "DATE", ' +
+    'date(DateTime) AS "DATE2" ' +
     'FROM service."/service/service1"',
 
     {|
@@ -1625,7 +1645,9 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
             ->project([
                 col(row:TDSRow[1] | now(), 'LOCALTIMESTAMP'),
                 col(row:TDSRow[1] | %2023-01-02, 'MAKEDATE'),
-                col(row:TDSRow[1] | %2023-01-02T12:11:10.5, 'MAKETIMESTAMP')
+                col(row:TDSRow[1] | %2023-01-02T12:11:10.5, 'MAKETIMESTAMP'),
+                col(row:TDSRow[1] | datePart(parseDate('2023-01-01')), 'DATE'),
+                col(row:TDSRow[1] | datePart($row.getDateTime('DateTime')), 'DATE2')
               ])
       })
 }
@@ -2181,6 +2203,23 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
       }, false)
 }
 
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStarWithWidnow():Boolean[1]
+{
+  test(
+    'SELECT *,' +
+    'rank() OVER (PARTITION BY String ORDER BY Integer ASC) AS "RANK" ' +
+    'FROM service."/service/service1"',
+
+    {|
+        FlatInput.all()
+            ->project(
+              [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn],
+              [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+            ->olapGroupBy(['String'], asc('Integer'), func(y | $y->meta::pure::functions::math::olap::rank()), 'RANK')
+      }, false)
+}
+
 function <<test.ToFix>> meta::external::query::sql::transformation::queryToPure::tests::testGroupByWithWindowFunctions():Boolean[1]
 {
   test(
@@ -2571,50 +2610,4 @@ function meta::external::query::sql::transformation::queryToPure::tests::testSou
     serviceToSource(Service3()),
     serviceToSource(Service4())
   ]
-}
-
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1]):Boolean[1]
-{
-  test($sqls, $expected, true);
-}
-
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], assertJSON:Boolean[1]):Boolean[1]
-{
-  test($sqls, $expected, testSources(), false, true, $assertJSON);
-}
-
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1]):Boolean[1]
-{
-  $sqls->forAll(sql |
-    let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom);
-    let actual = $sqlTransformContext.lambda();
-
-    if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
-    if ($assertJSON, | assertLambdaJSONEquals($expected, $actual), | true);
-  )
-}
-
-function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1]): SqlTransformContext[1]
-{
-  processQuery($sql, false);
-}
-
-function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
-{
-  processQuery($sql, [
-    serviceToSource(Service1()),
-    serviceToSource(Service2()),
-    serviceToSource(Service3()),
-    serviceToSource(Service4())
-  ], $scopeWithFrom);
-}
-
-function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
-{
-  let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
-
-  let extensions = relationalExtensions();
-  let context = rootContext($sources, $extensions);
-
-  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom));
 }

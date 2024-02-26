@@ -1,0 +1,169 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::transformation::utils::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+
+function meta::external::query::sql::transformation::compile::utils::nullOrSfe(func: meta::pure::metamodel::function::Function<Any>[1], pvs:ValueSpecification[*]):ValueSpecification[1]
+{
+  nullOrSfe($func, [], $pvs);
+}
+
+function meta::external::query::sql::transformation::compile::utils::nullOrSfe(func: meta::pure::metamodel::function::Function<Any>[1], resolvedTypeParameters:GenericType[*], pvs:ValueSpecification[*]):ValueSpecification[1]
+{
+  nullOrSfe($func, $func->functionReturnType(), $resolvedTypeParameters, $pvs);
+}
+
+function meta::external::query::sql::transformation::compile::utils::nullOrSfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], pvs:ValueSpecification[*]):ValueSpecification[1]
+{
+  nullOrSfe($func, $genericType, $resolvedTypeParameters, $func->functionReturnMultiplicity(), $pvs)
+}
+
+function meta::external::query::sql::transformation::compile::utils::nullOrSfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], multiplicity: Multiplicity[1], pvs:ValueSpecification[*]):ValueSpecification[1]
+{
+  let zipped = $func->getParameters()->evaluateAndDeactivate()->zip($pvs);
+  let null = $zipped->exists(p | $p.first.multiplicity->hasLowerBound() && $p.second->isNull());
+
+  if ($null,
+  | let i = iv([], $genericType),
+  | sfe($func, $genericType, $resolvedTypeParameters, $multiplicity, $pvs));
+}
+
+
+function meta::external::query::sql::transformation::compile::utils::isNull(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == PureZero;
+}
+
+function meta::external::query::sql::transformation::compile::utils::isZeroOne(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroOne;
+}
+
+function meta::external::query::sql::transformation::compile::utils::isZeroMany(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroMany;
+}
+
+
+function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
+{
+  sfe($func, [], $pvs);
+}
+
+function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], resolvedTypeParameters:GenericType[*], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
+{
+  sfe($func, $func->functionReturnType(), $resolvedTypeParameters, $pvs);
+}
+
+function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
+{
+  sfe($func, $genericType, $resolvedTypeParameters, $func->functionReturnMultiplicity(), $pvs)
+}
+
+function meta::external::query::sql::transformation::compile::utils::sfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], multiplicity: Multiplicity[1], pvs:ValueSpecification[*]):SimpleFunctionExpression[1]
+{
+
+  let zipped = $func->getParameters()->evaluateAndDeactivate()->zip($pvs);
+
+  let parameters = $zipped->map(p |
+
+    [
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), | sfe(toOne_T_MANY__T_1_, $p.second->evaluateAndDeactivate().genericType, [], PureOne, $p.second->evaluateAndDeactivate())),
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroMany(), | sfe(toOneMany_T_MANY__T_$1_MANY$_, $p.second->evaluateAndDeactivate().genericType, [], OneMany, $p.second->evaluateAndDeactivate()))
+    ]->getValue(true, | $p.second->evaluateAndDeactivate())->eval();
+  );
+
+  ^SimpleFunctionExpression(
+    func = $func,
+    genericType = $genericType,
+    resolvedTypeParameters = $resolvedTypeParameters,
+    importGroup = system::imports::coreImport,
+    multiplicity = $multiplicity,
+    parametersValues = $parameters
+  );
+}
+
+function meta::external::query::sql::transformation::compile::utils::createTypedFunction(pairs:Pair<Type, Function<Any>>[*], default:Function<Any>[1], type:Type[0..1], null:Boolean[1], args:ValueSpecification[*]):ValueSpecification[1]
+{
+  let func = if ($type->isEmpty(), | $default, | $pairs->getValue($type->toOne(), $default));
+  if ($null, | nullOrSfe($func, $args), | sfe($func, $args));
+}
+
+function meta::external::query::sql::transformation::compile::utils::functionType(name:String[1], type:Type[1], multiplicity:Multiplicity[1], returnType:Type[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
+{
+  functionType($name, ^GenericType(rawType = $type), $multiplicity, ^GenericType(rawType = $returnType), $returnMultiplicity);
+}
+
+function meta::external::query::sql::transformation::compile::utils::functionType(name:String[1], type:GenericType[1], multiplicity:Multiplicity[1], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
+{
+  ^FunctionType(parameters = ^VariableExpression(genericType = $type, name = $name, multiplicity = $multiplicity), returnMultiplicity = $returnMultiplicity, returnType = $returnType);
+}
+
+function meta::external::query::sql::transformation::compile::utils::functionType(parameters:VariableExpression[*], returnType:GenericType[1], returnMultiplicity:Multiplicity[1]):FunctionType[1]
+{
+  ^FunctionType(parameters = $parameters, returnMultiplicity = $returnMultiplicity, returnType = $returnType);
+}
+
+function meta::external::query::sql::transformation::compile::utils::lambda(functionType:FunctionType[1], expressionSequence:ValueSpecification[*]):LambdaFunction<Any>[1]
+{
+  let lambda = newLambdaFunction($functionType);
+  ^$lambda(expressionSequence = $expressionSequence->toOneMany());
+}
+
+function meta::external::query::sql::transformation::compile::utils::ivIfNotEmpty(a:Any[0..1]):ValueSpecification[0..1]
+{
+  if ($a->isNotEmpty(), | $a->iv(), | []);
+}
+
+function meta::external::query::sql::transformation::compile::utils::iv(value: Any[*]): ValueSpecification[1]
+{
+  $value->match([
+    v:ValueSpecification[1] | $v,
+    a:Any[0] | iv([], ^GenericType(rawType=Nil)),
+    a:Any[*] | iv($a, $a->genericType());
+  ]);
+}
+
+function meta::external::query::sql::transformation::compile::utils::iv(value: Any[*], genericType:GenericType[1]): ValueSpecification[1]
+{
+  let multiplicity = $value->match([
+    a:Any[0] | PureZero,
+    a:Any[1] | PureOne,
+    a:Any[*] |
+      let mv = ^MultiplicityValue(value = $a->size());
+      ^Multiplicity(lowerBound = $mv, upperBound = $mv);
+  ]);
+
+
+
+  ^InstanceValue(multiplicity = $multiplicity, genericType = $genericType, values = $value);
+}
+
+
+function meta::external::query::sql::transformation::compile::utils::processExtractEnumValue(enum:Enum[1]):FunctionExpression[1]
+{
+  processExtractEnumValue($enum->type()->cast(@Enumeration<Enum>), $enum->toString());
+}
+
+
+function meta::external::query::sql::transformation::compile::utils::processExtractEnumValue(enumeration:Enumeration<Enum>[1], value:String[1]):FunctionExpression[1]
+{
+  processExtractEnumValue($enumeration, $value->iv())
+}
+
+function meta::external::query::sql::transformation::compile::utils::processExtractEnumValue(enumeration:Enumeration<Enum>[1], value:ValueSpecification[1]):FunctionExpression[1]
+{
+  sfe(extractEnumValue_Enumeration_1__String_1__T_1_, ^GenericType(rawType = $enumeration), [], [iv($enumeration), $value]);
+}
