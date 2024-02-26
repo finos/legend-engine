@@ -24,8 +24,8 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
     udfs = ^UserDefinedFunctions(
       prefix = 'core',
       processors = [
-        processor('dateDiff', Integer, {args, fc, ctx | 
-            assertEquals(3, $args->size(), 'incorrect number of args for core_dateDiff');
+        processor('date_diff', Integer, {args, fc, ctx | 
+            assertEquals(3, $args->size(), 'incorrect number of args for core_date_diff');
 
             let part = $args->at(0)->reactivate()->toOne()->cast(@String);
 
@@ -42,7 +42,7 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
 
             nullOrSfe(dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_, [$args->at(1), $args->at(2), processExtractEnumValue($enum)])  ;       
         }),
-        aggregate('uniqueValueOnly', Any, {args, fc, ctx | 
+        aggregate('unique_value_only', Any, {args, fc, ctx | 
             sfe(uniqueValueOnly_T_MANY__T_$0_1$_, $args->at(0).genericType, $args->at(0).genericType, $args->at(0))
         })
       ]
