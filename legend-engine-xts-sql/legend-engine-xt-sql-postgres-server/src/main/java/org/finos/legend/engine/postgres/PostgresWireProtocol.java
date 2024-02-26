@@ -29,16 +29,19 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslHandler;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Scope;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethodType;
 import org.finos.legend.engine.postgres.auth.AuthenticationProvider;
 import org.finos.legend.engine.postgres.auth.KerberosIdentityProvider;
 import org.finos.legend.engine.postgres.config.GSSConfig;
-import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.postgres.utils.ExceptionUtil;
+import org.finos.legend.engine.postgres.utils.OpenTelemetry;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.ietf.jgss.GSSContext;
@@ -60,7 +63,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.ParameterMetaData;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -807,24 +809,45 @@ public class PostgresWireProtocol
      */
     private void handleDescribeMessage(ByteBuf buffer, Channel channel) throws Exception
     {
-        byte type = buffer.readByte();
-        String portalOrStatement = readCString(buffer);
-        DescribeResult describeResult = session.describe((char) type, portalOrStatement);
-        PostgresResultSetMetaData fields = describeResult.getFields();
-        if (type == 'S')
+        OpenTelemetry.TOTAL_METADATA.add(1);
+        OpenTelemetry.ACTIVE_METADATA.add(1);
+        long startTime = System.currentTimeMillis();
+
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("PostgresWireProtocol.handleDescribeMessage").startSpan();
+        try (Scope scope = span.makeCurrent())
         {
-            ParameterMetaData parameters = describeResult.getParameters();
-            Messages.sendParameterDescription(channel, parameters);
+            byte type = buffer.readByte();
+            String portalOrStatement = readCString(buffer);
+            DescribeResult describeResult = session.describe((char) type, portalOrStatement);
+            PostgresResultSetMetaData fields = describeResult.getFields();
+            if (type == 'S')
+            {
+                ParameterMetaData parameters = describeResult.getParameters();
+                Messages.sendParameterDescription(channel, parameters);
+            }
+            if (fields == null)
+            {
+                Messages.sendNoData(channel);
+            }
+            else
+            {
+                FormatCodes.FormatCode[] resultFormatCodes =
+                        type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
+                Messages.sendRowDescription(channel, fields, resultFormatCodes);
+            }
+            OpenTelemetry.TOTAL_SUCCESS_METADATA.add(1);
+            OpenTelemetry.METADATA_DURATION.record(System.currentTimeMillis() - startTime);
         }
-        if (fields == null)
+        catch (Exception e)
         {
-            Messages.sendNoData(channel);
+            span.recordException(e);
+            OpenTelemetry.TOTAL_FAILURE_METADATA.add(1);
+            throw e;
         }
-        else
+        finally
         {
-            FormatCodes.FormatCode[] resultFormatCodes =
-                    type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
-            Messages.sendRowDescription(channel, fields, resultFormatCodes);
+            OpenTelemetry.ACTIVE_METADATA.add(-1);
         }
     }
 
@@ -835,9 +858,15 @@ public class PostgresWireProtocol
      */
     private void handleExecute(ByteBuf buffer, DelayableWriteChannel channel)
     {
-        String portalName = readCString(buffer);
-        int maxRows = buffer.readInt();
-        String query = session.getQuery(portalName);
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("PostgresWireProtocol.handleExecute").startSpan();
+        try (Scope scope = span.makeCurrent())
+        {
+            String portalName = readCString(buffer);
+            int maxRows = buffer.readInt();
+            String query = session.getQuery(portalName);
+            span.setAttribute("portalName", portalName);
+            span.setAttribute("query", query);
  /*       if (query.isEmpty()) {
             // remove portal so that it doesn't stick around and no attempt to batch it with follow up statement is made
             session.close((byte) 'P', portalName);
@@ -889,15 +918,18 @@ public class PostgresWireProtocol
         session.execute(portalName, maxRows, resultReceiver);*/
 
 
-        try
-        {
             DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
             ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null);
             session.execute(portalName, maxRows, resultReceiver);
         }
         catch (Exception e)
         {
+            span.recordException(e);
             throw ExceptionUtil.wrapException(e);
+        }
+        finally
+        {
+            span.end();
         }
     }
 
@@ -972,56 +1004,77 @@ public class PostgresWireProtocol
         }*/
     void handleSimpleQuery(ByteBuf buffer, final DelayableWriteChannel channel)
     {
-        String queryString = readCString(buffer);
-        assert queryString != null : "query must not be nulL";
-
-
-        if (queryString.isEmpty() || ";".equals(queryString))
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("PostgresWireProtocol.handleSimpleQuery").startSpan();
+        try (Scope scope = span.makeCurrent())
         {
-            Messages.sendEmptyQueryResponse(channel);
-            Messages.sendReadyForQuery(channel);
-            return;
-        }
+            String queryString = readCString(buffer);
+            assert queryString != null : "query must not be nulL";
+            span.setAttribute("query", queryString);
 
-        List<String> queries = QueryStringSplitter.splitQuery(queryString);
-        CompletableFuture<?> composedFuture = CompletableFuture.completedFuture(null);
-        for (String query : queries)
+            if (queryString.isEmpty() || ";".equals(queryString))
+            {
+                Messages.sendEmptyQueryResponse(channel);
+                Messages.sendReadyForQuery(channel);
+                return;
+            }
+
+            List<String> queries = QueryStringSplitter.splitQuery(queryString);
+            CompletableFuture<?> composedFuture = CompletableFuture.completedFuture(null);
+            for (String query : queries)
+            {
+                composedFuture = composedFuture.thenCompose(result -> handleSingleQuery(query, channel));
+            }
+            composedFuture.whenComplete(new ReadyForQueryCallback(channel));
+        }
+        catch (Exception e)
         {
-            composedFuture = composedFuture.thenCompose(result -> handleSingleQuery(query, channel));
+            span.recordException(e);
+            throw e;
         }
-        composedFuture.whenComplete(new ReadyForQueryCallback(channel));
-
+        finally
+        {
+            span.end();
+        }
     }
 
 
     private CompletableFuture<?> handleSingleQuery(String query, DelayableWriteChannel channel)
     {
 
-        CompletableFuture<?> result = new CompletableFuture<>();
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("PostgresWireProtocol.handleSimpleQuery").startSpan();
+        try (Scope scope = span.makeCurrent())
+        {
+            CompletableFuture<?> result = new CompletableFuture<>();
 
-        if (query.isEmpty() || ";".equals(query))
-        {
-            Messages.sendEmptyQueryResponse(channel);
-            result.complete(null);
-            return result;
+            if (query.isEmpty() || ";".equals(query))
+            {
+                Messages.sendEmptyQueryResponse(channel);
+                result.complete(null);
+                return result;
+            }
+            try
+            {
+                DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
+                ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, true, null);
+                session.executeSimple(query, resultReceiver);
+                return session.sync();
+            }
+            catch (Throwable t)
+            {
+                //TODO need to understand this usecase
+                LOGGER.warn("Error processing single query", t);
+                session.clearState();
+                Messages.sendErrorResponse(channel, t);
+                result.completeExceptionally(t);
+                return result;
+            }
         }
-        try
+        finally
         {
-            DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
-            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, true, null);
-            session.executeSimple(query, resultReceiver);
-            return session.sync();
+            span.end();
         }
-        catch (Throwable t)
-        {
-            //TODO need to understand this usecase
-            LOGGER.warn("Error processing single query", t);
-            session.clearState();
-            Messages.sendErrorResponse(channel, t);
-            result.completeExceptionally(t);
-            return result;
-        }
-
 
     }
 
@@ -1054,7 +1107,7 @@ public class PostgresWireProtocol
         {
             final GSSName gssName = manager.createName(this.accountPrincipal, GSSName.NT_USER_NAME);
             return manager
-                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[]{
+                    .createCredential(gssName, GSSCredential.DEFAULT_LIFETIME, new Oid[] {
                             new Oid("1.2.840.113554.1.2.2"),    // Kerberos v5
                             new Oid("1.3.6.1.5.5.2")            // SPNEGO
                     }, GSSCredential.ACCEPT_ONLY);
