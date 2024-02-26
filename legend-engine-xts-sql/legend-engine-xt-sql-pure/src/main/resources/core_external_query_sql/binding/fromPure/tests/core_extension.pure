@@ -17,7 +17,7 @@ import meta::external::query::sql::transformation::queryToPure::tests::*;
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testDateDiff():Boolean[1]
 {
   test(
-    'SELECT core_dateDiff(\'day\', StrictDate, DateTime) as DateDiff FROM service."/service/service1"',
+    'SELECT core_date_diff(\'day\', StrictDate, DateTime) as DateDiff FROM service."/service/service1"',
 
     {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
@@ -31,7 +31,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUniqueValueOnly():Boolean[1]
 {
   test(
-    'SELECT StrictDate, core_uniqueValueOnly(String) as Unique FROM service."/service/service1" group by StrictDate',
+    'SELECT StrictDate, core_unique_value_only(String) as Unique FROM service."/service/service1" group by StrictDate',
 
     {| FlatInput.all()->project(
         [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
