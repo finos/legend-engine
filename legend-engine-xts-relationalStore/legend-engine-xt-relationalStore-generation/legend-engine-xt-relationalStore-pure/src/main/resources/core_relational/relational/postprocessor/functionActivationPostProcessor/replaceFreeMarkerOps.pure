@@ -21,15 +21,15 @@ import meta::core::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::mapping::*;
 
-function meta::relational::postProcessor::ReplaceFreeMarkerOps(query:SQLQuery[1]): PostProcessorResult[1]
+function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder(query:SQLQuery[1]): PostProcessorResult[1]
 {
   let transformFunc = {r: RelationalOperationElement[1], uniqueId: Integer[1] |  
                         $r->match([
                           l: Literal[1] | $l->replaceLiteral(),
                           v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
-                          v: VarSetPlaceHolder[1] | fail('not implemented'); $v;,
-                          v: VarCrossSetPlaceHolder[1] | fail('not implemented'); $v;,
-                          f: FreeMarkerOperationHolder[1] | fail('not implemented'); $f;,
+                          v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
+                          v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
+                          f: FreeMarkerOperationHolder[1] | fail('replacement of FreeMarkerOperationHolder with Parameter not supported yet'); $f;,
                           r: RelationalOperationElement[1] | $r;
                         ]);
                       };
@@ -50,9 +50,9 @@ function <<access.private>> meta::relational::postProcessor::replaceLiteral(l: L
     | $l, 
     | $l.value->match([
                           v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
-                          v: VarSetPlaceHolder[1] | fail('not implemented'); $v;,
-                          v: VarCrossSetPlaceHolder[1] | fail('not implemented'); $v;,
-                          f: FreeMarkerOperationHolder[1] | fail('not implemented'); $f;,
+                          v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
+                          v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
+                          f: FreeMarkerOperationHolder[1] | fail('replacement of FreeMarkerOperationHolder with Parameter not supported yet'); $f;,
                           r: RelationalOperationElement[1] | $r;
                      ]);
     );
