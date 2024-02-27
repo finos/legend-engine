@@ -265,7 +265,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         //assert that sql string contains placeholders that we need to process conditionally
         ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
         String sql = ((SQLExecutionNode)sqlNode).sqlQuery;
-        String expectedSQL = "select "root".fullName as "fullName" from PERSON as "root" where (("root".fullName in (${inFilterClause_names}) and "root".firmName = '${firmName?replace("'", "''")}') and (${optionalVarPlaceHolderOperationSelector(birthTime![], '"root".birthTime = ${varPlaceHolderToString(birthTime![] "TIMESTAMP\'" "\'" {} "null")}', '"root".birthTime is null')}))";
+        String expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}') and (${optionalVarPlaceHolderOperationSelector(birthTime![], '\"root\".birthTime = ${varPlaceHolderToString(birthTime![] \"TIMESTAMP\\'\" \"\\'\" {} \"null\")}', '\"root\".birthTime is null')}))";
 
         int h2MajorVersion = H2Manager.getMajorVersion();
         if (h2MajorVersion == LEGACY_H2_VERSION)
