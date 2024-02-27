@@ -299,7 +299,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         String expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where char_length(\\\"root\\\".fullName) in (2)\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"P3\"]},{\"values\":[\"P4\"]},{\"values\":[\"P5\"]}]}}";
         String expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where char_length(\\\"root\\\".fullName) in (2,3)\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P10\"]},{\"values\":[\"P2\"]},{\"values\":[\"P3\"]},{\"values\":[\"P4\"]},{\"values\":[\"P5\"]}]}}";
 
-        Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));stri
+        Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));
         Assert.assertEquals(expectedResWithSingleValue, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithSingleValue)));
         Assert.assertEquals(expectedResWithMultipleValues, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithMultipleValues)));
     }
