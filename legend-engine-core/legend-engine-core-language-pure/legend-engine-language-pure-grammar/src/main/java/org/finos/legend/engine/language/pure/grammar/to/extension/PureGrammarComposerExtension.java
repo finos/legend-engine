@@ -42,6 +42,12 @@ import java.util.Map;
 
 public interface PureGrammarComposerExtension extends LegendLanguageExtension
 {
+    @Override
+    default String type()
+    {
+        return "Composer";
+    }
+
     /**
      * This method takes a list of elements which are supposed to be within a section (specified by the parser name)
      */

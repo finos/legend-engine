@@ -19,7 +19,6 @@ import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::mapping::modelToModel::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::modelToModel::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::domain::*;
 import meta::protocols::pure::vX_X_X::transformation::fromPureGraph::store::csv::*;

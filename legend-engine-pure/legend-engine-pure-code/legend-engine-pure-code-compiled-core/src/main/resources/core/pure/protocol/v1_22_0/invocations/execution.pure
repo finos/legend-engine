@@ -20,7 +20,6 @@ import meta::pure::functions::io::http::*;
 import meta::protocols::pure::v1_22_0::invocation::execution::execute::*;
 import meta::protocols::pure::v1_22_0::transformation::fromPureGraph::context::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::json::*;
 
 
@@ -44,7 +43,7 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::process
    ^Pair<List<Any>, List<Activity>>(first=^List<Any>(values=$values), second = ^List<Activity>(values=$activities));
 }
 
-function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::context::transformContext(context:ExecutionContext[1], extensions:	meta::pure::extension::Extension[*]):meta::protocols::pure::v1_22_0::metamodel::ExecutionContext[1]
+function meta::protocols::pure::v1_22_0::transformation::fromPureGraph::context::transformContext(context:meta::pure::runtime::ExecutionContext[1], extensions:	meta::pure::extension::Extension[*]):meta::protocols::pure::v1_22_0::metamodel::ExecutionContext[1]
 {
    $context->match($extensions.serializerExtension('v1_22_0')->cast(@meta::protocols::pure::v1_22_0::extension::SerializerExtension_v1_22_0).invocation_execution_transformContext->concatenate([
       a:meta::pure::runtime::ExecutionContext[1]|
@@ -106,7 +105,7 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::execute
    $resp.entity;
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::buildExecutionInput<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1],  exeCtx:ExecutionContext[0..1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::buildExecutionInput<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], runtime:Runtime[1],  exeCtx:meta::pure::runtime::ExecutionContext[0..1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
          let transformedContext = if($exeCtx->isNotEmpty(), | $exeCtx->toOne()->transformContext($extensions),| []);
          let execMode = ExecutionMode->extractEnumValue($executionMode);
@@ -155,12 +154,12 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::buildEx
          )->alloyToJSON();
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:meta::pure::runtime::ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[1]
 {
   legendExecute($f, $m, $pureRuntime, $context, $host, $port, $version, 'json', $executionMode, $extensions);
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendExecute<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:meta::pure::runtime::ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]):meta::pure::mapping::Result<T|m>[1]
 {
    let transformedContext = if($context->isNotEmpty(), | $context->toOne()->transformContext($extensions),| []);
    let execMode = meta::protocols::pure::v1_22_0::invocation::execution::execute::ExecutionMode->extractEnumValue($executionMode);
@@ -174,8 +173,8 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendE
       | let planGenerated = if(isOptionSet('PlanLocal'),
                                {|
                                   let basicPlan = if($m.name->isEmpty(),
-                                                    |meta::pure::executionPlan::executionPlan($f, if($context->isEmpty(), |^ExecutionContext(), |$context->toOne()), $extensions, noDebug());,
-                                                    |meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime, if($context->isEmpty(), |^ExecutionContext(), |$context->toOne()), $extensions, noDebug()););
+                                                    |meta::pure::executionPlan::executionPlan($f, if($context->isEmpty(), |^meta::pure::runtime::ExecutionContext(), |$context->toOne()), $extensions, noDebug());,
+                                                    |meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime, if($context->isEmpty(), |^meta::pure::runtime::ExecutionContext(), |$context->toOne()), $extensions, noDebug()););
                                   let boundPlan = meta::pure::executionPlan::platformBinding::localBinding::bindTestPlanToPlatformLocallyWithClasspathExtensions($basicPlan);
                                   let unused    = if(isOptionSet('ShowLocalPlan'), |println($boundPlan->meta::pure::executionPlan::toString::planToString(true, $extensions)), |[]);
                                   $boundPlan->meta::protocols::pure::v1_22_0::transformation::fromPureGraph::executionPlan::transformPlan($extensions)->meta::json::toJSON(1000, meta::json::config(false, false, true, true));
@@ -210,10 +209,10 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendE
    let handlers= $extensions.serializerExtension('v1_22_0')->cast(@meta::protocols::pure::v1_22_0::extension::SerializerExtension_v1_22_0).invocation_execution_execute2_pre->concatenate(
                  $extensions.serializerExtension('v1_22_0')->cast(@meta::protocols::pure::v1_22_0::extension::SerializerExtension_v1_22_0).invocation_execution_execute2_pre2->map(f | $f->eval($extensions)))->concatenate([
                pair ( builderType:String[1]|$builderType->isNotEmpty() && $builderType->toOne()=='json',
-                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1], e:ExtendedJSONDeserializationConfig[1], co:ExecutionContext[0..1]|processJsonStreamingResult($result)}),
+                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1], e:ExtendedJSONDeserializationConfig[1], co:meta::pure::runtime::ExecutionContext[0..1]|processJsonStreamingResult($result)}),
 
                pair ( builderType:String[1]|$builderType->isNotEmpty() && ($builderType->toOne()=='csv' || $builderType->toOne()=='modelToModel'),
-                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1], e:ExtendedJSONDeserializationConfig[1], co:ExecutionContext[0..1]| let retType = if($resultClassType->instanceOf(meta::protocols::pure::v1_22_0::metamodel::executionPlan::ClassResultType),
+                      {resultJSON:String[1], result:JSONObject[1], m:Mapping[1], r:Runtime[1], e:ExtendedJSONDeserializationConfig[1], co:meta::pure::runtime::ExecutionContext[0..1]| let retType = if($resultClassType->instanceOf(meta::protocols::pure::v1_22_0::metamodel::executionPlan::ClassResultType),
                                                              | $resultClassType->cast(@meta::protocols::pure::v1_22_0::metamodel::executionPlan::ClassResultType).class->pathToElement()->cast(@Class<Any>), // This case is if we hit the generatePlan/executePlan endpoint, in which case we get the type from the exec plan.
                                                              | $resultClassType->cast(@Class<Any>)); // This case if is we hit the execute end point, in which case the type information is coming from the function
                                             processCSV_M2M($builderType->toOne(), $retType, $result);}
@@ -228,13 +227,13 @@ function meta::protocols::pure::v1_22_0::invocation::execution::execute::legendE
    ^Result<T|m>(values=$values, activities=$res.second.values);
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::generatePlan<T|m>(f: FunctionDefinition<{->T[m]}>[1], m: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[0..1], host: String[1], port: Integer[1], version: String[1], serializationKind:String[1], executionMode: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::generatePlan<T|m>(f: FunctionDefinition<{->T[m]}>[1], m: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[0..1], host: String[1], port: Integer[1], version: String[1], serializationKind:String[1], executionMode: String[1], extensions:meta::pure::extension::Extension[*]):String[1]
 {
    let resultJSON = buildExecutionInput($f, $m, $runtime, $exeCtx, $version, $serializationKind, $executionMode, $extensions);
    generatePlan($resultJSON, $host, $port);
 }
 
-function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecuteLambda<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]) : String[1]
+function meta::protocols::pure::v1_22_0::invocation::execution::execute::alloyExecuteLambda<T|m>(f:FunctionDefinition<{->T[m]}>[1], m:Mapping[1], pureRuntime:Runtime[1], context:meta::pure::runtime::ExecutionContext[0..1], host:String[1], port:Integer[1], version:String[1], serializationKind:String[1], executionMode:String[1], extensions:meta::pure::extension::Extension[*]) : String[1]
 {
    let payload = buildExecutionInput($f,$m,$pureRuntime,$context,$version, $serializationKind, $executionMode, $extensions);
 

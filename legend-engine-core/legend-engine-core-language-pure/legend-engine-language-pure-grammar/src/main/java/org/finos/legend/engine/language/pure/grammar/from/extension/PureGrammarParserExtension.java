@@ -23,6 +23,12 @@ import java.util.Collections;
 
 public interface PureGrammarParserExtension extends LegendLanguageExtension
 {
+    @Override
+    default String type()
+    {
+        return "Parser";
+    }
+
     default Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Collections.emptyList();

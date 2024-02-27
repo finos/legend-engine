@@ -36,6 +36,12 @@ import java.util.List;
 public class RelationalExecutionExtension implements ExecutionExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
+    }
+
+    @Override
     public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList(((executionNode, profiles, executionState) ->

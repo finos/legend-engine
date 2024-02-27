@@ -316,6 +316,13 @@ public class HelperMappingBuilder
 
     public static void processMappingTest(MappingTest_Legacy mappingTestLegacy, CompileContext context)
     {
+        // todo hack to support legacy test flow
+        // this is to ensure generics are set and prevent NPE
+        // this assume a cache for types, and this prime the value
+        context.resolveGenericType("meta::pure::mapping::Result")
+                ._typeArguments(Lists.fixedSize.of(context.resolveGenericType("meta::pure::metamodel::type::Any")))
+                ._multiplicityArguments(Lists.fixedSize.of(context.pureModel.getMultiplicity("zeromany")));
+
         HelperValueSpecificationBuilder.buildLambda(mappingTestLegacy.query, context);
         mappingTestLegacy.inputData.forEach(t -> HelperMappingBuilder.processMappingTestInputData(t, context));
     }

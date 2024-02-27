@@ -16,6 +16,7 @@
 package org.finos.legend.engine.external.format.arrow;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.shared.runtime.ExternalFormatRuntimeExtension;
 import org.finos.legend.engine.external.shared.runtime.write.ExternalFormatSerializeResult;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -38,6 +39,12 @@ public class ArrowRuntimeExtension implements ExternalFormatRuntimeExtension
     public List<String> getContentTypes()
     {
         return Collections.singletonList(CONTENT_TYPE);
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("External_Format", "Arrow");
     }
 
     @Override

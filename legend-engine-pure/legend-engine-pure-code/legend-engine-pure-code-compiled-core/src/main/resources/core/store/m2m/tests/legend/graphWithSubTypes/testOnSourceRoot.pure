@@ -14,10 +14,8 @@
 
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::tests::sourceTreeCalc::withSubType::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {meta::pure::executionPlan::profiles::serverVersion.start='v1_29_0'} meta::pure::mapping::modelToModel::test::alloy::simple::withSubType::rootLevel::sourceRoot::testSingleSubType():Boolean[1]

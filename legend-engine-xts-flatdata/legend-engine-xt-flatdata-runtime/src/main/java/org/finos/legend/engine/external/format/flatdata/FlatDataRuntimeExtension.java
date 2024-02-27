@@ -49,6 +49,12 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "FlatData");
+    }
+
+    @Override
     public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try

@@ -15,8 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
-import org.eclipse.collections.api.block.procedure.Procedure;
-import org.eclipse.collections.impl.factory.Lists;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -29,7 +28,7 @@ import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_constraint_Constraint_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_extension_TaggedValue_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_function_property_DefaultValue_Impl;
@@ -40,6 +39,7 @@ import org.finos.legend.pure.generated.Root_meta_pure_metamodel_type_generics_Ge
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ClassConstraintValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl;
+import org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath;
 import org.finos.legend.pure.m3.compiler.postprocessing.processor.milestoning.MilestoningFunctions;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PropertyOwner;
@@ -56,20 +56,18 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
-import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 import org.finos.legend.pure.runtime.java.compiled.execution.CompiledExecutionSupport;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
-
 public class HelperModelBuilder
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(HelperModelBuilder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HelperModelBuilder.class);
 
     public static org.eclipse.collections.api.block.function.Function<Property, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<Object, Object>> processProperty(CompileContext context, GenericType genericType, PropertyOwner owner)
     {
@@ -141,7 +139,7 @@ public class HelperModelBuilder
         return ve;
     }
 
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createVariableForMapped(LambdaFunction mapFn, CompileContext context)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression createVariableForMapped(LambdaFunction<?> mapFn, CompileContext context)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression ve = new Root_meta_pure_metamodel_valuespecification_VariableExpression_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::VariableExpression"))._name("mapped");
         final GenericType genericType = new Root_meta_pure_metamodel_type_generics_GenericType_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::type::generics::GenericType"))._rawType(((Root_meta_pure_metamodel_type_FunctionType_Impl) mapFn._classifierGenericType()._typeArguments().getFirst()._rawType())._returnType._rawType());
@@ -157,7 +155,7 @@ public class HelperModelBuilder
         return property ->
         {
             // Remove 'this' if it has been serialized in the JSON specification (coming from an old version of the Pure serializer)
-            if (property.parameters.size() > 0 && "this".equals(property.parameters.get(0).name))
+            if (!property.parameters.isEmpty() && "this".equals(property.parameters.get(0).name))
             {
                 property.parameters.remove(0);
             }
@@ -208,7 +206,7 @@ public class HelperModelBuilder
         targetClass._constraints(pureConstraints);
     }
 
-    public static void processFunctionConstraints(Function f, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition targetFunc, ProcessingContext ctx)
+    public static void processFunctionConstraints(Function f, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc, ProcessingContext ctx)
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ExpressionSequenceValueSpecificationContext expressionSequenceValueSpecificationContext = new Root_meta_pure_metamodel_valuespecification_ExpressionSequenceValueSpecificationContext_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::valuespecification::ExpressionSequenceValueSpecificationContext"))._functionDefinition(targetFunc);
 
@@ -229,7 +227,7 @@ public class HelperModelBuilder
             try
             {
                 lf = HelperValueSpecificationBuilder.buildLambdaWithContext(c.name, c.functionDefinition.body, c.functionDefinition.parameters, context, ctx);
-                lf._expressionSequence().forEach((Procedure<ValueSpecification>) es -> es._usageContext(vsContext));
+                lf._expressionSequence().forEach(es -> es._usageContext(vsContext));
                 lf.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.functionDefinition.sourceInformation));
             }
             catch (Exception e)
@@ -247,7 +245,7 @@ public class HelperModelBuilder
                 if (c.messageFunction != null)
                 {
                     mf = HelperValueSpecificationBuilder.buildLambdaWithContext(c.name, c.messageFunction.body, c.messageFunction.parameters, context, ctx);
-                    mf._expressionSequence().forEach((Procedure<ValueSpecification>) es -> es._usageContext(vsContext));
+                    mf._expressionSequence().forEach(es -> es._usageContext(vsContext));
                     mf.setSourceInformation(SourceInformationHelper.toM3SourceInformation(c.messageFunction.sourceInformation));
                 }
             }
@@ -308,7 +306,7 @@ public class HelperModelBuilder
         String functionSignature = LazyIterate.collect(function.parameters, HelperModelBuilder::getParameterSignature).select(Objects::nonNull).makeString("__")
                 // TODO: do we have to take care of void return type ~ Nil?
                 + "__" + getClassSignature(function.returnType) + "_" + getMultiplicitySignature(function.returnMultiplicity) + "_";
-        return function.parameters.size() > 0 ? "_" + functionSignature : functionSignature;
+        return function.parameters.isEmpty() ? functionSignature : ("_" + functionSignature);
     }
 
 
@@ -418,7 +416,7 @@ public class HelperModelBuilder
         AbstractProperty<?> prop = null;
         if (propertyOwner instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class)
         {
-            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class) propertyOwner;
+            org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class = (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?>) propertyOwner;
             prop = _class._properties().detect(p -> name.equals(p.getName()));
             if (prop == null)
             {
@@ -446,14 +444,14 @@ public class HelperModelBuilder
     /**
      * Recursively go through hierarchical/generalization chain and find the property and resolve to edge point property for milestoned properties.
      */
-    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
+    public static org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?> getPropertyOrResolvedEdgePointProperty(CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> _class, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters, String name, org.finos.legend.engine.protocol.pure.v1.model.SourceInformation sourceInformation)
     {
         AbstractProperty<?> abstractProperty = HelperModelBuilder.getAppliedProperty(context, _class, parameters, name, sourceInformation);
         if ((abstractProperty instanceof QualifiedProperty) && Milestoning.temporalStereotypes(((PackageableElement) abstractProperty._genericType()._rawType())._stereotypes()) != null)
         {
-            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), sourceInformation);
+            return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>) HelperModelBuilder.getAppliedProperty(context, _class, parameters, MilestoningFunctions.getEdgePointPropertyName(name), sourceInformation);
         }
-        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property) abstractProperty;
+        return (org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>) abstractProperty;
     }
 
     /**
@@ -499,7 +497,7 @@ public class HelperModelBuilder
     public static QualifiedProperty<?> getCompatibleDerivedProperty(RichIterable<? extends QualifiedProperty<?>> qualifiedProperties, String name, Optional<? extends List<? extends org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification>> parameters)
     {
         RichIterable<? extends QualifiedProperty<?>> propertiesWithSameName = qualifiedProperties.select(p -> name.equals(p._name()));
-        RichIterable<? extends QualifiedProperty<?>> milestoningProperties = propertiesWithSameName.select(p -> Milestoning.isDateArgGeneratedMilestoningQualifiedProperty(p));                             //dont pick NoArg Milestoned Property
+        RichIterable<? extends QualifiedProperty<?>> milestoningProperties = propertiesWithSameName.select(Milestoning::isDateArgGeneratedMilestoningQualifiedProperty);                             //dont pick NoArg Milestoned Property
 
         if (!milestoningProperties.isEmpty())
         {
@@ -509,8 +507,7 @@ public class HelperModelBuilder
         {
             if (parameters.isPresent())
             {
-                RichIterable<? extends QualifiedProperty<?>> compatibleProperties = propertiesWithSameName.select(p -> isCompatibleDerivedPropertyWithParameters(p, parameters.get()));
-                return compatibleProperties.getFirst();
+                return propertiesWithSameName.detect(p -> isCompatibleDerivedPropertyWithParameters(p, parameters.get()));
             }
             else
             {
@@ -537,11 +534,16 @@ public class HelperModelBuilder
 
     public static String getElementFullPath(PackageableElement element, CompiledExecutionSupport executionSupport)
     {
-        if (element instanceof Root_meta_external_store_model_ModelStore_Impl)
+        return getElementFullPath(element, "::", executionSupport);
+    }
+
+    public static String getElementFullPath(PackageableElement element, String separator, CompiledExecutionSupport executionSupport)
+    {
+        if (element instanceof Root_meta_external_store_model_ModelStore)
         {
             return "ModelStore";
         }
         // TODO: we might want to fix a bugs here where if we pass in element without ID/package + name, we might get `cannot cast a collection of multiplicity [0] to [1]` or so
-        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, executionSupport);
+        return platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1__String_1_(element, separator, executionSupport);
     }
 }

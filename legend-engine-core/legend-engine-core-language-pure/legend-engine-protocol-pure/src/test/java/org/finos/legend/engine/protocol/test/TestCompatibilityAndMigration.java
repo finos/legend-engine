@@ -1225,6 +1225,40 @@ public class TestCompatibilityAndMigration
     }
 
     @Test
+    public void testDataElementReference() throws Exception
+    {
+        check(
+                "{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"reference\",\n" +
+                "        \"dataElement\": \"com::path::exampleReference\"\n" +
+                "      },\n" +
+                "      \"name\": \"dataElementReferenceExample\",\n" +
+                "      \"package\": \"my\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n",
+         "{\n" +
+                "  \"_type\": \"data\",\n" +
+                "  \"elements\": [\n" +
+                "    {\n" +
+                "      \"_type\": \"dataElement\",\n" +
+                "      \"data\": {\n" +
+                "        \"_type\": \"reference\",\n" +
+                "        \"dataElement\":{\"path\":\"com::path::exampleReference\",\"type\":\"DATA\"}" +
+                "      },\n" +
+                "      \"name\": \"dataElementReferenceExample\",\n" +
+                "      \"package\": \"my\"\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}\n");
+    }
+
+    @Test
     public void testPackageableElementPointerCompatibility() throws Exception
     {
         String asString = "\"abc::myPath::MyName\"";

@@ -4,6 +4,7 @@ Class meta::external::function::activator::FunctionActivator extends Packageable
 {
   {doc.doc = 'The function that needs to be activated.'} function : PackageableFunction<Any>[1];
   {doc.doc = 'The activation configuration.'} activationConfiguration : DeploymentConfiguration[0..1];
+  {doc.doc = 'The ownership criteria.'} ownership : Ownership[1];
   
 }
 
@@ -20,6 +21,16 @@ Enum  meta::external::function::activator::DeploymentStage
 {
   SANDBOX,
   PRODUCTION
+}
+
+//ownership
+Class meta::external::function::activator::Ownership
+{
+}
+
+Class meta::external::function::activator::DeploymentOwnership extends meta::external::function::activator::Ownership
+{
+  id: String[1];
 }
 
 // This section needs to be code generated from the section above 

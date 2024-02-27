@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -37,6 +38,12 @@ public class PersistenceProtocolExtension implements PureProtocolExtension
 {
     public static final String PERSISTENCE_CLASSIFIER_PATH = "meta::pure::persistence::metamodel::Persistence";
     public static final String PERSISTENCE_CONTEXT_CLASSIFIER_PATH = "meta::pure::persistence::metamodel::PersistenceContext";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence");
+    }
 
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()

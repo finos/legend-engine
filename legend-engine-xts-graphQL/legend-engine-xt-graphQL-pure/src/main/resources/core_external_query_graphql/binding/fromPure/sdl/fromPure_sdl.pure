@@ -14,6 +14,7 @@ Class meta::external::query::graphQL::metamodel::sdl::GraphQLSDLContainer
 Class meta::external::query::graphQL::binding::fromPure::sdl::ModelToGraphQLConfig extends meta::external::format::shared::transformation::fromPure::ModelToSchemaConfiguration
 {
   integerScalarType: String[0..1];
+  excludeDynamicFilter: Boolean[0..1];
 }
 
 function meta::external::query::graphQL::binding::fromPure::sdl::pureToGraphQLSDL(modelUnit: ModelUnit[1], config: ModelToGraphQLConfig[1]): meta::external::format::shared::metamodel::SchemaSet[1]
@@ -60,6 +61,7 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
   let allTypes = $types->findTypes();
   
   let pureTypeToGraphQLScalarOverride = ^meta::external::query::graphQL::binding::PureTypeToGraphQLScalarOverride(integerScalarType = $config.integerScalarType);
+  let excludeDynamicFilter = if($config.excludeDynamicFilter->isEmpty(), | false, | $config.excludeDynamicFilter->toOne());
 
   let queryClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Query'))->cast(@Class<Any>);
   let mutationClasses = $allTypes->filter(t|$t->hasGraphQLStereotype('Mutation'))->cast(@Class<Any>);
@@ -108,15 +110,15 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
               buildInputObjectTypeDefinition($c, $pureTypeToGraphQLScalarOverride)->concatenate(
                 if ($classReturnTypes->contains($c),
                   // Used as both -> needs both input and output types
-                  | buildObjectTypeDefinition($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride), 
+                  | buildObjectTypeDefinition($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride, $excludeDynamicFilter), 
                   // Used as input -> needs input
                   | []
                 )
               ),
               // Not used as input --> needs output (unused types will result in output types)
-            | buildObjectTypeDefinition($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride)
+            | buildObjectTypeDefinition($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride, $excludeDynamicFilter)
             )->concatenate(
-              if($c->hasGraphQLStereotype('Query') || $c->hasGraphQLStereotype('Mutation') || $c->hasGraphQLStereotype('Subscription'),
+              if($c->hasGraphQLStereotype('Query') || $c->hasGraphQLStereotype('Mutation') || $c->hasGraphQLStereotype('Subscription') || $excludeDynamicFilter,
                 | [],
                 | buildBoolExpObject($c, $extendedClasses->contains($c), $pureTypeToGraphQLScalarOverride)
               )
@@ -126,21 +128,25 @@ function meta::external::query::graphQL::binding::fromPure::sdl::transformPureTo
             name = $c.name->toOne(),
             values = $e->enumValues()->map(z | ^EnumValueDefinition(value = $z->id()))
           )->concatenate(
-            ^InputObjectTypeDefinition(
-              name = $c.name->toOne() + '_comparison_exp',
-              fields = [
-                    ^InputValueDefinition
-                    (
-                      name = '_eq',
-                      type = ^NamedTypeReference(name=$c.name->toOne(),nullable=false)
-                    ),
-                    ^InputValueDefinition
-                    (
-                      name = '_in',
-                      type = ^ListTypeReference(nullable=true,itemType=^NamedTypeReference(name=$c.name->toOne(),nullable=false))
-                    )
-              ]
-            )
+              if ($excludeDynamicFilter, 
+                | [],
+                |
+                  ^InputObjectTypeDefinition(
+                    name = $c.name->toOne() + '_comparison_exp',
+                    fields = [
+                          ^InputValueDefinition
+                          (
+                            name = '_eq',
+                            type = ^NamedTypeReference(name=$c.name->toOne(),nullable=false)
+                          ),
+                          ^InputValueDefinition
+                          (
+                            name = '_in',
+                            type = ^ListTypeReference(nullable=true,itemType=^NamedTypeReference(name=$c.name->toOne(),nullable=false))
+                          )
+                    ]
+                  )
+              )
           )
       ]
     );
@@ -289,7 +295,7 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
   ];
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1], isExtended: Boolean[1], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[1]): TypeSystemDefinition[*]
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::buildObjectTypeDefinition(c: Class<Any>[1], isExtended: Boolean[1], pureTypeToGraphQLScalarOverride: PureTypeToGraphQLScalarOverride[1], excludeDynamicFilter: Boolean[1]): TypeSystemDefinition[*]
 {
   let props = $c->hierarchicalAllProperties()->filter(p | $p->isValidPropertyForGraphQL());
   let nonBuiltInScalars = $props->buildNonBuiltInGraphQLScalars($pureTypeToGraphQLScalarOverride);
@@ -321,9 +327,9 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::s
                               []
                           )->concatenate(
                             if(
-                              $isQueryClass,
-                              |generatedArgumentDefinitons($p),
-                              |[]
+                              $isQueryClass && !$excludeDynamicFilter,
+                              | generatedArgumentDefinitons($p),
+                              | []
                             )
                           )
                       )

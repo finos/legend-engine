@@ -22,12 +22,11 @@ import meta::relational::runtime::*;
 import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::pure::functions::collection::*;
 import meta::relational::functions::sqlQueryToString::*;
 
-function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
+function meta::relational::mapping::dbSpecificProcessor(query:SQLQuery[1], runtime:Runtime[1], store:Database[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]): PostProcessorResult[1]
 {
    let connectionStore = $runtime.connectionStores->filter(c|$c.connection->instanceOf(DatabaseConnection));
    let conn = $connectionStore.connection->distinct()->cast(@DatabaseConnection);

@@ -21,7 +21,6 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::functions::database::model::definition::*;
 import meta::relational::functions::database::model::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;

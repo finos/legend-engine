@@ -41,7 +41,6 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 import meta::relational::tests::model::simple::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;

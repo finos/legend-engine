@@ -26,8 +26,6 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::mapping::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::pure::executionPlan::platformBinding::legendJava::tests::utils::JavaExpressionTest
 {
    name              : String[1];

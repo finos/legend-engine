@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.snowflakeApp.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
@@ -33,6 +34,12 @@ import java.util.Map;
 public class SnowflakeAppProtocolExtension implements PureProtocolExtension
 {
     public static String packageJSONType = "snowflakeApp";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
+    }
 
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()

@@ -23,8 +23,6 @@ import meta::relational::runtime::*;
 import meta::relational::metamodel::relation::*;
 import apps::pure::api::relational::toDDL::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::relational::functions::toDDL::dropAndCreateTableSql(database:Database[1], schemaName:String[1], tableName:String[1], applyContraints:Boolean[1]):String[1]
 {
    dropTableStatement($database, $schemaName, $tableName) + '\n'

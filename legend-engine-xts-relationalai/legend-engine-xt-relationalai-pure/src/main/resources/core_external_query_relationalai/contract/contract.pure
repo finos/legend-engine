@@ -1,6 +1,5 @@
 import meta::pure::store::*;
 import meta::pure::mapping::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::pure::extension::*;
 import meta::external::store::rel::mapping::*;

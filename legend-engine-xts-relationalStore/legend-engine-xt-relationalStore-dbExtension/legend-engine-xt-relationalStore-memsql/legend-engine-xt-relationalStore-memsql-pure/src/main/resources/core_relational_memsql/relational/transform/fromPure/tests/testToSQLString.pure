@@ -170,7 +170,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testSubstring_MemSQL() : Boolean[1]
 {
-  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(type = DatabaseType.MemSQL)));
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.MemSQL)));
 
    let result = toSQLStringPretty({|Firm.all()->project([
         c | $c.legalName,
@@ -187,7 +187,7 @@ function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::te
 
 function <<test.Test>> meta::relational::memsql::tests::functions::sqlstring::testSubstringWithNonZeroIndex_MemSQL() : Boolean[1]
 {
-  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(type = DatabaseType.MemSQL)));
+  let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.MemSQL)));
 
    let result = toSQLStringPretty({|Firm.all()->project([
         c | $c.legalName,

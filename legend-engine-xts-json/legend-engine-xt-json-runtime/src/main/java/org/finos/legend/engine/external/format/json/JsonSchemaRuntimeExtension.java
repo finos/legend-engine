@@ -57,6 +57,12 @@ public class JsonSchemaRuntimeExtension implements ExternalFormatRuntimeExtensio
     }
 
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "JSON");
+    }
+
+    @Override
     public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
     {
         try

@@ -61,7 +61,7 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
                 {
                     String errorMessage = (embeddedData.isEmpty())
                             ? "No test data provided for connection type '" + connection.getClass().getSimpleName() + "'. Either you need to provide test data for the connection type or connection type is not supported."
-                            : "Unsupported test data type '" + embeddedData.getClass().getSimpleName() + "' with connection type '" + connection.getClass().getSimpleName() + '"';
+                            : "Unsupported test data type '" + String.join(",",ListIterate.collect(embeddedData, data -> data.getClass().getSimpleName())) + "' with connection type '" + connection.getClass().getSimpleName() + '"';
                     return new UnsupportedOperationException(errorMessage);
                 });
     }

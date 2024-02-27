@@ -20,7 +20,6 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::relational::runtime::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 
 //fix transform property platform code

@@ -35,16 +35,16 @@ function <<test.BeforePackage>> meta::relational::tests::postProcessor::snowflak
 
 function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testSnowflakeColumnRename():Boolean[1]
 {
-   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::mapping::union::myDB, connection=^TestDatabaseConnection(type = DatabaseType.Snowflake)));
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::mapping::union::myDB, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type = DatabaseType.Snowflake)));
    let result = meta::relational::functions::sqlstring::toSQL(|Person.all()->project([p|$p.lastName], ['name']), meta::relational::tests::mapping::union::unionMappingWithLongPropertyMapping, $runtime, meta::relational::extension::relationalExtensions()).sqlQueries->at(0)->cast(@SelectSQLQuery)->meta::relational::postProcessor::reAliasColumnName::trimColumnName($runtime).values->meta::relational::functions::sqlQueryToString::sqlQueryToString(DatabaseType.Snowflake, '', [], meta::relational::extension::relationalExtensions());
    assertEquals('select "unionBase"."concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" as "name" from (select "root".ID as "pk_0_0", null as "pk_0_1", concat(\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\', concat(\'ForTestPurposesOnly\', "root".lastName_s1)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet1 as "root" UNION ALL select null as "pk_0_0", "root".ID as "pk_0_1", concat(\'thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters\', concat(\'ForTestPurposesOnly\', "root".lastName_s2)) as "concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters_concat_ForTestPurposesOnly_PersonSet1lastName_s1_concat_thisStringIsThisLongMakeTheGeneratedAliasExplodePastTheDb2limitOf128Characters____6ce98e09e89aabde27805_0" from PersonSet2 as "root") as "unionBase"',$result);
 }
 
 function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPostProcessingOfGroupByAndHavingOp():Boolean[1]
 {
-   let runtime = testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let connectionStore = $runtime.connectionStores->at(0);
-   let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let conn = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    let postProcessFunction = {rel: RelationalOperationElement[1] |
       $rel->match([
          t: TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Varchar), | ^DynaFunction(name = 'toUpper', parameters = ^$t(column = $t.column->map(c | ^$c(type = ^meta::relational::metamodel::datatype::DataType())))), | $t),
@@ -65,9 +65,9 @@ function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPo
 
 function <<test.Test>> meta::relational::tests::postProcessor::snowflake::testPostProcessingOfGroupByAndHavingOpCachedTransform():Boolean[1]
 {
-   let runtime = testRuntime();
+   let runtime = meta::external::store::relational::tests::testRuntime();
    let connectionStore = $runtime.connectionStores->at(0);
-   let conn = $connectionStore.connection->cast(@TestDatabaseConnection);
+   let conn = $connectionStore.connection->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    let postProcessFunction = {rel: RelationalOperationElement[1] |
       $rel->match([
          t: TableAliasColumn[1] | if($t.column.type->instanceOf(meta::relational::metamodel::datatype::Varchar), | ^DynaFunction(name = 'toUpper', parameters = ^$t(column = $t.column->map(c | ^$c(type = ^meta::relational::metamodel::datatype::DataType())))), | $t),

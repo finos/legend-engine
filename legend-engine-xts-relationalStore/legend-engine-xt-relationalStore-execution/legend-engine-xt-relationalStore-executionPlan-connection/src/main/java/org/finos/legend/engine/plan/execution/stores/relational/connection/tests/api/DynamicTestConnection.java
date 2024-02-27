@@ -22,6 +22,12 @@ import org.finos.legend.engine.shared.core.extension.LegendExtension;
 //Connections that are started on the fly by legend test server
 public interface DynamicTestConnection extends LegendConnectionExtension
 {
+    @Override
+    default String type()
+    {
+        return "Test_Connection";
+    }
+
     DatabaseType getDatabaseType();
 
     void setup();                                //start connection db instance , register vaults etc

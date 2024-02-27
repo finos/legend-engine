@@ -51,6 +51,7 @@ public class TestValidation
                         "SnowflakeApp a::myApp{" +
                         "   applicationName: 'name';" +
                         "   description: 'ee';" +
+                        "   ownership : Deployment { identifier: 'ownership' };" +
                         "   function: a::f():Person[*];" +
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null);
@@ -72,6 +73,7 @@ public class TestValidation
                         "SnowflakeApp a::myApp{" +
                         "   applicationName: 'name';" +
                         "   description: 'ee';" +
+                        "   ownership : Deployment { identifier: 'ownership' };" +
                         "   function: a::f():Person[*];" +
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null);

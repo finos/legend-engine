@@ -46,6 +46,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Pri
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitInstance;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.UnitType;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Whatever;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.PureList;
 
 import java.io.ByteArrayInputStream;
 
@@ -132,7 +133,15 @@ public class PrimitiveValueSpecificationToObjectVisitor implements ValueSpecific
     @Override
     public Object visit(ClassInstance iv)
     {
-        return iv.value;
+        switch (iv.type)
+        {
+            case "listInstance":
+                return ListIterate.collect(((PureList) iv.value).values, x -> x.accept(this));
+            case "path":
+                return iv.value;                
+            default:
+                throw new UnsupportedOperationException("Unsupported ClassInstance type: " + iv.type);
+        }
     }
 
     @Override

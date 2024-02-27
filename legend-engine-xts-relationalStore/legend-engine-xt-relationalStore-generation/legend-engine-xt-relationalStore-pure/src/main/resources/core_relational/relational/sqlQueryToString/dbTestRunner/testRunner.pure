@@ -18,7 +18,6 @@ import meta::pure::extension::*;
 import meta::relational::extension::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;

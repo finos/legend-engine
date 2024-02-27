@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 

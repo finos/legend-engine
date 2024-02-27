@@ -13,6 +13,8 @@ identifier:     VALID_STRING | STRING |
                 SNOWFLAKE_APP__DESCRIPTION |
                 SNOWFLAKE_APP__FUNCTION |
                 SNOWFLAKE_APP__OWNER |
+                SNOWFLAKE_APP__OWNER_DEPLOYMENT |
+                SNOWFLAKE_APP__OWNER_DEPLOYMENT_ID |
                 SNOWFLAKE_APP__ACTIVATION|
                 CONFIGURATION| DEPLOYMENT_STAGE
                 | ACTIVATION_CONNECTION |
@@ -33,7 +35,7 @@ snowflakeApp:                   SNOWFLAKE_APP stereotypes? taggedValues? qualifi
                                                 applicationName
                                                 | description
                                                 | function
-                                                | owner
+                                                | ownership
                                                 | activation
                                             )*
                                         BRACE_CLOSE;
@@ -49,7 +51,11 @@ description:                    SNOWFLAKE_APP__DESCRIPTION COLON STRING SEMI_COL
 
 function:                       SNOWFLAKE_APP__FUNCTION COLON functionIdentifier SEMI_COLON;
 
-owner :                         SNOWFLAKE_APP__OWNER COLON STRING SEMI_COLON;
+ownership :                         SNOWFLAKE_APP__OWNER COLON
+                                    SNOWFLAKE_APP__OWNER_DEPLOYMENT
+                                        BRACE_OPEN
+                                            SNOWFLAKE_APP__OWNER_DEPLOYMENT_ID COLON STRING
+                                        BRACE_CLOSE SEMI_COLON;
 
 activation:                     SNOWFLAKE_APP__ACTIVATION COLON qualifiedName SEMI_COLON ;
 

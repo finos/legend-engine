@@ -17,14 +17,14 @@ package org.finos.legend.engine.protocol.hostedService.metamodel;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentConfiguration;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
 import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentConfiguration;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceArtifact;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceContent;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Deployment;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Ownership;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.hostedService.metamodel.control.UserList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -38,6 +38,12 @@ public class HostedServiceProtocolExtension implements PureProtocolExtension
     public static String packageJSONType = "hostedService";
 
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Hosted_Service");
+    }
+
+    @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
         return Lists.fixedSize.with(() -> Lists.mutable.with(
@@ -46,7 +52,7 @@ public class HostedServiceProtocolExtension implements PureProtocolExtension
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(Ownership.class)
                         .withSubtype(UserList.class, "userList")
-                        .withSubtype(Deployment.class, "deployment")
+//                        .withSubtype(Deployment.class, "deployment")
                         .build(),
                 ProtocolSubTypeInfo.newBuilder(DeploymentConfiguration.class)
                         .withSubtype(HostedServiceDeploymentConfiguration.class, "hostedServiceDeploymentConfiguration")

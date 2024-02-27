@@ -28,6 +28,7 @@ Class meta::external::language::java::metamodel::Importable
 Class meta::external::language::java::metamodel::Package extends meta::external::language::java::metamodel::AnnotatedElement, meta::external::language::java::metamodel::Importable
 {
    <<equality.Key>> name : String[1];
+   fullPath: String[0..1];
 }
 
 Association meta::external::language::java::metamodel::PackageChildren
@@ -158,7 +159,6 @@ Class meta::external::language::java::metamodel::Class extends meta::external::l
    methods : meta::external::language::java::metamodel::Method[*];
 
    additionalImports : String[*];
-
    projectionParentName : String[0..1]; // Java doesn't really have an equivalent AFAIK but we need this
 }
 

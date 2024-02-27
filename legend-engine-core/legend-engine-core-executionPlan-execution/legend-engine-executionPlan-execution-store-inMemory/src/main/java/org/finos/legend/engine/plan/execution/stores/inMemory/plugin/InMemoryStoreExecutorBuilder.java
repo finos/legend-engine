@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
@@ -21,6 +22,12 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 
 public class InMemoryStoreExecutorBuilder implements StoreExecutorBuilder
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "M2M");
+    }
+
     @Override
     public StoreType getStoreType()
     {

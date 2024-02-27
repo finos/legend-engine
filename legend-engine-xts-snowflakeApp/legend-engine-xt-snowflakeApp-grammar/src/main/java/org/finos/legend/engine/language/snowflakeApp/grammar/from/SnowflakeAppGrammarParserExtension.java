@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.snowflakeApp.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -35,6 +36,12 @@ import java.util.function.Consumer;
 public class SnowflakeAppGrammarParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "Snowflake";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

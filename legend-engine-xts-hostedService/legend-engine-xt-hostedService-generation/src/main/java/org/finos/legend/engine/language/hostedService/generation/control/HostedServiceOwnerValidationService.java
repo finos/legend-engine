@@ -30,7 +30,7 @@ public class HostedServiceOwnerValidationService
     {
         return INSTANCE.updateAndGet(existing ->
         {
-            if (existing == null)
+            if (existing == null || existing.isEmpty())
             {
                 MutableList<HostedServiceOwnerValidator> extensions = Lists.mutable.empty();
                 for (HostedServiceOwnerValidator extension : ServiceLoader.load(HostedServiceOwnerValidator.class))

@@ -21,7 +21,6 @@ import meta::relational::functions::sqlstring::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::test::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 
 function <<paramTest.Test>> meta::relational::tests::dbSpecificTests::sqlQueryTests::selectSubClauses::slice::testSlice(config:DbTestConfig[1]):Boolean[1]

@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
@@ -28,6 +29,11 @@ import org.pac4j.core.profile.CommonProfile;
 
 public class FakeServiceStoreExecutorBuilder implements StoreExecutorBuilder
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("__Test__");
+    }
 
     @Override
     public StoreType getStoreType()

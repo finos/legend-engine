@@ -86,7 +86,7 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
             //println($setUpSQLs);
 
             // Count is here to ensure lazy execution is actually flushing...
-            $setUpSQLs->map(sql | executeInDb($sql, $reprocessed.runtime.connectionStores.connection->toOne()->cast(@TestDatabaseConnection)))->count();
+            $setUpSQLs->map(sql | executeInDb($sql, $reprocessed.runtime.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection)))->count();
 
             $result;
     ]

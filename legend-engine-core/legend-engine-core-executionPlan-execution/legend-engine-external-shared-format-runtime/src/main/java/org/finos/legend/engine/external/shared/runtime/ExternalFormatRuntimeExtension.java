@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.shared.runtime;
 
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -30,6 +31,18 @@ import java.util.List;
 
 public interface ExternalFormatRuntimeExtension extends LegendExternalFormatExtension
 {
+    @Override
+    default String type()
+    {
+        return "Runtime";
+    }
+
+    @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("Plan", "Execution");
+    }
+
     List<String> getContentTypes();
 
     default StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)

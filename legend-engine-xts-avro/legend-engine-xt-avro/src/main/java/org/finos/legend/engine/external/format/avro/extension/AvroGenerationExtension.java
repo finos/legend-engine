@@ -15,6 +15,7 @@
 package org.finos.legend.engine.external.format.avro.extension;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationConfig;
 import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
@@ -38,6 +39,12 @@ import java.util.List;
 
 public class AvroGenerationExtension implements GenerationExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "!!MoveToArtifact!!", "Avro");
+    }
+
     @Override
     public String getLabel()
     {

@@ -145,6 +145,37 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     '}', $res);
 }
 
+function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testExcludeDynamicFilter():Boolean[1]
+{
+  let res = typesToGraphQLStringWithoutDynamicFilter([Query, Firm, Person, IncType]->cast(@PackageableElement));
+
+  assertEquals(
+    'type Firm {\n' +
+    '  legalName: String!\n' +
+    '  employees: [Person!]!\n' +
+    '  incType: IncType!\n' +
+    '}\n' +
+    '\n' +
+    'enum IncType {\n' +
+    '  LLC\n' +
+    '  CORP\n' +
+    '}\n' +
+    '\n' +
+    'type Person {\n' +
+    '  firstName: String\n' +
+    '  lastName: String!\n' +
+    '  age: Int!\n' +
+    '}\n' +
+    '\n' +
+    'type Query {\n' +
+    '  firmByName(n: String!): Firm\n' +
+    '}\n' +
+    '\n' +
+    'schema {\n' +
+    '  query : Query\n' +
+    '}', $res);
+}
+
 function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::tests::testQueryAndMutation():Boolean[1]
 {
   let res = typesToGraphQLString([Query, Mutation, Firm, Person, IncType]->cast(@PackageableElement));
@@ -702,15 +733,25 @@ function <<test.Test>> meta::external::query::graphQL::binding::fromPure::sdl::t
     $res);
 }
 
-function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*]): String[1]
+function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLStringWithoutDynamicFilter(types: PackageableElement[*]): String[1]
 {
-  typesToGraphQLString($types, []);
+  typesToGraphQLString($types, [], true);
 }
 
-function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*], integerScalarType: String[0..1]): String[1]
+function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*]): String[1]
+{
+  typesToGraphQLString($types, [], false);
+}
+
+function meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*], integerScalarType: String[0..1]): String[1]
+{
+  typesToGraphQLString($types, $integerScalarType, false);
+}
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::sdl::tests::typesToGraphQLString(types: PackageableElement[*], integerScalarType: String[0..1], excludeDynamicFilter: Boolean[1]): String[1]
 {
   let defaultConfig = meta::external::query::graphQL::binding::fromPure::sdl::defaultConfig();
-  let updatedConfig = ^$defaultConfig(integerScalarType = $integerScalarType);
+  let updatedConfig = ^$defaultConfig(integerScalarType = $integerScalarType, excludeDynamicFilter = $excludeDynamicFilter);
   meta::external::query::graphQL::binding::fromPure::sdl::transformPureToGraphQLSDL($types, $updatedConfig)
     ->map(x|$x->meta::external::query::graphQL::serialization::graphQLtoString())
     ->joinStrings('\n\n');

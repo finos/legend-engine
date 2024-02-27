@@ -47,6 +47,8 @@ public class GenerateDiff
 {
     private final CompiledExecutionSupport executionSupport;
     private final PureModel pureModel;
+    private String typeKeyName = "@type";
+    private String versionKeyName = "version";
 
     public GenerateDiff(List<PackageableElement> newEntities, List<PackageableElement> newDependencies, List<PackageableElement> oldEntities, List<PackageableElement> oldDependencies)
     {
@@ -114,10 +116,32 @@ public class GenerateDiff
         return new PureMap(res);
     }
 
+    public String getTypeKeyName()
+    {
+        return typeKeyName;
+    }
+
+    public void setTypeKeyName(String typeKeyName)
+    {
+        this.typeKeyName = typeKeyName;
+    }
+
+    public String getVersionKeyName()
+    {
+        return versionKeyName;
+    }
+
+    public void setVersionKeyName(String versionKeyName)
+    {
+        this.versionKeyName = versionKeyName;
+    }
+
     public String execute(String jsonString, Map<String, Map<String, String>> propertyRenames, Map<String, String> classRenames, Map<String, Map<String, Object>> defaultValues)
     {
-        Root_meta_pure_changetoken_Versions oldVersions = core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_jsonToVersions_String_1__Versions_1_(jsonString, this.executionSupport);
-        Root_meta_pure_changetoken_Versions newVersions = core_pure_changetoken_diff_generation.Root_meta_pure_changetoken_diff_generation_generateDiffFromVersions_Versions_1__Map_$0_1$__Map_$0_1$__Map_$0_1$__Versions_1_(oldVersions, toPureMap(propertyRenames), toPureMap(classRenames), toPureMap(defaultValues), this.pureModel.getExecutionSupport());
-        return core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_versionsToJson_Versions_1__String_1_(newVersions, this.executionSupport);
+        Root_meta_pure_changetoken_Versions oldVersions = core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_jsonToVersions_String_1__String_1__Versions_1_(jsonString, typeKeyName, this.executionSupport);
+        Root_meta_pure_changetoken_Versions newVersions = core_pure_changetoken_diff_generation.Root_meta_pure_changetoken_diff_generation_generateDiffFromVersions_Versions_1__Map_$0_1$__Map_$0_1$__Map_$0_1$__String_1__String_$0_1$__Versions_1_(oldVersions, toPureMap(propertyRenames), toPureMap(classRenames), toPureMap(defaultValues),
+                typeKeyName, versionKeyName,
+                this.pureModel.getExecutionSupport());
+        return core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_versionsToJson_Versions_1__String_1__String_1_(newVersions, typeKeyName, this.executionSupport);
     }
 }
