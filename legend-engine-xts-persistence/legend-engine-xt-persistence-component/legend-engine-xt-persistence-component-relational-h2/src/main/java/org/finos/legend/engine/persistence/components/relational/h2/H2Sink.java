@@ -14,11 +14,14 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
+import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -29,9 +32,13 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -39,6 +46,7 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
@@ -49,6 +57,8 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.HashFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.LoadCsvVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.MetadataFileNameFieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.MetadataRowNumberFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ParseJsonFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.FieldVisitor;
@@ -57,8 +67,10 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ToArrayFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
+import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
@@ -67,6 +79,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -77,9 +90,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.DATATYPE_CONVERSION;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUES;
 
 public class H2Sink extends AnsiSqlSink
 {
@@ -89,6 +105,9 @@ public class H2Sink extends AnsiSqlSink
     private static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
     private static final Map<DataType, Set<DataType>> IMPLICIT_DATA_TYPE_MAPPING;
     private static final Map<DataType, Set<DataType>> EXPLICIT_DATA_TYPE_MAPPING;
+
+    private static final String FILE = "FILE";
+    private static final String ROW_NUMBER = "ROW_NUMBER";
 
     static
     {
@@ -100,6 +119,7 @@ public class H2Sink extends AnsiSqlSink
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.DATA_TYPE_SCALE_CHANGE);
         capabilities.add(Capability.TRANSFORM_WHILE_COPY);
+        capabilities.add(Capability.DRY_RUN);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -116,6 +136,9 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
+        logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
+        logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
+        logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
         Map<DataType, Set<DataType>> implicitDataTypeMapping = new HashMap<>();
@@ -235,5 +258,69 @@ public class H2Sink extends AnsiSqlSink
             .build();
 
         return result;
+    }
+
+    public List<DataError> performDryRun(Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    {
+        executor.executePhysicalPlan(dryRunSqlPlan);
+
+        List<DataError> dataErrors = new ArrayList<>();
+
+        Map<Set<FieldValue>, SqlPlan> queriesForNull =  dryRunValidationSqlPlan.getOrDefault(NULL_VALUES, new HashMap<>());
+        Map<Set<FieldValue>, SqlPlan> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(DATATYPE_CONVERSION, new HashMap<>());
+
+        // Execute queries for null values
+        for (Set<FieldValue> validatedColumns : queriesForNull.keySet())
+        {
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(queriesForNull.get(validatedColumns), sampleRowCount);
+            if (!results.isEmpty())
+            {
+                List<Map<String, Object>> resultSets = results.get(0).getData();
+                for (Map<String, Object> row : resultSets)
+                {
+                    for (String column : validatedColumns.stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
+                    {
+                        if (row.get(column) == null)
+                        {
+                            dataErrors.add(constructDataError(row, FILE, ROW_NUMBER, NULL_VALUES, column));
+                        }
+                    }
+                }
+            }
+        }
+
+        // Execute queries for datatype conversion
+        for (Set<FieldValue> validatedColumns : queriesForDatatype.keySet())
+        {
+            try
+            {
+                executor.executePhysicalPlanAndGetResults(queriesForDatatype.get(validatedColumns), sampleRowCount);
+            }
+            catch (RuntimeException e)
+            {
+                String errorMessage = e.getCause().getMessage();
+                String problematicValue = errorMessage.substring(0, errorMessage.indexOf("; SQL statement"));
+                problematicValue = problematicValue.replace("org.h2.jdbc.JdbcSQLDataException: Data conversion error converting ", "");
+                problematicValue = problematicValue.replace("org.h2.jdbc.JdbcSQLDataException: Cannot parse \"TIMESTAMP\" constant ", "");
+                problematicValue = problematicValue.replaceAll("\"", "");
+
+                // This loop will only be executed once as there is always only one element in the set
+                for (FieldValue validatedColumn : validatedColumns)
+                {
+                    List<TabularData> results = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForSelectAllFieldsWithStringFieldEquals(validatedColumn, problematicValue)), sampleRowCount);
+                    if (!results.isEmpty())
+                    {
+                        List<Map<String, Object>> resultSets = results.get(0).getData();
+                        for (Map<String, Object> row : resultSets)
+                        {
+                            dataErrors.add(constructDataError(row, FILE, ROW_NUMBER, DATATYPE_CONVERSION, validatedColumn.fieldName()));
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return dataErrors;
     }
 }

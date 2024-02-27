@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataT
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
@@ -31,10 +32,13 @@ import org.finos.legend.engine.persistence.components.relational.sql.TabularData
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.sink.Sink;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
+import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class RelationalSink implements Sink
 {
@@ -190,5 +194,37 @@ public abstract class RelationalSink implements Sink
 
     public abstract IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues);
 
-    public abstract List<DataError> performDryRun(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount);
+    public abstract List<DataError> performDryRun(Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount);
+
+    protected Optional<String> getString(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        String strValue = value == null ? null : (String) value;
+        return Optional.ofNullable(strValue);
+    }
+
+    protected Optional<Long> getLong(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        Long longValue = value == null ? null : (Long) value;
+        return Optional.ofNullable(longValue);
+    }
+
+    protected DataError constructDataError(Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
+    {
+        String commaSeparatedRow = row.keySet().stream()
+            .sorted()
+            .filter(key -> !key.equals(fileNameColumnName) && !key.equals(rowNumberColumnName))
+            .map(key -> getString(row, key).orElse(""))
+            .collect(Collectors.joining(","));
+
+        return DataError.builder()
+            .errorMessage(validationCategory.getValidationFailedErrorMessage())
+            .file(getString(row, fileNameColumnName).orElseThrow(IllegalStateException::new))
+            .errorCategory(validationCategory.name())
+            .columnName(validatedColumnName)
+            .rowNumber(getLong(row, rowNumberColumnName))
+            .rejectedRecord(commaSeparatedRow)
+            .build();
+    }
 }

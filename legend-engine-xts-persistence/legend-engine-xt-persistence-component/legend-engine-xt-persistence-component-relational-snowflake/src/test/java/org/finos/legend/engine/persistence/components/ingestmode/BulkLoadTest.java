@@ -72,6 +72,13 @@ public class BulkLoadTest
             .columnNumber(5)
             .build();
 
+    private static Field col3NonNullable = Field.builder()
+        .name("col_bigint")
+        .type(FieldType.of(DataType.BIGINT, Optional.empty(), Optional.empty()))
+        .columnNumber(4)
+        .nullable(false)
+        .build();
+
     private List filesList = Arrays.asList("/path/xyz/file1.csv", "/path/xyz/file2.csv");
 
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
@@ -170,7 +177,7 @@ public class BulkLoadTest
                                 .location("my_location")
                                 .fileFormat(StandardFileFormat.builder().formatType(FileFormatType.AVRO).build())
                                 .addAllFilePaths(filesList).build())
-                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3, col4)).build())
+                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3NonNullable, col4)).build())
                 .alias("t")
                 .build();
 
@@ -196,7 +203,7 @@ public class BulkLoadTest
         List<String> metaIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_bigint\" BIGINT,\"col_variant\" VARIANT,\"batch_id\" INTEGER)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_bigint\" BIGINT NOT NULL,\"col_variant\" VARIANT,\"batch_id\" INTEGER)";
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_bigint\", \"col_variant\", \"batch_id\") " +
                 "FROM " +
@@ -214,6 +221,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetaIngestSql, metaIngestSql.get(0));
+
+        // TODO: convert these to assertions
+        System.out.println(operations.dryRunPreActionsSql());
+        System.out.println(operations.dryRunSql());
+        System.out.println(operations.dryRunValidationSql());
 
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));

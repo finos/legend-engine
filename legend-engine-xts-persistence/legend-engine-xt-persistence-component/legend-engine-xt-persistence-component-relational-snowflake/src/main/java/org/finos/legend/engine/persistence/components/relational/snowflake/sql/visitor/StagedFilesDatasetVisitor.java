@@ -29,7 +29,7 @@ public class StagedFilesDatasetVisitor implements LogicalPlanVisitor<StagedFiles
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, StagedFilesDataset current, VisitorContext context)
     {
-        List<Value> allColumns = LogicalPlanUtils.extractStagedFilesFieldValues(current);
+        List<Value> allColumns = LogicalPlanUtils.extractStagedFilesFieldValues(current, false);
         StagedFilesSelection selection = StagedFilesSelection.builder()
             .source(current)
             .addAllFields(allColumns)

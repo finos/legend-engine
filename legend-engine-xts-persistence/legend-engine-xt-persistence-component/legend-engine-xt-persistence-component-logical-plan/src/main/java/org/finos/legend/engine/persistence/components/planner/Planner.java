@@ -44,6 +44,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
@@ -53,6 +54,7 @@ import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -266,6 +268,11 @@ public abstract class Planner
     public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
     {
         return LogicalPlan.of(Collections.emptyList());
+    }
+
+    public Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> buildLogicalPlanForDryRunValidation(Resources resources)
+    {
+        return Collections.emptyMap();
     }
 
     public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)

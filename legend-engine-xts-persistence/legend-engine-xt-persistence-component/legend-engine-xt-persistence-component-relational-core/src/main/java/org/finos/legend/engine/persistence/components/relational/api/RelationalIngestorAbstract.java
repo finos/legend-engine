@@ -535,7 +535,8 @@ public abstract class RelationalIngestorAbstract
         if (enrichedIngestMode instanceof BulkLoad)
         {
             executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan());
-            return relationalSink().performDryRun(executor, generatorResult.dryRunSqlPlan(), sampleRowCount());
+            executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan());
+            return relationalSink().performDryRun(transformer, executor, generatorResult.dryRunSqlPlan(), generatorResult.dryRunValidationSqlPlan(), sampleRowCount());
         }
         else
         {

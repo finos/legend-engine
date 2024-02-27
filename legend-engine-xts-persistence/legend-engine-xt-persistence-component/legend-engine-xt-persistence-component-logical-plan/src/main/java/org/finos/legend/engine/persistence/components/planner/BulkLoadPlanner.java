@@ -21,10 +21,16 @@ import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
 import org.finos.legend.engine.persistence.components.ingestmode.audit.AuditingVisitors;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.IsNull;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Not;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
@@ -34,6 +40,8 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoa
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -41,14 +49,17 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
+import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_DATASET_BASE_NAME;
@@ -60,6 +71,9 @@ class BulkLoadPlanner extends Planner
     private boolean transformWhileCopy;
     private Dataset externalDataset;
     private StagedFilesDataset stagedFilesDataset;
+
+    private static final String FILE = "FILE";
+    private static final String ROW_NUMBER = "ROW_NUMBER";
 
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
@@ -118,24 +132,117 @@ class BulkLoadPlanner extends Planner
     @Override
     public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
     {
+        if (!capabilities.contains(Capability.DRY_RUN))
+        {
+            return LogicalPlan.of(Collections.emptyList());
+        }
+
         List<Operation> operations = new ArrayList<>();
-        if (capabilities.contains(Capability.DRY_RUN) && stagedFilesDataset.stagedFilesDatasetProperties().dryRunSupported())
+        if (stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
         {
             Dataset validationDataset = getValidationDataset();
             Copy copy = Copy.builder()
-                    .targetDataset(validationDataset)
-                    .sourceDataset(stagedFilesDataset.datasetReference().withAlias(""))
-                    .stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties())
-                    .dryRun(true)
-                    .build();
+                .targetDataset(validationDataset)
+                .sourceDataset(stagedFilesDataset.datasetReference().withAlias(""))
+                .stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties())
+                .dryRun(true)
+                .build();
+            operations.add(copy);
+        }
+        else
+        {
+            Dataset validationDataset = getValidationDatasetWithMetaColumns();
+
+            List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset(), true);
+            fieldsToSelect.add(MetadataFileNameField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
+            fieldsToSelect.add(MetadataRowNumberField.builder().build());
+
+            List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+            fieldsToInsert.add(FieldValue.builder().fieldName(FILE).datasetRef(stagingDataset().datasetReference()).build());
+            fieldsToInsert.add(FieldValue.builder().fieldName(ROW_NUMBER).datasetRef(stagingDataset().datasetReference()).build());
+
+            Dataset selectStage = StagedFilesSelection.builder().source(stagedFilesDataset).addAllFields(fieldsToSelect).build();
+
+            Copy copy = Copy.builder()
+                .targetDataset(validationDataset)
+                .sourceDataset(selectStage)
+                .addAllFields(fieldsToInsert)
+                .stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties())
+                .dryRun(false)
+                .build();
             operations.add(copy);
         }
         return LogicalPlan.of(operations);
     }
 
+    @Override
+    public Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> buildLogicalPlanForDryRunValidation(Resources resources)
+    {
+        if (!capabilities.contains(Capability.DRY_RUN) || stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
+        {
+            return Collections.emptyMap();
+        }
+
+        Dataset validationDataset = getValidationDatasetWithMetaColumns();
+
+        Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> validationMap = new HashMap<>();
+        List<Field> fieldsToCheckForNull = stagingDataset().schema().fields().stream().filter(field -> !field.nullable()).collect(Collectors.toList());
+        List<Field> fieldsToCheckForDatatype = stagingDataset().schema().fields().stream().filter(field -> !DataType.isStringDatatype(field.type().dataType())).collect(Collectors.toList());
+
+        if (!fieldsToCheckForNull.isEmpty())
+        {
+            Selection queryForNull = Selection.builder()
+                .source(validationDataset)
+                .condition(Or.of(fieldsToCheckForNull.stream().map(field ->
+                        IsNull.of(FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()))
+                    .collect(Collectors.toList())))
+                .build();
+
+            validationMap.put(ValidationCategory.NULL_VALUES,
+                Collections.singletonMap(fieldsToCheckForNull.stream().map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
+                    LogicalPlan.of(Collections.singletonList(queryForNull))));
+        }
+
+        if (!fieldsToCheckForDatatype.isEmpty())
+        {
+            if (capabilities.contains(Capability.SAFE_CAST))
+            {
+                Selection queryForDatatype = getSelectColumnsWithTryCast(validationDataset, fieldsToCheckForDatatype);
+                validationMap.put(ValidationCategory.DATATYPE_CONVERSION,
+                    Collections.singletonMap(fieldsToCheckForDatatype.stream().map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
+                        LogicalPlan.of(Collections.singletonList(queryForDatatype))));
+            }
+            else
+            {
+                validationMap.put(ValidationCategory.DATATYPE_CONVERSION, new HashMap<>());
+                for (Field fieldToCheckForDatatype : fieldsToCheckForDatatype)
+                {
+                    // TODO: change this to use cast - since we know at this point try cast is not possible
+                    Selection queryForDatatype = getSelectColumnsWithTryCast(validationDataset, Collections.singletonList(fieldToCheckForDatatype));
+                    validationMap.get(ValidationCategory.DATATYPE_CONVERSION).put(Stream.of(fieldToCheckForDatatype).map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
+                        LogicalPlan.of(Collections.singletonList(queryForDatatype)));
+                }
+            }
+        }
+
+        return validationMap;
+    }
+
+    private Selection getSelectColumnsWithTryCast(Dataset dataset, List<Field> fieldsToCheckForDatatype)
+    {
+        return Selection.builder()
+            .source(dataset)
+            .condition(Or.of(fieldsToCheckForDatatype.stream().map(field -> And.builder()
+                    .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build())))
+                    .addConditions(IsNull.of(TryCastFunction.builder().field(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build()).type(field.type()).build()))
+                    .build())
+                .collect(Collectors.toList())))
+            .build();
+    }
+
     private LogicalPlan buildLogicalPlanForTransformWhileCopy(Resources resources)
     {
-        List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
+        List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset(), false);
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         // Add digest
@@ -207,9 +314,16 @@ class BulkLoadPlanner extends Planner
     public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
     {
         List<Operation> operations = new ArrayList<>();
-        if (capabilities.contains(Capability.DRY_RUN) && stagedFilesDataset.stagedFilesDatasetProperties().dryRunSupported())
+        if (capabilities.contains(Capability.DRY_RUN))
         {
-            operations.add(Create.of(true, getValidationDataset()));
+            if (stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
+            {
+                operations.add(Create.of(true, getValidationDataset()));
+            }
+            else
+            {
+                operations.add(Create.of(true, getValidationDatasetWithMetaColumns()));
+            }
         }
         return LogicalPlan.of(operations);
     }
@@ -297,5 +411,22 @@ class BulkLoadPlanner extends Planner
                 .name(tableName + UNDERSCORE + "validation") // TODO legend_persistence
                 .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
                 .build();
+    }
+
+    private Dataset getValidationDatasetWithMetaColumns()
+    {
+        String tableName = mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+
+        List<Field> fields = stagedFilesDataset.schema().fields().stream().map(field -> field.withType(FieldType.builder().dataType(DataType.VARCHAR).build()).withNullable(true)).collect(Collectors.toList());
+        fields.add(Field.builder().name(FILE).type(FieldType.builder().dataType(DataType.VARCHAR).build()).build());
+        fields.add(Field.builder().name(ROW_NUMBER).type(FieldType.builder().dataType(DataType.BIGINT).build()).build());
+
+        return DatasetDefinition.builder()
+            .schema(stagedFilesDataset.schema().withFields(fields))
+            .database(mainDataset().datasetReference().database())
+            .group(mainDataset().datasetReference().group())
+            .name(tableName + UNDERSCORE + "validation") // TODO legend_persistence
+            .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
+            .build();
     }
 }

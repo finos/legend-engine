@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,15 +14,20 @@
 
 package org.finos.legend.engine.persistence.components.util;
 
-public enum Capability
+public enum ValidationCategory
 {
-    MERGE,
-    ADD_COLUMN,
-    IMPLICIT_DATA_TYPE_CONVERSION,
-    EXPLICIT_DATA_TYPE_CONVERSION,
-    DATA_TYPE_LENGTH_CHANGE,
-    DATA_TYPE_SCALE_CHANGE,
-    TRANSFORM_WHILE_COPY,
-    DRY_RUN,
-    SAFE_CAST
+    NULL_VALUES("Null values found in non-nullable column"),
+    DATATYPE_CONVERSION("Unable to type cast column");
+
+    private final String validationFailedErrorMessage;
+
+    ValidationCategory(String validationFailedErrorMessage)
+    {
+        this.validationFailedErrorMessage = validationFailedErrorMessage;
+    }
+
+    public String getValidationFailedErrorMessage()
+    {
+        return this.validationFailedErrorMessage;
+    }
 }

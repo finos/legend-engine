@@ -21,6 +21,7 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.planner.Planners;
@@ -35,6 +36,7 @@ import org.finos.legend.engine.persistence.components.transformer.TransformOptio
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -287,6 +289,19 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan dryRunLogicalPlan = planner.buildLogicalPlanForDryRun(resources);
         SqlPlan dryRunSqlPlan = transformer.generatePhysicalPlan(dryRunLogicalPlan);
 
+        // dry-run validations
+        Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> dryRunValidationLogicalPlan = planner.buildLogicalPlanForDryRunValidation(resources);
+        Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan = new HashMap<>();
+        for (ValidationCategory validationCategory : dryRunValidationLogicalPlan.keySet())
+        {
+            dryRunValidationSqlPlan.put(validationCategory, new HashMap<>());
+            for (Set<FieldValue> columns : dryRunValidationLogicalPlan.get(validationCategory).keySet())
+            {
+                SqlPlan sqlplan = transformer.generatePhysicalPlan(dryRunValidationLogicalPlan.get(validationCategory).get(columns));
+                dryRunValidationSqlPlan.get(validationCategory).put(columns, sqlplan);
+            }
+        }
+
         // metadata ingest
         LogicalPlan metaDataIngestLogicalPlan = planner.buildLogicalPlanForMetadataIngest(resources);
         SqlPlan metaDataIngestSqlPlan = transformer.generatePhysicalPlan(metaDataIngestLogicalPlan);
@@ -319,6 +334,7 @@ public abstract class RelationalGeneratorAbstract
             .schemaEvolutionDataset(schemaEvolutionDataset)
             .ingestSqlPlan(ingestSqlPlan)
             .dryRunSqlPlan(dryRunSqlPlan)
+            .putAllDryRunValidationSqlPlan(dryRunValidationSqlPlan)
             .postActionsSqlPlan(postActionsSqlPlan)
             .postCleanupSqlPlan(postCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)

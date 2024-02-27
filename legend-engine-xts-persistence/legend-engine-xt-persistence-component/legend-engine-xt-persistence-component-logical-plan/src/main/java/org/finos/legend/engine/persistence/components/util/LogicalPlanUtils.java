@@ -72,6 +72,7 @@ import static org.finos.legend.engine.persistence.components.logicalplan.dataset
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.VARCHAR;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATHS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATTERNS;
@@ -395,7 +396,7 @@ public class LogicalPlanUtils
         return stagingDataset.schema().fields().stream().filter(field -> field.primaryKey() && primaryKeysFromMain.contains(field.name())).collect(Collectors.toList());
     }
 
-    public static List<Value> extractStagedFilesFieldValues(Dataset dataset)
+    public static List<Value> extractStagedFilesFieldValues(Dataset dataset, boolean withVarCharType)
     {
         List<Value> stagedFilesFields = new ArrayList<>();
         boolean columnNumbersPresent = dataset.schema().fields().stream().allMatch(field -> field.columnNumber().isPresent());
@@ -407,7 +408,7 @@ public class LogicalPlanUtils
                     .datasetRefAlias(dataset.datasetReference().alias())
                     .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
                     .elementPath(field.elementPath())
-                    .fieldType(field.type())
+                    .fieldType(withVarCharType ? FieldType.builder().dataType(VARCHAR).build() : field.type())
                     .fieldName(field.name())
                     .build();
             stagedFilesFields.add(fieldValue);

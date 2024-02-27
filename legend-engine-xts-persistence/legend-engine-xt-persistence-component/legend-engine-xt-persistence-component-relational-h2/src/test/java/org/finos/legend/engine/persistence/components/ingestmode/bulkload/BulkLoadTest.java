@@ -35,12 +35,17 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.DryRunResult;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.datasets.H2StagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +55,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -88,6 +94,16 @@ public class BulkLoadTest extends BaseTest
     private static Field col4 = Field.builder()
         .name(COL_DATETIME)
         .type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty()))
+        .build();
+    private static Field col2NonNullable = Field.builder()
+        .name(COL_STRING)
+        .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
+        .nullable(false)
+        .build();
+    private static Field col3NonNullable = Field.builder()
+        .name(COL_DECIMAL)
+        .type(FieldType.of(DataType.DECIMAL, 5, 2))
+        .nullable(false)
         .build();
 
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
@@ -131,9 +147,7 @@ public class BulkLoadTest extends BaseTest
         GeneratorResult operations = generator.generateOperations(datasets);
 
         List<String> preActionsSql = operations.preActionsSql();
-        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
-        List<String> dryRunSql = operations.dryRunSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
@@ -148,8 +162,7 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
-        Assertions.assertEquals(0, dryRunPreActionsSql.size());
-        Assertions.assertEquals(0, dryRunSql.size());
+
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -738,6 +751,187 @@ public class BulkLoadTest extends BaseTest
         {
             Assertions.assertTrue(e.getMessage().contains("Cannot build H2StagedFilesDatasetProperties, only CSV file loading supported"));
         }
+    }
+
+    @Test
+    public void testBulkLoadDryRunSuccess()
+    {
+        String filePath = "src/test/resources/data/bulk-load/input/good_file_with_edge_case.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .batchIdPattern("{NEXT_BATCH_ID_PATTERN}")
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP,\"batch_id\" INTEGER,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"batch_id\", \"append_time\") " +
+            "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
+            "{NEXT_BATCH_ID_PATTERN},'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/good_file_with_edge_case.csv'," +
+            "'col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
+
+        // TODO: convert these to assertions
+        System.out.println(operations.dryRunPreActionsSql());
+        System.out.println(operations.dryRunSql());
+        System.out.println(operations.dryRunValidationSql());
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.empty());
+        ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.initDatasets(datasets);
+        DryRunResult dryRunResult = ingestor.dryRun();
+
+        Assertions.assertEquals(dryRunResult.status(), IngestStatus.SUCCEEDED);
+        Assertions.assertTrue(dryRunResult.errorRecords().isEmpty());
+    }
+
+    @Test
+    public void testBulkLoadDryRunFailure()
+    {
+        String filePath = "src/test/resources/data/bulk-load/input/bad_file.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2NonNullable, col3NonNullable, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .batchIdPattern("{NEXT_BATCH_ID_PATTERN}")
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER,\"col_string\" VARCHAR NOT NULL,\"col_decimal\" DECIMAL(5,2) NOT NULL,\"col_datetime\" TIMESTAMP,\"batch_id\" INTEGER,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"batch_id\", \"append_time\") " +
+            "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
+            "{NEXT_BATCH_ID_PATTERN},'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/bad_file.csv'," +
+            "'col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
+
+        // TODO: convert these to assertions
+        System.out.println(operations.dryRunPreActionsSql());
+        System.out.println(operations.dryRunSql());
+        System.out.println(operations.dryRunValidationSql());
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.empty());
+        ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.initDatasets(datasets);
+        DryRunResult dryRunResult = ingestor.dryRun();
+
+        List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.NULL_VALUES.name())
+            .rowNumber(1L)
+            .columnName(col3NonNullable.name())
+            .rejectedRecord("2022-01-99 00:00:00.0,,??,Andy")
+            .errorMessage("Null values found in non-nullable column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.NULL_VALUES.name())
+            .rowNumber(2L)
+            .columnName(col2NonNullable.name())
+            .rejectedRecord("2022-01-12 00:00:00.0,NaN,2,")
+            .errorMessage("Null values found in non-nullable column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
+            .rowNumber(1L)
+            .columnName(col1.name())
+            .rejectedRecord("2022-01-99 00:00:00.0,,??,Andy")
+            .errorMessage("Unable to type cast column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
+            .rowNumber(1L)
+            .columnName(col4.name())
+            .rejectedRecord("2022-01-99 00:00:00.0,,??,Andy")
+            .errorMessage("Unable to type cast column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
+            .rowNumber(2L)
+            .columnName(col3.name())
+            .rejectedRecord("2022-01-12 00:00:00.0,NaN,2,")
+            .errorMessage("Unable to type cast column")
+            .build());
+
+        Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
+        Assertions.assertEquals(new HashSet<>(expectedErrorRecords), new HashSet<>(dryRunResult.errorRecords()));
     }
 
     RelationalIngestor getRelationalIngestor(IngestMode ingestMode, PlannerOptions options, Clock executionTimestampClock, CaseConversion caseConversion, Optional<String> eventId)
