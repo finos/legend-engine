@@ -38,7 +38,7 @@ import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_ExternalFormatLegendJavaPlatformBindingDescriptor;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
-import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension;
+import org.finos.legend.pure.generated.core_java_platform_binding_external_format_legendJavaPlatformBinding_externalFormat_bindingLegendJavaPlatformBindingExtension;
 import org.finos.legend.pure.generated.core_pure_binding_extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
@@ -79,7 +79,7 @@ public abstract class TestExternalFormatQueries
 
             MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
             extensions.addAll(formatExtensions);
-            extensions.addAllIterable(core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
+            extensions.addAllIterable(core_java_platform_binding_external_format_legendJavaPlatformBinding_externalFormat_bindingLegendJavaPlatformBindingExtension.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
 
             SingleExecutionPlan plan = PlanGenerator.generateExecutionPlan(lambda, null, null, null, model, "vX_X_X", PlanPlatform.JAVA, "test", extensions, LegendPlanTransformers.transformers);
             PlanExecutor executor = PlanExecutor.newPlanExecutorBuilder().withAvailableStoreExecutors().build();
@@ -255,7 +255,7 @@ public abstract class TestExternalFormatQueries
 
             MutableList<Root_meta_pure_extension_Extension> extensions = Lists.mutable.with(core_pure_binding_extension.Root_meta_external_format_shared_externalFormatExtension__Extension_1_(model.getExecutionSupport()));
             extensions.addAll(formatExtensions);
-            extensions.addAllIterable(core_java_platform_binding_legendJavaPlatformBinding_binding_bindingLegendJavaPlatformBindingExtension.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
+            extensions.addAllIterable(core_java_platform_binding_external_format_legendJavaPlatformBinding_externalFormat_bindingLegendJavaPlatformBindingExtension.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_bindingExtensionsWithLegendJavaPlatformBinding_ExternalFormatLegendJavaPlatformBindingDescriptor_MANY__Extension_MANY_(Lists.mutable.withAll(formatDescriptors), model.getExecutionSupport()));
 
             Mapping mapping = model.getMapping(mappingPath);
             Root_meta_core_runtime_Runtime runtime = model.getRuntime(runtimePath);

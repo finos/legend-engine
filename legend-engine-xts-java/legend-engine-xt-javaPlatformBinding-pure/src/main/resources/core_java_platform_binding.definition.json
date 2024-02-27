@@ -1,6 +1,6 @@
 {
     "name" : "core_java_platform_binding",
-    "pattern" : "(meta::pure::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava|meta::external::format::shared::executionPlan::platformBinding::legendJava)(::.*)?",
+    "pattern" : "(meta::pure::executionPlan::platformBinding::legendJava|meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava)(::.*)?",
     "dependencies": [
         "platform",
         "platform_functions",

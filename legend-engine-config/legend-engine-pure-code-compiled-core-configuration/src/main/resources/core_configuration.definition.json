@@ -8,6 +8,7 @@
     "core_service",
     "core_external_language_java",
     "core_java_platform_binding",
+    "core_java_platform_binding_external_format",
     "core_relational",
     "core_relational_java_platform_binding",
     "core_servicestore",
