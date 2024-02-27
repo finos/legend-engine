@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.*;
 import org.finos.legend.engine.persistence.components.executor.DigestInfo;
@@ -27,7 +28,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFac
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
-import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -41,7 +41,9 @@ import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
+import org.finos.legend.engine.persistence.components.util.SqlLogging;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
@@ -76,6 +78,9 @@ public abstract class RelationalIngestorAbstract
     public static final String BATCH_ID_PATTERN = "{NEXT_BATCH_ID_PATTERN}";
     public static final String BATCH_START_TS_PATTERN = "{BATCH_START_TIMESTAMP_PLACEHOLDER}";
     private static final String BATCH_END_TS_PATTERN = "{BATCH_END_TIMESTAMP_PLACEHOLDER}";
+    private static final String ADDITIONAL_METADATA_KEY_PATTERN = "{ADDITIONAL_METADATA_KEY_PLACEHOLDER}";
+    private static final String ADDITIONAL_METADATA_VALUE_PATTERN = "{ADDITIONAL_METADATA_VALUE_PLACEHOLDER}";
+    private static final String ADDITIONAL_METADATA_PLACEHOLDER_PATTERN = "{\"" + ADDITIONAL_METADATA_KEY_PATTERN + "\":\"" + ADDITIONAL_METADATA_VALUE_PATTERN + "\"}";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RelationalIngestor.class);
 
@@ -146,6 +151,12 @@ public abstract class RelationalIngestorAbstract
     public abstract Optional<String> bulkLoadEventIdValue();
 
     @Default
+    public SqlLogging sqlLogging()
+    {
+        return SqlLogging.DISABLED;
+    }
+
+    @Default
     public String batchSuccessStatusValue()
     {
         return MetadataUtils.MetaTableStatus.DONE.toString();
@@ -156,21 +167,6 @@ public abstract class RelationalIngestorAbstract
     public abstract IngestMode ingestMode();
 
     public abstract RelationalSink relationalSink();
-
-    @Derived
-    protected PlannerOptions plannerOptions()
-    {
-        return PlannerOptions.builder()
-            .cleanupStagingData(cleanupStagingData())
-            .collectStatistics(collectStatistics())
-            .enableSchemaEvolution(enableSchemaEvolution())
-            .createStagingDataset(createStagingDataset())
-            .enableConcurrentSafety(enableConcurrentSafety())
-            .putAllAdditionalMetadata(additionalMetadata())
-            .bulkLoadEventIdValue(bulkLoadEventIdValue())
-            .batchSuccessStatusValue(batchSuccessStatusValue())
-            .build();
-    }
 
     @Derived
     protected TransformOptions transformOptions()
@@ -216,6 +212,7 @@ public abstract class RelationalIngestorAbstract
     {
         LOGGER.info("Invoked initExecutor method, will initialize the executor");
         this.executor = relationalSink().getRelationalExecutor(connection);
+        this.executor.setSqlLogging(sqlLogging());
         return executor;
     }
 
@@ -226,6 +223,7 @@ public abstract class RelationalIngestorAbstract
     {
         LOGGER.info("Invoked initExecutor method, will initialize the executor");
         this.executor = executor;
+        this.executor.setSqlLogging(sqlLogging());
     }
 
     /*
@@ -444,8 +442,8 @@ public abstract class RelationalIngestorAbstract
         if (enableConcurrentSafety())
         {
             LOGGER.info("Concurrent safety is enabled, Initializing lock");
-            Map<String, String> placeHolderKeyValues = new HashMap<>();
-            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
             try
             {
                 executor.executePhysicalPlan(generatorResult.initializeLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
@@ -463,8 +461,8 @@ public abstract class RelationalIngestorAbstract
         if (enableConcurrentSafety())
         {
             LOGGER.info("Concurrent safety is enabled, Acquiring lock");
-            Map<String, String> placeHolderKeyValues = new HashMap<>();
-            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+            Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+            placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
             executor.executePhysicalPlan(generatorResult.acquireLockSqlPlan().orElseThrow(IllegalStateException::new), placeHolderKeyValues);
         }
     }
@@ -588,7 +586,14 @@ public abstract class RelationalIngestorAbstract
         // 7. Enrich temp Datasets
         enrichedDatasets = enrichedIngestMode.accept(new TempDatasetsEnricher(enrichedDatasets));
 
-        // 8. generate sql plans
+        // 8. Use a placeholder for additional metadata
+        Map<String, Object> placeholderAdditionalMetadata = new HashMap<>();
+        if (!additionalMetadata().isEmpty())
+        {
+            placeholderAdditionalMetadata = Collections.singletonMap(ADDITIONAL_METADATA_KEY_PATTERN, ADDITIONAL_METADATA_VALUE_PATTERN);
+        }
+
+        // 9. generate sql plans
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(enrichedIngestMode)
                 .relationalSink(relationalSink())
@@ -597,17 +602,18 @@ public abstract class RelationalIngestorAbstract
                 .createStagingDataset(createStagingDataset())
                 .enableSchemaEvolution(enableSchemaEvolution())
                 .addAllSchemaEvolutionCapabilitySet(schemaEvolutionCapabilitySet())
+                .enableConcurrentSafety(enableConcurrentSafety())
                 .caseConversion(caseConversion())
                 .executionTimestampClock(executionTimestampClock())
                 .batchStartTimestampPattern(BATCH_START_TS_PATTERN)
                 .batchEndTimestampPattern(BATCH_END_TS_PATTERN)
                 .batchIdPattern(BATCH_ID_PATTERN)
-                .putAllAdditionalMetadata(additionalMetadata())
+                .putAllAdditionalMetadata(placeholderAdditionalMetadata)
                 .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .batchSuccessStatusValue(batchSuccessStatusValue())
                 .build();
 
-        planner = Planners.get(enrichedDatasets, enrichedIngestMode, plannerOptions(), relationalSink().capabilities());
+        planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
         generatorResult = generator.generateOperations(enrichedDatasets, resourcesBuilder.build(), planner, enrichedIngestMode);
         datasetsInitialized = true;
         return enrichedDatasets;
@@ -624,17 +630,17 @@ public abstract class RelationalIngestorAbstract
          {
              Optional<DataSplitRange> dataSplitRange = Optional.ofNullable(dataSplitsCount == 0 ? null : dataSplitRanges.get(dataSplitIndex));
              // Extract the Placeholders values
-             Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange);
+             Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, dataSplitRange);
              // Load main table, extract stats and update metadata table
              Map<StatisticName, Object> statisticsResultMap = loadData(executor, generatorResult, placeHolderKeyValues);
              IngestorResult result = IngestorResult.builder()
                  .putAllStatisticByName(statisticsResultMap)
                  .updatedDatasets(datasets)
-                 .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null))
+                 .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null))
                  .dataSplitRange(dataSplitRange)
                  .schemaEvolutionSql(schemaEvolutionResult.schemaEvolutionSql())
                  .status(IngestStatus.SUCCEEDED)
-                 .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
+                 .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
                  .build();
              results.add(result);
              dataSplitIndex++;
@@ -645,7 +651,7 @@ public abstract class RelationalIngestorAbstract
          return results;
     }
 
-    private Map<StatisticName, Object> loadData(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Map<String, String> placeHolderKeyValues)
+    private Map<StatisticName, Object> loadData(Executor<SqlGen, TabularData, SqlPlan> executor, GeneratorResult generatorResult, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         // Extract preIngest Statistics
         Map<StatisticName, Object> statisticsResultMap = new HashMap<>(
@@ -657,7 +663,7 @@ public abstract class RelationalIngestorAbstract
             executeStatisticsPhysicalPlan(executor, generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues));
         // Execute metadata ingest SqlPlan
         // add batchEndTimestamp
-        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
         executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
         return statisticsResultMap;
     }
@@ -668,7 +674,7 @@ public abstract class RelationalIngestorAbstract
                                                  IngestMode ingestMode, SchemaEvolutionResult schemaEvolutionResult)
     {
         List<IngestorResult> results = new ArrayList<>();
-        Map<String, String> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
+        Map<String, PlaceholderValue> placeHolderKeyValues = extractPlaceHolderKeyValues(datasets, executor, planner, transformer, ingestMode, Optional.empty());
 
         // Execute ingest SqlPlan
         IngestorResult result = relationalSink().performBulkLoad(datasets, executor, generatorResult.ingestSqlPlan(), generatorResult.postIngestStatisticsSqlPlan(), placeHolderKeyValues);
@@ -678,8 +684,8 @@ public abstract class RelationalIngestorAbstract
         }
         // Execute metadata ingest SqlPlan
         // add batchEndTimestamp
-        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
-        placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, result.status().name());
+        placeHolderKeyValues.put(BATCH_END_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
+        placeHolderKeyValues.put(BULK_LOAD_BATCH_STATUS_PATTERN, PlaceholderValue.of(result.status().name(), false));
         executor.executePhysicalPlan(generatorResult.metadataIngestSqlPlan(), placeHolderKeyValues);
         results.add(result);
         // Clean up
@@ -745,7 +751,7 @@ public abstract class RelationalIngestorAbstract
 
     private Map<StatisticName, Object> executeStatisticsPhysicalPlan(Executor<SqlGen, TabularData, SqlPlan> executor,
                                                                      Map<StatisticName, SqlPlan> statisticsSqlPlan,
-                                                                     Map<String, String> placeHolderKeyValues)
+                                                                     Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         Map<StatisticName, Object> results = new HashMap<>();
         for (Map.Entry<StatisticName, SqlPlan> entry: statisticsSqlPlan.entrySet())
@@ -772,18 +778,22 @@ public abstract class RelationalIngestorAbstract
         return results;
     }
 
-    private Map<String, String> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
+    private Map<String, PlaceholderValue> extractPlaceHolderKeyValues(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
                                                             Planner planner, Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode,
                                                             Optional<DataSplitRange> dataSplitRange)
     {
-        Map<String, String> placeHolderKeyValues = new HashMap<>();
+        Map<String, PlaceholderValue> placeHolderKeyValues = new HashMap<>();
+
+        // Handle batch ID
         Optional<Long> nextBatchId = ApiUtils.getNextBatchId(datasets, executor, transformer);
-        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
         if (nextBatchId.isPresent())
         {
             LOGGER.info(String.format("Obtained the next Batch id: %s", nextBatchId.get()));
-            placeHolderKeyValues.put(BATCH_ID_PATTERN, nextBatchId.get().toString());
+            placeHolderKeyValues.put(BATCH_ID_PATTERN, PlaceholderValue.of(nextBatchId.get().toString(), false));
         }
+
+        // Handle optimization filters
+        Optional<Map<OptimizationFilter, Pair<Object, Object>>> optimizationFilters = ApiUtils.getOptimizationFilterBounds(datasets, executor, transformer, ingestMode);
         if (optimizationFilters.isPresent())
         {
             for (OptimizationFilter filter : optimizationFilters.get().keySet())
@@ -792,13 +802,13 @@ public abstract class RelationalIngestorAbstract
                 Object upperBound = optimizationFilters.get().get(filter).getTwo();
                 if (lowerBound instanceof Date)
                 {
-                    placeHolderKeyValues.put(filter.lowerBoundPattern(), lowerBound.toString());
-                    placeHolderKeyValues.put(filter.upperBoundPattern(), upperBound.toString());
+                    placeHolderKeyValues.put(filter.lowerBoundPattern(), PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(filter.upperBoundPattern(), PlaceholderValue.of(upperBound.toString(), true));
                 }
                 else if (lowerBound instanceof Number)
                 {
-                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, lowerBound.toString());
-                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, upperBound.toString());
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.lowerBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(lowerBound.toString(), true));
+                    placeHolderKeyValues.put(SINGLE_QUOTE + filter.upperBoundPattern() + SINGLE_QUOTE, PlaceholderValue.of(upperBound.toString(), true));
                 }
                 else
                 {
@@ -806,13 +816,29 @@ public abstract class RelationalIngestorAbstract
                 }
             }
         }
+
+        // Handle data splits
         if (planner.dataSplitExecutionSupported() && dataSplitRange.isPresent())
         {
-            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.get().lowerBound()));
-            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, String.valueOf(dataSplitRange.get().upperBound()));
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_LOWER_BOUND_PLACEHOLDER + SINGLE_QUOTE, PlaceholderValue.of(String.valueOf(dataSplitRange.get().lowerBound()), false));
+            placeHolderKeyValues.put(SINGLE_QUOTE + LogicalPlanUtils.DATA_SPLIT_UPPER_BOUND_PLACEHOLDER + SINGLE_QUOTE, PlaceholderValue.of(String.valueOf(dataSplitRange.get().upperBound()), false));
         }
-        placeHolderKeyValues.put(BATCH_START_TS_PATTERN, LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER));
+
+        // Handle additional metadata
+        try
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            String additionalMetadataString = objectMapper.writeValueAsString(additionalMetadata());
+            placeHolderKeyValues.put(ADDITIONAL_METADATA_PLACEHOLDER_PATTERN, PlaceholderValue.of(additionalMetadataString, true));
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new IllegalStateException("Unable to parse additional metadata");
+        }
+
+        // Handle batch timestamp
+        placeHolderKeyValues.put(BATCH_START_TS_PATTERN, PlaceholderValue.of(LocalDateTime.now(executionTimestampClock()).format(DATE_TIME_FORMATTER), false));
+
         return placeHolderKeyValues;
     }
-
 }

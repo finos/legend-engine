@@ -48,6 +48,12 @@
             <artifactId>jackson-databind</artifactId>
         </dependency>
 
+        <!-- LOGGING -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
         <!-- MISC -->
         <dependency>
             <groupId>commons-codec</groupId>
