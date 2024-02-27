@@ -43,10 +43,10 @@ public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFil
     {
         // Only supported for CSV
         boolean dryRunSupported = false;
-        if (fileFormat().isPresent() && fileFormat().get() instanceof StandardFileFormatAbstract)
+        if (fileFormat().isPresent() && fileFormat().get() instanceof StandardFileFormat)
         {
-            StandardFileFormatAbstract standardFileFormatAbstract = (StandardFileFormatAbstract) fileFormat().get();
-            dryRunSupported = standardFileFormatAbstract.formatType().equals(FileFormatType.CSV);
+            StandardFileFormat standardFileFormat = (StandardFileFormat) fileFormat().get();
+            dryRunSupported = standardFileFormat.formatType().equals(FileFormatType.CSV);
         }
 
         return dryRunSupported;

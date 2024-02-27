@@ -223,7 +223,7 @@ public class CopyStatement implements DMLStatement
     {
         if (srcTable == null)
         {
-            throw new SqlDomException("selectStatement is mandatory for Copy Table Command");
+            throw new SqlDomException("srcTable is mandatory for Copy Table Command");
         }
 
         if (table == null)

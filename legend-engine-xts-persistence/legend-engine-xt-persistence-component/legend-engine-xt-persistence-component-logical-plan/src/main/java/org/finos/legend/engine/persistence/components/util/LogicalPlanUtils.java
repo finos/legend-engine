@@ -93,12 +93,6 @@ public class LogicalPlanUtils
     {
     }
 
-    public static String generateTableNameWithSuffix(String tableName, String suffix)
-    {
-        UUID uuid = UUID.randomUUID();
-        return tableName + UNDERSCORE + suffix + UNDERSCORE + uuid;
-    }
-
     public static Value INFINITE_BATCH_ID()
     {
         return InfiniteBatchIdValue.builder().build();

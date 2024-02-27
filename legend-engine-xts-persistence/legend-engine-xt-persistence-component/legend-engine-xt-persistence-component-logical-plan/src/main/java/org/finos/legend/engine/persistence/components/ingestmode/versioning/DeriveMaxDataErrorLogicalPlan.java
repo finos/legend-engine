@@ -14,28 +14,29 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
+import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.values.*;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeriveDataErrorsLogicalPlan implements VersioningStrategyVisitor<LogicalPlan>
+public class DeriveMaxDataErrorLogicalPlan implements VersioningStrategyVisitor<LogicalPlan>
 {
-    private List<String> primaryKeys;
-    private List<String> remainingColumns;
-    private Dataset tempStagingDataset;
-    private int sampleRowCount;
 
-    public DeriveDataErrorsLogicalPlan(List<String> primaryKeys, List<String> remainingColumns, Dataset tempStagingDataset, int sampleRowCount)
+    List<String> primaryKeys;
+    List<String> remainingColumns;
+    Dataset tempStagingDataset;
+
+    public DeriveMaxDataErrorLogicalPlan(List<String> primaryKeys, List<String> remainingColumns, Dataset tempStagingDataset)
     {
         this.primaryKeys = primaryKeys;
         this.remainingColumns = remainingColumns;
         this.tempStagingDataset = tempStagingDataset;
-        this.sampleRowCount = sampleRowCount;
     }
 
     @Override
@@ -49,7 +50,7 @@ public class DeriveDataErrorsLogicalPlan implements VersioningStrategyVisitor<Lo
     {
         if (maxVersionStrategy.performStageVersioning())
         {
-            return getLogicalPlanForDataErrors(maxVersionStrategy.versioningField());
+            return getLogicalPlanForDataErrorCheck(maxVersionStrategy.versioningField());
         }
         else
         {
@@ -62,7 +63,7 @@ public class DeriveDataErrorsLogicalPlan implements VersioningStrategyVisitor<Lo
     {
         if (allVersionsStrategyAbstract.performStageVersioning())
         {
-            return getLogicalPlanForDataErrors(allVersionsStrategyAbstract.versioningField());
+            return getLogicalPlanForDataErrorCheck(allVersionsStrategyAbstract.versioningField());
         }
         else
         {
@@ -70,9 +71,10 @@ public class DeriveDataErrorsLogicalPlan implements VersioningStrategyVisitor<Lo
         }
     }
 
-    private LogicalPlan getLogicalPlanForDataErrors(String versionField)
+    private LogicalPlan getLogicalPlanForDataErrorCheck(String versionField)
     {
-        String distinctRowCount = "legend_persistence_error_count";
+        String maxDataErrorAlias = DedupAndVersionErrorSqlType.MAX_DATA_ERRORS.name();
+        String distinctRowCount = "legend_persistence_distinct_rows";
         List<Value> pKsAndVersion = new ArrayList<>();
         for (String pk: primaryKeys)
         {
@@ -92,16 +94,22 @@ public class DeriveDataErrorsLogicalPlan implements VersioningStrategyVisitor<Lo
                 .alias(distinctRowCount)
                 .build();
 
-        Selection selectDataError = Selection.builder()
+        Selection selectCountDataError = Selection.builder()
                 .source(tempStagingDataset)
                 .groupByFields(pKsAndVersion)
-                .addAllFields(pKsAndVersion)
                 .addFields(countDistinct)
-                .havingCondition(GreaterThan.of(FieldValue.builder().fieldName(distinctRowCount).build(), ObjectValue.of(1)))
-                .limit(sampleRowCount)
+                .alias(tempStagingDataset.datasetReference().alias())
                 .build();
-
-        return LogicalPlan.builder().addOps(selectDataError).build();
+        FunctionImpl maxCount = FunctionImpl.builder()
+                .functionName(FunctionName.MAX)
+                .addValue(FieldValue.builder().fieldName(distinctRowCount).build())
+                .alias(maxDataErrorAlias)
+                .build();
+        Selection maxDataErrorCount = Selection.builder()
+                .source(selectCountDataError)
+                .addFields(maxCount)
+                .build();
+        return LogicalPlan.builder().addOps(maxDataErrorCount).build();
     }
 
 }

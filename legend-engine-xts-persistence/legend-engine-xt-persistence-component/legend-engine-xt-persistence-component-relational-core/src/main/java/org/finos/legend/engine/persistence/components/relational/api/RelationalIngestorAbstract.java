@@ -43,6 +43,7 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.finos.legend.engine.persistence.components.util.SqlLogging;
 import org.immutables.value.Value.Default;
@@ -533,6 +534,7 @@ public abstract class RelationalIngestorAbstract
     {
         if (enrichedIngestMode instanceof BulkLoad)
         {
+            executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan());
             return relationalSink().performDryRun(executor, generatorResult.dryRunSqlPlan(), sampleRowCount());
         }
         else
@@ -662,6 +664,7 @@ public abstract class RelationalIngestorAbstract
                 .putAllAdditionalMetadata(placeholderAdditionalMetadata)
                 .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .batchSuccessStatusValue(batchSuccessStatusValue())
+                .sampleRowCount(sampleRowCount())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
@@ -753,7 +756,7 @@ public abstract class RelationalIngestorAbstract
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
 
         externalDatasetReference = externalDatasetReference
-            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : LogicalPlanUtils.generateTableNameWithSuffix(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING))
+            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING))
             .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
             .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
             .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
