@@ -34,7 +34,7 @@ import static org.finos.legend.engine.repl.relational.schema.MetadataReader.getT
 
 public class RelationalReplExtension implements ReplExtension
 {
-    private final Client client;
+    private Client client;
 
     static
     {
@@ -47,7 +47,7 @@ public class RelationalReplExtension implements ReplExtension
         return "relational";
     }
 
-    public RelationalReplExtension(Client client)
+    public void setClient(Client client)
     {
         this.client = client;
     }

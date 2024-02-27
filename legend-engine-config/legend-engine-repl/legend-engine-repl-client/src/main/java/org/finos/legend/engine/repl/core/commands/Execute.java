@@ -71,7 +71,7 @@ public class Execute implements Command
         try
         {
             MutableList<Candidate> list = Lists.mutable.empty();
-            CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.buildState().makeString("\n")).complete(inScope);
+            CompletionResult result = new org.finos.legend.engine.repl.autocomplete.Completer(this.client.buildState().makeString("\n"), this.client.getCompleterExtensions()).complete(inScope);
             if (result.getEngineException() == null)
             {
                 list.addAll(result.getCompletion().collect(this::buildCandidate));

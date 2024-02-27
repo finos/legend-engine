@@ -17,6 +17,7 @@ package org.finos.legend.engine.repl.core;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.result.Result;
+import org.finos.legend.engine.repl.client.Client;
 import org.finos.legend.engine.shared.core.extension.LegendExtension;
 
 public interface ReplExtension extends LegendExtension
@@ -46,4 +47,6 @@ public interface ReplExtension extends LegendExtension
     boolean supports(Result res);
 
     String print(Result res);
+
+    void setClient(Client client);
 }

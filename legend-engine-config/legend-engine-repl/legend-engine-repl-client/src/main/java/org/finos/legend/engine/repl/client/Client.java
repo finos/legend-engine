@@ -17,6 +17,7 @@ package org.finos.legend.engine.repl.client;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.block.predicate.checked.CheckedPredicate;
+import org.finos.legend.engine.repl.autocomplete.CompleterExtension;
 import org.finos.legend.engine.repl.core.Command;
 import org.finos.legend.engine.repl.core.ReplExtension;
 import org.finos.legend.engine.repl.core.commands.*;
@@ -39,18 +40,22 @@ public class Client
     private final Terminal terminal;
     private final LineReader reader;
     private boolean debug = false;
-
     private MutableList<ReplExtension> replExtensions = Lists.mutable.empty();
+    private MutableList<CompleterExtension> completerExtensions = Lists.mutable.empty();
 
     public static void main(String[] args) throws Exception
     {
-        new Client().loop();
+        new Client(Lists.mutable.empty(), Lists.mutable.empty()).loop();
     }
 
     public MutableList<Command> commands;
 
-    public Client() throws Exception
+    public Client(MutableList<ReplExtension> replExtensions, MutableList<CompleterExtension> completerExtensions) throws Exception
     {
+        replExtensions.forEach(c -> c.setClient(this));
+        this.replExtensions = replExtensions;
+        this.completerExtensions = completerExtensions;
+
         this.terminal = TerminalBuilder.terminal();
 
         this.terminal.writer().println("\n" + Logos.logos.get((int) (Logos.logos.size() * Math.random())) + "\n");
@@ -157,7 +162,12 @@ public class Client
 
     public MutableList<ReplExtension> getReplExtensions()
     {
-        return replExtensions;
+        return this.replExtensions;
+    }
+
+    public MutableList<CompleterExtension> getCompleterExtensions()
+    {
+        return this.completerExtensions;
     }
 
     public MutableList<String> buildState()

@@ -29,19 +29,14 @@
     <dependencies>
 
         <dependency>
-            <groupId>org.jline</groupId>
-            <artifactId>jline</artifactId>
-        </dependency>
-
-
-        <!-- Pure Language Parser / Compiler -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m4</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m3-core</artifactId>
+        </dependency>
+
+        <!-- Pure Grammar -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-language-pure-grammar</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -51,19 +46,14 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-language-pure-grammar</artifactId>
-        </dependency>
+        <!-- Pure Grammar -->
+
+        <!-- Pure Compiler -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-shared-extensions</artifactId>
-        </dependency>
-        <!-- Pure Language Parser / Compiler -->
+        <!-- Pure Compiler -->
 
         <!-- Java compiled code support -->
         <dependency>
@@ -96,25 +86,12 @@
         </dependency>
         <!-- Pure Plan Generation / Execution -->
 
-        <!-- Relational -->
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-store-relational-pure</artifactId>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.finos.legend.engine</groupId>-->
-<!--            <artifactId>legend-engine-xt-relationalStore-executionPlan</artifactId>-->
-<!--        </dependency>-->
+        <!-- Extensions (use by Ext) -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-relationalStore-grammar</artifactId>
-            <scope>Runtime</scope>
+            <artifactId>legend-engine-shared-extensions</artifactId>
         </dependency>
-        <!-- Relational -->
+        <!-- Extensions (use by Ext) -->
 
         <dependency>
             <groupId>org.eclipse.collections</groupId>
@@ -123,6 +100,11 @@
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jline</groupId>
+            <artifactId>jline</artifactId>
         </dependency>
 
         <dependency>
@@ -139,7 +121,6 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
-
 
         <!-- TODO -> Itemize... Only using ErrorManagement import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException; -->
         <dependency>
