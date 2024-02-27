@@ -313,7 +313,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
                 "  {birthTime:DateTime[*] | test::Person.all()\n" +
                 "                               ->filter(p:test::Person[1] | $p.birthTime->in($birthTime))\n" +
                 "                               ->project([x | $x.fullName], ['fullName'])}\n" +
-                "}";st
+                "}";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
         Map<String, ?> paramWithEmptyList = Maps.mutable.with("birthTime", Lists.mutable.empty());
