@@ -265,7 +265,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         //assert that sql string contains placeholders that we need to process conditionally
         ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
         String sql = ((SQLExecutionNode)sqlNode).sqlQuery;
-        String expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}') and (${optionalVarPlaceHolderOperationSelector(birthTime![], '\"root\".birthTime = ${varPlaceHolderToString(birthTime![] \"\\'\" \"\\'\" {} \"null\")}', '\"root\".birthTime is null')}))"
+        String expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}') and (${optionalVarPlaceHolderOperationSelector(birthTime![], '\"root\".birthTime = ${varPlaceHolderToString(birthTime![] \"\\'\" \"\\'\" {} \"null\")}', '\"root\".birthTime is null')}))";
         Assert.assertEquals(expectedSQL, sql);
 
         //executePlan with freemarker placeholders in sql Query
@@ -299,7 +299,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
         String expectedResWithSingleValue = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where char_length(\\\"root\\\".fullName) in (2)\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P2\"]},{\"values\":[\"P3\"]},{\"values\":[\"P4\"]},{\"values\":[\"P5\"]}]}}";
         String expectedResWithMultipleValues = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where char_length(\\\"root\\\".fullName) in (2,3)\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[{\"values\":[\"P1\"]},{\"values\":[\"P10\"]},{\"values\":[\"P2\"]},{\"values\":[\"P3\"]},{\"values\":[\"P4\"]},{\"values\":[\"P5\"]}]}}";
 
-        Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));
+        Assert.assertEquals(expectedResWithEmptyList, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithEmptyList)));stri
         Assert.assertEquals(expectedResWithSingleValue, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithSingleValue)));
         Assert.assertEquals(expectedResWithMultipleValues, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, paramWithMultipleValues)));
     }
@@ -313,7 +313,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
                 "  {birthTime:DateTime[*] | test::Person.all()\n" +
                 "                               ->filter(p:test::Person[1] | $p.birthTime->in($birthTime))\n" +
                 "                               ->project([x | $x.fullName], ['fullName'])}\n" +
-                "}";
+                "}";st
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
         Map<String, ?> paramWithEmptyList = Maps.mutable.with("birthTime", Lists.mutable.empty());
