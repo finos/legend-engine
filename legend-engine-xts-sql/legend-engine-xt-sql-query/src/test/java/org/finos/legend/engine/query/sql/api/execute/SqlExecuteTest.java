@@ -35,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Enum;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.EnumSchemaColumn;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.Parameter;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveSchemaColumn;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveType;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
@@ -296,6 +297,8 @@ public class SqlExecuteTest
                 primitiveColumn("Col", PrimitiveType.Integer)
         );
 
+        schema.parameters = FastList.newListWith(parameter("_1", PrimitiveType.Integer));
+
         allSchemaTests("SELECT 1 + ? AS \"Col\" FROM service.\"/testService\"", FastList.newList(), schema);
     }
 
@@ -306,6 +309,8 @@ public class SqlExecuteTest
         schema.columns = FastList.newListWith(
                 primitiveColumn("Col", PrimitiveType.Integer)
         );
+
+        schema.parameters = FastList.newListWith(parameter("_1", PrimitiveType.Integer));
 
         allSchemaTests("SELECT 1 + ? AS \"Col\" FROM service.\"/testService\"", FastList.newListWith(1), schema);
     }
@@ -318,7 +323,7 @@ public class SqlExecuteTest
                 primitiveColumn("Id", PrimitiveType.Integer)
         );
 
-        allSchemaTests("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"", FastList.newListWith(1), schema);
+        allSchemaTests("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"", FastList.newList(), schema);
     }
 
     private static PrimitiveSchemaColumn primitiveColumn(String name, PrimitiveType type)
@@ -346,5 +351,14 @@ public class SqlExecuteTest
         e.values = FastList.newListWith(values);
 
         return e;
+    }
+
+    private static Parameter parameter(String name, PrimitiveType type)
+    {
+        Parameter param = new Parameter();
+        param.name = name;
+        param.type = type;
+
+        return param;
     }
 }
