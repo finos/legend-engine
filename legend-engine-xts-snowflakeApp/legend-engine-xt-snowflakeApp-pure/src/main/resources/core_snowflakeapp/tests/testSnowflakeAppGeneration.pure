@@ -47,7 +47,7 @@ function <<test.Test>> meta::external::function::activator::snowflakeApp::tests:
 function <<test.Test>> meta::external::function::activator::snowflakeApp::tests::testRelationalfunctionWithDateTimeHardCoded():Boolean[1]
 {
   // the time zone info in the connection should be ignored in the generated sql
-  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = \'2024-02-27 10:51:53\'::timestamp $$;';
+  let expected = 'APP1() RETURNS TABLE ("FIRSTNAME" VARCHAR,"LASTNAME" VARCHAR) LANGUAGE SQL AS $$ select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName" from personTable as "root" where "root".LAST_UPDATED = \'2024-02-27 16:21:53\'::timestamp $$;';
   assertSnowflakeArtifactForFunction( meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded__TabularDataSet_1_, $expected);
 }
 
@@ -116,7 +116,7 @@ function meta::external::function::activator::snowflakeApp::tests::simpleRelatio
 
 function meta::external::function::activator::snowflakeApp::tests::simpleRelationalfunctionWithDateTimeHardCoded():TabularDataSet[1]
 {
-    PersonX.all()->filter(p|$p.lastUpdated == %2024-02-27T16:21:53+0530)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
+    PersonX.all()->filter(p|$p.lastUpdated == %2024-02-27T16:21:53)->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName')])
     ->from(simpleRelationalMapping, testRuntimeWithTimeZone(dbInc))
 }
 
