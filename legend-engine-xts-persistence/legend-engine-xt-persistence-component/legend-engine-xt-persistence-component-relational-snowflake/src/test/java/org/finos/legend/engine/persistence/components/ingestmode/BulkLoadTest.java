@@ -52,6 +52,8 @@ import static org.finos.legend.engine.persistence.components.common.StatisticNam
 public class BulkLoadTest
 {
     private static final String APPEND_TIME = "append_time";
+    private static final String ingestRunId = "075605e3-bada-47d7-9ae9-7138f392fe22";
+
 
     private static Field col1 = Field.builder()
             .name("col_int")
@@ -117,6 +119,7 @@ public class BulkLoadTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .bulkLoadEventIdValue("task123")
                 .batchIdPattern("{NEXT_BATCH_ID}")
+                .ingestRunId(ingestRunId)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -141,9 +144,9 @@ public class BulkLoadTest
         String expectedMetadataIngestSql = "INSERT INTO batch_metadata (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"batch_source_info\") " +
                 "(SELECT 'my_name',{NEXT_BATCH_ID},'2000-01-01 00:00:00.000000',SYSDATE(),'{BULK_LOAD_BATCH_STATUS_PLACEHOLDER}',PARSE_JSON('{\"event_id\":\"task123\",\"file_patterns\":[\"/path/xyz/file1.csv\",\"/path/xyz/file2.csv\"]}'))";
 
-        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation\"" +
+        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
                 "(\"col_int\" INTEGER,\"col_integer\" INTEGER)";
-        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation\"  FROM my_location " +
+        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\"  FROM my_location " +
                 "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
                 "FILE_FORMAT = (ERROR_ON_COLUMN_COUNT_MISMATCH = false, FIELD_DELIMITER = ',', TYPE = 'CSV') " +
                 "ON_ERROR = 'ABORT_STATEMENT' " +
@@ -194,6 +197,7 @@ public class BulkLoadTest
                 .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .batchSuccessStatusValue("SUCCEEDED")
                 .executionTimestampClock(fixedClock_2000_01_01)
+                .ingestRunId(ingestRunId)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -262,6 +266,7 @@ public class BulkLoadTest
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .caseConversion(CaseConversion.TO_UPPER)
+                .ingestRunId(ingestRunId)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -362,6 +367,7 @@ public class BulkLoadTest
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
                     .bulkLoadEventIdValue("task123")
+                    .ingestRunId(ingestRunId)
                     .build();
 
             GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagingDataset));
@@ -402,6 +408,7 @@ public class BulkLoadTest
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .bulkLoadEventIdValue("task123")
+                .ingestRunId(ingestRunId)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -463,6 +470,7 @@ public class BulkLoadTest
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
             .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -533,6 +541,7 @@ public class BulkLoadTest
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
             .bulkLoadEventIdValue("task123")
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -597,6 +606,7 @@ public class BulkLoadTest
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
             .bulkLoadEventIdValue("task123")
+            .ingestRunId(ingestRunId)
             .build();
 
         GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
@@ -618,9 +628,9 @@ public class BulkLoadTest
             "FILE_FORMAT = (FIELD_DELIMITER = ',', TYPE = 'CSV') " +
             "ON_ERROR = 'SKIP_FILE'";
 
-        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation\"" +
+        String expectedDryRunPreActionsSql = "CREATE TEMPORARY TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
                 "(\"col_int\" INTEGER,\"col_integer\" INTEGER)";
-        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation\"  FROM my_location " +
+        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\"  FROM my_location " +
                 "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
                 "FILE_FORMAT = (ERROR_ON_COLUMN_COUNT_MISMATCH = false, FIELD_DELIMITER = ',', TYPE = 'CSV') " +
                 "ON_ERROR = 'SKIP_FILE' " +

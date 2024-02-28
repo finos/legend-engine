@@ -77,13 +77,13 @@ public class UnitemporalSnapshotBatchIdBasedTest extends UnitmemporalSnapshotBat
                 "SET sink.`batch_id_out` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')-1 " +
                 "WHERE (sink.`batch_id_out` = 999999999) " +
                 "AND (NOT (EXISTS " +
-                "(SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
+                "(SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` = stage.`digest`))))";
 
         String expectedUpsertQuery = "INSERT INTO `mydb`.`main` " +
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id_in`, `batch_id_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN'),999999999 " +
-                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE NOT (stage.`digest` IN (SELECT sink.`digest` FROM `mydb`.`main` as sink WHERE sink.`batch_id_out` = 999999999)))";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMainTableBatchIdBasedCreateQuery, preActionsSql.get(0));

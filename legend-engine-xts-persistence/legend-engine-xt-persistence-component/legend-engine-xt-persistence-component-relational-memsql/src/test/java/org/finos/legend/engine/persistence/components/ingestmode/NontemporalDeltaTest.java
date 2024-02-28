@@ -32,10 +32,10 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
             "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
 
     protected String incomingRecordCountWithSplitsAndDuplicates = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` " +
-            "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE "
+            "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE "
             + "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
 
-    protected String incomingRecordCountWithSplitsTempTable = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE " +
+    protected String incomingRecordCountWithSplitsTempTable = "SELECT COUNT(*) as `incomingRecordCount` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE " +
             "(stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
     protected String rowsTerminated = "SELECT 0 as `rowsTerminated`";
     protected String rowsDeleted = "SELECT 0 as `rowsDeleted`";
@@ -86,7 +86,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         List<String> metaIngestSqlList = operations.metadataIngestSql();
 
         String updateSql = "UPDATE `mydb`.`main` as sink " +
-                "INNER JOIN `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "INNER JOIN `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
                 "SET sink.`id` = stage.`id`," +
                 "sink.`name` = stage.`name`," +
@@ -100,7 +100,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000'," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
-                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
@@ -121,7 +121,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     {
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN " +
-                "(SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
+                "(SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) " +
                 "SET sink.`id` = stage.`id`," +
                 "sink.`name` = stage.`name`," +
@@ -133,7 +133,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
-                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
                 "AND (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
 
@@ -197,7 +197,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
     {
         String updateSql = "UPDATE `mydb`.`main` as sink " +
                 "INNER JOIN " +
-                "(SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
+                "(SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) as stage " +
                 "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (sink.`digest` <> stage.`digest`) SET " +
                 "sink.`id` = stage.`id`," +
                 "sink.`name` = stage.`name`," +
@@ -210,7 +210,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,'2000-01-01 00:00:00.000000'," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
-                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
                 "AND (NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)))))";
 
@@ -425,7 +425,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String updateSql = "UPDATE `mydb`.`main` as sink " +
             "INNER JOIN " +
-            "`mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "`mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "ON ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND (stage.`version` > sink.`version`) " +
             "SET sink.`id` = stage.`id`,sink.`name` = stage.`name`,sink.`amount` = stage.`amount`,sink.`biz_date` = stage.`biz_date`,sink.`digest` = stage.`digest`,sink.`version` = stage.`version`," +
             "sink.`batch_id` = (SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')";
@@ -433,7 +433,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `version`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`,stage.`version`," +
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
-            "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+            "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink WHERE (sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`))))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQuery, preActionsSqlList.get(0));
@@ -524,7 +524,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
 
         String updateSql = "UPDATE `MYDB`.`MAIN` as sink " +
             "INNER JOIN " +
-            "`MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage " +
+            "`MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` as stage " +
             "ON ((sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`)) AND (stage.`VERSION` >= sink.`VERSION`) " +
             "SET sink.`ID` = stage.`ID`,sink.`NAME` = stage.`NAME`,sink.`AMOUNT` = stage.`AMOUNT`,sink.`BIZ_DATE` = stage.`BIZ_DATE`,sink.`DIGEST` = stage.`DIGEST`,sink.`VERSION` = stage.`VERSION`," +
             "sink.`BATCH_ID` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN')";
@@ -532,7 +532,7 @@ public class NontemporalDeltaTest extends NontemporalDeltaTestCases
         String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `DIGEST`, `VERSION`, `BATCH_ID`) " +
             "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`,stage.`DIGEST`,stage.`VERSION`," +
             "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN') " +
-            "FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage " +
+            "FROM `MYDB`.`STAGING_TEMP_STAGING_LP_YOSULF` as stage " +
             "WHERE NOT (EXISTS (SELECT * FROM `MYDB`.`MAIN` as sink WHERE (sink.`ID` = stage.`ID`) AND (sink.`NAME` = stage.`NAME`))))";
 
         Assertions.assertEquals(MemsqlTestArtifacts.expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase, preActionsSqlList.get(0));

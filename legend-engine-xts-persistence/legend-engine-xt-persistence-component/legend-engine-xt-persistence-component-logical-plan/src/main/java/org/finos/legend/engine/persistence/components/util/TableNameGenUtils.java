@@ -14,21 +14,27 @@
 
 package org.finos.legend.engine.persistence.components.util;
 
-import java.util.UUID;
-
 import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.UNDERSCORE;
 
 public class TableNameGenUtils
 {
-    private static String generateTableSuffix()
+    public static String LEGEND_PERSISTENCE_MARKER = "lp";
+    public static final String TEMP_DATASET_QUALIFIER = "temp";
+    public static final String TEMP_DATASET_ALIAS = "legend_persistence_temp";
+    public static final String TEMP_STAGING_DATASET_QUALIFIER = "temp_staging";
+    public static final String TEMP_STAGING_DATASET_ALIAS = "legend_persistence_temp_staging";
+
+    private static String generateTableSuffix(String ingestRunId)
     {
-        UUID uuid = UUID.randomUUID();
-        int uuidHashCode = Math.abs(uuid.hashCode());
-        return UNDERSCORE + "LP" + UNDERSCORE + Integer.toString(uuidHashCode, 36);
+        int hashCode = Math.abs(ingestRunId.hashCode());
+        return LEGEND_PERSISTENCE_MARKER + UNDERSCORE + Integer.toString(hashCode, 36);
     }
 
-    public static String generateTableName(String baseTableName, String suffix)
+    /*
+    Table name = <base_table>_<qualifier>_lp_<hash>
+     */
+    public static String generateTableName(String baseTableName, String qualifier, String ingestRunId)
     {
-        return baseTableName + UNDERSCORE + suffix + UNDERSCORE + generateTableSuffix();
+        return baseTableName + UNDERSCORE + qualifier + UNDERSCORE + generateTableSuffix(ingestRunId);
     }
 }

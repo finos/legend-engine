@@ -63,6 +63,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionNoDedupMaxVersion(operations);
@@ -98,6 +99,7 @@ public abstract class UnitmemporalSnapshotBatchIdDateTimeBasedTestCases extends 
                 .caseConversion(CaseConversion.TO_UPPER)
                 .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .batchSuccessStatusValue("SUCCEEDED")
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionWithUpperCaseOptimizerFilterDupsMaxVersion(operations);
