@@ -286,7 +286,11 @@ public class PureModel implements IPureModel
             LOGGER.info("{}", new LogInfo(pm, "GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES", nanosDurationToMillis(loadOtherElementsPostConnectionsAndRuntimesStart, loadOtherElementsPostConnectionsAndRuntimesEnd)));
             span.log("GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES");
 
+            long loadFunctionsStart = System.nanoTime();
             pureModelContextDataIndex.functions.forEach(this::processFifthPass);
+            long loadFunctionsEnd = System.nanoTime();
+            LOGGER.info("{}", new LogInfo(pm, "GRAPH_FUNCTIONS_BUILT", nanosDurationToMillis(loadFunctionsStart, loadFunctionsEnd)));
+            span.log("GRAPH_FUNCTIONS_BUILT");
 
             // Post Validation
             long postValidationStart = System.nanoTime();
@@ -493,7 +497,6 @@ public class PureModel implements IPureModel
         pure.mappings.forEach(this::processThirdPass);
         pure.mappings.forEach(this::processFourthPass);
         pure.mappings.forEach(this::processFifthPass);
-
     }
 
     public void loadConnectionsAndRuntimes(PureModelContextDataIndex pure)
