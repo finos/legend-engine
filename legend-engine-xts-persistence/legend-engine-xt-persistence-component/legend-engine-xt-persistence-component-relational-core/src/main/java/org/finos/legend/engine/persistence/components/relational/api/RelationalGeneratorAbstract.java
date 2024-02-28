@@ -256,7 +256,6 @@ public abstract class RelationalGeneratorAbstract
             acquireLockSqlPlan = Optional.of(transformer.generatePhysicalPlan(acquireLockLogicalPlan));
         }
 
-
         // schema evolution
         Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.empty();
         Optional<Dataset> schemaEvolutionDataset = Optional.empty();
@@ -318,12 +317,17 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan postActionsLogicalPlan = planner.buildLogicalPlanForPostActions(resources);
         SqlPlan postActionsSqlPlan = transformer.generatePhysicalPlan(postActionsLogicalPlan);
 
+        // post-cleanup
         LogicalPlan postCleanupLogicalPlan = planner.buildLogicalPlanForPostCleanup(resources);
         Optional<SqlPlan> postCleanupSqlPlan = Optional.empty();
         if (postCleanupLogicalPlan != null)
         {
             postCleanupSqlPlan = Optional.of(transformer.generatePhysicalPlan(postCleanupLogicalPlan));
         }
+
+        // dry-run post-cleanup
+        LogicalPlan dryRunPostCleanupLogicalPlan = planner.buildLogicalPlanForDryRunPostCleanup(resources);
+        SqlPlan dryRunPostCleanupSqlPlan = transformer.generatePhysicalPlan(dryRunPostCleanupLogicalPlan);
 
         // post-run statistics
         Map<StatisticName, LogicalPlan> postIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPostRunStatistics(resources);
@@ -345,6 +349,7 @@ public abstract class RelationalGeneratorAbstract
             .putAllDryRunValidationSqlPlan(dryRunValidationSqlPlan)
             .postActionsSqlPlan(postActionsSqlPlan)
             .postCleanupSqlPlan(postCleanupSqlPlan)
+            .dryRunPostCleanupSqlPlan(dryRunPostCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)
             .deduplicationAndVersioningSqlPlan(deduplicationAndVersioningSqlPlan)
             .putAllDeduplicationAndVersioningErrorChecksSqlPlan(deduplicationAndVersioningErrorChecksSqlPlan)

@@ -287,6 +287,11 @@ public abstract class Planner
         return LogicalPlan.of(Collections.emptyList());
     }
 
+    public LogicalPlan buildLogicalPlanForDryRunPostCleanup(Resources resources)
+    {
+        return LogicalPlan.of(Collections.emptyList());
+    }
+
     public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
     {
         // Save staging filters into batch_source_info column

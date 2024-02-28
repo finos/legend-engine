@@ -72,6 +72,8 @@ public abstract class GeneratorResultAbstract
 
     public abstract Optional<SqlPlan> postCleanupSqlPlan();
 
+    public abstract SqlPlan dryRunPostCleanupSqlPlan();
+
     public abstract Map<DedupAndVersionErrorSqlType, SqlPlan> deduplicationAndVersioningErrorChecksSqlPlan();
 
     public abstract Map<StatisticName, SqlPlan> preIngestStatisticsSqlPlan();
@@ -147,6 +149,11 @@ public abstract class GeneratorResultAbstract
     public List<String> postCleanupSql()
     {
         return postCleanupSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
+    }
+
+    public List<String> dryRunPostCleanupSql()
+    {
+        return dryRunPostCleanupSqlPlan().getSqlList();
     }
 
     public Map<StatisticName, String> preIngestStatisticsSql()

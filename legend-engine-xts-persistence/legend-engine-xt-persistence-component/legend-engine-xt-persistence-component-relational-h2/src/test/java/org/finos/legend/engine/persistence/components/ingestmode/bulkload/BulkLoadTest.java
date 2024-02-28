@@ -811,6 +811,7 @@ public class BulkLoadTest extends BaseTest
         System.out.println(operations.dryRunPreActionsSql());
         System.out.println(operations.dryRunSql());
         System.out.println(operations.dryRunValidationSql());
+        System.out.println(operations.dryRunPostCleanupSql());
 
 
         // Verify execution using ingestor
@@ -883,6 +884,7 @@ public class BulkLoadTest extends BaseTest
         System.out.println(operations.dryRunPreActionsSql());
         System.out.println(operations.dryRunSql());
         System.out.println(operations.dryRunValidationSql());
+        System.out.println(operations.dryRunPostCleanupSql());
 
 
         // Verify execution using ingestor

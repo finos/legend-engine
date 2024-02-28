@@ -29,11 +29,10 @@ import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetAdditionalProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.TableType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
+import org.finos.legend.engine.persistence.components.logicalplan.operations.Delete;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
@@ -159,6 +158,9 @@ class BulkLoadPlanner extends Planner
         }
         else
         {
+            // As data is actually being loaded in this case, we delete all data from the validation dataset first to ensure we are in a clean slate
+            operations.add(Delete.builder().dataset(validationDataset).build());
+
             List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset(), true);
             fieldsToSelect.add(MetadataFileNameField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
             fieldsToSelect.add(MetadataRowNumberField.builder().build());
@@ -356,6 +358,17 @@ class BulkLoadPlanner extends Planner
     }
 
     @Override
+    public LogicalPlan buildLogicalPlanForDryRunPostCleanup(Resources resources)
+    {
+        List<Operation> operations = new ArrayList<>();
+        if (capabilities.contains(Capability.DRY_RUN))
+        {
+            operations.add(Drop.of(true, validationDataset, false));
+        }
+        return LogicalPlan.of(operations);
+    }
+
+    @Override
     List<String> getDigestOrRemainingColumns()
     {
         return Collections.emptyList();
@@ -418,13 +431,13 @@ class BulkLoadPlanner extends Planner
                 .database(mainDataset().datasetReference().database())
                 .group(mainDataset().datasetReference().group())
                 .name(validationDatasetName)
-                .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
                 .build();
     }
 
     private Dataset getValidationDatasetWithMetaColumns()
     {
         String tableName = mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+        String validationDatasetName = TableNameGenUtils.generateTableName(tableName, "validation", options().ingestRunId());
 
         List<Field> fields = stagedFilesDataset.schema().fields().stream().map(field -> field.withType(FieldType.builder().dataType(DataType.VARCHAR).build()).withNullable(true)).collect(Collectors.toList());
         fields.add(Field.builder().name(FILE).type(FieldType.builder().dataType(DataType.VARCHAR).build()).build());
@@ -434,8 +447,7 @@ class BulkLoadPlanner extends Planner
             .schema(stagedFilesDataset.schema().withFields(fields))
             .database(mainDataset().datasetReference().database())
             .group(mainDataset().datasetReference().group())
-            .name(tableName + UNDERSCORE + "validation") // TODO legend_persistence
-            .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
+            .name(validationDatasetName)
             .build();
     }
 }
