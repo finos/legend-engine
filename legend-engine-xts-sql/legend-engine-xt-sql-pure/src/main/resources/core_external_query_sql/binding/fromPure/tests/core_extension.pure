@@ -28,6 +28,34 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
   )
 }
 
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testMostRecentDayOfWeek():Boolean[1]
+{
+  test(
+    'SELECT core_most_recent_day_of_week(\'monday\', StrictDate) as MostRecentDayOfWeek FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | mostRecentDayOfWeek($row.getStrictDate('StrictDate'), DayOfWeek.Monday), 'MostRecentDayOfWeek')
+        ])
+      }
+  )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testPreviousDayOfWeek():Boolean[1]
+{
+  test(
+    'SELECT core_previous_day_of_week(\'monday\', StrictDate) as PreviousDayOfWeek FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])->project([
+          col(row:TDSRow[1] | previousDayOfWeek($row.getStrictDate('StrictDate'), DayOfWeek.Monday), 'PreviousDayOfWeek')
+        ])
+      }
+  )
+}
+
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testUniqueValueOnly():Boolean[1]
 {
   test(
