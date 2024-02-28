@@ -15,8 +15,9 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtensions;
@@ -25,29 +26,41 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.*;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Profile;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_EngineRuntime_Impl;
+import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElement;
+import org.finos.legend.pure.generated.Root_meta_pure_data_DataElementReference;
+import org.finos.legend.pure.generated.Root_meta_pure_data_EmbeddedData;
+import org.finos.legend.pure.generated.Root_meta_pure_metamodel_relationship_Generalization_Impl;
+import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.QualifiedProperty;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.relationship.Generalization;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.generics.GenericType;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.Set;
 
 public class PackageableElementSecondPassBuilder implements PackageableElementVisitor<PackageableElement>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PackageableElementSecondPassBuilder.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PackageableElementSecondPassBuilder.class);
 
     private final CompileContext context;
 
@@ -81,8 +94,8 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
     {
         String fullPath = this.context.pureModel.buildPackageString(srcClass._package, srcClass.name);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class _class = this.context.pureModel.getClass(fullPath, srcClass.sourceInformation);
-        final GenericType _classGenericType = this.context.resolveGenericType(fullPath, srcClass.sourceInformation);
-        Set<String> uniqueSuperTypes = new HashSet<>();
+        GenericType _classGenericType = this.context.resolveGenericType(fullPath, srcClass.sourceInformation);
+        Set<String> uniqueSuperTypes = Sets.mutable.empty();
         MutableList<Generalization> generalization = ListIterate.collect(srcClass.superTypes, superType ->
         {
             // validate no duplicated class supertype
@@ -113,7 +126,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property<?, ?>> withMilestoningProperties = properties.select(p -> !restrictedMilestoningProperties.contains(p)).withAll(Milestoning.generateMilestoningProperties(_class, this.context));
 
         ProcessingContext ctx = new ProcessingContext("Class '" + this.context.pureModel.buildPackageString(srcClass._package, srcClass.name) + "' Second Pass");
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name));
+        ValueSpecification thisVariable = HelperModelBuilder.createThisVariableForClass(this.context, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name));
         ctx.addInferredVariables("this", thisVariable);
 
         RichIterable<QualifiedProperty<?>> qualifiedProperties = ListIterate.collect(srcClass.qualifiedProperties, HelperModelBuilder.processQualifiedPropertyFirstPass(this.context, _class, this.context.pureModel.buildPackageString(srcClass._package, srcClass.name), ctx));
@@ -166,17 +179,22 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
         String packageString = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = this.context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
         ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Second Pass");
-        MutableList<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> body;
+        MutableList<ValueSpecification> body;
         try
         {
             function.parameters.forEach(p -> p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
+            body = ListIterate.collect(function.body, expression -> expression.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
         }
         catch (Exception e)
         {
             LOGGER.warn(new LogInfo(null, LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
             throw e;
         }
+        FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
+        HelperModelBuilder.checkCompatibility(this.context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
         ctx.pop();
+        targetFunc._expressionSequence(body);
+        HelperFunctionBuilder.processFunctionSuites(function, targetFunc, this.context, ctx);
         return targetFunc;
     }
 
@@ -211,7 +229,7 @@ public class PackageableElementSecondPassBuilder implements PackageableElementVi
                     });
             pureMapping._includesAddAll(mappingIncludes);
             // validate no duplicated included mappings
-            Set<String> uniqueMappingIncludes = new HashSet<>();
+            Set<String> uniqueMappingIncludes = Sets.mutable.empty();
             mappingIncludes.forEach(includedMapping ->
             {
                 String mappingName = IncludedMappingHandler.parseIncludedMappingNameRecursively(includedMapping);
