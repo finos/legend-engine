@@ -199,8 +199,8 @@ public abstract class RelationalIngestorAbstract
     private GeneratorResult generatorResult;
     boolean mainDatasetExists;
     private Planner planner;
-
     private boolean datasetsInitialized = false;
+    private String ingestRunId;
 
     // ---------- API ----------
 
@@ -361,6 +361,11 @@ public abstract class RelationalIngestorAbstract
         Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         return ApiUtils.extractDatasetFilters(metadataDataset, executor, physicalPlan);
+    }
+
+    public String getIngestRunId()
+    {
+        return this.ingestRunId;
     }
 
     // ---------- UTILITY METHODS ----------
@@ -600,6 +605,9 @@ public abstract class RelationalIngestorAbstract
         {
             throw new IllegalStateException("Executor not initialized, call init(Connection) before invoking this method!");
         }
+        // 0. Set the run id
+        ingestRunId = UUID.randomUUID().toString();
+
         // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
         enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
@@ -665,6 +673,7 @@ public abstract class RelationalIngestorAbstract
                 .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .batchSuccessStatusValue(batchSuccessStatusValue())
                 .sampleRowCount(sampleRowCount())
+                .ingestRunId(ingestRunId)
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
@@ -756,7 +765,7 @@ public abstract class RelationalIngestorAbstract
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
 
         externalDatasetReference = externalDatasetReference
-            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING))
+            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING, ingestRunId))
             .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
             .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
             .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
@@ -811,20 +820,6 @@ public abstract class RelationalIngestorAbstract
         for (Map.Entry<StatisticName, SqlPlan> entry: statisticsSqlPlan.entrySet())
         {
             List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue(), placeHolderKeyValues);
-            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
-            Object value = obj.orElse(null);
-            results.put(entry.getKey(), value);
-        }
-        return results;
-    }
-
-    private Map<DedupAndVersionErrorSqlType, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                                                                  Map<DedupAndVersionErrorSqlType, SqlPlan> errorChecksPlan)
-    {
-        Map<DedupAndVersionErrorSqlType, Object> results = new HashMap<>();
-        for (Map.Entry<DedupAndVersionErrorSqlType, SqlPlan> entry: errorChecksPlan.entrySet())
-        {
-            List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue());
             Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
             Object value = obj.orElse(null);
             results.put(entry.getKey(), value);

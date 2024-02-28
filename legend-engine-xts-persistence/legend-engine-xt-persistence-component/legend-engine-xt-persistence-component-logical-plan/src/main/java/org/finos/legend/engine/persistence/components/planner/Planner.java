@@ -61,6 +61,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.UUID;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.INCOMING_RECORD_COUNT;
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_DELETED;
@@ -131,6 +132,12 @@ public abstract class Planner
         {
             return 20;
         }
+
+        @Default
+        default String ingestRunId()
+        {
+            return UUID.randomUUID().toString();
+        }
     }
 
     private final Datasets datasets;
@@ -179,7 +186,7 @@ public abstract class Planner
         Optional<Dataset> tempStagingDataset = Optional.empty();
         if (isTempTableNeededForStaging)
         {
-            tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(originalStagingDataset(), ingestMode));
+            tempStagingDataset = Optional.of(LogicalPlanUtils.getTempStagingDatasetDefinition(originalStagingDataset(), ingestMode, options().ingestRunId()));
         }
         return tempStagingDataset;
     }

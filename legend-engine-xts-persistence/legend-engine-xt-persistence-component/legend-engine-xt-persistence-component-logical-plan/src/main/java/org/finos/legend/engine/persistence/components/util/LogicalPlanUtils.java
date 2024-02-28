@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.BIGINT;
@@ -76,6 +75,8 @@ import static org.finos.legend.engine.persistence.components.util.MetadataUtils.
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATHS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATTERNS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
+import static org.finos.legend.engine.persistence.components.util.TableNameGenUtils.TEMP_STAGING_DATASET_ALIAS;
+import static org.finos.legend.engine.persistence.components.util.TableNameGenUtils.TEMP_STAGING_DATASET_QUALIFIER;
 
 
 public class LogicalPlanUtils
@@ -86,7 +87,6 @@ public class LogicalPlanUtils
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";
     public static final String TEMP_DATASET_BASE_NAME = "legend_persistence_temp";
-    public static final String TEMP_STAGING_DATASET_BASE_NAME = "legend_persistence_temp_staging";
     public static final String TEMP_DATASET_WITH_DELETE_INDICATOR_BASE_NAME = "legend_persistence_tempWithDeleteIndicator";
 
     private LogicalPlanUtils()
@@ -449,10 +449,10 @@ public class LogicalPlanUtils
         }
     }
 
-    public static Dataset getTempStagingDatasetDefinition(Dataset stagingDataset, IngestMode ingestMode)
+    public static Dataset getTempStagingDatasetDefinition(Dataset stagingDataset, IngestMode ingestMode, String ingestRunId)
     {
-        String alias = stagingDataset.datasetReference().alias().orElse(TEMP_STAGING_DATASET_BASE_NAME);
-        String datasetName = stagingDataset.datasetReference().name().orElseThrow(IllegalStateException::new) + UNDERSCORE + TEMP_STAGING_DATASET_BASE_NAME;
+        String alias = stagingDataset.datasetReference().alias().orElse(TEMP_STAGING_DATASET_ALIAS);
+        String datasetName = TableNameGenUtils.generateTableName(stagingDataset.datasetReference().name().orElseThrow(IllegalStateException::new), TEMP_STAGING_DATASET_QUALIFIER, ingestRunId);
         SchemaDefinition tempStagingSchema = ingestMode.versioningStrategy().accept(new DeriveTempStagingSchemaDefinition(stagingDataset.schema(), ingestMode.deduplicationStrategy()));
         return DatasetDefinition.builder()
                 .schema(tempStagingSchema)

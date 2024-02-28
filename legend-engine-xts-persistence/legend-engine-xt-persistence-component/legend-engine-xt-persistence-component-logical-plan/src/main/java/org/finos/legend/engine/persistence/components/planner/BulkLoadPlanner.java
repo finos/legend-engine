@@ -46,13 +46,14 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.BatchSt
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
+import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.common.StatisticName.ROWS_INSERTED;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.TEMP_DATASET_BASE_NAME;
-import static org.finos.legend.engine.persistence.components.util.LogicalPlanUtils.UNDERSCORE;
+import static org.finos.legend.engine.persistence.components.util.TableNameGenUtils.TEMP_DATASET_ALIAS;
+import static org.finos.legend.engine.persistence.components.util.TableNameGenUtils.TEMP_DATASET_QUALIFIER;
 
 class BulkLoadPlanner extends Planner
 {
@@ -77,12 +78,13 @@ class BulkLoadPlanner extends Planner
         transformWhileCopy = capabilities.contains(Capability.TRANSFORM_WHILE_COPY);
         if (!transformWhileCopy)
         {
+            String externalDatasetName = TableNameGenUtils.generateTableName(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)), TEMP_DATASET_QUALIFIER, options().ingestRunId());
             externalDataset = ExternalDataset.builder()
                 .stagedFilesDataset(stagedFilesDataset)
                 .database(datasets.mainDataset().datasetReference().database())
                 .group(datasets.mainDataset().datasetReference().group())
-                .name(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)) + UNDERSCORE + TEMP_DATASET_BASE_NAME)
-                .alias(TEMP_DATASET_BASE_NAME)
+                .name(externalDatasetName)
+                .alias(TEMP_DATASET_ALIAS)
                 .build();
         }
     }
@@ -290,11 +292,12 @@ class BulkLoadPlanner extends Planner
     private Dataset getValidationDataset()
     {
         String tableName = mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
+        String validationDatasetName = TableNameGenUtils.generateTableName(tableName, "validation", options().ingestRunId());
         return DatasetDefinition.builder()
                 .schema(stagedFilesDataset.schema())
                 .database(mainDataset().datasetReference().database())
                 .group(mainDataset().datasetReference().group())
-                .name(tableName + UNDERSCORE + "validation") // TODO legend_persistence
+                .name(validationDatasetName)
                 .datasetAdditionalProperties(DatasetAdditionalProperties.builder().tableType(TableType.TEMPORARY).build())
                 .build();
     }

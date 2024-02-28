@@ -79,13 +79,13 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
                 "SET sink.\"batch_id_out\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')-1,sink.\"batch_time_out\" = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.\"batch_id_out\" = 999999999) " +
                 "AND (NOT (EXISTS " +
-                "(SELECT * FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\"))))";
+                "(SELECT * FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage WHERE ((sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\")) AND (sink.\"digest\" = stage.\"digest\"))))";
 
         String expectedUpsertQuery = "INSERT INTO \"mydb\".\"main\" " +
                 "(\"id\", \"name\", \"amount\", \"biz_date\", \"digest\", \"batch_id_in\", \"batch_id_out\", \"batch_time_in\", \"batch_time_out\") " +
                 "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\"," +
                 "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
-                "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+                "FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
                 "WHERE NOT (stage.\"digest\" IN (SELECT sink.\"digest\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id_out\" = 999999999)))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableCreateQuery, preActionsSql.get(0));
@@ -130,13 +130,13 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
         String expectedMilestoneQuery = "UPDATE \"MYDB\".\"MAIN\" as sink SET sink.\"BATCH_ID_OUT\" = " +
                 "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE " +
                 "UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN')-1,sink.\"BATCH_TIME_OUT\" = '2000-01-01 00:00:00.000000' " +
-                "WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (NOT (EXISTS (SELECT * FROM \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage " +
+                "WHERE (sink.\"BATCH_ID_OUT\" = 999999999) AND (NOT (EXISTS (SELECT * FROM \"MYDB\".\"STAGING_TEMP_STAGING_LP_YOSULF\" as stage " +
                 "WHERE ((sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\")) AND (sink.\"DIGEST\" = stage.\"DIGEST\"))))";
         String expectedUpsertQuery = "INSERT INTO \"MYDB\".\"MAIN\" " +
                 "(\"ID\", \"NAME\", \"AMOUNT\", \"BIZ_DATE\", \"DIGEST\", \"BATCH_ID_IN\", \"BATCH_ID_OUT\", \"BATCH_TIME_IN\", \"BATCH_TIME_OUT\") " +
                 "(SELECT stage.\"ID\",stage.\"NAME\",stage.\"AMOUNT\",stage.\"BIZ_DATE\",stage.\"DIGEST\"," +
                 "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
-                "WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage " +
+                "WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),999999999,'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM \"MYDB\".\"STAGING_TEMP_STAGING_LP_YOSULF\" as stage " +
                 "WHERE NOT (stage.\"DIGEST\" IN (SELECT sink.\"DIGEST\" FROM \"MYDB\".\"MAIN\" as sink WHERE sink.\"BATCH_ID_OUT\" = 999999999)))";
         Assertions.assertEquals(AnsiTestArtifacts.expectedMainTableCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQueryWithUpperCase(), preActionsSql.get(1));

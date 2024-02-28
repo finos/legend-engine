@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Immutable
@@ -137,6 +138,12 @@ public abstract class RelationalGeneratorAbstract
         return 20;
     }
 
+    @Default
+    public String ingestRunId()
+    {
+        return UUID.randomUUID().toString();
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -156,6 +163,7 @@ public abstract class RelationalGeneratorAbstract
             .bulkLoadEventIdValue(bulkLoadEventIdValue())
             .batchSuccessStatusValue(batchSuccessStatusValue())
             .sampleRowCount(sampleRowCount())
+            .ingestRunId(ingestRunId())
             .build();
     }
 

@@ -60,6 +60,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
         verifyUnitemporalDeltaNoDeleteIndFailOnDupsAllVersionWithoutPerform(operations, dataSplitRangesOneToTwo);
@@ -92,6 +93,7 @@ public abstract class UnitmemporalDeltaDateTimeBasedTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
         verifyUnitemporalDeltaWithDeleteIndFilterDupsAllVersion(operations, dataSplitRangesOneToTwo);
