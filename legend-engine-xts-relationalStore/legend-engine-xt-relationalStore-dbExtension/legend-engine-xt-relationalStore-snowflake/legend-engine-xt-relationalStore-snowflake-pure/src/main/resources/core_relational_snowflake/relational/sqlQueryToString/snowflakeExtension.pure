@@ -29,6 +29,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
    ^DbExtension(
       isBooleanLiteralSupported = true,
       collectionThresholdLimit = 16348,
+      extraTempTableCreationLogicSupplierForIn = {varName:String[1] | 'instanceOf(' + $varName + ', "StreamingResult")'},
       aliasLimit = 255,
       isDbReservedIdentifier = {str:String[1]| $str->toLower()->in($reservedWords)},
       literalProcessor = $literalProcessor,
