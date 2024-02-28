@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.builder;
 
-import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -83,8 +82,12 @@ public class MultiHandlerFunctionExpressionBuilder extends FunctionExpressionBui
 
     public SimpleFunctionExpression buildFunctionExpressionGraph(List<org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification> parameters, SourceInformation sourceInformation)
     {
-        RichIterable<SimpleFunctionExpression> res = handlers.collect(h -> h.getDispatch().shouldSelect(parameters) ? h.process(parameters, sourceInformation) : null);
-        return res.select(Objects::nonNull).getFirst();
+        return handlers.stream()
+                .filter(h -> h.getDispatch().shouldSelect(parameters))
+                .map(h -> h.process(parameters, sourceInformation))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override

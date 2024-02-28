@@ -34,6 +34,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 import org.finos.legend.pure.m3.navigation.type.Type;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,7 +55,14 @@ public abstract class FunctionExpressionBuilder
 
         if (vars.size() == parameters.size())
         {
-            return vars.zip(parameters).injectInto(true, (a, b) -> a && comp(b.getOne(), b.getTwo(), pureModel, processingContext));
+            boolean valid = true;
+            Iterator<? extends VariableExpression> varsIter = vars.iterator();
+            Iterator<org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification> paramsIter = parameters.iterator();
+            while (valid && varsIter.hasNext())
+            {
+                valid = comp(varsIter.next(), paramsIter.next(), pureModel, processingContext);
+            }
+            return valid;
         }
         return false;
     }

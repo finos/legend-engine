@@ -226,7 +226,9 @@ public class Handlers
         else
         {
             toCollection(parameters.get(1)).values.forEach(l -> updateLambdaWithCol(cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), l));
-            return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+            List<ValueSpecification> results = Lists.mutable.with(firstProcessedParameter);
+            parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).forEach(results::add);
+            return results;
         }
     };
 
@@ -504,54 +506,62 @@ public class Handlers
     public static final ParametersInference TDSFilterInference = (parameters, ov, cc, pc) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        List<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
         GenericType gt = firstProcessedParameter._genericType();
         if ("TabularDataSet".equals(gt._rawType()._name()))
         {
             updateSimpleLambda(parameters.get(1), cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
-            return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
+            parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).forEach(result::add);
         }
         else if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
         {
             updateSimpleLambda(parameters.get(1), gt._typeArguments().getFirst(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
-            return Stream.concat(Stream.of(firstProcessedParameter), parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc)))).collect(Collectors.toList());
+            parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).forEach(result::add);
         }
         else
         {
             List<ValueSpecification> firstPassProcessed = parameters.stream().skip(1).map(p -> p instanceof Lambda ? null : p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
             updateSimpleLambda(parameters.get(1), parameters.size() != 0 && parameters.get(0) instanceof Lambda ? firstPassProcessed.get(0)._genericType() : firstProcessedParameter._genericType(), new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1));
-            return ListIterate.zip(LazyIterate.concatenate(FastList.newListWith(firstProcessedParameter), firstPassProcessed).toList(), parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc)));
+            return LazyIterate.zip(LazyIterate.concatenate(Lists.fixedSize.of(firstProcessedParameter), firstPassProcessed), parameters).collect(p -> p.getOne() != null ? p.getOne() : p.getTwo().accept(new ValueSpecificationBuilder(cc, ov, pc))).toList();
         }
+        return result;
     };
 
     public static final ParametersInference JoinInference = (parameters, ov, cc, pc) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
         GenericType gt = firstProcessedParameter._genericType();
 
         if ("TabularDataSet".equals(gt._rawType()._name()))
         {
             updateTDSRowLambda(((Lambda) parameters.get(3)).parameters);
-            return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+            parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).forEach(result::add);
         }
         else if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
         {
             ValueSpecification secondProcessedParameter = parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc));
             org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity one = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity(1, 1);
             updateTwoParamsLambdaDiffTypes(parameters.get(3), firstProcessedParameter._genericType()._typeArguments().getFirst(), secondProcessedParameter._genericType()._typeArguments().getFirst(), one, one);
-            return Lists.mutable.with(firstProcessedParameter, secondProcessedParameter, parameters.get(2).accept(new ValueSpecificationBuilder(cc, ov, pc)), parameters.get(3).accept(new ValueSpecificationBuilder(cc, ov, pc)));
+            result.with(secondProcessedParameter).with(parameters.get(2).accept(new ValueSpecificationBuilder(cc, ov, pc))).with(parameters.get(3).accept(new ValueSpecificationBuilder(cc, ov, pc)));
         }
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        else
+        {
+            parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).forEach(result::add);
+        }
+        return result;
     };
 
     public static final ParametersInference TDSAggInference = (parameters, ov, cc, pc) ->
     {
         ValueSpecification firstProcessedParameter = parameters.get(0).accept(new ValueSpecificationBuilder(cc, ov, pc));
+        MutableList<ValueSpecification> result = Lists.mutable.with(firstProcessedParameter);
         GenericType gt = firstProcessedParameter._genericType();
 
         if ("TabularDataSet".equals(gt._rawType()._name()))
         {
             aggInferenceAll(parameters, cc.pureModel.getGenericType("meta::pure::tds::TDSRow"), 1, 2, ov, cc, pc);
-            return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+            parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).forEach(result::add);
         }
         else if (Sets.immutable.with("Nil", "Relation", "RelationElementAccessor", "TDS", "RelationStoreAccessor").contains(gt._rawType().getName()))
         {
@@ -577,9 +587,13 @@ public class Handlers
             {
                 throw new RuntimeException("Not supported " + aggCol.getClass());
             }
-            return Lists.mutable.with(firstProcessedParameter, parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc)), parameters.get(2).accept(new ValueSpecificationBuilder(cc, ov, pc)));
+            result.with(parameters.get(1).accept(new ValueSpecificationBuilder(cc, ov, pc))).with(parameters.get(2).accept(new ValueSpecificationBuilder(cc, ov, pc)));
         }
-        return parameters.stream().map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).collect(Collectors.toList());
+        else
+        {
+            parameters.stream().skip(1).map(p -> p.accept(new ValueSpecificationBuilder(cc, ov, pc))).forEach(result::add);
+        }
+        return result;
 
     };
 
