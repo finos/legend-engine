@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
+import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
@@ -38,7 +39,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Metadat
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -67,7 +67,7 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ToArrayFunctionVisitor;
-import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.TryCastFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
@@ -136,7 +136,7 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
-        logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
+        logicalPlanVisitorByClass.put(CastFunction.class, new CastFunctionVisitor());
         logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
         logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);

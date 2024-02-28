@@ -15,11 +15,10 @@
 package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
-import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
+import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.H2DataTypeMapping;
-import org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.CastFunction;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schema.DataType;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -27,17 +26,18 @@ import org.finos.legend.engine.persistence.components.transformer.VisitorContext
 import java.util.ArrayList;
 import java.util.List;
 
-public class TryCastFunctionVisitor implements LogicalPlanVisitor<TryCastFunction>
+public class CastFunctionVisitor implements LogicalPlanVisitor<CastFunction>
 {
     @Override
-    public VisitorResult visit(PhysicalPlanNode prev, TryCastFunction current, VisitorContext context)
+    public VisitorResult visit(PhysicalPlanNode prev, CastFunction current, VisitorContext context)
     {
         DataType dataType = new H2DataTypeMapping().getDataType(current.type());
 
-        CastFunction castFunction = new CastFunction(dataType, context.quoteIdentifier());
+        org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.CastFunction castFunction
+            = new org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.CastFunction(dataType, context.quoteIdentifier());
         for (Optimizer optimizer : context.optimizers())
         {
-            castFunction = (CastFunction) optimizer.optimize(castFunction);
+            castFunction = (org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.CastFunction) optimizer.optimize(castFunction);
         }
         prev.push(castFunction);
 

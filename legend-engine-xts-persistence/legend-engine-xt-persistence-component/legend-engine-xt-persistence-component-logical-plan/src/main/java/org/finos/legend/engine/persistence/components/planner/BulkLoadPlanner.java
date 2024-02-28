@@ -37,6 +37,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -70,6 +71,7 @@ class BulkLoadPlanner extends Planner
 
     private boolean transformWhileCopy;
     private Dataset externalDataset;
+    private Dataset validationDataset;
     private StagedFilesDataset stagedFilesDataset;
 
     private static final String FILE = "FILE";
@@ -98,6 +100,11 @@ class BulkLoadPlanner extends Planner
                 .name(datasets.mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new)) + UNDERSCORE + TEMP_DATASET_BASE_NAME)
                 .alias(TEMP_DATASET_BASE_NAME)
                 .build();
+        }
+
+        if (capabilities.contains(Capability.DRY_RUN))
+        {
+            validationDataset = stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported() ? getValidationDataset() : getValidationDatasetWithMetaColumns();
         }
     }
 
@@ -140,19 +147,16 @@ class BulkLoadPlanner extends Planner
         List<Operation> operations = new ArrayList<>();
         if (stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
         {
-            Dataset validationDataset = getValidationDataset();
             Copy copy = Copy.builder()
                 .targetDataset(validationDataset)
                 .sourceDataset(stagedFilesDataset.datasetReference().withAlias(""))
                 .stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties())
-                .dryRun(true)
+                .validationMode(true)
                 .build();
             operations.add(copy);
         }
         else
         {
-            Dataset validationDataset = getValidationDatasetWithMetaColumns();
-
             List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset(), true);
             fieldsToSelect.add(MetadataFileNameField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
             fieldsToSelect.add(MetadataRowNumberField.builder().build());
@@ -168,7 +172,7 @@ class BulkLoadPlanner extends Planner
                 .sourceDataset(selectStage)
                 .addAllFields(fieldsToInsert)
                 .stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties())
-                .dryRun(false)
+                .validationMode(false)
                 .build();
             operations.add(copy);
         }
@@ -182,9 +186,6 @@ class BulkLoadPlanner extends Planner
         {
             return Collections.emptyMap();
         }
-
-        Dataset validationDataset = getValidationDatasetWithMetaColumns();
-
         Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> validationMap = new HashMap<>();
         List<Field> fieldsToCheckForNull = stagingDataset().schema().fields().stream().filter(field -> !field.nullable()).collect(Collectors.toList());
         List<Field> fieldsToCheckForDatatype = stagingDataset().schema().fields().stream().filter(field -> !DataType.isStringDatatype(field.type().dataType())).collect(Collectors.toList());
@@ -217,8 +218,7 @@ class BulkLoadPlanner extends Planner
                 validationMap.put(ValidationCategory.DATATYPE_CONVERSION, new HashMap<>());
                 for (Field fieldToCheckForDatatype : fieldsToCheckForDatatype)
                 {
-                    // TODO: change this to use cast - since we know at this point try cast is not possible
-                    Selection queryForDatatype = getSelectColumnsWithTryCast(validationDataset, Collections.singletonList(fieldToCheckForDatatype));
+                    Selection queryForDatatype = getSelectColumnsWithCast(validationDataset, fieldToCheckForDatatype);
                     validationMap.get(ValidationCategory.DATATYPE_CONVERSION).put(Stream.of(fieldToCheckForDatatype).map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
                         LogicalPlan.of(Collections.singletonList(queryForDatatype)));
                 }
@@ -230,6 +230,7 @@ class BulkLoadPlanner extends Planner
 
     private Selection getSelectColumnsWithTryCast(Dataset dataset, List<Field> fieldsToCheckForDatatype)
     {
+        // When using TRY_CAST, we can check all columns at once, as the query will not fail
         return Selection.builder()
             .source(dataset)
             .condition(Or.of(fieldsToCheckForDatatype.stream().map(field -> And.builder()
@@ -237,6 +238,18 @@ class BulkLoadPlanner extends Planner
                     .addConditions(IsNull.of(TryCastFunction.builder().field(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build()).type(field.type()).build()))
                     .build())
                 .collect(Collectors.toList())))
+            .build();
+    }
+
+    private Selection getSelectColumnsWithCast(Dataset dataset, Field fieldToCheckForDatatype)
+    {
+        // When using CAST, we have to check column by column as the query may fail and we need to know which column we have a problem in
+        return Selection.builder()
+            .source(dataset)
+            .condition(And.builder()
+                    .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build())))
+                    .addConditions(IsNull.of(CastFunction.builder().field(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build()).type(fieldToCheckForDatatype.type()).build()))
+                    .build())
             .build();
     }
 
@@ -316,14 +329,7 @@ class BulkLoadPlanner extends Planner
         List<Operation> operations = new ArrayList<>();
         if (capabilities.contains(Capability.DRY_RUN))
         {
-            if (stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
-            {
-                operations.add(Create.of(true, getValidationDataset()));
-            }
-            else
-            {
-                operations.add(Create.of(true, getValidationDatasetWithMetaColumns()));
-            }
+            operations.add(Create.of(true, validationDataset));
         }
         return LogicalPlan.of(operations);
     }
