@@ -84,6 +84,13 @@ public class BulkLoadTest
         .nullable(false)
         .build();
 
+    private static Field col4NonNullable = Field.builder()
+        .name("col_variant")
+        .type(FieldType.of(DataType.VARIANT, Optional.empty(), Optional.empty()))
+        .columnNumber(5)
+        .nullable(false)
+        .build();
+
     private List filesList = Arrays.asList("/path/xyz/file1.csv", "/path/xyz/file2.csv");
 
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
@@ -151,7 +158,8 @@ public class BulkLoadTest
 
         String expectedDryRunPreActionsSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
                 "(\"col_int\" INTEGER,\"col_integer\" INTEGER)";
-        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\"  FROM my_location " +
+        String expectedDryRunDeleteSql = "DELETE FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf";
+        String expectedDryRunLoadSql = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\"  FROM my_location " +
                 "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
                 "FILE_FORMAT = (ERROR_ON_COLUMN_COUNT_MISMATCH = false, FIELD_DELIMITER = ',', TYPE = 'CSV') " +
                 "ON_ERROR = 'ABORT_STATEMENT' " +
@@ -162,7 +170,8 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetadataIngestSql, metadataIngestSql.get(0));
         Assertions.assertEquals(expectedDryRunPreActionsSql, dryRunPreActionsSql.get(0));
-        Assertions.assertEquals(expectedDryRunSql, dryRunSql.get(0));
+        Assertions.assertEquals(expectedDryRunDeleteSql, dryRunSql.get(0));
+        Assertions.assertEquals(expectedDryRunLoadSql, dryRunSql.get(1));
         Assertions.assertTrue(dryRunValidationSql.isEmpty());
         Assertions.assertEquals(expectedDryRunPostCleanupSql, dryRunPostCleanupSql.get(0));
 
@@ -188,7 +197,7 @@ public class BulkLoadTest
                                 .location("my_location")
                                 .fileFormat(StandardFileFormat.builder().formatType(FileFormatType.AVRO).build())
                                 .addAllFilePaths(filesList).build())
-                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3NonNullable, col4)).build())
+                .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col3NonNullable, col4NonNullable)).build())
                 .alias("t")
                 .build();
 
@@ -215,7 +224,7 @@ public class BulkLoadTest
         List<String> metaIngestSql = operations.metadataIngestSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
-        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_bigint\" BIGINT NOT NULL,\"col_variant\" VARIANT,\"batch_id\" INTEGER)";
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name\"(\"col_bigint\" BIGINT NOT NULL,\"col_variant\" VARIANT NOT NULL,\"batch_id\" INTEGER)";
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
                 "(\"col_bigint\", \"col_variant\", \"batch_id\") " +
                 "FROM " +
@@ -234,16 +243,40 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedMetaIngestSql, metaIngestSql.get(0));
 
-        // TODO: convert these to assertions
-        System.out.println(operations.dryRunPreActionsSql());
-        System.out.println(operations.dryRunSql());
-        System.out.println(operations.dryRunValidationSql());
-        System.out.println(operations.dryRunPostCleanupSql());
-
         Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
         Assertions.assertNull(statsSql.get(ROWS_DELETED));
         Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
         Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+
+        // Checking dry run
+        String expectedDryRunPreActionSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
+            "(\"col_bigint\" VARCHAR,\"col_variant\" VARCHAR,\"FILE\" VARCHAR,\"ROW_NUMBER\" BIGINT)";
+
+        String expectedDryRunDeleteSql = "DELETE FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf";
+
+        String expectedDryRunLoadSQl = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\" (\"col_bigint\", \"col_variant\", \"FILE\", \"ROW_NUMBER\") " +
+            "FROM (SELECT t.$4 as \"col_bigint\",t.$5 as \"col_variant\",METADATA$FILENAME,METADATA$FILE_ROW_NUMBER FROM my_location as t) " +
+            "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') FILE_FORMAT = (TYPE = 'AVRO') ON_ERROR = 'ABORT_STATEMENT'";
+
+        String expectedDryRunNullValidationSql = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"FILE\",my_name_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf " +
+            "WHERE (my_name_validation_lp_yosulf.\"col_bigint\" IS NULL) OR (my_name_validation_lp_yosulf.\"col_variant\" IS NULL) LIMIT 20";
+
+        String expectedDryRunDatatypeValidationSql = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"FILE\",my_name_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf WHERE " +
+            "((NOT (my_name_validation_lp_yosulf.\"col_bigint\" IS NULL)) AND (TRY_CAST(my_name_validation_lp_yosulf.\"col_bigint\" AS BIGINT) IS NULL)) " +
+            "OR ((NOT (my_name_validation_lp_yosulf.\"col_variant\" IS NULL)) AND (TRY_CAST(my_name_validation_lp_yosulf.\"col_variant\" AS VARIANT) IS NULL)) LIMIT 20";
+
+        String expectedDryRunPostCleanupSql = "DROP TABLE IF EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"";
+
+        Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
+        Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
+        Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
+        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUES).containsValue(expectedDryRunNullValidationSql));
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUES).keySet().size());
+        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql));
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).keySet().size());
+        Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
     }
 
     @Test
@@ -639,7 +672,8 @@ public class BulkLoadTest
 
         String expectedDryRunPreActionsSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
                 "(\"col_int\" INTEGER,\"col_integer\" INTEGER)";
-        String expectedDryRunSql = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\"  FROM my_location " +
+        String expectedDryRunDeleteSql = "DELETE FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf";
+        String expectedDryRunLoadSql = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\"  FROM my_location " +
                 "PATTERN = '(/path/xyz/file1.csv)|(/path/xyz/file2.csv)' " +
                 "FILE_FORMAT = (ERROR_ON_COLUMN_COUNT_MISMATCH = false, FIELD_DELIMITER = ',', TYPE = 'CSV') " +
                 "ON_ERROR = 'SKIP_FILE' " +
@@ -649,7 +683,8 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals(expectedDryRunPreActionsSql, operations.dryRunPreActionsSql().get(0));
-        Assertions.assertEquals(expectedDryRunSql, operations.dryRunSql().get(0));
+        Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
+        Assertions.assertEquals(expectedDryRunLoadSql, operations.dryRunSql().get(1));
         Assertions.assertTrue(operations.dryRunValidationSql().isEmpty());
         Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
 

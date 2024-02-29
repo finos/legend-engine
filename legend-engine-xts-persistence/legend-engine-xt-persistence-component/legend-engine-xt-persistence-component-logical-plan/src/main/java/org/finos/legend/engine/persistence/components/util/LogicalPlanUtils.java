@@ -396,6 +396,7 @@ public class LogicalPlanUtils
         return stagingDataset.schema().fields().stream().filter(field -> field.primaryKey() && primaryKeysFromMain.contains(field.name())).collect(Collectors.toList());
     }
 
+    // TODO: another method: public static List<Value> extractStagedFilesFieldValuesWithVarCharType(Dataset dataset)
     public static List<Value> extractStagedFilesFieldValues(Dataset dataset, boolean withVarCharType)
     {
         List<Value> stagedFilesFields = new ArrayList<>();
@@ -403,6 +404,7 @@ public class LogicalPlanUtils
         int iter = 1;
         for (Field field : dataset.schema().fields())
         {
+            // TODO: extract this part into a private method that takes the desired type
             StagedFilesFieldValue fieldValue = StagedFilesFieldValue.builder()
                     .columnNumber(columnNumbersPresent ? field.columnNumber().get() : iter++)
                     .datasetRefAlias(dataset.datasetReference().alias())

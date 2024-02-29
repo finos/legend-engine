@@ -160,6 +160,7 @@ import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class AnsiSqlSink extends RelationalSink
 {
@@ -332,5 +333,64 @@ public class AnsiSqlSink extends RelationalSink
     public List<DataError> performDryRun(Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         throw new UnsupportedOperationException("DryRun not supported!");
+    }
+
+    protected Optional<String> getString(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        String strValue = value == null ? null : (String) value;
+        return Optional.ofNullable(strValue);
+    }
+
+    protected Optional<Long> getLong(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        Long longValue = value == null ? null : (Long) value;
+        return Optional.ofNullable(longValue);
+    }
+
+    protected DataError constructDataError(Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
+    {
+        // TODO: follow the order of schema object
+        String commaSeparatedRow = row.keySet().stream()
+            .sorted()
+            .filter(key -> !key.equals(fileNameColumnName) && !key.equals(rowNumberColumnName))
+            .map(key -> getString(row, key).orElse(""))
+            .collect(Collectors.joining(","));
+
+        return DataError.builder()
+            .errorMessage(validationCategory.getValidationFailedErrorMessage())
+            .file(getString(row, fileNameColumnName).orElseThrow(IllegalStateException::new))
+            .errorCategory(validationCategory.name())
+            .columnName(validatedColumnName)
+            .rowNumber(getLong(row, rowNumberColumnName))
+            .rejectedRecord(commaSeparatedRow)
+            .build();
+    }
+
+    protected List<DataError> getDataErrorsWithEqualDistributionAcrossCategories(int sampleRowCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory)
+    {
+        List<DataError> dataErrors = new ArrayList<>();
+        Set<ValidationCategory> exhaustedCategories = new HashSet<>();
+
+        while (dataErrors.size() < sampleRowCount && exhaustedCategories.size() != ValidationCategory.values().length)
+        {
+            for (ValidationCategory validationCategory : ValidationCategory.values())
+            {
+                if (!dataErrorsByCategory.get(validationCategory).isEmpty())
+                {
+                    if (dataErrors.size() < sampleRowCount)
+                    {
+                        dataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
+                    }
+                }
+                else
+                {
+                    exhaustedCategories.add(validationCategory);
+                }
+            }
+        }
+
+        return dataErrors;
     }
 }

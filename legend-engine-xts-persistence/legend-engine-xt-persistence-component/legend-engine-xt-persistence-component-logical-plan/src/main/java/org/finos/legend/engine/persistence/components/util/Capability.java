@@ -24,5 +24,5 @@ public enum Capability
     DATA_TYPE_SCALE_CHANGE,
     TRANSFORM_WHILE_COPY,
     DRY_RUN,
-    SAFE_CAST
+    TRY_CAST
 }

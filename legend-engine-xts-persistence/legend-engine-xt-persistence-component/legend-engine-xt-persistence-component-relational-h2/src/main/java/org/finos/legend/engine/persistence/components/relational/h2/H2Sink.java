@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.h2;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -89,6 +90,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -265,6 +267,11 @@ public class H2Sink extends AnsiSqlSink
         executor.executePhysicalPlan(dryRunSqlPlan);
 
         List<DataError> dataErrors = new ArrayList<>();
+        Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
+        for (ValidationCategory validationCategory : ValidationCategory.values())
+        {
+            dataErrorsByCategory.put(validationCategory, new LinkedList<>());
+        }
 
         Map<Set<FieldValue>, SqlPlan> queriesForNull =  dryRunValidationSqlPlan.getOrDefault(NULL_VALUES, new HashMap<>());
         Map<Set<FieldValue>, SqlPlan> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(DATATYPE_CONVERSION, new HashMap<>());
@@ -272,7 +279,7 @@ public class H2Sink extends AnsiSqlSink
         // Execute queries for null values
         for (Set<FieldValue> validatedColumns : queriesForNull.keySet())
         {
-            List<TabularData> results = executor.executePhysicalPlanAndGetResults(queriesForNull.get(validatedColumns), sampleRowCount);
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(queriesForNull.get(validatedColumns));
             if (!results.isEmpty())
             {
                 List<Map<String, Object>> resultSets = results.get(0).getData();
@@ -282,7 +289,9 @@ public class H2Sink extends AnsiSqlSink
                     {
                         if (row.get(column) == null)
                         {
-                            dataErrors.add(constructDataError(row, FILE, ROW_NUMBER, NULL_VALUES, column));
+                            DataError dataError = constructDataError(row, FILE, ROW_NUMBER, NULL_VALUES, column);
+                            dataErrors.add(dataError);
+                            dataErrorsByCategory.get(NULL_VALUES).add(dataError);
                         }
                     }
                 }
@@ -294,7 +303,7 @@ public class H2Sink extends AnsiSqlSink
         {
             try
             {
-                executor.executePhysicalPlanAndGetResults(queriesForDatatype.get(validatedColumns), sampleRowCount);
+                executor.executePhysicalPlanAndGetResults(queriesForDatatype.get(validatedColumns));
             }
             catch (RuntimeException e)
             {
@@ -313,7 +322,9 @@ public class H2Sink extends AnsiSqlSink
                         List<Map<String, Object>> resultSets = results.get(0).getData();
                         for (Map<String, Object> row : resultSets)
                         {
-                            dataErrors.add(constructDataError(row, FILE, ROW_NUMBER, DATATYPE_CONVERSION, validatedColumn.fieldName()));
+                            DataError dataError = constructDataError(row, FILE, ROW_NUMBER, DATATYPE_CONVERSION, validatedColumn.fieldName());
+                            dataErrors.add(dataError);
+                            dataErrorsByCategory.get(DATATYPE_CONVERSION).add(dataError);
                         }
                     }
                 }
@@ -321,6 +332,13 @@ public class H2Sink extends AnsiSqlSink
             }
         }
 
-        return dataErrors;
+        if (dataErrors.size() <= sampleRowCount)
+        {
+            return dataErrors;
+        }
+        else
+        {
+            return getDataErrorsWithEqualDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
+        }
     }
 }

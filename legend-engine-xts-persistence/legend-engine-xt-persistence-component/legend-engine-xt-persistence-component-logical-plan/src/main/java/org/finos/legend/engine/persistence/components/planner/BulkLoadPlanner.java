@@ -146,6 +146,8 @@ class BulkLoadPlanner extends Planner
         }
 
         List<Operation> operations = new ArrayList<>();
+        operations.add(Delete.builder().dataset(validationDataset).build());
+
         if (stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
         {
             Copy copy = Copy.builder()
@@ -158,9 +160,6 @@ class BulkLoadPlanner extends Planner
         }
         else
         {
-            // As data is actually being loaded in this case, we delete all data from the validation dataset first to ensure we are in a clean slate
-            operations.add(Delete.builder().dataset(validationDataset).build());
-
             List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset(), true);
             fieldsToSelect.add(MetadataFileNameField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
             fieldsToSelect.add(MetadataRowNumberField.builder().build());
@@ -201,6 +200,7 @@ class BulkLoadPlanner extends Planner
                 .condition(Or.of(fieldsToCheckForNull.stream().map(field ->
                         IsNull.of(FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()))
                     .collect(Collectors.toList())))
+                .limit(options().sampleRowCount())
                 .build();
 
             validationMap.put(ValidationCategory.NULL_VALUES,
@@ -210,7 +210,7 @@ class BulkLoadPlanner extends Planner
 
         if (!fieldsToCheckForDatatype.isEmpty())
         {
-            if (capabilities.contains(Capability.SAFE_CAST))
+            if (capabilities.contains(Capability.TRY_CAST))
             {
                 Selection queryForDatatype = getSelectColumnsWithTryCast(validationDataset, fieldsToCheckForDatatype);
                 validationMap.put(ValidationCategory.DATATYPE_CONVERSION,
@@ -242,6 +242,7 @@ class BulkLoadPlanner extends Planner
                     .addConditions(IsNull.of(TryCastFunction.builder().field(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build()).type(field.type()).build()))
                     .build())
                 .collect(Collectors.toList())))
+            .limit(options().sampleRowCount())
             .build();
     }
 
@@ -254,6 +255,7 @@ class BulkLoadPlanner extends Planner
                     .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build())))
                     .addConditions(IsNull.of(CastFunction.builder().field(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build()).type(fieldToCheckForDatatype.type()).build()))
                     .build())
+            .limit(options().sampleRowCount())
             .build();
     }
 

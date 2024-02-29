@@ -92,10 +92,12 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -142,7 +144,7 @@ public class SnowflakeSink extends AnsiSqlSink
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         capabilities.add(Capability.DRY_RUN);
-        capabilities.add(Capability.SAFE_CAST);
+        capabilities.add(Capability.TRY_CAST);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -304,11 +306,17 @@ public class SnowflakeSink extends AnsiSqlSink
         executor.executePhysicalPlan(dryRunSqlPlan);
 
         List<DataError> dataErrors = new ArrayList<>();
+        Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
+        for (ValidationCategory validationCategory : ValidationCategory.values())
+        {
+            dataErrorsByCategory.put(validationCategory, new LinkedList<>());
+        }
+
         for (ValidationCategory validationCategory : dryRunValidationSqlPlan.keySet())
         {
             for (Set<FieldValue> validatedColumns : dryRunValidationSqlPlan.get(validationCategory).keySet())
             {
-                List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunValidationSqlPlan.get(validationCategory).get(validatedColumns), sampleRowCount);
+                List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunValidationSqlPlan.get(validationCategory).get(validatedColumns));
                 if (!results.isEmpty())
                 {
                     List<Map<String, Object>> resultSets = results.get(0).getData();
@@ -318,14 +326,24 @@ public class SnowflakeSink extends AnsiSqlSink
                         {
                             if (row.get(column) == null)
                             {
-                                dataErrors.add(constructDataError(row, FILE_WITH_ERROR, ROW_NUMBER, validationCategory, column));
+                                DataError dataError = constructDataError(row, FILE_WITH_ERROR, ROW_NUMBER, validationCategory, column);
+                                dataErrors.add(dataError);
+                                dataErrorsByCategory.get(validationCategory).add(dataError);
                             }
                         }
                     }
                 }
             }
         }
-        return dataErrors;
+
+        if (dataErrors.size() <= sampleRowCount)
+        {
+            return dataErrors;
+        }
+        else
+        {
+            return getDataErrorsWithEqualDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
+        }
     }
 
     @Override
