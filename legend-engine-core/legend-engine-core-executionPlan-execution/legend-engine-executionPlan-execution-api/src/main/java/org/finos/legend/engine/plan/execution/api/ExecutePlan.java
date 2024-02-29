@@ -84,7 +84,7 @@ public class ExecutePlan
         Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         if (this.planExecutionAuthorizer == null)
         {
-            return this.doExecutePlanLegacy(request, executionRequest, format, pm);
+            return this.doExecutePlanLegacy(request, executionRequest, format, identity);
         }
         else
         {
@@ -92,11 +92,8 @@ public class ExecutePlan
         }
     }
 
-    public Response doExecutePlanLegacy(HttpServletRequest request, ExecutionRequest executionRequest, SerializationFormat format, ProfileManager<CommonProfile> pm)
+    public Response doExecutePlanLegacy(HttpServletRequest request, ExecutionRequest executionRequest, SerializationFormat format, Identity identity)
     {
-        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
-
         try
         {
             LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_PLAN_EXEC_START, "").toString());
