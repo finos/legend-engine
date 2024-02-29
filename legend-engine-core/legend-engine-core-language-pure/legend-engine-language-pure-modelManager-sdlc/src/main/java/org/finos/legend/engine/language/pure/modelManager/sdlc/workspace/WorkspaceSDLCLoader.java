@@ -40,7 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
@@ -141,7 +141,7 @@ public class WorkspaceSDLCLoader
             //MutableList<GitlabPersonalAccessTokenProfile> patProfiles = pm.selectInstancesOf(GitlabPersonalAccessTokenProfile.class);
             if (identity != null)
             {
-                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, identity.getName()));
+                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, IdentityFactoryProvider.getInstance().adapt(identity).get(0).getClientName()));
                 //httpRequest.addHeader(new BasicHeader(patHeaderName, patProfiles.getFirst().getPersonalAccessToken()));
             }
         }
