@@ -13,6 +13,7 @@
 // limitations under the License.
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
@@ -26,6 +27,7 @@ import org.junit.Test;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
+import javax.security.auth.kerberos.KerberosPrincipal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -58,14 +60,14 @@ public class TestDefaultIdentityFactory
     @Test
     public void testWithSingleKerberosProfile()
     {
-        Subject subject = SubjectTools.getLocalSubject();
+        Subject subject = new Subject(true, Sets.mutable.with(new KerberosPrincipal("dummy@example.com")), Sets.mutable.empty(), Sets.mutable.empty());
         KerberosProfile kerberosProfile = new KerberosProfile(subject, null);
         Identity identity = defaultIdentityFactory.makeIdentity(Lists.mutable.with(kerberosProfile));
 
         assertTrue(identity.getCredential(LegendKerberosCredential.class).isPresent());
 
         String userName = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(Lists.mutable.with(kerberosProfile)));
-        assertEquals(userName, identity.getName() + "@GS.COM");
+        assertEquals(userName, identity.getName() + "@example.com");
 
         Subject subjectFromIdentity = identity.getSubjectFromIdentity();
         assertEquals(ProfileManagerHelper.extractSubject(Lists.mutable.with(kerberosProfile)), subjectFromIdentity);
@@ -75,7 +77,7 @@ public class TestDefaultIdentityFactory
     @Test
     public void testWithMultipleKerberosProfile()
     {
-        Subject subject1 = SubjectTools.getLocalSubject();
+        Subject subject1 = new Subject(true, Sets.mutable.with(new KerberosPrincipal("dummy@example.com")), Sets.mutable.empty(), Sets.mutable.empty());
         KerberosProfile kerberosProfile1 = new KerberosProfile(subject1, null);
 
         Subject subject2 = new Subject();
@@ -85,7 +87,7 @@ public class TestDefaultIdentityFactory
         Identity identity = defaultIdentityFactory.makeIdentity(profiles);
 
         String userName = SubjectTools.getPrincipal(ProfileManagerHelper.extractSubject(profiles));
-        assertEquals(userName, identity.getName() + "@GS.COM");
+        assertEquals(userName, identity.getName() + "@example.com");
 
         Subject subjectFromIdentity = identity.getSubjectFromIdentity();
         Subject subjectFromProfiles = ProfileManagerHelper.extractSubject(profiles);
