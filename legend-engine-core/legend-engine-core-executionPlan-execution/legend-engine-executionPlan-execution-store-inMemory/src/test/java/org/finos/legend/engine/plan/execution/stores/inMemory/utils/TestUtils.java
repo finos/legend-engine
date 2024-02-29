@@ -39,7 +39,7 @@ public class TestUtils
     public static SingleExecutionPlan buildPlanForQuery(String grammar, String mapping, String runtime)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(grammar);
-        PureModel pureModel = org.finos.legend.engine.language.pure.compiler.Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+        PureModel pureModel = org.finos.legend.engine.language.pure.compiler.Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         Function queryFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
 

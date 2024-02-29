@@ -68,7 +68,7 @@ public class TestCompilationFromGrammar
                 ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
                 String json = objectMapper.writeValueAsString(modelData);
                 modelData = objectMapper.readValue(json, PureModelContextData.class);
-                PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+                PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");

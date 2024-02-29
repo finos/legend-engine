@@ -109,7 +109,7 @@ public class ServiceModeling
             Service service = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
             invokedService = service;
             PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(data.getOrigin()).withSerializer(data.getSerializer()).withElements(LazyIterate.select(data.getElements(), e -> e != service)).build();
-            PureModel pureModel  = new PureModel(dataWithoutService, identity, deploymentMode);
+            PureModel pureModel  = new PureModel(dataWithoutService, identity.getName(), deploymentMode);
             Pair<PureModelContextData, PureModel> pureModelAndData  = Tuples.pair(dataWithoutService, pureModel);
             long end = System.currentTimeMillis();
             MetricsHandler.observe("service test model resolve", start, end);
@@ -161,7 +161,7 @@ public class ServiceModeling
         PureModelContextData data = ((PureModelContextData) context).shallowCopy();
         Service service = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
         PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(data.getOrigin()).withSerializer(data.getSerializer()).withElements(LazyIterate.select(data.getElements(), e -> e != service)).build();
-        PureModel pureModel = new PureModel(dataWithoutService, identity, deploymentMode);
+        PureModel pureModel = new PureModel(dataWithoutService, identity.getName(), deploymentMode);
         long end = System.currentTimeMillis();
         MetricsHandler.observe("service validation model resolve", start, end);
         MetricsHandler.observeServerOperation("model_resolve", metricsContext, start, end);

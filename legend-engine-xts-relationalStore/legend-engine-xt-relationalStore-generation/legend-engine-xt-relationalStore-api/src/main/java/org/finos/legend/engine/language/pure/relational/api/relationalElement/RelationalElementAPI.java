@@ -81,7 +81,7 @@ public class RelationalElementAPI
         {
             PureModelContextData modelData = input.getModelData();
             String databasePath = input.getDatabasePath();
-            PureModel model = new PureModel(modelData, identity, this.deploymentMode);
+            PureModel model = new PureModel(modelData, identity.getName(), this.deploymentMode);
             String inputTargetPackage = input.getTargetPackage();
             Database database = (Database) model.getStore(databasePath);
             String targetPackage = (inputTargetPackage == null || inputTargetPackage.isEmpty()) ? getTargetPackageFromDatabasePath(databasePath) : inputTargetPackage;

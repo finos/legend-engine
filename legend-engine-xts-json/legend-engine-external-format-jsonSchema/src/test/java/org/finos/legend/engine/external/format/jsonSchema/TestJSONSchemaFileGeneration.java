@@ -42,7 +42,7 @@ public class TestJSONSchemaFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             JSONSchemaConfig jsonSchemaConfig = JSONSchemaGenerationConfigBuilder.build(fileGeneration);
             Assert.assertTrue(jsonSchemaConfig.useConstraints);

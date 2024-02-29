@@ -109,7 +109,7 @@ public class Completer
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
             PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = Compiler.compile(pureModelContextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+            PureModel pureModel = Compiler.compile(pureModelContextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             ProcessingContext processingContext = new ProcessingContext("");
 

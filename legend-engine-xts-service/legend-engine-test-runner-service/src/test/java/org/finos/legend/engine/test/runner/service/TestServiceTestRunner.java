@@ -42,7 +42,7 @@ public class TestServiceTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource(serviceModelPath));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         Service service = pureModelContextData.getElementsOfType(Service.class).stream().filter(s -> s.getPath().equals(servicePath)).findFirst()
                 .orElseThrow(() -> new RuntimeException("Unable to find service with path '" + servicePath + "'"));
@@ -106,7 +106,7 @@ public class TestServiceTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("legend-sdlc-test-services-without-tests.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         Service service = pureModelContextData.getElementsOfType(Service.class).get(0);
 
@@ -127,7 +127,7 @@ public class TestServiceTestRunner
     {
         URL url = Objects.requireNonNull(getClass().getClassLoader().getResource("legend-sdlc-test-services-multi-execution-without-tests.json"));
         PureModelContextData pureModelContextData = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(url, PureModelContextData.class);
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         Service service = pureModelContextData.getElementsOfType(Service.class).get(0);
 

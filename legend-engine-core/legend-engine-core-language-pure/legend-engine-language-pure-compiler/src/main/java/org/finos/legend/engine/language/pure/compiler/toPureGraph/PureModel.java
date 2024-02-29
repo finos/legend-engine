@@ -143,29 +143,29 @@ public class PureModel implements IPureModel
 
     public static final PureModel CORE_PURE_MODEL = getCorePureModel();
 
-    public PureModel(PureModelContextData pure, Identity identity, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode)
     {
-        this(pure, identity, null, deploymentMode, new PureModelProcessParameter(), null);
+        this(pure, user, null, deploymentMode, new PureModelProcessParameter(), null);
     }
 
-    public PureModel(PureModelContextData pure, Identity identity, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
+    public PureModel(PureModelContextData pure, String user, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        this(pure, identity, null, deploymentMode, pureModelProcessParameter, metaData);
+        this(pure, user, null, deploymentMode, pureModelProcessParameter, metaData);
     }
 
-    public PureModel(PureModelContextData pure, Identity identity, ClassLoader classLoader, DeploymentMode deploymentMode)
+    public PureModel(PureModelContextData pure, String user, ClassLoader classLoader, DeploymentMode deploymentMode)
     {
-        this(pure, identity, classLoader, deploymentMode, new PureModelProcessParameter(), null);
+        this(pure, user, classLoader, deploymentMode, new PureModelProcessParameter(), null);
     }
 
-    public PureModel(PureModelContextData pureModelContextData, Identity identity, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
+    public PureModel(PureModelContextData pureModelContextData, String user, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        this(pureModelContextData, CompilerExtensions.fromAvailableExtensions(), identity, classLoader, deploymentMode, pureModelProcessParameter, metaData);
+        this(pureModelContextData, CompilerExtensions.fromAvailableExtensions(), user, classLoader, deploymentMode, pureModelProcessParameter, metaData);
     }
 
-    public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, Identity identity, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
+    public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, String user, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        identity = identity == null ? IdentityFactoryProvider.getInstance().getAnonymousIdentity() : identity;
+        user = user == null ? IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName() : user;
         long start = System.nanoTime();
 
         if (classLoader == null)
@@ -206,7 +206,7 @@ public class PureModel implements IPureModel
             registerElementsForPathToElement();
             long preInitEnd = System.nanoTime();
 
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_START", (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo == null) ? "" : pureModelContextData.origin.sdlcInfo.packageableElementPointers, nanosDurationToMillis(start, preInitEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_START", (pureModelContextData.origin == null || pureModelContextData.origin.sdlcInfo == null) ? "" : pureModelContextData.origin.sdlcInfo.packageableElementPointers, nanosDurationToMillis(start, preInitEnd)));
             span.log("GRAPH_START");
 
             long initStart = System.nanoTime();
@@ -214,21 +214,21 @@ public class PureModel implements IPureModel
             initializeMultiplicities();
             initializePrimitiveTypes();
             long initEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_INITIALIZED", nanosDurationToMillis(initStart, initEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_INITIALIZED", nanosDurationToMillis(initStart, initEnd)));
             span.log("GRAPH_INITIALIZED");
 
             // Pre Validation
             long preValidationStart = System.nanoTime();
             new PureModelContextDataValidator().validate(this, pureModelContextData);
             long preValidationEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_PRE_VALIDATION_COMPLETED", nanosDurationToMillis(preValidationStart, preValidationEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_PRE_VALIDATION_COMPLETED", nanosDurationToMillis(preValidationStart, preValidationEnd)));
             span.log("GRAPH_PRE_VALIDATION_COMPLETED");
 
             // Processing
             long indexStart = System.nanoTime();
             PureModelContextDataIndex pureModelContextDataIndex = index(pureModelContextData);
             long indexEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_INDEX_INPUT", pureModelContextDataIndex, nanosDurationToMillis(indexStart, indexEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_INDEX_INPUT", pureModelContextDataIndex, nanosDurationToMillis(indexStart, indexEnd)));
             span.log("GRAPH_INDEX_INPUT");
 
             // First pass -> ensure all packageable elements are resolved as early as possible.
@@ -248,44 +248,44 @@ public class PureModel implements IPureModel
             this.extensions.sortExtraProcessors(pureModelContextDataIndex.otherElementsByProcessor.keysView())
                     .forEach(p -> pureModelContextDataIndex.otherElementsByProcessor.get(p).forEach(this::processFirstPass));
             long firstPassEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_FIRST_PASS", nanosDurationToMillis(firstPassStart, firstPassEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_FIRST_PASS", nanosDurationToMillis(firstPassStart, firstPassEnd)));
             span.log("GRAPH_FIRST_PASS");
 
             long loadTypesStart = System.nanoTime();
             loadTypes(pureModelContextDataIndex);
             long loadTypesEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_LOAD_TYPES", nanosDurationToMillis(loadTypesStart, loadTypesEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_LOAD_TYPES", nanosDurationToMillis(loadTypesStart, loadTypesEnd)));
             span.log("GRAPH_LOAD_TYPES");
 
             long loadOtherElementsPreStoresStart = System.nanoTime();
             loadDataElements(pureModelContextDataIndex);
             loadOtherElementsPreStores(pureModelContextDataIndex);
             long loadOtherElementsPreStoresEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES", nanosDurationToMillis(loadOtherElementsPreStoresStart, loadOtherElementsPreStoresEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES", nanosDurationToMillis(loadOtherElementsPreStoresStart, loadOtherElementsPreStoresEnd)));
             span.log("GRAPH_OTHER_ELEMENTS_BUILT_PRE_STORES");
 
             long loadStoresStart = System.nanoTime();
             loadStores(pureModelContextDataIndex);
             long loadStoresEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_STORES_BUILT", storeStats(pureModelContextDataIndex), nanosDurationToMillis(loadStoresStart, loadStoresEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_STORES_BUILT", storeStats(pureModelContextDataIndex), nanosDurationToMillis(loadStoresStart, loadStoresEnd)));
             span.log("GRAPH_STORES_BUILT");
 
             long loadMappingsStart = System.nanoTime();
             loadMappings(pureModelContextDataIndex);
             long loadMappingsEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_MAPPINGS_BUILT", nanosDurationToMillis(loadMappingsStart, loadMappingsEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_MAPPINGS_BUILT", nanosDurationToMillis(loadMappingsStart, loadMappingsEnd)));
             span.log("GRAPH_MAPPINGS_BUILT");
 
             long loadConnectionsAndRuntimesStart = System.nanoTime();
             loadConnectionsAndRuntimes(pureModelContextDataIndex);
             long loadConnectionsAndRuntimesEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT", nanosDurationToMillis(loadConnectionsAndRuntimesStart, loadConnectionsAndRuntimesEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT", nanosDurationToMillis(loadConnectionsAndRuntimesStart, loadConnectionsAndRuntimesEnd)));
             span.log("GRAPH_CONNECTIONS_AND_RUNTIMES_BUILT");
 
             long loadOtherElementsPostConnectionsAndRuntimesStart = System.nanoTime();
             loadOtherElementsPostConnectionsAndRuntimes(pureModelContextDataIndex);
             long loadOtherElementsPostConnectionsAndRuntimesEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES", nanosDurationToMillis(loadOtherElementsPostConnectionsAndRuntimesStart, loadOtherElementsPostConnectionsAndRuntimesEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES", nanosDurationToMillis(loadOtherElementsPostConnectionsAndRuntimesStart, loadOtherElementsPostConnectionsAndRuntimesEnd)));
             span.log("GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES");
 
             long loadFunctionsStart = System.nanoTime();
@@ -304,17 +304,17 @@ public class PureModel implements IPureModel
             new org.finos.legend.engine.language.pure.compiler.toPureGraph.validator.MappingValidator().validate(this, pureModelContextData, extensions);
             this.extensions.getExtraPostValidators().forEach(validator -> validator.value(this, pureModelContextData));
             long postValidationEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_POST_VALIDATION_COMPLETED", nanosDurationToMillis(postValidationStart, postValidationEnd)));
             span.log("GRAPH_POST_VALIDATION_COMPLETED");
 
             long end = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_STOP", nanosDurationToMillis(start, end)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_STOP", nanosDurationToMillis(start, end)));
             span.log("GRAPH_STOP");
         }
         catch (Exception e)
         {
             long end = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(identity.getName(), "GRAPH_ERROR", e, nanosDurationToMillis(start, end)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_ERROR", e, nanosDurationToMillis(start, end)));
             span.log("GRAPH_ERROR");
             // TODO: we need to have a better strategy to throw compilation error instead of the generic exception
             throw e;
@@ -327,7 +327,7 @@ public class PureModel implements IPureModel
 
     private static PureModel getCorePureModel()
     {
-        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null, new PureModelProcessParameter(), null);
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), null, null, new PureModelProcessParameter(), null);
     }
 
     private void modifyRootClassifier()

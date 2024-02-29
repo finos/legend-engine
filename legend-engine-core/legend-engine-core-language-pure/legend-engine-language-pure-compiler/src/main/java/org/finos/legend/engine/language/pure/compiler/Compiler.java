@@ -29,20 +29,20 @@ import org.finos.legend.pure.runtime.java.compiled.metadata.Metadata;
 
 public class Compiler
 {
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Identity identity)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, String user)
     {
-        return compile(model, deploymentMode, identity, null, null);
+        return compile(model, deploymentMode, user, null, null);
     }
 
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Identity identity, String packageOffset)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, String user, String packageOffset)
     {
-        return compile(model, deploymentMode, identity, packageOffset, null);
+        return compile(model, deploymentMode, user, packageOffset, null);
     }
 
-    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, Identity identity, String packageOffset, Metadata metaData)
+    public static PureModel compile(PureModelContextData model, DeploymentMode deploymentMode, String user, String packageOffset, Metadata metaData)
     {
         PureModelProcessParameter pureModelProcessParameter = new PureModelProcessParameter(packageOffset);
-        return new PureModel(model, identity, deploymentMode, pureModelProcessParameter, metaData);
+        return new PureModel(model, user, deploymentMode, pureModelProcessParameter, metaData);
     }
 
     public static String getLambdaReturnType(Lambda lambda, PureModel pureModel)

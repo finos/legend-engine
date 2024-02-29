@@ -1161,7 +1161,7 @@ public class TestServiceRunner
             InputStreamReader inputStreamReader = new InputStreamReader(Objects.requireNonNull(TestServiceRunner.class.getResourceAsStream(modelCodeResource)));
             BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
             PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(bufferedReader.lines().collect(Collectors.joining("\n")));
-            PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+            PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             Function fetchFunction = contextData.getElementsOfType(Function.class).stream().filter(x -> fetchFunctionName.equals(x._package + "::" + x.name)).findFirst().orElseThrow(() -> new IllegalArgumentException("Unknown function"));
 

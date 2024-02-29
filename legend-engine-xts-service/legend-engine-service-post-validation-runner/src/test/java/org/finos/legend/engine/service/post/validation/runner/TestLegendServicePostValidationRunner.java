@@ -59,7 +59,7 @@ public class TestLegendServicePostValidationRunner
         Service service = pureModelContextData.getElementsOfType(Service.class).stream().filter(s -> s.getPath().equals(servicePath)).findFirst()
                 .orElseThrow(() -> new RuntimeException("Unable to find service with path '" + servicePath + "'"));
         PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(pureModelContextData.getOrigin()).withSerializer(pureModelContextData.getSerializer()).withElements(LazyIterate.select(pureModelContextData.getElements(), e -> e != service)).build();
-        PureModel pureModel = new PureModel(dataWithoutService, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(dataWithoutService, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.PROD);
 
         Response validationResult = this.runValidation(service, pureModel, assertionId, serializationFormat);
         Assert.assertNotNull(validationResult);

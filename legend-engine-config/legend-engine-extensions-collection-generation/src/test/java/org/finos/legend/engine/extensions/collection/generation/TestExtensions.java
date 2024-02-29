@@ -223,7 +223,7 @@ public class TestExtensions
     @Test
     public void testPureModel()
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.PROD);
         MutableSet<String> expectedClassifiers = Iterate.flatCollect(PureProtocolExtensionLoader.extensions(), ext -> ext.getExtraProtocolToClassifierPathMap().values(), Sets.mutable.empty());
         Assert.assertEquals(
                 Lists.fixedSize.empty(),

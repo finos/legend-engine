@@ -191,7 +191,7 @@ public class TestRuntimeGenerationForServiceTests
                         "  ];\n" +
                         "}\n";
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureGrammarWithModelChainConnection);
-        PureModel pureModel = new PureModel(contextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(contextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
         Service service = contextData.getElementsOfType(Service.class).get(0);
         EngineRuntime testRuntime = (EngineRuntime) ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) service.execution, (SingleExecutionTest) service.test, contextData, pureModel);
         Assert.assertEquals(2, testRuntime.connections.size());
@@ -292,7 +292,7 @@ public class TestRuntimeGenerationForServiceTests
                         "  ];\n" +
                         "}\n";
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureGrammarWithModelChainConnection);
-        PureModel pureModel = new PureModel(contextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(contextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
         Service service = contextData.getElementsOfType(Service.class).get(0);
         EngineRuntime testRuntime = (EngineRuntime) ServiceTestGenerationHelper.buildSingleExecutionTestRuntime((PureSingleExecution) service.execution, (SingleExecutionTest) service.test, contextData, pureModel);
         Assert.assertEquals(1, testRuntime.connections.size());

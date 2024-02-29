@@ -77,7 +77,7 @@ public class LocalREPL implements REPLInterface
     @Override
     public PureModel compile(PureModelContextData pureModelContextData)
     {
-        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+        return Compiler.compile(pureModelContextData, DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
     }
 
     @Override

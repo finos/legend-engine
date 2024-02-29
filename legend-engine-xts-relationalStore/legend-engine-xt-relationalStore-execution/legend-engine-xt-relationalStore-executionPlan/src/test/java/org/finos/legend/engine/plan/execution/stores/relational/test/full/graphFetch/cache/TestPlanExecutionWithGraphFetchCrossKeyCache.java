@@ -689,7 +689,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
     private SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction);
-        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         List<ValueSpecification> fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0).body;
 

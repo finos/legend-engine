@@ -204,7 +204,7 @@ public class GraphQLDebug extends GraphQL
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Generate Pure Instance Builder").startActive(true))
         {
             Document document = new ObjectMapper().readValue(json, ExecutableDocument.class);
-            PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), identity, DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), identity.getName(), DeploymentMode.TEST);
             return Response.ok(buildPureInstanceGeneration(toPureModel(document, pureModel), pureModel)).build();
         }
         catch (Exception e)

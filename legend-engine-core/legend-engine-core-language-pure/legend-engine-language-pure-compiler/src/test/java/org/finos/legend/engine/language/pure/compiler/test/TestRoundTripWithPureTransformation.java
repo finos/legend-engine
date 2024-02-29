@@ -84,7 +84,7 @@ public class TestRoundTripWithPureTransformation
     private PureModel compileIntoPureModel(String pureCode)
     {
         PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(pureCode);
-        return new PureModel(pmcd, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
+        return new PureModel(pmcd, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
     }
 
 }

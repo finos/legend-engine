@@ -69,7 +69,7 @@ public class TestArrowQueries
             ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
             ExecuteInput input = objectMapper.readValue(getClass().getClassLoader().getResource("arrowService.json"), ExecuteInput.class);
 
-            PureModel model = org.finos.legend.engine.language.pure.compiler.Compiler.compile((PureModelContextData) input.model, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+            PureModel model = org.finos.legend.engine.language.pure.compiler.Compiler.compile((PureModelContextData) input.model, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
             Root_meta_core_runtime_Runtime runtime = HelperRuntimeBuilder.buildPureRuntime(input.runtime, model.getContext());
 
             LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(input.function.body, input.function.parameters, model.getContext());

@@ -119,7 +119,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -150,7 +150,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -182,7 +182,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -219,7 +219,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 

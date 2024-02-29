@@ -82,7 +82,7 @@ public class ModelManager
                 PureModelContext cacheKey = loader.cacheKey(context, identity);
                 try
                 {
-                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity, packageOffset));
+                    return this.pureModelCache.get(cacheKey, () -> Compiler.compile(this.loadData(cacheKey, clientVersion, identity), this.deploymentMode, identity.getName(), packageOffset));
                 }
                 catch (ExecutionException e)
                 {
@@ -90,7 +90,7 @@ public class ModelManager
                 }
             }
         }
-        return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity, packageOffset);
+        return Compiler.compile(this.loadData(context, clientVersion, identity), this.deploymentMode, identity.getName(), packageOffset);
     }
 
     // Remove clientVersion

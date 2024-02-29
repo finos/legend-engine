@@ -43,13 +43,13 @@ public class ModelToSchemaGenerationTest
         try
         {
             PureModelContextData modelData = PureGrammarParser.newInstance().parseModel(modelCode);
-            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             PureModelContextData generated = new ModelToSchemaGenerator(pureModel, extensions).generate(config, modelUnit, generateBinding, targetBindingPath);
             PureModelContextData combined = modelData.combine(generated);
             try
             {
-                Compiler.compile(combined, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
+                Compiler.compile(combined, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
             }
             catch (Exception e)
             {

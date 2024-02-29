@@ -42,7 +42,7 @@ public class TestRosettaFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             RosettaGenerationConfig rosettaConfig = RosettaGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
             Root_meta_external_format_rosetta_generation_RosettaConfig metaModelConfig = rosettaConfig.process(pureModel);
