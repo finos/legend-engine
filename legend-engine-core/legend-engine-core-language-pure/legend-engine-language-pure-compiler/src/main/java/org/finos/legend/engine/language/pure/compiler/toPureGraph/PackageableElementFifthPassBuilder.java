@@ -14,9 +14,6 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElementVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.DataElement;
@@ -29,17 +26,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.Mapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
-import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
-import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
-import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
-import org.slf4j.Logger;
 
 public class PackageableElementFifthPassBuilder implements PackageableElementVisitor<PackageableElement>
 {
-    private static final Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PackageableElementSecondPassBuilder.class);
-
     private final CompileContext context;
 
     public PackageableElementFifthPassBuilder(CompileContext context)
@@ -81,26 +71,7 @@ public class PackageableElementFifthPassBuilder implements PackageableElementVis
     @Override
     public PackageableElement visit(Function function)
     {
-        String packageString = this.context.pureModel.buildPackageString(function._package, HelperModelBuilder.getSignature(function));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition<?> targetFunc = this.context.pureModel.getConcreteFunctionDefinition(packageString, function.sourceInformation);
-        ProcessingContext ctx = new ProcessingContext("Function '" + packageString + "' Fifth Pass");
-        MutableList<ValueSpecification> body;
-        try
-        {
-            function.parameters.forEach(p -> p.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
-            body = ListIterate.collect(function.body, expression -> expression.accept(new ValueSpecificationBuilder(this.context, Lists.mutable.empty(), ctx)));
-        }
-        catch (Exception e)
-        {
-            LOGGER.warn(new LogInfo(null, LoggingEventType.GRAPH_EXPRESSION_ERROR, "Can't build function '" + packageString + "' - stack: " + ctx.getStack()).toString());
-            throw e;
-        }
-        FunctionType fType = ((FunctionType) targetFunc._classifierGenericType()._typeArguments().getFirst()._rawType());
-        HelperModelBuilder.checkCompatibility(this.context, body.getLast()._genericType()._rawType(), body.getLast()._multiplicity(), fType._returnType()._rawType(), fType._returnMultiplicity(), "Error in function '" + packageString + "'", function.body.get(function.body.size() - 1).sourceInformation);
-        ctx.pop();
-        targetFunc._expressionSequence(body);
-        HelperFunctionBuilder.processFunctionSuites(function, targetFunc, this.context, ctx);
-        return targetFunc;
+        return null;
     }
 
     @Override

@@ -287,7 +287,7 @@ public class PureModel implements IPureModel
             span.log("GRAPH_OTHER_ELEMENTS_BUILT_POST_CONNECTIONS_AND_RUNTIMES");
 
             long loadFunctionsStart = System.nanoTime();
-            pureModelContextDataIndex.functions.forEach(this::processFifthPass);
+            loadFunctions(pureModelContextDataIndex);
             long loadFunctionsEnd = System.nanoTime();
             LOGGER.info("{}", new LogInfo(pm, "GRAPH_FUNCTIONS_BUILT", nanosDurationToMillis(loadFunctionsStart, loadFunctionsEnd)));
             span.log("GRAPH_FUNCTIONS_BUILT");
@@ -470,7 +470,6 @@ public class PureModel implements IPureModel
         pure.classes.forEach(this::processFourthPass);
         pure.enumerations.forEach(this::processFourthPass);
         pure.associations.forEach(this::processThirdPass);
-        pure.functions.forEach(this::processSecondPass);
     }
 
     private void loadDataElements(PureModelContextDataIndex pure)
@@ -504,6 +503,11 @@ public class PureModel implements IPureModel
         // Connections must be loaded before runtimes
         pure.connections.forEach(this::processSecondPass);
         pure.runtimes.forEach(this::processSecondPass);
+    }
+
+    private void loadFunctions(PureModelContextDataIndex pure)
+    {
+        pure.functions.forEach(this::processSecondPass);
     }
 
     private void loadOtherElementsPreStores(PureModelContextDataIndex pure)
