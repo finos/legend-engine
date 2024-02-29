@@ -75,7 +75,7 @@ public class TestRelationalConnectionManagerLocalMode
         authenticationStrategy.publicUserName = "legend-local-snowflake-publicuserName";
         connectionSpec.authenticationStrategy = authenticationStrategy;
 
-        Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
+        Identity identity = DefaultIdentityFactory.INSTANCE.getAnonymousIdentity();
         DataSourceSpecification dataSourceSpecification = manager.getDataSourceSpecification(connectionSpec);
 
         Connection connection = manager.getDataSourceSpecification(connectionSpec).getConnectionUsingIdentity(identity, Optional.empty());

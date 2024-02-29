@@ -107,7 +107,7 @@ public class AbstractMiddleTierExecutionTest
     public void setup() throws Exception
     {
         DefaultIdentityFactory defaultIdentityFactory = new DefaultIdentityFactory();
-        this.identity = defaultIdentityFactory.makeUnknownIdentity();
+        this.identity = defaultIdentityFactory.getAnonymousIdentity();
 
         this.testVaultImplementation = new TestVaultImplementation();
         MiddleTierUserPasswordCredential middleTierUserPasswordCredential = new MiddleTierUserPasswordCredential(postgresTestContainerWrapper.getUser(), postgresTestContainerWrapper.getPassword(), "unused");

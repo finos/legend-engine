@@ -28,19 +28,20 @@ import org.pac4j.core.profile.CommonProfile;
 import javax.security.auth.Subject;
 import java.security.Principal;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public final class DefaultIdentityFactory implements IdentityFactory
 {
     public static DefaultIdentityFactory INSTANCE = new DefaultIdentityFactory();
+    private static final Identity ANONYMOUS_IDENTITY = new Identity("Anonymous");
+
 
     @Override
     public Identity makeIdentity(Subject subject)
     {
         if (subject == null)
         {
-            return this.makeUnknownIdentity();
+            return this.getAnonymousIdentity();
         }
         Principal principal = getKerberosPrincipalFromSubject(subject);
         if (principal == null)
@@ -61,7 +62,7 @@ public final class DefaultIdentityFactory implements IdentityFactory
     {
         if (profiles == null)
         {
-            return this.makeUnknownIdentity();
+            return this.getAnonymousIdentity();
         }
         Optional<KerberosProfile> kerberosProfileHolder = this.getKerberosProfile(profiles);
         if (kerberosProfileHolder.isPresent())
@@ -69,7 +70,7 @@ public final class DefaultIdentityFactory implements IdentityFactory
             return INSTANCE.makeIdentity(kerberosProfileHolder.get().getSubject());
         }
 
-        return INSTANCE.makeUnknownIdentity();
+        return INSTANCE.getAnonymousIdentity();
     }
 
     private Optional<KerberosProfile> getKerberosProfile(MutableList<CommonProfile> profiles)
@@ -77,9 +78,9 @@ public final class DefaultIdentityFactory implements IdentityFactory
         return Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, KerberosProfile.class).getFirst());
     }
 
-    public Identity makeUnknownIdentity()
+    public Identity getAnonymousIdentity()
     {
-        return new Identity("_UNKNOWN_");
+        return ANONYMOUS_IDENTITY;
     }
 
     @Override
