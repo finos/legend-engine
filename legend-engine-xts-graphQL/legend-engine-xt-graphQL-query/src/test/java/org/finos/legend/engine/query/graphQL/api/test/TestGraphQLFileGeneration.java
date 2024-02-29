@@ -24,6 +24,7 @@ import org.finos.legend.engine.query.graphQL.api.format.generation.GraphQLGenera
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,7 +42,7 @@ public class TestGraphQLFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             GraphQLGenerationExtension graphQLGenerationExtension = new GraphQLGenerationExtension();
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = graphQLGenerationExtension.generateFromElement(fileGeneration, pureModel.getContext());
@@ -75,7 +76,7 @@ public class TestGraphQLFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("scalarFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             GraphQLGenerationExtension graphQLGenerationExtension = new GraphQLGenerationExtension();
             List<? extends Root_meta_pure_generation_metamodel_GenerationOutput> outputs = graphQLGenerationExtension.generateFromElement(fileGeneration, pureModel.getContext());

@@ -34,6 +34,7 @@ import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordin
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateWrapper;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectResolvedContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -78,7 +79,7 @@ public class TestLegendServiceSQLSourceProvider
 
         SQLSource expected = expectedFunc.apply(execution);
 
-        SQLSourceResolvedContext resolved = provider.resolve(FastList.newListWith(table), null, Identity.getAnonymousIdentity());
+        SQLSourceResolvedContext resolved = provider.resolve(FastList.newListWith(table), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         Assert.assertNotNull(resolved.getPureModelContext());
         Assert.assertEquals(1, resolved.getSources().size());
 
@@ -131,7 +132,7 @@ public class TestLegendServiceSQLSourceProvider
                 new SQLSourceArgument("key", null, "k2")
         ));
 
-        SQLSourceResolvedContext resolved = provider.resolve(FastList.newListWith(table), null, Identity.getAnonymousIdentity());
+        SQLSourceResolvedContext resolved = provider.resolve(FastList.newListWith(table), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         Assert.assertEquals(FastList.newListWith(pointer), resolved.getPureModelContexts());
         Assert.assertEquals(1, resolved.getSources().size());
 
@@ -189,7 +190,7 @@ public class TestLegendServiceSQLSourceProvider
                 new TableSourceArgument("project", null, "p1"),
                 new TableSourceArgument("workspace", null, "ws")
         ));
-        IllegalArgumentException exception = Assert.assertThrows("Should throw given no service found", IllegalArgumentException.class, () -> provider.resolve(FastList.newListWith(table), null, Identity.getAnonymousIdentity()));
+        IllegalArgumentException exception = Assert.assertThrows("Should throw given no service found", IllegalArgumentException.class, () -> provider.resolve(FastList.newListWith(table), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
         Assert.assertEquals("No element found for 'service'", exception.getMessage());
     }
 }

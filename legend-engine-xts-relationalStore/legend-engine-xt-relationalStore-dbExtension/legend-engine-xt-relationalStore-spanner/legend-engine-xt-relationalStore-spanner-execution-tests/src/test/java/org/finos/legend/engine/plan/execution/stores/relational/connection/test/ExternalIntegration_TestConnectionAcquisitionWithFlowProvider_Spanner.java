@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import static org.junit.Assert.assertTrue;
@@ -96,7 +97,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     public void testSpannerGCPADCConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 5, TEST_QUERY);
     }
 

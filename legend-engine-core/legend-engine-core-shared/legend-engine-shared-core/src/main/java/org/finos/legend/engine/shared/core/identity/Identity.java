@@ -31,7 +31,6 @@ public class Identity
 {
     private String name;
     private final List<Credential> credentials = new ArrayList<>();
-    private static final Identity ANONYMOUS_IDENTITY = new Identity("Anonymous");
 
     public Identity(String name, Credential... credentials)
     {
@@ -111,10 +110,5 @@ public class Identity
                 .select(Objects::nonNull)
                 .collect(LegendKerberosCredential::getSubject)
                 .getFirst();
-    }
-
-    public static Identity getAnonymousIdentity()
-    {
-        return ANONYMOUS_IDENTITY;
     }
 }

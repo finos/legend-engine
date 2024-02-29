@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_protocols_pure_vX_X_X_metamodel_PackageableElement;
 import org.finos.legend.pure.generated.core_pure_protocol_vX_X_X_transfers_metamodel;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -83,7 +84,7 @@ public class TestRoundTripWithPureTransformation
     private PureModel compileIntoPureModel(String pureCode)
     {
         PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(pureCode);
-        return new PureModel(pmcd, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        return new PureModel(pmcd, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
     }
 
 }

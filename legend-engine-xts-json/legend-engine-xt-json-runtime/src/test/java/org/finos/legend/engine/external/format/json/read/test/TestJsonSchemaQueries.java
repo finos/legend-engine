@@ -26,6 +26,7 @@ import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtili
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.ModelUnit;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -41,7 +42,7 @@ public class TestJsonSchemaQueries extends TestExternalFormatQueries
     @BeforeClass
     public static void setup()
     {
-        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity()).getExecutionSupport();
+        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()).getExecutionSupport();
         formatExtensions = Collections.singletonList(core_external_format_json_externalFormatContract.Root_meta_external_format_json_extension_jsonSchemaFormatExtension__Extension_1_(executionSupport));
         formatDescriptors = Collections.singletonList(core_external_format_json_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_json_executionPlan_platformBinding_legendJava_jsonSchemaJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
     }

@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpace;
 import org.junit.Assert;
 import org.junit.Test;
@@ -62,7 +63,7 @@ public class TestDataSpaceAnalyticsArtifactGenerationExtension
     {
         String pureModelString = getResourceAsString(modelFilePath);
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString, false);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         DataSpaceAnalyticsArtifactGenerationExtension extension = new DataSpaceAnalyticsArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = pureModel.getPackageableElement(dataSpacePath);
         Assert.assertTrue(packageableElement instanceof Root_meta_pure_metamodel_dataSpace_DataSpace);

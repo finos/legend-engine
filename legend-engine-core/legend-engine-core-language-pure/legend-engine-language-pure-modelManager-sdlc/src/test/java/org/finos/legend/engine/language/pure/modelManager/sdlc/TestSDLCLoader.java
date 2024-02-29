@@ -40,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.After;
 import org.junit.Assert;
@@ -88,7 +89,7 @@ public class TestSDLCLoader
         configureWireMockForRetries();
         SDLCLoader sdlcLoader = createSDLCLoader();
 
-        PureModelContextData pmcdLoaded = sdlcLoader.load(Identity.getAnonymousIdentity(), pointer, CLIENT_VERSION, tracer.activeSpan());
+        PureModelContextData pmcdLoaded = sdlcLoader.load(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), pointer, CLIENT_VERSION, tracer.activeSpan());
         Assert.assertNotNull(pmcdLoaded);
 
         Object tries = tracer.finishedSpans()
@@ -112,7 +113,7 @@ public class TestSDLCLoader
 
         try
         {
-            sdlcLoader.load(Identity.getAnonymousIdentity(), pointer, CLIENT_VERSION, tracer.activeSpan());
+            sdlcLoader.load(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), pointer, CLIENT_VERSION, tracer.activeSpan());
             Assert.fail("Should throw");
         }
         catch (EngineException e)
@@ -134,7 +135,7 @@ public class TestSDLCLoader
 
         configureWireMockForRetries();
         SDLCLoader sdlcLoader = createSDLCLoader();
-        PureModelContextData pmcdLoaded = sdlcLoader.load(Identity.getAnonymousIdentity(), pointer, CLIENT_VERSION, tracer.activeSpan());
+        PureModelContextData pmcdLoaded = sdlcLoader.load(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), pointer, CLIENT_VERSION, tracer.activeSpan());
         Assert.assertNotNull(pmcdLoaded);
         Assert.assertEquals(1, pmcdLoaded.getElements().size());
         Assert.assertEquals("pkg::pkg::myClass", pmcdLoaded.getElements().get(0).getPath());
@@ -156,7 +157,7 @@ public class TestSDLCLoader
 
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST, tracer, sdlcLoader);
 
-        PureModelContextData pmcdLoaded = modelManager.loadData(pointer, CLIENT_VERSION, Identity.getAnonymousIdentity());
+        PureModelContextData pmcdLoaded = modelManager.loadData(pointer, CLIENT_VERSION, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
 
         Assert.assertNotNull(pmcdLoaded);
         Assert.assertEquals(2, pmcdLoaded.getElements().size());

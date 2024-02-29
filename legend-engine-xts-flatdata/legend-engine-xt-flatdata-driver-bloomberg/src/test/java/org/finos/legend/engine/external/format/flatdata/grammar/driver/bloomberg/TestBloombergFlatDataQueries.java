@@ -22,6 +22,7 @@ import org.finos.legend.engine.language.pure.compiler.Compiler;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor;
 import org.finos.legend.pure.m3.execution.ExecutionSupport;
@@ -35,7 +36,7 @@ public class TestBloombergFlatDataQueries extends TestExternalFormatQueries
     public static void setup()
     {
         ExecutionSupport executionSupport = Compiler
-                .compile(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity()).getExecutionSupport();
+                .compile(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()).getExecutionSupport();
         formatExtensions = Collections
                 .singletonList(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(executionSupport));
         formatDescriptors = Collections.singletonList(core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_flatdata_executionPlan_platformBinding_legendJava_flatDataJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));

@@ -39,6 +39,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.cla
 import org.finos.legend.engine.repl.autocomplete.handlers.*;
 import org.finos.legend.engine.repl.autocomplete.parser.ParserFixer;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionAccessor;
@@ -108,7 +109,7 @@ public class Completer
             ValueSpecification currentExpression = findPartiallyWrittenExpression(vs, lineOffset, value.length());
 
             PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(buildCodeContext);
-            PureModel pureModel = Compiler.compile(pureModelContextData, null, Identity.getAnonymousIdentity());
+            PureModel pureModel = Compiler.compile(pureModelContextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
 
             ProcessingContext processingContext = new ProcessingContext("");
 

@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -37,7 +38,7 @@ public class TestPlanExecutor
         Map<String, Result> res = Maps.mutable.empty();
         res.put("execID", new ConstantResult("b26973f8-8857-4ece-bfdc-107176c9da8b"));
         res.put("userId", new ConstantResult("anumam"));
-        Identity identity = Identity.getAnonymousIdentity();
+        Identity identity = IdentityFactoryProvider.getInstance().getAnonymousIdentity();
 
         ExecutionState state1 = new ExecutionState(res, Lists.mutable.empty(), Lists.mutable.empty(), false, 52_428_800L, new RequestContext(session, "https://allo'y'.site.gs.com/"), null);
         PlanExecutor.setUpState(new SingleExecutionPlan(), state1, identity, "anumam");

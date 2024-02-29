@@ -42,6 +42,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.url.EngineUrlStreamHandlerFactory;
 import org.finos.legend.engine.shared.core.url.InputStreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
@@ -201,7 +202,7 @@ public class PlanExecutor
     @Deprecated
     public Result execute(ExecutionPlan executionPlan, Map<String, ?> params, StreamProvider inputStreamProvider, PlanExecutionContext planExecutionContext)
     {
-        return execute(executionPlan, params, inputStreamProvider, Identity.getAnonymousIdentity(), planExecutionContext);
+        return execute(executionPlan, params, inputStreamProvider, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), planExecutionContext);
     }
 
     @Deprecated
@@ -679,7 +680,7 @@ public class PlanExecutor
             this.executionState = builder.executionState;
             this.vars.putAll(builder.vars);
             this.params.putAll(builder.params);
-            this.identity = builder.identity == null ? Identity.getAnonymousIdentity() : builder.identity; // write a test case and merge it into engine
+            this.identity = builder.identity == null ? IdentityFactoryProvider.getInstance().getAnonymousIdentity() : builder.identity; // write a test case and merge it into engine
             this.user = builder.user;
             this.requestContext = builder.requestContext;
         }
@@ -699,7 +700,7 @@ public class PlanExecutor
         private Map<StoreType, StoreExecutionState.RuntimeContext> storeRuntimeContexts = Maps.mutable.empty();
         private Map<String, Result> vars = Maps.mutable.empty();
         private Map<String, Object> params = Maps.mutable.empty();
-        private Identity identity = Identity.getAnonymousIdentity();
+        private Identity identity = IdentityFactoryProvider.getInstance().getAnonymousIdentity();
         private String user;
         private RequestContext requestContext;
 

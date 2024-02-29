@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGen
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -41,7 +42,7 @@ public class TestJSONSchemaFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             JSONSchemaConfig jsonSchemaConfig = JSONSchemaGenerationConfigBuilder.build(fileGeneration);
             Assert.assertTrue(jsonSchemaConfig.useConstraints);

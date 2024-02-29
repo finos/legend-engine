@@ -30,6 +30,7 @@ import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordin
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectResolvedContext;
 import org.finos.legend.engine.query.sql.providers.shared.utils.SQLProviderUtils;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -202,7 +203,7 @@ public class TestRelationalStoreSQLSourceProvider extends AbstractTestLegendStor
                 .with(new SQLSourceArgument("schema", null, schemaName))
                 .with(new SQLSourceArgument("table", null, tableName));
 
-        SQLSourceResolvedContext result = provider.resolve(FastList.newListWith(tablesource), null, Identity.getAnonymousIdentity());
+        SQLSourceResolvedContext result = provider.resolve(FastList.newListWith(tablesource), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
 
         Lambda lambda = SQLProviderUtils.tableToTDS(databaseName, schemaName, tableName);
 

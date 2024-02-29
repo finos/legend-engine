@@ -37,6 +37,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.port.DynamicPortGenerator;
 import org.h2.tools.Server;
 import org.junit.After;
@@ -155,7 +156,7 @@ public abstract class AlloyTestServer
 
     protected String executePlan(SingleExecutionPlan plan,String user)
     {
-        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user,Identity.getAnonymousIdentity());
+        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) plan, Maps.mutable.empty(), user,IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         return result.flush(new RelationalResultToJsonDefaultSerializer(result));
     }
 
@@ -173,7 +174,7 @@ public abstract class AlloyTestServer
         {
             updateRuntimeWithTimeZone(contextData.getElementsOfType(PackageableRuntime.class).get(0), timeZone);
         }
-        PureModel pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity());
+        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         Function fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0);
 
         return PlanGenerator.generateExecutionPlan(

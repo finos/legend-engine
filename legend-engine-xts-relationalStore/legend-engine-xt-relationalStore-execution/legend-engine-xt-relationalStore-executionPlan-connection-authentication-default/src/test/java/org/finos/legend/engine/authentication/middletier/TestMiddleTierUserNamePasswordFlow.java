@@ -21,6 +21,7 @@ import org.finos.legend.engine.authentication.flows.middletier.MemSqlStaticWithM
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.MiddleTierUserNamePasswordAuthenticationStrategy;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.middletier.MiddleTierUserPasswordCredential;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.After;
@@ -60,7 +61,7 @@ public class TestMiddleTierUserNamePasswordFlow
                     "legend.resourceContext",
                     "resource1")
             );
-            flow.makeCredential(Identity.getAnonymousIdentity(), null, authenticationStrategy, context);
+            flow.makeCredential(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, authenticationStrategy, context);
             fail("failed to throw");
         }
         catch (Exception e)
@@ -79,7 +80,7 @@ public class TestMiddleTierUserNamePasswordFlow
                     "legend.usageContext",
                     "SERVICE_EXECUTION")
             );
-            flow.makeCredential(Identity.getAnonymousIdentity(), null, authenticationStrategy, context);
+            flow.makeCredential(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, authenticationStrategy, context);
             fail("failed to throw");
         }
         catch (Exception e)

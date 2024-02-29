@@ -23,6 +23,7 @@ import org.finos.legend.engine.plan.execution.result.json.JsonStreamingResult;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.AlloyTestServer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -227,7 +228,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
         SingleExecutionPlan plan = buildPlan(LOGICAL_MODEL + STORE_MODEL + invalidMapping + RUNTIME + fetchFunction);
         RuntimeException e = Assert.assertThrows(RuntimeException.class, () ->
         {
-            JsonStreamingResult res  = (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, Identity.getAnonymousIdentity());
+            JsonStreamingResult res  = (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
             res.flush(new JsonStreamToPureFormatSerializer(res));
         });
         Assert.assertEquals("Error reading in property 'integer' of type Integer from SQL column of type 'VARCHAR'.", e.getMessage());
@@ -284,7 +285,7 @@ public class TestRelationalGraphFetchExecutionDataTypes extends AlloyTestServer
                 "}";
 
         SingleExecutionPlan plan = buildPlan(LOGICAL_MODEL + storeModel + MAPPING + RUNTIME + fetchFunction);
-        return (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, Identity.getAnonymousIdentity());
+        return (JsonStreamingResult) this.planExecutor.execute(plan, Maps.mutable.empty(), (String) null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
     }
 
     @Override

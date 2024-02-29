@@ -31,6 +31,7 @@ import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordin
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectResolvedContext;
 import org.finos.legend.engine.query.sql.providers.shared.utils.SQLProviderUtils;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.Assert;
 import org.junit.Before;
@@ -157,13 +158,13 @@ public class TestFunctionSQLSourceProvider
 
     private <T extends Throwable> void testException(TableSource tableSource, Class<T> throwable, String expected)
     {
-        T exception = Assert.assertThrows("Should throw given no service found", throwable, () -> provider.resolve(FastList.newListWith(tableSource), null, Identity.getAnonymousIdentity()));
+        T exception = Assert.assertThrows("Should throw given no service found", throwable, () -> provider.resolve(FastList.newListWith(tableSource), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
         Assert.assertEquals(expected, exception.getMessage());
     }
 
     private void testSuccess(TableSource tableSource, PureModelContext expectedContext, SQLSource expected)
     {
-        SQLSourceResolvedContext result = provider.resolve(FastList.newListWith(tableSource), null, Identity.getAnonymousIdentity());
+        SQLSourceResolvedContext result = provider.resolve(FastList.newListWith(tableSource), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
 
         //ASSERT
         Assert.assertEquals(FastList.newListWith(expectedContext), result.getPureModelContexts());

@@ -27,6 +27,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPWorkloadIdentityFederationAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.BigQueryDatasourceSpecification;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
@@ -130,7 +131,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public void testBigQueryGCPADCConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPADCSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 
@@ -138,7 +139,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_BigQu
     public void testBigQueryGCPWIFConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.bigQueryWithGCPWIFSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select * from `legend-integration-testing.integration_dataset1.table1`");
     }
 

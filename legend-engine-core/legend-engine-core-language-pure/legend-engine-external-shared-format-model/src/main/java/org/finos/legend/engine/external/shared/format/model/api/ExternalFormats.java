@@ -81,11 +81,11 @@ public class ExternalFormats
     {
         try
         {
-            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity(), null).getTwo();
+            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null).getTwo();
             List<ExternalFormatDescription> descriptions = extensions.values().stream()
                     .map(ext -> ExternalFormatDescription.newDescription(ext, pureModel))
                     .collect(Collectors.toList());
-            return ManageConstantResult.manageResult(Identity.getAnonymousIdentity().getName(), descriptions);
+            return ManageConstantResult.manageResult(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), descriptions);
         }
         catch (Exception ex)
         {

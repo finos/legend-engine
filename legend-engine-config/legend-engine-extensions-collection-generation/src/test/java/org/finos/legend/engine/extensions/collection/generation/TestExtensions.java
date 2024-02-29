@@ -82,6 +82,7 @@ import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarCo
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -222,7 +223,7 @@ public class TestExtensions
     @Test
     public void testPureModel()
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), Identity.getAnonymousIdentity(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(PureModelContextData.newPureModelContextData(), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.PROD);
         MutableSet<String> expectedClassifiers = Iterate.flatCollect(PureProtocolExtensionLoader.extensions(), ext -> ext.getExtraProtocolToClassifierPathMap().values(), Sets.mutable.empty());
         Assert.assertEquals(
                 Lists.fixedSize.empty(),

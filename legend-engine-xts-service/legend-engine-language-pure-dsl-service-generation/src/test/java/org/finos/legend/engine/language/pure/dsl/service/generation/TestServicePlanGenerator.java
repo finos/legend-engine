@@ -32,6 +32,7 @@ import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension;
 import org.finos.legend.pure.generated.core_pure_extensions_functions;
@@ -54,7 +55,7 @@ public class TestServicePlanGenerator
     public void testSingleExecutionServiceGenerationJSON()
     {
         PureModelContextData data = loadModelDataFromResource("simpleJsonService.json");
-        PureModel pureModel = new PureModel(data, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(data, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
         Service service = data.getElementsOfType(Service.class).get(0);
         Assert.assertTrue(service.execution instanceof PureSingleExecution);
         ExecutionPlan plan = ServicePlanGenerator.generateServiceExecutionPlan(service, null, pureModel, "vX_X_X", PlanPlatform.JAVA, core_java_platform_binding_legendJavaPlatformBinding_store_m2m_m2mLegendJavaPlatformBindingExtension.Root_meta_pure_mapping_modelToModel_executionPlan_platformBinding_legendJava_inMemoryExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers);
@@ -65,7 +66,7 @@ public class TestServicePlanGenerator
     public void testSingleExecutionServiceGenerationWithExecutionOptions()
     {
         PureModelContextData data = loadModelDataFromResource("simpleJsonService.json");
-        PureModel pureModel = new PureModel(data, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(data, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
         Service service = data.getElementsOfType(Service.class).get(0);
         Assert.assertTrue(service.execution instanceof PureSingleExecution);
         ((PureSingleExecution) service.execution).executionOptions = Lists.mutable.of(new DummyExecutionOption());
@@ -84,7 +85,7 @@ public class TestServicePlanGenerator
     public void testGenerationWithFunctionUsingFromEnvironment() throws Exception
     {
         PureModelContextData data = PureGrammarParser.newInstance().parseModel(new Scanner(getClass().getClassLoader().getResource("ServiceSpecificationUsingFromEnvironment.pure").openStream(), "UTF-8").useDelimiter("\\A").next());
-        PureModel pureModel = new PureModel(data, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(data, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
         Service service = data.getElementsOfType(Service.class).get(0);
         Assert.assertTrue(service.execution instanceof PureSingleExecution);
         MutableList<PlanGeneratorExtension> extensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));

@@ -26,6 +26,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -75,7 +76,7 @@ public class TestRelationalElementApi
         PureModelContextData generatedModel = objectMapper.readValue(actualJson, PureModelContextData.class);
         PureModelContextData fullModel = generatedModel.combine(inputPmcd);
         // compile generated model and input database
-        testManager.loadModelAndData(fullModel, fullModel.serializer.version, Identity.getAnonymousIdentity(), null);
+        testManager.loadModelAndData(fullModel, fullModel.serializer.version, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null);
     }
 
     @Test

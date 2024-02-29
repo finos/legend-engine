@@ -40,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_flatdata_externalFormatContract;
 import org.finos.legend.pure.generated.core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor;
@@ -61,7 +62,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
     @BeforeClass
     public static void setup()
     {
-        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, Identity.getAnonymousIdentity()).getExecutionSupport();
+        ExecutionSupport executionSupport = Compiler.compile(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity()).getExecutionSupport();
         formatExtensions = Collections.singletonList(core_external_format_flatdata_externalFormatContract.Root_meta_external_format_flatdata_extension_flatDataFormatExtension__Extension_1_(executionSupport));
         formatDescriptors = Collections.singletonList(core_external_format_flatdata_java_platform_binding_legendJavaPlatformBinding_descriptor.Root_meta_external_format_flatdata_executionPlan_platformBinding_legendJava_flatDataJavaBindingDescriptor__ExternalFormatLegendJavaPlatformBindingDescriptor_1_(executionSupport));
     }
@@ -148,7 +149,7 @@ public class TestFlatDataQueries extends TestExternalFormatQueries
         PureModelContextData generated = SchemaToModelGenerationTest.generateModel(schemaCode, config, true, "test::gen::TestBinding");
         PureModelContextData schemaData = PureGrammarParser.newInstance().parseModel(schemaCode);
 
-        PureModel model = Compiler.compile(generated.combine(schemaData), DeploymentMode.TEST, Identity.getAnonymousIdentity());
+        PureModel model = Compiler.compile(generated.combine(schemaData), DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         PureGrammarParser parser = PureGrammarParser.newInstance();
         Lambda lambdaProtocol = parser.parseLambda("data:String[1]|test::gen::PricesRecord->internalize(test::gen::TestBinding, $data)->graphFetchChecked(" + tree + ")->serialize(" + tree + ")");
         LambdaFunction<?> lambda = HelperValueSpecificationBuilder.buildLambda(lambdaProtocol.body, lambdaProtocol.parameters, model.getContext());

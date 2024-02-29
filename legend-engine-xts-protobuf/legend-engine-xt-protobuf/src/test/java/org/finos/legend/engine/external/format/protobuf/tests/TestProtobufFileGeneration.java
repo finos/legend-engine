@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGen
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.finos.legend.pure.generated.core_external_format_protobuf_deprecated;
@@ -41,7 +42,7 @@ public class TestProtobufFileGeneration
         try
         {
             PureModelContextData pureModelContextData = getProtocol("simpleFileGeneration.json");
-            PureModel pureModel = new PureModel(pureModelContextData, Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+            PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
             FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
             ProtobufGenerationConfig protobufConfig = ProtobufGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
             Root_meta_external_format_protobuf_deprecated_generation_configuration_ProtobufConfig metaModelConfig = protobufConfig.transformToPure(pureModel);

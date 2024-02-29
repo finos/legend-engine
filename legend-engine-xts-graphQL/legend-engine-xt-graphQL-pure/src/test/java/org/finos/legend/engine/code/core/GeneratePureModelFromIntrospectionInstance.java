@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_metamodel_introspection___Schema;
 import org.finos.legend.pure.generated.core_external_query_graphql_binding_toPure_introspection_toPure_introspection;
 import org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar;
@@ -32,7 +33,7 @@ public class GeneratePureModelFromIntrospectionInstance
 {
     public static void main(String[] args) throws Exception
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
         __Schema schema = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(GeneratePureModelFromIntrospectionInstance.class.getClassLoader().getResourceAsStream("exampleModel.json"), __Schema.class);
         Root_meta_external_query_graphQL_metamodel_introspection___Schema pureSchema = new org.finos.legend.engine.protocol.graphQL.introspection.model.ProtocolToMetamodelTranslator().translate(schema, pureModel);
         RichIterable<? extends Type> types = core_external_query_graphql_binding_toPure_introspection_toPure_introspection.Root_meta_external_query_graphQL_binding_toPure_introspection_buildPureTypesFromGraphQLSchema___Schema_1__String_1__Type_MANY_(pureSchema, "pack", pureModel.getExecutionSupport());

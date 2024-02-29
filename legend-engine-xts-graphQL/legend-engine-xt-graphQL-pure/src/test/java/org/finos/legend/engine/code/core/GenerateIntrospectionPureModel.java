@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTra
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.core_pure_serialization_toPureGrammar;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Type;
 
@@ -29,7 +30,7 @@ public class GenerateIntrospectionPureModel
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
         String introspection = "type __Schema {\n" +
                 "  types: [__Type!]!\n" +
                 "  queryType: __Type!\n" +

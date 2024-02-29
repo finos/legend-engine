@@ -23,6 +23,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.deployment.DeploymentStateAndVersions;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Test;
 
 import java.net.URL;
@@ -58,7 +59,7 @@ public class TestOpenApiArtifactGenerationExtension
     {
         String pureServiceString = getResourceAsString("testService.pure");
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureServiceString);
-        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
+        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         OpenApiArtifactGenerationExtension extension = new OpenApiArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("test::TestService");
         assertTrue(extension.canGenerate(packageableElement));
@@ -74,7 +75,7 @@ public class TestOpenApiArtifactGenerationExtension
     {
         String pureServiceString = getResourceAsString("TestServiceNoProfile.pure");
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(pureServiceString);
-        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
+        PureModel model = Compiler.compile(contextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         OpenApiArtifactGenerationExtension extension = new OpenApiArtifactGenerationExtension();
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement packageableElement = model.getPackageableElement("test::TestServiceNoProfile");
         assertFalse(extension.canGenerate(packageableElement));

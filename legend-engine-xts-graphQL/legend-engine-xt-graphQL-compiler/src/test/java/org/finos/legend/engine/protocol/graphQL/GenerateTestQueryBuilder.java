@@ -21,12 +21,13 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.ProtocolToMetamodelTra
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 
 public class GenerateTestQueryBuilder
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
         String introspection = "query MyQuery {\n" +
                 "  firmByLegalName(legalName: \"ork\") {\n" +
                 "    legalName\n" +

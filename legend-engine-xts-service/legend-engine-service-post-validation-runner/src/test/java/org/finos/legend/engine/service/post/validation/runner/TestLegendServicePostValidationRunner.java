@@ -35,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.m3.coreinstance.Package;
 import org.junit.Assert;
@@ -58,7 +59,7 @@ public class TestLegendServicePostValidationRunner
         Service service = pureModelContextData.getElementsOfType(Service.class).stream().filter(s -> s.getPath().equals(servicePath)).findFirst()
                 .orElseThrow(() -> new RuntimeException("Unable to find service with path '" + servicePath + "'"));
         PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(pureModelContextData.getOrigin()).withSerializer(pureModelContextData.getSerializer()).withElements(LazyIterate.select(pureModelContextData.getElements(), e -> e != service)).build();
-        PureModel pureModel = new PureModel(dataWithoutService, Identity.getAnonymousIdentity(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(dataWithoutService, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.PROD);
 
         Response validationResult = this.runValidation(service, pureModel, assertionId, serializationFormat);
         Assert.assertNotNull(validationResult);
@@ -75,7 +76,7 @@ public class TestLegendServicePostValidationRunner
         Root_meta_legend_service_metamodel_Service pureService = compileService(service, pureModel.getContext(service));
 
         PlanExecutor planExecutor = PlanExecutor.newPlanExecutor(Relational.build(), InMemory.build());
-        LegendServicePostValidationRunner servicePostValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, ((PureExecution) service.execution).func.parameters, Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X", Identity.getAnonymousIdentity(), serializationFormat,planExecutor);
+        LegendServicePostValidationRunner servicePostValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, ((PureExecution) service.execution).func.parameters, Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, "vX_X_X", IdentityFactoryProvider.getInstance().getAnonymousIdentity(), serializationFormat,planExecutor);
         try
         {
             return servicePostValidationRunner.runValidationAssertion(assertionId);

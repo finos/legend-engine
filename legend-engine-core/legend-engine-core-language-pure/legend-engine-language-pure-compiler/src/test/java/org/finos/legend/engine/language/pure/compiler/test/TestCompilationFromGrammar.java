@@ -28,6 +28,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -67,7 +68,7 @@ public class TestCompilationFromGrammar
                 ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
                 String json = objectMapper.writeValueAsString(modelData);
                 modelData = objectMapper.readValue(json, PureModelContextData.class);
-                PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, Identity.getAnonymousIdentity());
+                PureModel pureModel = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");

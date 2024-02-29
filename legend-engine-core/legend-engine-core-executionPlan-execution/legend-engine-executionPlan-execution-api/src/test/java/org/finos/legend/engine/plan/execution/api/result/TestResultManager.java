@@ -17,6 +17,7 @@ package org.finos.legend.engine.plan.execution.api.result;
 import org.finos.legend.engine.plan.execution.result.ErrorResult;
 import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.junit.Test;
 
@@ -29,7 +30,7 @@ public class TestResultManager
     @Test
     public void testDefaultErrorCode() throws Exception
     {
-        Response response = ResultManager.manageResult(Identity.getAnonymousIdentity().getName(), new ErrorResult(999, "some error"), SerializationFormat.PURE, LoggingEventType.SERVICE_ERROR);
+        Response response = ResultManager.manageResult(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), new ErrorResult(999, "some error"), SerializationFormat.PURE, LoggingEventType.SERVICE_ERROR);
         assertEquals(500, response.getStatus());
         ResultManager.ErrorMessage errorMessage = (ResultManager.ErrorMessage) response.getEntity();
         // error code of 999 in the input result is ignored and replaced by a magic number 20 - This is legacy behavior that is preserved as is
@@ -39,7 +40,7 @@ public class TestResultManager
     @Test
     public void testNonDefaultErrorCode() throws Exception
     {
-        Response response = ResultManager.manageResultWithCustomErrorCode(Identity.getAnonymousIdentity().getName(), new ErrorResult(999, "some error"), SerializationFormat.PURE, LoggingEventType.SERVICE_ERROR);
+        Response response = ResultManager.manageResultWithCustomErrorCode(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), new ErrorResult(999, "some error"), SerializationFormat.PURE, LoggingEventType.SERVICE_ERROR);
         assertEquals(500, response.getStatus());
         ResultManager.ErrorMessage errorMessage = (ResultManager.ErrorMessage) response.getEntity();
         assertEquals(999, errorMessage.code);

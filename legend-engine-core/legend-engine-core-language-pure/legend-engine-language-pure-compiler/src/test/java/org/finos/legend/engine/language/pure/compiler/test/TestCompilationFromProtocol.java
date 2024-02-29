@@ -20,6 +20,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.junit.Assert;
 
@@ -48,7 +49,7 @@ public class TestCompilationFromProtocol
             try
             {
                 PureModelContextData pureModelContextData = objectMapper.readValue(pureModelContextDataJsonStr, PureModelContextData.class);
-                Compiler.compile(pureModelContextData, null, Identity.getAnonymousIdentity());
+                Compiler.compile(pureModelContextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");
@@ -71,7 +72,7 @@ public class TestCompilationFromProtocol
             try
             {
                 PureModelContextData pureModelContextData = objectMapper.readValue(jsonString, PureModelContextData.class);
-                Compiler.compile(pureModelContextData, null, Identity.getAnonymousIdentity(), offset, null);
+                Compiler.compile(pureModelContextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), offset, null);
                 if (expectedErrorMsg != null)
                 {
                     Assert.fail("Expected compilation error with message: " + expectedErrorMsg + "; but no error occurred");

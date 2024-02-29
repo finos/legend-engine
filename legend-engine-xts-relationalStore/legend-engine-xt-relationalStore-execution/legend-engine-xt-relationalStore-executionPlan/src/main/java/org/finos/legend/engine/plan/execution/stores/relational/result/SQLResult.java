@@ -24,6 +24,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.drive
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -154,13 +155,13 @@ public abstract class SQLResult extends Result implements StoreExecutable
             if (!this.getStatement().isClosed())
             {
                 this.getStatement().cancel();
-                LOGGER.info(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + this.getRequestContext()).toString());
+                LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION, "Successful cancellation of  RelationalResult " + this.getRequestContext()).toString());
 
             }
         }
         catch (Exception e)
         {
-            LOGGER.error(new LogInfo(Identity.getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + this.getRequestContext() + " " + e.getMessage()).toString());
+            LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.EXECUTABLE_CANCELLATION_ERROR, "Unable to cancel  RelationalResult  for session " + this.getRequestContext() + " " + e.getMessage()).toString());
         }
     }
 }

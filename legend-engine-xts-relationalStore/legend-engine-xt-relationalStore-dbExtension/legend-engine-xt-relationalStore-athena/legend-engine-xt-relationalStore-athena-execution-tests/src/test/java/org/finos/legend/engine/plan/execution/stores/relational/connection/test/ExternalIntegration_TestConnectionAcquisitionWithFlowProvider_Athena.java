@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.config.Temporary
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Before;
@@ -55,7 +56,7 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Athen
     public void testConnectivity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = getTestConnection();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection(Identity.getAnonymousIdentity(), systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 1, "select 1");
     }
 

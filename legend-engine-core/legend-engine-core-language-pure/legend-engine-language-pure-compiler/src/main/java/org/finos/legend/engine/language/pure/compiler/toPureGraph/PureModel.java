@@ -54,6 +54,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -164,7 +165,7 @@ public class PureModel implements IPureModel
 
     public PureModel(PureModelContextData pureModelContextData, CompilerExtensions extensions, Identity identity, ClassLoader classLoader, DeploymentMode deploymentMode, PureModelProcessParameter pureModelProcessParameter, Metadata metaData)
     {
-        identity = identity == null ? Identity.getAnonymousIdentity() : identity;
+        identity = identity == null ? IdentityFactoryProvider.getInstance().getAnonymousIdentity() : identity;
         long start = System.nanoTime();
 
         if (classLoader == null)
@@ -326,7 +327,7 @@ public class PureModel implements IPureModel
 
     private static PureModel getCorePureModel()
     {
-        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), Identity.getAnonymousIdentity(), null, null, new PureModelProcessParameter(), null);
+        return new PureModel(PureModelContextData.newBuilder().build(), CompilerExtensions.fromExtensions(Lists.mutable.empty()), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null, null, new PureModelProcessParameter(), null);
     }
 
     private void modifyRootClassifier()

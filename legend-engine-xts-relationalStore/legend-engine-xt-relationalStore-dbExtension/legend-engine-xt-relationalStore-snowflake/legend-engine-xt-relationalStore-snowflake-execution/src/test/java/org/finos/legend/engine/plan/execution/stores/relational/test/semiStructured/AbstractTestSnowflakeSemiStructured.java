@@ -30,6 +30,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.core_external_format_json_externalFormatContract;
@@ -54,7 +55,7 @@ public abstract class AbstractTestSnowflakeSemiStructured
     public AbstractTestSnowflakeSemiStructured()
     {
         this.contextData = PureGrammarParser.newInstance().parseModel(readModelContentFromResource(this.modelResourcePath()));
-        this.pureModel = Compiler.compile(contextData, null, Identity.getAnonymousIdentity());
+        this.pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
     }
 
     public abstract String modelResourcePath();

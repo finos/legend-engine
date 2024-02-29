@@ -32,6 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPla
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 
@@ -264,7 +265,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
     protected Result execute(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
         PlanExecutionContext planExecutionContext = null;
-        Identity identity = Identity.getAnonymousIdentity();
+        Identity identity = IdentityFactoryProvider.getInstance().getAnonymousIdentity();
 
         if (serviceRunnerInput != null)
         {

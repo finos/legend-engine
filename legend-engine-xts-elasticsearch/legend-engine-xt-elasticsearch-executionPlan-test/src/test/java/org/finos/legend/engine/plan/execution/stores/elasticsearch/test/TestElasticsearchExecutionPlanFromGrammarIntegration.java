@@ -39,6 +39,7 @@ import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_functions_io_http_URL;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
@@ -79,7 +80,7 @@ public class TestElasticsearchExecutionPlanFromGrammarIntegration
     {
         String grammar = IOUtils.toString(ClassLoader.getSystemResource("grammarForPlanIntegrationTesting.pure"), StandardCharsets.UTF_8);
         PureModelContextData pmcd = PureGrammarParser.newInstance().parseModel(grammar.replace("_%_ELASTIC_HOST_%_", hostPort));
-        PURE_MODEL = Compiler.compile(pmcd, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, Identity.getAnonymousIdentity());
+        PURE_MODEL = Compiler.compile(pmcd, DeploymentMode.TEST_IGNORE_FUNCTION_MATCH, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
     }
 
     @AfterClass

@@ -21,12 +21,13 @@ import org.finos.legend.engine.protocol.sql.metamodel.Node;
 import org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 
 public class GenerateTestQueryBuilder
 {
     public static void main(String[] args)
     {
-        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(),Identity.getAnonymousIdentity(), DeploymentMode.TEST);
+        PureModel pureModel = new PureModel(PureModelContextData.newBuilder().build(), IdentityFactoryProvider.getInstance().getAnonymousIdentity(), DeploymentMode.TEST);
         String query = "SELECT id FROM alloy.\"/alloy/bi/getTableauUsage\" LIMIT 1";
         SQLGrammarParser parser = SQLGrammarParser.newInstance();
         Node node = parser.parseStatement(query);

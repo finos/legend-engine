@@ -21,6 +21,7 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.Da
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.SnowflakeDataSourceSpecification;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ds.specifications.keys.SnowflakeDataSourceSpecificationKey;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.Test;
@@ -45,7 +46,7 @@ public class ExternalIntegration_TestConnectionObjectProtocol_Snowflake extends 
     @Test
     public void testSnowflakePublicConnection_identity() throws Exception
     {
-        testSnowflakePublicConnection(c -> c.getConnectionUsingIdentity(Identity.getAnonymousIdentity()));
+        testSnowflakePublicConnection(c -> c.getConnectionUsingIdentity(IdentityFactoryProvider.getInstance().getAnonymousIdentity()));
     }
 
     private void testSnowflakePublicConnection(Function<DataSourceSpecification, Connection> toDBConnection) throws Exception
