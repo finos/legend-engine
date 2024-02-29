@@ -1,0 +1,33 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::relational::mapping::*;
+import meta::external::function::activator::*;
+import meta::external::store::relational::runtime::*;
+import meta::relational::runtime::*;
+import meta::relational::metamodel::*;
+import meta::pure::mapping::*;
+import meta::core::runtime::*;
+import meta::pure::runtime::*;
+
+function meta::relational::mapping::contextBasedPostProcessors(result:PostProcessorResult[1], runtime:Runtime[1], ext:RoutedValueSpecification[0..1], mapping:Mapping[0..1], store:Database[0..1], exeCtx:ExecutionContext[1]): PostProcessorResult[1]
+{
+   $exeCtx->match([
+      f: FunctionActivatorExecutionContext[1] | let res = $f.postProcessor->cast(@ConcreteFunctionDefinition<{SQLQuery[1]->PostProcessorResult[1]}>)->toOne()->eval($result.query)->toOne();
+                                                ^$result(query = $res.query, templateFunctions = $result.templateFunctions->concatenate($res.templateFunctions),executionNodes =$result.executionNodes->concatenate( $res.executionNodes), postExecutionNodes=$result.postExecutionNodes->concatenate($res.postExecutionNodes));,
+      m: MultiExecutionContext[1] | $m.allContexts()->fold({ctx, prevResult | contextBasedPostProcessors($prevResult, $runtime, $ext, $mapping, $store, $ctx);}, $result),                                                
+
+      a: Any[1] | $result]);
+}

@@ -141,7 +141,8 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), property = $s.property->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->map(i | $i->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
                     s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
-                    s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn))     
+                    s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn)),
+                    t:TableFunctionParamPlaceHolder[1] | $t
                   ]);
 }
 
