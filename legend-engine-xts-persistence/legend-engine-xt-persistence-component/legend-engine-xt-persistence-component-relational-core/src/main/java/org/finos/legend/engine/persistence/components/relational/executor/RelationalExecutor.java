@@ -87,6 +87,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
+            SqlUtils.logSql(LOGGER, sqlLogging, sql);
             List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(sql, rows);
             if (!queryResult.isEmpty())
             {
