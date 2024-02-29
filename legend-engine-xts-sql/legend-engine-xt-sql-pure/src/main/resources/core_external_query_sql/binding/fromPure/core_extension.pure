@@ -29,23 +29,61 @@ function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtens
 
             let part = $args->at(0)->reactivate()->toOne()->cast(@String);
 
-            let enum = [
-              pair('year', DurationUnit.YEARS),
-              pair('month', DurationUnit.MONTHS),
-              pair('week', DurationUnit.WEEKS),
-              pair('day', DurationUnit.DAYS),
-              pair('hour', DurationUnit.HOURS),
-              pair('minute', DurationUnit.MINUTES),
-              pair('second', DurationUnit.SECONDS),
-              pair('millisecond', DurationUnit.MILLISECONDS)
-            ]->getValue($part->toLower());   
+            let enum = mapDuration($part) ;  
 
             nullOrSfe(dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_, [$args->at(1), $args->at(2), processExtractEnumValue($enum)])  ;       
         }),
+        processor('most_recent_day_of_week', Date, {args, fc, ctx |
+            assertEquals(2, $args->size(), 'incorrect number of args for core_most_recent_day_of_week');
+
+            let part = $args->at(0)->reactivate()->toOne()->cast(@String);
+
+            let enum = mapDayOfWeek($part);
+
+            nullOrSfe(mostRecentDayOfWeek_Date_1__DayOfWeek_1__Date_1_, [$args->at(1), processExtractEnumValue($enum)])  ;
+        }),        
+        processor('previous_day_of_week', Date, {args, fc, ctx |
+            assertEquals(2, $args->size(), 'incorrect number of args for core_previous_day_of_week');
+
+            let part = $args->at(0)->reactivate()->toOne()->cast(@String);
+
+            let enum = mapDayOfWeek($part);
+
+            nullOrSfe(previousDayOfWeek_Date_1__DayOfWeek_1__Date_1_, [$args->at(1), processExtractEnumValue($enum)])  ;
+        }),        
         aggregate('unique_value_only', Any, {args, fc, ctx | 
             sfe(uniqueValueOnly_T_MANY__T_$0_1$_, $args->at(0).genericType, $args->at(0).genericType, $args->at(0))
         })
       ]
     )
   )
+}
+
+function meta::external::query::sql::mapDuration(durationUnit:String[1]):DurationUnit[1]
+{
+  [
+    pair('year', DurationUnit.YEARS),
+    pair('month', DurationUnit.MONTHS),
+    pair('week', DurationUnit.WEEKS),
+    pair('day', DurationUnit.DAYS),
+    pair('hour', DurationUnit.HOURS),
+    pair('minute', DurationUnit.MINUTES),
+    pair('second', DurationUnit.SECONDS),
+    pair('millisecond', DurationUnit.MILLISECONDS)
+  ]->getValue($durationUnit->toLower()); 
+
+}
+
+function meta::external::query::sql::mapDayOfWeek(stringDate:String[1]):DayOfWeek[1]
+{
+   [
+    pair('monday', DayOfWeek.Monday),
+    pair('tuesday', DayOfWeek.Tuesday),
+    pair('wednesday', DayOfWeek.Wednesday),
+    pair('thursday', DayOfWeek.Thursday),
+    pair('friday', DayOfWeek.Friday),
+    pair('saturday', DayOfWeek.Saturday),
+    pair('sunday', DayOfWeek.Sunday)
+  ]->getValue($stringDate->toLower());
+
 }
