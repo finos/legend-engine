@@ -160,7 +160,7 @@ class BulkLoadPlanner extends Planner
         }
         else
         {
-            List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset(), true);
+            List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValuesWithVarCharType(stagingDataset());
             fieldsToSelect.add(MetadataFileNameField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
             fieldsToSelect.add(MetadataRowNumberField.builder().build());
 
@@ -261,7 +261,7 @@ class BulkLoadPlanner extends Planner
 
     private LogicalPlan buildLogicalPlanForTransformWhileCopy(Resources resources)
     {
-        List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset(), false);
+        List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValues(stagingDataset());
         List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
 
         // Add digest

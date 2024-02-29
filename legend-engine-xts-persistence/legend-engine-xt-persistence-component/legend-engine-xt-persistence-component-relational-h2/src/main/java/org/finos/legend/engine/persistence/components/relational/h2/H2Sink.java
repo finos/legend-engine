@@ -262,7 +262,7 @@ public class H2Sink extends AnsiSqlSink
         return result;
     }
 
-    public List<DataError> performDryRun(Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
@@ -272,6 +272,8 @@ public class H2Sink extends AnsiSqlSink
         {
             dataErrorsByCategory.put(validationCategory, new LinkedList<>());
         }
+
+        List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
 
         Map<Set<FieldValue>, SqlPlan> queriesForNull =  dryRunValidationSqlPlan.getOrDefault(NULL_VALUES, new HashMap<>());
         Map<Set<FieldValue>, SqlPlan> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(DATATYPE_CONVERSION, new HashMap<>());
@@ -289,7 +291,7 @@ public class H2Sink extends AnsiSqlSink
                     {
                         if (row.get(column) == null)
                         {
-                            DataError dataError = constructDataError(row, FILE, ROW_NUMBER, NULL_VALUES, column);
+                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, NULL_VALUES, column);
                             dataErrors.add(dataError);
                             dataErrorsByCategory.get(NULL_VALUES).add(dataError);
                         }
@@ -322,7 +324,7 @@ public class H2Sink extends AnsiSqlSink
                         List<Map<String, Object>> resultSets = results.get(0).getData();
                         for (Map<String, Object> row : resultSets)
                         {
-                            DataError dataError = constructDataError(row, FILE, ROW_NUMBER, DATATYPE_CONVERSION, validatedColumn.fieldName());
+                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, DATATYPE_CONVERSION, validatedColumn.fieldName());
                             dataErrors.add(dataError);
                             dataErrorsByCategory.get(DATATYPE_CONVERSION).add(dataError);
                         }

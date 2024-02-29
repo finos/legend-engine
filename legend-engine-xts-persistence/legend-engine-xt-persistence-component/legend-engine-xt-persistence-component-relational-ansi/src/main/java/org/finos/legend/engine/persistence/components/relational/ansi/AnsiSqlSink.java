@@ -330,7 +330,7 @@ public class AnsiSqlSink extends RelationalSink
         throw new UnsupportedOperationException("Bulk Load not supported!");
     }
 
-    public List<DataError> performDryRun(Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         throw new UnsupportedOperationException("DryRun not supported!");
     }
@@ -349,22 +349,15 @@ public class AnsiSqlSink extends RelationalSink
         return Optional.ofNullable(longValue);
     }
 
-    protected DataError constructDataError(Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
+    protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
     {
-        // TODO: follow the order of schema object
-        String commaSeparatedRow = row.keySet().stream()
-            .sorted()
-            .filter(key -> !key.equals(fileNameColumnName) && !key.equals(rowNumberColumnName))
-            .map(key -> getString(row, key).orElse(""))
-            .collect(Collectors.joining(","));
-
         return DataError.builder()
             .errorMessage(validationCategory.getValidationFailedErrorMessage())
             .file(getString(row, fileNameColumnName).orElseThrow(IllegalStateException::new))
             .errorCategory(validationCategory.name())
             .columnName(validatedColumnName)
             .rowNumber(getLong(row, rowNumberColumnName))
-            .rejectedRecord(commaSeparatedRow)
+            .rejectedRecord(allColumns.stream().map(column -> getString(row, column).orElse("")).collect(Collectors.joining(",")))
             .build();
     }
 

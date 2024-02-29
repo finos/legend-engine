@@ -396,26 +396,40 @@ public class LogicalPlanUtils
         return stagingDataset.schema().fields().stream().filter(field -> field.primaryKey() && primaryKeysFromMain.contains(field.name())).collect(Collectors.toList());
     }
 
-    // TODO: another method: public static List<Value> extractStagedFilesFieldValuesWithVarCharType(Dataset dataset)
-    public static List<Value> extractStagedFilesFieldValues(Dataset dataset, boolean withVarCharType)
+    public static List<Value> extractStagedFilesFieldValues(Dataset dataset)
     {
         List<Value> stagedFilesFields = new ArrayList<>();
         boolean columnNumbersPresent = dataset.schema().fields().stream().allMatch(field -> field.columnNumber().isPresent());
         int iter = 1;
         for (Field field : dataset.schema().fields())
         {
-            // TODO: extract this part into a private method that takes the desired type
-            StagedFilesFieldValue fieldValue = StagedFilesFieldValue.builder()
-                    .columnNumber(columnNumbersPresent ? field.columnNumber().get() : iter++)
-                    .datasetRefAlias(dataset.datasetReference().alias())
-                    .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
-                    .elementPath(field.elementPath())
-                    .fieldType(withVarCharType ? FieldType.builder().dataType(VARCHAR).build() : field.type())
-                    .fieldName(field.name())
-                    .build();
-            stagedFilesFields.add(fieldValue);
+            stagedFilesFields.add(getStagedFilesFieldValueWithType(dataset, field, field.type(), columnNumbersPresent, iter++));
         }
         return stagedFilesFields;
+    }
+
+    public static List<Value> extractStagedFilesFieldValuesWithVarCharType(Dataset dataset)
+    {
+        List<Value> stagedFilesFields = new ArrayList<>();
+        boolean columnNumbersPresent = dataset.schema().fields().stream().allMatch(field -> field.columnNumber().isPresent());
+        int iter = 1;
+        for (Field field : dataset.schema().fields())
+        {
+            stagedFilesFields.add(getStagedFilesFieldValueWithType(dataset, field, FieldType.builder().dataType(VARCHAR).build(), columnNumbersPresent, iter++));
+        }
+        return stagedFilesFields;
+    }
+
+    public static StagedFilesFieldValue getStagedFilesFieldValueWithType(Dataset dataset, Field field, FieldType fieldType, boolean columnNumbersPresent, int counter)
+    {
+        return StagedFilesFieldValue.builder()
+            .columnNumber(columnNumbersPresent ? field.columnNumber().get() : counter)
+            .datasetRefAlias(dataset.datasetReference().alias())
+            .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
+            .elementPath(field.elementPath())
+            .fieldType(fieldType)
+            .fieldName(field.name())
+            .build();
     }
 
     public static Dataset getTempDataset(Datasets datasets)

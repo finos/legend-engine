@@ -262,7 +262,7 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    public List<DataError> performDryRun(Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         if (dryRunValidationSqlPlan == null || dryRunValidationSqlPlan.isEmpty())
         {
@@ -270,7 +270,7 @@ public class SnowflakeSink extends AnsiSqlSink
         }
         else
         {
-            return performDryRunWithValidationQueries(executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount);
+            return performDryRunWithValidationQueries(datasets, executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount);
         }
     }
 
@@ -301,7 +301,7 @@ public class SnowflakeSink extends AnsiSqlSink
         return dataErrors;
     }
 
-    private List<DataError> performDryRunWithValidationQueries(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    private List<DataError> performDryRunWithValidationQueries(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
@@ -311,6 +311,8 @@ public class SnowflakeSink extends AnsiSqlSink
         {
             dataErrorsByCategory.put(validationCategory, new LinkedList<>());
         }
+
+        List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
 
         for (ValidationCategory validationCategory : dryRunValidationSqlPlan.keySet())
         {
@@ -326,7 +328,7 @@ public class SnowflakeSink extends AnsiSqlSink
                         {
                             if (row.get(column) == null)
                             {
-                                DataError dataError = constructDataError(row, FILE_WITH_ERROR, ROW_NUMBER, validationCategory, column);
+                                DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, validationCategory, column);
                                 dataErrors.add(dataError);
                                 dataErrorsByCategory.get(validationCategory).add(dataError);
                             }

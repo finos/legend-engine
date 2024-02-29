@@ -968,43 +968,41 @@ public class BulkLoadTest extends BaseTest
             .errorCategory(ValidationCategory.NULL_VALUES.name())
             .rowNumber(1L)
             .columnName(col3NonNullable.name())
-            .rejectedRecord("2022-01-99 00:00:00.0,,??,Andy")
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
             .build(), DataError.builder()
             .file(filePath)
             .errorCategory(ValidationCategory.NULL_VALUES.name())
             .rowNumber(2L)
             .columnName(col2NonNullable.name())
-            .rejectedRecord("2022-01-12 00:00:00.0,NaN,2,")
+            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
             .build(), DataError.builder()
             .file(filePath)
             .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
             .rowNumber(1L)
             .columnName(col1.name())
-            .rejectedRecord("2022-01-99 00:00:00.0,,??,Andy")
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
             .build(), DataError.builder()
             .file(filePath)
             .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
             .rowNumber(1L)
             .columnName(col4.name())
-            .rejectedRecord("2022-01-99 00:00:00.0,,??,Andy")
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
             .build(), DataError.builder()
             .file(filePath)
             .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
             .rowNumber(2L)
             .columnName(col3.name())
-            .rejectedRecord("2022-01-12 00:00:00.0,NaN,2,")
+            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Unable to type cast column")
             .build());
 
         Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
         Assertions.assertEquals(new HashSet<>(expectedErrorRecords), new HashSet<>(dryRunResult.errorRecords()));
     }
-
-    // TODO: add test for sample row count
 
     RelationalIngestor getRelationalIngestor(IngestMode ingestMode, PlannerOptions options, Clock executionTimestampClock, CaseConversion caseConversion, Optional<String> eventId)
     {
