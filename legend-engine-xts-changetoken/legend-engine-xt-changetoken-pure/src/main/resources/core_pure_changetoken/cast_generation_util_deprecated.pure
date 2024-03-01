@@ -17,14 +17,17 @@ import meta::external::language::java::metamodel::*;
 import meta::json::*;
 import meta::pure::changetoken::cast_generation::*;
 
-function <<access.private>> meta::pure::changetoken::cast_generation::inlineJsonValueWithUnescaping(type: String[1], isSingle: Boolean[1], jsonValue: JSONElement[1]): Code[1]
+function <<access.private>> meta::pure::changetoken::cast_generation::inlineJsonValueWithUnescaping(type: String[1], isOptional: Boolean[1], isSingle: Boolean[1], jsonValue: JSONElement[1]): Code[1]
 {
     let value = expandComplexString($jsonValue);
+    if($value->instanceOf(JSONNull) || $value->instanceOf(JSONString) && ($value->cast(@JSONString).value->length() == 0 || $value->cast(@JSONString).value->equalIgnoreCase('null')) && $isOptional,
+        | j_null(),
+        |
     if($type->equalIgnoreCase('Boolean') && $isSingle,
         | $value->match([b:JSONBoolean[1] | j_boolean($b.value), s:JSONString[1] | j_boolean($s.value)]),
         |
     if($type->equalIgnoreCase('Float') && $isSingle || $type->equalIgnoreCase('Double') && $isSingle,
-        | $value->match([f:JSONNumber[1] | j_double($f.value->cast(@Float)), s:JSONString[1] | j_double($s.value)]),
+        | $value->match([f:JSONNumber[1] | $f.value->match([i:Integer[1] | j_int($i), f:Float[1] | j_double($f)]), s:JSONString[1] | j_double($s.value)]),
         |
     if($type->equalIgnoreCase('Integer') && $isSingle,
         | $value->match([i:JSONNumber[1] | j_int($i.value->cast(@Integer)), s:JSONString[1] | j_int($s.value)]),
@@ -32,12 +35,13 @@ function <<access.private>> meta::pure::changetoken::cast_generation::inlineJson
     if($value->instanceOf(JSONString),
         | j_string(stripMatchingQuotes($value->match([s:JSONString[1] | $s.value]))),
         | inlineJsonValue($value);
-    ))));
+    )))));
 }
 
 function <<access.private>> meta::pure::changetoken::cast_generation::expandComplexString(value: JSONElement[1]): JSONElement[1]
 {
-    if($value->instanceOf(JSONString) && $value->cast(@JSONString).value->startsWith('{') && $value->cast(@JSONString).value->endsWith('}'),
+    if($value->instanceOf(JSONString) && (($value->cast(@JSONString).value->startsWith('{') && $value->cast(@JSONString).value->endsWith('}'))
+        || ($value->cast(@JSONString).value->startsWith('[') && $value->cast(@JSONString).value->endsWith(']'))),
         | $value->cast(@JSONString).value->parseJSON(),
         | $value
     );
