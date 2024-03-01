@@ -26,11 +26,11 @@ import org.eclipse.collections.api.set.MutableSet;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.IncludedMappingHandler;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
@@ -73,7 +73,7 @@ import java.util.Optional;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
 
-public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDataCompilerExtension, StoreProviderCompilerExtension
+public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDataCompilerHelper, StoreProviderCompilerHelper
 {
     static final MutableMap<String, Root_meta_pure_metamodel_dataSpace_DataSpace> dataSpacesIndex = Maps.mutable.empty();
 
@@ -289,6 +289,6 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
         return ListIterate
                 .select(pureModelContextData.getElementsOfType(DataSpace.class), e -> dataElementReference.dataElement.path.equals(e.getPath()))
                 .collect(d -> Iterate.detect(d.executionContexts, e -> e.name.equals(d.defaultExecutionContext)).testData)
-                .collect(d -> EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement(d, pureModelContextData));
+                .collect(d -> EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement(d, pureModelContextData));
     }
 }

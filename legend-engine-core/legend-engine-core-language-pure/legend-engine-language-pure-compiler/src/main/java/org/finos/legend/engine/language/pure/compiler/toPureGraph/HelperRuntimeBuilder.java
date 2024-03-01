@@ -18,7 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -272,7 +272,7 @@ public class HelperRuntimeBuilder
 
     public static Store getStore(StoreProviderPointer storeProviderPointer, CompileContext context)
     {
-        return StoreProviderCompilerExtension.getStoreFromStoreProviderPointers(storeProviderPointer, context);
+        return StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(storeProviderPointer, context);
     }
 
     /**

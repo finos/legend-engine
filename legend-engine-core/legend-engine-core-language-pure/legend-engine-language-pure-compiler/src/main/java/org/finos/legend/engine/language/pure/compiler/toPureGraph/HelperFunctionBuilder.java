@@ -18,7 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -116,7 +116,7 @@ public class HelperFunctionBuilder
     private static Root_meta_legend_function_metamodel_StoreTestData buildFunctionTestData(org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime runtime, StoreTestData storeTestData, CompileContext compileContext, ProcessingContext ctx)
     {
         Root_meta_legend_function_metamodel_StoreTestData_Impl metamodelStoreTestData = new Root_meta_legend_function_metamodel_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(storeTestData.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::StoreTestData"));
-        Store resolvedStore = StoreProviderCompilerExtension.getStoreFromStoreProviderPointers(storeTestData.store, compileContext);
+        Store resolvedStore = StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(storeTestData.store, compileContext);
         try
         {
             org.finos.legend.pure.generated.Root_meta_core_runtime_Connection connection = runtime.connectionByElement(resolvedStore, compileContext.pureModel.getExecutionSupport());

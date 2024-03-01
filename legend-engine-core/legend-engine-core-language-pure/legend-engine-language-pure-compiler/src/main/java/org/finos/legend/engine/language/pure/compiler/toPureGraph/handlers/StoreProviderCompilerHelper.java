@@ -26,7 +26,7 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import java.util.Map;
 
-public interface StoreProviderCompilerExtension
+public interface StoreProviderCompilerHelper
 {
     default Map<PackageableElementType, Function2<StoreProviderPointer, CompileContext, Store>> getExtraStoreProviderHandlers()
     {
@@ -35,13 +35,14 @@ public interface StoreProviderCompilerExtension
 
     static Store getStoreFromStoreProviderPointers(StoreProviderPointer storeProviderPointer, CompileContext context)
     {
+        if (storeProviderPointer.path.equals("ModelStore"))
+        {
+            return new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"))
+        }
         Map<PackageableElementType, Function2<StoreProviderPointer, CompileContext, Store>> extraStoreProviderPointerHandlers = Maps.mutable.empty();
         ListIterate
-                .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), StoreProviderCompilerExtension.class)
+                .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), StoreProviderCompilerHelper.class)
                 .forEach(e -> extraStoreProviderPointerHandlers.putAll(e.getExtraStoreProviderHandlers()));
-        return storeProviderPointer.path.equals("ModelStore") ?
-                new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"))
-                : extraStoreProviderPointerHandlers.get(storeProviderPointer.type).apply(storeProviderPointer, context);
-
+        return extraStoreProviderPointerHandlers.get(storeProviderPointer.type).apply(storeProviderPointer, context);
     }
 }

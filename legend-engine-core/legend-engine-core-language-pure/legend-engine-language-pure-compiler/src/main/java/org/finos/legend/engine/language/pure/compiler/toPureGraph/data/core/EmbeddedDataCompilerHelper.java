@@ -38,7 +38,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public interface EmbeddedDataCompilerExtension
+public interface EmbeddedDataCompilerHelper
 {
     static Root_meta_pure_data_EmbeddedData compileCoreEmbeddedDataTypes(EmbeddedData embeddedData, CompileContext context, ProcessingContext processingContext)
     {
@@ -127,8 +127,8 @@ public interface EmbeddedDataCompilerExtension
     static EmbeddedData getEmbeddedDataFromDataElement(DataElementReference dataElementReference, PureModelContextData pureModelContextData)
     {
         List<EmbeddedData> dataList = ListIterate
-                .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), EmbeddedDataCompilerExtension.class)
-                .flatCollect(EmbeddedDataCompilerExtension::getExtraDataElementReferencePMCDTraversers)
+                .selectInstancesOf(CompilerExtensions.fromAvailableExtensions().getExtensions(), EmbeddedDataCompilerHelper.class)
+                .flatCollect(EmbeddedDataCompilerHelper::getExtraDataElementReferencePMCDTraversers)
                 .flatCollect(f -> f.apply(dataElementReference, pureModelContextData))
                 .select(Objects::nonNull);
         if (dataList.size() > 1)

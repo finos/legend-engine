@@ -25,8 +25,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerExtension;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.ModelStoreTestConnectionFactory;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
@@ -238,16 +238,16 @@ public class FunctionTestRunner implements TestRunner
                     Optional<StoreTestData> optionalStoreTestData = protocolFunctionSuite.testData.stream().filter(
                             pTestData ->
                             {
-                                String testDataStorePath = getElementFullPath(StoreProviderCompilerExtension.getStoreFromStoreProviderPointers(pTestData.store, context.getPureModel().getContext()), context.getPureModel().getExecutionSupport());
+                                String testDataStorePath = getElementFullPath(StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(pTestData.store, context.getPureModel().getContext()), context.getPureModel().getExecutionSupport());
                                 return testDataStorePath.equals(connectionStorePath);
                             }).findFirst();
                     if (optionalStoreTestData.isPresent())
                     {
                         StoreTestData resolvedStoreTestData = optionalStoreTestData.get();
                         EmbeddedData testData = (resolvedStoreTestData.data instanceof DataElementReference)
-                                ? EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement((DataElementReference) resolvedStoreTestData.data, context.getPureModelContextData())
+                                ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) resolvedStoreTestData.data, context.getPureModelContextData())
                                 : resolvedStoreTestData.data;
-                        org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store store = StoreProviderCompilerExtension.getStoreFromStoreProviderPointers(resolvedStoreTestData.store, context.getPureModel().getContext());
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store store = StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(resolvedStoreTestData.store, context.getPureModel().getContext());
                         Store protocolStore = this.resolveStore(context.getPureModelContextData(), getElementFullPath(store, context.getPureModel().getExecutionSupport()));
                         storeTestDataList.put(protocolStore, testData);
                     }
