@@ -301,7 +301,20 @@ public class H2Sink extends AnsiSqlSink
         }
 
         // Execute queries for datatype conversion
-        for (Set<FieldValue> validatedColumns : queriesForDatatype.keySet())
+        // Sort the map keys first to achieve deterministic results
+        List<Set<FieldValue>> sortedMapKeysForDatatype = queriesForDatatype.keySet().stream().sorted((o1, o2) ->
+        {
+            // There is only one element in the set
+            Optional<FieldValue> fieldValue1 = o1.stream().findAny();
+            Optional<FieldValue> fieldValue2 = o2.stream().findAny();
+            if (fieldValue1.isPresent() && fieldValue2.isPresent())
+            {
+                return fieldValue1.get().fieldName().compareTo(fieldValue2.get().fieldName());
+            }
+            return 0;
+        }).collect(Collectors.toList());
+
+        for (Set<FieldValue> validatedColumns : sortedMapKeysForDatatype)
         {
             try
             {
