@@ -32,14 +32,14 @@ public class SubjectTools
 {
     public static String getPrincipal(Subject subject)
     {
-        return subject == null ? "_UNKNOWN_" : subject.getPrincipals().iterator().next().getName();
+        return subject == null ? "Anonymous" : subject.getPrincipals().iterator().next().getName();
     }
 
     public static String getKerberos(Subject subject)
     {
         if (subject == null)
         {
-            return "_UNKNOWN_";
+            return "Anonymous";
         }
         String principal = subject.getPrincipals().iterator().next().getName();
         return getUsername(principal);
