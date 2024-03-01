@@ -34,6 +34,7 @@ import java.util.Optional;
 public final class DefaultIdentityFactory implements IdentityFactory
 {
     public static DefaultIdentityFactory INSTANCE = new DefaultIdentityFactory();
+    private static final Identity ANONYMOUS_IDENTITY = new Identity("Anonymous");
 
     @Override
     public Identity makeIdentity(Subject subject)
@@ -80,6 +81,11 @@ public final class DefaultIdentityFactory implements IdentityFactory
     public Identity makeUnknownIdentity()
     {
         return new Identity("_UNKNOWN_");
+    }
+
+    public Identity getAnonymousIdentity()
+    {
+        return ANONYMOUS_IDENTITY;
     }
 
     @Override
