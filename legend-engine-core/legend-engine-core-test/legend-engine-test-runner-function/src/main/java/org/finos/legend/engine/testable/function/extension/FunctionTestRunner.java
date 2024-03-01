@@ -25,6 +25,8 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.ModelStoreTestConnectionFactory;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
@@ -36,8 +38,8 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedDataHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
@@ -232,14 +234,22 @@ public class FunctionTestRunner implements TestRunner
                 if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store)
                 {
                     org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store metamodelStore = (org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store) element;
-                    String storePath = getElementFullPath(metamodelStore, context.getPureModel().getExecutionSupport());
-                    Optional<StoreTestData> optionalStoreTestData = protocolFunctionSuite.testData.stream().filter(pTestData -> pTestData.store.equals(storePath)).findFirst();
+                    String connectionStorePath = getElementFullPath(metamodelStore, context.getPureModel().getExecutionSupport());
+                    Optional<StoreTestData> optionalStoreTestData = protocolFunctionSuite.testData.stream().filter(
+                            pTestData ->
+                            {
+                                String testDataStorePath = getElementFullPath(StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(pTestData.store, context.getPureModel().getContext()), context.getPureModel().getExecutionSupport());
+                                return testDataStorePath.equals(connectionStorePath);
+                            }).findFirst();
                     if (optionalStoreTestData.isPresent())
                     {
                         StoreTestData resolvedStoreTestData = optionalStoreTestData.get();
-                        EmbeddedData testData = EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), resolvedStoreTestData.data);
-                        Store store = this.resolveStore(context.getPureModelContextData(), resolvedStoreTestData.store);
-                        storeTestDataList.put(store, testData);
+                        EmbeddedData testData = (resolvedStoreTestData.data instanceof DataElementReference)
+                                ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) resolvedStoreTestData.data, context.getPureModelContextData())
+                                : resolvedStoreTestData.data;
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store store = StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(resolvedStoreTestData.store, context.getPureModel().getContext());
+                        Store protocolStore = this.resolveStore(context.getPureModelContextData(), getElementFullPath(store, context.getPureModel().getExecutionSupport()));
+                        storeTestDataList.put(protocolStore, testData);
                     }
                 }
             });

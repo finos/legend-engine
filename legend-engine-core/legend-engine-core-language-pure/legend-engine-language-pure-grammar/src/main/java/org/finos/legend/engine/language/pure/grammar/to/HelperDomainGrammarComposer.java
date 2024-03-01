@@ -229,7 +229,7 @@ public class HelperDomainGrammarComposer
     {
         StringBuilder dataStrBuilder = new StringBuilder();
         dataStrBuilder.append(getTabString(currentInt));
-        dataStrBuilder.append(storeTestData.store + ":");
+        dataStrBuilder.append(HelperRuntimeGrammarComposer.renderStoreProviderPointer(storeTestData.store) + ":");
         EmbeddedData embeddedData = storeTestData.data;
         if (embeddedData instanceof DataElementReference)
         {

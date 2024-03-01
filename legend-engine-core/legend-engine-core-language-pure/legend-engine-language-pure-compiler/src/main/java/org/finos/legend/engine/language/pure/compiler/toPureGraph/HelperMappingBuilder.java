@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.procedure.Procedure2;
+import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.ImmutableSet;
 import org.eclipse.collections.api.set.MutableSet;
@@ -93,7 +94,6 @@ import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecificat
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.Test;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
-import org.finos.legend.pure.m4.coreinstance.SourceInformation;
 
 import java.util.List;
 import java.util.Map;
@@ -102,6 +102,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder.getElementFullPath;
+import static org.finos.legend.pure.generated.platform_dsl_mapping_functions_Mapping.Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_;
 import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HelperMappingBuilder
@@ -562,5 +563,23 @@ public class HelperMappingBuilder
             mappingStoreTestData._store(context.resolveStore(testData.store));
         }
         return mappingStoreTestData;
+    }
+
+    static ImmutableList<Store> getStoresFromMappingIgnoringIncludedMappings(Mapping mapping, CompileContext context)
+    {
+        ImmutableList<String> mappedStores = getUniqueMapStorePathsFromMapping(mapping, context);
+        return mappedStores.collect(store -> store.equals("ModelStore") ?
+            new Root_meta_external_store_model_ModelStore_Impl("", null, context.pureModel.getClass("meta::external::store::model::ModelStore"))
+            : context.resolveStore(store));
+    }
+
+    static ImmutableList<String> getUniqueMapStorePathsFromMapping(Mapping mapping, CompileContext context)
+    {
+        MutableSet<String> mappedStores = Sets.mutable.empty();
+        ListIterate.forEach(Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_(mapping, context.pureModel.getExecutionSupport()).toList(), setImplementation ->
+        {
+            context.getCompilerExtensions().getExtraSetImplementationSourceScanners().forEach(scanner -> scanner.value(setImplementation, mappedStores, context));
+        });
+        return mappedStores.toList().toImmutable();
     }
 }

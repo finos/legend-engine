@@ -19,7 +19,7 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.ListIterate;
-import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerExtension;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
@@ -62,7 +62,7 @@ public class TestRuntimeBuilder
                 {
                     if (connectionTestData.data instanceof DataElementReference)
                     {
-                        EmbeddedData embeddedData = EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
+                        EmbeddedData embeddedData = EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
                         data.add(embeddedData);
                     }
                     else
@@ -96,7 +96,7 @@ public class TestRuntimeBuilder
                     {
                         if (connectionTestData.data instanceof DataElementReference)
                         {
-                            EmbeddedData d = EmbeddedDataCompilerExtension.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
+                            EmbeddedData d = EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) connectionTestData.data, pureModelContextData);
                             embeddedData.add(d);
                         }
                         else

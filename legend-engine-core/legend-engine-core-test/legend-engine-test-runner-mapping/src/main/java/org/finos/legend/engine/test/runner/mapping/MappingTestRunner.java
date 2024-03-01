@@ -52,6 +52,7 @@ import org.finos.legend.engine.test.runner.shared.ComparisonError;
 import org.finos.legend.engine.test.runner.shared.JsonNodeComparator;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayOutputStream;
@@ -100,9 +101,11 @@ public class MappingTestRunner
         this.buildTestConnection(conn ->
         {
             CompileContext context = this.pureModel.getContext();
-            Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("")
-                    ._connection(conn.accept(connectionVisitor))
-                    ._element(getStore(conn.element, conn.elementSourceInformation, context));
+            Store element = getStore(conn.element, conn.elementSourceInformation, context);
+            Root_meta_core_runtime_ConnectionStore connectionStore =
+                    new Root_meta_core_runtime_ConnectionStore_Impl("")
+                            ._connection(conn.accept(connectionVisitor))
+                            ._element(element);
             this.runtime._connectionStoresAdd(connectionStore);
         });
     }

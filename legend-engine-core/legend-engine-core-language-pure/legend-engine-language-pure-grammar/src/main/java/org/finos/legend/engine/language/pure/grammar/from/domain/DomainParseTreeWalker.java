@@ -38,6 +38,7 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.Navi
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreProviderPointerFactory;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -610,7 +611,7 @@ public class DomainParseTreeWalker
     private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData processStoreTestData(DomainParserGrammar.FunctionDataContext functionDataContext)
     {
         StoreTestData storeTestData = new StoreTestData();
-        storeTestData.store = PureGrammarParserUtility.fromQualifiedName(functionDataContext.qualifiedName().packagePath() == null ? Collections.emptyList() : functionDataContext.qualifiedName().packagePath().identifier(), functionDataContext.qualifiedName().identifier());
+        storeTestData.store = StoreProviderPointerFactory.create(functionDataContext.storeProviderPointer(), walkerSourceInformation.getSourceInformation(functionDataContext.storeProviderPointer()));
         if (functionDataContext.functionDataValue() != null)
         {
             DomainParserGrammar.FunctionDataValueContext dataValueContext = functionDataContext.functionDataValue();

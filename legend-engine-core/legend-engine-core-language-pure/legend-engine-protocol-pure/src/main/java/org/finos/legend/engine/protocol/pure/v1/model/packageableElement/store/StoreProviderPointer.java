@@ -12,26 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.protocol.pure.v1.model.context;
+package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
-public enum PackageableElementType
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+
+public class StoreProviderPointer extends PackageableElementPointer
 {
-    PACKAGE,
-    PROFILE,
-    CLASS,
-    ASSOCIATION,
-    ENUMERATION,
-    FUNCTION,
-    STORE,
-    RUNTIME,
-    MAPPING,
-    SERVICE,
-    PERSISTENCE,
-    PERSISTENCE_CONTEXT,
-    FLATTEN,
-    DATASTORESPEC,
-    DATASPACE,
-    DIAGRAM,
-    FILE_GENERATION,
-    DATA
 }
