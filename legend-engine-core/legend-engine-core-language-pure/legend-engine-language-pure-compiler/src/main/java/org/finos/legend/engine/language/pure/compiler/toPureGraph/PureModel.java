@@ -291,7 +291,7 @@ public class PureModel implements IPureModel
             long loadFunctionsStart = System.nanoTime();
             loadFunctions(pureModelContextDataIndex);
             long loadFunctionsEnd = System.nanoTime();
-            LOGGER.info("{}", new LogInfo(pm, "GRAPH_FUNCTIONS_BUILT", nanosDurationToMillis(loadFunctionsStart, loadFunctionsEnd)));
+            LOGGER.info("{}", new LogInfo(user, "GRAPH_FUNCTIONS_BUILT", nanosDurationToMillis(loadFunctionsStart, loadFunctionsEnd)));
             span.log("GRAPH_FUNCTIONS_BUILT");
 
             // Post Validation

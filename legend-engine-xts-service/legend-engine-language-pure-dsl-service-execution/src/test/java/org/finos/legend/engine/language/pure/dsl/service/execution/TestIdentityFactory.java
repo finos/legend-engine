@@ -85,7 +85,8 @@ public final class TestIdentityFactory implements IdentityFactory
     }
 
     @Override
-    public Identity getAnonymousIdentity() {
+    public Identity getAnonymousIdentity()
+    {
         return new Identity("Anonymous");
     }
 
