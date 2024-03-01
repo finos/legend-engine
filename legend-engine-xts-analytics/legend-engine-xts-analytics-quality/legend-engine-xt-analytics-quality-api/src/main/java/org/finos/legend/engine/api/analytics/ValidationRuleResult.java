@@ -14,24 +14,71 @@
 
 package org.finos.legend.engine.api.analytics;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class ValidationRuleResult
 {
-    private Map<String, String> resultMap = new HashMap<>();
+    private boolean ruleResult;
+    private String packageableElementName;
+    private String violationType;
+    private String errorMessage;
+    private String ruleDescription;
 
     public ValidationRuleResult(boolean ruleResult, String packageableElementName, String violationType, String errorMessage, String ruleDescription)
     {
-        this.resultMap.put("isElementValid", String.valueOf(ruleResult));
-        this.resultMap.put("packageableElementName", packageableElementName);
-        this.resultMap.put("violationType", violationType);
-        this.resultMap.put("errorMessage", errorMessage);
-        this.resultMap.put("ruleDescription", ruleDescription);
+        this.ruleResult = ruleResult;
+        this.packageableElementName = packageableElementName;
+        this.violationType = violationType;
+        this.errorMessage = errorMessage;
+        this.ruleDescription = ruleDescription;
     }
 
-    public Map<String, String> getResultMap()
+    public void setRuleResult(boolean ruleResult)
     {
-        return this.resultMap;
+        this.ruleResult = ruleResult;
     }
+
+    public void setPackageableElementName(String packageableElementName)
+    {
+        this.packageableElementName = packageableElementName;
+    }
+
+    public void setViolationType(String violationType)
+    {
+        this.violationType = violationType;
+    }
+
+    public void setErrorMessage(String errorMessage)
+    {
+        this.errorMessage = errorMessage;
+    }
+
+    public void setRuleDescription(String ruleDescription)
+    {
+        this.ruleDescription = ruleDescription;
+    }
+
+    public boolean getRuleResult()
+    {
+        return this.ruleResult;
+    }
+
+    public String getPackageableElementName()
+    {
+        return this.packageableElementName;
+    }
+
+    public String getViolationType()
+    {
+        return this.violationType;
+    }
+
+    public String getErrorMessage()
+    {
+        return this.errorMessage;
+    }
+
+    public String getRuleDescription()
+    {
+        return this.ruleDescription;
+    }
+
 }

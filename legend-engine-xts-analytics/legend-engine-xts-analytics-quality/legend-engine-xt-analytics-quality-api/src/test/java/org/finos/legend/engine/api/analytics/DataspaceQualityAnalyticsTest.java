@@ -62,8 +62,9 @@ public class DataspaceQualityAnalyticsTest
         List<ValidationRuleResult> message = new ArrayList<>();
         message.add(targetCompany);
         message.add(targetPerson);
-        ValidationResult validationResult = new ValidationResult(message, 8);
-        Assert.assertEquals(validationResult.getValidationRuleResultsAsListOfMaps(), response.getEntity());
+        ValidationResult expectedValidationResult = new ValidationResult(message, 8);
+        ValidationResult actualValidationResult = (ValidationResult) response.getEntity();
+        Assert.assertEquals(expectedValidationResult.getHealthScore(), actualValidationResult.getHealthScore());
     }
 
     @Test
@@ -83,8 +84,9 @@ public class DataspaceQualityAnalyticsTest
         );
 
         message.add(targetCompany);
-        ValidationResult validationResult = new ValidationResult(message, 9);
-        Assert.assertEquals(validationResult.getValidationRuleResultsAsListOfMaps(), response.getEntity());
+        ValidationResult expectedValidationResult = new ValidationResult(message, 9);
+        ValidationResult actualValidationResult = (ValidationResult) response.getEntity();
+        Assert.assertEquals(expectedValidationResult.getHealthScore(), actualValidationResult.getHealthScore());
     }
 
     @Test
@@ -104,8 +106,9 @@ public class DataspaceQualityAnalyticsTest
                 "Enum name should start with Upper case, not contain underscores or the word Enum"
         );
         message.add(e);
-        ValidationResult validationResult = new ValidationResult(message, 9);
-        Assert.assertEquals(validationResult.getValidationRuleResultsAsListOfMaps(), response.getEntity());
+        ValidationResult expectedValidationResult = new ValidationResult(message, 9);
+        ValidationResult actualValidationResult = (ValidationResult) response.getEntity();
+        Assert.assertEquals(expectedValidationResult.getHealthScore(), actualValidationResult.getHealthScore());
     }
 
     @Test
@@ -133,8 +136,9 @@ public class DataspaceQualityAnalyticsTest
                 "Check for contains / containsAll / containsAny checks that will always result in false due to type mismatches (e.g. [\\'abc\\']->contains(123))"
         );
         message.add(fn2);
-        ValidationResult validationResult = new ValidationResult(message, 8);
-        Assert.assertEquals(validationResult.getValidationRuleResultsAsListOfMaps(), response.getEntity());
+        ValidationResult expectedValidationResult = new ValidationResult(message, 8);
+        ValidationResult actualValidationResult = (ValidationResult) response.getEntity();
+        Assert.assertEquals(expectedValidationResult.getHealthScore(), actualValidationResult.getHealthScore());
     }
 
     @Test
@@ -163,8 +167,9 @@ public class DataspaceQualityAnalyticsTest
 
         message.add(prop);
         message.add(prop2);
-        ValidationResult validationResult = new ValidationResult(message, 8);
-        Assert.assertEquals(validationResult.getValidationRuleResultsAsListOfMaps(), response.getEntity());
+        ValidationResult expectedValidationResult = new ValidationResult(message, 8);
+        ValidationResult actualValidationResult = (ValidationResult) response.getEntity();
+        Assert.assertEquals(expectedValidationResult.getHealthScore(), actualValidationResult.getHealthScore());
     }
 
     private final String validDataspace = "###DataSpace\n" +

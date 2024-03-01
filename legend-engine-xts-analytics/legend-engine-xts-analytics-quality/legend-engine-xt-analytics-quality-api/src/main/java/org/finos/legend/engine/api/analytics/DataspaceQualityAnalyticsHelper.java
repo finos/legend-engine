@@ -49,7 +49,7 @@ public class DataspaceQualityAnalyticsHelper
             return Response.ok().build();
         }
         ValidationResult validationResult = calculateValidationResult(result, allElements.size());
-        return Response.ok().entity(validationResult.getValidationRuleResultsAsListOfMaps()).build();
+        return Response.ok().entity(validationResult).build();
     }
 
     private static ValidationResult calculateValidationResult(RichIterable<? extends Root_meta_analytics_quality_model_ViolationInstance<?>> result, int elements)

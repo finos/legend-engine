@@ -37,25 +37,12 @@ public class ValidationResult
         return (int) (Math.round((diff * 100.0 / totalElements)) / 10);
     }
 
-    public List<Map<String, String>> getValidationRuleResultsAsListOfMaps()
-    {
-        List<Map<String, String>> listOfMaps = new ArrayList<>();
-        for (ValidationRuleResult validationRuleResult : this.validationRuleResults)
-        {
-            listOfMaps.add(validationRuleResult.getResultMap());
-        }
-        Map<String, String> healthScore = new HashMap<>();
-        healthScore.put("overallDataspaceHealthScore", String.valueOf(this.healthScore));
-        listOfMaps.add(healthScore);
-        return listOfMaps;
-    }
-
     public int getHealthScore()
     {
         return this.healthScore;
     }
 
-    public List<ValidationRuleResult> getValidationRuleResultsAsListOfObjs()
+    public List<ValidationRuleResult> getValidationRuleResultsList()
     {
         return this.validationRuleResults;
     }
