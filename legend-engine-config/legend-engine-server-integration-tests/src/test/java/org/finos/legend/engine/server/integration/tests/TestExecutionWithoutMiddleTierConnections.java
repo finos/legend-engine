@@ -89,7 +89,7 @@ public class TestExecutionWithoutMiddleTierConnections
     public void setup() throws Exception
     {
         DefaultIdentityFactory defaultIdentityFactory = new DefaultIdentityFactory();
-        this.identity = defaultIdentityFactory.getAnonymousIdentity();
+        this.identity = defaultIdentityFactory.makeUnknownIdentity();
 
         this.testVaultImplementation = new TestVaultImplementation();
         Vault.INSTANCE.registerImplementation(testVaultImplementation);

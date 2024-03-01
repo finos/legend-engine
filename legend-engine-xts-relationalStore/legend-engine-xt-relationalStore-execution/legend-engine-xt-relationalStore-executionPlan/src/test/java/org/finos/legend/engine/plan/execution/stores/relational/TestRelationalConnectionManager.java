@@ -91,7 +91,7 @@ public class TestRelationalConnectionManager
                         "}";
 
         RelationalDatabaseConnection connectionSpec = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(connectionStr, RelationalDatabaseConnection.class);
-        Identity identity = DefaultIdentityFactory.INSTANCE.getAnonymousIdentity();
+        Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
         try (Connection connection = manager.getDataSourceSpecification(connectionSpec).getConnectionUsingIdentity(identity, Optional.empty()))
         {
             try (Statement statement = connection.createStatement())
@@ -125,7 +125,7 @@ public class TestRelationalConnectionManager
         RelationalDatabaseConnection connectionSpec = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports().readValue(connectionStr, RelationalDatabaseConnection.class);
         DatabaseAuthenticationFlowProvider flowProvider = new NoOpFlowProvider();
 
-        Identity identity = DefaultIdentityFactory.INSTANCE.getAnonymousIdentity();
+        Identity identity = DefaultIdentityFactory.INSTANCE.makeUnknownIdentity();
         Optional<CredentialSupplier> credential = RelationalConnectionManager.getCredential(flowProvider, connectionSpec, identity, StoreExecutionState.emptyRuntimeContext());
         assertFalse(credential.isPresent());
     }
