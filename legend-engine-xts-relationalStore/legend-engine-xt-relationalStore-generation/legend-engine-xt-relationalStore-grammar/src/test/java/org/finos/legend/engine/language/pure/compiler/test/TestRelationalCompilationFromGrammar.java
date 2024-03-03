@@ -1594,7 +1594,7 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
 
         MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(1, warnings.size());
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"simple::simpleRelationalMappingInc\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":30,\"startColumn\":12,\"endLine\":30,\"endColumn\":43},\"message\":\"Error 'x' can't be found in the mapping simple::simpleRelationalMappingInc\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }
 
     @Test
@@ -2372,6 +2372,6 @@ public class TestRelationalCompilationFromGrammar extends TestCompilationFromGra
 
         MutableList<Warning> warnings = res.getTwo().getWarnings();
         Assert.assertEquals(1, warnings.size());
-        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"test::Map\",\"startLine\":24,\"startColumn\":9,\"endLine\":24,\"endColumn\":33},\"message\":\"Missing an EnumerationMapping for the enum property 'type'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
+        Assert.assertEquals("{\"sourceInformation\":{\"sourceId\":\"\",\"startLine\":24,\"startColumn\":9,\"endLine\":24,\"endColumn\":33},\"message\":\"Missing an EnumerationMapping for the enum property 'type'. Enum properties require an EnumerationMapping in order to transform the store values into the Enum.\"}", new ObjectMapper().writeValueAsString(warnings.get(0)));
     }
 }
