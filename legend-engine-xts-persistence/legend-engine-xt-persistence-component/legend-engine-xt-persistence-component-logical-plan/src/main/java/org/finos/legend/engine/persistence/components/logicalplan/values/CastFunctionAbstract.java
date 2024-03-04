@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.logicalplan.values;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 
 import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Parameter;
 import static org.immutables.value.Value.Style;
 
 @Immutable
@@ -29,7 +30,9 @@ import static org.immutables.value.Value.Style;
 )
 public interface CastFunctionAbstract extends Value
 {
+    @Parameter(order = 0)
     Value field();
 
+    @Parameter(order = 1)
     FieldType type();
 }

@@ -14,7 +14,6 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -266,7 +265,6 @@ public class H2Sink extends AnsiSqlSink
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
-        List<DataError> dataErrors = new ArrayList<>();
         Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
         for (ValidationCategory validationCategory : ValidationCategory.values())
         {
@@ -292,7 +290,6 @@ public class H2Sink extends AnsiSqlSink
                         if (row.get(column) == null)
                         {
                             DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, NULL_VALUES, column);
-                            dataErrors.add(dataError);
                             dataErrorsByCategory.get(NULL_VALUES).add(dataError);
                         }
                     }
@@ -338,7 +335,6 @@ public class H2Sink extends AnsiSqlSink
                         for (Map<String, Object> row : resultSets)
                         {
                             DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, DATATYPE_CONVERSION, validatedColumn.fieldName());
-                            dataErrors.add(dataError);
                             dataErrorsByCategory.get(DATATYPE_CONVERSION).add(dataError);
                         }
                     }
@@ -347,13 +343,6 @@ public class H2Sink extends AnsiSqlSink
             }
         }
 
-        if (dataErrors.size() <= sampleRowCount)
-        {
-            return dataErrors;
-        }
-        else
-        {
-            return getDataErrorsWithEqualDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
-        }
+        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
     }
 }

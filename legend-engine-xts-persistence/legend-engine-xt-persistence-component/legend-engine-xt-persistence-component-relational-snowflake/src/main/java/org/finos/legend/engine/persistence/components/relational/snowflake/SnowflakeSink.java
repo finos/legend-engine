@@ -305,7 +305,6 @@ public class SnowflakeSink extends AnsiSqlSink
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
-        List<DataError> dataErrors = new ArrayList<>();
         Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
         for (ValidationCategory validationCategory : ValidationCategory.values())
         {
@@ -329,7 +328,6 @@ public class SnowflakeSink extends AnsiSqlSink
                             if (row.get(column) == null)
                             {
                                 DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, validationCategory, column);
-                                dataErrors.add(dataError);
                                 dataErrorsByCategory.get(validationCategory).add(dataError);
                             }
                         }
@@ -338,14 +336,7 @@ public class SnowflakeSink extends AnsiSqlSink
             }
         }
 
-        if (dataErrors.size() <= sampleRowCount)
-        {
-            return dataErrors;
-        }
-        else
-        {
-            return getDataErrorsWithEqualDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
-        }
+        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
     }
 
     @Override

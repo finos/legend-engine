@@ -105,7 +105,7 @@ class BulkLoadPlanner extends Planner
 
         if (capabilities.contains(Capability.DRY_RUN))
         {
-            validationDataset = stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported() ? getValidationDataset() : getValidationDatasetWithMetaColumns();
+            validationDataset = stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported() ? getValidationModeDataset() : getGenericValidationDataset();
         }
     }
 
@@ -137,6 +137,23 @@ class BulkLoadPlanner extends Planner
         }
     }
 
+    /*
+    ------------------
+    Validation Mode Logic:
+    ------------------
+    COPY INTO temp_table (data_columns)
+    SELECT data_columns from staging
+    WITH VALIDATION_MODE = true
+
+    ------------------
+    Generic Approach Logic:
+    ------------------
+    modified_data_columns: nullable data_columns with String datatype
+    meta_columns: file_name, row_number
+
+    COPY INTO temp_table (modified_data_columns, meta_columns)
+    SELECT modified_data_columns, meta_columns from staging
+     */
     @Override
     public LogicalPlan buildLogicalPlanForDryRun(Resources resources)
     {
@@ -182,6 +199,41 @@ class BulkLoadPlanner extends Planner
         return LogicalPlan.of(operations);
     }
 
+    /*
+    ------------------
+    Validation Mode Logic:
+    ------------------
+    NOT APPLICABLE
+
+    ------------------
+    Generic Approach with TRY_CAST Logic:
+    ------------------
+    For null values:
+    SELECT * FROM temp_table WHERE
+        (non_nullable_data_column_1 = NULL
+        OR non_nullable_data_column_2 = NULL
+        OR ...)
+
+    For datatype conversion:
+    SELECT * FROM temp_table WHERE
+        ((non_string_data_column_1 != NULL AND TRY_CAST(non_string_data_column_1 AS datatype) = NULL)
+        OR (non_string_data_column_2 != NULL AND TRY_CAST(non_string_data_column_2 AS datatype) = NULL)
+        OR ...)
+
+    ------------------
+    Generic Approach with CAST Logic:
+    ------------------
+    For null values:
+    SELECT * FROM temp_table WHERE
+        (non_nullable_data_column_1 = NULL
+        OR non_nullable_data_column_2 = NULL
+        OR ...)
+
+    For datatype conversion:
+    SELECT * FROM temp_table WHERE (non_string_data_column_1 != NULL AND CAST(non_string_data_column_1 AS datatype) = NULL)
+    SELECT * FROM temp_table WHERE (non_string_data_column_2 != NULL AND CAST(non_string_data_column_2 AS datatype) = NULL)
+    ...
+     */
     @Override
     public Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> buildLogicalPlanForDryRunValidation(Resources resources)
     {
@@ -239,7 +291,7 @@ class BulkLoadPlanner extends Planner
             .source(dataset)
             .condition(Or.of(fieldsToCheckForDatatype.stream().map(field -> And.builder()
                     .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build())))
-                    .addConditions(IsNull.of(TryCastFunction.builder().field(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build()).type(field.type()).build()))
+                    .addConditions(IsNull.of(TryCastFunction.of(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build(), field.type())))
                     .build())
                 .collect(Collectors.toList())))
             .limit(options().sampleRowCount())
@@ -253,7 +305,7 @@ class BulkLoadPlanner extends Planner
             .source(dataset)
             .condition(And.builder()
                     .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build())))
-                    .addConditions(IsNull.of(CastFunction.builder().field(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build()).type(fieldToCheckForDatatype.type()).build()))
+                    .addConditions(IsNull.of(CastFunction.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build(), fieldToCheckForDatatype.type())))
                     .build())
             .limit(options().sampleRowCount())
             .build();
@@ -424,7 +476,7 @@ class BulkLoadPlanner extends Planner
         // Not supported at the moment
     }
 
-    private Dataset getValidationDataset()
+    private Dataset getValidationModeDataset()
     {
         String tableName = mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
         String validationDatasetName = TableNameGenUtils.generateTableName(tableName, "validation", options().ingestRunId());
@@ -436,7 +488,7 @@ class BulkLoadPlanner extends Planner
                 .build();
     }
 
-    private Dataset getValidationDatasetWithMetaColumns()
+    private Dataset getGenericValidationDataset()
     {
         String tableName = mainDataset().datasetReference().name().orElseThrow((IllegalStateException::new));
         String validationDatasetName = TableNameGenUtils.generateTableName(tableName, "validation", options().ingestRunId());

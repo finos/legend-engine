@@ -81,4 +81,12 @@ public class WindowFunctionTest
         assertEquals("ROW_NUMBER() OVER (PARTITION BY stage.\"field1\",stage.\"field2\" ORDER BY stage.\"field1\" ASC,stage.\"field2\")", sql);
     }
 
+    @Test
+    void testPartitionAndOrderByBothEmpty()
+    {
+        Function rowNumber = new Function(FunctionName.ROW_NUMBER, null, BaseTest.QUOTE_IDENTIFIER);
+        WindowFunction windowFunction = new WindowFunction(BaseTest.QUOTE_IDENTIFIER, rowNumber, null, null);
+        String sql = BaseTest.genSql(windowFunction);
+        assertEquals("ROW_NUMBER() OVER ()", sql);
+    }
 }

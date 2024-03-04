@@ -361,29 +361,35 @@ public class AnsiSqlSink extends RelationalSink
             .build();
     }
 
-    protected List<DataError> getDataErrorsWithEqualDistributionAcrossCategories(int sampleRowCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory)
+    public List<DataError> getDataErrorsWithFairDistributionAcrossCategories(int sampleRowCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory)
     {
-        List<DataError> dataErrors = new ArrayList<>();
-        Set<ValidationCategory> exhaustedCategories = new HashSet<>();
-
-        while (dataErrors.size() < sampleRowCount && exhaustedCategories.size() != ValidationCategory.values().length)
+        List<DataError> totalErrors = dataErrorsByCategory.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        if (totalErrors.size() <= sampleRowCount)
         {
-            for (ValidationCategory validationCategory : ValidationCategory.values())
+            return totalErrors;
+        }
+
+        List<DataError> fairlyDistributedDataErrors = new ArrayList<>();
+        List<ValidationCategory> eligibleCategories = new ArrayList<>(Arrays.asList(ValidationCategory.values()));
+
+        while (fairlyDistributedDataErrors.size() < sampleRowCount && !eligibleCategories.isEmpty())
+        {
+            for (ValidationCategory validationCategory : eligibleCategories)
             {
                 if (!dataErrorsByCategory.get(validationCategory).isEmpty())
                 {
-                    if (dataErrors.size() < sampleRowCount)
+                    if (fairlyDistributedDataErrors.size() < sampleRowCount)
                     {
-                        dataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
+                        fairlyDistributedDataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
                     }
                 }
                 else
                 {
-                    exhaustedCategories.add(validationCategory);
+                    eligibleCategories.remove(validationCategory);
                 }
             }
         }
 
-        return dataErrors;
+        return fairlyDistributedDataErrors;
     }
 }
