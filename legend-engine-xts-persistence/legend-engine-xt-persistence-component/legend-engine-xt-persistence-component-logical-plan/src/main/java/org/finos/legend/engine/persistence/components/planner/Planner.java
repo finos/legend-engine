@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -277,7 +278,7 @@ public abstract class Planner
         return LogicalPlan.of(Collections.emptyList());
     }
 
-    public Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> buildLogicalPlanForDryRunValidation(Resources resources)
+    public Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> buildLogicalPlanForDryRunValidation(Resources resources)
     {
         return Collections.emptyMap();
     }

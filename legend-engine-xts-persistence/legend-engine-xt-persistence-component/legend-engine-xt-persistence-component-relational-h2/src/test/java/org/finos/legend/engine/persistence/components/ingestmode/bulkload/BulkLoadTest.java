@@ -823,7 +823,7 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDryRunDatatypeValidationSql1 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
             "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
-            "WHERE (NOT (main_validation_lp_yosulf.\"col_datetime\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_datetime\" AS TIMESTAMP) IS NULL) LIMIT 20";
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_int\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_int\" AS INTEGER) IS NULL) LIMIT 20";
 
         String expectedDryRunDatatypeValidationSql2 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
             "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
@@ -831,18 +831,18 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDryRunDatatypeValidationSql3 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
             "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
-            "WHERE (NOT (main_validation_lp_yosulf.\"col_int\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_int\" AS INTEGER) IS NULL) LIMIT 20";
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_datetime\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_datetime\" AS TIMESTAMP) IS NULL) LIMIT 20";
 
         String expectedDryRunPostCleanupSql = "DROP TABLE IF EXISTS \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\"";
 
         Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
         Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
         Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
-        Assertions.assertNull(operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUES));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql1));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql2));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql3));
-        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).keySet().size());
+        Assertions.assertNull(operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT));
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(2).getTwo());
+        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
         Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
 
 
@@ -931,7 +931,7 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDryRunDatatypeValidationSql1 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
             "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
-            "WHERE (NOT (main_validation_lp_yosulf.\"col_datetime\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_datetime\" AS TIMESTAMP) IS NULL) LIMIT 20";
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_int\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_int\" AS INTEGER) IS NULL) LIMIT 20";
 
         String expectedDryRunDatatypeValidationSql2 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
             "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
@@ -939,19 +939,19 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDryRunDatatypeValidationSql3 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
             "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
-            "WHERE (NOT (main_validation_lp_yosulf.\"col_int\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_int\" AS INTEGER) IS NULL) LIMIT 20";
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_datetime\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_datetime\" AS TIMESTAMP) IS NULL) LIMIT 20";
 
         String expectedDryRunPostCleanupSql = "DROP TABLE IF EXISTS \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\"";
 
         Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
         Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
         Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUES).containsValue(expectedDryRunNullValidationSql));
-        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUES).keySet().size());
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql1));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql2));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql3));
-        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).keySet().size());
+        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).get(0).getTwo());
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).size());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(2).getTwo());
+        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
         Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
 
 
@@ -965,35 +965,35 @@ public class BulkLoadTest extends BaseTest
 
         List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.NULL_VALUES.name())
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
             .rowNumber(1L)
             .columnName(col3NonNullable.name())
             .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
             .build(), DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.NULL_VALUES.name())
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
             .rowNumber(2L)
             .columnName(col2NonNullable.name())
             .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
             .build(), DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
             .rowNumber(1L)
             .columnName(col1.name())
             .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
             .build(), DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
             .rowNumber(1L)
             .columnName(col4.name())
             .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
             .build(), DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
             .rowNumber(2L)
             .columnName(col3.name())
             .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
@@ -1093,12 +1093,12 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
         Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
         Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUES).containsValue(expectedDryRunNullValidationSql));
-        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUES).keySet().size());
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql1));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql2));
-        Assertions.assertTrue(operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).containsValue(expectedDryRunDatatypeValidationSql3));
-        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.DATATYPE_CONVERSION).keySet().size());
+        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).get(0).getTwo());
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).size());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(2).getTwo());
+        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
         Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
 
 
@@ -1112,23 +1112,23 @@ public class BulkLoadTest extends BaseTest
 
         List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.NULL_VALUES.name())
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
             .rowNumber(1L)
             .columnName(col3NonNullable.name().toUpperCase())
             .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
             .build(), DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.NULL_VALUES.name())
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
             .rowNumber(2L)
             .columnName(col2NonNullable.name().toUpperCase())
             .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
             .build(), DataError.builder()
             .file(filePath)
-            .errorCategory(ValidationCategory.DATATYPE_CONVERSION.name())
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
             .rowNumber(1L)
-            .columnName(col4.name().toUpperCase())
+            .columnName(col1.name().toUpperCase())
             .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
             .build());

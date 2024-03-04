@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
@@ -60,7 +62,7 @@ public abstract class GeneratorResultAbstract
 
     public abstract SqlPlan dryRunSqlPlan();
 
-    public abstract Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan();
+    public abstract Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan();
 
     public abstract Optional<DataSplitRange> ingestDataSplitRange();
 
@@ -120,15 +122,15 @@ public abstract class GeneratorResultAbstract
         return dryRunSqlPlan().getSqlList();
     }
 
-    public Map<ValidationCategory, Map<Set<FieldValue>, String>> dryRunValidationSql()
+    public Map<ValidationCategory, List<Pair<Set<FieldValue>, String>>> dryRunValidationSql()
     {
         return dryRunValidationSqlPlan().keySet().stream()
             .collect(Collectors.toMap(
-                k -> k,
-                k -> dryRunValidationSqlPlan().get(k).keySet().stream().collect(Collectors.toMap(
-                    k2 -> k2,
-                    k2 -> dryRunValidationSqlPlan().get(k).get(k2).getSql()
-                ))));
+               k -> k,
+               k -> dryRunValidationSqlPlan().get(k).stream().map(
+                   e -> Tuples.pair(e.getOne(), e.getTwo().getSql())
+               ).collect(Collectors.toList())
+            ));
     }
 
     public List<String> metadataIngestSql()

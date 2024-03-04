@@ -16,18 +16,18 @@ package org.finos.legend.engine.persistence.components.util;
 
 public enum ValidationCategory
 {
-    NULL_VALUES("Null values found in non-nullable column"),
-    DATATYPE_CONVERSION("Unable to type cast column");
+    CHECK_CONSTRAINT("check_constraint"),
+    CONVERSION("conversion");
 
-    private final String validationFailedErrorMessage;
+    private final String categoryName;
 
-    ValidationCategory(String validationFailedErrorMessage)
+    ValidationCategory(String categoryName)
     {
-        this.validationFailedErrorMessage = validationFailedErrorMessage;
+        this.categoryName = categoryName;
     }
 
-    public String getValidationFailedErrorMessage()
+    public String getCategoryName()
     {
-        return this.validationFailedErrorMessage;
+        return this.categoryName;
     }
 }

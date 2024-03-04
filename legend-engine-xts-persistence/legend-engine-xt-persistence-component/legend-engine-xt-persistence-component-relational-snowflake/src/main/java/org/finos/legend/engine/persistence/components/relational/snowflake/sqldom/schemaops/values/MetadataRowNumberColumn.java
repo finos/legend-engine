@@ -36,5 +36,6 @@ public class MetadataRowNumberColumn extends Value
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
         builder.append("METADATA$FILE_ROW_NUMBER");
+        builder.append(" + 1"); // This is to standardize such that row numbers start from 1
     }
 }

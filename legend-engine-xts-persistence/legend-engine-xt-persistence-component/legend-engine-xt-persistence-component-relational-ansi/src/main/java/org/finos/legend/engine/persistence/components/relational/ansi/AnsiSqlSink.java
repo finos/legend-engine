@@ -330,7 +330,7 @@ public class AnsiSqlSink extends RelationalSink
         throw new UnsupportedOperationException("Bulk Load not supported!");
     }
 
-    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         throw new UnsupportedOperationException("DryRun not supported!");
     }
@@ -352,21 +352,33 @@ public class AnsiSqlSink extends RelationalSink
     protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
     {
         return DataError.builder()
-            .errorMessage(validationCategory.getValidationFailedErrorMessage())
+            .errorMessage(getValidationFailedErrorMessage(validationCategory))
             .file(getString(row, fileNameColumnName).orElseThrow(IllegalStateException::new))
-            .errorCategory(validationCategory.name())
+            .errorCategory(validationCategory.getCategoryName())
             .columnName(validatedColumnName)
             .rowNumber(getLong(row, rowNumberColumnName))
             .rejectedRecord(allColumns.stream().map(column -> getString(row, column).orElse("")).collect(Collectors.joining(",")))
             .build();
     }
 
-    public List<DataError> getDataErrorsWithFairDistributionAcrossCategories(int sampleRowCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory)
+    private String getValidationFailedErrorMessage(ValidationCategory category)
     {
-        List<DataError> totalErrors = dataErrorsByCategory.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
-        if (totalErrors.size() <= sampleRowCount)
+        switch (category)
         {
-            return totalErrors;
+            case CHECK_CONSTRAINT:
+                return "Null values found in non-nullable column";
+            case CONVERSION:
+                return "Unable to type cast column";
+            default:
+                throw new IllegalStateException("Unsupported validation category");
+        }
+    }
+
+    public List<DataError> getDataErrorsWithFairDistributionAcrossCategories(int sampleRowCount, int dataErrorsTotalCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory)
+    {
+        if (dataErrorsTotalCount <= sampleRowCount)
+        {
+            return dataErrorsByCategory.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
         }
 
         List<DataError> fairlyDistributedDataErrors = new ArrayList<>();

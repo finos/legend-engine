@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.snowflake;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -144,7 +145,6 @@ public class SnowflakeSink extends AnsiSqlSink
         capabilities.add(Capability.DATA_TYPE_LENGTH_CHANGE);
         capabilities.add(Capability.TRANSFORM_WHILE_COPY);
         capabilities.add(Capability.DRY_RUN);
-        capabilities.add(Capability.TRY_CAST);
         CAPABILITIES = Collections.unmodifiableSet(capabilities);
 
         Map<Class<?>, LogicalPlanVisitor<?>> logicalPlanVisitorByClass = new HashMap<>();
@@ -262,7 +262,7 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         if (dryRunValidationSqlPlan == null || dryRunValidationSqlPlan.isEmpty())
         {
@@ -301,10 +301,11 @@ public class SnowflakeSink extends AnsiSqlSink
         return dataErrors;
     }
 
-    private List<DataError> performDryRunWithValidationQueries(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    private List<DataError> performDryRunWithValidationQueries(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
+        int dataErrorsTotalCount = 0;
         Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
         for (ValidationCategory validationCategory : ValidationCategory.values())
         {
@@ -315,20 +316,21 @@ public class SnowflakeSink extends AnsiSqlSink
 
         for (ValidationCategory validationCategory : dryRunValidationSqlPlan.keySet())
         {
-            for (Set<FieldValue> validatedColumns : dryRunValidationSqlPlan.get(validationCategory).keySet())
+            for (Pair<Set<FieldValue>, SqlPlan> pair : dryRunValidationSqlPlan.get(validationCategory))
             {
-                List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunValidationSqlPlan.get(validationCategory).get(validatedColumns));
+                List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
                 if (!results.isEmpty())
                 {
                     List<Map<String, Object>> resultSets = results.get(0).getData();
                     for (Map<String, Object> row : resultSets)
                     {
-                        for (String column : validatedColumns.stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
+                        for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
                         {
                             if (row.get(column) == null)
                             {
                                 DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, validationCategory, column);
                                 dataErrorsByCategory.get(validationCategory).add(dataError);
+                                dataErrorsTotalCount++;
                             }
                         }
                     }
@@ -336,7 +338,7 @@ public class SnowflakeSink extends AnsiSqlSink
             }
         }
 
-        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
+        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsTotalCount, dataErrorsByCategory);
     }
 
     @Override

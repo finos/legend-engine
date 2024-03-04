@@ -23,6 +23,5 @@ public enum Capability
     DATA_TYPE_LENGTH_CHANGE,
     DATA_TYPE_SCALE_CHANGE,
     TRANSFORM_WHILE_COPY,
-    DRY_RUN,
-    TRY_CAST
+    DRY_RUN
 }

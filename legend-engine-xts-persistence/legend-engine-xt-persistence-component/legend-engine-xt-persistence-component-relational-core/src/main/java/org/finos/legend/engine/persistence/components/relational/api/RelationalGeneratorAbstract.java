@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -43,6 +45,7 @@ import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -297,15 +300,15 @@ public abstract class RelationalGeneratorAbstract
         SqlPlan dryRunSqlPlan = transformer.generatePhysicalPlan(dryRunLogicalPlan);
 
         // dry-run validations
-        Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> dryRunValidationLogicalPlan = planner.buildLogicalPlanForDryRunValidation(resources);
-        Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan = new HashMap<>();
+        Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> dryRunValidationLogicalPlan = planner.buildLogicalPlanForDryRunValidation(resources);
+        Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan = new HashMap<>();
         for (ValidationCategory validationCategory : dryRunValidationLogicalPlan.keySet())
         {
-            dryRunValidationSqlPlan.put(validationCategory, new HashMap<>());
-            for (Set<FieldValue> columns : dryRunValidationLogicalPlan.get(validationCategory).keySet())
+            dryRunValidationSqlPlan.put(validationCategory, new ArrayList<>());
+            for (Pair<Set<FieldValue>, LogicalPlan> pair : dryRunValidationLogicalPlan.get(validationCategory))
             {
-                SqlPlan sqlplan = transformer.generatePhysicalPlan(dryRunValidationLogicalPlan.get(validationCategory).get(columns));
-                dryRunValidationSqlPlan.get(validationCategory).put(columns, sqlplan);
+                SqlPlan sqlplan = transformer.generatePhysicalPlan(pair.getTwo());
+                dryRunValidationSqlPlan.get(validationCategory).add(Tuples.pair(pair.getOne(), sqlplan));
             }
         }
 

@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.persistence.components.relational.h2;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -31,7 +33,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Stage
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesSelection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Copy;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.LoadCsv;
-import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.HashFunction;
@@ -39,6 +40,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Metadat
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ParseJsonFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -67,7 +69,7 @@ import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.StagedFilesSelectionVisitor;
 import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.ToArrayFunctionVisitor;
-import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.CastFunctionVisitor;
+import org.finos.legend.engine.persistence.components.relational.h2.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
@@ -95,8 +97,8 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
-import static org.finos.legend.engine.persistence.components.util.ValidationCategory.DATATYPE_CONVERSION;
-import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUES;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CONVERSION;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
 
 public class H2Sink extends AnsiSqlSink
 {
@@ -137,7 +139,7 @@ public class H2Sink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
         logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
-        logicalPlanVisitorByClass.put(CastFunction.class, new CastFunctionVisitor());
+        logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
         logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
         logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
@@ -261,10 +263,11 @@ public class H2Sink extends AnsiSqlSink
         return result;
     }
 
-    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, Map<Set<FieldValue>, SqlPlan>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
+        int dataErrorsTotalCount = 0;
         Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
         for (ValidationCategory validationCategory : ValidationCategory.values())
         {
@@ -273,24 +276,25 @@ public class H2Sink extends AnsiSqlSink
 
         List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
 
-        Map<Set<FieldValue>, SqlPlan> queriesForNull =  dryRunValidationSqlPlan.getOrDefault(NULL_VALUES, new HashMap<>());
-        Map<Set<FieldValue>, SqlPlan> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(DATATYPE_CONVERSION, new HashMap<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(CHECK_CONSTRAINT, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(CONVERSION, new ArrayList<>());
 
         // Execute queries for null values
-        for (Set<FieldValue> validatedColumns : queriesForNull.keySet())
+        for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForNull)
         {
-            List<TabularData> results = executor.executePhysicalPlanAndGetResults(queriesForNull.get(validatedColumns));
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
             if (!results.isEmpty())
             {
                 List<Map<String, Object>> resultSets = results.get(0).getData();
                 for (Map<String, Object> row : resultSets)
                 {
-                    for (String column : validatedColumns.stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
+                    for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
                     {
                         if (row.get(column) == null)
                         {
-                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, NULL_VALUES, column);
-                            dataErrorsByCategory.get(NULL_VALUES).add(dataError);
+                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, CHECK_CONSTRAINT, column);
+                            dataErrorsByCategory.get(CHECK_CONSTRAINT).add(dataError);
+                            dataErrorsTotalCount++;
                         }
                     }
                 }
@@ -298,24 +302,11 @@ public class H2Sink extends AnsiSqlSink
         }
 
         // Execute queries for datatype conversion
-        // Sort the map keys first to achieve deterministic results
-        List<Set<FieldValue>> sortedMapKeysForDatatype = queriesForDatatype.keySet().stream().sorted((o1, o2) ->
-        {
-            // There is only one element in the set
-            Optional<FieldValue> fieldValue1 = o1.stream().findAny();
-            Optional<FieldValue> fieldValue2 = o2.stream().findAny();
-            if (fieldValue1.isPresent() && fieldValue2.isPresent())
-            {
-                return fieldValue1.get().fieldName().compareTo(fieldValue2.get().fieldName());
-            }
-            return 0;
-        }).collect(Collectors.toList());
-
-        for (Set<FieldValue> validatedColumns : sortedMapKeysForDatatype)
+        for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForDatatype)
         {
             try
             {
-                executor.executePhysicalPlanAndGetResults(queriesForDatatype.get(validatedColumns));
+                executor.executePhysicalPlanAndGetResults(pair.getTwo());
             }
             catch (RuntimeException e)
             {
@@ -326,7 +317,7 @@ public class H2Sink extends AnsiSqlSink
                 problematicValue = problematicValue.replaceAll("\"", "");
 
                 // This loop will only be executed once as there is always only one element in the set
-                for (FieldValue validatedColumn : validatedColumns)
+                for (FieldValue validatedColumn : pair.getOne())
                 {
                     List<TabularData> results = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForSelectAllFieldsWithStringFieldEquals(validatedColumn, problematicValue)), sampleRowCount);
                     if (!results.isEmpty())
@@ -334,8 +325,9 @@ public class H2Sink extends AnsiSqlSink
                         List<Map<String, Object>> resultSets = results.get(0).getData();
                         for (Map<String, Object> row : resultSets)
                         {
-                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, DATATYPE_CONVERSION, validatedColumn.fieldName());
-                            dataErrorsByCategory.get(DATATYPE_CONVERSION).add(dataError);
+                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, CONVERSION, validatedColumn.fieldName());
+                            dataErrorsByCategory.get(CONVERSION).add(dataError);
+                            dataErrorsTotalCount++;
                         }
                     }
                 }
@@ -343,6 +335,6 @@ public class H2Sink extends AnsiSqlSink
             }
         }
 
-        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsByCategory);
+        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsTotalCount, dataErrorsByCategory);
     }
 }

@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.planner;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
@@ -36,7 +38,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Del
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Drop;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BulkLoadBatchStatusValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.CastFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
@@ -163,7 +164,6 @@ class BulkLoadPlanner extends Planner
         }
 
         List<Operation> operations = new ArrayList<>();
-        operations.add(Delete.builder().dataset(validationDataset).build());
 
         if (stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
         {
@@ -177,6 +177,8 @@ class BulkLoadPlanner extends Planner
         }
         else
         {
+            operations.add(Delete.builder().dataset(validationDataset).build());
+
             List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValuesWithVarCharType(stagingDataset());
             fieldsToSelect.add(MetadataFileNameField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
             fieldsToSelect.add(MetadataRowNumberField.builder().build());
@@ -206,7 +208,7 @@ class BulkLoadPlanner extends Planner
     NOT APPLICABLE
 
     ------------------
-    Generic Approach with TRY_CAST Logic:
+    Generic Approach Logic:
     ------------------
     For null values:
     SELECT * FROM temp_table WHERE
@@ -215,33 +217,17 @@ class BulkLoadPlanner extends Planner
         OR ...)
 
     For datatype conversion:
-    SELECT * FROM temp_table WHERE
-        ((non_string_data_column_1 != NULL AND TRY_CAST(non_string_data_column_1 AS datatype) = NULL)
-        OR (non_string_data_column_2 != NULL AND TRY_CAST(non_string_data_column_2 AS datatype) = NULL)
-        OR ...)
-
-    ------------------
-    Generic Approach with CAST Logic:
-    ------------------
-    For null values:
-    SELECT * FROM temp_table WHERE
-        (non_nullable_data_column_1 = NULL
-        OR non_nullable_data_column_2 = NULL
-        OR ...)
-
-    For datatype conversion:
-    SELECT * FROM temp_table WHERE (non_string_data_column_1 != NULL AND CAST(non_string_data_column_1 AS datatype) = NULL)
-    SELECT * FROM temp_table WHERE (non_string_data_column_2 != NULL AND CAST(non_string_data_column_2 AS datatype) = NULL)
+    SELECT * FROM temp_table WHERE (non_string_data_column_1 != NULL AND TRY_CAST(non_string_data_column_1 AS datatype) = NULL)
+    SELECT * FROM temp_table WHERE (non_string_data_column_2 != NULL AND TRY_CAST(non_string_data_column_2 AS datatype) = NULL)
     ...
      */
-    @Override
-    public Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> buildLogicalPlanForDryRunValidation(Resources resources)
+    public Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> buildLogicalPlanForDryRunValidation(Resources resources)
     {
         if (!capabilities.contains(Capability.DRY_RUN) || stagedFilesDataset.stagedFilesDatasetProperties().validationModeSupported())
         {
             return Collections.emptyMap();
         }
-        Map<ValidationCategory, Map<Set<FieldValue>, LogicalPlan>> validationMap = new HashMap<>();
+        Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> validationMap = new HashMap<>();
         List<Field> fieldsToCheckForNull = stagingDataset().schema().fields().stream().filter(field -> !field.nullable()).collect(Collectors.toList());
         List<Field> fieldsToCheckForDatatype = stagingDataset().schema().fields().stream().filter(field -> !DataType.isStringDatatype(field.type().dataType())).collect(Collectors.toList());
 
@@ -255,60 +241,32 @@ class BulkLoadPlanner extends Planner
                 .limit(options().sampleRowCount())
                 .build();
 
-            validationMap.put(ValidationCategory.NULL_VALUES,
-                Collections.singletonMap(fieldsToCheckForNull.stream().map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
-                    LogicalPlan.of(Collections.singletonList(queryForNull))));
+            validationMap.put(ValidationCategory.CHECK_CONSTRAINT,
+                Collections.singletonList(Tuples.pair(fieldsToCheckForNull.stream().map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
+                    LogicalPlan.of(Collections.singletonList(queryForNull)))));
         }
 
         if (!fieldsToCheckForDatatype.isEmpty())
         {
-            if (capabilities.contains(Capability.TRY_CAST))
+            validationMap.put(ValidationCategory.CONVERSION, new ArrayList<>());
+
+            for (Field fieldToCheckForDatatype : fieldsToCheckForDatatype)
             {
-                Selection queryForDatatype = getSelectColumnsWithTryCast(validationDataset, fieldsToCheckForDatatype);
-                validationMap.put(ValidationCategory.DATATYPE_CONVERSION,
-                    Collections.singletonMap(fieldsToCheckForDatatype.stream().map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
-                        LogicalPlan.of(Collections.singletonList(queryForDatatype))));
-            }
-            else
-            {
-                validationMap.put(ValidationCategory.DATATYPE_CONVERSION, new HashMap<>());
-                for (Field fieldToCheckForDatatype : fieldsToCheckForDatatype)
-                {
-                    Selection queryForDatatype = getSelectColumnsWithCast(validationDataset, fieldToCheckForDatatype);
-                    validationMap.get(ValidationCategory.DATATYPE_CONVERSION).put(Stream.of(fieldToCheckForDatatype).map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
-                        LogicalPlan.of(Collections.singletonList(queryForDatatype)));
-                }
+                Selection queryForDatatype = Selection.builder()
+                    .source(validationDataset)
+                    .condition(And.builder()
+                        .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(validationDataset.datasetReference()).build())))
+                        .addConditions(IsNull.of(TryCastFunction.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(validationDataset.datasetReference()).build(), fieldToCheckForDatatype.type())))
+                        .build())
+                    .limit(options().sampleRowCount())
+                    .build();
+
+                validationMap.get(ValidationCategory.CONVERSION).add(Tuples.pair(Stream.of(fieldToCheckForDatatype).map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
+                    LogicalPlan.of(Collections.singletonList(queryForDatatype))));
             }
         }
 
         return validationMap;
-    }
-
-    private Selection getSelectColumnsWithTryCast(Dataset dataset, List<Field> fieldsToCheckForDatatype)
-    {
-        // When using TRY_CAST, we can check all columns at once, as the query will not fail
-        return Selection.builder()
-            .source(dataset)
-            .condition(Or.of(fieldsToCheckForDatatype.stream().map(field -> And.builder()
-                    .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build())))
-                    .addConditions(IsNull.of(TryCastFunction.of(FieldValue.builder().fieldName(field.name()).datasetRef(dataset.datasetReference()).build(), field.type())))
-                    .build())
-                .collect(Collectors.toList())))
-            .limit(options().sampleRowCount())
-            .build();
-    }
-
-    private Selection getSelectColumnsWithCast(Dataset dataset, Field fieldToCheckForDatatype)
-    {
-        // When using CAST, we have to check column by column as the query may fail and we need to know which column we have a problem in
-        return Selection.builder()
-            .source(dataset)
-            .condition(And.builder()
-                    .addConditions(Not.of(IsNull.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build())))
-                    .addConditions(IsNull.of(CastFunction.of(FieldValue.builder().fieldName(fieldToCheckForDatatype.name()).datasetRef(dataset.datasetReference()).build(), fieldToCheckForDatatype.type())))
-                    .build())
-            .limit(options().sampleRowCount())
-            .build();
     }
 
     private LogicalPlan buildLogicalPlanForTransformWhileCopy(Resources resources)
