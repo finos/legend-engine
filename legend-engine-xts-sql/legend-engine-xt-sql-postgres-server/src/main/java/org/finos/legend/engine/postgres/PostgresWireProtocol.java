@@ -208,6 +208,7 @@ public class PostgresWireProtocol
     private AuthenticationContext authContext;
     private Properties properties;
 
+
     public PostgresWireProtocol(SessionsFactory sessions,
             /*Function<CoordinatorSessionSettings, AccessControl> getAcessControl,*/
             /*Consumer<ChannelPipeline> addTransportHandler,*/
@@ -865,8 +866,12 @@ public class PostgresWireProtocol
             String portalName = readCString(buffer);
             int maxRows = buffer.readInt();
             String query = session.getQuery(portalName);
-            span.setAttribute("portalName", portalName);
+            span.setAttribute("portal.name", portalName);
             span.setAttribute("query", query);
+            //span.setAttribute("authentication.method", authContext.getAuthenticationMethodType().name());
+            span.setAttribute("user", properties.getProperty("user"));
+            //span.setAttribute("caller.address", authContext.getConnProperties().address().getHostName());
+
  /*       if (query.isEmpty()) {
             // remove portal so that it doesn't stick around and no attempt to batch it with follow up statement is made
             session.close((byte) 'P', portalName);
