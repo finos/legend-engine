@@ -85,7 +85,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-functions</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-functions-base</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                 </dependencies>

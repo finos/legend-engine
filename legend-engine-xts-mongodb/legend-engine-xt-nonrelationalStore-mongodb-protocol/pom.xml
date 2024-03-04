@@ -61,7 +61,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                     <dependency>

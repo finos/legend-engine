@@ -59,7 +59,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-functions-json</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                 </dependencies>
@@ -87,11 +87,15 @@
 <!--        </dependency>-->
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-compiled-functions-json</artifactId>
          </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-runtime-java-extension-functions-shared-conversion</artifactId>
+            <artifactId>legend-pure-runtime-java-extension-shared-functions-json</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-shared-functions-conversion</artifactId>
         </dependency>
 
         <dependency>

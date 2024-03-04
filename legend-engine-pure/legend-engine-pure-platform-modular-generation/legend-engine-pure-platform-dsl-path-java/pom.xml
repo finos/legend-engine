@@ -59,7 +59,7 @@
                     </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>
+                        <artifactId>legend-pure-runtime-java-extension-compiled-dsl-path</artifactId>
                         <version>${legend.pure.version}</version>
                     </dependency>
                 </dependencies>
@@ -80,7 +80,6 @@
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-path-pure</artifactId>
-            <version>${legend.pure.version}</version>
         </dependency>
 
         <dependency>

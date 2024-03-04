@@ -104,7 +104,7 @@
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.1.3</legend.pure.version>
+        <legend.pure.version>5.1.4-SNAPSHOT</legend.pure.version>
         <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->
@@ -2018,7 +2018,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-functions</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-functions-base</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-interpreted-functions-base</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -2033,7 +2038,17 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-functions-shared-conversion</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-shared-store-relational</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-shared-functions-conversion</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-shared-functions-json</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -2350,7 +2365,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-functions-json</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-functions-json</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-interpreted-functions-json</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -2400,7 +2420,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-functions-relation</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -2420,7 +2440,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-functions-relation</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-functions-relation</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -2435,32 +2455,32 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-dsl-diagram</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-dsl-diagram</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-dsl-graph</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-dsl-graph</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-dsl-mapping</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-dsl-store</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-dsl-store</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-dsl-path</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-dsl-path</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-dsl-tds</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-dsl-tds</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>
@@ -2500,7 +2520,7 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
-                <artifactId>legend-pure-runtime-java-extension-store-relational</artifactId>
+                <artifactId>legend-pure-runtime-java-extension-compiled-store-relational</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
             <dependency>

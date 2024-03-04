@@ -5,7 +5,7 @@
     "core",
     "platform",
     "platform_dsl_graph",
-    "platform_dsl_mapping",
+    "platform_dsl_store",
     "platform_store_relational",
     "platform_functions",
     "platform_functions_json",
