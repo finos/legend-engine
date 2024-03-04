@@ -343,7 +343,7 @@ public class H2Sink extends AnsiSqlSink
         }
         else if (errorMessage.contains("Cannot parse"))
         {
-            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Cannot parse \"(.*)\" constant " , "").replaceAll("\"", "");
+            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Cannot parse \"(.*)\" constant ", "").replaceAll("\"", "");
         }
         return errorMessage;
     }
