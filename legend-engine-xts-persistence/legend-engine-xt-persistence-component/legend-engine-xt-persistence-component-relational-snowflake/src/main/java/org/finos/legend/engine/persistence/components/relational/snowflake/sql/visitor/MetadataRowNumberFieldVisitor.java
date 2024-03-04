@@ -16,7 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.sql.
 
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.MetadataRowNumberColumn;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.MetadataRowNumberValue;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -25,7 +25,7 @@ public class MetadataRowNumberFieldVisitor implements LogicalPlanVisitor<Metadat
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, MetadataRowNumberField current, VisitorContext context)
     {
-        MetadataRowNumberColumn rowNumberColumn = new MetadataRowNumberColumn(context.quoteIdentifier());
+        MetadataRowNumberValue rowNumberColumn = new MetadataRowNumberValue(context.quoteIdentifier());
         prev.push(rowNumberColumn);
         return new VisitorResult(null);
     }

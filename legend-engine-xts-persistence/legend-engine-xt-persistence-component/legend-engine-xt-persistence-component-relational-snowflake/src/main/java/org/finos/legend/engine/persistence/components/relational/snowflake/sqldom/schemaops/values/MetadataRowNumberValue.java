@@ -17,10 +17,10 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.sqld
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
-public class MetadataFileNameColumn extends Value
+public class MetadataRowNumberValue extends Value
 {
 
-    public MetadataFileNameColumn(String quoteIdentifier)
+    public MetadataRowNumberValue(String quoteIdentifier)
     {
         super(quoteIdentifier);
     }
@@ -35,6 +35,7 @@ public class MetadataFileNameColumn extends Value
     @Override
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
-        builder.append("METADATA$FILENAME");
+        builder.append("METADATA$FILE_ROW_NUMBER");
+        builder.append(" + 1"); // This is to standardize such that row numbers start from 1
     }
 }

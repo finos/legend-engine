@@ -16,7 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.snowflake.sql.
 
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.MetadataFileNameColumn;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.values.MetadataFileNameValue;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
 
@@ -25,7 +25,7 @@ public class MetadataFileNameFieldVisitor implements LogicalPlanVisitor<Metadata
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, MetadataFileNameField current, VisitorContext context)
     {
-        MetadataFileNameColumn fileNameColumn = new MetadataFileNameColumn(context.quoteIdentifier());
+        MetadataFileNameValue fileNameColumn = new MetadataFileNameValue(context.quoteIdentifier());
         prev.push(fileNameColumn);
         return new VisitorResult(null);
     }

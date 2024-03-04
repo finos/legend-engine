@@ -311,10 +311,7 @@ public class H2Sink extends AnsiSqlSink
             catch (RuntimeException e)
             {
                 String errorMessage = e.getCause().getMessage();
-                String problematicValue = errorMessage.substring(0, errorMessage.indexOf("; SQL statement"));
-                problematicValue = problematicValue.replace("org.h2.jdbc.JdbcSQLDataException: Data conversion error converting ", "");
-                problematicValue = problematicValue.replace("org.h2.jdbc.JdbcSQLDataException: Cannot parse \"TIMESTAMP\" constant ", "");
-                problematicValue = problematicValue.replaceAll("\"", "");
+                String problematicValue = extractProblematicValueFromErrorMessage(errorMessage.substring(0, errorMessage.indexOf("; SQL statement")));
 
                 // This loop will only be executed once as there is always only one element in the set
                 for (FieldValue validatedColumn : pair.getOne())
@@ -336,5 +333,18 @@ public class H2Sink extends AnsiSqlSink
         }
 
         return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsTotalCount, dataErrorsByCategory);
+    }
+
+    private String extractProblematicValueFromErrorMessage(String errorMessage)
+    {
+        if (errorMessage.contains("Data conversion error"))
+        {
+            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Data conversion error converting ", "").replaceAll("\"", "");
+        }
+        else if (errorMessage.contains("Cannot parse"))
+        {
+            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Cannot parse \"(.*)\" constant " , "").replaceAll("\"", "");
+        }
+        return errorMessage;
     }
 }
