@@ -193,6 +193,8 @@ public class ApplicationQuery
     @Consumes({MediaType.APPLICATION_JSON})
     public Response patchQuery(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
+        MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(profileManager);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Patch Query - update selected query fields").startActive(true))
         {
             return Response.ok().entity(this.queryStoreManager.patchQuery(queryId, query, getCurrentUser(profileManager))).build();
@@ -203,7 +205,7 @@ public class ApplicationQuery
             {
                 return ((ApplicationQueryException) e).toResponse();
             }
-            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, ProfileManagerHelper.extractProfiles(profileManager));
+            return ExceptionTool.exceptionManager(e, LoggingEventType.UPDATE_QUERY_ERROR, identity.getName());
         }
     }
 
