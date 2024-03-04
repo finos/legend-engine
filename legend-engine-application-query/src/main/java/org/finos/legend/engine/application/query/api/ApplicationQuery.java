@@ -188,14 +188,14 @@ public class ApplicationQuery
     }
 
     @PUT
-    @Path("{queryId}/updateSelectedFields")
-    @ApiOperation(value = "Update query versionId")
+    @Path("{queryId}/patchQuery")
+    @ApiOperation(value = "Patch Query - update selected query fields")
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response updateQuerySelectedFields(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
+    public Response patchQuery(@PathParam("queryId") String queryId, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> profileManager)
     {
-        try (Scope scope = GlobalTracer.get().buildSpan("Query: Update Query Version Id").startActive(true))
+        try (Scope scope = GlobalTracer.get().buildSpan("Patch Query - update selected query fields").startActive(true))
         {
-            return Response.ok().entity(this.queryStoreManager.updateQuerySelectedFields(queryId, query, getCurrentUser(profileManager))).build();
+            return Response.ok().entity(this.queryStoreManager.patchQuery(queryId, query, getCurrentUser(profileManager))).build();
         }
         catch (Exception e)
         {

@@ -395,7 +395,7 @@ public class QueryStoreManager
         return query;
     }
 
-    public Query updateQuerySelectedFields(String queryId, Query updatedQuery, String currentUser) throws JsonProcessingException
+    public Query patchQuery(String queryId, Query updatedQuery, String currentUser) throws JsonProcessingException
     {
         Query currentQuery = this.getQuery(queryId);
         // Make sure only the owner can update the query

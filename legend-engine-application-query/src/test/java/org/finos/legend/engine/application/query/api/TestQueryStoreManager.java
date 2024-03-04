@@ -615,10 +615,19 @@ public class TestQueryStoreManager
         queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
         queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", "query2", currentUser).build(), currentUser);
         Assert.assertEquals("query2", queryStoreManager.getQuery("1").name);
+    }
+
+    @Test
+    public void testUpdateQueryVersion() throws Exception
+    {
+        String currentUser = "testUser";
+        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
+        queryStoreManager.updateQuery("1", TestQueryBuilder.create("1", "query2", currentUser).build(), currentUser);
+        Assert.assertEquals("query2", queryStoreManager.getQuery("1").name);
         Query queryWithSelectedFields = new Query();
         queryWithSelectedFields.id = "1";
         queryWithSelectedFields.versionId = "1.0.0";
-        queryStoreManager.updateQuerySelectedFields("1", queryWithSelectedFields, currentUser);
+        queryStoreManager.patchQuery("1", queryWithSelectedFields, currentUser);
         Assert.assertEquals("1.0.0", queryStoreManager.getQuery("1").versionId);
         Assert.assertEquals("0.0.0", queryStoreManager.getQuery("1").originalVersionId);
     }
