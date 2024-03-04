@@ -44,6 +44,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.junit.Assert;
@@ -501,7 +503,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
                 "]";
 
         SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction);
-        EngineJavaCompiler compiler = JavaHelper.compilePlan(plan, null);
+        EngineJavaCompiler compiler = JavaHelper.compilePlan(plan, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         GraphFetchCrossAssociationKeys graphFetchCrossAssociationKeys = GraphFetchCrossAssociationKeys.graphFetchCrossAssociationKeysForPlan(plan).stream().filter(x -> x.getName().equals("<default, root.firm@test_Firm>")).findFirst().orElse(null);
 
         try (JavaHelper.ThreadContextClassLoaderScope ignored = JavaHelper.withCurrentThreadContextClassLoader(compiler.getClassLoader()))
@@ -687,7 +689,7 @@ public class TestPlanExecutionWithGraphFetchCrossKeyCache extends AlloyTestServe
     private SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction);
-        PureModel pureModel = Compiler.compile(contextData, null, null);
+        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         List<ValueSpecification> fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0).body;
 

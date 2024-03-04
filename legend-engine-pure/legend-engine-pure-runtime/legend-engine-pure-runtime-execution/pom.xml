@@ -148,12 +148,6 @@
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
         </dependency>
 
-
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>org.eclipse.collections</groupId>
             <artifactId>eclipse-collections-api</artifactId>

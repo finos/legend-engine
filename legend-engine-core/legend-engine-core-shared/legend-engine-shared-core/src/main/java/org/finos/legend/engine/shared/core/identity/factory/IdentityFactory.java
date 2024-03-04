@@ -32,6 +32,8 @@ public interface IdentityFactory extends LegendExtension
 
     Identity makeIdentityForTesting(String name);
 
+    Identity getAnonymousIdentity();
+
     /*
         A helper function to translate from Identity to Profile.
         Legend code base makes use of both Identity and Profile.

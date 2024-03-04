@@ -31,7 +31,7 @@ import org.finos.legend.engine.plan.execution.result.object.StreamingObjectResul
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.io.InputStream;
 import java.util.Collections;
@@ -55,12 +55,12 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public StreamingObjectResult<?> executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, InputStream inputStream, Identity identity, ExecutionState executionState)
     {
         try
         {
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
-            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, identity);
             IFlatDataDeserializeExecutionNodeSpecifics<?> specifics = (IFlatDataDeserializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
 
             specifics.setMaximumSchemaObjectSize(executionState.getGraphFetchExecutionConfiguration().getGraphFetchBatchMemorySoftLimit());
@@ -76,7 +76,7 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, Result result, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, Result result, Identity identity, ExecutionState executionState)
     {
         try
         {
@@ -85,7 +85,7 @@ public class FlatDataRuntimeExtension implements ExternalFormatRuntimeExtension
                     : ((StreamingObjectResult<?>) result).getObjectStream();
 
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
-            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, identity);
             IFlatDataSerializeExecutionNodeSpecifics<?> specifics = (IFlatDataSerializeExecutionNodeSpecifics<?>) specificsClass.getConstructor().newInstance();
 
             FlatDataContext<?> context = specifics.createContext();

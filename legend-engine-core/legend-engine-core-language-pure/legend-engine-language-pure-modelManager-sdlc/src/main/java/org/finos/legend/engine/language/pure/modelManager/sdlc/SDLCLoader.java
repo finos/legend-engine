@@ -33,7 +33,6 @@ import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.block.function.Function0;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.primitive.IntSet;
 import org.eclipse.collections.impl.factory.primitive.IntSets;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
@@ -49,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPo
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.kerberos.SubjectCache;
 import org.finos.legend.engine.shared.core.operational.Assert;
@@ -56,7 +56,6 @@ import org.finos.legend.engine.shared.core.operational.errorManagement.EngineExc
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.opentracing.HttpRequestHeaderMap;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import static io.opentracing.propagation.Format.Builtin.HTTP_HEADERS;
@@ -71,7 +70,7 @@ public class SDLCLoader implements ModelLoader
     private final PureServerLoader pureLoader;
     private final AlloySDLCLoader alloyLoader;
     private final WorkspaceSDLCLoader workspaceLoader;
-    private final Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider;
+    private final Function<Identity, CloseableHttpClient> httpClientProvider;
 
     public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider)
     {
@@ -88,17 +87,17 @@ public class SDLCLoader implements ModelLoader
         this(metaDataServerConfiguration, subjectProvider, pureLoader, null);
     }
 
-    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
         this(metaDataServerConfiguration, subjectProvider, pureLoader, httpClientProvider, new AlloySDLCLoader(metaDataServerConfiguration));
     }
 
-    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider, AlloySDLCLoader alloyLoader)
+    public SDLCLoader(MetaDataServerConfiguration metaDataServerConfiguration, Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<Identity, CloseableHttpClient> httpClientProvider, AlloySDLCLoader alloyLoader)
     {
         this(subjectProvider, pureLoader, httpClientProvider, alloyLoader, new WorkspaceSDLCLoader(metaDataServerConfiguration.sdlc));
     }
 
-    public SDLCLoader(Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider, AlloySDLCLoader alloyLoader, WorkspaceSDLCLoader workspaceLoader)
+    public SDLCLoader(Supplier<Subject> subjectProvider, PureServerLoader pureLoader, Function<Identity, CloseableHttpClient> httpClientProvider, AlloySDLCLoader alloyLoader, WorkspaceSDLCLoader workspaceLoader)
     {
         this.subjectProvider = subjectProvider;
         this.pureLoader = pureLoader;
@@ -147,12 +146,12 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContext cacheKey(PureModelContext context, MutableList<CommonProfile> pm)
+    public PureModelContext cacheKey(PureModelContext context, Identity identity)
     {
         if (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo))
         {
             final Subject executionSubject = getSubject();
-            Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, pm, executionSubject);
+            Function0<PureModelContext> pureModelContextFunction = () -> this.pureLoader.getCacheKey(context, identity, executionSubject);
             return executionSubject == null ? pureModelContextFunction.value() : exec(executionSubject, pureModelContextFunction::value);
         }
         else
@@ -168,7 +167,7 @@ public class SDLCLoader implements ModelLoader
     }
 
     @Override
-    public PureModelContextData load(MutableList<CommonProfile> pm, PureModelContext ctx, String clientVersion, Span parentSpan)
+    public PureModelContextData load(Identity identity, PureModelContext ctx, String clientVersion, Span parentSpan)
     {
         PureModelContextPointer context = (PureModelContextPointer) ctx;
         Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
@@ -177,7 +176,7 @@ public class SDLCLoader implements ModelLoader
                 parentSpan,
                 clientVersion,
                 this.httpClientProvider,
-                pm,
+                identity,
                 this.pureLoader,
                 this.alloyLoader,
                 this.workspaceLoader
@@ -196,24 +195,24 @@ public class SDLCLoader implements ModelLoader
         return metaData;
     }
 
-    public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
+    public static PureModelContextData loadMetadataFromHTTPURL(Identity identity, LoggingEventType startEvent, LoggingEventType stopEvent, String url)
     {
-        return loadMetadataFromHTTPURL(pm, startEvent, stopEvent, url, null);
+        return loadMetadataFromHTTPURL(identity, startEvent, stopEvent, url, null);
     }
 
-    public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    public static PureModelContextData loadMetadataFromHTTPURL(Identity identity, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
-        return loadMetadataFromHTTPURL(pm, startEvent, stopEvent, url, httpClientProvider, null);
+        return loadMetadataFromHTTPURL(identity, startEvent, stopEvent, url, httpClientProvider, null);
     }
 
-    public static PureModelContextData loadMetadataFromHTTPURL(MutableList<CommonProfile> pm, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider, Function<String, HttpRequestBase> httpRequestProvider)
+    public static PureModelContextData loadMetadataFromHTTPURL(Identity identity, LoggingEventType startEvent, LoggingEventType stopEvent, String url, Function<Identity, CloseableHttpClient> httpClientProvider, Function<String, HttpRequestBase> httpRequestProvider)
     {
         Scope scope = GlobalTracer.get().scopeManager().active();
         CloseableHttpClient httpclient;
 
         if (httpClientProvider != null)
         {
-            httpclient = httpClientProvider.apply(pm);
+            httpclient = httpClientProvider.apply(identity);
         }
         else
         {
@@ -222,7 +221,7 @@ public class SDLCLoader implements ModelLoader
 
         long start = System.currentTimeMillis();
 
-        LogInfo info = new LogInfo(pm, startEvent, "Requesting metadata");
+        LogInfo info = new LogInfo(identity.getName(), startEvent, "Requesting metadata");
         LOGGER.info(info.toString());
         Span span = GlobalTracer.get().activeSpan();
         if (span != null)
@@ -231,7 +230,7 @@ public class SDLCLoader implements ModelLoader
             scope.span().setOperationName(startEvent.toString());
             span.log(url);
         }
-        LOGGER.info(new LogInfo(pm, LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
+        LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.METADATA_LOAD_FROM_URL, "Loading from URL " + url).toString());
 
         HttpRequestBase httpRequest;
         if (httpRequestProvider != null)
@@ -253,7 +252,7 @@ public class SDLCLoader implements ModelLoader
             HttpEntity entity1 = execHttpRequest(span, httpclient, httpRequest);
             PureModelContextData modelContextData = objectMapper.readValue(entity1.getContent(), PureModelContextData.class);
             Assert.assertTrue(modelContextData.getSerializer() != null, () -> "Engine was unable to load information from the Pure SDLC <a href='" + url + "'>link</a>");
-            LOGGER.info(new LogInfo(pm, stopEvent, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(identity.getName(), stopEvent, (double) System.currentTimeMillis() - start).toString());
             if (span != null)
             {
                 scope.span().log(String.valueOf(stopEvent));

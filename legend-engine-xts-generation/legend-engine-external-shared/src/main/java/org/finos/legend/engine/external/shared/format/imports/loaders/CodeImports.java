@@ -19,6 +19,8 @@ import io.swagger.annotations.ApiOperation;
 import org.finos.legend.engine.external.shared.format.imports.description.ImportConfigurationDescription;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
@@ -52,7 +54,7 @@ public class CodeImports
     {
         try
         {
-            return ManageConstantResult.manageResult(null, codeConfigurationDescriptions);
+            return ManageConstantResult.manageResult(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), codeConfigurationDescriptions);
         }
         catch (Exception ex)
         {

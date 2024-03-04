@@ -23,7 +23,7 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.relational.result.RelationalResult;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -48,7 +48,7 @@ public class ArrowRuntimeExtension implements ExternalFormatRuntimeExtension
     }
 
     @Override
-    public Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, Result result, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, Result result, Identity identity, ExecutionState executionState)
     {
         try
         {

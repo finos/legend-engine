@@ -27,6 +27,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -69,34 +71,35 @@ public class GraphQLGenerationService
     public Response generateGraphQL(GraphQLGenerationInput generateGraphQLInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         boolean interactive = generateGraphQLInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate GraphQL").startActive(true))
         {
             return exec(generateGraphQLInput.config != null ? generateGraphQLInput.config : new GraphQLGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateGraphQLInput.model, generateGraphQLInput.clientVersion, profiles, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateGraphQLInput.model, generateGraphQLInput.clientVersion, identity, null).getTwo(),
                     interactive,
-                    profiles);
+                    identity);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_GRAPHQL_CODE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_GRAPHQL_CODE_ERROR, identity.getName());
         }
     }
 
-    private Response exec(GraphQLGenerationConfig graphQLConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
+    private Response exec(GraphQLGenerationConfig graphQLConfig, Function0<PureModel> pureModelFunc, boolean interactive, Identity identity)
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_GRAPHQL_CODE_START).toString());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_START : LoggingEventType.GENERATE_GRAPHQL_CODE_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_query_graphql_deprecated_generation.Root_meta_external_query_graphQL_generation_generateGraphQL_GraphQLConfig_1__GraphQLOutput_MANY_(graphQLConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_GRAPHQL_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_STOP : LoggingEventType.GENERATE_GRAPHQL_CODE_STOP, (double) System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(identity.getName(), output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_GRAPHQL_CODE_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_GRAPHQL_CODE_INTERACTIVE_ERROR : LoggingEventType.GENERATE_GRAPHQL_CODE_ERROR, identity.getName());
         }
     }
 }

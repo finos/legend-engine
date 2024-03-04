@@ -19,6 +19,8 @@ import freemarker.template.TemplateDateModel;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.block.factory.Predicates;
 import org.eclipse.collections.impl.factory.Lists;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -130,7 +132,7 @@ public class PlanDateParameterDateFormat extends TemplateDateFormat
     private static void throwIllegalArgumentException(String dateExpression) throws IllegalArgumentException
     {
         String exceptionMessage = "Plan parsing error; unable to process Date: " + dateExpression + ", expecting: " + dateRegex + " e.g.: '[EST] + $date', where $date is of format: " + planDateFormatters.collect(pdf -> pdf.datePattern).makeString("[", ", ", "]") + " , e.g. : [EST] 2018-10-15T20:00:00.123";
-        LOGGER.error(new LogInfo(null, LoggingEventType.JSON_PARSING_ERROR, exceptionMessage).toString());
+        LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.JSON_PARSING_ERROR, exceptionMessage).toString());
         throw new IllegalArgumentException(exceptionMessage);
     }
 

@@ -29,6 +29,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -69,35 +71,36 @@ public class RosettaGenerationService
     public Response generateCdm(RosettaGenerationInput generateCdmInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         boolean interactive = generateCdmInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Rosetta").startActive(true))
         {
             return exec(
                     generateCdmInput.config != null ? generateCdmInput.config : new RosettaGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, profiles, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateCdmInput.model, generateCdmInput.clientVersion, identity, null).getTwo(),
                     interactive,
-                    profiles);
+                    identity);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, identity.getName());
         }
 
     }
 
-    private Response exec(RosettaGenerationConfig rosettaConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
+    private Response exec(RosettaGenerationConfig rosettaConfig, Function0<PureModel> pureModelFunc, boolean interactive, Identity identity)
     {
         try
         {
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_START : LoggingEventType.GENERATE_ROSETTA_START).toString());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_START : LoggingEventType.GENERATE_ROSETTA_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_format_rosetta_transformation_transformation_entry.Root_meta_external_format_rosetta_generation_generateRosettaFromPureWithScope_RosettaConfig_1__GenerationOutput_MANY_(rosettaConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_STOP : LoggingEventType.GENERATE_ROSETTA_STOP).toString());
-            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_STOP : LoggingEventType.GENERATE_ROSETTA_STOP).toString());
+            return ManageConstantResult.manageResult(identity.getName(), output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_ROSETTA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_ROSETTA_ERROR, identity.getName());
         }
     }
 }

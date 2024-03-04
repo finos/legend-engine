@@ -16,7 +16,6 @@
 package org.finos.legend.engine.query.sql.api;
 
 import org.eclipse.collections.api.LazyIterable;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -31,7 +30,7 @@ import org.finos.legend.engine.query.sql.providers.core.SQLSourceProvider;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceResolvedContext;
 import org.finos.legend.engine.query.sql.providers.core.TableSource;
 import org.finos.legend.engine.query.sql.providers.core.TableSourceArgument;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -72,7 +71,7 @@ public class TestSQLSourceProvider implements SQLSourceProvider
     }
 
     @Override
-    public SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, MutableList<CommonProfile> profiles)
+    public SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, Identity identity)
     {
         List<SQLSource> sqlSources = FastList.newList();
         ListIterate.forEach(sources, source ->

@@ -28,6 +28,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat.ExternalFormatSchemaSet;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 
 import java.io.BufferedReader;
@@ -60,7 +62,7 @@ public class SchemaToModelGenerationTest
         try
         {
             modelData = PureGrammarParser.newInstance().parseModel(schemaCode);
-            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, null);
+            pureModel = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         }
         catch (Exception e)
         {
@@ -72,7 +74,7 @@ public class SchemaToModelGenerationTest
         PureModelContextData combined = modelData.combine(generated);
         try
         {
-            Compiler.compile(combined, DeploymentMode.TEST, null);
+            Compiler.compile(combined, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         }
         catch (Exception e)
         {

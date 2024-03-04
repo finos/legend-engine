@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.function.extension.FunctionTestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
@@ -189,7 +191,7 @@ public class TestFunctionTestSuite
         FunctionTestableRunnerExtension functionTestableRunnerExtension = new FunctionTestableRunnerExtension();
         String pureModelString = getResourceAsString("testable/" + grammar);
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = pureModel.getPackageableElement(fullPath);
         Assert.assertTrue(element instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition);
         ConcreteFunctionDefinition<?> functionMetamodel = (ConcreteFunctionDefinition<?>) element;

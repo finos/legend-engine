@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.execution;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.PlanExecutionContext;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.PlanExecutorInfo;
@@ -34,10 +32,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPla
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -267,16 +264,12 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
 
     protected Result execute(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider)
     {
-        MutableList<CommonProfile> profiles = Lists.mutable.empty();
         PlanExecutionContext planExecutionContext = null;
+        Identity identity = IdentityFactoryProvider.getInstance().getAnonymousIdentity();
 
         if (serviceRunnerInput != null)
         {
-            Identity identity = serviceRunnerInput.getIdentity();
-            if (identity != null)
-            {
-                profiles.addAll(IdentityFactoryProvider.getInstance().adapt(identity));
-            }
+            identity = serviceRunnerInput.getIdentity();
 
             if (serviceRunnerInput.getOperationalContext() != null && serviceRunnerInput.getOperationalContext().getGraphFetchCrossAssociationKeysCacheConfig() != null)
             {
@@ -291,7 +284,7 @@ public abstract class AbstractServicePlanExecutor implements ServiceRunner
                 planExecutionContext = new PlanExecutionContext(graphFetchCaches);
             }
         }
-        return this.executor.execute(this.plan, parameters, streamProvider, profiles, planExecutionContext);
+        return this.executor.execute(this.plan, parameters, streamProvider, identity, planExecutionContext);
     }
 
     protected void executeToStream(Map<String, ?> parameters, ServiceRunnerInput serviceRunnerInput, StreamProvider streamProvider, OutputStream outputStream)

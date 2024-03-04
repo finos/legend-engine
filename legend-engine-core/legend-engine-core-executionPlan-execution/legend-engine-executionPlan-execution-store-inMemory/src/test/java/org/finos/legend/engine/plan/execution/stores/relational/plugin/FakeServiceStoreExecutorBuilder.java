@@ -25,7 +25,7 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class FakeServiceStoreExecutorBuilder implements StoreExecutorBuilder
 {
@@ -86,7 +86,7 @@ public class FakeServiceStoreExecutorBuilder implements StoreExecutorBuilder
                 }
 
                 @Override
-                public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+                public ExecutionNodeVisitor<Result> getVisitor(Identity identity, ExecutionState executionState)
                 {
                     return null;
                 }

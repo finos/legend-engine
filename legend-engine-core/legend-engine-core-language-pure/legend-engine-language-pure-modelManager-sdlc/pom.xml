@@ -26,16 +26,6 @@
     <name>Legend Engine - Language Pure - Model Manager - SDLC</name>
 
     <dependencies>
-        <dependency>
-            <groupId>org.finos.legend.shared</groupId>
-            <artifactId>legend-shared-pac4j-gitlab</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <!-- ENGINE -->
         <dependency>

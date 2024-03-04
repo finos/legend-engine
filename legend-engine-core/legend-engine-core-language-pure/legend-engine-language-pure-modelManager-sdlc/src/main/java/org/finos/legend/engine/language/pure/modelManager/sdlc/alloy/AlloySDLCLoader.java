@@ -18,15 +18,14 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetaDataServerConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.pac4j.core.profile.CommonProfile;
 
 public class AlloySDLCLoader
 {
@@ -37,12 +36,12 @@ public class AlloySDLCLoader
         this.metaDataServerConfiguration = metaDataServerConfiguration;
     }
 
-    public PureModelContextData loadAlloyProject(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    public PureModelContextData loadAlloyProject(Identity identity, AlloySDLC alloySDLC, String clientVersion, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
-        return SDLCLoader.loadMetadataFromHTTPURL(pm, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(pm, alloySDLC, clientVersion), httpClientProvider);
+        return SDLCLoader.loadMetadataFromHTTPURL(identity, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(identity, alloySDLC, clientVersion), httpClientProvider);
     }
 
-    public String getMetaDataApiUrl(MutableList<CommonProfile> pm, AlloySDLC alloySDLC, String clientVersion)
+    public String getMetaDataApiUrl(Identity identity, AlloySDLC alloySDLC, String clientVersion)
     {
         Assert.assertTrue(alloySDLC.project == null, () -> "Accessing metadata services using project id was demised.  Please update AlloySDLC to provide group and artifact IDs");
         Assert.assertTrue(alloySDLC.groupId != null && alloySDLC.artifactId != null, () -> "AlloySDLC info must contain and group and artifact IDs to access metadata services");

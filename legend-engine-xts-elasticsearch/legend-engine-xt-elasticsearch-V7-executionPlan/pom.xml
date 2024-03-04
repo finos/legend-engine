@@ -114,11 +114,6 @@
             </exclusions>
         </dependency>
 
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-
 
         <dependency>
             <groupId>io.opentracing</groupId>

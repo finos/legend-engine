@@ -260,13 +260,6 @@
         </dependency>
         <!-- LOGGING -->
 
-        <!-- Authentication -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- Authentication -->
-
         <!-- Test -->
         <dependency>
             <groupId>junit</groupId>
