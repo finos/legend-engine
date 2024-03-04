@@ -868,9 +868,7 @@ public class PostgresWireProtocol
             String query = session.getQuery(portalName);
             span.setAttribute("portal.name", portalName);
             span.setAttribute("query", query);
-            //span.setAttribute("authentication.method", authContext.getAuthenticationMethodType().name());
-            span.setAttribute("user", properties.getProperty("user"));
-            //span.setAttribute("caller.address", authContext.getConnProperties().address().getHostName());
+            span.setAttribute("user", session.getIdentity().getName());
 
  /*       if (query.isEmpty()) {
             // remove portal so that it doesn't stick around and no attempt to batch it with follow up statement is made
