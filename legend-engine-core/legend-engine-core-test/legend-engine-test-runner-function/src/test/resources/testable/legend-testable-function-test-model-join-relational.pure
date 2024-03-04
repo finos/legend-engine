@@ -182,20 +182,13 @@ RelationalDatabaseConnection com::trade::TradeConnection
 
 
 ###Runtime
-Runtime com::trade::TradeRuntime
+LocalRuntime com::trade::TradeRuntime
 {
   mappings:
   [
     com::trade::TradeWithLegalEntityMapping
   ];
-  connectionStores:
-  [
-    com::trade::TradeConnection:
-    [
-      com::trade::TradeDatabase,
-      (dataspace) com::entity::EntityDataspace
-    ]
-  ];
+  connection: com::trade::TradeConnection;
 }
 
 Runtime com::entity::EntityRuntime

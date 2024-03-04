@@ -11,8 +11,8 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                             VALID_STRING | STRING
-                                        | RUNTIME | IMPORT
-                                        | MAPPINGS | CONNECTIONS
+                                        | RUNTIME | LOCAL_RUNTIME | IMPORT
+                                        | MAPPINGS | CONNECTIONS | CONNECTION
                                         | CONNECTIONSTORES
 ;
 
@@ -20,7 +20,7 @@ identifier:                             VALID_STRING | STRING
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                             imports
-                                            (runtime)*
+                                            (runtime|localRuntime)*
                                         EOF
 ;
 imports:                                (importStatement)*
@@ -32,6 +32,11 @@ runtime:                                RUNTIME qualifiedName
                                                 (mappings | connections | connectionStoresList)*
                                             BRACE_CLOSE
 ;
+localRuntime:                           LOCAL_RUNTIME qualifiedName
+                                            BRACE_OPEN
+                                                (mappings|singleConnection)*
+                                            BRACE_CLOSE
+;
 mappings:                               MAPPINGS COLON
                                             BRACKET_OPEN
                                                 (qualifiedName (COMMA qualifiedName)*)?
@@ -41,6 +46,8 @@ connections:                            CONNECTIONS COLON
                                             BRACKET_OPEN
                                                 (storeConnections (COMMA storeConnections)*)?
                                             BRACKET_CLOSE SEMI_COLON
+;
+singleConnection:                       CONNECTION COLON packageableElementPointer SEMI_COLON
 ;
 connectionStoresList:                   CONNECTIONSTORES COLON
                                             BRACKET_OPEN
