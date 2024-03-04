@@ -40,6 +40,7 @@ import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.utils.ExceptionUtil;
 import org.finos.legend.engine.postgres.utils.OpenTelemetry;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,12 +55,20 @@ public class Session implements AutoCloseable
     private ExecutorService executorService;
     private CompletableFuture<?> activeExecution;
 
-    public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler, ExecutorService executorService)
+    private Identity identity;
+
+    public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler, ExecutorService executorService, Identity identity)
     {
         this.executorService = executorService;
         this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
+        this.identity = identity;
         OpenTelemetry.ACTIVE_SESSIONS.add(1);
         OpenTelemetry.TOTAL_SESSIONS.add(1);
+    }
+
+    public Identity getIdentity()
+    {
+        return identity;
     }
 
     public CompletableFuture<?> sync()
