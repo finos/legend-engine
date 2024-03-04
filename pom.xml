@@ -2375,6 +2375,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-runtime-java-extension-interpreted-store-relational</artifactId>
+                <version>${legend.pure.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-m2-dsl-path-pure</artifactId>
                 <version>${legend.pure.version}</version>
             </dependency>
