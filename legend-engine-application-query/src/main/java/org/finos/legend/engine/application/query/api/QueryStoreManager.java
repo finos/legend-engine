@@ -405,8 +405,8 @@ public class QueryStoreManager
             throw new ApplicationQueryException("Only owner can update the query", Response.Status.FORBIDDEN);
         }
 
-        Class<? extends Query> queryClazz = currentQuery.getClass();
-        for (java.lang.reflect.Field field : queryClazz.getDeclaredFields())
+        Class<? extends Query> queryClass = currentQuery.getClass();
+        for (java.lang.reflect.Field field : queryClass.getDeclaredFields())
         {
             try
             {
