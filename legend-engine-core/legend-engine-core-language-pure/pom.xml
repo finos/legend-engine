@@ -28,7 +28,6 @@
 
 
     <modules>
-        <module>legend-engine-external-shared-format-model</module>
         <module>legend-engine-language-pure-compiler</module>
         <module>legend-engine-language-pure-compiler-api</module>
         <module>legend-engine-language-pure-grammar</module>

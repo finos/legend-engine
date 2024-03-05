@@ -186,7 +186,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-external-shared-format-model</artifactId>
+            <artifactId>legend-engine-external-format-compiler</artifactId>
         </dependency>
         <!-- ENGINE -->
 

@@ -33,5 +33,6 @@
         <module>legend-engine-core-query-pure</module>
         <module>legend-engine-core-shared</module>
         <module>legend-engine-core-test</module>
+        <module>legend-engine-external-format</module>
     </modules>
 </project>

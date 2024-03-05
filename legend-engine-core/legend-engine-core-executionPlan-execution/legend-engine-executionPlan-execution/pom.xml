@@ -120,13 +120,6 @@
         </dependency>
         <!-- ENGINE -->
 
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
-
         <!-- COMMONS LANG -->
         <dependency>
             <groupId>commons-lang</groupId>
