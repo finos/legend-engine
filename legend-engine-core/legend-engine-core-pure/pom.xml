@@ -17,17 +17,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-core</artifactId>
         <version>4.40.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-pure</artifactId>
+    <artifactId>legend-engine-core-pure</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Pure</name>
+    <name>Legend Engine - Core - Pure</name>
 
     <modules>
-        <module>legend-engine-pure-ide</module>
-        <module>legend-engine-pure-runtime</module>
+        <module>legend-engine-pure-code-compiled-core</module>
+        <module>legend-engine-pure-code-compiled-functions</module>
+        <module>legend-engine-pure-code-core-extension</module>
+        <module>legend-engine-pure-platform-modular-generation</module>
     </modules>
 </project>

@@ -17,17 +17,23 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-core</artifactId>
         <version>4.40.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>legend-engine-pure</artifactId>
+    <artifactId>legend-engine-core-testable</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - Pure</name>
+    <name>Legend Engine - Core - Test</name>
 
     <modules>
-        <module>legend-engine-pure-ide</module>
-        <module>legend-engine-pure-runtime</module>
+        <module>legend-engine-test-runner-mapping</module>
+        <module>legend-engine-test-runner-function</module>
+        <module>legend-engine-test-runner-shared</module>
+        <module>legend-engine-test-server-shared</module>
+        <module>legend-engine-test-data-generation</module>
+        <module>legend-engine-test-framework</module>
+        <module>legend-engine-testable</module>
+        <module>legend-engine-testable-api</module>
     </modules>
 </project>

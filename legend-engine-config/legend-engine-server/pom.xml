@@ -179,7 +179,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-query-pure</artifactId>
+            <artifactId>legend-engine-core-query-pure-rest</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Copyright 2022 Goldman Sachs
+ Copyright 2020 Goldman Sachs
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -14,20 +14,32 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>org.finos.legend.engine</groupId>
-        <artifactId>legend-engine</artifactId>
+        <artifactId>legend-engine-core-testable</artifactId>
         <version>4.40.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <artifactId>legend-engine-test-runner-shared</artifactId>
+    <name>Legend Engine - Test Runner - Shared</name>
 
-    <artifactId>legend-engine-pure</artifactId>
-    <packaging>pom</packaging>
-    <name>Legend Engine - Pure</name>
 
-    <modules>
-        <module>legend-engine-pure-ide</module>
-        <module>legend-engine-pure-runtime</module>
-    </modules>
+
+    <dependencies>
+        <!-- JACKSON -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <!-- JACKSON -->
+        <!-- TEST -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- TEST -->
+    </dependencies>
 </project>
