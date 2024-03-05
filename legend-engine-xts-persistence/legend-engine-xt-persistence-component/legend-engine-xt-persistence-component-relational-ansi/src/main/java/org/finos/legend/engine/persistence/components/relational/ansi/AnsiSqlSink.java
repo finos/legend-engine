@@ -162,10 +162,15 @@ import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
+
 public class AnsiSqlSink extends RelationalSink
 {
     private static final RelationalSink INSTANCE;
     protected static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
+
+    protected static final String FILE_WITH_ERROR = "FILE";
+    protected static final String ROW_NUMBER = "ROW_NUMBER";
 
     static
     {
@@ -347,6 +352,32 @@ public class AnsiSqlSink extends RelationalSink
         Object value = row.get(key);
         Long longValue = value == null ? null : (Long) value;
         return Optional.ofNullable(longValue);
+    }
+
+    protected int findNullValuesDataErrors(Executor<SqlGen, TabularData, SqlPlan> executor, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>> queriesForNull, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory, List<String> allFields)
+    {
+        int errorsCount = 0;
+        for (org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan> pair : queriesForNull)
+        {
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
+            if (!results.isEmpty())
+            {
+                List<Map<String, Object>> resultSets = results.get(0).getData();
+                for (Map<String, Object> row : resultSets)
+                {
+                    for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
+                    {
+                        if (row.get(column) == null)
+                        {
+                            DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CHECK_CONSTRAINT, column);
+                            dataErrorsByCategory.get(CHECK_CONSTRAINT).add(dataError);
+                            errorsCount++;
+                        }
+                    }
+                }
+            }
+        }
+        return errorsCount;
     }
 
     protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)

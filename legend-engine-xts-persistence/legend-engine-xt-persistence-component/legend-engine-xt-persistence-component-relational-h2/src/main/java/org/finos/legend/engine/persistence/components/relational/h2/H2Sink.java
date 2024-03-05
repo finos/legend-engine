@@ -109,9 +109,6 @@ public class H2Sink extends AnsiSqlSink
     private static final Map<DataType, Set<DataType>> IMPLICIT_DATA_TYPE_MAPPING;
     private static final Map<DataType, Set<DataType>> EXPLICIT_DATA_TYPE_MAPPING;
 
-    private static final String FILE = "FILE";
-    private static final String ROW_NUMBER = "ROW_NUMBER";
-
     static
     {
         Set<Capability> capabilities = new HashSet<>();
@@ -280,26 +277,8 @@ public class H2Sink extends AnsiSqlSink
         List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(CONVERSION, new ArrayList<>());
 
         // Execute queries for null values
-        for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForNull)
-        {
-            List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
-            if (!results.isEmpty())
-            {
-                List<Map<String, Object>> resultSets = results.get(0).getData();
-                for (Map<String, Object> row : resultSets)
-                {
-                    for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
-                    {
-                        if (row.get(column) == null)
-                        {
-                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, CHECK_CONSTRAINT, column);
-                            dataErrorsByCategory.get(CHECK_CONSTRAINT).add(dataError);
-                            dataErrorsTotalCount++;
-                        }
-                    }
-                }
-            }
-        }
+        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields);
+        dataErrorsTotalCount += nullValuesErrorsCount;
 
         // Execute queries for datatype conversion
         for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForDatatype)
@@ -322,7 +301,7 @@ public class H2Sink extends AnsiSqlSink
                         List<Map<String, Object>> resultSets = results.get(0).getData();
                         for (Map<String, Object> row : resultSets)
                         {
-                            DataError dataError = constructDataError(allFields, row, FILE, ROW_NUMBER, CONVERSION, validatedColumn.fieldName());
+                            DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CONVERSION, validatedColumn.fieldName());
                             dataErrorsByCategory.get(CONVERSION).add(dataError);
                             dataErrorsTotalCount++;
                         }

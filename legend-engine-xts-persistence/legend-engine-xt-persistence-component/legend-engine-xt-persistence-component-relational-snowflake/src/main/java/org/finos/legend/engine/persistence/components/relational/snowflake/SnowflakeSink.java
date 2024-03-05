@@ -105,6 +105,8 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CONVERSION;
 
 public class SnowflakeSink extends AnsiSqlSink
 {
@@ -123,15 +125,12 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final String ERRORS_SEEN = "errors_seen";
     private static final String FIRST_ERROR = "first_error";
     private static final String FIRST_ERROR_COLUMN_NAME = "first_error_column_name";
-
     private static final String ERROR = "ERROR";
-    private static final String FILE_WITH_ERROR = "FILE";
     private static final String LINE = "LINE";
     private static final String CHARACTER = "CHARACTER";
     private static final String BYTE_OFFSET = "BYTE_OFFSET";
     private static final String CATEGORY = "CATEGORY";
     private static final String COLUMN_NAME = "COLUMN_NAME";
-    private static final String ROW_NUMBER = "ROW_NUMBER";
     private static final String ROW_START_LINE = "ROW_START_LINE";
 
     private static final String REJECTED_RECORD = "REJECTED_RECORD";
@@ -314,25 +313,28 @@ public class SnowflakeSink extends AnsiSqlSink
 
         List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
 
-        for (ValidationCategory validationCategory : dryRunValidationSqlPlan.keySet())
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(CHECK_CONSTRAINT, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(CONVERSION, new ArrayList<>());
+
+        // Execute queries for null values
+        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields);
+        dataErrorsTotalCount += nullValuesErrorsCount;
+
+        // Execute queries for datatype conversion
+        for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForDatatype)
         {
-            for (Pair<Set<FieldValue>, SqlPlan> pair : dryRunValidationSqlPlan.get(validationCategory))
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
+            if (!results.isEmpty())
             {
-                List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
-                if (!results.isEmpty())
+                List<Map<String, Object>> resultSets = results.get(0).getData();
+                for (Map<String, Object> row : resultSets)
                 {
-                    List<Map<String, Object>> resultSets = results.get(0).getData();
-                    for (Map<String, Object> row : resultSets)
+                    // This loop will only be executed once as there is always only one element in the set
+                    for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
                     {
-                        for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
-                        {
-                            if (row.get(column) == null)
-                            {
-                                DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, validationCategory, column);
-                                dataErrorsByCategory.get(validationCategory).add(dataError);
-                                dataErrorsTotalCount++;
-                            }
-                        }
+                        DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CONVERSION, column);
+                        dataErrorsByCategory.get(CONVERSION).add(dataError);
+                        dataErrorsTotalCount++;
                     }
                 }
             }
