@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
 {
@@ -60,7 +60,7 @@ public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
         }
     }
 
-    private final Map<String, URLStreamHandler> handlers = new TreeMap<>();
+    private final Map<String, URLStreamHandler> handlers = new ConcurrentHashMap<>();
 
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol)
