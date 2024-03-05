@@ -41,6 +41,7 @@ public class RelationalSinkCleanerTest extends BaseTest
                 .relationalSink(H2Sink.get())
                 .mainDataset(mainTable)
                 .executionTimestampClock(fixedClock_2000_01_01)
+                .requestedBy("lh_dev")
                 .build();
 
         //Table counts before sink cleanup
@@ -70,6 +71,7 @@ public class RelationalSinkCleanerTest extends BaseTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .enableConcurrentSafety(true)
                 .lockInfoDataset(lockTable)
+                .requestedBy("lh_dev")
                 .build();
 
         //Table counts before sink cleanup

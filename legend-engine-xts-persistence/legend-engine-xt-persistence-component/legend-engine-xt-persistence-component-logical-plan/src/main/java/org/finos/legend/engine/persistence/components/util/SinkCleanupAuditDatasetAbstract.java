@@ -49,6 +49,12 @@ public interface SinkCleanupAuditDatasetAbstract
     }
 
     @Default
+    default String requestedBy()
+    {
+        return "requested_by";
+    }
+
+    @Default
     default String batchStartTimeField()
     {
         return "batch_start_ts_utc";
@@ -66,11 +72,6 @@ public interface SinkCleanupAuditDatasetAbstract
         return "batch_status";
     }
 
-//    @Default
-//    default String tableBatchIdField()
-//    {
-//        return "table_batch_id";
-//    }
 
     @Derived
     default Dataset get()
@@ -84,7 +85,7 @@ public interface SinkCleanupAuditDatasetAbstract
                 .addFields(Field.builder().name(batchStartTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(batchEndTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(batchStatusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
-              //  .addFields(Field.builder().name(tableBatchIdField()).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(requestedBy()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
                 .build())
             .build();
     }

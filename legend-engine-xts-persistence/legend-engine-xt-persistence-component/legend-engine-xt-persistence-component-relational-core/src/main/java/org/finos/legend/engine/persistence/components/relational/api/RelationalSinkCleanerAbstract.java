@@ -62,6 +62,8 @@ public abstract class RelationalSinkCleanerAbstract
 
     public abstract Optional<LockInfoDataset> lockInfoDataset();
 
+    public abstract String requestedBy();
+
     @Default
     public SinkCleanupAuditDataset auditDataset()
     {
@@ -143,6 +145,7 @@ public abstract class RelationalSinkCleanerAbstract
                 .build();
     }
 
+    //todo : ApiUtils.getLockInfoDataset() ?
     public SinkCleanupIngestorResult executeOperationsForSinkCleanup(RelationalConnection connection)
     {
         SinkCleanupIngestorResult ingestorResult;
@@ -233,23 +236,26 @@ public abstract class RelationalSinkCleanerAbstract
 
     private Operation buildInsertCondition()
     {
-        DatasetReference metaTableRef = this.auditDataset().get().datasetReference();
-        FieldValue tableName = FieldValue.builder().datasetRef(metaTableRef).fieldName(auditDataset().tableNameField()).build();
-        FieldValue startTs = FieldValue.builder().datasetRef(metaTableRef).fieldName(auditDataset().batchStartTimeField()).build();
-        FieldValue endTs = FieldValue.builder().datasetRef(metaTableRef).fieldName(auditDataset().batchEndTimeField()).build();
-        FieldValue batchStatus = FieldValue.builder().datasetRef(metaTableRef).fieldName(auditDataset().batchStatusField()).build();
+        DatasetReference auditTableRef = this.auditDataset().get().datasetReference();
+        FieldValue tableName = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().tableNameField()).build();
+        FieldValue startTs = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().batchStartTimeField()).build();
+        FieldValue endTs = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().batchEndTimeField()).build();
+        FieldValue batchStatus = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().batchStatusField()).build();
+        FieldValue requestedBy = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().requestedBy()).build();
 
         List<org.finos.legend.engine.persistence.components.logicalplan.values.Value> fieldsToInsert = new ArrayList<>();
         fieldsToInsert.add(tableName);
         fieldsToInsert.add(startTs);
         fieldsToInsert.add(endTs);
         fieldsToInsert.add(batchStatus);
+        fieldsToInsert.add(requestedBy);
 
         List<org.finos.legend.engine.persistence.components.logicalplan.values.Value> selectFields = new ArrayList<>();
         selectFields.add(getMainTableName());
         selectFields.add(BatchStartTimestamp.INSTANCE);
         selectFields.add(BatchEndTimestamp.INSTANCE);
         selectFields.add(StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()));
+        selectFields.add(StringValue.of(requestedBy()));
 
         return Insert.of(auditDataset().get(), Selection.builder().addAllFields(selectFields).build(), fieldsToInsert);
     }
