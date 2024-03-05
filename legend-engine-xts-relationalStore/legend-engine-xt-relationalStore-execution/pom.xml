@@ -28,6 +28,7 @@
 
     <modules>
         <module>legend-engine-xt-relationalStore-executionPlan</module>
+        <module>legend-engine-xt-relationalStore-executionPlan-rest</module>
         <module>legend-engine-xt-relationalStore-executionPlan-authorizer</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection</module>
         <module>legend-engine-xt-relationalStore-executionPlan-connection-api</module>

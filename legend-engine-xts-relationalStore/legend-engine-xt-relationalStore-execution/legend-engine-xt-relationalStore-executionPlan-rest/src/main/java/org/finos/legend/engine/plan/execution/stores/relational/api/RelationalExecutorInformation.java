@@ -26,7 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-
 @Api(tags = "Server")
 @Path("server/v1")
 @Produces(MediaType.APPLICATION_JSON)

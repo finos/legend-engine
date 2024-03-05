@@ -27,7 +27,7 @@
     <name>Legend Engine - External - Format</name>
 
     <modules>
-<!--        <module>legend-engine-external-format-execution</module>-->
+        <module>legend-engine-external-format-execution</module>
         <module>legend-engine-external-format-language</module>
     </modules>
 </project>
