@@ -626,7 +626,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(PackageableRuntime packageableRuntime)
     {
-        return "Runtime " + PureGrammarComposerUtility.convertPath(packageableRuntime.getPath()) + "\n" +
+        String runtimeType = packageableRuntime.runtimeValue instanceof LocalEngineRuntime
+                ? "SingleConnectionRuntime "
+                : "Runtime ";
+        return runtimeType + PureGrammarComposerUtility.convertPath(packageableRuntime.getPath()) + "\n" +
                 "{" +
                 HelperRuntimeGrammarComposer.renderRuntimeValue(packageableRuntime.runtimeValue, 1, false, this) +
                 "\n}";

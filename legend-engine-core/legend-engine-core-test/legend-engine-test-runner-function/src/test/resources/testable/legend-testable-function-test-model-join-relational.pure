@@ -182,7 +182,7 @@ RelationalDatabaseConnection com::trade::TradeConnection
 
 
 ###Runtime
-LocalRuntime com::trade::TradeRuntime
+SingleConnectionRuntime com::trade::TradeRuntime
 {
   mappings:
   [

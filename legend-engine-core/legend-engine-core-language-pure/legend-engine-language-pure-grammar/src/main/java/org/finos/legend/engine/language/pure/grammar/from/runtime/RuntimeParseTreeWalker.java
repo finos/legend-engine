@@ -58,10 +58,10 @@ public class RuntimeParseTreeWalker
     {
         ListIterate.collect(ctx.imports().importStatement(), importCtx -> PureGrammarParserUtility.fromPath(importCtx.packagePath().identifier()), this.section.imports);
         ctx.runtime().stream().map(this::visitRuntime).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
-        ctx.localRuntime().stream().map(this::visitLocalRuntime).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
+        ctx.singleConnectionRuntime().stream().map(this::visitSingleConnectionRuntime).peek(e -> this.section.elements.add(e.getPath())).forEach(this.elementConsumer);
     }
 
-    public PackageableRuntime visitLocalRuntime(RuntimeParserGrammar.LocalRuntimeContext ctx)
+    public PackageableRuntime visitSingleConnectionRuntime(RuntimeParserGrammar.SingleConnectionRuntimeContext ctx)
     {
         PackageableRuntime runtime = new PackageableRuntime();
         runtime.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
@@ -73,11 +73,11 @@ public class RuntimeParseTreeWalker
         RuntimeParserGrammar.MappingsContext mappingsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mappings(), "mappings", runtime.sourceInformation);
         runtime.runtimeValue.mappings = visitMappings(mappingsContext);
         RuntimeParserGrammar.SingleConnectionContext singleConnectionContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.singleConnection(), "connection", runtime.sourceInformation);
-        runtime.runtimeValue.connectionStores.add(visitLocalRuntimeSingleConnection(singleConnectionContext));
+        runtime.runtimeValue.connectionStores.add(visitSingleConnectionRuntimeSingleConnection(singleConnectionContext));
         return runtime;
     }
 
-    public ConnectionStores visitLocalRuntimeSingleConnection(RuntimeParserGrammar.SingleConnectionContext singleConnectionContext)
+    public ConnectionStores visitSingleConnectionRuntimeSingleConnection(RuntimeParserGrammar.SingleConnectionContext singleConnectionContext)
     {
         ConnectionStores connectionStores = new ConnectionStores();
         connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(singleConnectionContext);

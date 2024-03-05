@@ -54,6 +54,24 @@ public class HelperRuntimeGrammarComposer
             builder.append(engineRuntime.mappings.stream().map(mappingPointer -> getTabString(baseIndentation + 1) + mappingPointer.path).collect(Collectors.joining(",\n"))).append(engineRuntime.mappings.isEmpty() ? "" : "\n");
             appendTabString(builder, baseIndentation).append("];");
         }
+        return engineRuntime instanceof LocalEngineRuntime
+                ? builder.append(renderSingleConnectionRuntimeValue((LocalEngineRuntime) engineRuntime, baseIndentation)).toString()
+                : builder.append(renderEngineRuntimeValue(engineRuntime, baseIndentation, isEmbeddedRuntime, transformer)).toString();
+    }
+
+    private static String renderSingleConnectionRuntimeValue(LocalEngineRuntime localEngineRuntime, int baseIndentation)
+    {
+        StringBuilder builder = new StringBuilder();
+        if (!localEngineRuntime.connectionStores.isEmpty())
+        {
+            appendTabString(builder.append("\n"), baseIndentation).append("connection: ").append(PureGrammarComposerUtility.convertPath(localEngineRuntime.connectionStores.get(0).connectionPointer.connection)).append(";");
+        }
+        return builder.toString();
+    }
+
+    private static String renderEngineRuntimeValue(EngineRuntime engineRuntime, int baseIndentation, boolean isEmbeddedRuntime, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        StringBuilder builder = new StringBuilder();
         if (!engineRuntime.connections.isEmpty() && !engineRuntime.connections.parallelStream().allMatch(storeConnections -> storeConnections.storeConnections.isEmpty()))
         {
             List<String> storeConnectionStrings = new ArrayList<>();

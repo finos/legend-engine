@@ -11,7 +11,7 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                             VALID_STRING | STRING
-                                        | RUNTIME | LOCAL_RUNTIME | IMPORT
+                                        | RUNTIME | SINGLE_CONNECTION_RUNTIME | IMPORT
                                         | MAPPINGS | CONNECTIONS | CONNECTION
                                         | CONNECTIONSTORES
 ;
@@ -20,7 +20,7 @@ identifier:                             VALID_STRING | STRING
 // -------------------------------------- DEFINITION --------------------------------------
 
 definition:                             imports
-                                            (runtime|localRuntime)*
+                                            (runtime|singleConnectionRuntime)*
                                         EOF
 ;
 imports:                                (importStatement)*
@@ -32,7 +32,7 @@ runtime:                                RUNTIME qualifiedName
                                                 (mappings | connections | connectionStoresList)*
                                             BRACE_CLOSE
 ;
-localRuntime:                           LOCAL_RUNTIME qualifiedName
+singleConnectionRuntime:                           SINGLE_CONNECTION_RUNTIME qualifiedName
                                             BRACE_OPEN
                                                 (mappings|singleConnection)*
                                             BRACE_CLOSE

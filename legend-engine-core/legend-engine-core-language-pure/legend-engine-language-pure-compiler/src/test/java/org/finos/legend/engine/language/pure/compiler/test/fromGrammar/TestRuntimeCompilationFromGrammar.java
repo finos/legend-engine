@@ -36,7 +36,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
     }
 
     @Test
-    public void testLocalRuntimeCompilation()
+    public void testSingleConnectionRuntimeCompilation()
     {
         String resource = "Class test::class\n" +
                 "{\n" +
@@ -53,7 +53,7 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "  url : 'asd';\n" +
                 "}\n";
         test(resource + "###Runtime\n" +
-                "LocalRuntime com::test::localRuntime\n" +
+                "SingleConnectionRuntime com::test::singleConnectionRuntime\n" +
                 "{\n" +
                 "  mappings:\n" +
                 "  [\n" +

@@ -152,7 +152,7 @@ RelationalDatabaseConnection model::MyConnection
 
 
 ###Runtime
-LocalRuntime execution::Runtime
+SingleConnectionRuntime execution::Runtime
 {
   mappings:
   [
