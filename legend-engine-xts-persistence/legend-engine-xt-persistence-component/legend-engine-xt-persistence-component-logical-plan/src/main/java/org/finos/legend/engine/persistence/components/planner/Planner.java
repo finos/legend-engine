@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -44,6 +45,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
@@ -53,6 +55,7 @@ import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -275,7 +278,17 @@ public abstract class Planner
         return LogicalPlan.of(Collections.emptyList());
     }
 
+    public Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> buildLogicalPlanForDryRunValidation(Resources resources)
+    {
+        return Collections.emptyMap();
+    }
+
     public LogicalPlan buildLogicalPlanForDryRunPreActions(Resources resources)
+    {
+        return LogicalPlan.of(Collections.emptyList());
+    }
+
+    public LogicalPlan buildLogicalPlanForDryRunPostCleanup(Resources resources)
     {
         return LogicalPlan.of(Collections.emptyList());
     }

@@ -25,7 +25,7 @@ public interface StagedFilesDatasetProperties
     List<String> filePatterns();
 
     @Value.Derived
-    default boolean dryRunSupported()
+    default boolean validationModeSupported()
     {
         return false;
     }

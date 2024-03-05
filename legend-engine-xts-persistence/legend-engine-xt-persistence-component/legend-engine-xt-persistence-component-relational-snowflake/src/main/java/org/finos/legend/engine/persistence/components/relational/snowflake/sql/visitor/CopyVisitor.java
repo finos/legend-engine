@@ -57,7 +57,7 @@ public class CopyVisitor implements LogicalPlanVisitor<Copy>
         copyStatement.setFilePatterns(properties.filePatterns());
         copyStatement.setFilePaths(properties.filePaths());
 
-        if (current.dryRun())
+        if (current.validationMode())
         {
             copyStatement.setValidationMode("RETURN_ERRORS");
         }
@@ -83,7 +83,7 @@ public class CopyVisitor implements LogicalPlanVisitor<Copy>
             {
                 StandardFileFormat standardFileFormat = (StandardFileFormat) format;
                 Map<String, Object> formatOptions = new HashMap<>(standardFileFormat.formatOptions());
-                if (current.dryRun() && standardFileFormat.formatType().equals(FileFormatType.CSV))
+                if (current.validationMode() && standardFileFormat.formatType().equals(FileFormatType.CSV))
                 {
                     formatOptions.put("ERROR_ON_COLUMN_COUNT_MISMATCH", false);
                 }

@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,15 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.logicalplan.operations;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
-
-import java.util.List;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 
 import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Parameter;
 import static org.immutables.value.Value.Style;
 
 @Immutable
@@ -31,19 +28,11 @@ import static org.immutables.value.Value.Style;
     optionalAcceptNullable = true,
     strictBuilder = true
 )
-public interface CopyAbstract extends Operation
+public interface TryCastFunctionAbstract extends Value
 {
-    Dataset targetDataset();
+    @Parameter(order = 0)
+    Value field();
 
-    Dataset sourceDataset();
-
-    List<Value> fields();
-
-    StagedFilesDatasetProperties stagedFilesDatasetProperties();
-
-    @org.immutables.value.Value.Default
-    default boolean validationMode()
-    {
-        return false;
-    }
+    @Parameter(order = 1)
+    FieldType type();
 }

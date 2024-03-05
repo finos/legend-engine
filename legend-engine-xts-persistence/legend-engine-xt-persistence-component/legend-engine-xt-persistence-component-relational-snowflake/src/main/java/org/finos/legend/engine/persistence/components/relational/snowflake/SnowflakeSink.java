@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.snowflake;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -35,7 +36,11 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Cre
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Show;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
+import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
@@ -55,6 +60,8 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.S
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.AlterVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.BatchEndTimestampVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ClusterKeyVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataFileNameFieldVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.MetadataRowNumberFieldVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SQLCreateVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.SchemaDefinitionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.FieldVisitor;
@@ -66,13 +73,16 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesSelectionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
+import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,16 +93,20 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Queue;
 import java.util.Set;
-import java.util.Objects;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CONVERSION;
 
 public class SnowflakeSink extends AnsiSqlSink
 {
@@ -111,15 +125,12 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final String ERRORS_SEEN = "errors_seen";
     private static final String FIRST_ERROR = "first_error";
     private static final String FIRST_ERROR_COLUMN_NAME = "first_error_column_name";
-
     private static final String ERROR = "ERROR";
-    private static final String FILE_WITH_ERROR = "FILE";
     private static final String LINE = "LINE";
     private static final String CHARACTER = "CHARACTER";
     private static final String BYTE_OFFSET = "BYTE_OFFSET";
     private static final String CATEGORY = "CATEGORY";
     private static final String COLUMN_NAME = "COLUMN_NAME";
-    private static final String ROW_NUMBER = "ROW_NUMBER";
     private static final String ROW_START_LINE = "ROW_START_LINE";
 
     private static final String REJECTED_RECORD = "REJECTED_RECORD";
@@ -150,6 +161,9 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(StagedFilesFieldValue.class, new StagedFilesFieldValueVisitor());
         logicalPlanVisitorByClass.put(StagedFilesSelection.class, new StagedFilesSelectionVisitor());
         logicalPlanVisitorByClass.put(DigestUdf.class, new DigestUdfVisitor());
+        logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
+        logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
+        logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 
@@ -247,12 +261,20 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    public List<DataError> performDryRun(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
     {
-        if (dryRunSqlPlan == null || dryRunSqlPlan.getSqlList().isEmpty())
+        if (dryRunValidationSqlPlan == null || dryRunValidationSqlPlan.isEmpty())
         {
-            throw new RuntimeException("DryRun supported for this ingest");
+            return performDryRunWithValidationMode(executor, dryRunSqlPlan, sampleRowCount);
         }
+        else
+        {
+            return performDryRunWithValidationQueries(datasets, executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount);
+        }
+    }
+
+    private List<DataError> performDryRunWithValidationMode(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount)
+    {
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunSqlPlan, sampleRowCount);
         List<DataError> dataErrors = new ArrayList<>();
 
@@ -262,20 +284,63 @@ public class SnowflakeSink extends AnsiSqlSink
             for (Map<String, Object> row : resultSets)
             {
                 DataError dataError = DataError.builder()
-                        .errorMessage(getString(row, ERROR).orElseThrow(IllegalStateException::new))
-                        .file(getString(row, FILE_WITH_ERROR).orElseThrow(IllegalStateException::new))
-                        .errorCategory(getString(row, CATEGORY).orElseThrow(IllegalStateException::new))
-                        .columnName(getString(row, COLUMN_NAME))
-                        .lineNumber(getLong(row, LINE))
-                        .characterPosition(getLong(row, CHARACTER))
-                        .rowNumber(getLong(row, ROW_NUMBER))
-                        .rowStartLineNumber(getLong(row, ROW_START_LINE))
-                        .rejectedRecord(getString(row, REJECTED_RECORD))
-                        .build();
+                    .errorMessage(getString(row, ERROR).orElseThrow(IllegalStateException::new))
+                    .file(getString(row, FILE_WITH_ERROR).orElseThrow(IllegalStateException::new))
+                    .errorCategory(getString(row, CATEGORY).orElseThrow(IllegalStateException::new))
+                    .columnName(getString(row, COLUMN_NAME))
+                    .lineNumber(getLong(row, LINE))
+                    .characterPosition(getLong(row, CHARACTER))
+                    .rowNumber(getLong(row, ROW_NUMBER))
+                    .rowStartLineNumber(getLong(row, ROW_START_LINE))
+                    .rejectedRecord(getString(row, REJECTED_RECORD))
+                    .build();
                 dataErrors.add(dataError);
             }
         }
         return dataErrors;
+    }
+
+    private List<DataError> performDryRunWithValidationQueries(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
+    {
+        executor.executePhysicalPlan(dryRunSqlPlan);
+
+        int dataErrorsTotalCount = 0;
+        Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
+        for (ValidationCategory validationCategory : ValidationCategory.values())
+        {
+            dataErrorsByCategory.put(validationCategory, new LinkedList<>());
+        }
+
+        List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
+
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(CHECK_CONSTRAINT, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(CONVERSION, new ArrayList<>());
+
+        // Execute queries for null values
+        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields);
+        dataErrorsTotalCount += nullValuesErrorsCount;
+
+        // Execute queries for datatype conversion
+        for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForDatatype)
+        {
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
+            if (!results.isEmpty())
+            {
+                List<Map<String, Object>> resultSets = results.get(0).getData();
+                for (Map<String, Object> row : resultSets)
+                {
+                    // This loop will only be executed once as there is always only one element in the set
+                    for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
+                    {
+                        DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CONVERSION, column);
+                        dataErrorsByCategory.get(CONVERSION).add(dataError);
+                        dataErrorsTotalCount++;
+                    }
+                }
+            }
+        }
+
+        return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsTotalCount, dataErrorsByCategory);
     }
 
     @Override
@@ -370,19 +435,4 @@ public class SnowflakeSink extends AnsiSqlSink
             throw new RuntimeException(e);
         }
     }
-
-    private Optional<String> getString(Map<String, Object> row, String key)
-    {
-        Object value = row.get(key);
-        String strValue = value == null ? null : (String) value;
-        return Optional.ofNullable(strValue);
-    }
-
-    private Optional<Long> getLong(Map<String, Object> row, String key)
-    {
-        Object value = row.get(key);
-        Long longValue = value == null ? null : (Long) value;
-        return Optional.ofNullable(longValue);
-    }
-
 }

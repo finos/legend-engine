@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.api;
 
+import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -21,6 +23,7 @@ import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.planner.Planners;
@@ -35,12 +38,14 @@ import org.finos.legend.engine.persistence.components.transformer.TransformOptio
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.immutables.value.Value.Default;
 import org.immutables.value.Value.Derived;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -254,7 +259,6 @@ public abstract class RelationalGeneratorAbstract
             acquireLockSqlPlan = Optional.of(transformer.generatePhysicalPlan(acquireLockLogicalPlan));
         }
 
-
         // schema evolution
         Optional<SqlPlan> schemaEvolutionSqlPlan = Optional.empty();
         Optional<Dataset> schemaEvolutionDataset = Optional.empty();
@@ -295,6 +299,19 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan dryRunLogicalPlan = planner.buildLogicalPlanForDryRun(resources);
         SqlPlan dryRunSqlPlan = transformer.generatePhysicalPlan(dryRunLogicalPlan);
 
+        // dry-run validations
+        Map<ValidationCategory, List<Pair<Set<FieldValue>, LogicalPlan>>> dryRunValidationLogicalPlan = planner.buildLogicalPlanForDryRunValidation(resources);
+        Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan = new HashMap<>();
+        for (ValidationCategory validationCategory : dryRunValidationLogicalPlan.keySet())
+        {
+            dryRunValidationSqlPlan.put(validationCategory, new ArrayList<>());
+            for (Pair<Set<FieldValue>, LogicalPlan> pair : dryRunValidationLogicalPlan.get(validationCategory))
+            {
+                SqlPlan sqlplan = transformer.generatePhysicalPlan(pair.getTwo());
+                dryRunValidationSqlPlan.get(validationCategory).add(Tuples.pair(pair.getOne(), sqlplan));
+            }
+        }
+
         // metadata ingest
         LogicalPlan metaDataIngestLogicalPlan = planner.buildLogicalPlanForMetadataIngest(resources);
         SqlPlan metaDataIngestSqlPlan = transformer.generatePhysicalPlan(metaDataIngestLogicalPlan);
@@ -303,12 +320,17 @@ public abstract class RelationalGeneratorAbstract
         LogicalPlan postActionsLogicalPlan = planner.buildLogicalPlanForPostActions(resources);
         SqlPlan postActionsSqlPlan = transformer.generatePhysicalPlan(postActionsLogicalPlan);
 
+        // post-cleanup
         LogicalPlan postCleanupLogicalPlan = planner.buildLogicalPlanForPostCleanup(resources);
         Optional<SqlPlan> postCleanupSqlPlan = Optional.empty();
         if (postCleanupLogicalPlan != null)
         {
             postCleanupSqlPlan = Optional.of(transformer.generatePhysicalPlan(postCleanupLogicalPlan));
         }
+
+        // dry-run post-cleanup
+        LogicalPlan dryRunPostCleanupLogicalPlan = planner.buildLogicalPlanForDryRunPostCleanup(resources);
+        SqlPlan dryRunPostCleanupSqlPlan = transformer.generatePhysicalPlan(dryRunPostCleanupLogicalPlan);
 
         // post-run statistics
         Map<StatisticName, LogicalPlan> postIngestStatisticsLogicalPlan = planner.buildLogicalPlanForPostRunStatistics(resources);
@@ -327,8 +349,10 @@ public abstract class RelationalGeneratorAbstract
             .schemaEvolutionDataset(schemaEvolutionDataset)
             .ingestSqlPlan(ingestSqlPlan)
             .dryRunSqlPlan(dryRunSqlPlan)
+            .putAllDryRunValidationSqlPlan(dryRunValidationSqlPlan)
             .postActionsSqlPlan(postActionsSqlPlan)
             .postCleanupSqlPlan(postCleanupSqlPlan)
+            .dryRunPostCleanupSqlPlan(dryRunPostCleanupSqlPlan)
             .metadataIngestSqlPlan(metaDataIngestSqlPlan)
             .deduplicationAndVersioningSqlPlan(deduplicationAndVersioningSqlPlan)
             .putAllDeduplicationAndVersioningErrorChecksSqlPlan(deduplicationAndVersioningErrorChecksSqlPlan)

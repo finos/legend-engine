@@ -61,6 +61,13 @@
         </dependency>
         <!-- JACKSON -->
 
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+
         <!-- LOGGING -->
         <dependency>
             <groupId>org.slf4j</groupId>

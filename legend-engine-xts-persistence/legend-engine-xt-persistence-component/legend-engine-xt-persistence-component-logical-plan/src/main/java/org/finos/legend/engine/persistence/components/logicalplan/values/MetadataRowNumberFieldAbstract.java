@@ -1,4 +1,4 @@
-// Copyright 2022 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,16 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.util;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-public enum Capability
+import static org.immutables.value.Value.Immutable;
+import static org.immutables.value.Value.Style;
+
+@Immutable
+@Style(
+    typeAbstract = "*Abstract",
+    typeImmutable = "*",
+    jdkOnly = true,
+    optionalAcceptNullable = true,
+    strictBuilder = true
+)
+public interface MetadataRowNumberFieldAbstract extends Value
 {
-    MERGE,
-    ADD_COLUMN,
-    IMPLICIT_DATA_TYPE_CONVERSION,
-    EXPLICIT_DATA_TYPE_CONVERSION,
-    DATA_TYPE_LENGTH_CHANGE,
-    DATA_TYPE_SCALE_CHANGE,
-    TRANSFORM_WHILE_COPY,
-    DRY_RUN
 }

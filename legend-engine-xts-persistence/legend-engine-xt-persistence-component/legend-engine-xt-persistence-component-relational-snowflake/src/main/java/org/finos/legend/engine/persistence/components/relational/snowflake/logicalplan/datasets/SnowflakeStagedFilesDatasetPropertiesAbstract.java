@@ -39,16 +39,16 @@ public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFil
     Map<String, Object> copyOptions();
 
     @Value.Derived
-    default boolean dryRunSupported()
+    default boolean validationModeSupported()
     {
         // Only supported for CSV
-        boolean dryRunSupported = false;
+        boolean validationModeSuppoerted = false;
         if (fileFormat().isPresent() && fileFormat().get() instanceof StandardFileFormat)
         {
             StandardFileFormat standardFileFormat = (StandardFileFormat) fileFormat().get();
-            dryRunSupported = standardFileFormat.formatType().equals(FileFormatType.CSV);
+            validationModeSuppoerted = standardFileFormat.formatType().equals(FileFormatType.CSV);
         }
 
-        return dryRunSupported;
+        return validationModeSuppoerted;
     }
 }

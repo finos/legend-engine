@@ -71,6 +71,7 @@ import static org.finos.legend.engine.persistence.components.logicalplan.dataset
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
+import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.VARCHAR;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATHS;
 import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATTERNS;
@@ -402,17 +403,33 @@ public class LogicalPlanUtils
         int iter = 1;
         for (Field field : dataset.schema().fields())
         {
-            StagedFilesFieldValue fieldValue = StagedFilesFieldValue.builder()
-                    .columnNumber(columnNumbersPresent ? field.columnNumber().get() : iter++)
-                    .datasetRefAlias(dataset.datasetReference().alias())
-                    .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
-                    .elementPath(field.elementPath())
-                    .fieldType(field.type())
-                    .fieldName(field.name())
-                    .build();
-            stagedFilesFields.add(fieldValue);
+            stagedFilesFields.add(getStagedFilesFieldValueWithType(dataset, field, field.type(), columnNumbersPresent, iter++));
         }
         return stagedFilesFields;
+    }
+
+    public static List<Value> extractStagedFilesFieldValuesWithVarCharType(Dataset dataset)
+    {
+        List<Value> stagedFilesFields = new ArrayList<>();
+        boolean columnNumbersPresent = dataset.schema().fields().stream().allMatch(field -> field.columnNumber().isPresent());
+        int iter = 1;
+        for (Field field : dataset.schema().fields())
+        {
+            stagedFilesFields.add(getStagedFilesFieldValueWithType(dataset, field, FieldType.builder().dataType(VARCHAR).build(), columnNumbersPresent, iter++));
+        }
+        return stagedFilesFields;
+    }
+
+    public static StagedFilesFieldValue getStagedFilesFieldValueWithType(Dataset dataset, Field field, FieldType fieldType, boolean columnNumbersPresent, int counter)
+    {
+        return StagedFilesFieldValue.builder()
+            .columnNumber(columnNumbersPresent ? field.columnNumber().get() : counter)
+            .datasetRefAlias(dataset.datasetReference().alias())
+            .alias(field.fieldAlias().isPresent() ? field.fieldAlias().get() : field.name())
+            .elementPath(field.elementPath())
+            .fieldType(fieldType)
+            .fieldName(field.name())
+            .build();
     }
 
     public static Dataset getTempDataset(Datasets datasets)

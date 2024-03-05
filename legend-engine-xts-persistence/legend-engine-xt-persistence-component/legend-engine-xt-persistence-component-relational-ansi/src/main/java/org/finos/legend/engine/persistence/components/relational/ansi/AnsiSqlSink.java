@@ -154,15 +154,23 @@ import org.finos.legend.engine.persistence.components.relational.sql.TabularData
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
+import org.finos.legend.engine.persistence.components.transformer.Transformer;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
 
 public class AnsiSqlSink extends RelationalSink
 {
     private static final RelationalSink INSTANCE;
     protected static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
+
+    protected static final String FILE_WITH_ERROR = "FILE";
+    protected static final String ROW_NUMBER = "ROW_NUMBER";
 
     static
     {
@@ -327,8 +335,104 @@ public class AnsiSqlSink extends RelationalSink
         throw new UnsupportedOperationException("Bulk Load not supported!");
     }
 
-    public List<DataError> performDryRun(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
     {
         throw new UnsupportedOperationException("DryRun not supported!");
+    }
+
+    protected Optional<String> getString(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        String strValue = value == null ? null : (String) value;
+        return Optional.ofNullable(strValue);
+    }
+
+    protected Optional<Long> getLong(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        Long longValue = value == null ? null : (Long) value;
+        return Optional.ofNullable(longValue);
+    }
+
+    protected int findNullValuesDataErrors(Executor<SqlGen, TabularData, SqlPlan> executor, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>> queriesForNull, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory, List<String> allFields)
+    {
+        int errorsCount = 0;
+        for (org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan> pair : queriesForNull)
+        {
+            List<TabularData> results = executor.executePhysicalPlanAndGetResults(pair.getTwo());
+            if (!results.isEmpty())
+            {
+                List<Map<String, Object>> resultSets = results.get(0).getData();
+                for (Map<String, Object> row : resultSets)
+                {
+                    for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
+                    {
+                        if (row.get(column) == null)
+                        {
+                            DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CHECK_CONSTRAINT, column);
+                            dataErrorsByCategory.get(CHECK_CONSTRAINT).add(dataError);
+                            errorsCount++;
+                        }
+                    }
+                }
+            }
+        }
+        return errorsCount;
+    }
+
+    protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
+    {
+        return DataError.builder()
+            .errorMessage(getValidationFailedErrorMessage(validationCategory))
+            .file(getString(row, fileNameColumnName).orElseThrow(IllegalStateException::new))
+            .errorCategory(validationCategory.getCategoryName())
+            .columnName(validatedColumnName)
+            .rowNumber(getLong(row, rowNumberColumnName))
+            .rejectedRecord(allColumns.stream().map(column -> getString(row, column).orElse("")).collect(Collectors.joining(",")))
+            .build();
+    }
+
+    private String getValidationFailedErrorMessage(ValidationCategory category)
+    {
+        switch (category)
+        {
+            case CHECK_CONSTRAINT:
+                return "Null values found in non-nullable column";
+            case CONVERSION:
+                return "Unable to type cast column";
+            default:
+                throw new IllegalStateException("Unsupported validation category");
+        }
+    }
+
+    public List<DataError> getDataErrorsWithFairDistributionAcrossCategories(int sampleRowCount, int dataErrorsTotalCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory)
+    {
+        if (dataErrorsTotalCount <= sampleRowCount)
+        {
+            return dataErrorsByCategory.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        }
+
+        List<DataError> fairlyDistributedDataErrors = new ArrayList<>();
+        List<ValidationCategory> eligibleCategories = new ArrayList<>(Arrays.asList(ValidationCategory.values()));
+
+        while (fairlyDistributedDataErrors.size() < sampleRowCount && !eligibleCategories.isEmpty())
+        {
+            for (ValidationCategory validationCategory : eligibleCategories)
+            {
+                if (!dataErrorsByCategory.get(validationCategory).isEmpty())
+                {
+                    if (fairlyDistributedDataErrors.size() < sampleRowCount)
+                    {
+                        fairlyDistributedDataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
+                    }
+                }
+                else
+                {
+                    eligibleCategories.remove(validationCategory);
+                }
+            }
+        }
+
+        return fairlyDistributedDataErrors;
     }
 }

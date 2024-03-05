@@ -35,12 +35,17 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Schem
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDataset;
 import org.finos.legend.engine.persistence.components.planner.PlannerOptions;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.DryRunResult;
 import org.finos.legend.engine.persistence.components.relational.api.GeneratorResult;
+import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalGenerator;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalIngestor;
 import org.finos.legend.engine.persistence.components.relational.h2.H2DigestUtil;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.datasets.H2StagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
+import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +55,7 @@ import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +78,7 @@ public class BulkLoadTest extends BaseTest
     private static final String COL_STRING = "col_string";
     private static final String COL_DECIMAL = "col_decimal";
     private static final String COL_DATETIME = "col_datetime";
+    private static final String ingestRunId = "075605e3-bada-47d7-9ae9-7138f392fe22";
 
     private static Field col1 = Field.builder()
             .name(COL_INT)
@@ -88,6 +95,16 @@ public class BulkLoadTest extends BaseTest
     private static Field col4 = Field.builder()
         .name(COL_DATETIME)
         .type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty()))
+        .build();
+    private static Field col2NonNullable = Field.builder()
+        .name(COL_STRING)
+        .type(FieldType.of(DataType.STRING, Optional.empty(), Optional.empty()))
+        .nullable(false)
+        .build();
+    private static Field col3NonNullable = Field.builder()
+        .name(COL_DECIMAL)
+        .type(FieldType.of(DataType.DECIMAL, 5, 2))
+        .nullable(false)
         .build();
 
     protected final ZonedDateTime fixedZonedDateTime_2000_01_01 = ZonedDateTime.of(2000, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
@@ -131,9 +148,7 @@ public class BulkLoadTest extends BaseTest
         GeneratorResult operations = generator.generateOperations(datasets);
 
         List<String> preActionsSql = operations.preActionsSql();
-        List<String> dryRunPreActionsSql = operations.dryRunPreActionsSql();
         List<String> ingestSql = operations.ingestSql();
-        List<String> dryRunSql = operations.dryRunSql();
         Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
 
         String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
@@ -148,8 +163,7 @@ public class BulkLoadTest extends BaseTest
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
         Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
-        Assertions.assertEquals(0, dryRunPreActionsSql.size());
-        Assertions.assertEquals(0, dryRunSql.size());
+
 
         // Verify execution using ingestor
         PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
@@ -738,6 +752,403 @@ public class BulkLoadTest extends BaseTest
         {
             Assertions.assertTrue(e.getMessage().contains("Cannot build H2StagedFilesDatasetProperties, only CSV file loading supported"));
         }
+    }
+
+    @Test
+    public void testBulkLoadDryRunSuccess()
+    {
+        String filePath = "src/test/resources/data/bulk-load/input/good_file_with_edge_case.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .batchIdPattern("{NEXT_BATCH_ID_PATTERN}")
+            .ingestRunId(ingestRunId)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP,\"batch_id\" INTEGER,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"batch_id\", \"append_time\") " +
+            "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
+            "{NEXT_BATCH_ID_PATTERN},'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/good_file_with_edge_case.csv'," +
+            "'col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
+
+        // Checking dry run
+        String expectedDryRunPreActionSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\"" +
+            "(\"col_int\" VARCHAR,\"col_string\" VARCHAR,\"col_decimal\" VARCHAR,\"col_datetime\" VARCHAR,\"FILE\" VARCHAR,\"ROW_NUMBER\" BIGINT)";
+
+        String expectedDryRunDeleteSql = "DELETE FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf";
+
+        String expectedDryRunLoadSQl = "INSERT INTO \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"FILE\", \"ROW_NUMBER\") " +
+            "SELECT CONVERT(\"col_int\",VARCHAR),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",VARCHAR),CONVERT(\"col_datetime\",VARCHAR)," +
+            "'src/test/resources/data/bulk-load/input/good_file_with_edge_case.csv',ROW_NUMBER() OVER () " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/good_file_with_edge_case.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        String expectedDryRunDatatypeValidationSql1 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_int\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_int\" AS INTEGER) IS NULL) LIMIT 20";
+
+        String expectedDryRunDatatypeValidationSql2 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_decimal\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_decimal\" AS DECIMAL(5,2)) IS NULL) LIMIT 20";
+
+        String expectedDryRunDatatypeValidationSql3 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_datetime\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_datetime\" AS TIMESTAMP) IS NULL) LIMIT 20";
+
+        String expectedDryRunPostCleanupSql = "DROP TABLE IF EXISTS \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\"";
+
+        Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
+        Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
+        Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
+        Assertions.assertNull(operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT));
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(2).getTwo());
+        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
+        Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.empty());
+        ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.initDatasets(datasets);
+        DryRunResult dryRunResult = ingestor.dryRun();
+
+        Assertions.assertEquals(dryRunResult.status(), IngestStatus.SUCCEEDED);
+        Assertions.assertTrue(dryRunResult.errorRecords().isEmpty());
+    }
+
+    @Test
+    public void testBulkLoadDryRunFailure()
+    {
+        String filePath = "src/test/resources/data/bulk-load/input/bad_file.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2NonNullable, col3NonNullable, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .batchIdPattern("{NEXT_BATCH_ID_PATTERN}")
+            .ingestRunId(ingestRunId)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER,\"col_string\" VARCHAR NOT NULL,\"col_decimal\" DECIMAL(5,2) NOT NULL,\"col_datetime\" TIMESTAMP,\"batch_id\" INTEGER,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"batch_id\", \"append_time\") " +
+            "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
+            "{NEXT_BATCH_ID_PATTERN},'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/bad_file.csv'," +
+            "'col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
+
+        // Checking dry run
+        String expectedDryRunPreActionSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\"" +
+            "(\"col_int\" VARCHAR,\"col_string\" VARCHAR,\"col_decimal\" VARCHAR,\"col_datetime\" VARCHAR,\"FILE\" VARCHAR,\"ROW_NUMBER\" BIGINT)";
+
+        String expectedDryRunDeleteSql = "DELETE FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf";
+
+        String expectedDryRunLoadSQl = "INSERT INTO \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"FILE\", \"ROW_NUMBER\") " +
+            "SELECT CONVERT(\"col_int\",VARCHAR),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",VARCHAR),CONVERT(\"col_datetime\",VARCHAR)," +
+            "'src/test/resources/data/bulk-load/input/bad_file.csv',ROW_NUMBER() OVER () " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/bad_file.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        String expectedDryRunNullValidationSql = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
+            "WHERE (main_validation_lp_yosulf.\"col_string\" IS NULL) OR (main_validation_lp_yosulf.\"col_decimal\" IS NULL) LIMIT 20";
+
+        String expectedDryRunDatatypeValidationSql1 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_int\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_int\" AS INTEGER) IS NULL) LIMIT 20";
+
+        String expectedDryRunDatatypeValidationSql2 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_decimal\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_decimal\" AS DECIMAL(5,2)) IS NULL) LIMIT 20";
+
+        String expectedDryRunDatatypeValidationSql3 = "SELECT main_validation_lp_yosulf.\"col_int\",main_validation_lp_yosulf.\"col_string\",main_validation_lp_yosulf.\"col_decimal\",main_validation_lp_yosulf.\"col_datetime\",main_validation_lp_yosulf.\"FILE\",main_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\" as main_validation_lp_yosulf " +
+            "WHERE (NOT (main_validation_lp_yosulf.\"col_datetime\" IS NULL)) AND (CAST(main_validation_lp_yosulf.\"col_datetime\" AS TIMESTAMP) IS NULL) LIMIT 20";
+
+        String expectedDryRunPostCleanupSql = "DROP TABLE IF EXISTS \"TEST_DB\".\"TEST\".\"main_validation_lp_yosulf\"";
+
+        Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
+        Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
+        Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
+        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).get(0).getTwo());
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).size());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(2).getTwo());
+        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
+        Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.empty());
+        ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.initDatasets(datasets);
+        DryRunResult dryRunResult = ingestor.dryRun();
+
+        List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
+            .rowNumber(1L)
+            .columnName(col3NonNullable.name())
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorMessage("Null values found in non-nullable column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
+            .rowNumber(2L)
+            .columnName(col2NonNullable.name())
+            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
+            .errorMessage("Null values found in non-nullable column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
+            .rowNumber(1L)
+            .columnName(col1.name())
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorMessage("Unable to type cast column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
+            .rowNumber(1L)
+            .columnName(col4.name())
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorMessage("Unable to type cast column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
+            .rowNumber(2L)
+            .columnName(col3.name())
+            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
+            .errorMessage("Unable to type cast column")
+            .build());
+
+        Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
+        Assertions.assertEquals(new HashSet<>(expectedErrorRecords), new HashSet<>(dryRunResult.errorRecords()));
+    }
+
+    @Test
+    public void testBulkLoadDryRunFailureWithSampleRowCountWithUpperCase()
+    {
+        String filePath = "src/test/resources/data/bulk-load/input/bad_file.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(NoDigestGenStrategy.builder().build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2NonNullable, col3NonNullable, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .batchIdPattern("{NEXT_BATCH_ID_PATTERN}")
+            .ingestRunId(ingestRunId)
+            .sampleRowCount(3)
+            .caseConversion(CaseConversion.TO_UPPER)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"MAIN\"" +
+            "(\"COL_INT\" INTEGER,\"COL_STRING\" VARCHAR NOT NULL,\"COL_DECIMAL\" DECIMAL(5,2) NOT NULL,\"COL_DATETIME\" TIMESTAMP,\"BATCH_ID\" INTEGER,\"APPEND_TIME\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"MAIN\" " +
+            "(\"COL_INT\", \"COL_STRING\", \"COL_DECIMAL\", \"COL_DATETIME\", \"BATCH_ID\", \"APPEND_TIME\") " +
+            "SELECT CONVERT(\"COL_INT\",INTEGER),CONVERT(\"COL_STRING\",VARCHAR),CONVERT(\"COL_DECIMAL\",DECIMAL(5,2)),CONVERT(\"COL_DATETIME\",TIMESTAMP)," +
+            "{NEXT_BATCH_ID_PATTERN},'2000-01-01 00:00:00.000000' " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/bad_file.csv','COL_INT,COL_STRING,COL_DECIMAL,COL_DATETIME',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"BATCH_ID\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
+
+        // Checking dry run
+        String expectedDryRunPreActionSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\"" +
+            "(\"COL_INT\" VARCHAR,\"COL_STRING\" VARCHAR,\"COL_DECIMAL\" VARCHAR,\"COL_DATETIME\" VARCHAR,\"FILE\" VARCHAR,\"ROW_NUMBER\" BIGINT)";
+
+        String expectedDryRunDeleteSql = "DELETE FROM \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\" as MAIN_validation_lp_yosulf";
+
+        String expectedDryRunLoadSQl = "INSERT INTO \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\" " +
+            "(\"COL_INT\", \"COL_STRING\", \"COL_DECIMAL\", \"COL_DATETIME\", \"FILE\", \"ROW_NUMBER\") " +
+            "SELECT CONVERT(\"COL_INT\",VARCHAR),CONVERT(\"COL_STRING\",VARCHAR),CONVERT(\"COL_DECIMAL\",VARCHAR),CONVERT(\"COL_DATETIME\",VARCHAR),'src/test/resources/data/bulk-load/input/bad_file.csv',ROW_NUMBER() OVER () " +
+            "FROM CSVREAD('src/test/resources/data/bulk-load/input/bad_file.csv','COL_INT,COL_STRING,COL_DECIMAL,COL_DATETIME',NULL)";
+
+        String expectedDryRunNullValidationSql = "SELECT MAIN_validation_lp_yosulf.\"COL_INT\",MAIN_validation_lp_yosulf.\"COL_STRING\",MAIN_validation_lp_yosulf.\"COL_DECIMAL\",MAIN_validation_lp_yosulf.\"COL_DATETIME\",MAIN_validation_lp_yosulf.\"FILE\",MAIN_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\" as MAIN_validation_lp_yosulf " +
+            "WHERE (MAIN_validation_lp_yosulf.\"COL_STRING\" IS NULL) OR (MAIN_validation_lp_yosulf.\"COL_DECIMAL\" IS NULL) LIMIT 3";
+
+        String expectedDryRunDatatypeValidationSql1 = "SELECT MAIN_validation_lp_yosulf.\"COL_INT\",MAIN_validation_lp_yosulf.\"COL_STRING\",MAIN_validation_lp_yosulf.\"COL_DECIMAL\",MAIN_validation_lp_yosulf.\"COL_DATETIME\",MAIN_validation_lp_yosulf.\"FILE\",MAIN_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\" as MAIN_validation_lp_yosulf " +
+            "WHERE (NOT (MAIN_validation_lp_yosulf.\"COL_INT\" IS NULL)) AND (CAST(MAIN_validation_lp_yosulf.\"COL_INT\" AS INTEGER) IS NULL) LIMIT 3";
+
+        String expectedDryRunDatatypeValidationSql2 = "SELECT MAIN_validation_lp_yosulf.\"COL_INT\",MAIN_validation_lp_yosulf.\"COL_STRING\",MAIN_validation_lp_yosulf.\"COL_DECIMAL\",MAIN_validation_lp_yosulf.\"COL_DATETIME\",MAIN_validation_lp_yosulf.\"FILE\",MAIN_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\" as MAIN_validation_lp_yosulf " +
+            "WHERE (NOT (MAIN_validation_lp_yosulf.\"COL_DECIMAL\" IS NULL)) AND (CAST(MAIN_validation_lp_yosulf.\"COL_DECIMAL\" AS DECIMAL(5,2)) IS NULL) LIMIT 3";
+
+        String expectedDryRunDatatypeValidationSql3 = "SELECT MAIN_validation_lp_yosulf.\"COL_INT\",MAIN_validation_lp_yosulf.\"COL_STRING\",MAIN_validation_lp_yosulf.\"COL_DECIMAL\",MAIN_validation_lp_yosulf.\"COL_DATETIME\",MAIN_validation_lp_yosulf.\"FILE\",MAIN_validation_lp_yosulf.\"ROW_NUMBER\" " +
+            "FROM \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\" as MAIN_validation_lp_yosulf " +
+            "WHERE (NOT (MAIN_validation_lp_yosulf.\"COL_DATETIME\" IS NULL)) AND (CAST(MAIN_validation_lp_yosulf.\"COL_DATETIME\" AS TIMESTAMP) IS NULL) LIMIT 3";
+
+        String expectedDryRunPostCleanupSql = "DROP TABLE IF EXISTS \"TEST_DB\".\"TEST\".\"MAIN_VALIDATION_LP_YOSULF\"";
+
+        Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
+        Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
+        Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
+        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).get(0).getTwo());
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).size());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(2).getTwo());
+        Assertions.assertEquals(3, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
+        Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, 3);
+        ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
+        ingestor.initDatasets(datasets);
+        DryRunResult dryRunResult = ingestor.dryRun();
+
+        List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
+            .rowNumber(1L)
+            .columnName(col3NonNullable.name().toUpperCase())
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorMessage("Null values found in non-nullable column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
+            .rowNumber(2L)
+            .columnName(col2NonNullable.name().toUpperCase())
+            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
+            .errorMessage("Null values found in non-nullable column")
+            .build(), DataError.builder()
+            .file(filePath)
+            .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
+            .rowNumber(1L)
+            .columnName(col1.name().toUpperCase())
+            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorMessage("Unable to type cast column")
+            .build());
+
+        Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
+        Assertions.assertEquals(new HashSet<>(expectedErrorRecords), new HashSet<>(dryRunResult.errorRecords()));
+    }
+
+    RelationalIngestor getRelationalIngestor(IngestMode ingestMode, PlannerOptions options, Clock executionTimestampClock, CaseConversion caseConversion, int sampleRowCount)
+    {
+        return RelationalIngestor.builder()
+            .ingestMode(ingestMode)
+            .relationalSink(H2Sink.get())
+            .executionTimestampClock(executionTimestampClock)
+            .cleanupStagingData(options.cleanupStagingData())
+            .collectStatistics(options.collectStatistics())
+            .enableConcurrentSafety(true)
+            .caseConversion(caseConversion)
+            .sampleRowCount(sampleRowCount)
+            .build();
     }
 
     RelationalIngestor getRelationalIngestor(IngestMode ingestMode, PlannerOptions options, Clock executionTimestampClock, CaseConversion caseConversion, Optional<String> eventId)
