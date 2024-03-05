@@ -16,11 +16,11 @@
 package org.finos.legend.engine.persistence.components;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
-import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalSinkCleaner;
 import org.finos.legend.engine.persistence.components.relational.api.SinkCleanupGeneratorResult;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,13 +30,19 @@ import java.util.List;
 public class RelationalSinkCleanerTest extends IngestModeTest
 {
     private static DatasetDefinition mainTable;
-    private static LockInfoDataset lockTable = LockInfoDataset.builder().name("lock_info").build();
+    private final static LockInfoDataset lockTable = LockInfoDataset.builder().name("lock_info").build();
     protected SchemaDefinition mainTableSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(batchIdIn)
             .addFields(batchIdOut)
             .build();
+    private final MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
+    private final String auditTableCreationQuery = "CREATE TABLE IF NOT EXISTS sink_cleanup_audit(\"table_name\" VARCHAR(255),\"batch_start_ts_utc\" DATETIME,\"batch_end_ts_utc\" DATETIME,\"batch_status\" VARCHAR(32),\"requested_by\" VARCHAR(32))";
+    private final String dropMainTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main\" CASCADE";
+    private final String deleteFromMetadataTableQuery = "DELETE FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
+    private final String insertToAuditTableQuery = "INSERT INTO sink_cleanup_audit (\"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"requested_by\") (SELECT 'main','2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'SUCCEEDED','lh_dev')";
+
 
     @BeforeEach
     void initializeTables()
@@ -53,26 +59,24 @@ public class RelationalSinkCleanerTest extends IngestModeTest
         RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
                 .relationalSink(AnsiSqlSink.get())
                 .mainDataset(mainTable)
+                .metadataDataset(metadata)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .requestedBy("lh_dev")
                 .build();
         SinkCleanupGeneratorResult result = sinkCleaner.generateOperationsForSinkCleanup();
 
         List<String> preActionsSql = result.preActionsSql();
-        String creationQuery = "CREATE TABLE IF NOT EXISTS sink_cleanup_audit(\"table_name\" VARCHAR(255),\"batch_start_ts_utc\" DATETIME,\"batch_end_ts_utc\" DATETIME,\"batch_status\" VARCHAR(32),\"requested_by\" VARCHAR(32))";
-        Assertions.assertEquals(creationQuery, preActionsSql.get(0));
 
-        String dropMainTable = "DROP TABLE IF EXISTS \"mydb\".\"main\" CASCADE";
-        String deleteFromMetadataTable = "DELETE FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
-        String insertToAuditTable = "INSERT INTO sink_cleanup_audit (\"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"requested_by\") (SELECT 'main','2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE','lh_dev')";
+        Assertions.assertEquals(auditTableCreationQuery, preActionsSql.get(0));
+
         List<String> cleanupSql = result.cleanupSql();
-        Assertions.assertEquals(dropMainTable, cleanupSql.get(0));
-        Assertions.assertEquals(deleteFromMetadataTable, cleanupSql.get(1));
-        Assertions.assertEquals(insertToAuditTable, cleanupSql.get(2));
+        Assertions.assertEquals(dropMainTableQuery, cleanupSql.get(0));
+        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(1));
+        Assertions.assertEquals(insertToAuditTableQuery, cleanupSql.get(2));
     }
 
     @Test
-    void testGenerateOperationsForSinkCleanupWithConcurrencyFlagAndUpperCase()
+    void testGenerateOperationsForSinkCleanupWithConcurrencyFlag()
     {
         RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
                 .relationalSink(AnsiSqlSink.get())
@@ -80,26 +84,21 @@ public class RelationalSinkCleanerTest extends IngestModeTest
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .enableConcurrentSafety(true)
                 .lockInfoDataset(lockTable)
-                .caseConversion(CaseConversion.TO_UPPER)
+                .metadataDataset(metadata)
                 .requestedBy("lh_dev")
                 .build();
         SinkCleanupGeneratorResult result = sinkCleaner.generateOperationsForSinkCleanup();
 
         List<String> preActionsSql = result.preActionsSql();
-        String auditTableCreationQuery = "CREATE TABLE IF NOT EXISTS SINK_CLEANUP_AUDIT(\"TABLE_NAME\" VARCHAR(255),\"BATCH_START_TS_UTC\" DATETIME,\"BATCH_END_TS_UTC\" DATETIME,\"BATCH_STATUS\" VARCHAR(32),\"REQUESTED_BY\" VARCHAR(32))";
-        String lockTableCreationQuery = "CREATE TABLE IF NOT EXISTS LOCK_INFO(\"INSERT_TS_UTC\" DATETIME,\"LAST_USED_TS_UTC\" DATETIME,\"TABLE_NAME\" VARCHAR UNIQUE)";
+        String lockTableCreationQuery = "CREATE TABLE IF NOT EXISTS lock_info(\"insert_ts_utc\" DATETIME,\"last_used_ts_utc\" DATETIME,\"table_name\" VARCHAR UNIQUE)";
         Assertions.assertEquals(auditTableCreationQuery, preActionsSql.get(0));
         Assertions.assertEquals(lockTableCreationQuery, preActionsSql.get(1));
 
-        //todo : table name (main) in small ?
-        String initializeLockQuery = "INSERT INTO LOCK_INFO (\"INSERT_TS_UTC\", \"TABLE_NAME\") (SELECT '2000-01-01 00:00:00.000000','main' WHERE NOT (EXISTS (SELECT * FROM LOCK_INFO as lock_info)))";
-        String acquireLockQuery = "UPDATE LOCK_INFO as lock_info SET lock_info.\"LAST_USED_TS_UTC\" = '2000-01-01 00:00:00.000000'";
+        String initializeLockQuery = "INSERT INTO lock_info (\"insert_ts_utc\", \"table_name\") (SELECT '2000-01-01 00:00:00.000000','main' WHERE NOT (EXISTS (SELECT * FROM lock_info as lock_info)))";
+        String acquireLockQuery = "UPDATE lock_info as lock_info SET lock_info.\"last_used_ts_utc\" = '2000-01-01 00:00:00.000000'";
         Assertions.assertEquals(initializeLockQuery, result.initializeLockSql().get(0));
         Assertions.assertEquals(acquireLockQuery, result.acquireLockSql().get(0));
 
-        String dropMainTableQuery = "DROP TABLE IF EXISTS \"MYDB\".\"MAIN\" CASCADE";
-        String deleteFromMetadataTableQuery = "DELETE FROM BATCH_METADATA as batch_metadata WHERE UPPER(batch_metadata.\"TABLE_NAME\") = 'MAIN'";
-        String insertToAuditTableQuery = "INSERT INTO SINK_CLEANUP_AUDIT (\"TABLE_NAME\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"REQUESTED_BY\") (SELECT 'main','2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE','lh_dev')";
         List<String> cleanupSql = result.cleanupSql();
         Assertions.assertEquals(dropMainTableQuery, cleanupSql.get(0));
         Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(1));

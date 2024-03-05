@@ -22,6 +22,7 @@ import org.finos.legend.engine.persistence.components.relational.api.SinkCleanup
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -34,14 +35,16 @@ public class RelationalSinkCleanerTest extends BaseTest
     @Test
     void testExecuteSinkCleanup()
     {
+        MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
-        createSampleMainTableWithData();
-        createBatchMetadataTableWithData();
+        createSampleMainTableWithData(mainTable.name());
+        createBatchMetadataTableWithData(metadata.metadataDatasetName(), mainTable.name());
         RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
                 .relationalSink(H2Sink.get())
                 .mainDataset(mainTable)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .requestedBy("lh_dev")
+                .metadataDataset(metadata)
                 .build();
 
         //Table counts before sink cleanup
@@ -61,10 +64,11 @@ public class RelationalSinkCleanerTest extends BaseTest
     @Test
     void testExecuteSinkCleanupWithConcurrency()
     {
+        MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
         DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
         LockInfoDataset lockTable = LockInfoDataset.builder().name("lock_info").build();
-        createSampleMainTableWithData();
-        createBatchMetadataTableWithData();
+        createSampleMainTableWithData(mainTable.name());
+        createBatchMetadataTableWithData(metadata.metadataDatasetName(), mainTable.name());
         RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
                 .relationalSink(H2Sink.get())
                 .mainDataset(mainTable)
@@ -72,6 +76,7 @@ public class RelationalSinkCleanerTest extends BaseTest
                 .enableConcurrentSafety(true)
                 .lockInfoDataset(lockTable)
                 .requestedBy("lh_dev")
+                .metadataDataset(metadata)
                 .build();
 
         //Table counts before sink cleanup
@@ -88,29 +93,59 @@ public class RelationalSinkCleanerTest extends BaseTest
         Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
     }
 
-    private void createBatchMetadataTableWithData()
+    @Test
+    void testExecuteSinkCleanupWithFailureStatus()
     {
-        List<String> list = new ArrayList<>();
-        list.add("CREATE TABLE IF NOT EXISTS batch_metadata" +
-                "(`table_name` VARCHAR(255)," +
+        MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
+        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
+        createSampleMainTableWithData(mainTable.name());
+        createBatchMetadataTableWithData(metadata.metadataDatasetName(), mainTable.name());
+        RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
+                .relationalSink(H2Sink.get())
+                .mainDataset(mainTable)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .requestedBy("lh_dev")
+                .metadataDataset(metadata.withMetadataDatasetName("batch_metadata2"))
+                .build();
+
+        SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
+        Assertions.assertEquals(result.status(), IngestStatus.FAILED);
+        System.out.println(result.message().get());
+    }
+
+    private void createBatchMetadataTableWithData(String metaTableName, String mainTableName)
+    {
+        String createMetaTable = "CREATE TABLE IF NOT EXISTS " + metaTableName +
+                " (`table_name` VARCHAR(255)," +
                 "`batch_start_ts_utc` DATETIME," +
                 "`batch_end_ts_utc` DATETIME," +
                 "`batch_status` VARCHAR(32)," +
                 "`table_batch_id` INTEGER," +
                 "`batch_source_info` JSON," +
-                "`ADDITIONAL_METADATA` JSON)");
-        list.add("INSERT INTO batch_metadata " +
-                "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
-                " (SELECT 'main',1,'2000-01-01 00:00:00.000000','2000-01-01 00:00:00.000000','DONE')");
+                "`ADDITIONAL_METADATA` JSON)";
+        String insertData = "INSERT INTO " + metaTableName +
+                " (\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
+                " (SELECT '" + mainTableName + "',1,'2000-01-01 00:00:00.000000','2000-01-01 00:00:00.000000','DONE')";
+        List<String> list = new ArrayList<>();
+        if (metaTableName.toUpperCase().equals(metaTableName))
+        {
+            list.add(createMetaTable.toUpperCase());
+            list.add(insertData.toUpperCase());
+        }
+        else
+        {
+            list.add(createMetaTable);
+            list.add(insertData);
+        }
         h2Sink.executeStatements(list);
     }
 
-    private void createSampleMainTableWithData()
+    private void createSampleMainTableWithData(String tableName)
     {
         List<String> list = new ArrayList<>();
-        list.add("CREATE TABLE main(ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
-        list.add("INSERT INTO main VALUES (1, 'A', '2020-01-01 00:00:00')");
-        list.add("INSERT INTO main VALUES (2, 'B', '2021-01-01 00:00:00')");
+        list.add("CREATE TABLE " + tableName + " (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
+        list.add("INSERT INTO  " + tableName + "  VALUES (1, 'A', '2020-01-01 00:00:00')");
+        list.add("INSERT INTO  " + tableName + "  VALUES (2, 'B', '2021-01-01 00:00:00')");
         h2Sink.executeStatements(list);
     }
 }

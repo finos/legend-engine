@@ -23,7 +23,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.*;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
-import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
@@ -31,7 +30,10 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.TransformOptions;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
-import org.finos.legend.engine.persistence.components.util.*;
+import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
+import org.finos.legend.engine.persistence.components.util.LockInfoUtils;
+import org.finos.legend.engine.persistence.components.util.MetadataDataset;
+import org.finos.legend.engine.persistence.components.util.SinkCleanupAuditDataset;
 import org.immutables.value.Value;
 import org.immutables.value.Value.Default;
 import org.slf4j.Logger;
@@ -70,22 +72,12 @@ public abstract class RelationalSinkCleanerAbstract
         return SinkCleanupAuditDataset.builder().build();
     }
 
-    @Default
-    public MetadataDataset metadataDataset()
-    {
-        return MetadataDataset.builder().build();
-    }
+    public abstract MetadataDataset metadataDataset();
 
     @Default
     public Clock executionTimestampClock()
     {
         return Clock.systemUTC();
-    }
-
-    @Default
-    public CaseConversion caseConversion()
-    {
-        return CaseConversion.NONE;
     }
 
     @Default
@@ -97,12 +89,7 @@ public abstract class RelationalSinkCleanerAbstract
     @Value.Derived
     protected TransformOptions transformOptions()
     {
-        TransformOptions.Builder builder = TransformOptions.builder()
-                .executionTimestampClock(executionTimestampClock());
-
-        relationalSink().optimizerForCaseConversion(caseConversion()).ifPresent(builder::addOptimizers);
-
-        return builder.build();
+        return TransformOptions.builder().executionTimestampClock(executionTimestampClock()).build();
     }
 
     // ---------- Private Fields ----------
@@ -154,7 +141,6 @@ public abstract class RelationalSinkCleanerAbstract
         initExecutor(connection);
 
         // 2. Generate sink cleanup Operations
-        // todo : need to enrich datastes? (enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion());)
         LOGGER.info("Generating SQL's for sink cleanup");
         SinkCleanupGeneratorResult result = generateOperationsForSinkCleanup();
 
@@ -181,11 +167,13 @@ public abstract class RelationalSinkCleanerAbstract
             executor.commit();
             ingestorResult = SinkCleanupIngestorResult.builder().status(IngestStatus.SUCCEEDED).build();
         }
-        //todo : throw exception vs return failure status?
         catch (Exception e)
         {
             executor.revert();
-            throw e;
+            ingestorResult = SinkCleanupIngestorResult.builder()
+                    .status(IngestStatus.FAILED)
+                    .message(e.toString())
+                    .build();
         }
         finally
         {
@@ -195,7 +183,6 @@ public abstract class RelationalSinkCleanerAbstract
     }
 
     // ---------- UTILITY METHODS ----------
-
     private Executor initExecutor(RelationalConnection connection)
     {
         LOGGER.info("Invoked initExecutor method, will initialize the executor");
@@ -225,7 +212,7 @@ public abstract class RelationalSinkCleanerAbstract
 
     private Operation buildDeleteCondition()
     {
-        StringValue mainTableName = getMainTableName();
+        StringValue mainTableName = getMainTable();
                 FieldValue tableNameFieldValue = FieldValue.builder().datasetRef(metadataDataset().get().datasetReference()).fieldName(metadataDataset().tableNameField()).build();
         FunctionImpl tableNameInUpperCase = FunctionImpl.builder().functionName(FunctionName.UPPER).addValue(tableNameFieldValue).build();
         StringValue mainTableNameInUpperCase = StringValue.builder().value(mainTableName.value().map(field -> field.toUpperCase()))
@@ -251,16 +238,16 @@ public abstract class RelationalSinkCleanerAbstract
         fieldsToInsert.add(requestedBy);
 
         List<org.finos.legend.engine.persistence.components.logicalplan.values.Value> selectFields = new ArrayList<>();
-        selectFields.add(getMainTableName());
+        selectFields.add(getMainTable());
         selectFields.add(BatchStartTimestamp.INSTANCE);
         selectFields.add(BatchEndTimestamp.INSTANCE);
-        selectFields.add(StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()));
+        selectFields.add(StringValue.of(IngestStatus.SUCCEEDED.name()));
         selectFields.add(StringValue.of(requestedBy()));
 
         return Insert.of(auditDataset().get(), Selection.builder().addAllFields(selectFields).build(), fieldsToInsert);
     }
 
-    private StringValue getMainTableName()
+    private StringValue getMainTable()
     {
         return StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
     }
