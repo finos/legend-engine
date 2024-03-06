@@ -54,17 +54,17 @@ public class HelperRuntimeGrammarComposer
             builder.append(engineRuntime.mappings.stream().map(mappingPointer -> getTabString(baseIndentation + 1) + mappingPointer.path).collect(Collectors.joining(",\n"))).append(engineRuntime.mappings.isEmpty() ? "" : "\n");
             appendTabString(builder, baseIndentation).append("];");
         }
-        return engineRuntime instanceof LocalEngineRuntime
-                ? builder.append(renderSingleConnectionRuntimeValue((LocalEngineRuntime) engineRuntime, baseIndentation)).toString()
+        return engineRuntime instanceof SingleConnectionEngineRuntime
+                ? builder.append(renderSingleConnectionRuntimeValue((SingleConnectionEngineRuntime) engineRuntime, baseIndentation)).toString()
                 : builder.append(renderEngineRuntimeValue(engineRuntime, baseIndentation, isEmbeddedRuntime, transformer)).toString();
     }
 
-    private static String renderSingleConnectionRuntimeValue(LocalEngineRuntime localEngineRuntime, int baseIndentation)
+    private static String renderSingleConnectionRuntimeValue(SingleConnectionEngineRuntime singleConnectionEngineRuntime, int baseIndentation)
     {
         StringBuilder builder = new StringBuilder();
-        if (!localEngineRuntime.connectionStores.isEmpty())
+        if (!singleConnectionEngineRuntime.connectionStores.isEmpty())
         {
-            appendTabString(builder.append("\n"), baseIndentation).append("connection: ").append(PureGrammarComposerUtility.convertPath(localEngineRuntime.connectionStores.get(0).connectionPointer.connection)).append(";");
+            appendTabString(builder.append("\n"), baseIndentation).append("connection: ").append(PureGrammarComposerUtility.convertPath(singleConnectionEngineRuntime.connectionStores.get(0).connectionPointer.connection)).append(";");
         }
         return builder.toString();
     }

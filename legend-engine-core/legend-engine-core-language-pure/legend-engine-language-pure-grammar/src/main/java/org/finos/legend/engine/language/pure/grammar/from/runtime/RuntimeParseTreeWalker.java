@@ -29,7 +29,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connect
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.ConnectionStores;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LocalEngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.StoreConnections;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
@@ -67,7 +67,7 @@ public class RuntimeParseTreeWalker
         runtime.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier());
         runtime._package = ctx.qualifiedName().packagePath() == null ? "" : PureGrammarParserUtility.fromPath(ctx.qualifiedName().packagePath().identifier());
         runtime.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        runtime.runtimeValue = new LocalEngineRuntime();
+        runtime.runtimeValue = new SingleConnectionEngineRuntime();
         runtime.runtimeValue.sourceInformation = runtime.sourceInformation;
         // mappings
         RuntimeParserGrammar.MappingsContext mappingsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.mappings(), "mappings", runtime.sourceInformation);

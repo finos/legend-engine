@@ -20,6 +20,11 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = EngineRuntime.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = EngineRuntime.class, name = "engineRuntime"),
+        @JsonSubTypes.Type(value = SingleConnectionEngineRuntime.class, name = "localEngineRuntime")
+})
 public class EngineRuntime extends Runtime
 {
     public List<PackageableElementPointer> mappings = new ArrayList<>();

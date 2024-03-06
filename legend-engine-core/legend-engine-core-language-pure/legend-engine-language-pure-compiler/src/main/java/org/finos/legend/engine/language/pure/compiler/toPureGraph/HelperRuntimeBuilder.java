@@ -25,7 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LocalEngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
@@ -138,7 +138,7 @@ public class HelperRuntimeBuilder
             {
                 pureConnection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
             }
-            if (engineRuntime instanceof LocalEngineRuntime)
+            if (engineRuntime instanceof SingleConnectionEngineRuntime)
             {
                 connectionStores.storePointers = Lists.mutable.ofAll(getAllMapStorePathsFromMappings(mappings, context))
                         .collect(storePath -> new StoreProviderPointer(PackageableElementType.STORE, storePath, engineRuntime.sourceInformation));
