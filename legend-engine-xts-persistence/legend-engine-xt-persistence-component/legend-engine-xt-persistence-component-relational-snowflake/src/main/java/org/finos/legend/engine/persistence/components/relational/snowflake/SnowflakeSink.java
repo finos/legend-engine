@@ -290,8 +290,7 @@ public class SnowflakeSink extends AnsiSqlSink
                     .columnName(getString(row, COLUMN_NAME))
                     .lineNumber(getLong(row, LINE))
                     .characterPosition(getLong(row, CHARACTER))
-                    .rowNumber(getLong(row, ROW_NUMBER))
-                    .rowStartLineNumber(getLong(row, ROW_START_LINE))
+                    .recordNumber(getLong(row, ROW_NUMBER))
                     .rejectedRecord(getString(row, REJECTED_RECORD))
                     .build();
                 dataErrors.add(dataError);

@@ -109,7 +109,7 @@ public class DataErrorFairDistributionTest
         return DataError.builder()
             .file("some_file_name")
             .errorCategory(category.getCategoryName())
-            .rowNumber(rowNumber)
+            .recordNumber(rowNumber)
             .columnName("some_column_name")
             .rejectedRecord("some_data")
             .errorMessage("some_error_message")

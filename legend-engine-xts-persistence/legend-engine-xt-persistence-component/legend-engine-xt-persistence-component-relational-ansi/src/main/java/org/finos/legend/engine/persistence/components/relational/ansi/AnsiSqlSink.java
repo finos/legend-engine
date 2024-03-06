@@ -387,7 +387,7 @@ public class AnsiSqlSink extends RelationalSink
             .file(getString(row, fileNameColumnName).orElseThrow(IllegalStateException::new))
             .errorCategory(validationCategory.getCategoryName())
             .columnName(validatedColumnName)
-            .rowNumber(getLong(row, rowNumberColumnName))
+            .recordNumber(getLong(row, rowNumberColumnName))
             .rejectedRecord(allColumns.stream().map(column -> getString(row, column).orElse("")).collect(Collectors.joining(",")))
             .build();
     }

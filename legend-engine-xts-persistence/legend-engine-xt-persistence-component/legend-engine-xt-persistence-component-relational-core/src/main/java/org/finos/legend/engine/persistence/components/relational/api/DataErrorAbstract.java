@@ -40,9 +40,7 @@ public interface DataErrorAbstract
 
     Optional<Long> characterPosition();
 
-    Optional<Long> rowNumber();
-
-    Optional<Long> rowStartLineNumber();
+    Optional<Long> recordNumber();
 
     Optional<String> rejectedRecord();
 }
