@@ -219,7 +219,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-server</artifactId>
+            <artifactId>legend-engine-server-rest</artifactId>
             <exclusions>
                 <exclusion>
                     <groupId>*</groupId>

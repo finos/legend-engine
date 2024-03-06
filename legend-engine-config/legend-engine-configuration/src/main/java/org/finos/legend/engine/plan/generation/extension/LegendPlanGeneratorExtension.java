@@ -18,7 +18,6 @@ import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
-import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransformer;
 
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
 {
