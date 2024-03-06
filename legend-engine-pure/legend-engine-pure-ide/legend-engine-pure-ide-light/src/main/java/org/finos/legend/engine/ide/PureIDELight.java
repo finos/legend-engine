@@ -38,7 +38,6 @@ public class PureIDELight extends PureIDEServer
     protected MutableList<RepositoryCodeStorage> buildRepositories(SourceLocationConfiguration sourceLocationConfiguration)
     {
         return Lists.mutable.<RepositoryCodeStorage>empty()
-                .with(this.buildCore("legend-engine-config/legend-engine-pure-code-compiled-core-configuration", "configuration"))
                 .with(this.buildCore("legend-engine-pure/legend-engine-pure-ide/legend-engine-pure-ide-light-metadata-pure", "ide_metadata"))
                 .with(this.buildCore("legend-engine-pure/legend-engine-pure-code/legend-engine-pure-code-compiled-core", ""))
                 .with(this.buildCore("legend-engine-core/legend-engine-core-language-pure/legend-engine-protocol-generation-pure", "protocol_generation"))
