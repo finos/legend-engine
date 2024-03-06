@@ -964,40 +964,30 @@ public class BulkLoadTest extends BaseTest
         DryRunResult dryRunResult = ingestor.dryRun();
 
         List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
-            .recordNumber(1L)
-            .columnName(col3NonNullable.name())
-            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col3NonNullable.name(), 1L))
             .build(), DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
-            .recordNumber(2L)
-            .columnName(col2NonNullable.name())
-            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
+            .errorRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col2NonNullable.name(), 2L))
             .build(), DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
-            .recordNumber(1L)
-            .columnName(col1.name())
-            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col1.name(), 1L))
             .build(), DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
-            .recordNumber(1L)
-            .columnName(col4.name())
-            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col4.name(), 1L))
             .build(), DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
-            .recordNumber(2L)
-            .columnName(col3.name())
-            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
+            .errorRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Unable to type cast column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col3.name(), 2L))
             .build());
 
         Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
@@ -1111,26 +1101,20 @@ public class BulkLoadTest extends BaseTest
         DryRunResult dryRunResult = ingestor.dryRun();
 
         List<DataError> expectedErrorRecords = Arrays.asList(DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
-            .recordNumber(1L)
-            .columnName(col3NonNullable.name().toUpperCase())
-            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col3NonNullable.name(), 1L))
             .build(), DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
-            .recordNumber(2L)
-            .columnName(col2NonNullable.name().toUpperCase())
-            .rejectedRecord("2,,NaN,2022-01-12 00:00:00.0")
+            .errorRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col2NonNullable.name(), 2L))
             .build(), DataError.builder()
-            .file(filePath)
             .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
-            .recordNumber(1L)
-            .columnName(col1.name().toUpperCase())
-            .rejectedRecord("??,Andy,,2022-01-99 00:00:00.0")
+            .errorRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
+            .putAllErrorDetails(buildErrorDetails(filePath, col1.name(), 1L))
             .build());
 
         Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
@@ -1239,6 +1223,15 @@ public class BulkLoadTest extends BaseTest
         {
             Assertions.assertNull(appendMetadata.get("ADDITIONAL_METADATA"));
         }
+    }
+
+    private Map<String, Object> buildErrorDetails(String fileName, String columnName,Long recordNumber)
+    {
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put(DataError.FILE_NAME, fileName);
+        errorDetails.put(DataError.COLUMN_NAME, columnName);
+        errorDetails.put(DataError.RECORD_NUMBER, recordNumber);
+        return errorDetails;
     }
 
 }

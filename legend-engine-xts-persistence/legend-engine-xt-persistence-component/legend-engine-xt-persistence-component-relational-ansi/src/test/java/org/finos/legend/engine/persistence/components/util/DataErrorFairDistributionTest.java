@@ -106,12 +106,15 @@ public class DataErrorFairDistributionTest
 
     private DataError getDummyDataError(ValidationCategory category, long rowNumber)
     {
+        Map<String, Object> errorDetails = new HashMap<>();
+        errorDetails.put(DataError.FILE_NAME, "some_file_name");
+        errorDetails.put(DataError.RECORD_NUMBER, rowNumber);
+        errorDetails.put(DataError.COLUMN_NAME, "some_column_name");
+
         return DataError.builder()
-            .file("some_file_name")
             .errorCategory(category.getCategoryName())
-            .recordNumber(rowNumber)
-            .columnName("some_column_name")
-            .rejectedRecord("some_data")
+            .putAllErrorDetails(errorDetails)
+            .errorRecord("some_data")
             .errorMessage("some_error_message")
             .build();
     }

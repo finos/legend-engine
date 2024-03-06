@@ -283,15 +283,15 @@ public class SnowflakeSink extends AnsiSqlSink
             List<Map<String, Object>> resultSets = results.get(0).getData();
             for (Map<String, Object> row : resultSets)
             {
+                Map<String, Object> errorDetails = buildErrorDetails(getString(row, FILE_WITH_ERROR), getString(row, COLUMN_NAME), getLong(row, ROW_NUMBER));
+                getLong(row, LINE).ifPresent(line -> errorDetails.put(DataError.LINE_NUMBER, line));
+                getLong(row, CHARACTER).ifPresent(characterPos -> errorDetails.put(DataError.CHARACTER_POSITION, characterPos));
+
                 DataError dataError = DataError.builder()
                     .errorMessage(getString(row, ERROR).orElseThrow(IllegalStateException::new))
-                    .file(getString(row, FILE_WITH_ERROR).orElseThrow(IllegalStateException::new))
                     .errorCategory(getString(row, CATEGORY).orElseThrow(IllegalStateException::new))
-                    .columnName(getString(row, COLUMN_NAME))
-                    .lineNumber(getLong(row, LINE))
-                    .characterPosition(getLong(row, CHARACTER))
-                    .recordNumber(getLong(row, ROW_NUMBER))
-                    .rejectedRecord(getString(row, REJECTED_RECORD))
+                    .putAllErrorDetails(errorDetails)
+                    .errorRecord(getString(row, REJECTED_RECORD))
                     .build();
                 dataErrors.add(dataError);
             }

@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.immutables.value.Value;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Value.Immutable
@@ -28,19 +29,20 @@ import java.util.Optional;
 )
 public interface DataErrorAbstract
 {
-    String errorMessage();
 
-    String file();
+    public static final String FILE_NAME = "file";
+    public static final String LINE_NUMBER = "line_number";
+    public static final String RECORD_NUMBER = "record_number";
+    public static final String COLUMN_NAME = "column_name";
+    public static final String CHARACTER_POSITION = "character_position";
+    public static final String NUM_DUPLICATES = "num_duplicates";
+    public static final String NUM_DATA_VERSION_ERRORS = "num_data_version_errors";
+
+    String errorMessage();
 
     String errorCategory();
 
-    Optional<String> columnName();
+    Optional<String> errorRecord();
 
-    Optional<Long> lineNumber();
-
-    Optional<Long> characterPosition();
-
-    Optional<Long> recordNumber();
-
-    Optional<String> rejectedRecord();
+    Map<String, Object> errorDetails();
 }

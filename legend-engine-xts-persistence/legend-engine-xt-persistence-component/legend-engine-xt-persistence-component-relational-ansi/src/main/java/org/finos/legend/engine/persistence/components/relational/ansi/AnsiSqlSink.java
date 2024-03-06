@@ -382,14 +382,22 @@ public class AnsiSqlSink extends RelationalSink
 
     protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
     {
+        Map<String, Object> errorDetails = buildErrorDetails(getString(row, fileNameColumnName), Optional.of(validatedColumnName), getLong(row, rowNumberColumnName));
         return DataError.builder()
             .errorMessage(getValidationFailedErrorMessage(validationCategory))
-            .file(getString(row, fileNameColumnName).orElseThrow(IllegalStateException::new))
             .errorCategory(validationCategory.getCategoryName())
-            .columnName(validatedColumnName)
-            .recordNumber(getLong(row, rowNumberColumnName))
-            .rejectedRecord(allColumns.stream().map(column -> getString(row, column).orElse("")).collect(Collectors.joining(",")))
+            .putAllErrorDetails(errorDetails)
+            .errorRecord(allColumns.stream().map(column -> getString(row, column).orElse("")).collect(Collectors.joining(",")))
             .build();
+    }
+
+    protected Map<String, Object> buildErrorDetails(Optional<String> fileName, Optional<String> columnName, Optional<Long> recordNumber)
+    {
+        Map<String, Object> errorDetails = new HashMap<>();
+        fileName.ifPresent(file -> errorDetails.put(DataError.FILE_NAME, file));
+        columnName.ifPresent(col -> errorDetails.put(DataError.COLUMN_NAME, col));
+        recordNumber.ifPresent(rowNum -> errorDetails.put(DataError.RECORD_NUMBER, rowNum));
+        return errorDetails;
     }
 
     private String getValidationFailedErrorMessage(ValidationCategory category)
