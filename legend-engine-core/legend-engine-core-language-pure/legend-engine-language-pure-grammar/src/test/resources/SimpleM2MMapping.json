@@ -26,7 +26,7 @@
                 "sourceInformation": {
                   "endColumn": 8,
                   "endLine": 7,
-                  "sourceId": "mapping::simpleModelMapping",
+                  "sourceId": "",
                   "startColumn": 5,
                   "startLine": 7
                 }
@@ -35,7 +35,7 @@
               "sourceInformation": {
                 "endColumn": 19,
                 "endLine": 7,
-                "sourceId": "mapping::simpleModelMapping",
+                "sourceId": "",
                 "startColumn": 5,
                 "startLine": 7
               },
@@ -51,7 +51,7 @@
                         "sourceInformation": {
                           "endColumn": 14,
                           "endLine": 7,
-                          "sourceId": "mapping::simpleModelMapping",
+                          "sourceId": "",
                           "startColumn": 11,
                           "startLine": 7
                         }
@@ -61,7 +61,7 @@
                     "sourceInformation": {
                       "endColumn": 19,
                       "endLine": 7,
-                      "sourceId": "mapping::simpleModelMapping",
+                      "sourceId": "",
                       "startColumn": 16,
                       "startLine": 7
                     }
@@ -75,7 +75,7 @@
           "sourceClassSourceInformation": {
             "endColumn": 27,
             "endLine": 6,
-            "sourceId": "mapping::simpleModelMapping",
+            "sourceId": "",
             "startColumn": 10,
             "startLine": 6
           },
