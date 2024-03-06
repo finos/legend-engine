@@ -30,7 +30,7 @@ import java.util.List;
 public class RelationalSinkCleanerTest extends IngestModeTest
 {
     private static DatasetDefinition mainTable;
-    private final static LockInfoDataset lockTable = LockInfoDataset.builder().name("lock_info").build();
+    private static final LockInfoDataset lockTable = LockInfoDataset.builder().name("lock_info").build();
     protected SchemaDefinition mainTableSchema = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
