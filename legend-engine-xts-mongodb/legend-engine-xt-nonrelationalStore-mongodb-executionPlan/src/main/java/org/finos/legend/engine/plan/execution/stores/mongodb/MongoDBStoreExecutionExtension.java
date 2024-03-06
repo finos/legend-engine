@@ -22,24 +22,30 @@ import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBDocumentInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Collections;
 import java.util.List;
 
 public class MongoDBStoreExecutionExtension implements IMongoDBStoreExecutionExtension
 {
-    public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
+    @Override
+    public MutableList<String> group()
     {
-        return Collections.singletonList(((executionNode, profiles, executionState) ->
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Mongo");
+    }
+
+    public List<Function3<ExecutionNode, Identity, ExecutionState, Result>> getExtraNodeExecutors()
+    {
+        return Collections.singletonList(((executionNode, identity, executionState) ->
         {
             if (executionNode instanceof MongoDBExecutionNode)
             {
-                return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
+                return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(identity, executionState));
             }
             else if (executionNode instanceof MongoDBDocumentInternalizeExecutionNode)
             {
-                return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState));
+                return executionNode.accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(identity, executionState));
             }
             return null;
         }));

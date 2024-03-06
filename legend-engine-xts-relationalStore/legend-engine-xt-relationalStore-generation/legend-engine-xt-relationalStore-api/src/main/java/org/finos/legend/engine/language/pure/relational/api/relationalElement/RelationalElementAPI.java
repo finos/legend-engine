@@ -24,6 +24,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.manag
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -74,11 +76,12 @@ public class RelationalElementAPI
     public Response generateModelsFromDatabaseSpecification(DatabaseToModelGenerationInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try
         {
             PureModelContextData modelData = input.getModelData();
             String databasePath = input.getDatabasePath();
-            PureModel model = new PureModel(modelData, profiles, this.deploymentMode);
+            PureModel model = new PureModel(modelData, identity.getName(), this.deploymentMode);
             String inputTargetPackage = input.getTargetPackage();
             Database database = (Database) model.getStore(databasePath);
             String targetPackage = (inputTargetPackage == null || inputTargetPackage.isEmpty()) ? getTargetPackageFromDatabasePath(databasePath) : inputTargetPackage;
@@ -89,7 +92,7 @@ public class RelationalElementAPI
         catch (Exception ex)
         {
             LOGGER.error("Failed to generate models from database specifications", ex);
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
         }
     }
 
@@ -100,6 +103,7 @@ public class RelationalElementAPI
     public Response getDbDataSourceAuthComb(@Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try
         {
             List<DbTypeDataSourceAuth> dbTypeDataSourceAuthCombinations = new ArrayList<>();
@@ -114,7 +118,7 @@ public class RelationalElementAPI
         catch (Exception ex)
         {
             LOGGER.error("Failed to fetch Database Authentication Flows", ex);
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
         }
     }
 

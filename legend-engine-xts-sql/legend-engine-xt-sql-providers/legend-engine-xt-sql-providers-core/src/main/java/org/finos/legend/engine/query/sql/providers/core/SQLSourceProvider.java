@@ -15,14 +15,12 @@
 
 package org.finos.legend.engine.query.sql.providers.core;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.pac4j.core.profile.CommonProfile;
-
 import java.util.List;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public interface SQLSourceProvider
 {
     String getType();
 
-    SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, MutableList<CommonProfile> profiles);
+    SQLSourceResolvedContext resolve(List<TableSource> sources, SQLContext context, Identity identity);
 }

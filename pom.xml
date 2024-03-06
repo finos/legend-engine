@@ -26,7 +26,7 @@
     <name>Legend Engine</name>
     <groupId>org.finos.legend.engine</groupId>
     <artifactId>legend-engine</artifactId>
-    <version>4.38.3-SNAPSHOT</version>
+    <version>4.39.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -92,9 +92,6 @@
 
         <!-- Misc -->
         <module>legend-engine-xts-authentication</module>
-        <!--
-        <module>legend-engine-xts-connection</module>
-        -->
         <module>legend-engine-config</module>
 
         <!-- Analytics -->
@@ -103,14 +100,11 @@
         <!-- Application -->
         <module>legend-engine-xts-mastery</module>
         <module>legend-engine-application-query</module>
-        <!--
-        <module>legend-engine-xts-data-push</module>
-        -->
     </modules>
 
     <properties>
         <!-- Legend -->
-        <legend.pure.version>5.1.2</legend.pure.version>
+        <legend.pure.version>5.1.3</legend.pure.version>
         <legend.shared.version>0.25.4</legend.shared.version>
 
         <!-- SONAR -->
@@ -3373,6 +3367,12 @@
                 <version>${bouncycastle.version}</version>
             </dependency>
             <!-- Bouncy Castle -->
+
+            <dependency>
+                <groupId>org.jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>3.25.0</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>

@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-language-pure</artifactId>
-        <version>4.38.3-SNAPSHOT</version>
+        <version>4.39.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-modelManager</artifactId>
@@ -44,13 +44,6 @@
             <artifactId>legend-engine-language-pure-grammar</artifactId>
         </dependency>
         <!-- ENGINE -->
-
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
 
         <!-- JACKSON -->
         <dependency>

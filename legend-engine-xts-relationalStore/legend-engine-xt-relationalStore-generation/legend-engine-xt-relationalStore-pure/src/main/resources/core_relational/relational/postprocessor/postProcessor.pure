@@ -46,6 +46,7 @@ Class meta::relational::mapping::PostProcessorResult
 function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let postProcessorResult = $query->defaultPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx, $extensions)
+                                   ->contextBasedPostProcessors($runtime,$ext,$m,$store,$exeCtx)
                                    ->userPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx);
 
    $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, $ext, $m, $store, $exeCtx)}, $postProcessorResult);

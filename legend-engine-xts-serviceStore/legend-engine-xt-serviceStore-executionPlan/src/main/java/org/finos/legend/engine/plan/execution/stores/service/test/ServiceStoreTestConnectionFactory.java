@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.service.test;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -38,6 +39,12 @@ import java.util.Optional;
 
 public class ServiceStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Service");
+    }
+
     @Override
     public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data)
     {

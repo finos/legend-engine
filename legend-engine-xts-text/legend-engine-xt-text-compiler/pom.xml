@@ -18,7 +18,7 @@
     <parent>
         <artifactId>legend-engine-xts-text</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.38.3-SNAPSHOT</version>
+        <version>4.39.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -48,6 +48,15 @@
             <artifactId>legend-engine-language-pure-compiler</artifactId>
         </dependency>
         <!-- ENGINE -->
+
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
 
         <!-- TEST -->
         <dependency>

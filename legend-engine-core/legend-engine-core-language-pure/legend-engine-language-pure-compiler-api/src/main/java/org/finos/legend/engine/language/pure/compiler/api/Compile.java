@@ -28,6 +28,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -72,11 +74,12 @@ public class Compile
     public Response compile(PureModelContext model, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         long start = System.currentTimeMillis();
         try (Scope scope = GlobalTracer.get().buildSpan("Service: compile").startActive(true))
         {
             CompilerExtensions.logAvailableExtensions();
-            Pair<PureModelContextData, PureModel> res = modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles, null);
+            Pair<PureModelContextData, PureModel> res = modelManager.loadModelAndData(model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, identity, null);
             long end = System.currentTimeMillis();
             MetricsHandler.observe("compile model", start, end);
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, end);
@@ -87,7 +90,7 @@ public class Compile
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.COMPILE_MODEL_ERROR, ex, null);
-            return handleException(uriInfo, profiles, start, ex);
+            return handleException(uriInfo, identity, start, ex);
         }
     }
 
@@ -99,12 +102,13 @@ public class Compile
     public Response lambdaReturnType(LambdaReturnTypeInput lambdaReturnTypeInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         long start = System.currentTimeMillis();
         try
         {
             PureModelContext model = lambdaReturnTypeInput.model;
             Lambda lambda = lambdaReturnTypeInput.lambda;
-            String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, profiles);
+            String typeName = modelManager.getLambdaReturnType(lambda, model, model instanceof PureModelContextPointer ? ((PureModelContextPointer) model).serializer.version : null, identity);
             Map<String, String> result = new HashMap<>();
             long end = System.currentTimeMillis();
             MetricsHandler.observe("lambda return type", start, end);
@@ -116,14 +120,14 @@ public class Compile
         catch (Exception ex)
         {
             MetricsHandler.observeError(LoggingEventType.LAMBDA_RETURN_TYPE_ERROR, ex, null);
-            return handleException(uriInfo, profiles, start, ex);
+            return handleException(uriInfo, identity, start, ex);
         }
     }
 
-    private Response handleException(UriInfo uriInfo, MutableList<CommonProfile> profiles, long start, Exception ex)
+    private Response handleException(UriInfo uriInfo, Identity identity, long start, Exception ex)
     {
         Response.Status status = ex instanceof EngineException ? Response.Status.BAD_REQUEST : Response.Status.INTERNAL_SERVER_ERROR;
-        Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, status, profiles);
+        Response errorResponse = ExceptionTool.exceptionManager(ex, LoggingEventType.COMPILE_ERROR, status, identity.getName());
         return errorResponse;
     }
 }

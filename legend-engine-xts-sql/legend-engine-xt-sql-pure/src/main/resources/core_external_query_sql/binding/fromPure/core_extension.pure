@@ -1,0 +1,89 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::transformation::queryToPure::*;
+import meta::external::query::sql::*;
+import meta::external::query::sql::transformation::utils::*;
+import meta::external::query::sql::transformation::compile::utils::*;
+
+function <<sql.Extension>> meta::external::query::sql::coreExtension():SQLExtension[1]
+{
+  ^SQLExtension(
+    name = 'core',
+    udfs = ^UserDefinedFunctions(
+      prefix = 'core',
+      processors = [
+        processor('date_diff', Integer, {args, fc, ctx | 
+            assertEquals(3, $args->size(), 'incorrect number of args for core_date_diff');
+
+            let part = $args->at(0)->reactivate()->toOne()->cast(@String);
+
+            let enum = mapDuration($part) ;  
+
+            nullOrSfe(dateDiff_Date_1__Date_1__DurationUnit_1__Integer_1_, [$args->at(1), $args->at(2), processExtractEnumValue($enum)])  ;       
+        }),
+        processor('most_recent_day_of_week', Date, {args, fc, ctx |
+            assertEquals(2, $args->size(), 'incorrect number of args for core_most_recent_day_of_week');
+
+            let part = $args->at(0)->reactivate()->toOne()->cast(@String);
+
+            let enum = mapDayOfWeek($part);
+
+            nullOrSfe(mostRecentDayOfWeek_Date_1__DayOfWeek_1__Date_1_, [$args->at(1), processExtractEnumValue($enum)])  ;
+        }),        
+        processor('previous_day_of_week', Date, {args, fc, ctx |
+            assertEquals(2, $args->size(), 'incorrect number of args for core_previous_day_of_week');
+
+            let part = $args->at(0)->reactivate()->toOne()->cast(@String);
+
+            let enum = mapDayOfWeek($part);
+
+            nullOrSfe(previousDayOfWeek_Date_1__DayOfWeek_1__Date_1_, [$args->at(1), processExtractEnumValue($enum)])  ;
+        }),        
+        aggregate('unique_value_only', Any, {args, fc, ctx | 
+            sfe(uniqueValueOnly_T_MANY__T_$0_1$_, $args->at(0).genericType, $args->at(0).genericType, $args->at(0))
+        })
+      ]
+    )
+  )
+}
+
+function meta::external::query::sql::mapDuration(durationUnit:String[1]):DurationUnit[1]
+{
+  [
+    pair('year', DurationUnit.YEARS),
+    pair('month', DurationUnit.MONTHS),
+    pair('week', DurationUnit.WEEKS),
+    pair('day', DurationUnit.DAYS),
+    pair('hour', DurationUnit.HOURS),
+    pair('minute', DurationUnit.MINUTES),
+    pair('second', DurationUnit.SECONDS),
+    pair('millisecond', DurationUnit.MILLISECONDS)
+  ]->getValue($durationUnit->toLower()); 
+
+}
+
+function meta::external::query::sql::mapDayOfWeek(stringDate:String[1]):DayOfWeek[1]
+{
+   [
+    pair('monday', DayOfWeek.Monday),
+    pair('tuesday', DayOfWeek.Tuesday),
+    pair('wednesday', DayOfWeek.Wednesday),
+    pair('thursday', DayOfWeek.Thursday),
+    pair('friday', DayOfWeek.Friday),
+    pair('saturday', DayOfWeek.Saturday),
+    pair('sunday', DayOfWeek.Sunday)
+  ]->getValue($stringDate->toLower());
+
+}

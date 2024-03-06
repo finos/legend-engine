@@ -15,9 +15,11 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -82,7 +84,7 @@ public class HelperRuntimeGrammarComposer
                     connectionStoreStrings.add(
                             getTabString(baseIndentation + 1) + PureGrammarComposerUtility.convertPath(connectionPointerStore.connectionPointer.connection) + ":\n" +
                                     getTabString(baseIndentation + 1) + "[\n" +
-                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + PureGrammarComposerUtility.convertPath(storePointer.path))).makeString(",\n") + "\n" +
+                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + renderStoreProviderPointer(storePointer))).makeString(",\n") + "\n" +
                                     getTabString(baseIndentation + 1) + "]"
                     );
                 }
@@ -93,5 +95,10 @@ public class HelperRuntimeGrammarComposer
             appendTabString(builder.append("\n"), baseIndentation).append("];");
         }
         return builder.toString();
+    }
+
+    public static String renderStoreProviderPointer(StoreProviderPointer storeProviderPointer)
+    {
+        return (storeProviderPointer.type.equals(PackageableElementType.STORE) ?  "" : ("(" + storeProviderPointer.type.toString().toLowerCase() + ") ")) + PureGrammarComposerUtility.convertPath(storeProviderPointer.path);
     }
 }

@@ -14,11 +14,17 @@ Class meta::external::function::activator::snowflakeApp::tests::model::simple::P
     otherNames : String[*];
     extraInformation : String[0..1];
     manager : PersonX[0..1];
+    gender: Gender[0..1];
     age : Integer[0..1];
-    nickName : String[0..1];
+    nickName : String[0..1];    
     activeEmployment: Boolean[0..1];
+    lastUpdated: DateTime[0..1];
     name(){$this.firstName+' '+$this.lastName}:String[1];
 
+}
+
+Enum meta::external::function::activator::snowflakeApp::tests::model::simple::Gender {
+  M, F
 }
 
 function meta::external::function::activator::snowflakeApp::tests::testRuntime(db:Database[1]):Runtime[1]
@@ -26,12 +32,17 @@ function meta::external::function::activator::snowflakeApp::tests::testRuntime(d
     testRuntime(testDatabaseConnection($db,[]->cast(@String)));
 }
 
+function meta::external::function::activator::snowflakeApp::tests::testRuntimeWithTimeZone(db:Database[1]):Runtime[1]
+{
+    testRuntime(testDatabaseConnection($db, '+0530'));
+}
+
 function meta::external::function::activator::snowflakeApp::tests::testRelationalConnection():ConnectionStore[1]
 {
   ^ConnectionStore(
     element = dbInc ,connection=
   ^RelationalDatabaseConnection(
-    type = DatabaseType.H2,
+    type = DatabaseType.Snowflake,
     datasourceSpecification = ^meta::pure::alloy::connections::alloy::specification::LocalH2DatasourceSpecification(testDataSetupCsv = ''),
     authenticationStrategy = ^meta::pure::alloy::connections::alloy::authentication::TestDatabaseAuthenticationStrategy()
   ))
@@ -48,7 +59,7 @@ function <<access.private>> meta::external::function::activator::snowflakeApp::t
         element = $db,
         connection=
     ^meta::external::store::relational::runtime::TestDatabaseConnection(
-        type = DatabaseType.H2,
+        type = DatabaseType.Snowflake,
         timeZone = if($timeZone->isEmpty(), |'GMT', |$timeZone)
     ));
 }
@@ -68,16 +79,22 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
                 scope([dbInc])
                 (
                     firstName : personTable.FIRSTNAME,
-                    age : personTable.AGE
+                    age : personTable.AGE,
+                    gender:  EnumerationMapping genderEnum: personTable.FIRSTNAME
                 ),
                 scope([dbInc]default.personTable)
                 (
-                    lastName : LASTNAME
+                    lastName : LASTNAME,
+                    lastUpdated: LAST_UPDATED
                 ),
                 manager : [dbInc]@Person_Manager
             }
 
-
+    Gender: EnumerationMapping genderEnum
+    {
+          M:  'male',
+          F: 'female'
+    }
 )
 
 
@@ -106,7 +123,7 @@ Mapping meta::external::function::activator::snowflakeApp::tests::simpleRelation
 ###Relational
 Database meta::external::function::activator::snowflakeApp::tests::dbInc
 (
-    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
+    Table personTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, LAST_UPDATED TIMESTAMP)
     Table validPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)
     Table PersonTableExtension (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT, birthDate DATE)
     Table differentPersonTable (ID INT PRIMARY KEY, FIRSTNAME VARCHAR(200), LASTNAME VARCHAR(200), AGE INT, ADDRESSID INT, FIRMID INT, MANAGERID INT)

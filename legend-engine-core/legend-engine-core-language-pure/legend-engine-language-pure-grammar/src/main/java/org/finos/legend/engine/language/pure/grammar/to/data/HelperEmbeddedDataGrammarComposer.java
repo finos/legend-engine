@@ -20,6 +20,7 @@ import org.finos.legend.engine.language.pure.grammar.from.data.embedded.Referenc
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
@@ -58,9 +59,9 @@ public class HelperEmbeddedDataGrammarComposer
 
             return new ContentWithType(ExternalFormatEmbeddedDataParser.TYPE, content);
         }
-        else if (embeddedData instanceof DataElementReference)
+        else if (embeddedData instanceof DataElementReference && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATA))
         {
-            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement);
+            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement.path);
 
             return new ContentWithType(ReferenceEmbeddedDataParser.TYPE, content);
         }

@@ -57,9 +57,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalSaveNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import java.io.StringReader;
@@ -122,36 +122,36 @@ public class RelationalExecutor
         return this.connectionManager;
     }
 
-    public Result execute(RelationalExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public Result execute(RelationalExecutionNode node, Identity identity, ExecutionState executionState)
     {
         Connection connectionManagerConnection;
         String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
         String databaseTypeName = node.getDatabaseTypeName();
         List<String> tempTableList = new FastList<>();
 
-        connectionManagerConnection = getConnection(node, profiles, ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)));
+        connectionManagerConnection = getConnection(node, identity, ((RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational)));
         Span span = GlobalTracer.get().activeSpan();
         if (span != null)
         {
             span.log("Connection acquired");
         }
 
-        this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseTypeName, tempTableList, profiles, executionState, true);
+        this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseTypeName, tempTableList, identity, executionState, true);
 
         if (executionState.inAllocation)
         {
             if ((ExecutionNodeTDSResultHelper.isResultTDS(node) || (ExecutionNodeResultHelper.isResultSizeRangeSet(node) && !ExecutionNodeResultHelper.isSingleRecordResult(node))) && !executionState.realizeInMemory)
             {
-                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+                return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
             }
             else if (node.isResultVoid())
             {
-                return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
+                return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, identity, executionState.logSQLWithParamValues());
             }
             else
             {
                 // Refactor and clean up the flush to Constant
-                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+                RelationalResult result = new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
 
                 if (node.isResultPrimitiveType())
                 {
@@ -202,11 +202,11 @@ public class RelationalExecutor
         }
         else if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, identity, executionState.logSQLWithParamValues());
         }
         else
         {
-            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+            return new RelationalResult(executionState.activities, node, node.resultColumns, databaseTypeName, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
         }
     }
 
@@ -223,7 +223,7 @@ public class RelationalExecutor
         return null;
     }
 
-    public Result execute(SQLExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public Result execute(SQLExecutionNode node, Identity identity, ExecutionState executionState)
     {
         Connection connectionManagerConnection;
         String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
@@ -231,23 +231,24 @@ public class RelationalExecutor
         List<String> tempTableList = FastList.newList();
 
         Span span = GlobalTracer.get().activeSpan();
-        connectionManagerConnection = getConnection(node, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+
+        connectionManagerConnection = getConnection(node, identity, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
         {
             span.log("Connection acquired");
         }
 
-        this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState, true);
+        this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, identity, executionState, true);
         
         if (node.isResultVoid())
         {
-            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, profiles, executionState.logSQLWithParamValues());
+            return new VoidRelationalResult(executionState.activities, node, connectionManagerConnection, identity, executionState.logSQLWithParamValues());
         }
 
-        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, profiles, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
+        return new SQLExecutionResult(executionState.activities, node, databaseType, databaseTimeZone, connectionManagerConnection, identity, tempTableList, executionState.topSpan, executionState.getRequestContext(), executionState.logSQLWithParamValues());
     }
 
-    public SQLUpdateResult execute(RelationalSaveNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public SQLUpdateResult execute(RelationalSaveNode node, Identity identity, ExecutionState executionState)
     {
         Connection connectionManagerConnection;
         String databaseTimeZone = node.getDatabaseTimeZone() == null ? DEFAULT_DB_TIME_ZONE : node.getDatabaseTimeZone();
@@ -255,18 +256,18 @@ public class RelationalExecutor
         List<String> tempTableList = FastList.newList();
 
         Span span = GlobalTracer.get().activeSpan();
-        connectionManagerConnection = this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, profiles, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
+        connectionManagerConnection = this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, (RelationalStoreExecutionState) executionState.getStoreExecutionState(StoreType.Relational));
         if (span != null)
         {
             span.log("Connection acquired");
         }
 
-        this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, profiles, executionState, false);
+        this.prepareForSQLExecution(node.sqlQuery, node.sqlComment, connectionManagerConnection, databaseTimeZone, databaseType, tempTableList, identity, executionState, false);
 
-        return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection, profiles, tempTableList, executionState.getRequestContext());
+        return new SQLUpdateResult(executionState.activities, databaseType, connectionManagerConnection, identity, tempTableList, executionState.getRequestContext());
     }
 
-    private void prepareForSQLExecution(String sqlQuery, String sqlComment, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, MutableList<CommonProfile> profiles, ExecutionState executionState, boolean shouldLogSQL)
+    private void prepareForSQLExecution(String sqlQuery, String sqlComment, Connection connection, String databaseTimeZone, String databaseTypeName, List<String> tempTableList, Identity identity, ExecutionState executionState, boolean shouldLogSQL)
     {
         DatabaseManager databaseManager = DatabaseManager.fromString(databaseTypeName);
         RelationalDatabaseCommands relationalDatabaseCommands = databaseManager.relationalDatabaseSupport();
@@ -325,7 +326,7 @@ public class RelationalExecutor
 
         if (executionState.logSQLWithParamValues())
         {
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars " + executionState.getResults().keySet() + ": " + sqlQuery).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_REPROCESS_SQL, "Reprocessing sql with vars " + executionState.getResults().keySet() + ": " + sqlQuery).toString());
         }
 
         executionState.activities.add(new RelationalExecutionActivity(sqlQuery, sqlComment));
@@ -368,21 +369,21 @@ public class RelationalExecutor
         }
     }
 
-    private Connection getConnection(RelationalExecutionNode node, MutableList<CommonProfile> profiles, RelationalStoreExecutionState executionState)
+    private Connection getConnection(RelationalExecutionNode node, Identity identity, RelationalStoreExecutionState executionState)
     {
-        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, profiles, executionState);
+        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState);
     }
 
-    private Connection getConnection(SQLExecutionNode node, MutableList<CommonProfile> profiles, RelationalStoreExecutionState executionState)
+    private Connection getConnection(SQLExecutionNode node, Identity identity, RelationalStoreExecutionState executionState)
     {
-        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, profiles, executionState);
+        return this.getConnection(node.connection, node.onConnectionCloseRollbackQuery, node.onConnectionCloseCommitQuery, identity, executionState);
     }
 
-    private Connection getConnection(DatabaseConnection databaseConnection, String onConnectionCloseRollbackQuery, String onConnectionCloseCommitQuery, MutableList<CommonProfile> profiles, RelationalStoreExecutionState executionState)
+    private Connection getConnection(DatabaseConnection databaseConnection, String onConnectionCloseRollbackQuery, String onConnectionCloseCommitQuery, Identity identity, RelationalStoreExecutionState executionState)
     {
         if (executionState.retainConnection())
         {
-            BlockConnection blockConnection = executionState.getBlockConnectionContext().getBlockConnection(executionState, databaseConnection, profiles);
+            BlockConnection blockConnection = executionState.getBlockConnectionContext().getBlockConnection(executionState, databaseConnection, identity);
             if (onConnectionCloseRollbackQuery != null)
             {
                 blockConnection.addRollbackQuery(onConnectionCloseRollbackQuery);
@@ -393,7 +394,7 @@ public class RelationalExecutor
             }
             return blockConnection;
         }
-        return executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(profiles, databaseConnection, executionState.getRuntimeContext());
+        return executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, executionState.getRuntimeContext());
     }
 
     public static String process(String query, Map<?, ?> vars, String templateFunctions)

@@ -21,6 +21,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_external_language_morphir_generation_MorphirConfig;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationOutput;
 import org.finos.legend.pure.generated.core_external_language_morphir_transformation_integration;
@@ -38,7 +40,7 @@ public class TestMorphirFileGeneration
     public void testGenerateMorphirRentalExample() throws IOException
     {
         PureModelContextData pureModelContextData = getProtocol("org/finos/legend/engine/external/language/morphir/tests/simpleFileGeneration.json");
-        PureModel pureModel = new PureModel(pureModelContextData, null, DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), DeploymentMode.PROD);
         FileGenerationSpecification fileGeneration = pureModelContextData.getElementsOfType(FileGenerationSpecification.class).get(0);
         MorphirGenerationConfig morphirConfig = MorphirGenerationConfigFromFileGenerationSpecificationBuilder.build(fileGeneration);
         Root_meta_external_language_morphir_generation_MorphirConfig metaModelConfig = morphirConfig.process(pureModel);

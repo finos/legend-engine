@@ -19,7 +19,6 @@ package org.finos.legend.engine.service.post.validation.runner;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -35,13 +34,13 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.SimpleFunctionExpression;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.security.PrivilegedActionException;
 import java.sql.ResultSet;
@@ -55,9 +54,9 @@ import static org.finos.legend.pure.generated.core_service_service_validation.Ro
 
 public class LegendServicePostValidationRunner extends ServicePostValidationRunner
 {
-    public LegendServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format, PlanExecutor planExecutor)
+    public LegendServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, Identity identity, SerializationFormat format, PlanExecutor planExecutor)
     {
-        super(pureModel, pureService, rawParams, extensions, transformers, pureVersion, profiles, format,planExecutor);
+        super(pureModel, pureService, rawParams, extensions, transformers, pureVersion, identity, format,planExecutor);
     }
 
     protected MutableMap<String, Result> evaluateParameters(RichIterable<?> parameters)

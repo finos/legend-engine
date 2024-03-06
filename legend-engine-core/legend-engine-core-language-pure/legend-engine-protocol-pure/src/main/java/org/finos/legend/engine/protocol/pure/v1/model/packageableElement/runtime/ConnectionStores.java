@@ -16,9 +16,9 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtim
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +29,6 @@ public class ConnectionStores
     // Only used for TestRunners when they need to generate a test connection in protocol to replace the pointed connection
     @JsonIgnore
     public Connection connection;
-    public List<PackageableElementPointer> storePointers = new ArrayList();
+    public List<StoreProviderPointer> storePointers = new ArrayList();
     public SourceInformation sourceInformation;
 }

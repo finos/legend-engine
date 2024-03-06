@@ -26,11 +26,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.TestDatabaseAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.LocalH2DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
 import java.sql.Connection;
@@ -75,10 +76,10 @@ public class TestConnectionAcquisitionWithFlowProvider_H2 extends DbSpecificTest
     }
 
     @Test
-    public void testLocalTestConnection_profile() throws Exception
+    public void testLocalTestConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.localH2WithUserPasswordSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, "SELECT * FROM PersonTable");
     }
 

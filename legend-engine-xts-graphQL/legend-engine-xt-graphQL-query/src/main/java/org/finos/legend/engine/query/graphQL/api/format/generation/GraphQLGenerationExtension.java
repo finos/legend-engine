@@ -15,6 +15,7 @@
 package org.finos.legend.engine.query.graphQL.api.format.generation;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
@@ -36,6 +37,18 @@ import java.util.List;
 @Deprecated
 public class GraphQLGenerationExtension implements GenerationExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "GraphQL");
+    }
+
+    @Override
+    public String type()
+    {
+        return "Generation - To Delete?";
+    }
+
     @Override
     public String getLabel()
     {

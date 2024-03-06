@@ -22,12 +22,13 @@ function <<access.private>> meta::pure::changetoken::cast_generation::handleRena
     token: RenamedClass[1],
     objVar: Code[1],
     typeVar: Code[1],
+    typeKeyName: String[1],
     version: String[1],
     pathVar: Code[1],
     rootObjVar: Code[1],
     resVar: Code[1]): Code[1]
 {
     j_if($typeVar->j_invoke('equals', [j_string($token.newName)]),
-        $resVar->j_invoke('put', [j_string('@type'), j_string($token.class)])
+        $resVar->j_invoke('put', [j_string($typeKeyName), j_string($token.class)])
     );
 }

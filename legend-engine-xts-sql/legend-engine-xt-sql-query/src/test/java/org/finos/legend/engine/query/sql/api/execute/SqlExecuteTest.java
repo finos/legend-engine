@@ -35,6 +35,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.protocol.sql.metamodel.Query;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Enum;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.EnumSchemaColumn;
+import org.finos.legend.engine.protocol.sql.schema.metamodel.Parameter;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveSchemaColumn;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.PrimitiveType;
 import org.finos.legend.engine.protocol.sql.schema.metamodel.Schema;
@@ -44,6 +45,8 @@ import org.finos.legend.engine.query.sql.api.MockPac4jFeature;
 import org.finos.legend.engine.query.sql.api.TestSQLSourceProvider;
 import org.finos.legend.engine.shared.core.api.grammar.RenderStyle;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory;
 import org.junit.Assert;
 import org.junit.ClassRule;
@@ -77,7 +80,7 @@ public class SqlExecuteTest
         TestSQLSourceProvider testSQLSourceProvider = new TestSQLSourceProvider();
         SqlExecute sqlExecute = new SqlExecute(modelManager, executor, (pm) -> PureCoreExtensionLoader.extensions().flatCollect(g -> g.extraPureCoreExtensions(pm.getExecutionSupport())), FastList.newListWith(testSQLSourceProvider), generatorExtensions.flatCollect(PlanGeneratorExtension::getExtraPlanTransformers));
 
-        PureModel pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, null, "");
+        PureModel pureModel = modelManager.loadModel(testSQLSourceProvider.getPureModelContextData(), PureClientVersions.production, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), "");
         ResourceTestRule resources = ResourceTestRule.builder()
                 .setTestContainerFactory(new GrizzlyWebTestContainerFactory())
                 .addResource(sqlExecute)
@@ -296,6 +299,8 @@ public class SqlExecuteTest
                 primitiveColumn("Col", PrimitiveType.Integer)
         );
 
+        schema.parameters = FastList.newListWith(parameter("_1", PrimitiveType.Integer));
+
         allSchemaTests("SELECT 1 + ? AS \"Col\" FROM service.\"/testService\"", FastList.newList(), schema);
     }
 
@@ -306,6 +311,8 @@ public class SqlExecuteTest
         schema.columns = FastList.newListWith(
                 primitiveColumn("Col", PrimitiveType.Integer)
         );
+
+        schema.parameters = FastList.newListWith(parameter("_1", PrimitiveType.Integer));
 
         allSchemaTests("SELECT 1 + ? AS \"Col\" FROM service.\"/testService\"", FastList.newListWith(1), schema);
     }
@@ -318,7 +325,7 @@ public class SqlExecuteTest
                 primitiveColumn("Id", PrimitiveType.Integer)
         );
 
-        allSchemaTests("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"", FastList.newListWith(1), schema);
+        allSchemaTests("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"", FastList.newList(), schema);
     }
 
     private static PrimitiveSchemaColumn primitiveColumn(String name, PrimitiveType type)
@@ -346,5 +353,14 @@ public class SqlExecuteTest
         e.values = FastList.newListWith(values);
 
         return e;
+    }
+
+    private static Parameter parameter(String name, PrimitiveType type)
+    {
+        Parameter param = new Parameter();
+        param.name = name;
+        param.type = type;
+
+        return param;
     }
 }

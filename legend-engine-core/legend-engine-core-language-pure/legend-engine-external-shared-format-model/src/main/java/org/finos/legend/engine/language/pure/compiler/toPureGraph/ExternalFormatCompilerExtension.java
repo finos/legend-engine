@@ -19,6 +19,7 @@ import org.eclipse.collections.api.block.procedure.Procedure;
 import org.eclipse.collections.api.block.procedure.Procedure2;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtension;
 import org.finos.legend.engine.external.shared.format.model.ExternalFormatExtensionLoader;
@@ -43,6 +44,12 @@ public class ExternalFormatCompilerExtension implements CompilerExtension
         externalFormatExtensions = ExternalFormatExtensionLoader.extensions();
         schemaSetCompiler = new SchemaSetCompiler(externalFormatExtensions);
         bindingCompiler = new BindingCompiler(externalFormatExtensions);
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "-Core");
     }
 
     @Override

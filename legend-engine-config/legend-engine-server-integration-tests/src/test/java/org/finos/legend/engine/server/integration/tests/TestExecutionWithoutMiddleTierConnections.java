@@ -14,8 +14,6 @@
 
 package org.finos.legend.engine.server.integration.tests;
 
-import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlan;
 import org.finos.legend.engine.plan.execution.api.request.ExecutionRequest;
@@ -24,13 +22,13 @@ import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.Relational;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.vault.TestVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -84,14 +82,14 @@ public class TestExecutionWithoutMiddleTierConnections
         }
     }
 
-    private MutableList<CommonProfile> profiles;
+    private Identity identity;
     private TestVaultImplementation testVaultImplementation;
 
     @Before
     public void setup() throws Exception
     {
         DefaultIdentityFactory defaultIdentityFactory = new DefaultIdentityFactory();
-        this.profiles = Lists.mutable.withAll(defaultIdentityFactory.adapt(defaultIdentityFactory.makeUnknownIdentity()));
+        this.identity = defaultIdentityFactory.makeUnknownIdentity();
 
         this.testVaultImplementation = new TestVaultImplementation();
         Vault.INSTANCE.registerImplementation(testVaultImplementation);
@@ -111,7 +109,7 @@ public class TestExecutionWithoutMiddleTierConnections
     {
         SingleExecutionPlan executionPlan = this.loadPlanFromFile("/plans/planWithoutMiddleTierConnections.json");
         PlanExecutor executor = PlanExecutor.newPlanExecutor(InMemory.build(), Relational.build());
-        Response response = new ExecutePlan(executor).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, profiles);
+        Response response = new ExecutePlan(executor).doExecutePlanImpl(new ExecutionRequest(executionPlan), SerializationFormat.defaultFormat, identity);
 
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
         String responseText = this.readResponse(response);

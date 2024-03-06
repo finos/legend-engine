@@ -14,6 +14,9 @@
 
 package org.finos.legend.engine.shared.core.extension;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
+
 public interface LegendGenerationExtension extends LegendExtension
 {
 }

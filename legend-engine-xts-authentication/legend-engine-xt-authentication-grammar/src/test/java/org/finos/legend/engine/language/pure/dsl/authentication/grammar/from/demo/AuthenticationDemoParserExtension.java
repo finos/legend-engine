@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.de
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -34,6 +35,12 @@ import java.util.function.Consumer;
 public class AuthenticationDemoParserExtension implements IAuthenticationDemoParserExtension
 {
     public static final String NAME = "AuthenticationDemo";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("__Test__");
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

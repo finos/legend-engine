@@ -163,6 +163,15 @@ public class PureGrammarComposer
         return DEPRECATED_renderElement(element);
     }
 
+    public String render(PackageableElement element, String parser)
+    {
+        return this.context.extraSectionComposers.stream().map(composer -> composer.value(Lists.mutable.with(element), this.context, parser)).filter(Objects::nonNull).findFirst()
+                // NOTE: this is the old way (no-plugin) way to render section elements, this approach is not great since it does not enforce
+                // the types of elements a section can have, the newer approach does the check and compose unsupported message when such violations occur
+                // TO BE REMOVED when we moved everything to extensions
+                .orElseGet(() -> LazyIterate.collect(Lists.mutable.with(element), this::DEPRECATED_renderElement).makeString("\n\n"));
+    }
+
     static String processReturn(PackageableElement element, MutableList<String> select)
     {
         if (select.size() == 1)

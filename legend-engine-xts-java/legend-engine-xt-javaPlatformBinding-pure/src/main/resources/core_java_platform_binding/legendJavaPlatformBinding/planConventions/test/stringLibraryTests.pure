@@ -247,6 +247,8 @@ meta::pure::executionPlan::platformBinding::legendJava::library::string::tests::
       ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassInstanceToRepresentation__Boolean_1_) // requires new
       ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testClassToRepresentation__Boolean_1_) // requires metadata
       ->excludeTest(meta::pure::functions::string::tests::toRepresentation::testFunctionToRepresentation__Boolean_1_) // requires metadata
+      ->excludeTest(meta::pure::functions::string::tests::format::testFormatInEval__Boolean_1_) // requires eval
+      ->excludeTest(meta::pure::functions::string::tests::format::testFormatInEvaluate__Boolean_1_) // requires evaluate
       ->addTestsWithin(meta::pure::functions::string::tests::parseBoolean)
       ->addTestsWithin(meta::pure::functions::string::tests::chunk)
       ->addTestsWithin(meta::pure::functions::string::tests::parseDecimal)

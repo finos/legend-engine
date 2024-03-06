@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.graphQL.grammar.integration;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
@@ -29,6 +30,12 @@ import java.util.Map;
 
 public class GraphQLCompilerExtension implements CompilerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "GraphQL");
+    }
+
     @Override
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
