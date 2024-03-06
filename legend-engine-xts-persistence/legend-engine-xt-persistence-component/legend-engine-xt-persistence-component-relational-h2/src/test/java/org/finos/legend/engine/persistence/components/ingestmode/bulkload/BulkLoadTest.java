@@ -1104,17 +1104,17 @@ public class BulkLoadTest extends BaseTest
             .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
             .errorRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
-            .putAllErrorDetails(buildErrorDetails(filePath, col3NonNullable.name(), 1L))
+            .putAllErrorDetails(buildErrorDetails(filePath, col3NonNullable.name().toUpperCase(), 1L))
             .build(), DataError.builder()
             .errorCategory(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())
             .errorRecord("2,,NaN,2022-01-12 00:00:00.0")
             .errorMessage("Null values found in non-nullable column")
-            .putAllErrorDetails(buildErrorDetails(filePath, col2NonNullable.name(), 2L))
+            .putAllErrorDetails(buildErrorDetails(filePath, col2NonNullable.name().toUpperCase(), 2L))
             .build(), DataError.builder()
             .errorCategory(ValidationCategory.CONVERSION.getCategoryName())
             .errorRecord("??,Andy,,2022-01-99 00:00:00.0")
             .errorMessage("Unable to type cast column")
-            .putAllErrorDetails(buildErrorDetails(filePath, col1.name(), 1L))
+            .putAllErrorDetails(buildErrorDetails(filePath, col1.name().toUpperCase(), 1L))
             .build());
 
         Assertions.assertEquals(IngestStatus.FAILED, dryRunResult.status());
@@ -1225,7 +1225,7 @@ public class BulkLoadTest extends BaseTest
         }
     }
 
-    private Map<String, Object> buildErrorDetails(String fileName, String columnName,Long recordNumber)
+    private Map<String, Object> buildErrorDetails(String fileName, String columnName, Long recordNumber)
     {
         Map<String, Object> errorDetails = new HashMap<>();
         errorDetails.put(DataError.FILE_NAME, fileName);
