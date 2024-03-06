@@ -15,6 +15,8 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
 import java.util.ArrayList;

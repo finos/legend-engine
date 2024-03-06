@@ -14,8 +14,25 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 
 public class StoreProviderPointer extends PackageableElementPointer
 {
+    public StoreProviderPointer()
+    {
+        super();
+    }
+
+    public StoreProviderPointer(PackageableElementType type, String path)
+    {
+        super(type, path);
+    }
+
+    public StoreProviderPointer(PackageableElementType type, String path, SourceInformation sourceInformation)
+    {
+        super(type, path, sourceInformation);
+    }
+
 }
