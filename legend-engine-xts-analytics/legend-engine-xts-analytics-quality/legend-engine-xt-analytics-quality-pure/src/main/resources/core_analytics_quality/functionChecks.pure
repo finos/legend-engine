@@ -58,7 +58,7 @@ function <<access.public>> meta::analytics::quality::model::domain::getLocalFunc
 }
 
 function  {rule.rule = 'Invalid Contains',
-           rule.description ='Check for contains / containsAll / containsAny checks that will always result in false due to type miss matches (e.g. [\'abc\']->contains(123))',
+           rule.description ='Check for contains / containsAll / containsAny checks that will always result in false due to type mismatches (e.g. [\'abc\']->contains(123))',
            rule.severity = 'High',
            rule.category = 'Correctness'}
 meta::analytics::quality::model::domain::invalidContainsComparisons(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
@@ -69,7 +69,7 @@ meta::analytics::quality::model::domain::invalidContainsComparisons(fns:List<Fun
       ->map(ie|
          let t1 = $ie->meta::analytics::quality::model::domain::resolveParameterType(0);
          let t2 = $ie->meta::analytics::quality::model::domain::resolveParameterType(1);
-         let message = ('Possible invalid ' + $ie.functionName->makeString() + ' check (type miss match, ' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')');
+         let message = ('Possible invalid ' + $ie.functionName->makeString() + ' check (type mismatch, ' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')');
          let result = ^CheckResult(isValid=false,message=$message);
          pair($ie,$result);
          );
@@ -77,7 +77,7 @@ meta::analytics::quality::model::domain::invalidContainsComparisons(fns:List<Fun
 
 
 function  {rule.rule = 'Invalid Equality',
-           rule.description ='Check for equality checks that will always result in false due to type miss matches (e.g. \'abc\' == 123)',
+           rule.description ='Check for equality checks that will always result in false due to type mismatches (e.g. \'abc\' == 123)',
            rule.severity = 'High',
            rule.category = 'Correctness'}
 meta::analytics::quality::model::domain::validEqualityComparisons(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
@@ -98,7 +98,7 @@ meta::analytics::quality::model::domain::validEqualityComparisons(fns:List<Funct
 
             let message = if($valid,
                              |'Valid ' + $ie.functionName->toOne() + ' check (' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')',
-                             |'Possible invalid ' + $ie.functionName->toOne() + ' check (type mismatch, ' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')');
+                             | 'Function (' + $ie.functionName->toOne() + ') does not match required standards: Possible invalid ' + $ie.functionName->toOne() + ' check (type mismatch, ' + $t1->elementToPath() + ' vs ' + $t2->elementToPath() + ')');
             let result = ^CheckResult(isValid=$valid, message=$message);
             pair($ie, $result);
          );

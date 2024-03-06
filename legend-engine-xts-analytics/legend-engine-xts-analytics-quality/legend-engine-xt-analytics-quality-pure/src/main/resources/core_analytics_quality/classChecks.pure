@@ -77,8 +77,7 @@ meta::analytics::quality::model::domain::allEntitiesAndPropertiesShouldHaveALong
 {
    let passed = ($cl.taggedValues->size() != 0 && $cl.taggedValues->filter(t | $t.tag.profile == doc)->size() != 0)
                   && $cl.properties->size() == $cl.properties->map(p|$p.taggedValues)-> filter(t | $t.tag.profile == doc)->size();
-
-   let message ='Provide documentation for class and its properties ' + $cl.name->toOne() ;
+   let message ='Provide documentation for class ' + + $cl.name->toOne() + ' and its properties';
 
    ^CheckResult(isValid=$passed, message=$message);
 }
