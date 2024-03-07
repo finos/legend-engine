@@ -16,8 +16,11 @@ package org.finos.legend.engine.persistence.components.relational.snowflake;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVRecord;
 import org.eclipse.collections.api.tuple.Pair;
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
@@ -47,12 +50,15 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.SnowflakeStagedFilesDatasetProperties;
+import org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets.StandardFileFormat;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.optmizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.SnowflakeDataTypeMapping;
@@ -86,6 +92,8 @@ import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -101,12 +109,14 @@ import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
-import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
-import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CONVERSION;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.TYPE_CONVERSION;
 
 public class SnowflakeSink extends AnsiSqlSink
 {
@@ -126,14 +136,18 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final String FIRST_ERROR = "first_error";
     private static final String FIRST_ERROR_COLUMN_NAME = "first_error_column_name";
     private static final String ERROR = "ERROR";
+    protected static final String FILE_WITH_ERROR = "FILE";
+    protected static final String ROW_NUMBER = "ROW_NUMBER";
     private static final String LINE = "LINE";
     private static final String CHARACTER = "CHARACTER";
     private static final String BYTE_OFFSET = "BYTE_OFFSET";
     private static final String CATEGORY = "CATEGORY";
     private static final String COLUMN_NAME = "COLUMN_NAME";
     private static final String ROW_START_LINE = "ROW_START_LINE";
-
     private static final String REJECTED_RECORD = "REJECTED_RECORD";
+    private static final String FIELD_DELIMITER = "FIELD_DELIMITER";
+    private static final String ESCAPE = "ESCAPE";
+    private static final String FIELD_OPTIONALLY_ENCLOSED_BY = "FIELD_OPTIONALLY_ENCLOSED_BY";
 
     static
     {
@@ -261,19 +275,51 @@ public class SnowflakeSink extends AnsiSqlSink
         }
     }
 
-    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
     {
-        if (dryRunValidationSqlPlan == null || dryRunValidationSqlPlan.isEmpty())
+        try
         {
-            return performDryRunWithValidationMode(executor, dryRunSqlPlan, sampleRowCount);
+            if (dryRunValidationSqlPlan == null || dryRunValidationSqlPlan.isEmpty())
+            {
+                return performDryRunWithValidationMode(datasets, executor, dryRunSqlPlan, sampleRowCount);
+            }
+            else
+            {
+                return performDryRunWithValidationQueries(datasets, executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount, caseConversion);
+            }
         }
-        else
+        catch (Exception e)
         {
-            return performDryRunWithValidationQueries(datasets, executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount);
+            return parseSnowflakeExceptions(e);
         }
     }
 
-    private List<DataError> performDryRunWithValidationMode(Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount)
+    private List<DataError> parseSnowflakeExceptions(Exception e)
+    {
+        String errorMessage = e.getMessage();
+
+        if (errorMessage.contains("Error parsing"))
+        {
+            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.PARSING_ERROR.name()).errorMessage(errorMessage).build());
+        }
+
+        if (errorMessage.contains("file") && errorMessage.contains("was not found"))
+        {
+            Optional<String> fileName = Optional.empty();
+            Matcher matcher = Pattern.compile("'(.*)'").matcher(errorMessage);
+            if (matcher.find())
+            {
+                fileName = Optional.of(matcher.group(1));
+            }
+            Map<String, Object> errorDetails = buildErrorDetails(fileName, Optional.empty(), Optional.empty());
+
+            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND.name()).errorMessage(errorMessage).putAllErrorDetails(errorDetails).build());
+        }
+
+        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN.name()).errorMessage(errorMessage).build());
+    }
+
+    private List<DataError> performDryRunWithValidationMode(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, int sampleRowCount)
     {
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(dryRunSqlPlan, sampleRowCount);
         List<DataError> dataErrors = new ArrayList<>();
@@ -288,10 +334,20 @@ public class SnowflakeSink extends AnsiSqlSink
                 getLong(row, CHARACTER).ifPresent(characterPos -> errorDetails.put(DataError.CHARACTER_POSITION, characterPos));
 
                 DataError dataError = DataError.builder()
-                    .errorMessage(getString(row, ERROR).orElseThrow(IllegalStateException::new))
+                    .errorMessage(parseSnowflakeErrorCategory(row))
                     .errorCategory(getString(row, CATEGORY).orElseThrow(IllegalStateException::new))
                     .putAllErrorDetails(errorDetails)
-                    .errorRecord(getString(row, REJECTED_RECORD))
+                    .errorRecord(getString(row, REJECTED_RECORD).map(rejectedRecord ->
+                    {
+                        try
+                        {
+                            return parseSnowflakeRejectedRecord(datasets, rejectedRecord);
+                        }
+                        catch (IOException e)
+                        {
+                            throw new RuntimeException(e);
+                        }
+                    }))
                     .build();
                 dataErrors.add(dataError);
             }
@@ -299,7 +355,85 @@ public class SnowflakeSink extends AnsiSqlSink
         return dataErrors;
     }
 
-    private List<DataError> performDryRunWithValidationQueries(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
+    private String parseSnowflakeErrorCategory(Map<String, Object> row)
+    {
+        String snowflakeErrorCategory = getString(row, CATEGORY).orElseThrow(IllegalStateException::new);
+        String errorMessage = getString(row, ERROR).orElseThrow(IllegalStateException::new);
+
+        if (snowflakeErrorCategory.equals("conversion"))
+        {
+            return ErrorCategory.TYPE_CONVERSION.name();
+        }
+        else if (snowflakeErrorCategory.equals("check_constraint"))
+        {
+            if (errorMessage.contains("NULL result in a non-nullable column"))
+            {
+                return ErrorCategory.CHECK_NULL_CONSTRAINT.name();
+            }
+            else
+            {
+                return ErrorCategory.CHECK_OTHER_CONSTRAINT.name();
+            }
+        }
+        else
+        {
+            return ErrorCategory.UNKNOWN.name(); // TODO: or shall we return snowflake's error category?
+        }
+    }
+
+    public String parseSnowflakeRejectedRecord(Datasets datasets, String rejectedRecord) throws IOException
+    {
+        if (!(datasets.stagingDataset() instanceof StagedFilesDataset))
+        {
+            throw new IllegalStateException("");
+        }
+        StagedFilesDataset stagedFilesDataset = (StagedFilesDataset) datasets.stagingDataset();
+        if (!(stagedFilesDataset.stagedFilesDatasetProperties() instanceof SnowflakeStagedFilesDatasetProperties))
+        {
+            throw new IllegalStateException("");
+        }
+        SnowflakeStagedFilesDatasetProperties snowflakeStagedFilesDatasetProperties = (SnowflakeStagedFilesDatasetProperties) stagedFilesDataset.stagedFilesDatasetProperties();
+        if (!snowflakeStagedFilesDatasetProperties.fileFormat().isPresent() || !(snowflakeStagedFilesDatasetProperties.fileFormat().get() instanceof StandardFileFormat))
+        {
+            throw new IllegalStateException("");
+        }
+        StandardFileFormat standardFileFormat = (StandardFileFormat) snowflakeStagedFilesDatasetProperties.fileFormat().get();
+        if (!standardFileFormat.formatType().equals(FileFormatType.CSV))
+        {
+            throw new IllegalStateException("");
+        }
+
+        CSVFormat csvFormat = CSVFormat.DEFAULT.withDelimiter(',').withQuote(null).withEscape(null);
+        Map<String, Object> formatOptions = standardFileFormat.formatOptions();
+        if (formatOptions.containsKey(FIELD_DELIMITER))
+        {
+            csvFormat = csvFormat.withDelimiter(getChar(formatOptions, FIELD_DELIMITER).orElseThrow(IllegalStateException::new));
+        }
+        if (formatOptions.containsKey(ESCAPE))
+        {
+            csvFormat = csvFormat.withEscape(getChar(formatOptions, ESCAPE).orElseThrow(IllegalStateException::new));
+        }
+        if (formatOptions.containsKey(FIELD_OPTIONALLY_ENCLOSED_BY))
+        {
+            csvFormat = csvFormat.withQuote(getChar(formatOptions, FIELD_OPTIONALLY_ENCLOSED_BY).orElseThrow(IllegalStateException::new));
+        }
+
+        List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
+        Map<String, Object> errorRecordMap = new HashMap<>();
+
+        List<CSVRecord> records = csvFormat.parse(new StringReader(rejectedRecord)).getRecords();
+        for (CSVRecord csvRecord : records)
+        {
+            for (int i = 0; i < csvRecord.size(); i++)
+            {
+                errorRecordMap.put(allFields.get(i), csvRecord.get(i));
+            }
+        }
+
+        return new ObjectMapper().writeValueAsString(errorRecordMap);
+    }
+
+    private List<DataError> performDryRunWithValidationQueries(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
@@ -312,11 +446,11 @@ public class SnowflakeSink extends AnsiSqlSink
 
         List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
 
-        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(CHECK_CONSTRAINT, new ArrayList<>());
-        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(CONVERSION, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(NULL_VALUE, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(TYPE_CONVERSION, new ArrayList<>());
 
         // Execute queries for null values
-        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields);
+        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields, caseConversion);
         dataErrorsTotalCount += nullValuesErrorsCount;
 
         // Execute queries for datatype conversion
@@ -331,8 +465,8 @@ public class SnowflakeSink extends AnsiSqlSink
                     // This loop will only be executed once as there is always only one element in the set
                     for (String column : pair.getOne().stream().map(FieldValue::fieldName).collect(Collectors.toSet()))
                     {
-                        DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CONVERSION, column);
-                        dataErrorsByCategory.get(CONVERSION).add(dataError);
+                        DataError dataError = constructDataError(allFields, row, TYPE_CONVERSION, column, caseConversion);
+                        dataErrorsByCategory.get(TYPE_CONVERSION).add(dataError);
                         dataErrorsTotalCount++;
                     }
                 }

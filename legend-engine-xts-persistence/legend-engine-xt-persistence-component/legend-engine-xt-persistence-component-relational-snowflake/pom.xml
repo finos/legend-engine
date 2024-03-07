@@ -68,6 +68,14 @@
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
 
+        <!-- COMMONS CSV -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>${commons-csv.version}</version>
+        </dependency>
+        <!-- COMMONS CSV -->
+
         <!-- LOGGING -->
         <dependency>
             <groupId>org.slf4j</groupId>

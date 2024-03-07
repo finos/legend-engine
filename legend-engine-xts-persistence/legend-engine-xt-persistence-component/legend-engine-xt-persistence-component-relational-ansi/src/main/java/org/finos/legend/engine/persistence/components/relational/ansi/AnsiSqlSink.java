@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.ansi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -148,6 +150,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
@@ -162,15 +165,15 @@ import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 
 public class AnsiSqlSink extends RelationalSink
 {
     private static final RelationalSink INSTANCE;
     protected static final Map<Class<?>, LogicalPlanVisitor<?>> LOGICAL_PLAN_VISITOR_BY_CLASS;
 
-    protected static final String FILE_WITH_ERROR = "FILE";
-    protected static final String ROW_NUMBER = "ROW_NUMBER";
+    private static final String FILE = "legend_persistence_file";
+    private static final String ROW_NUMBER = "legend_persistence_row_number";
 
     static
     {
@@ -335,7 +338,7 @@ public class AnsiSqlSink extends RelationalSink
         throw new UnsupportedOperationException("Bulk Load not supported!");
     }
 
-    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
     {
         throw new UnsupportedOperationException("DryRun not supported!");
     }
@@ -354,7 +357,23 @@ public class AnsiSqlSink extends RelationalSink
         return Optional.ofNullable(longValue);
     }
 
-    protected int findNullValuesDataErrors(Executor<SqlGen, TabularData, SqlPlan> executor, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>> queriesForNull, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory, List<String> allFields)
+    protected Optional<Character> getChar(Map<String, Object> row, String key)
+    {
+        Object value = row.get(key);
+        if (value instanceof Character)
+        {
+            Character charValue = value == null ? null : (Character) value;
+            return Optional.ofNullable(charValue);
+        }
+        if (value instanceof String)
+        {
+            Optional<String> stringValue = getString(row, key);
+            return stringValue.map(s -> s.charAt(0));
+        }
+        return Optional.empty();
+    }
+
+    protected int findNullValuesDataErrors(Executor<SqlGen, TabularData, SqlPlan> executor, List<org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan>> queriesForNull, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory, List<String> allFields, CaseConversion caseConversion)
     {
         int errorsCount = 0;
         for (org.eclipse.collections.api.tuple.Pair<Set<FieldValue>, SqlPlan> pair : queriesForNull)
@@ -369,8 +388,8 @@ public class AnsiSqlSink extends RelationalSink
                     {
                         if (row.get(column) == null)
                         {
-                            DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CHECK_CONSTRAINT, column);
-                            dataErrorsByCategory.get(CHECK_CONSTRAINT).add(dataError);
+                            DataError dataError = constructDataError(allFields, row, NULL_VALUE, column, caseConversion);
+                            dataErrorsByCategory.get(NULL_VALUE).add(dataError);
                             errorsCount++;
                         }
                     }
@@ -380,14 +399,33 @@ public class AnsiSqlSink extends RelationalSink
         return errorsCount;
     }
 
-    protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, String fileNameColumnName, String rowNumberColumnName, ValidationCategory validationCategory, String validatedColumnName)
+    protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, ValidationCategory validationCategory, String validatedColumnName, CaseConversion caseConversion)
     {
-        Map<String, Object> errorDetails = buildErrorDetails(getString(row, fileNameColumnName), Optional.of(validatedColumnName), getLong(row, rowNumberColumnName));
+        ErrorCategory errorCategory = getValidationFailedErrorCategory(validationCategory);
+
+        String fileColumnName;
+        String rowNumberColumnName;
+        switch (caseConversion)
+        {
+            case TO_UPPER:
+                fileColumnName = FILE.toUpperCase();
+                rowNumberColumnName = ROW_NUMBER.toUpperCase();
+                break;
+            case TO_LOWER:
+                fileColumnName = FILE.toLowerCase();
+                rowNumberColumnName = ROW_NUMBER.toLowerCase();
+                break;
+            default:
+                fileColumnName = FILE;
+                rowNumberColumnName = ROW_NUMBER;
+        }
+        Map<String, Object> errorDetails = buildErrorDetails(getString(row, fileColumnName), Optional.of(validatedColumnName), getLong(row, rowNumberColumnName));
+
         return DataError.builder()
-            .errorMessage(getValidationFailedErrorMessage(validationCategory))
-            .errorCategory(validationCategory.getCategoryName())
+            .errorMessage(errorCategory.getDefaultErrorMessage())
+            .errorCategory(errorCategory.name())
             .putAllErrorDetails(errorDetails)
-            .errorRecord(allColumns.stream().map(column -> getString(row, column).orElse("")).collect(Collectors.joining(",")))
+            .errorRecord(buildErrorRecord(allColumns, row))
             .build();
     }
 
@@ -400,14 +438,37 @@ public class AnsiSqlSink extends RelationalSink
         return errorDetails;
     }
 
-    private String getValidationFailedErrorMessage(ValidationCategory category)
+    protected String buildErrorRecord(List<String> allColumns, Map<String, Object> row)
     {
-        switch (category)
+        Map<String, Object> errorRecordMap = new HashMap<>();
+
+        for (String column : allColumns)
         {
-            case CHECK_CONSTRAINT:
-                return "Null values found in non-nullable column";
-            case CONVERSION:
-                return "Unable to type cast column";
+            if (row.containsKey(column))
+            {
+                errorRecordMap.put(column, row.get(column));
+            }
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return objectMapper.writeValueAsString(errorRecordMap);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private ErrorCategory getValidationFailedErrorCategory(ValidationCategory validationCategory)
+    {
+        switch (validationCategory)
+        {
+            case NULL_VALUE:
+                return ErrorCategory.CHECK_NULL_CONSTRAINT;
+            case TYPE_CONVERSION:
+                return ErrorCategory.TYPE_CONVERSION;
             default:
                 throw new IllegalStateException("Unsupported validation category");
         }

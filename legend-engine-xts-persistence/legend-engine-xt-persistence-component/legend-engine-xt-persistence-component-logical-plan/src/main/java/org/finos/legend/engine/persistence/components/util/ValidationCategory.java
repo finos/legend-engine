@@ -16,18 +16,6 @@ package org.finos.legend.engine.persistence.components.util;
 
 public enum ValidationCategory
 {
-    CHECK_CONSTRAINT("check_constraint"),
-    CONVERSION("conversion");
-
-    private final String categoryName;
-
-    ValidationCategory(String categoryName)
-    {
-        this.categoryName = categoryName;
-    }
-
-    public String getCategoryName()
-    {
-        return this.categoryName;
-    }
+    NULL_VALUE,
+    TYPE_CONVERSION
 }

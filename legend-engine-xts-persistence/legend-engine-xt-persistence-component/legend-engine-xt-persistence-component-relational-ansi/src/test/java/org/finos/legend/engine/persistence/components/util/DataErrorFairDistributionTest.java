@@ -16,6 +16,7 @@ package org.finos.legend.engine.persistence.components.util;
 
 import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSink;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -35,18 +36,18 @@ public class DataErrorFairDistributionTest
         AnsiSqlSink sink = (AnsiSqlSink) AnsiSqlSink.get();
 
         Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
-        dataErrorsByCategory.put(ValidationCategory.CHECK_CONSTRAINT, new LinkedList<>());
-        dataErrorsByCategory.put(ValidationCategory.CONVERSION, new LinkedList<>());
+        dataErrorsByCategory.put(ValidationCategory.NULL_VALUE, new LinkedList<>());
+        dataErrorsByCategory.put(ValidationCategory.TYPE_CONVERSION, new LinkedList<>());
         List<DataError> expectedNullValuesErrors = new ArrayList<>();
         List<DataError> expectedDatatypeErrors = new ArrayList<>();
 
-        populateDataErrors(ValidationCategory.CHECK_CONSTRAINT, 5, 5, dataErrorsByCategory, expectedNullValuesErrors);
-        populateDataErrors(ValidationCategory.CONVERSION, 5, 5, dataErrorsByCategory, expectedDatatypeErrors);
+        populateDataErrors(ValidationCategory.NULL_VALUE, ErrorCategory.CHECK_NULL_CONSTRAINT, 5, 5, dataErrorsByCategory, expectedNullValuesErrors);
+        populateDataErrors(ValidationCategory.TYPE_CONVERSION, ErrorCategory.TYPE_CONVERSION, 5, 5, dataErrorsByCategory, expectedDatatypeErrors);
 
         List<DataError> results = sink.getDataErrorsWithFairDistributionAcrossCategories(20, 10, dataErrorsByCategory);
         Assertions.assertEquals(10, results.size());
-        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())).collect(Collectors.toList()));
-        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ValidationCategory.CONVERSION.getCategoryName())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT.name())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION.name())).collect(Collectors.toList()));
     }
 
     @Test
@@ -55,18 +56,18 @@ public class DataErrorFairDistributionTest
         AnsiSqlSink sink = (AnsiSqlSink) AnsiSqlSink.get();
 
         Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
-        dataErrorsByCategory.put(ValidationCategory.CHECK_CONSTRAINT, new LinkedList<>());
-        dataErrorsByCategory.put(ValidationCategory.CONVERSION, new LinkedList<>());
+        dataErrorsByCategory.put(ValidationCategory.NULL_VALUE, new LinkedList<>());
+        dataErrorsByCategory.put(ValidationCategory.TYPE_CONVERSION, new LinkedList<>());
         List<DataError> expectedNullValuesErrors = new ArrayList<>();
         List<DataError> expectedDatatypeErrors = new ArrayList<>();
 
-        populateDataErrors(ValidationCategory.CHECK_CONSTRAINT, 5, 5, dataErrorsByCategory, expectedNullValuesErrors);
-        populateDataErrors(ValidationCategory.CONVERSION, 50, 15, dataErrorsByCategory, expectedDatatypeErrors);
+        populateDataErrors(ValidationCategory.NULL_VALUE, ErrorCategory.CHECK_NULL_CONSTRAINT, 5, 5, dataErrorsByCategory, expectedNullValuesErrors);
+        populateDataErrors(ValidationCategory.TYPE_CONVERSION, ErrorCategory.TYPE_CONVERSION, 50, 15, dataErrorsByCategory, expectedDatatypeErrors);
 
         List<DataError> results = sink.getDataErrorsWithFairDistributionAcrossCategories(20, 55, dataErrorsByCategory);
         Assertions.assertEquals(20, results.size());
-        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())).collect(Collectors.toList()));
-        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ValidationCategory.CONVERSION.getCategoryName())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT.name())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION.name())).collect(Collectors.toList()));
     }
 
     @Test
@@ -75,27 +76,27 @@ public class DataErrorFairDistributionTest
         AnsiSqlSink sink = (AnsiSqlSink) AnsiSqlSink.get();
 
         Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory = new HashMap<>();
-        dataErrorsByCategory.put(ValidationCategory.CHECK_CONSTRAINT, new LinkedList<>());
-        dataErrorsByCategory.put(ValidationCategory.CONVERSION, new LinkedList<>());
+        dataErrorsByCategory.put(ValidationCategory.NULL_VALUE, new LinkedList<>());
+        dataErrorsByCategory.put(ValidationCategory.TYPE_CONVERSION, new LinkedList<>());
         List<DataError> expectedNullValuesErrors = new ArrayList<>();
         List<DataError> expectedDatatypeErrors = new ArrayList<>();
 
-        populateDataErrors(ValidationCategory.CHECK_CONSTRAINT, 15, 10, dataErrorsByCategory, expectedNullValuesErrors);
-        populateDataErrors(ValidationCategory.CONVERSION, 20, 9, dataErrorsByCategory, expectedDatatypeErrors);
+        populateDataErrors(ValidationCategory.NULL_VALUE, ErrorCategory.CHECK_NULL_CONSTRAINT, 15, 10, dataErrorsByCategory, expectedNullValuesErrors);
+        populateDataErrors(ValidationCategory.TYPE_CONVERSION, ErrorCategory.TYPE_CONVERSION, 20, 9, dataErrorsByCategory, expectedDatatypeErrors);
 
         List<DataError> results = sink.getDataErrorsWithFairDistributionAcrossCategories(19, 35, dataErrorsByCategory);
         Assertions.assertEquals(19, results.size());
-        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ValidationCategory.CHECK_CONSTRAINT.getCategoryName())).collect(Collectors.toList()));
-        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ValidationCategory.CONVERSION.getCategoryName())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT.name())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION.name())).collect(Collectors.toList()));
     }
 
-    private void populateDataErrors(ValidationCategory category, int totalCount, int expectedCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory, List<DataError> expectedList)
+    private void populateDataErrors(ValidationCategory validationCategory, ErrorCategory errorCategory, int totalCount, int expectedCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory, List<DataError> expectedList)
     {
         int count = 1;
         while (count <= totalCount)
         {
-            DataError dataError = getDummyDataError(category, count);
-            dataErrorsByCategory.get(category).add(dataError);
+            DataError dataError = getDummyDataError(errorCategory, count);
+            dataErrorsByCategory.get(validationCategory).add(dataError);
             if (count <= expectedCount)
             {
                 expectedList.add(dataError);
@@ -104,7 +105,7 @@ public class DataErrorFairDistributionTest
         }
     }
 
-    private DataError getDummyDataError(ValidationCategory category, long rowNumber)
+    private DataError getDummyDataError(ErrorCategory category, long rowNumber)
     {
         Map<String, Object> errorDetails = new HashMap<>();
         errorDetails.put(DataError.FILE_NAME, "some_file_name");
@@ -112,7 +113,7 @@ public class DataErrorFairDistributionTest
         errorDetails.put(DataError.COLUMN_NAME, "some_column_name");
 
         return DataError.builder()
-            .errorCategory(category.getCategoryName())
+            .errorCategory(category.name())
             .putAllErrorDetails(errorDetails)
             .errorRecord("some_data")
             .errorMessage("some_error_message")

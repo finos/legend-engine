@@ -49,6 +49,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSin
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
@@ -97,8 +98,8 @@ import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_ID_PATTERN;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalIngestorAbstract.BATCH_START_TS_PATTERN;
-import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CONVERSION;
-import static org.finos.legend.engine.persistence.components.util.ValidationCategory.CHECK_CONSTRAINT;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.TYPE_CONVERSION;
+import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 
 public class H2Sink extends AnsiSqlSink
 {
@@ -260,7 +261,33 @@ public class H2Sink extends AnsiSqlSink
         return result;
     }
 
-    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount)
+    public List<DataError> performDryRun(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
+    {
+        try
+        {
+            return performDryRunWithValidationQueries(datasets, transformer, executor, dryRunSqlPlan, dryRunValidationSqlPlan, sampleRowCount, caseConversion);
+        }
+        catch (Exception e)
+        {
+            return parseH2Exceptions(e);
+        }
+    }
+
+    private List<DataError> parseH2Exceptions(Exception e)
+    {
+        String errorMessage = e.getMessage();
+
+        if (errorMessage.contains("IO Exception"))
+        {
+            String fileName = extractProblematicValueFromErrorMessage(errorMessage);
+            Map<String, Object> errorDetails = buildErrorDetails(Optional.of(fileName), Optional.empty(), Optional.empty());
+            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND.name()).errorMessage(ErrorCategory.FILE_NOT_FOUND.getDefaultErrorMessage()).putAllErrorDetails(errorDetails).build());
+        }
+
+        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN.name()).errorMessage(errorMessage).build());
+    }
+
+    public List<DataError> performDryRunWithValidationQueries(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
     {
         executor.executePhysicalPlan(dryRunSqlPlan);
 
@@ -273,11 +300,11 @@ public class H2Sink extends AnsiSqlSink
 
         List<String> allFields = datasets.stagingDataset().schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
 
-        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(CHECK_CONSTRAINT, new ArrayList<>());
-        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(CONVERSION, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForNull = dryRunValidationSqlPlan.getOrDefault(NULL_VALUE, new ArrayList<>());
+        List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(TYPE_CONVERSION, new ArrayList<>());
 
         // Execute queries for null values
-        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields);
+        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields, caseConversion);
         dataErrorsTotalCount += nullValuesErrorsCount;
 
         // Execute queries for datatype conversion
@@ -289,8 +316,7 @@ public class H2Sink extends AnsiSqlSink
             }
             catch (RuntimeException e)
             {
-                String errorMessage = e.getCause().getMessage();
-                String problematicValue = extractProblematicValueFromErrorMessage(errorMessage.substring(0, errorMessage.indexOf("; SQL statement")));
+                String problematicValue = extractProblematicValueFromErrorMessage(e.getCause().getMessage());
 
                 // This loop will only be executed once as there is always only one element in the set
                 for (FieldValue validatedColumn : pair.getOne())
@@ -301,8 +327,8 @@ public class H2Sink extends AnsiSqlSink
                         List<Map<String, Object>> resultSets = results.get(0).getData();
                         for (Map<String, Object> row : resultSets)
                         {
-                            DataError dataError = constructDataError(allFields, row, FILE_WITH_ERROR, ROW_NUMBER, CONVERSION, validatedColumn.fieldName());
-                            dataErrorsByCategory.get(CONVERSION).add(dataError);
+                            DataError dataError = constructDataError(allFields, row, TYPE_CONVERSION, validatedColumn.fieldName(), caseConversion);
+                            dataErrorsByCategory.get(TYPE_CONVERSION).add(dataError);
                             dataErrorsTotalCount++;
                         }
                     }
@@ -316,6 +342,7 @@ public class H2Sink extends AnsiSqlSink
 
     private String extractProblematicValueFromErrorMessage(String errorMessage)
     {
+        errorMessage = errorMessage.substring(0, errorMessage.indexOf("; SQL statement"));
         if (errorMessage.contains("Data conversion error"))
         {
             return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Data conversion error converting ", "").replaceAll("\"", "");
@@ -323,6 +350,10 @@ public class H2Sink extends AnsiSqlSink
         else if (errorMessage.contains("Cannot parse"))
         {
             return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Cannot parse \"(.*)\" constant ", "").replaceAll("\"", "");
+        }
+        else if (errorMessage.contains("IO Exception"))
+        {
+            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: \"IOException reading ", "").replaceAll("\"", "");
         }
         return errorMessage;
     }

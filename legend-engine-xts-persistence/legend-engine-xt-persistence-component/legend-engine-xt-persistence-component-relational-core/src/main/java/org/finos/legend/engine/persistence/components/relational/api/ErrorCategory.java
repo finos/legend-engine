@@ -16,10 +16,22 @@ package org.finos.legend.engine.persistence.components.relational.api;
 
 public enum ErrorCategory
 {
-    TYPE_CONVERSION,
-    CHECK_NULL_CONSTRAINT,
-    CHECK_OTHER_CONSTRAINT,
-    PARSING_ERROR,
-    FILE_NOT_FOUND,
-    UNKNOWN
+    TYPE_CONVERSION("Unable to type cast column"),
+    CHECK_NULL_CONSTRAINT("Null values found in non-nullable column"), // TODO: shall we change to exactly the same as snowflake's error message for null?
+    CHECK_OTHER_CONSTRAINT("Table constraints not fulfilled"),
+    PARSING_ERROR("Unable to parse file"),
+    FILE_NOT_FOUND("File not found in specified location"),
+    UNKNOWN("Unknown error");
+
+    private final String defaultErrorMessage;
+
+    ErrorCategory(String defaultErrorMessage)
+    {
+        this.defaultErrorMessage = defaultErrorMessage;
+    }
+
+    public String getDefaultErrorMessage()
+    {
+        return defaultErrorMessage;
+    }
 }

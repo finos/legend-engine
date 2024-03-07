@@ -75,8 +75,8 @@ class BulkLoadPlanner extends Planner
     private Dataset validationDataset;
     private StagedFilesDataset stagedFilesDataset;
 
-    private static final String FILE = "FILE";
-    private static final String ROW_NUMBER = "ROW_NUMBER";
+    private static final String FILE = "legend_persistence_file";
+    private static final String ROW_NUMBER = "legend_persistence_row_number";
 
     BulkLoadPlanner(Datasets datasets, BulkLoad ingestMode, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
@@ -181,7 +181,7 @@ class BulkLoadPlanner extends Planner
 
             List<Value> fieldsToSelect = LogicalPlanUtils.extractStagedFilesFieldValuesWithVarCharType(stagingDataset());
             fieldsToSelect.add(MetadataFileNameField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
-            fieldsToSelect.add(MetadataRowNumberField.builder().build());
+            fieldsToSelect.add(MetadataRowNumberField.builder().stagedFilesDatasetProperties(stagedFilesDataset.stagedFilesDatasetProperties()).build());
 
             List<Value> fieldsToInsert = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
             fieldsToInsert.add(FieldValue.builder().fieldName(FILE).datasetRef(stagingDataset().datasetReference()).build());
@@ -241,14 +241,14 @@ class BulkLoadPlanner extends Planner
                 .limit(options().sampleRowCount())
                 .build();
 
-            validationMap.put(ValidationCategory.CHECK_CONSTRAINT,
+            validationMap.put(ValidationCategory.NULL_VALUE,
                 Collections.singletonList(Tuples.pair(fieldsToCheckForNull.stream().map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
                     LogicalPlan.of(Collections.singletonList(queryForNull)))));
         }
 
         if (!fieldsToCheckForDatatype.isEmpty())
         {
-            validationMap.put(ValidationCategory.CONVERSION, new ArrayList<>());
+            validationMap.put(ValidationCategory.TYPE_CONVERSION, new ArrayList<>());
 
             for (Field fieldToCheckForDatatype : fieldsToCheckForDatatype)
             {
@@ -261,7 +261,7 @@ class BulkLoadPlanner extends Planner
                     .limit(options().sampleRowCount())
                     .build();
 
-                validationMap.get(ValidationCategory.CONVERSION).add(Tuples.pair(Stream.of(fieldToCheckForDatatype).map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
+                validationMap.get(ValidationCategory.TYPE_CONVERSION).add(Tuples.pair(Stream.of(fieldToCheckForDatatype).map(field -> FieldValue.builder().fieldName(field.name()).datasetRef(validationDataset.datasetReference()).build()).collect(Collectors.toSet()),
                     LogicalPlan.of(Collections.singletonList(queryForDatatype))));
             }
         }

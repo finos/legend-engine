@@ -19,10 +19,17 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 
 public class MetadataRowNumberValue extends Value
 {
+    private int startingRowNumber = 1;
 
     public MetadataRowNumberValue(String quoteIdentifier)
     {
         super(quoteIdentifier);
+    }
+
+    public MetadataRowNumberValue(String quoteIdentifier, int startingRowNumber)
+    {
+        super(quoteIdentifier);
+        this.startingRowNumber = startingRowNumber;
     }
 
     @Override
@@ -36,6 +43,10 @@ public class MetadataRowNumberValue extends Value
     public void genSqlWithoutAlias(StringBuilder builder) throws SqlDomException
     {
         builder.append("METADATA$FILE_ROW_NUMBER");
-        builder.append(" + 1"); // This is to standardize such that row numbers start from 1
+        if (startingRowNumber != 1)
+        {
+            int offset = 1 - startingRowNumber;
+            builder.append(String.format(" + %d", offset)); // This is to standardize such that row numbers start from 1
+        }
     }
 }

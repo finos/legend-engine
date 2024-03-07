@@ -255,23 +255,23 @@ public class BulkLoadTest
 
         // Checking dry run
         String expectedDryRunPreActionSql = "CREATE TABLE IF NOT EXISTS \"my_db\".\"my_name_validation_lp_yosulf\"" +
-            "(\"col_bigint\" VARCHAR,\"col_variant\" VARCHAR,\"FILE\" VARCHAR,\"ROW_NUMBER\" BIGINT)";
+            "(\"col_bigint\" VARCHAR,\"col_variant\" VARCHAR,\"legend_persistence_file\" VARCHAR,\"legend_persistence_row_number\" BIGINT)";
 
         String expectedDryRunDeleteSql = "DELETE FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf";
 
-        String expectedDryRunLoadSQl = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\" (\"col_bigint\", \"col_variant\", \"FILE\", \"ROW_NUMBER\") " +
+        String expectedDryRunLoadSQl = "COPY INTO \"my_db\".\"my_name_validation_lp_yosulf\" (\"col_bigint\", \"col_variant\", \"legend_persistence_file\", \"legend_persistence_row_number\") " +
             "FROM (SELECT t.$4 as \"col_bigint\",t.$5 as \"col_variant\",METADATA$FILENAME,METADATA$FILE_ROW_NUMBER + 1 FROM my_location as t) " +
             "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') FILE_FORMAT = (TYPE = 'AVRO') ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedDryRunNullValidationSql = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"FILE\",my_name_validation_lp_yosulf.\"ROW_NUMBER\" " +
+        String expectedDryRunNullValidationSql = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"legend_persistence_file\",my_name_validation_lp_yosulf.\"legend_persistence_row_number\" " +
             "FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf " +
             "WHERE (my_name_validation_lp_yosulf.\"col_bigint\" IS NULL) OR (my_name_validation_lp_yosulf.\"col_variant\" IS NULL) LIMIT 20";
 
-        String expectedDryRunDatatypeValidationSql1 = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"FILE\",my_name_validation_lp_yosulf.\"ROW_NUMBER\" " +
+        String expectedDryRunDatatypeValidationSql1 = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"legend_persistence_file\",my_name_validation_lp_yosulf.\"legend_persistence_row_number\" " +
             "FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf " +
             "WHERE (NOT (my_name_validation_lp_yosulf.\"col_bigint\" IS NULL)) AND (TRY_CAST(my_name_validation_lp_yosulf.\"col_bigint\" AS BIGINT) IS NULL) LIMIT 20";
 
-        String expectedDryRunDatatypeValidationSql2 = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"FILE\",my_name_validation_lp_yosulf.\"ROW_NUMBER\" " +
+        String expectedDryRunDatatypeValidationSql2 = "SELECT my_name_validation_lp_yosulf.\"col_bigint\",my_name_validation_lp_yosulf.\"col_variant\",my_name_validation_lp_yosulf.\"legend_persistence_file\",my_name_validation_lp_yosulf.\"legend_persistence_row_number\" " +
             "FROM \"my_db\".\"my_name_validation_lp_yosulf\" as my_name_validation_lp_yosulf " +
             "WHERE (NOT (my_name_validation_lp_yosulf.\"col_variant\" IS NULL)) AND (TRY_CAST(my_name_validation_lp_yosulf.\"col_variant\" AS VARIANT) IS NULL) LIMIT 20";
 
@@ -280,11 +280,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
         Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
         Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
-        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).get(0).getTwo());
-        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).size());
-        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
-        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
-        Assertions.assertEquals(2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
+        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUE).get(0).getTwo());
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUE).size());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.TYPE_CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.TYPE_CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(2, operations.dryRunValidationSql().get(ValidationCategory.TYPE_CONVERSION).size());
         Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
     }
 
@@ -356,25 +356,25 @@ public class BulkLoadTest
 
         // Checking dry run
         String expectedDryRunPreActionSql = "CREATE TABLE IF NOT EXISTS \"MY_DB\".\"MY_NAME_VALIDATION_LP_YOSULF\"" +
-            "(\"COL_INT\" VARCHAR,\"COL_INTEGER\" VARCHAR,\"FILE\" VARCHAR,\"ROW_NUMBER\" BIGINT)";
+            "(\"COL_INT\" VARCHAR,\"COL_INTEGER\" VARCHAR,\"LEGEND_PERSISTENCE_FILE\" VARCHAR,\"LEGEND_PERSISTENCE_ROW_NUMBER\" BIGINT)";
 
         String expectedDryRunDeleteSql = "DELETE FROM \"MY_DB\".\"MY_NAME_VALIDATION_LP_YOSULF\" as MY_NAME_validation_lp_yosulf";
 
         String expectedDryRunLoadSQl = "COPY INTO \"MY_DB\".\"MY_NAME_VALIDATION_LP_YOSULF\" " +
-            "(\"COL_INT\", \"COL_INTEGER\", \"FILE\", \"ROW_NUMBER\") FROM " +
-            "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\",METADATA$FILENAME,METADATA$FILE_ROW_NUMBER + 1 " +
+            "(\"COL_INT\", \"COL_INTEGER\", \"LEGEND_PERSISTENCE_FILE\", \"LEGEND_PERSISTENCE_ROW_NUMBER\") FROM " +
+            "(SELECT legend_persistence_stage.$1 as \"COL_INT\",legend_persistence_stage.$2 as \"COL_INTEGER\",METADATA$FILENAME,METADATA$FILE_ROW_NUMBER " +
             "FROM my_location as legend_persistence_stage) " +
             "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') FILE_FORMAT = (FORMAT_NAME = 'my_file_format') ON_ERROR = 'ABORT_STATEMENT'";
 
-        String expectedDryRunNullValidationSql = "SELECT MY_NAME_validation_lp_yosulf.\"COL_INT\",MY_NAME_validation_lp_yosulf.\"COL_INTEGER\",MY_NAME_validation_lp_yosulf.\"FILE\",MY_NAME_validation_lp_yosulf.\"ROW_NUMBER\" " +
+        String expectedDryRunNullValidationSql = "SELECT MY_NAME_validation_lp_yosulf.\"COL_INT\",MY_NAME_validation_lp_yosulf.\"COL_INTEGER\",MY_NAME_validation_lp_yosulf.\"LEGEND_PERSISTENCE_FILE\",MY_NAME_validation_lp_yosulf.\"LEGEND_PERSISTENCE_ROW_NUMBER\" " +
             "FROM \"MY_DB\".\"MY_NAME_VALIDATION_LP_YOSULF\" as MY_NAME_validation_lp_yosulf " +
             "WHERE MY_NAME_validation_lp_yosulf.\"COL_INT\" IS NULL LIMIT 20";
 
-        String expectedDryRunDatatypeValidationSql1 = "SELECT MY_NAME_validation_lp_yosulf.\"COL_INT\",MY_NAME_validation_lp_yosulf.\"COL_INTEGER\",MY_NAME_validation_lp_yosulf.\"FILE\",MY_NAME_validation_lp_yosulf.\"ROW_NUMBER\" " +
+        String expectedDryRunDatatypeValidationSql1 = "SELECT MY_NAME_validation_lp_yosulf.\"COL_INT\",MY_NAME_validation_lp_yosulf.\"COL_INTEGER\",MY_NAME_validation_lp_yosulf.\"LEGEND_PERSISTENCE_FILE\",MY_NAME_validation_lp_yosulf.\"LEGEND_PERSISTENCE_ROW_NUMBER\" " +
             "FROM \"MY_DB\".\"MY_NAME_VALIDATION_LP_YOSULF\" as MY_NAME_validation_lp_yosulf " +
             "WHERE (NOT (MY_NAME_validation_lp_yosulf.\"COL_INT\" IS NULL)) AND (TRY_CAST(MY_NAME_validation_lp_yosulf.\"COL_INT\" AS INTEGER) IS NULL) LIMIT 20";
 
-        String expectedDryRunDatatypeValidationSql2 = "SELECT MY_NAME_validation_lp_yosulf.\"COL_INT\",MY_NAME_validation_lp_yosulf.\"COL_INTEGER\",MY_NAME_validation_lp_yosulf.\"FILE\",MY_NAME_validation_lp_yosulf.\"ROW_NUMBER\" " +
+        String expectedDryRunDatatypeValidationSql2 = "SELECT MY_NAME_validation_lp_yosulf.\"COL_INT\",MY_NAME_validation_lp_yosulf.\"COL_INTEGER\",MY_NAME_validation_lp_yosulf.\"LEGEND_PERSISTENCE_FILE\",MY_NAME_validation_lp_yosulf.\"LEGEND_PERSISTENCE_ROW_NUMBER\" " +
             "FROM \"MY_DB\".\"MY_NAME_VALIDATION_LP_YOSULF\" as MY_NAME_validation_lp_yosulf " +
             "WHERE (NOT (MY_NAME_validation_lp_yosulf.\"COL_INTEGER\" IS NULL)) AND (TRY_CAST(MY_NAME_validation_lp_yosulf.\"COL_INTEGER\" AS INTEGER) IS NULL) LIMIT 20";
 
@@ -383,11 +383,11 @@ public class BulkLoadTest
         Assertions.assertEquals(expectedDryRunPreActionSql, operations.dryRunPreActionsSql().get(0));
         Assertions.assertEquals(expectedDryRunDeleteSql, operations.dryRunSql().get(0));
         Assertions.assertEquals(expectedDryRunLoadSQl, operations.dryRunSql().get(1));
-        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).get(0).getTwo());
-        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.CHECK_CONSTRAINT).size());
-        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(0).getTwo());
-        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).get(1).getTwo());
-        Assertions.assertEquals(2, operations.dryRunValidationSql().get(ValidationCategory.CONVERSION).size());
+        Assertions.assertEquals(expectedDryRunNullValidationSql, operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUE).get(0).getTwo());
+        Assertions.assertEquals(1, operations.dryRunValidationSql().get(ValidationCategory.NULL_VALUE).size());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql1, operations.dryRunValidationSql().get(ValidationCategory.TYPE_CONVERSION).get(0).getTwo());
+        Assertions.assertEquals(expectedDryRunDatatypeValidationSql2, operations.dryRunValidationSql().get(ValidationCategory.TYPE_CONVERSION).get(1).getTwo());
+        Assertions.assertEquals(2, operations.dryRunValidationSql().get(ValidationCategory.TYPE_CONVERSION).size());
         Assertions.assertEquals(expectedDryRunPostCleanupSql, operations.dryRunPostCleanupSql().get(0));
     }
 

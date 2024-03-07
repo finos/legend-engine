@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.logicalplan.values;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
+
 import static org.immutables.value.Value.Immutable;
 import static org.immutables.value.Value.Style;
 
@@ -27,4 +29,5 @@ import static org.immutables.value.Value.Style;
 )
 public interface MetadataRowNumberFieldAbstract extends Value
 {
+    StagedFilesDatasetProperties stagedFilesDatasetProperties();
 }
