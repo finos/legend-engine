@@ -80,10 +80,10 @@ public class RuntimeParseTreeWalker
     public ConnectionStores visitSingleConnectionRuntimeSingleConnection(RuntimeParserGrammar.SingleConnectionContext singleConnectionContext)
     {
         ConnectionStores connectionStores = new ConnectionStores();
-        connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(singleConnectionContext);
+        connectionStores.sourceInformation = walkerSourceInformation.getSourceInformation(singleConnectionContext.packageableElementPointer());
         connectionStores.connectionPointer = new ConnectionPointer();
         connectionStores.connectionPointer.connection = PureGrammarParserUtility.fromQualifiedName(singleConnectionContext.packageableElementPointer().qualifiedName().packagePath() == null ? Collections.emptyList() : singleConnectionContext.packageableElementPointer().qualifiedName().packagePath().identifier(), singleConnectionContext.packageableElementPointer().qualifiedName().identifier());
-        connectionStores.connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(singleConnectionContext);
+        connectionStores.connectionPointer.sourceInformation = walkerSourceInformation.getSourceInformation(singleConnectionContext.packageableElementPointer());
         return connectionStores;
     }
 
