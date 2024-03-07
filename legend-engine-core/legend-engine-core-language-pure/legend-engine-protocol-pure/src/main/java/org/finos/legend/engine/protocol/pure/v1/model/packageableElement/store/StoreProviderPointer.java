@@ -32,7 +32,8 @@ public class StoreProviderPointer extends PackageableElementPointer
 
     public StoreProviderPointer(PackageableElementType type, String path, SourceInformation sourceInformation)
     {
-        super(type, path, sourceInformation);
+        this.type = type;
+        this.path = path;
+        this.sourceInformation = sourceInformation;
     }
-
 }
