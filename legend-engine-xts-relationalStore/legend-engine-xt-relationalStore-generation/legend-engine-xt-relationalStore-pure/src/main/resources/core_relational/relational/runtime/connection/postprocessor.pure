@@ -54,7 +54,7 @@ function meta::pure::alloy::connections::postProcessor::tableMapperPostProcessor
    ^meta::relational::runtime::PostProcessor(sqlQueryPostProcessorForExecution ={|''} , sqlQueryPostProcessorForPlan = meta::pure::alloy::connections::tableMapperPostProcessor_SQLQuery_1__Mapping_$0_1$__Runtime_1__Database_$0_1$__ExecutionContext_1__PostProcessorParameter_MANY__PostProcessorResult_1_ )
 }
 
-function meta::pure::alloy::connections::tableMapperPostProcessor(sql:SelectSQLQueryWithCommonTableExpressions[1],m:Mapping[0..1], runtime:Runtime[1],store:Database[0..1],exeCtx:meta::pure::runtime::ExecutionContext[1],params:	meta::relational::runtime::PostProcessorParameter[*]):PostProcessorResult[1]
+function meta::pure::alloy::connections::tableMapperPostProcessor(sql:meta::relational::metamodel::relation::SelectSQLQueryWithCommonTableExpressions[1],m:Mapping[0..1], runtime:Runtime[1],store:Database[0..1],exeCtx:meta::pure::runtime::ExecutionContext[1],params:	meta::relational::runtime::PostProcessorParameter[*]):PostProcessorResult[1]
 {
    let commonTableExpressions = $sql.commonTableExpressions;
 

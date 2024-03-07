@@ -154,7 +154,7 @@ function <<access.private>> meta::relational::postProcessor::reAlias::transformA
                                     let transformedSqlQuery = 
                                     if($s->instanceOf(SelectSQLQueryWithCommonTableExpressions),
                                     |
-                                     let transformedCommonTableExpressions = $s->cast(@SelectSQLQueryWithCommonTableExpressions).commonTableExpressions->map(cte | ^$cte(sqlQuery = $cte->cast(@SelectCommonTableExpression).selectSQLQuery->transformAliasName($m)->cast(@SelectSQLQueryWithCommonTableExpressions)));
+                                     let transformedCommonTableExpressions = $s->cast(@SelectSQLQueryWithCommonTableExpressions).commonTableExpressions->map(cte | ^$cte(sqlQuery = $cte->cast(@SelectCommonTableExpression).selectSQLQuery->transformAliasName($m)->cast(@SelectSQLQuery)));
                                      let newNewS = $newS->cast(@SelectSQLQueryWithCommonTableExpressions);
                                      ^$newNewS(commonTableExpressions = $transformedCommonTableExpressions);,
                                     |
