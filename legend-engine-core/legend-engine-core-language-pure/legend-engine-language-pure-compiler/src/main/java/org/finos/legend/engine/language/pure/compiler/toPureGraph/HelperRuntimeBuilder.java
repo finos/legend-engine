@@ -25,6 +25,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElement
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.LegacyRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.Runtime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.RuntimePointer;
@@ -41,7 +42,6 @@ import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelChain
 import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore;
 import org.finos.legend.pure.generated.Root_meta_external_store_model_XmlModelConnection;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_PackageableRuntime;
-import org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PureInstanceSetImplementation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
@@ -73,10 +73,6 @@ public class HelperRuntimeBuilder
         mappings.forEach(mapping ->
                 ListIterate.forEach(Root_meta_pure_mapping__allClassMappingsRecursive_Mapping_1__SetImplementation_MANY_(mapping, context.pureModel.getExecutionSupport()).toList(), setImplementation ->
                 {
-                    if (setImplementation instanceof PureInstanceSetImplementation && ((PureInstanceSetImplementation) setImplementation)._srcClass() != null)
-                    {
-                        mappedStores.add("ModelStore");
-                    }
                     context.getCompilerExtensions().getExtraSetImplementationSourceScanners().forEach(scanner -> scanner.value(setImplementation, mappedStores, context));
                 }));
         return mappedStores;
@@ -114,18 +110,17 @@ public class HelperRuntimeBuilder
     {
         // convert EngineRuntime with connection as a map indexes by store to Pure runtime which only contains an array of connections
         Root_meta_core_runtime_Runtime pureRuntime = new Root_meta_core_runtime_Runtime_Impl("Root::meta::core::runtime::Runtime", SourceInformationHelper.toM3SourceInformation(engineRuntime.sourceInformation), null);
-        buildEngineRuntime(engineRuntime, pureRuntime, context);
-        return pureRuntime;
+        return buildEngineRuntime(engineRuntime, pureRuntime, context);
     }
 
-    public static void buildEngineRuntime(EngineRuntime engineRuntime, Root_meta_core_runtime_Runtime pureRuntime, CompileContext context)
+    public static Root_meta_core_runtime_Runtime buildEngineRuntime(EngineRuntime engineRuntime, Root_meta_core_runtime_Runtime pureRuntime, CompileContext context)
     {
         if (engineRuntime.mappings.isEmpty())
         {
             context.pureModel.addWarnings(Lists.mutable.with(new Warning(engineRuntime.sourceInformation, "Runtime must cover at least one mapping")));
         }
         // verify if each mapping associated with the PackageableRuntime exists
-        List<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : engineRuntime.mappings.stream().map(mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation)).collect(Collectors.toList());
+        List<Mapping> mappings = engineRuntime.mappings.isEmpty() ? Lists.mutable.empty() : ListIterate.collect(engineRuntime.mappings, mappingPointer -> context.resolveMapping(mappingPointer.path, mappingPointer.sourceInformation));
         // build connections
         List<CoreInstance> visitedSourceClasses = new ArrayList<>();
         List<CoreInstance> visitedConnectionTypes = new ArrayList<>();
@@ -142,6 +137,11 @@ public class HelperRuntimeBuilder
             else
             {
                 pureConnection = context.resolveConnection(connectionStores.connectionPointer.connection, connectionStores.connectionPointer.sourceInformation);
+            }
+            if (engineRuntime instanceof SingleConnectionEngineRuntime)
+            {
+                connectionStores.storePointers = Lists.mutable.ofAll(getAllMapStorePathsFromMappings(mappings, context))
+                        .collect(storePath -> new StoreProviderPointer(PackageableElementType.STORE, storePath, engineRuntime.sourceInformation));
             }
             ListIterate.forEach(connectionStores.storePointers, storePointer ->
             {
@@ -226,6 +226,7 @@ public class HelperRuntimeBuilder
         });
         // verify runtime mapping coverage
         checkRuntimeMappingCoverage(pureRuntime, mappings, context, engineRuntime.sourceInformation);
+        return pureRuntime;
     }
 
     public static Root_meta_core_runtime_Runtime buildPureRuntime(Runtime runtime, CompileContext context)
@@ -263,10 +264,7 @@ public class HelperRuntimeBuilder
 
     public static Store getStore(String element, SourceInformation sourceInformation, CompileContext context)
     {
-        StoreProviderPointer s = new StoreProviderPointer();
-        s.path = element;
-        s.type = PackageableElementType.STORE;
-        s.sourceInformation = sourceInformation;
+        StoreProviderPointer s = new StoreProviderPointer(PackageableElementType.STORE, element, sourceInformation);
         return getStore(s, context);
     }
 
