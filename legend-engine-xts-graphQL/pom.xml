@@ -37,5 +37,6 @@
         <module>legend-engine-xt-graphQL-pure-metamodel</module>
         <module>legend-engine-xt-graphQL-query</module>
         <module>legend-engine-xt-graphQL-relational-extension</module>
+        <module>legend-engine-xt-graphQL-api</module>
     </modules>
 </project>

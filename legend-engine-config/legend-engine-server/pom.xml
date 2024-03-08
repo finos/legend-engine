@@ -187,6 +187,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-graphQL-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-graphQL-relational-extension</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -509,6 +513,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-protobuf-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-protobuf</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -516,6 +524,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-avro</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-avro-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
@@ -552,7 +564,10 @@
             <artifactId>legend-engine-xt-arrow-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-json-api</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-json-model</artifactId>
@@ -577,6 +592,10 @@
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-xt-morphir</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-daml-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

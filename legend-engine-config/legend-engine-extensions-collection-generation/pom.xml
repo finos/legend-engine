@@ -528,13 +528,6 @@
         </dependency>
         <!-- Avro -->
 
-        <!-- Roestta -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-rosetta</artifactId>
-        </dependency>
-        <!-- Roestta -->
-
         <!-- GraphQL -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
