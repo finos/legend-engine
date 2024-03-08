@@ -23,6 +23,8 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.importer.Importer;
 import org.finos.legend.engine.persistence.components.importer.Importers;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorRowsLogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
@@ -43,7 +45,6 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
-import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.finos.legend.engine.persistence.components.util.SqlLogging;
@@ -63,6 +64,8 @@ import static org.finos.legend.engine.persistence.components.common.DedupAndVers
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.*;
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.retrieveValueAsLong;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DATA_VERSION_ERRORS;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DUPLICATES;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.BULK_LOAD_BATCH_STATUS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
@@ -461,7 +464,9 @@ public abstract class RelationalIngestorAbstract
                     TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS)).get(0);
                     String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
                     LOGGER.error(errorMessage);
-                    throw new DataQualityException(errorMessage, duplicateRows.getData());
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.getData(),
+                            ErrorCategory.DUPLICATES, caseConversion(), DatasetDeduplicationHandler.COUNT, NUM_DUPLICATES);
+                    throw new DataQualityException(errorMessage, dataErrors);
                 }
             }
 
@@ -474,10 +479,12 @@ public abstract class RelationalIngestorAbstract
                 if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
                 {
                     // Find the data errors
-                    TabularData dataErrors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS)).get(0);
+                    TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS)).get(0);
                     String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
                     LOGGER.error(errorMessage);
-                    throw new DataQualityException(errorMessage, dataErrors.getData());
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),
+                            ErrorCategory.DATA_VERSION_ERROR, caseConversion(), DeriveDataErrorRowsLogicalPlan.DATA_VERSION_ERROR_COUNT, NUM_DATA_VERSION_ERRORS);
+                    throw new DataQualityException(errorMessage, dataErrors);
                 }
             }
         }

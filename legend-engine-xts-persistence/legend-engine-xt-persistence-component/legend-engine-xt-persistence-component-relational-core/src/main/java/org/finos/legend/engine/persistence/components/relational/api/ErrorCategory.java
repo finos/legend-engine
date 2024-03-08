@@ -21,7 +21,9 @@ public enum ErrorCategory
     CHECK_OTHER_CONSTRAINT("Table constraints not fulfilled"),
     PARSING_ERROR("Unable to parse file"),
     FILE_NOT_FOUND("File not found in specified location"),
-    UNKNOWN("Unknown error");
+    UNKNOWN("Unknown error"),
+    DUPLICATES("Duplicate rows found"),
+    DATA_VERSION_ERROR("Data errors (same PK, same version but different data)");
 
     private final String defaultErrorMessage;
 

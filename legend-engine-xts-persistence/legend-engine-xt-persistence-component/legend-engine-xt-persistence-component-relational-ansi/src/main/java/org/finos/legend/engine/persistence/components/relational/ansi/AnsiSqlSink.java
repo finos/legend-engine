@@ -150,6 +150,7 @@ import org.finos.legend.engine.persistence.components.relational.ansi.sql.visito
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.TruncateVisitor;
 import org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.WindowFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
 import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
@@ -165,6 +166,7 @@ import org.finos.legend.engine.persistence.components.util.ValidationCategory;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.buildErrorRecord;
 import static org.finos.legend.engine.persistence.components.util.ValidationCategory.NULL_VALUE;
 
 public class AnsiSqlSink extends RelationalSink
@@ -402,28 +404,13 @@ public class AnsiSqlSink extends RelationalSink
     protected DataError constructDataError(List<String> allColumns, Map<String, Object> row, ValidationCategory validationCategory, String validatedColumnName, CaseConversion caseConversion)
     {
         ErrorCategory errorCategory = getValidationFailedErrorCategory(validationCategory);
-
-        String fileColumnName;
-        String rowNumberColumnName;
-        switch (caseConversion)
-        {
-            case TO_UPPER:
-                fileColumnName = FILE.toUpperCase();
-                rowNumberColumnName = ROW_NUMBER.toUpperCase();
-                break;
-            case TO_LOWER:
-                fileColumnName = FILE.toLowerCase();
-                rowNumberColumnName = ROW_NUMBER.toLowerCase();
-                break;
-            default:
-                fileColumnName = FILE;
-                rowNumberColumnName = ROW_NUMBER;
-        }
+        String fileColumnName = ApiUtils.convertCase(caseConversion, FILE);
+        String rowNumberColumnName = ApiUtils.convertCase(caseConversion, ROW_NUMBER);
         Map<String, Object> errorDetails = buildErrorDetails(getString(row, fileColumnName), Optional.of(validatedColumnName), getLong(row, rowNumberColumnName));
 
         return DataError.builder()
             .errorMessage(errorCategory.getDefaultErrorMessage())
-            .errorCategory(errorCategory.name())
+            .errorCategory(errorCategory)
             .putAllErrorDetails(errorDetails)
             .errorRecord(buildErrorRecord(allColumns, row))
             .build();
@@ -436,29 +423,6 @@ public class AnsiSqlSink extends RelationalSink
         columnName.ifPresent(col -> errorDetails.put(DataError.COLUMN_NAME, col));
         recordNumber.ifPresent(rowNum -> errorDetails.put(DataError.RECORD_NUMBER, rowNum));
         return errorDetails;
-    }
-
-    protected String buildErrorRecord(List<String> allColumns, Map<String, Object> row)
-    {
-        Map<String, Object> errorRecordMap = new HashMap<>();
-
-        for (String column : allColumns)
-        {
-            if (row.containsKey(column))
-            {
-                errorRecordMap.put(column, row.get(column));
-            }
-        }
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        try
-        {
-            return objectMapper.writeValueAsString(errorRecordMap);
-        }
-        catch (JsonProcessingException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 
     private ErrorCategory getValidationFailedErrorCategory(ValidationCategory validationCategory)
@@ -490,10 +454,7 @@ public class AnsiSqlSink extends RelationalSink
             {
                 if (!dataErrorsByCategory.get(validationCategory).isEmpty())
                 {
-                    if (fairlyDistributedDataErrors.size() < sampleRowCount)
-                    {
-                        fairlyDistributedDataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
-                    }
+                    fairlyDistributedDataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
                 }
                 else
                 {

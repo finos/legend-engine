@@ -281,10 +281,10 @@ public class H2Sink extends AnsiSqlSink
         {
             String fileName = extractProblematicValueFromErrorMessage(errorMessage);
             Map<String, Object> errorDetails = buildErrorDetails(Optional.of(fileName), Optional.empty(), Optional.empty());
-            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND.name()).errorMessage(ErrorCategory.FILE_NOT_FOUND.getDefaultErrorMessage()).putAllErrorDetails(errorDetails).build());
+            return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND).errorMessage(ErrorCategory.FILE_NOT_FOUND.getDefaultErrorMessage()).putAllErrorDetails(errorDetails).build());
         }
 
-        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN.name()).errorMessage(errorMessage).build());
+        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN).errorMessage(errorMessage).build());
     }
 
     public List<DataError> performDryRunWithValidationQueries(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
@@ -304,8 +304,7 @@ public class H2Sink extends AnsiSqlSink
         List<Pair<Set<FieldValue>, SqlPlan>> queriesForDatatype = dryRunValidationSqlPlan.getOrDefault(TYPE_CONVERSION, new ArrayList<>());
 
         // Execute queries for null values
-        int nullValuesErrorsCount = findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields, caseConversion);
-        dataErrorsTotalCount += nullValuesErrorsCount;
+        dataErrorsTotalCount += findNullValuesDataErrors(executor, queriesForNull, dataErrorsByCategory, allFields, caseConversion);
 
         // Execute queries for datatype conversion
         for (Pair<Set<FieldValue>, SqlPlan> pair : queriesForDatatype)

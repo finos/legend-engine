@@ -113,7 +113,7 @@ public class DataErrorFairDistributionTest
         errorDetails.put(DataError.COLUMN_NAME, "some_column_name");
 
         return DataError.builder()
-            .errorCategory(category.name())
+            .errorCategory(category)
             .putAllErrorDetails(errorDetails)
             .errorRecord("some_data")
             .errorMessage("some_error_message")

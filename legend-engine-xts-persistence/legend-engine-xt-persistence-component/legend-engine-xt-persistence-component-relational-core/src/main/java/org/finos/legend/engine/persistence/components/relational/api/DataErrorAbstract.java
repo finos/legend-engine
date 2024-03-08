@@ -40,7 +40,7 @@ public interface DataErrorAbstract
 
     String errorMessage();
 
-    String errorCategory();
+    ErrorCategory errorCategory();
 
     Optional<String> errorRecord();
 

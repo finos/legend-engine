@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFac
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetsCaseConverter;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.planner.Planner;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
@@ -41,6 +42,7 @@ import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
@@ -231,4 +233,69 @@ public class ApiUtils
         }
         return object;
     }
+
+    public static List<DataError> constructDataQualityErrors(Dataset stagingDataset, List<Map<String, Object>> dataErrors,
+                                                             ErrorCategory errorCategory, CaseConversion caseConversion, String errorField, String errorDetailsKey)
+    {
+        List<DataError> dataErrorList = new ArrayList<>();
+        List<String> allFields = stagingDataset.schemaReference().fieldValues().stream().map(FieldValue::fieldName).collect(Collectors.toList());
+        String caseCorrectedErrorField = convertCase(caseConversion, errorField);
+
+        for (Map<String, Object> dataError: dataErrors)
+        {
+            dataErrorList.add(DataError.builder()
+                    .errorMessage(errorCategory.getDefaultErrorMessage())
+                    .errorCategory(errorCategory)
+                    .errorRecord(buildErrorRecord(allFields, dataError))
+                    .putAllErrorDetails(buildErrorDetails(dataError, caseCorrectedErrorField, errorDetailsKey))
+                    .build());
+        }
+        return dataErrorList;
+    }
+
+    private static Map<String, Object> buildErrorDetails(Map<String, Object> dataError, String errorField, String errorDetailsKey)
+    {
+        Map<String, Object> errorDetails = new HashMap<>();
+        Object errorDetailsValue = dataError.get(errorField);
+        errorDetails.put(errorDetailsKey, errorDetailsValue);
+        return errorDetails;
+    }
+
+
+    public static String convertCase(CaseConversion caseConversion, String value)
+    {
+        switch (caseConversion)
+        {
+            case TO_UPPER:
+                return value.toUpperCase();
+            case TO_LOWER:
+                return value.toLowerCase();
+            default:
+                return value;
+        }
+    }
+
+    public static String buildErrorRecord(List<String> allColumns, Map<String, Object> row)
+    {
+        Map<String, Object> errorRecordMap = new HashMap<>();
+
+        for (String column : allColumns)
+        {
+            if (row.containsKey(column))
+            {
+                errorRecordMap.put(column, row.get(column));
+            }
+        }
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return objectMapper.writeValueAsString(errorRecordMap);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
 }

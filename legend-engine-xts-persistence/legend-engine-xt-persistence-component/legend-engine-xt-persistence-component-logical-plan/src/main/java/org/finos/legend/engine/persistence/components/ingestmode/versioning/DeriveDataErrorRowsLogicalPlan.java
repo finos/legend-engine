@@ -30,6 +30,8 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
     private Dataset tempStagingDataset;
     private int sampleRowCount;
 
+    public static final String DATA_VERSION_ERROR_COUNT = "legend_persistence_error_count";
+
     public DeriveDataErrorRowsLogicalPlan(List<String> primaryKeys, List<String> remainingColumns, Dataset tempStagingDataset, int sampleRowCount)
     {
         this.primaryKeys = primaryKeys;
@@ -72,7 +74,6 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
 
     private LogicalPlan getLogicalPlanForDataErrors(String versionField)
     {
-        String distinctRowCount = "legend_persistence_error_count";
         List<Value> pKsAndVersion = new ArrayList<>();
         for (String pk: primaryKeys)
         {
@@ -89,7 +90,7 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
         FunctionImpl countDistinct = FunctionImpl.builder()
                 .functionName(FunctionName.COUNT)
                 .addValue(FunctionImpl.builder().functionName(FunctionName.DISTINCT).addAllValue(distinctValueFields).build())
-                .alias(distinctRowCount)
+                .alias(DATA_VERSION_ERROR_COUNT)
                 .build();
 
         Selection selectDataError = Selection.builder()
@@ -97,7 +98,7 @@ public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor
                 .groupByFields(pKsAndVersion)
                 .addAllFields(pKsAndVersion)
                 .addFields(countDistinct)
-                .havingCondition(GreaterThan.of(FieldValue.builder().fieldName(distinctRowCount).build(), ObjectValue.of(1)))
+                .havingCondition(GreaterThan.of(FieldValue.builder().fieldName(DATA_VERSION_ERROR_COUNT).build(), ObjectValue.of(1)))
                 .limit(sampleRowCount)
                 .build();
 

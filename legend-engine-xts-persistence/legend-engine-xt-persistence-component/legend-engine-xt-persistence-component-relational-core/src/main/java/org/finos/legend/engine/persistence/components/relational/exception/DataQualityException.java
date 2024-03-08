@@ -14,21 +14,22 @@
 
 package org.finos.legend.engine.persistence.components.relational.exception;
 
+import org.finos.legend.engine.persistence.components.relational.api.DataError;
+
 import java.util.List;
-import java.util.Map;
 
 public class DataQualityException extends RuntimeException
 {
-    private List<Map<String, Object>> sampleRows;
+    private List<DataError> dataErrors;
 
-    public List<Map<String, Object>> getSampleRows()
+    public List<DataError> getDataErrors()
     {
-        return sampleRows;
+        return dataErrors;
     }
 
-    public DataQualityException(String message, List<Map<String, Object>> sampleRows)
+    public DataQualityException(String message, List<DataError> dataErrors)
     {
         super(message);
-        this.sampleRows = sampleRows;
+        this.dataErrors = dataErrors;
     }
 }
