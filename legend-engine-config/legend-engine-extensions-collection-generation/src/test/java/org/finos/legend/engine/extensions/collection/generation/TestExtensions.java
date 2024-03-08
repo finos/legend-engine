@@ -491,7 +491,6 @@ public class TestExtensions
                 .with("core_diagram")
                 .with("core_diagram_metamodel")
                 .with("core_external_format_avro")
-                .with("core_external_format_rosetta")
                 .with("core_external_language_morphir")
                 .with("core_external_format_flatdata")
                 .with("core_external_format_json")
