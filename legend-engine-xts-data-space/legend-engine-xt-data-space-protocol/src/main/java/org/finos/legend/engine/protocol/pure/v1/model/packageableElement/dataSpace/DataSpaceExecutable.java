@@ -14,14 +14,19 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
-import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
-public class DataSpaceExecutable
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = DataSpacePackageableElementExecutable.class, name = "dataSpacePackageableElementExecutable"),
+        @JsonSubTypes.Type(value = DataSpaceTemplateExecutable.class, name = "dataSpaceTemplateExecutable"),
+})
+public abstract class DataSpaceExecutable
 {
     // NOTE: this is subjected to change depending on how we want to embed executables information
     public String title;
     public String description;
-    public PackageableElementPointer executable;
     public SourceInformation sourceInformation;
 }

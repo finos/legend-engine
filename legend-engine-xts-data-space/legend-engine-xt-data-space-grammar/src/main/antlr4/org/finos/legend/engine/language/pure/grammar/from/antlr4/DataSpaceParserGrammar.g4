@@ -1,6 +1,6 @@
 parser grammar DataSpaceParserGrammar;
 
-import CoreParserGrammar;
+import M3ParserGrammar;
 
 options
 {
@@ -10,6 +10,7 @@ options
 // -------------------------------------- IDENTIFIER --------------------------------------
 
 identifier:                         VALID_STRING | STRING
+                                    | ALL | LET | ALL_VERSIONS | ALL_VERSIONS_IN_RANGE | TO_BYTES_FUNCTION      // from M3Parser
                                     | STEREOTYPES | TAGS
                                     | DATA_SPACE
                                     | DATA_SPACE__NAME
@@ -25,6 +26,8 @@ identifier:                         VALID_STRING | STRING
                                     | DATA_SPACE_ELEMENTS
                                     | DATA_SPACE_EXECUTABLES
                                     | DATA_SPACE_EXECUTABLE
+                                    | DATA_SPACE__TEMPLATE_QUERY
+                                    | DATA_SPACE__EXECUTION_CONTEXT_KEY
                                     | DATA_SPACE_SUPPORT_INFO
                                     | DATA_SPACE_SUPPORT_DOC_URL
                                     | DATA_SPACE_SUPPORT_EMAIL
@@ -112,7 +115,6 @@ executionContextDefaultRuntime:     DATA_SPACE_DEFAULT_RUNTIME COLON qualifiedNa
 ;
 defaultExecutionContext:            DATA_SPACE_DEFAULT_EXECUTION_CONTEXT COLON STRING SEMI_COLON
 ;
-
 diagrams:                           DATA_SPACE_DIAGRAMS COLON BRACKET_OPEN ( diagram (COMMA diagram)* )? BRACKET_CLOSE SEMI_COLON
 ;
 diagram:                            BRACE_OPEN
@@ -129,13 +131,10 @@ diagramDescription:                 DATA_SPACE__DESCRIPTION COLON STRING SEMI_CO
 ;
 diagramPath:                        DATA_SPACE_DIAGRAM COLON qualifiedName SEMI_COLON
 ;
-
-
 elements:                           DATA_SPACE_ELEMENTS COLON BRACKET_OPEN ( elementScopePath (COMMA elementScopePath)* )? BRACKET_CLOSE SEMI_COLON
 ;
 elementScopePath:                   ( MINUS )? qualifiedName
 ;
-
 executables:                        DATA_SPACE_EXECUTABLES COLON BRACKET_OPEN ( executable (COMMA executable)* )? BRACKET_CLOSE SEMI_COLON
 ;
 executable:                         BRACE_OPEN
@@ -143,6 +142,8 @@ executable:                         BRACE_OPEN
                                             executableTitle
                                             | executableDescription
                                             | executablePath
+                                            | executableTemplateQuery
+                                            | executableExecutionContextKey
                                         )*
                                     BRACE_CLOSE
 ;
@@ -151,6 +152,10 @@ executableTitle:                    DATA_SPACE__TITLE COLON STRING SEMI_COLON
 executableDescription:              DATA_SPACE__DESCRIPTION COLON STRING SEMI_COLON
 ;
 executablePath:                     DATA_SPACE_EXECUTABLE COLON qualifiedName SEMI_COLON
+;
+executableTemplateQuery:            DATA_SPACE__TEMPLATE_QUERY COLON combinedExpression SEMI_COLON
+;
+executableExecutionContextKey:      DATA_SPACE__EXECUTION_CONTEXT_KEY COLON STRING SEMI_COLON
 ;
 
 // NOTE: we would need to potentially come up with extension mechanism later
@@ -162,7 +167,6 @@ supportInfo:                        DATA_SPACE_SUPPORT_INFO COLON
                                         )
                                     SEMI_COLON
 ;
-
 supportDocumentationUrl:            DATA_SPACE_SUPPORT_DOC_URL COLON STRING SEMI_COLON
 ;
 supportEmail:                       DATA_SPACE_SUPPORT_EMAIL
@@ -205,6 +209,5 @@ artifactId:                         DATA_SPACE_ARTIFACT_ID COLON STRING SEMI_COL
 ;
 versionId:                          DATA_SPACE_VERSION_ID COLON STRING SEMI_COLON
 ;
-
 featuredDiagrams:                   DATA_SPACE_FEATURED_DIAGRAMS COLON BRACKET_OPEN ( qualifiedName (COMMA qualifiedName)* )? BRACKET_CLOSE SEMI_COLON
 ;

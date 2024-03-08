@@ -130,7 +130,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "      title: 'Exec 1';\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "PARSER error at [14:5-16:5]: Field 'executable' is required");
+                "}\n", "PARSER error at [2:8-20:2]: Unsupported syntax");
 
         // Diagrams
         test("###DataSpace\n" +
@@ -573,5 +573,98 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "    emails: [];\n" +
                 "  };\n" +
                 "}\n", "PARSER error at [13:16-16:3]: Field 'emails' should be specified only once");
+    }
+
+    @Test
+    public void testDataSpaceExecutableTemplate()
+    {
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Exec 1';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 2';\n" +
+                "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Exec 1';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 2';\n" +
+                "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
+        test("###DataSpace\n" +
+                "DataSpace model::dataSpace" +
+                "{\n" +
+                "  executionContexts:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      name: 'Context 1';\n" +
+                "      mapping: model::String;\n" +
+                "      defaultRuntime: model::Runtime;\n" +
+                "    }\n" +
+                "  ];\n" +
+                "  defaultExecutionContext: 'Context 1';\n" +
+                "  executables:\n" +
+                "  [\n" +
+                "    {\n" +
+                "      title: 'Exec 1';\n" +
+                "      executable: model::MyExecutable;\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 1';\n" +
+                "      query: src: meta::transform::tests::Address[1]|$src.a;\n" +
+                "      executionContextKey: 'Context 1';\n" +
+                "    },\n" +
+                "    {\n" +
+                "      title: 'Template 2';\n" +
+                "      query: domain::COVIDData.all()->project([x|$x.cases], ['Cases']);\n" +
+                "    }\n" +
+                "  ];\n" +
+                "}\n");
     }
 }
