@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -22,12 +24,21 @@ public class StoreProviderPointer extends PackageableElementPointer
 {
     public StoreProviderPointer()
     {
+
     }
 
-    public StoreProviderPointer(PackageableElementType type, String storeAddress, SourceInformation sourceInformation)
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    public StoreProviderPointer(String path)
+    {
+        this.type = PackageableElementType.STORE;
+        this.path = path;
+    }
+
+    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
+    public StoreProviderPointer(@JsonProperty("type") PackageableElementType type, @JsonProperty("path") String path, @JsonProperty("sourceInformation") SourceInformation sourceInformation)
     {
         this.type = type;
-        this.path = storeAddress;
+        this.path = path;
         this.sourceInformation = sourceInformation;
     }
 }
