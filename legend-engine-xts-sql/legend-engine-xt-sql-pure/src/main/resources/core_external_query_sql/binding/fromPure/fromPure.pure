@@ -144,7 +144,9 @@ function meta::external::query::sql::transformation::queryToPure::parameterConst
 function meta::external::query::sql::transformation::queryToPure::normalizeParameterValue(value:Any[0..1]):Any[0..1]
 {
   $value->match([
-    d:Date[1] | $d->toString(),
+    d:Date[1] | if( $d->toString()->endsWith('+0000'),
+                | $d->toString()->split('+')->at(0)+':00',
+                | $d->toString()),
     a:Any[0..1] | $a
   ])
 }
