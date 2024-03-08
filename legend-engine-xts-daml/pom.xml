@@ -32,5 +32,6 @@
         <module>legend-engine-xt-daml-grammar</module>
         <module>legend-engine-xt-daml-model</module>
         <module>legend-engine-xt-daml-pure</module>
+        <module>legend-engine-xt-daml-api</module>
     </modules>
 </project>

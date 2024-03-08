@@ -41,11 +41,20 @@ public interface GenerationExtension extends LegendGenerationExtension
 
     GenerationConfigurationDescription getGenerationDescription();
 
-    ImportConfigurationDescription getImportDescription();
+    /**
+     * TO REMOVE
+     */
+    default ImportConfigurationDescription getImportDescription()
+    {
+        return null;
+    }
 
     Root_meta_pure_generation_metamodel_GenerationConfiguration defaultConfig(CompileContext context);
 
-    Object getService(ModelManager modelManager);
+    default Object getService(ModelManager modelManager)
+    {
+        return null;
+    }
 
     List<Root_meta_pure_generation_metamodel_GenerationOutput> generateFromElement(PackageableElement element, CompileContext compileContext);
 }
