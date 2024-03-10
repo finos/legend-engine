@@ -32,11 +32,11 @@ public class StoreProviderPointer extends PackageableElementPointer
         super(type, path);
     }
 
-    @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
-    public StoreProviderPointer(@JsonProperty("type") PackageableElementType type, @JsonProperty("path") String path)
+    @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
+    public StoreProviderPointer(String path)
     {
-        this.type = type;
-        this.path = path;
+        super(path);
+        this.type = PackageableElementType.STORE;
     }
 
     @JsonCreator(mode = JsonCreator.Mode.PROPERTIES)
