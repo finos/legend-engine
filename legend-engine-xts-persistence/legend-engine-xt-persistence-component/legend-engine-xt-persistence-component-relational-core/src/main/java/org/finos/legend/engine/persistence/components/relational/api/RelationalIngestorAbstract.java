@@ -176,6 +176,12 @@ public abstract class RelationalIngestorAbstract
         return 20;
     }
 
+    @Derived
+    public String getIngestRunId()
+    {
+        return UUID.randomUUID().toString();
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -204,7 +210,6 @@ public abstract class RelationalIngestorAbstract
     boolean mainDatasetExists;
     private Planner planner;
     private boolean datasetsInitialized = false;
-    private String ingestRunId;
 
     // ---------- API ----------
 
@@ -245,16 +250,7 @@ public abstract class RelationalIngestorAbstract
      */
     public Datasets initDatasets(Datasets datasets)
     {
-        String ingestRunId = UUID.randomUUID().toString();
-        return enrichDatasetsAndGenerateOperations(datasets, ingestRunId);
-    }
-
-    /*
-    - Initializes Datasets with a provided ingestRunId
-     */
-    public Datasets initDatasets(Datasets datasets, String ingestRunId)
-    {
-        return enrichDatasetsAndGenerateOperations(datasets, ingestRunId);
+        return enrichDatasetsAndGenerateOperations(datasets);
     }
 
     /*
@@ -374,11 +370,6 @@ public abstract class RelationalIngestorAbstract
         Executor<SqlGen, TabularData, SqlPlan> executor = relationalSink().getRelationalExecutor(connection);
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         return ApiUtils.extractDatasetFilters(metadataDataset, executor, physicalPlan);
-    }
-
-    public String getIngestRunId()
-    {
-        return this.ingestRunId;
     }
 
     // ---------- UTILITY METHODS ----------
@@ -616,7 +607,7 @@ public abstract class RelationalIngestorAbstract
     }
 
 
-    private Datasets enrichDatasetsAndGenerateOperations(Datasets datasets, String ingestRunId)
+    private Datasets enrichDatasetsAndGenerateOperations(Datasets datasets)
     {
         LOGGER.info("Initializing Datasets");
         // Validation: init(Connection) must have been invoked
@@ -624,9 +615,6 @@ public abstract class RelationalIngestorAbstract
         {
             throw new IllegalStateException("Executor not initialized, call init(Connection) before invoking this method!");
         }
-
-        // 0. Set the run id
-        this.ingestRunId = ingestRunId;
 
         // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
@@ -693,7 +681,7 @@ public abstract class RelationalIngestorAbstract
                 .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .batchSuccessStatusValue(batchSuccessStatusValue())
                 .sampleRowCount(sampleRowCount())
-                .ingestRunId(ingestRunId)
+                .ingestRunId(getIngestRunId())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
@@ -785,7 +773,7 @@ public abstract class RelationalIngestorAbstract
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
 
         externalDatasetReference = externalDatasetReference
-            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING, ingestRunId))
+            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING, getIngestRunId()))
             .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
             .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
             .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
