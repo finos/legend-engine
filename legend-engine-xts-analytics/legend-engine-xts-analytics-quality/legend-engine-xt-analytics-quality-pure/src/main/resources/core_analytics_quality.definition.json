@@ -9,6 +9,8 @@
     "platform_store_relational",
     "platform_functions_json",
     "core_functions",
-    "core"
+    "core",
+    "core_external_compiler",
+    "core_data_space_metamodel"
   ]
 }

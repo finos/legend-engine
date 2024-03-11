@@ -32,4 +32,5 @@ public class StoreTestData
     public StoreProviderPointer store;
     public EmbeddedData data;
     public SourceInformation sourceInformation;
+
 }

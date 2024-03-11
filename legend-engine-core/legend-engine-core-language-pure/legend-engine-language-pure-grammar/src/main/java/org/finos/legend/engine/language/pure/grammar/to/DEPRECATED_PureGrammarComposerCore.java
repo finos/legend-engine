@@ -48,6 +48,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.aggregationAware.AggregationAwarePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.xStore.XStorePropertyMapping;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.PackageableRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.SectionIndex;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.JsonModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
@@ -626,7 +627,10 @@ public final class DEPRECATED_PureGrammarComposerCore implements
     @Override
     public String visit(PackageableRuntime packageableRuntime)
     {
-        return "Runtime " + PureGrammarComposerUtility.convertPath(packageableRuntime.getPath()) + "\n" +
+        String runtimeType = packageableRuntime.runtimeValue instanceof SingleConnectionEngineRuntime
+                ? "SingleConnectionRuntime "
+                : "Runtime ";
+        return runtimeType + PureGrammarComposerUtility.convertPath(packageableRuntime.getPath()) + "\n" +
                 "{" +
                 HelperRuntimeGrammarComposer.renderRuntimeValue(packageableRuntime.runtimeValue, 1, false, this) +
                 "\n}";

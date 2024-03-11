@@ -25,7 +25,6 @@ meta::analytics::quality::model::domain::associationNameShouldStartWithUpperCase
    let passed  = size($tokens) == 2 &&
                               $tokens->at(0)->meta::pure::functions::string::substring(0,1) ->isUpperCase() &&
                                  $tokens->at(1)->meta::pure::functions::string::substring(0,1) ->isUpperCase();
-   let message ='Check name of association ' + $a.name->toOne() ;
-
+   let message ='Association (' + $a.name->toOne() + ') does not match required standards: Camel case must be used Association name and should be upper camel case, with an underscore between both sides of the join';
    ^CheckResult(isValid=$passed, message=$message);
 }

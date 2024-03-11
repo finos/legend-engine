@@ -79,7 +79,7 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
             HttpPost request = new HttpPost(new URIBuilder()
                     .setScheme("http")
                     .setHost(deployConf.domain)
-                    .setPort(deployConf.port)
+                    //.setPort(deployConf.port)
                     .setPath(deployConf.path)
                     .build());
             StringEntity stringEntity = new StringEntity(mapper.writeValueAsString(artifact));

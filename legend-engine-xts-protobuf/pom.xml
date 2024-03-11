@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.39.1-SNAPSHOT</version>
+        <version>4.40.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,5 +33,6 @@
         <module>legend-engine-xt-protobuf-grammar</module>
         <module>legend-engine-xt-protobuf-protocol</module>
         <module>legend-engine-xt-protobuf-pure</module>
+        <module>legend-engine-xt-protobuf-api</module>
     </modules>
 </project>

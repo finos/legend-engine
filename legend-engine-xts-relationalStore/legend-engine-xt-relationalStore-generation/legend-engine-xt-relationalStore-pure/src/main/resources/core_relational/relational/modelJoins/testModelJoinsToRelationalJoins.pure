@@ -49,7 +49,7 @@ function meta::external::store::relational::modelJoins::test::getXStoreRuntime()
   );
 }
 
-function meta::external::store::relational::modelJoins::test::getLocalRuntime():Runtime[1]
+function meta::external::store::relational::modelJoins::test::getSingleConnectionRuntime():Runtime[1]
 {
   let localruntime = ^meta::core::runtime::Runtime(
     connectionStores=[
@@ -62,7 +62,7 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
 {
   let query = {|Trade.all()->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping, getXStoreRuntime(), meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan($query, LocalTradesMapping, getLocalRuntime(),meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan($query, LocalTradesMapping, getSingleConnectionRuntime(),meta::relational::extension::relationalExtensions());
   assertEquals(
     $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery,
     $localResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery
@@ -72,7 +72,7 @@ function <<test.Test>> meta::external::store::relational::modelJoins::test::test
 function <<test.Test>> meta::external::store::relational::modelJoins::test::testPersonToFirmUsingFromProject():Boolean[1]
 {
   let xstoreResult = executionPlan({|Trade.all()->from(XStoreTradesMapping, getXStoreRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getLocalRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getSingleConnectionRuntime())->project([x|$x.value,x|$x.client.name],['Value','Client/Name']);}, meta::relational::extension::relationalExtensions());
   assertEquals(
     $xstoreResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery,
     $localResult.rootExecutionNode.executionNodes->at(0)->cast(@SQLExecutionNode).sqlQuery
@@ -91,7 +91,7 @@ function <<test.Test, test.ToFix>> meta::external::store::relational::modelJoins
    }#;
   let query = {|Trade.all()->graphFetch($tree)->serialize($tree);};
   let xstoreResult = executionPlan($query, XStoreTradesMapping, getXStoreRuntime(), meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan($query, LocalTradesMapping, getLocalRuntime(), meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan($query, LocalTradesMapping, getSingleConnectionRuntime(), meta::relational::extension::relationalExtensions());
   false;
 }
 
@@ -106,7 +106,7 @@ function <<test.Test, test.ToFix>> meta::external::store::relational::modelJoins
       }
    }#;
   let xstoreResult = executionPlan({|Trade.all()->from(XStoreTradesMapping, getXStoreRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
-  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getLocalRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
+  let localResult = executionPlan({|Trade.all()->from(LocalTradesMapping, getSingleConnectionRuntime())->graphFetch($tree)->serialize($tree);}, meta::relational::extension::relationalExtensions());
   false;
 }
 

@@ -20,6 +20,22 @@ import org.junit.Test;
 public class TestRuntimeGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammarRoundtripTestSuite
 {
     @Test
+    public void testSingleConnectionRuntime()
+    {
+        test("###Runtime\n" +
+                "SingleConnectionRuntime com::test::singleConnectionRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::mapping::someMapping\n" +
+                "  ];\n" +
+                "  connection: com::test::someConnection;\n" +
+                "}\n"
+        );
+    }
+
+
+    @Test
     public void testRuntime()
     {
         test("###Runtime\n" +
