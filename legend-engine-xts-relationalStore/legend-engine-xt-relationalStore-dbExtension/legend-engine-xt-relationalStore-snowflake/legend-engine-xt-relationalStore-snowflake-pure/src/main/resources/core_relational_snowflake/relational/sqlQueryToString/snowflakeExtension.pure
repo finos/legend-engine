@@ -307,7 +307,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::snowf
 
    let doubleQuote = if($sgc.config.useQuotesForTableAliasColumn == false, |'', |'"');
    let processedIdentifier = $sgc.dbConfig.identifierProcessor($doubleQuote + $s.tableAliasColumn.alias.name->toOne() + $doubleQuote);
-   $processedIdentifier + '.' + processColumnName('value', $sgc.dbConfig) + castSuffixForSnowflakeSemiStructuredData($s.returnType);
+   $processedIdentifier + '.' + processColumnName('VALUE', $sgc.dbConfig) + castSuffixForSnowflakeSemiStructuredData($s.returnType);
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::castSuffixForSnowflakeSemiStructuredData(type:Type[0..1]): String[1]
