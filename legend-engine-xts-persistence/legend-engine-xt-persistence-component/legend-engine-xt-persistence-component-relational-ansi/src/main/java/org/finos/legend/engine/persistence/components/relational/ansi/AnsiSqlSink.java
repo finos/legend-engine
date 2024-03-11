@@ -454,7 +454,10 @@ public class AnsiSqlSink extends RelationalSink
             {
                 if (!dataErrorsByCategory.get(validationCategory).isEmpty())
                 {
-                    fairlyDistributedDataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
+                    if (fairlyDistributedDataErrors.size() < sampleRowCount)
+                    {
+                        fairlyDistributedDataErrors.add(dataErrorsByCategory.get(validationCategory).poll());
+                    }
                 }
                 else
                 {

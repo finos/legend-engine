@@ -46,8 +46,8 @@ public class DataErrorFairDistributionTest
 
         List<DataError> results = sink.getDataErrorsWithFairDistributionAcrossCategories(20, 10, dataErrorsByCategory);
         Assertions.assertEquals(10, results.size());
-        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT.name())).collect(Collectors.toList()));
-        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION.name())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT)).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION)).collect(Collectors.toList()));
     }
 
     @Test
@@ -66,8 +66,8 @@ public class DataErrorFairDistributionTest
 
         List<DataError> results = sink.getDataErrorsWithFairDistributionAcrossCategories(20, 55, dataErrorsByCategory);
         Assertions.assertEquals(20, results.size());
-        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT.name())).collect(Collectors.toList()));
-        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION.name())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT)).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION)).collect(Collectors.toList()));
     }
 
     @Test
@@ -86,8 +86,8 @@ public class DataErrorFairDistributionTest
 
         List<DataError> results = sink.getDataErrorsWithFairDistributionAcrossCategories(19, 35, dataErrorsByCategory);
         Assertions.assertEquals(19, results.size());
-        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT.name())).collect(Collectors.toList()));
-        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION.name())).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedNullValuesErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.CHECK_NULL_CONSTRAINT)).collect(Collectors.toList()));
+        Assertions.assertEquals(expectedDatatypeErrors, results.stream().filter(error -> error.errorCategory().equals(ErrorCategory.TYPE_CONVERSION)).collect(Collectors.toList()));
     }
 
     private void populateDataErrors(ValidationCategory validationCategory, ErrorCategory errorCategory, int totalCount, int expectedCount, Map<ValidationCategory, Queue<DataError>> dataErrorsByCategory, List<DataError> expectedList)
