@@ -500,7 +500,7 @@ function meta::relational::functions::sqlQueryToString::default::getDDLCommandsT
               );
 }
 
-function meta::relational::functions::sqlQueryToString::default::processTempTableNameDefault(tempTableName:String[1]) : String[1]
+function meta::relational::functions::sqlQueryToString::default::processTempTableNameDefault(tempTableName:String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]) : String[1]
 {
    $tempTableName;
 }

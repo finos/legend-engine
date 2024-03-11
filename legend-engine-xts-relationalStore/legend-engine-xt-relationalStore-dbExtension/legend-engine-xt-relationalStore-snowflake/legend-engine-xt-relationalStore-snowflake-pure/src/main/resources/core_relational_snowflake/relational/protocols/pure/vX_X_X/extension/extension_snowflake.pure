@@ -39,6 +39,8 @@ meta::protocols::pure::vX_X_X::transformation::fromPureGraph::connection::snowfl
                      proxyHost = $s.proxyHost,
                      proxyPort = $s.proxyPort,
                      nonProxyHosts = $s.nonProxyHosts,
+                     tempTableDb = $s.tempTableDb,
+                     tempTableSchema = $s.tempTableSchema,
                      accountType = if($s.accountType->isEmpty(),|[],|$s.accountType->toOne()->toString()),
                      organization = $s.organization,
                      role = $s.role,
