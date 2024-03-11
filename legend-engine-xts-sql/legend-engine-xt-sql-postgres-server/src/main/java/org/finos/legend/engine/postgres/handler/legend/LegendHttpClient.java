@@ -15,18 +15,31 @@
 package org.finos.legend.engine.postgres.handler.legend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Context;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Scope;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.propagation.TextMapSetter;
 import java.io.IOException;
 import java.io.InputStream;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
+
 import static javax.ws.rs.core.MediaType.TEXT_PLAIN;
+
+import javax.annotation.Nullable;
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
+import org.apache.http.message.BasicHeader;
+import org.finos.legend.engine.postgres.utils.OpenTelemetry;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
@@ -38,6 +51,14 @@ public class LegendHttpClient implements LegendClient
     private static final Logger LOGGER = LoggerFactory.getLogger(LegendHttpClient.class);
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
+    private static final TextMapSetter<HttpRequest> TEXT_MAP_SETTER = new TextMapSetter<HttpRequest>()
+    {
+        @Override
+        public void set(@Nullable HttpRequest httpRequest, String key, String value)
+        {
+            httpRequest.addHeader(new BasicHeader(key, value));
+        }
+    };
 
     private final String protocol;
     private final String host;
@@ -74,8 +95,11 @@ public class LegendHttpClient implements LegendClient
         stringEntity.setContentType(TEXT_PLAIN);
         req.setEntity(stringEntity);
 
-        try
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("LegendHttpClient.executeQuery").startSpan();
+        try (Scope scope = span.makeCurrent();)
         {
+            OpenTelemetry.getPropagators().inject(Context.current(), req, TEXT_MAP_SETTER);
             HttpClient client = HttpClientBuilder.getHttpClient(new BasicCookieStore());
             HttpResponse res = client.execute(req);
             return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());
@@ -84,6 +108,10 @@ public class LegendHttpClient implements LegendClient
         catch (IOException e)
         {
             throw new RuntimeException(e);
+        }
+        finally
+        {
+            span.end();
         }
     }
 

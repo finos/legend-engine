@@ -20,6 +20,7 @@ import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.metrics.DoubleHist
 import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.propagation.TextMapPropagator;
 
 public class OpenTelemetry
 {
@@ -103,6 +104,11 @@ public class OpenTelemetry
     public static Tracer getTracer()
     {
         return GlobalOpenTelemetry.getTracer(LEGEND_ENGINE_XTS_SQL);
+    }
+
+    public static TextMapPropagator getPropagators()
+    {
+        return GlobalOpenTelemetry.getPropagators().getTextMapPropagator();
     }
 
 }
