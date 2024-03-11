@@ -205,7 +205,7 @@ public class DataSpaceParseTreeWalker
         {
             return visitDataSpacePackageableElementExecutable(ctx);
         }
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("Can't parse unsupported dataSpace executable. please specify token 'execute' or 'query'.");
     }
 
     private DataSpaceExecutable visitDataSpacePackageableElementExecutable(DataSpaceParserGrammar.ExecutableContext ctx)

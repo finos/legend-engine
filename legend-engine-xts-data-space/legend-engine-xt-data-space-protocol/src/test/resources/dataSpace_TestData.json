@@ -45,7 +45,6 @@
       ],
       "executables": [
         {
-          "_type": "dataSpacePackageableElementExecutable",
           "title": "Executable 1",
           "description": "description",
           "executable": { "path": "model::MyExecutable" }
@@ -53,6 +52,12 @@
         {
           "_type": "dataSpacePackageableElementExecutable",
           "title": "Executable 2",
+          "description": "description",
+          "executable": { "path": "model::MyExecutable" }
+        },
+        {
+          "_type": "dataSpacePackageableElementExecutable",
+          "title": "Executable 3",
           "description": "description",
           "executable": { "path": "model::MyExecutable" }
         }

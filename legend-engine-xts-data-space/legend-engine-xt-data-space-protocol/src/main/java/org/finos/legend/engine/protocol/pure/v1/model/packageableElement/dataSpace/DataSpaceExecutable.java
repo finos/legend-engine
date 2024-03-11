@@ -18,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = DataSpacePackageableElementExecutable.class)
 @JsonSubTypes({
         @JsonSubTypes.Type(value = DataSpacePackageableElementExecutable.class, name = "dataSpacePackageableElementExecutable"),
         @JsonSubTypes.Type(value = DataSpaceTemplateExecutable.class, name = "dataSpaceTemplateExecutable"),

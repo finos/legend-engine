@@ -130,7 +130,7 @@ public class TestDataSpaceGrammarParser extends TestGrammarParser.TestGrammarPar
                 "      title: 'Exec 1';\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "PARSER error at [2:8-20:2]: Unsupported syntax");
+                "}\n", "PARSER error at [2:8-20:2]: Can't parse unsupported dataSpace executable. please specify token 'execute' or 'query'.");
 
         // Diagrams
         test("###DataSpace\n" +
