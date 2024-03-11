@@ -86,7 +86,7 @@ public class TestSnowflakeConnectionGrammarCompiler
     private String getConnectionString(String tempTableDb, String tempTableSchema)
     {
         String tempTableDbSpec = tempTableDb == null ? "" : "    tempTableDb: '" + tempTableDb + "';\n";
-        String tempTableSchemaSpec = tempTableDb == null ? "" : "    tempTableSchema: '" + tempTableSchema + "';\n";
+        String tempTableSchemaSpec = tempTableSchema == null ? "" : "    tempTableSchema: '" + tempTableSchema + "';\n";
         String connString = "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +
