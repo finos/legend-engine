@@ -83,11 +83,11 @@ public class TestSnowflakeConnectionGrammarCompiler
 
     }
 
-    @Test
-    public void testSnowflakeConnectionWithTempTableSpecPropagatedToCompiledGraph()
+    private String getConnectionString(String tempTableDb, String tempTableSchema)
     {
-        Pair<PureModelContextData, PureModel> result = test(TestRelationalCompilationFromGrammar.DB_INC +
-                "###Connection\n" +
+        String tempTableDbSpec = tempTableDb == null ? "" : "    tempTableDb: '" + tempTableDb + "';\n";
+        String tempTableSchemaSpec = tempTableDb == null ? "" : "    tempTableSchema: '" + tempTableSchema + "';\n";
+        String connString = "###Connection\n" +
                 "RelationalDatabaseConnection simple::StaticConnection\n" +
                 "{\n" +
                 "  store: apps::pure::studio::relational::tests::dbInc;\n" +
@@ -104,8 +104,8 @@ public class TestSnowflakeConnectionGrammarCompiler
                 "    accountType: MultiTenant;\n" +
                 "    organization: 'sampleOrganization';\n" +
                 "    role: 'DB_ROLE_123';\n" +
-                "    tempTableDb: 'temp_table_db';\n" +
-                "    tempTableSchema: 'temp_table_schema';\n" +
+                tempTableDbSpec +
+                tempTableSchemaSpec +
                 "  };\n" +
                 "  auth: SnowflakePublic\n" +
                 "  {" +
@@ -113,7 +113,17 @@ public class TestSnowflakeConnectionGrammarCompiler
                 "       privateKeyVaultReference: 'privateKey';\n" +
                 "       passPhraseVaultReference: 'passPhrase';\n" +
                 "  };\n" +
-                "}\n");
+                "}\n";
+
+        return connString;
+    }
+
+    @Test
+    public void testSnowflakeConnectionWithTempTableSpecPropagatedToCompiledGraph()
+    {
+        Pair<PureModelContextData, PureModel> result = test(TestRelationalCompilationFromGrammar.DB_INC +
+                getConnectionString("temp_table_db", "temp_table_schema")
+        );
 
 
         Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) result.getTwo().getConnection("simple::StaticConnection", SourceInformation.getUnknownSourceInformation());
@@ -145,65 +155,15 @@ public class TestSnowflakeConnectionGrammarCompiler
     @Test
     public void testSnowflakeConnectionTempTableDbPresentAndSchemaAbsent()
     {
-        test(TestRelationalCompilationFromGrammar.DB_INC +
-                "###Connection\n" +
-                "RelationalDatabaseConnection simple::SnowflakeConnection\n" +
-                "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
-                "  type: Snowflake;\n" +
-                "  specification: Snowflake\n" +
-                "  {\n" +
-                "    name: 'test';\n" +
-                "    account: 'account';\n" +
-                "    warehouse: 'warehouseName';\n" +
-                "    region: 'us-east2';\n" +
-                "    proxyHost: 'sampleHost';\n" +
-                "    proxyPort: 'samplePort';\n" +
-                "    nonProxyHosts: 'sample';\n" +
-                "    accountType: MultiTenant;\n" +
-                "    organization: 'sampleOrganization';\n" +
-                "    role: 'DB_ROLE_123';\n" +
-                "    tempTableDb: 'temp_table_db';\n" +
-                "  };\n" +
-                "  auth: SnowflakePublic\n" +
-                "  {" +
-                "       publicUserName: 'name';\n" +
-                "       privateKeyVaultReference: 'privateKey';\n" +
-                "       passPhraseVaultReference: 'passPhrase';\n" +
-                "  };\n" +
-                "}\n", "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+        test(TestRelationalCompilationFromGrammar.DB_INC + getConnectionString("temp_table_db", null),
+                "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
     }
 
     @Test
     public void testSnowflakeConnectionTempTableSchemaPresentAndDbAbsent()
     {
-        test(TestRelationalCompilationFromGrammar.DB_INC +
-                "###Connection\n" +
-                "RelationalDatabaseConnection simple::SnowflakeConnection\n" +
-                "{\n" +
-                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
-                "  type: Snowflake;\n" +
-                "  specification: Snowflake\n" +
-                "  {\n" +
-                "    name: 'test';\n" +
-                "    account: 'account';\n" +
-                "    warehouse: 'warehouseName';\n" +
-                "    region: 'us-east2';\n" +
-                "    proxyHost: 'sampleHost';\n" +
-                "    proxyPort: 'samplePort';\n" +
-                "    nonProxyHosts: 'sample';\n" +
-                "    accountType: MultiTenant;\n" +
-                "    organization: 'sampleOrganization';\n" +
-                "    role: 'DB_ROLE_123';\n" +
-                "    tempTableSchema: 'temp_table_schema';\n" +
-                "  };\n" +
-                "  auth: SnowflakePublic\n" +
-                "  {" +
-                "       publicUserName: 'name';\n" +
-                "       privateKeyVaultReference: 'privateKey';\n" +
-                "       passPhraseVaultReference: 'passPhrase';\n" +
-                "  };\n" +
-                "}\n", "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+        test(TestRelationalCompilationFromGrammar.DB_INC + getConnectionString(null, "temp_table_schema"),
+                "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
     }
 
     @Test
