@@ -145,7 +145,7 @@ function meta::external::query::sql::transformation::queryToPure::normalizeParam
 {
   $value->match([
     d:StrictDate[1] | $d->toString(),
-    d:DateTime[1] | $d->toEpochValue()->fromEpochValue()->toString(),
+    d:DateTime[1] | $d->toEpochValue()->fromEpochValue()->toString(), // Using Epoch to normalize the formatting
     a:Any[0..1] | $a
   ])
 }
