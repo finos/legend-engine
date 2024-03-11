@@ -245,7 +245,16 @@ public abstract class RelationalIngestorAbstract
      */
     public Datasets initDatasets(Datasets datasets)
     {
-        return enrichDatasetsAndGenerateOperations(datasets);
+        String ingestRunId = UUID.randomUUID().toString();
+        return enrichDatasetsAndGenerateOperations(datasets, ingestRunId);
+    }
+
+    /*
+    - Initializes Datasets with a provided ingestRunId
+     */
+    public Datasets initDatasets(Datasets datasets, String ingestRunId)
+    {
+        return enrichDatasetsAndGenerateOperations(datasets, ingestRunId);
     }
 
     /*
@@ -607,7 +616,7 @@ public abstract class RelationalIngestorAbstract
     }
 
 
-    private Datasets enrichDatasetsAndGenerateOperations(Datasets datasets)
+    private Datasets enrichDatasetsAndGenerateOperations(Datasets datasets, String ingestRunId)
     {
         LOGGER.info("Initializing Datasets");
         // Validation: init(Connection) must have been invoked
@@ -615,8 +624,9 @@ public abstract class RelationalIngestorAbstract
         {
             throw new IllegalStateException("Executor not initialized, call init(Connection) before invoking this method!");
         }
+
         // 0. Set the run id
-        ingestRunId = UUID.randomUUID().toString();
+        this.ingestRunId = ingestRunId;
 
         // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
