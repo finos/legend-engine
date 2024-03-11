@@ -73,21 +73,18 @@ function meta::relational::functions::sqlQueryToString::snowflake::getDDLCommand
 
 function meta::relational::functions::sqlQueryToString::snowflake::processTempTableNameSnowflake(tempTableName: String[1], dc: meta::external::store::relational::runtime::DatabaseConnection[1]): String[1]
 {
-   if($dc->toOne()->instanceOf(RelationalDatabaseConnection) && 
-      ($dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableDb->isNotEmpty() ||
-      $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableSchema->isNotEmpty()),
+   let dataSourceSpec = if($dc->instanceOf(RelationalDatabaseConnection),| $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification),| []);
+
+   if($dataSourceSpec->isNotEmpty() &&
+      $dataSourceSpec.tempTableDb->isNotEmpty() &&
+      $dataSourceSpec.tempTableSchema->isNotEmpty(),
    |
-    let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($dc->toOne().type, $dc->toOne().timeZone, $dc->toOne().quoteIdentifiers);
-    if($dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableDb->isNotEmpty() &&
-         $dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableSchema->isNotEmpty(),
-      | 
-        $dbConfig.identifierProcessor($dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableDb->toOne()) + '.' + 
-        $dbConfig.identifierProcessor($dc->cast(@RelationalDatabaseConnection).datasourceSpecification->cast(@SnowflakeDatasourceSpecification).tempTableSchema->toOne()) + '.' +
-        $tempTableName,
-      | fail('One of Database name and schema name for temp tables is missing. Please specify both.'); @String;
-      );,
-   | 'LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.' + $tempTableName;
-   )
+    let dbConfig = meta::relational::functions::sqlQueryToString::createDbConfig($dc.type, $dc.timeZone, $dc.quoteIdentifiers);
+    $dbConfig.identifierProcessor($dataSourceSpec.tempTableDb->toOne()) + '.' + $dbConfig.identifierProcessor($dataSourceSpec.tempTableSchema->toOne()) + '.' + $tempTableName;,
+   |
+    assert($dataSourceSpec.tempTableDb->isEmpty() && $dataSourceSpec.tempTableSchema->isEmpty(), 'One of Database name and schema name for temp tables is missing. Please specify both.');
+    'LEGEND_TEMP_DB.LEGEND_TEMP_SCHEMA.' + $tempTableName;
+   );
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::snowflake::translateCreateSchemaStatementForSnowflake(createSchemaSQL:CreateSchemaSQL[1], dbConfig:DbConfig[1]) : String[0..1]
