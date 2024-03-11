@@ -195,6 +195,38 @@ public class SqlExecuteTest
     }
 
     @Test
+    public void testExecuteWithDateTimeParamsTimezone() throws JsonProcessingException
+    {
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00:00:000+0000')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build());
+    }
+
+    @Test
+    public void testExecuteWithDateTimeParamsHours() throws JsonProcessingException
+    {
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build());
+    }
+
+    @Test
+    public void testExecuteWithDateTimeParamsMins() throws JsonProcessingException
+    {
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00:00')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build());
+    }
+
+    @Test
+    public void testExecuteWithDateTimeParamsSeconds() throws JsonProcessingException
+    {
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00:00:000')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build());
+    }
+
+    @Test
     public void testExecuteWithEnumParams() throws JsonProcessingException
     {
         allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24', type => 'Type1')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
