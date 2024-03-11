@@ -261,8 +261,6 @@ public abstract class RelationalSinkCleanerAbstract
         try
         {
             executor.executePhysicalPlan(result.dropSqlPlan());
-//            if (!executor.datasetExists(mainDataset()))
-//            {
                 try
                 {
                     executor.begin();
