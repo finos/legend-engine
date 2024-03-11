@@ -891,7 +891,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [20:1-44:1]: Data space executable title is not unique");
+                "}\n", "COMPILATION error at [20:1-44:1]: Data space executable title, Template 1, is not unique");
 
         test("Class model::element {}\n" +
                 "Class model::sub::element {}\n" +
@@ -937,7 +937,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "      query: src: model::sub::element[1]|$srssc;\n" +
                 "    }\n" +
                 "  ];\n" +
-                "}\n", "COMPILATION error at [20:1-44:1]: Data space template executable's executionContextKey is not valid");
+                "}\n", "COMPILATION error at [20:1-44:1]: Data space template executable's executionContextKey, random 1, is not valid. Please specify one from [Context 1]");
     }
 
     @Test

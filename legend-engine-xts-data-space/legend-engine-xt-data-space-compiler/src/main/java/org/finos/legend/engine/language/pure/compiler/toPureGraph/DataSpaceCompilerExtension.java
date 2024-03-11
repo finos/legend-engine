@@ -178,11 +178,9 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                             }
                             else if (executable instanceof DataSpaceTemplateExecutable)
                             {
-
-
                                     if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
                                     {
-                                        throw new EngineException("Data space template executable's executionContextKey is not valid", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                        throw new EngineException("Data space template executable's executionContextKey, " + ((DataSpaceTemplateExecutable) executable).executionContextKey + ", is not valid. Please specify one from " + dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).toString(), dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                                     }
                                     return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
                                             ._title(executable.title)
@@ -198,7 +196,7 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                         }
                         else
                         {
-                            throw new EngineException("Data space executable title is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                            throw new EngineException("Data space executable title, " + executable.title +  ", is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                         }
                     }) : null);
 
