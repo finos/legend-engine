@@ -197,33 +197,25 @@ public class SqlExecuteTest
     @Test
     public void testExecuteWithDateTimeParamsTimezone() throws JsonProcessingException
     {
-        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00:00:000+0000')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
-                .addRow(FastList.newListWith("Alice"))
-                .build());
+        executeWithDateTimeTestHelper("2023-08-24T00:00:000+0000");
     }
 
     @Test
     public void testExecuteWithDateTimeParamsHours() throws JsonProcessingException
     {
-        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
-                .addRow(FastList.newListWith("Alice"))
-                .build());
+        executeWithDateTimeTestHelper("2023-08-24T00");
     }
 
     @Test
     public void testExecuteWithDateTimeParamsMins() throws JsonProcessingException
     {
-        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00:00')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
-                .addRow(FastList.newListWith("Alice"))
-                .build());
+        executeWithDateTimeTestHelper("2023-08-24T00:00");
     }
 
     @Test
     public void testExecuteWithDateTimeParamsSeconds() throws JsonProcessingException
     {
-        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'2023-08-24T00:00:000')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
-                .addRow(FastList.newListWith("Alice"))
-                .build());
+        executeWithDateTimeTestHelper("2023-08-24T00:00:000");
     }
 
     @Test
@@ -358,6 +350,13 @@ public class SqlExecuteTest
         );
 
         allSchemaTests("SELECT Id FROM service.\"/testService\" UNION SELECT Id FROM service.\"/testService\"", FastList.newList(), schema);
+    }
+
+    private void executeWithDateTimeTestHelper(String string) throws JsonProcessingException
+    {
+        allExecuteTests("SELECT Name FROM service('/personServiceForStartDate/{date}', date =>'" + string + "')", FastList.newList(), TDSExecuteResult.builder(FastList.newListWith("Name"))
+                .addRow(FastList.newListWith("Alice"))
+                .build());
     }
 
     private static PrimitiveSchemaColumn primitiveColumn(String name, PrimitiveType type)
