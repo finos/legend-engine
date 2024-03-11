@@ -195,7 +195,7 @@ public class Session implements AutoCloseable
             LOGGER.debug("method=describe type={} portalOrStatement={}", type, portalOrStatement);
         }
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("ResultSetReceiver.allFinished").startSpan();
+        Span span = tracer.spanBuilder("Session.describe").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             span.setAttribute("type", type);

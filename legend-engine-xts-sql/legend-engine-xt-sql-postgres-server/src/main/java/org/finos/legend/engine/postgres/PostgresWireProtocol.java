@@ -849,6 +849,7 @@ public class PostgresWireProtocol
         finally
         {
             OpenTelemetry.ACTIVE_METADATA.add(-1);
+            span.end();
         }
     }
 

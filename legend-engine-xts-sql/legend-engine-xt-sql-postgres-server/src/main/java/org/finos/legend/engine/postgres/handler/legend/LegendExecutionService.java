@@ -79,7 +79,7 @@ public class LegendExecutionService
     public LegendExecutionResult executeQuery(String query)
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("LegendExecutionService.getSchema").startSpan();
+        Span span = tracer.spanBuilder("LegendExecutionService.executeQuery").startSpan();
         try (Scope scope = span.makeCurrent();)
         {
             span.setAttribute("query", query);
