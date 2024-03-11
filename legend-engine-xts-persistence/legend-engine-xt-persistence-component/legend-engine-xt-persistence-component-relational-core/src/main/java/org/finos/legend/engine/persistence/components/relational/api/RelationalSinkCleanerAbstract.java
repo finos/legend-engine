@@ -122,11 +122,14 @@ public abstract class RelationalSinkCleanerAbstract
         }
 
         //Sink clean-up SQL's
-        LogicalPlan cleanupLogicalPlan = buildLogicalPlanForCleanupActions();
+        LogicalPlan dropLogicalPlan = buildLogicalPlanForDropActions();
+        SqlPlan dropSqlPlan = transformer.generatePhysicalPlan(dropLogicalPlan);
+        LogicalPlan cleanupLogicalPlan = buildLogicalPlanForCleanupAndAuditActions();
         SqlPlan cleanupSqlPlan = transformer.generatePhysicalPlan(cleanupLogicalPlan);
         return SinkCleanupGeneratorResult.builder()
                 .preActionsSqlPlan(preActionsSqlPlan)
                 .cleanupSqlPlan(cleanupSqlPlan)
+                .dropSqlPlan(dropSqlPlan)
                 .initializeLockSqlPlan(initializeLockSqlPlan)
                 .acquireLockSqlPlan(acquireLockSqlPlan)
                 .build();
@@ -135,8 +138,6 @@ public abstract class RelationalSinkCleanerAbstract
     //todo : ApiUtils.getLockInfoDataset() ?
     public SinkCleanupIngestorResult executeOperationsForSinkCleanup(RelationalConnection connection)
     {
-        SinkCleanupIngestorResult ingestorResult;
-
         // 1. initialize connection
         initExecutor(connection);
 
@@ -154,32 +155,7 @@ public abstract class RelationalSinkCleanerAbstract
         }
 
         //4. Execute sink cleanup operations
-        try
-        {
-            executor.begin();
-            if (enableConcurrentSafety())
-            {
-                LOGGER.info("Concurrent safety is enabled, acquiring lock");
-                executor.executePhysicalPlan(result.acquireLockSqlPlan().get());
-            }
-            LOGGER.info("Executing SQL's for sink cleanup");
-            executor.executePhysicalPlan(result.cleanupSqlPlan());
-            executor.commit();
-            ingestorResult = SinkCleanupIngestorResult.builder().status(IngestStatus.SUCCEEDED).build();
-        }
-        catch (Exception e)
-        {
-            executor.revert();
-            ingestorResult = SinkCleanupIngestorResult.builder()
-                    .status(IngestStatus.FAILED)
-                    .message(e.toString())
-                    .build();
-        }
-        finally
-        {
-            executor.close();
-        }
-        return ingestorResult;
+        return getSinkCleanupIngestorResult(result);
     }
 
     // ---------- UTILITY METHODS ----------
@@ -197,16 +173,23 @@ public abstract class RelationalSinkCleanerAbstract
         if (enableConcurrentSafety())
         {
             operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
+            operations.add(buildInsertCondition(AuditTableStatus.INITIALIZED));
         }
         return LogicalPlan.of(operations);
     }
 
-    private LogicalPlan buildLogicalPlanForCleanupActions()
+    private LogicalPlan buildLogicalPlanForDropActions()
     {
         List<Operation> operations = new ArrayList<>();
-        operations.add(Drop.of(true, mainDataset(), true));
+        operations.add(Drop.of(true, mainDataset(), false));
+        return LogicalPlan.of(operations);
+    }
+
+    private LogicalPlan buildLogicalPlanForCleanupAndAuditActions()
+    {
+        List<Operation> operations = new ArrayList<>();
         operations.add(buildDeleteCondition());
-        operations.add(buildInsertCondition());
+        operations.add(buildInsertCondition(AuditTableStatus.SUCCEEDED));
         return LogicalPlan.of(operations);
     }
 
@@ -221,7 +204,7 @@ public abstract class RelationalSinkCleanerAbstract
         return Delete.of(metadataDataset().get(), whereCondition);
     }
 
-    private Operation buildInsertCondition()
+    private Operation buildInsertCondition(AuditTableStatus status)
     {
         DatasetReference auditTableRef = this.auditDataset().get().datasetReference();
         FieldValue tableName = FieldValue.builder().datasetRef(auditTableRef).fieldName(auditDataset().tableNameField()).build();
@@ -241,7 +224,7 @@ public abstract class RelationalSinkCleanerAbstract
         selectFields.add(getMainTable());
         selectFields.add(BatchStartTimestamp.INSTANCE);
         selectFields.add(BatchEndTimestamp.INSTANCE);
-        selectFields.add(StringValue.of(IngestStatus.SUCCEEDED.name()));
+        selectFields.add(StringValue.of(status.name()));
         selectFields.add(StringValue.of(requestedBy()));
 
         return Insert.of(auditDataset().get(), Selection.builder().addAllFields(selectFields).build(), fieldsToInsert);
@@ -270,5 +253,47 @@ public abstract class RelationalSinkCleanerAbstract
             return LogicalPlan.of(Collections.singleton(lockInfoUtils.updateLockInfo(BatchStartTimestampAbstract.INSTANCE)));
         }
         return null;
+    }
+
+    private SinkCleanupIngestorResult getSinkCleanupIngestorResult(SinkCleanupGeneratorResult result)
+    {
+        SinkCleanupIngestorResult ingestorResult;
+        executor.executePhysicalPlan(result.dropSqlPlan());
+        if (!executor.datasetExists(mainDataset()))
+        {
+            try
+            {
+                executor.begin();
+                if (enableConcurrentSafety())
+                {
+                    LOGGER.info("Concurrent safety is enabled, acquiring lock");
+                    executor.executePhysicalPlan(result.acquireLockSqlPlan().get());
+                }
+                LOGGER.info("Executing SQL's for sink cleanup");
+                executor.executePhysicalPlan(result.cleanupSqlPlan());
+                executor.commit();
+                ingestorResult = SinkCleanupIngestorResult.builder().status(IngestStatus.SUCCEEDED).build();
+            }
+            catch (Exception e)
+            {
+                executor.revert();
+                ingestorResult = SinkCleanupIngestorResult.builder()
+                        .status(IngestStatus.FAILED)
+                        .message(e.toString())
+                        .build();
+            }
+            finally
+            {
+                executor.close();
+            }
+        }
+        else
+        {
+            ingestorResult = SinkCleanupIngestorResult.builder()
+                    .status(IngestStatus.FAILED)
+                    .message("Drop operation on main table failed")
+                    .build();
+        }
+        return ingestorResult;
     }
 }

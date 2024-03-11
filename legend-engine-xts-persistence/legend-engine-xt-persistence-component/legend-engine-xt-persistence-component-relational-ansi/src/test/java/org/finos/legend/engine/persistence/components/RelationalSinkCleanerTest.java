@@ -39,7 +39,7 @@ public class RelationalSinkCleanerTest extends IngestModeTest
             .build();
     private final MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
     private final String auditTableCreationQuery = "CREATE TABLE IF NOT EXISTS sink_cleanup_audit(\"table_name\" VARCHAR(255),\"batch_start_ts_utc\" DATETIME,\"batch_end_ts_utc\" DATETIME,\"batch_status\" VARCHAR(32),\"requested_by\" VARCHAR(32))";
-    private final String dropMainTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main\" CASCADE";
+    private final String dropMainTableQuery = "DROP TABLE IF EXISTS \"mydb\".\"main\"";
     private final String deleteFromMetadataTableQuery = "DELETE FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'";
     private final String insertToAuditTableQuery = "INSERT INTO sink_cleanup_audit (\"table_name\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"requested_by\") (SELECT 'main','2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'SUCCEEDED','lh_dev')";
 
@@ -70,9 +70,9 @@ public class RelationalSinkCleanerTest extends IngestModeTest
         Assertions.assertEquals(auditTableCreationQuery, preActionsSql.get(0));
 
         List<String> cleanupSql = result.cleanupSql();
-        Assertions.assertEquals(dropMainTableQuery, cleanupSql.get(0));
-        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(1));
-        Assertions.assertEquals(insertToAuditTableQuery, cleanupSql.get(2));
+        Assertions.assertEquals(dropMainTableQuery, result.dropSql().get(0));
+        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(0));
+        Assertions.assertEquals(insertToAuditTableQuery, cleanupSql.get(1));
     }
 
     @Test
@@ -100,8 +100,8 @@ public class RelationalSinkCleanerTest extends IngestModeTest
         Assertions.assertEquals(acquireLockQuery, result.acquireLockSql().get(0));
 
         List<String> cleanupSql = result.cleanupSql();
-        Assertions.assertEquals(dropMainTableQuery, cleanupSql.get(0));
-        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(1));
-        Assertions.assertEquals(insertToAuditTableQuery, cleanupSql.get(2));
+        Assertions.assertEquals(dropMainTableQuery, result.dropSql().get(0));
+        Assertions.assertEquals(deleteFromMetadataTableQuery, cleanupSql.get(0));
+        Assertions.assertEquals(insertToAuditTableQuery, cleanupSql.get(1));
     }
 }

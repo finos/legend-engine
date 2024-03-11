@@ -88,7 +88,7 @@ public class RelationalSinkCleanerTest extends BaseTest
 
         //Table counts after sink cleanup
         List<Map<String, Object>> auditTableData = h2Sink.executeQuery("select count(*) as audit_table_count from \"sink_cleanup_audit\" where table_name = 'main'");
-        Assertions.assertEquals(auditTableData.get(0).get("audit_table_count"), 1L);
+        Assertions.assertEquals(auditTableData.get(0).get("audit_table_count"), 2L);
         List<Map<String, Object>> tableAfterSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
         Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
     }
@@ -110,7 +110,7 @@ public class RelationalSinkCleanerTest extends BaseTest
 
         SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
         Assertions.assertEquals(result.status(), IngestStatus.FAILED);
-        System.out.println(result.message().get());
+        Assertions.assertTrue(result.message().get().contains("Table \"batch_metadata2\" not found"));
     }
 
     private void createBatchMetadataTableWithData(String metaTableName, String mainTableName)
@@ -143,9 +143,9 @@ public class RelationalSinkCleanerTest extends BaseTest
     private void createSampleMainTableWithData(String tableName)
     {
         List<String> list = new ArrayList<>();
-        list.add("CREATE TABLE " + tableName + " (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
-        list.add("INSERT INTO  " + tableName + "  VALUES (1, 'A', '2020-01-01 00:00:00')");
-        list.add("INSERT INTO  " + tableName + "  VALUES (2, 'B', '2021-01-01 00:00:00')");
+        list.add("CREATE TABLE TEST." + tableName + " (ID INT PRIMARY KEY, NAME VARCHAR(255), BIRTH DATETIME)");
+        list.add("INSERT INTO  TEST." + tableName + "  VALUES (1, 'A', '2020-01-01 00:00:00')");
+        list.add("INSERT INTO  TEST." + tableName + "  VALUES (2, 'B', '2021-01-01 00:00:00')");
         h2Sink.executeStatements(list);
     }
 }

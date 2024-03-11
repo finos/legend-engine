@@ -34,12 +34,13 @@ import java.util.Optional;
 )
 public abstract class SinkCleanupGeneratorResultAbstract
 {
-
     public abstract SqlPlan preActionsSqlPlan();
 
     public abstract Optional<SqlPlan> initializeLockSqlPlan();
 
     public abstract Optional<SqlPlan> acquireLockSqlPlan();
+
+    public abstract SqlPlan dropSqlPlan();
 
     public abstract SqlPlan cleanupSqlPlan();
 
@@ -52,6 +53,11 @@ public abstract class SinkCleanupGeneratorResultAbstract
     public List<String> cleanupSql()
     {
         return cleanupSqlPlan().getSqlList();
+    }
+
+    public List<String> dropSql()
+    {
+        return dropSqlPlan().getSqlList();
     }
 
     public List<String> initializeLockSql()
