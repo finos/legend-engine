@@ -1891,7 +1891,12 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
-                <artifactId>legend-engine-configuration</artifactId>
+                <artifactId>legend-engine-configuration-contract-extension-pure</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-configuration-plan-generation-serialization</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
