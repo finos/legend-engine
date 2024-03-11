@@ -156,14 +156,14 @@ public class TestSnowflakeConnectionGrammarCompiler
     public void testSnowflakeConnectionTempTableDbPresentAndSchemaAbsent()
     {
         test(TestRelationalCompilationFromGrammar.DB_INC + getConnectionString("temp_table_db", null),
-                "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+                "COMPILATION error at [65:1-88:1]: Error in 'simple::StaticConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
     }
 
     @Test
     public void testSnowflakeConnectionTempTableSchemaPresentAndDbAbsent()
     {
         test(TestRelationalCompilationFromGrammar.DB_INC + getConnectionString(null, "temp_table_schema"),
-                "COMPILATION error at [65:1-88:1]: Error in 'simple::SnowflakeConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+                "COMPILATION error at [65:1-88:1]: Error in 'simple::StaticConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
     }
 
     @Test
