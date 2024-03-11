@@ -258,40 +258,42 @@ public abstract class RelationalSinkCleanerAbstract
     private SinkCleanupIngestorResult getSinkCleanupIngestorResult(SinkCleanupGeneratorResult result)
     {
         SinkCleanupIngestorResult ingestorResult;
-        executor.executePhysicalPlan(result.dropSqlPlan());
-        if (!executor.datasetExists(mainDataset()))
+        try
         {
-            try
-            {
-                executor.begin();
-                if (enableConcurrentSafety())
+            executor.executePhysicalPlan(result.dropSqlPlan());
+//            if (!executor.datasetExists(mainDataset()))
+//            {
+                try
                 {
-                    LOGGER.info("Concurrent safety is enabled, acquiring lock");
-                    executor.executePhysicalPlan(result.acquireLockSqlPlan().get());
+                    executor.begin();
+                    if (enableConcurrentSafety())
+                    {
+                        LOGGER.info("Concurrent safety is enabled, acquiring lock");
+                        executor.executePhysicalPlan(result.acquireLockSqlPlan().get());
+                    }
+                    LOGGER.info("Executing SQL's for sink cleanup");
+                    executor.executePhysicalPlan(result.cleanupSqlPlan());
+                    executor.commit();
+                    ingestorResult = SinkCleanupIngestorResult.builder().status(IngestStatus.SUCCEEDED).build();
                 }
-                LOGGER.info("Executing SQL's for sink cleanup");
-                executor.executePhysicalPlan(result.cleanupSqlPlan());
-                executor.commit();
-                ingestorResult = SinkCleanupIngestorResult.builder().status(IngestStatus.SUCCEEDED).build();
+                catch (Exception e)
+                {
+                    executor.revert();
+                    ingestorResult = SinkCleanupIngestorResult.builder()
+                            .status(IngestStatus.FAILED)
+                            .message(e.toString())
+                            .build();
+                }
+                finally
+                {
+                    executor.close();
+                }
             }
-            catch (Exception e)
-            {
-                executor.revert();
-                ingestorResult = SinkCleanupIngestorResult.builder()
-                        .status(IngestStatus.FAILED)
-                        .message(e.toString())
-                        .build();
-            }
-            finally
-            {
-                executor.close();
-            }
-        }
-        else
+        catch (Exception e)
         {
             ingestorResult = SinkCleanupIngestorResult.builder()
                     .status(IngestStatus.FAILED)
-                    .message("Drop operation on main table failed")
+                    .message(e.toString())
                     .build();
         }
         return ingestorResult;
