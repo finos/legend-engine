@@ -40,7 +40,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.TDSResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Multiplicity;
@@ -406,7 +405,7 @@ public class DataSpaceAnalyticsHelper
 
                     org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                             dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey())).findFirst().get();
-                    templateExecutableInfo.executionContextKey = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey();
+                    templateExecutableInfo.executionContextKey = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext()._name() : ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey();
                     executableAnalysisResult.info = templateExecutableInfo;
                     executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
                             ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query(),
