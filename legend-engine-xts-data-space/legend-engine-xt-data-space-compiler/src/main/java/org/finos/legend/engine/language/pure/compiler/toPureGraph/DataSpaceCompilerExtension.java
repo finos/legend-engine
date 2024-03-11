@@ -141,35 +141,38 @@ public class DataSpaceCompilerExtension implements CompilerExtension, EmbeddedDa
                     HashSet<String> executableTitles = new HashSet<>();
                     metamodel._executables(dataSpace.executables != null ? ListIterate.collect(dataSpace.executables, executable ->
                     {
-                        if (executable instanceof DataSpacePackageableElementExecutable)
+                        if (executableTitles.add(executable.title))
                         {
-                            return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
-                                    ._title(executable.title)
-                                    ._description(executable.description)
-                                    ._executable(context.pureModel.getPackageableElement(((DataSpacePackageableElementExecutable) executable).executable.path, ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation));
-                        }
-                        else if (executable instanceof DataSpaceTemplateExecutable)
-                        {
-                            if (executableTitles.add(executable.title))
+                            if (executable instanceof DataSpacePackageableElementExecutable)
                             {
-                                if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
-                                {
-                                    throw new EngineException("Data space template executable's executionContextKey is not valid", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
-                                }
-                                return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
+                                return new Root_meta_pure_metamodel_dataSpace_DataSpacePackageableElementExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable"))
                                         ._title(executable.title)
                                         ._description(executable.description)
-                                        ._query(HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context))
-                                        ._executionContextKey(((DataSpaceTemplateExecutable) executable).executionContextKey);
+                                        ._executable(context.pureModel.getPackageableElement(((DataSpacePackageableElementExecutable) executable).executable.path, ((DataSpacePackageableElementExecutable) executable).executable.sourceInformation));
+                            }
+                            else if (executable instanceof DataSpaceTemplateExecutable)
+                            {
+
+
+                                    if (((DataSpaceTemplateExecutable) executable).executionContextKey != null && !dataSpace.executionContexts.stream().map(c -> c.name).collect(Collectors.toList()).contains(((DataSpaceTemplateExecutable) executable).executionContextKey))
+                                    {
+                                        throw new EngineException("Data space template executable's executionContextKey is not valid", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                    }
+                                    return new Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable_Impl("", null, context.pureModel.getClass("meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable"))
+                                            ._title(executable.title)
+                                            ._description(executable.description)
+                                            ._query(HelperValueSpecificationBuilder.buildLambda(((DataSpaceTemplateExecutable) executable).query, context))
+                                            ._executionContextKey(((DataSpaceTemplateExecutable) executable).executionContextKey);
+
                             }
                             else
                             {
-                                throw new EngineException("Data space executable title is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                                throw new EngineException("Data space executables could only be template or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                             }
                         }
                         else
                         {
-                            throw new EngineException("Data space executables could only be template or executable", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
+                            throw new EngineException("Data space executable title is not unique", dataSpace.sourceInformation, EngineErrorType.COMPILATION);
                         }
                     }) : null);
 

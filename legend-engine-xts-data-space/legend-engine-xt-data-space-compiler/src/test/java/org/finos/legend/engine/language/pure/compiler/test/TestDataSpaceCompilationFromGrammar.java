@@ -1191,7 +1191,7 @@ public class TestDataSpaceCompilationFromGrammar extends TestCompilationFromGram
                 "    }\n" +
                 "  ];\n" +
                 "  defaultExecutionContext: 'Context 1';\n" +
-                "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec'; executable: model::Mine; }];\n" +
-                "}\n", "COMPILATION error at [53:88-111]: Can't find the packageable element 'model::Mine'");
+                "  executables: [{ title: 'MyExec'; executable: model::MyService; }, { title: 'MyExec1'; executable: model::Mine; }];\n" +
+                "}\n", "COMPILATION error at [53:89-112]: Can't find the packageable element 'model::Mine'");
     }
 }

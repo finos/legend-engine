@@ -406,8 +406,7 @@ public class DataSpaceAnalyticsHelper
 
                     org.finos.legend.pure.generated.Root_meta_pure_metamodel_dataSpace_DataSpaceExecutionContext executionContext = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey() == null ? dataSpace._defaultExecutionContext() :
                             dataSpace._executionContexts().toList().stream().filter(c -> c._name().equals(((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey())).findFirst().get();
-                    templateExecutableInfo.mapping = HelperModelBuilder.getElementFullPath(executionContext._mapping(), pureModel.getExecutionSupport());
-                    templateExecutableInfo.runtime = pureModel.getRuntimePath(executionContext._defaultRuntime()._runtimeValue());
+                    templateExecutableInfo.executionContextKey = ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._executionContextKey();
                     executableAnalysisResult.info = templateExecutableInfo;
                     executableAnalysisResult.result = buildExecutableResult(PlanGenerator.generateExecutionPlanDebug(
                             ((Root_meta_pure_metamodel_dataSpace_DataSpaceTemplateExecutable) executable)._query(),
