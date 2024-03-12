@@ -22,7 +22,6 @@
         <version>4.40.3-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.example</groupId>
     <artifactId>legend-engine-xt-morphir-api</artifactId>
     <name>Legend Engine - XT - Morphir - API</name>
 
