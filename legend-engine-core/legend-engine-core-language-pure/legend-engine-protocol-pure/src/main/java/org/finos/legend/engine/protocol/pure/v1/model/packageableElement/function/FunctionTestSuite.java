@@ -21,8 +21,5 @@ import java.util.List;
 
 public class FunctionTestSuite extends TestSuite
 {
-
     public List<StoreTestData> testData;
-
-    public SourceInformation sourceInformation;
 }
