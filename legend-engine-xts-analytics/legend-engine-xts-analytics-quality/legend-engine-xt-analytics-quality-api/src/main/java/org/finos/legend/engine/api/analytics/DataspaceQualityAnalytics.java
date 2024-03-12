@@ -22,6 +22,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
 import org.pac4j.core.profile.CommonProfile;
@@ -56,8 +58,9 @@ public class DataspaceQualityAnalytics
                                               @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         List<PackageableElement> allElements = pureModelContextData.getElements();
         return DataspaceQualityAnalyticsHelper.getResponse(pureModel, allElements);
     }

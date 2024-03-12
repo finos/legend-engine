@@ -126,7 +126,7 @@ function meta::analytics::quality::model::domain::findAllNestedFilterExpressions
 
 
 function  {rule.rule = 'Invalid Instance Of',
-           rule.description ='Check for Match functions that will always fail (e.g. \'abc\'->match([ i: Integer[1]|$i))',
+           rule.description ='Check for invalid instanceOf checks (e.g. \'hello\'->instanceOf(Float) or \'hello\'->instanceOf(String))',
            rule.severity = 'High',
            rule.category = 'Correctness'}
 meta::analytics::quality::model::domain::badInstanceOfChecks(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
@@ -142,7 +142,7 @@ meta::analytics::quality::model::domain::badInstanceOfChecks(fns:List<FunctionDe
 }
 
 function  {rule.rule = 'Invalid Match',
-           rule.description ='Check for invalid instanceOf checks (e.g. \'hello\'->instanceOf(Float) or \'hello\'->instanceOf(String))',
+           rule.description ='Check for Match functions that will always fail (e.g. \'abc\'->match([ i: Integer[1]|$i))',
            rule.severity = 'High',
            rule.category = 'Correctness'}
 meta::analytics::quality::model::domain::invalidMatchUsages(fns:List<FunctionDefinition<Any>>[1]) : Pair<FunctionExpression,CheckResult>[*]
