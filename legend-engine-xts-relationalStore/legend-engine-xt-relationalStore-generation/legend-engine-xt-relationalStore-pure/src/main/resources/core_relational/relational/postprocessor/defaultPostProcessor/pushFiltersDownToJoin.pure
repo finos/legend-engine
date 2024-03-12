@@ -28,12 +28,19 @@ function meta::relational::postProcessor::filterPushDown::pushFiltersDownToJoins
 {
    let transformFunction = {r: RelationalOperationElement[1] |
                               $r->match([
-                                 s: SelectSQLQuery[1] | if($s.data->isNotEmpty(),
+                                 s: SelectSQLQuery[1] | let transformedS = if($s.data->isNotEmpty(),
                                                            | let newS = ^$s(data = $s.data->toOne()->pushFiltersDownToJoins(list($s.filteringOperation->getFilteringPairs()), $extensions)->cast(@RootJoinTreeNode));
                                                            if($s.leftSideOfFilter->isNotEmpty(),
                                                               |^$newS(leftSideOfFilter=$s.leftSideOfFilter->toOne()->meta::relational::functions::pureToSqlQuery::findOneNode($s.data->toOne(), $newS.data->toOne())),
                                                               | $newS);,
-                                                           | $s),
+                                                           | $s);
+                                                        if($transformedS->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+                                                        |
+                                                          let selectWithCte = $transformedS->cast(@SelectSQLQueryWithCommonTableExpressions);
+                                                          ^$selectWithCte(commonTableExpressions = $selectWithCte.commonTableExpressions->map(c | ^$c(sqlQuery = $c->cast(@SelectCommonTableExpression).selectSQLQuery->pushFiltersDownToJoins($extensions).values)));,
+                                                        |
+                                                          $transformedS;
+                                                        );,
                                  rel: RelationalOperationElement[1] | $rel;
                               ]);
                            };

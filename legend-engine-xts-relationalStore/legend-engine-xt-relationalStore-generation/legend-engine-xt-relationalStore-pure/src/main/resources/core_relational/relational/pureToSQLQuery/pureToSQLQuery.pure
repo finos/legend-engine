@@ -6248,6 +6248,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          u:Union[1]|$u.queries->map(q|$q->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
          c:TableAliasColumnName[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.columnName;,
          c:TableAliasColumn[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.column.name;,
+         sc:CommonTableExpressionReference[1]|$sc.name,
          l:Literal[1]|if($l.value->instanceOf(VarPlaceHolder),|$l.value->cast(@VarPlaceHolder).name,|$l.value->toString()),
          l:LiteralList[1]|  $l.values->map(l|$l->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
          v:VariableArityOperation[1]|$v->type()->toOne().name->toOne() + '_' + $v.args->buildUniqueName($alias, $selectColumns, $extensions),
