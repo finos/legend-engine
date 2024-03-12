@@ -19,11 +19,15 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
 
+import java.util.List;
+
 public interface ModelLoader
 {
     boolean supports(PureModelContext context);
 
     PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan);
+
+    PureModelContextData load(Identity identity, List<PureModelContext> contextList, String clientVersion, Span parentSpan);
 
     void setModelManager(ModelManager modelManager);
 

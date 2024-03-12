@@ -21,8 +21,10 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
+import org.finos.legend.server.pac4j.gitlab.GitlabPersonalAccessTokenProfile;
 import org.pac4j.core.profile.CommonProfile;
 
 import javax.security.auth.Subject;
@@ -67,13 +69,22 @@ public final class DefaultIdentityFactory implements IdentityFactory
         {
             return INSTANCE.makeIdentity(kerberosProfileHolder.get().getSubject());
         }
-
+        Optional<GitlabPersonalAccessTokenProfile> gitlabPersonalAccessTokenProfileHolder = this.getGitlabProfile(profiles);
+        if (gitlabPersonalAccessTokenProfileHolder.isPresent())
+        {
+            return new Identity(gitlabPersonalAccessTokenProfileHolder.get().getUsername(), new OAuthCredential(gitlabPersonalAccessTokenProfileHolder.get().getPersonalAccessToken()));
+        }
         return INSTANCE.makeUnknownIdentity();
     }
 
     private Optional<KerberosProfile> getKerberosProfile(MutableList<CommonProfile> profiles)
     {
         return Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, KerberosProfile.class).getFirst());
+    }
+
+    private Optional<GitlabPersonalAccessTokenProfile> getGitlabProfile(MutableList<CommonProfile> profiles)
+    {
+        return Optional.ofNullable(LazyIterate.selectInstancesOf(profiles, GitlabPersonalAccessTokenProfile.class).getFirst());
     }
 
     public Identity makeUnknownIdentity()

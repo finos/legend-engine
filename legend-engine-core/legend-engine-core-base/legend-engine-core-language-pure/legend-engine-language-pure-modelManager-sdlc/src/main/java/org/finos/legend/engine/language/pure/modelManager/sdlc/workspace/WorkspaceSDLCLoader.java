@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -34,11 +35,13 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.Met
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.credential.OAuthCredential;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -105,16 +108,7 @@ public class WorkspaceSDLCLoader
                 try (InputStream content = entity.getContent())
                 {
                     List<SDLCProjectDependency> dependencies = mapper.readValue(content, SDLC_PROJECT_DEPENDENCY_TYPE);
-
-                    PureModelContextData.Builder builder = PureModelContextData.newBuilder();
-
-                    dependencies.forEach(dependency ->
-                    {
-                        builder.addPureModelContextData(this.loadDependencyData(identity, clientVersion, dependency));
-                    });
-
-                    builder.removeDuplicates();
-                    return builder.build();
+                    return this.loadDependencyData(identity, clientVersion, dependencies);
                 }
             }
             catch (Exception e)
@@ -137,11 +131,12 @@ public class WorkspaceSDLCLoader
         if (this.sdlcServerConnectionConfig.pac4j != null && this.sdlcServerConnectionConfig.pac4j instanceof MetadataServerPrivateAccessTokenConfiguration)
         {
             String patHeaderName = ((MetadataServerPrivateAccessTokenConfiguration) this.sdlcServerConnectionConfig.pac4j).accessTokenHeaderName;
-            //MutableList<GitlabPersonalAccessTokenProfile> patProfiles = pm.selectInstancesOf(GitlabPersonalAccessTokenProfile.class);
-            if (identity != null)
+            String clientName = ((MetadataServerPrivateAccessTokenConfiguration) this.sdlcServerConnectionConfig.pac4j).clientName;
+            if(identity != null && identity.getCredential(OAuthCredential.class).isPresent())
             {
-                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, IdentityFactoryProvider.getInstance().adapt(identity).get(0).getClientName()));
-                //httpRequest.addHeader(new BasicHeader(patHeaderName, patProfiles.getFirst().getPersonalAccessToken()));
+                String accessToken = identity.getCredential(OAuthCredential.class).get().getAccessToken();
+                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, clientName)); // TODO client name for sdlc should also come from config and should match with sdlc config
+                httpRequest.addHeader(new BasicHeader(patHeaderName, accessToken));
             }
         }
 
@@ -153,16 +148,19 @@ public class WorkspaceSDLCLoader
         return httpRequest;
     }
 
-    private PureModelContextData loadDependencyData(Identity profiles, String clientVersion, SDLCProjectDependency dependency)
+    private PureModelContextData loadDependencyData(Identity profiles, String clientVersion, List<SDLCProjectDependency> dependencies)
     {
-        PureModelContextPointer pointer = new PureModelContextPointer();
-        AlloySDLC sdlcInfo = new AlloySDLC();
-        sdlcInfo.groupId = dependency.getGroupId();
-        sdlcInfo.artifactId = dependency.getArtifactId();
-        sdlcInfo.version = dependency.getVersionId();
-        pointer.sdlcInfo = sdlcInfo;
-        pointer.serializer = new Protocol("pure", clientVersion);
-        return this.modelManager.loadData(pointer, clientVersion, profiles);
+        List<PureModelContext> pointers = dependencies.stream().map(dependency -> {
+            PureModelContextPointer pointer = new PureModelContextPointer();
+            AlloySDLC sdlcInfo = new AlloySDLC();
+            sdlcInfo.groupId = dependency.getGroupId();
+            sdlcInfo.artifactId = dependency.getArtifactId();
+            sdlcInfo.version = dependency.getVersionId();
+            pointer.sdlcInfo = sdlcInfo;
+            pointer.serializer = new Protocol("pure", clientVersion);
+            return pointer;
+        }).collect(Collectors.toList());
+        return this.modelManager.loadData(pointers, clientVersion, profiles);
     }
 
     private static class SDLCProjectDependency

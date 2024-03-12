@@ -20,9 +20,11 @@ import io.opentracing.Span;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpStatus;
@@ -184,6 +186,35 @@ public class SDLCLoader implements ModelLoader
 
         Subject subject = getSubject();
         PureModelContextData metaData = subject == null ? context.sdlcInfo.accept(fetcher) : exec(subject, () -> context.sdlcInfo.accept(fetcher));
+
+        if (metaData.origin != null)
+        {
+            Assert.assertTrue("none".equals(metaData.origin.sdlcInfo.version), () -> "Version can't be set in the pointer");
+            metaData.origin.sdlcInfo.version = metaData.origin.sdlcInfo.baseVersion;
+            metaData.origin.sdlcInfo.baseVersion = null;
+        }
+
+        return metaData;
+    }
+
+    @Override
+    public PureModelContextData load(Identity identity, List<PureModelContext> contextList, String clientVersion, Span parentSpan)
+    {
+        List<AlloySDLC> sdlcList = contextList.stream().map(context1 -> (AlloySDLC) ((PureModelContextPointer) context1).sdlcInfo).collect(Collectors.toList());
+        Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
+
+        SDLCFetcher fetcher = new SDLCFetcher(
+                parentSpan,
+                clientVersion,
+                this.httpClientProvider,
+                identity,
+                this.pureLoader,
+                this.alloyLoader,
+                this.workspaceLoader
+        );
+
+        Subject subject = getSubject();
+        PureModelContextData metaData = subject == null ? fetcher.visit(sdlcList) : exec(subject, () -> fetcher.visit(sdlcList));
 
         if (metaData.origin != null)
         {

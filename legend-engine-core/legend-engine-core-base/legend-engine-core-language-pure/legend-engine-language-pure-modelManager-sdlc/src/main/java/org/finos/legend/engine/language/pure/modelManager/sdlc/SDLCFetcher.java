@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.function.Function;
 import javax.security.auth.Subject;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.alloy.AlloySDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.pure.PureServerLoader;
@@ -75,6 +76,18 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
                         "Please make sure the corresponding Gitlab pipeline for version " + (this.alloyLoader.isLatestRevision(sdlc) ? "latest" : sdlc.version) + " has completed and also metadata server has updated with corresponding entities " +
                         "by confirming the data returned from <a href=\"" + this.alloyLoader.getMetaDataApiUrl(identity, sdlc, clientVersion) + "\"/> this API </a>.");
             }
+        }
+    }
+
+    @Override
+    public PureModelContextData visit(List<AlloySDLC> sdlc)
+    {
+        parentSpan.setTag("sdlc", "alloy");
+        try (Scope ignore = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
+        {
+            PureModelContextData loadedProject = this.alloyLoader.loadAlloyProjects(identity, sdlc, clientVersion, this.httpClientProvider);
+            return loadedProject;
+            // TODO add check for missing paths
         }
     }
 
