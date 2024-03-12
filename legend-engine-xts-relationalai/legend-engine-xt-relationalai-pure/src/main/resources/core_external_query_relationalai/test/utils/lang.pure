@@ -1,6 +1,6 @@
-import meta::rel::utils::lang::*;
+import meta::external::store::rel::utils::lang::*;
 
-function <<test.Test>> meta::rel::test::utils::lang::testSwitch(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::utils::lang::testSwitch(): Any[*] {
   let x = 3;
 
   assertEquals(

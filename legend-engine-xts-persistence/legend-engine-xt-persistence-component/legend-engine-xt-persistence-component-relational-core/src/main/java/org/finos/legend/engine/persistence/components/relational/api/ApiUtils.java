@@ -37,7 +37,6 @@ import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.transformer.Transformer;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
@@ -45,6 +44,7 @@ import java.util.*;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MIN_OF_FIELD;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
 public class ApiUtils
 {
@@ -65,12 +65,10 @@ public class ApiUtils
     {
         DatasetsCaseConverter converter = new DatasetsCaseConverter();
         MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
-        BulkLoadMetadataDataset bulkLoadMetadataDataset = datasets.bulkLoadMetadataDataset().orElse(BulkLoadMetadataDataset.builder().build());
         LockInfoDataset lockInfoDataset = getLockInfoDataset(datasets);
         Datasets enrichedDatasets = datasets
                 .withMetadataDataset(metadataDataset)
-                .withLockInfoDataset(lockInfoDataset)
-                .withBulkLoadMetadataDataset(bulkLoadMetadataDataset);
+                .withLockInfoDataset(lockInfoDataset);
         if (caseConversion == CaseConversion.TO_UPPER)
         {
             return converter.applyCase(enrichedDatasets, String::toUpperCase);
@@ -117,17 +115,14 @@ public class ApiUtils
     }
 
     public static Optional<Long> getNextBatchId(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor,
-                                          Transformer<SqlGen, SqlPlan> transformer, IngestMode ingestMode)
+                                          Transformer<SqlGen, SqlPlan> transformer)
     {
-        if (ingestMode.accept(IngestModeVisitors.IS_INGEST_MODE_TEMPORAL) || ingestMode instanceof BulkLoad)
+        LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets);
+        List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
+        Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
+        if (nextBatchId.isPresent())
         {
-            LogicalPlan logicalPlanForNextBatchId = LogicalPlanFactory.getLogicalPlanForNextBatchId(datasets, ingestMode);
-            List<TabularData> tabularData = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(logicalPlanForNextBatchId));
-            Optional<Object> nextBatchId = getFirstColumnValue(getFirstRowForFirstResult(tabularData));
-            if (nextBatchId.isPresent())
-            {
-                return retrieveValueAsLong(nextBatchId.get());
-            }
+            return retrieveValueAsLong(nextBatchId.get());
         }
         return Optional.empty();
     }
@@ -165,13 +160,13 @@ public class ApiUtils
                 .findFirst()
                 .map(TabularData::getData)
                 .flatMap(t -> t.stream().findFirst())
-                .map(stringObjectMap -> (String) stringObjectMap.get(metadataDataset.stagingFiltersField()));
+                .map(stringObjectMap -> (String) stringObjectMap.get(metadataDataset.batchSourceInfoField()));
 
         // Convert map of Filters to List of Filters
         if (stagingFilters.isPresent())
         {
-            Map<String, Map<String, Object>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Object>>>() {});
-            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.entrySet())
+            Map<String, Map<String, Map<String, Object>>> datasetFiltersMap = new ObjectMapper().readValue(stagingFilters.get(), new TypeReference<Map<String, Map<String, Map<String, Object>>>>() {});
+            for (Map.Entry<String, Map<String, Object>> filtersMapEntry : datasetFiltersMap.get(BATCH_SOURCE_INFO_STAGING_FILTERS).entrySet())
             {
                 for (Map.Entry<String, Object> filterEntry : filtersMapEntry.getValue().entrySet())
                 {

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import meta::pure::router::store::metamodel::clustering::*;
+import meta::pure::executionPlan::featureFlag::*;
 import meta::pure::dataQuality::*;
 import meta::pure::executionPlan::*;
 import meta::pure::extension::*;
@@ -143,7 +145,14 @@ function <<access.private>> meta::external::format::shared::executionPlan::exter
 function <<access.private>> meta::external::format::shared::executionPlan::externalizeTDSFunctionProcessor(fe:FunctionExpression[1], state:ExternalFormatPlanGenerationState[1], extensions : Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let parameters      = $fe.parametersValues->evaluateAndDeactivate();
-   let children        = $parameters->at(0)->processValueSpecification($state, $extensions, $debug)->toOneMany();
+  let fn = $parameters->at(0);
+  let updatedFN = if ($fn->instanceOf(ClusteredValueSpecification),
+                    |  let vs =  $fn->cast(@ClusteredValueSpecification); 
+                      ^$vs( exeCtx= $vs.exeCtx->toOne()->meta::pure::executionPlan::featureFlag::addFlagToContext(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM));  ,
+                    |$fn
+                  );
+
+   let children        = $updatedFN->processValueSpecification($state, $extensions, $debug)->toOneMany();
    let contentType      = $fe.parametersValues->at(1)->byPassValueSpecificationWrapper()->cast(@InstanceValue).values->at(0)->cast(@String);
    ^ExternalFormatExternalizeTDSExecutionNode
    (
@@ -214,7 +223,7 @@ function <<access.private>> meta::external::format::shared::executionPlan::gener
                                       ]);
 }
 
-function <<access.private>> meta::external::format::shared::executionPlan::extractPackageableElementFromTree(tree:GraphFetchTree[1]): PackageableElement[*]
+function meta::external::format::shared::executionPlan::extractPackageableElementFromTree(tree:GraphFetchTree[1]): PackageableElement[*]
 {
   let classesFromTree = $tree->match([
                                   r:RootGraphFetchTree<Any>[1] | $r.class,

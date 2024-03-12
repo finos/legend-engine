@@ -40,6 +40,13 @@ public class TestSQLRoundTrip
     }
 
     @Test
+    public void testParameters()
+    {
+        check("SELECT * FROM myTable where name = $1");
+        check("SELECT * FROM myTable where name = ?");
+    }
+
+    @Test
     public void testSelectStarFromNoParamTableFunc()
     {
         check("SELECT * FROM myTable()");
@@ -66,7 +73,7 @@ public class TestSQLRoundTrip
     @Test
     public void testSelectQualified()
     {
-        check("SELECT col1, myTable.col2 FROM myTable");
+        check("SELECT col1, myTable.col2, \"col 3\" FROM myTable");
     }
 
     @Test

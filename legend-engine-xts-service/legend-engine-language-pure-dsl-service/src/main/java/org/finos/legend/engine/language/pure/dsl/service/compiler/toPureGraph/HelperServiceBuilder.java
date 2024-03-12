@@ -152,13 +152,6 @@ public class HelperServiceBuilder
 
         if (testData.connectionsTestData != null && !testData.connectionsTestData.isEmpty())
         {
-            List<String> connectionIds = ListIterate.collect(testData.connectionsTestData, d -> d.id);
-            List<String> duplicateConnectionIds = connectionIds.stream().filter(e -> Collections.frequency(connectionIds, e) > 1).distinct().collect(Collectors.toList());
-
-            if (!duplicateConnectionIds.isEmpty())
-            {
-                throw new EngineException("Multiple connection test data found with ids : '" + String.join(",", duplicateConnectionIds) + "'", testData.sourceInformation, EngineErrorType.COMPILATION);
-            }
             pureTestData._connectionsTestData(ListIterate.collect(testData.connectionsTestData, data -> HelperServiceBuilder.processServiceConnectionData(data, context, processingContext)));
         }
 
@@ -272,6 +265,13 @@ public class HelperServiceBuilder
 
     public static Root_meta_legend_service_metamodel_TestContainer processTestContainer(TestContainer testContainer, CompileContext context)
     {
+        // todo hack to support legacy test flow
+        // this is to ensure generics are set and prevent NPE
+        // this assume a cache for types, and this prime the value
+        context.resolveGenericType("meta::pure::mapping::Result")
+                ._typeArguments(Lists.fixedSize.of(context.resolveGenericType("meta::pure::metamodel::type::Any")))
+                ._multiplicityArguments(Lists.fixedSize.of(context.pureModel.getMultiplicity("zeromany")));
+
         return new Root_meta_legend_service_metamodel_TestContainer_Impl("", null, context.pureModel.getClass("meta::legend::service::metamodel::TestContainer"))
                 ._parametersValues(ListIterate.collect(testContainer.parametersValues, parameterValue -> parameterValue.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))))
                 ._assert(HelperValueSpecificationBuilder.buildLambda(testContainer._assert, context));

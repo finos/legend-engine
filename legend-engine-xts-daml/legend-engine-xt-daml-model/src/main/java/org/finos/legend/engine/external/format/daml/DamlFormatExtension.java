@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.format.daml;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.daml.fromModel.ModelToDamlConfiguration;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.external.shared.format.model.transformation.fromModel.ExternalFormatSchemaGenerationExtension;
@@ -36,6 +37,11 @@ public class DamlFormatExtension implements ExternalFormatSchemaGenerationExtens
 
     public static final String TYPE = damlContract._id();
 
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "DAML");
+    }
 
     @Override
     public Root_meta_external_format_shared_ExternalFormatContract<Root_meta_external_language_haskell_format_HaskellSchema> getExternalFormatContract()

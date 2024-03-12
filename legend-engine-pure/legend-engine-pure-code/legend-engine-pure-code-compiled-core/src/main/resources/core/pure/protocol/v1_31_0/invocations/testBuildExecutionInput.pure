@@ -14,20 +14,19 @@
 
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::extension::*;
 import meta::protocols::pure::v1_31_0::invocation::execution::*;
 
 function <<test.Test>> meta::protocols::pure::v1_31_0::invocation::execution::testbuildExecutionInput():Boolean[1]
 {
-   let outputString = meta::protocols::pure::v1_31_0::invocation::execution::execute::buildExecutionInput((|[]), ^Mapping(), ^Runtime(), ^ExecutionContext(), 'v1', 'json', 'SEMI_INTERACTIVE', 'http://pure.metadataserver.com', meta::pure::extension::defaultExtensions());
+   let outputString = meta::protocols::pure::v1_31_0::invocation::execution::execute::buildExecutionInput((|[]), ^Mapping(), ^Runtime(), ^meta::pure::runtime::ExecutionContext(), 'v1', 'json', 'SEMI_INTERACTIVE', 'http://pure.metadataserver.com', meta::pure::extension::defaultExtensions());
    let expectedString = '{"function":{"_type":"lambda","body":[{"multiplicity":{"upperBound":0,"lowerBound":0},"_type":"collection"}]},"context":{"_type":"BaseExecutionContext"},"model":{"sdlcInfo":{"baseVersion":"-1","_type":"pure","version":"none","overrideUrl":"http:\/\/pure.metadataserver.com"},"_type":"pointer","serializer":{"name":"pure","version":"v1_31_0"}},"clientVersion":"v1_31_0"}';
    meta::pure::functions::boolean::equalJsonStrings($outputString, $expectedString);
 }
 
 function <<test.Test>> meta::protocols::pure::v1_31_0::invocation::execution::testbuildExecutionInputWithoutOverrideUrl():Boolean[1]
 {
-   let outputString = meta::protocols::pure::v1_31_0::invocation::execution::execute::buildExecutionInput((|[]), ^Mapping(), ^Runtime(), ^ExecutionContext(), 'v1', 'json', 'SEMI_INTERACTIVE', [], meta::pure::extension::defaultExtensions());
+   let outputString = meta::protocols::pure::v1_31_0::invocation::execution::execute::buildExecutionInput((|[]), ^Mapping(), ^Runtime(), ^meta::pure::runtime::ExecutionContext(), 'v1', 'json', 'SEMI_INTERACTIVE', [], meta::pure::extension::defaultExtensions());
    let expectedString = '{"function":{"_type":"lambda","body":[{"multiplicity":{"upperBound":0,"lowerBound":0},"_type":"collection"}]},"context":{"_type":"BaseExecutionContext"},"model":{"sdlcInfo":{"baseVersion":"-1","_type":"pure","version":"none"},"_type":"pointer","serializer":{"name":"pure","version":"v1_31_0"}},"clientVersion":"v1_31_0"}';
    meta::pure::functions::boolean::equalJsonStrings($outputString, $expectedString);
 }

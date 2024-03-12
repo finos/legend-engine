@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.function.Function5;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -43,16 +45,17 @@ public class GrammarAPI
     protected <T> Response grammarToJson(String text, Function<String, T> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             try
             {
                 T data = func.apply(text);
-                return ManageConstantResult.manageResult(profiles, data, objectMapper);
+                return ManageConstantResult.manageResult(identity.getName(), data, objectMapper);
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }
@@ -60,6 +63,7 @@ public class GrammarAPI
     protected <T> Response grammarToJsonBatch(Map<String, ParserInput> input, Function5<String, String, Integer, Integer, Boolean, T> func, Map<String, T> result, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             Map<String, ParserError> errors = Maps.mutable.empty();
@@ -74,18 +78,18 @@ public class GrammarAPI
                 {
                     if (!EngineErrorType.PARSER.equals(e.getErrorType()))
                     {
-                        ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+                        ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, identity.getName());
                         throw e;
                     }
                     errors.put(key, new ParserError(e.getMessage(), e.getSourceInformation()));
                 }
                 catch (Exception e)
                 {
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, identity.getName());
                     throw e;
                 }
             });
-            return ManageConstantResult.manageResult(profiles, new BatchResult<T>(result, errors), objectMapper);
+            return ManageConstantResult.manageResult(identity.getName(), new BatchResult<T>(result, errors), objectMapper);
         }
     }
 
@@ -93,19 +97,21 @@ public class GrammarAPI
     protected <T> Response jsonToGrammar(T graphFetchTree, RenderStyle renderStyle, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             return Response.ok(func.apply(graphFetchTree, renderStyle)).build();
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, identity.getName());
         }
     }
 
     protected <T> Response jsonToGrammarBatch(RenderStyle renderStyle, Map<String, T> values, Function2<T, RenderStyle, String> func, ProfileManager<CommonProfile> pm, String spanText)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan(spanText).startActive(true))
         {
             Map<String, Object> result = org.eclipse.collections.api.factory.Maps.mutable.empty();
@@ -113,12 +119,12 @@ public class GrammarAPI
             {
                 result.put(key, func.apply(value, renderStyle));
             });
-            return ManageConstantResult.manageResult(profiles, result);
+            return ManageConstantResult.manageResult(identity.getName(), result);
         }
         catch (Exception ex)
         {
             ex.printStackTrace();
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_JSON_TO_GRAMMAR_ERROR, identity.getName());
         }
     }
 

@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::runtime::connection::authentication::*;
 import meta::external::store::service::metamodel::*;
 

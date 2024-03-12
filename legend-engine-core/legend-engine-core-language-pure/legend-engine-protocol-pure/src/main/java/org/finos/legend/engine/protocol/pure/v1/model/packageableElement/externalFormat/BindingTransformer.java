@@ -14,7 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.externalFormat;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
+
 public class BindingTransformer
 {
     public String binding;
+    @JsonIgnore
+    public SourceInformation sourceInformation;
 }

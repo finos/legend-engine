@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.external.shared;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataBooleanAdder;
 import org.finos.legend.engine.external.shared.runtime.dependencies.ExternalDataDoubleAdder;
@@ -44,6 +45,12 @@ public class ExternalFormatJavaCompilerExtension implements ExecutionPlanJavaCom
         DEPENDENCIES.put(PURE_PACKAGE + "_ExternalDataObjectAdder", ExternalDataObjectAdder.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_IExternalData", IExternalData.class);
         DEPENDENCIES.put(PURE_PACKAGE + "_IExternalDataFactory", IExternalDataFactory.class);
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "-Core");
     }
 
     @Override

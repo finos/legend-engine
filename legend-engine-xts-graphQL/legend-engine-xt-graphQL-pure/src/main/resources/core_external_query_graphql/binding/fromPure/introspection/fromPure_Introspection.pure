@@ -1,4 +1,5 @@
 ###Pure
+import meta::external::query::graphQL::binding::*;
 import meta::pure::functions::doc::*;
 import meta::external::query::graphQL::metamodel::introspection::*;
 import meta::external::query::graphQL::transformation::introspection::*;
@@ -67,6 +68,44 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
       ])
     )
   )->concatenate(
+    $types->map(t|
+      if($t->instanceOf(Class) && !$t->hasGraphQLStereotype('Query'),
+        | pair(
+            $t.name->toOne() + '_bool_exp',
+            ^__Type(
+              kind = __TypeKind.INPUT_OBJECT,
+              name = $t->cast(@Class<Any>).name->toOne() + '_bool_exp',
+              description = 'A logical extension of ' + $t.name->toOne() + ' object type for use in arguments for filtering'
+            )
+          ),
+        | if($t->instanceOf(Enumeration),
+            | pair(
+                $t.name->toOne() + '_comparison_exp',
+                ^__Type(
+                  kind = __TypeKind.INPUT_OBJECT,
+                  name = $t.name->toOne() + '_comparison_exp',
+                  description = 'A logical extension of ' + $t.name->toOne() + ' enum type for use in arguments for filtering'
+                )
+              ),
+            | []
+          )
+      ) 
+    )
+  )->concatenate(
+    $types->map(t|
+      if($t->instanceOf(Class) && !$t->hasGraphQLStereotype('Query'),
+        | pair(
+            $t.name->toOne() + '_exists_exp',
+            ^__Type(
+              kind = __TypeKind.INPUT_OBJECT,
+              name = $t->cast(@Class<Any>).name->toOne() + '_exists_exp',
+              description = 'A logical extension of ' + $t.name->toOne() + ' object type for use in arguments for filtering particularly where a property is list of given object type'
+            )
+          ),
+        | []
+      ) 
+    )
+  )->concatenate(
     [
       pair('String',^__Type(kind = __TypeKind.SCALAR,name = 'String')),
       pair('Float',^__Type(kind = __TypeKind.SCALAR,name = 'Float')),
@@ -100,6 +139,10 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
                                                                       name=$parameter.name,
                                                                       type=buildType($parameter,$res)
                                                                     );
+                                                                  )->concatenate(
+                                                                    if($c->hasGraphQLStereotype('Query'),
+                                                                    | ^__InputValue(type=$res->get($p->functionReturnType().rawType.name->toOne() + '_bool_exp')->toOne(),name='where'),
+                                                                    | [])
                                                                   ),
                                                     |[]
                                                )
@@ -120,7 +163,100 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
     $type;
   );
 
-  $res->values()->meta::pure::functions::collection::sortBy(t|$t.name->toOne());
+  let m = customGraphQLScalarsToPrimitiveMappingForInput();
+
+  // THIRD PASS
+  $res->values()->map(
+    t| if($t.kind == __TypeKind.OBJECT,
+          | let newName = $t.name->toOne() + '_bool_exp';
+            let newFields = $t.fields->map(f | 
+              // if(unWrap($f.type).name->toOne()
+                if( unWrap($f.type).kind != __TypeKind.SCALAR || unWrap($f.type).name->in($m->keys()) 
+                  ,| ^__InputValue(
+                      name = $f.name,
+                      type = ^__Type(
+                        kind= __TypeKind.INPUT_OBJECT, 
+                        name= if(unWrap($f.type).kind->in([__TypeKind.SCALAR, __TypeKind.ENUM]), 
+                                | unWrap($f.type).name->toOne() + '_comparison_exp', 
+                                | if($f.type.kind == __TypeKind.LIST,
+                                    | unWrap($f.type).name->toOne() + '_exists_exp',
+                                    | unWrap($f.type).name->toOne() + '_bool_exp'
+                                  )
+                              )
+                      )
+                    )
+                  ,| []
+                )
+            )->concatenate(
+              ['_or', '_and']->map(s|
+                ^__InputValue(
+                  name=$s,
+                  type=wrap(^__Type(kind=__TypeKind.INPUT_OBJECT, name = $t.name->toOne() + '_bool_exp'), __TypeKind.LIST)
+                )
+              )
+            );
+            let type = $res->get($newName);
+            if($type->isNotEmpty(), | $type->toOne()->mutateAdd('inputFields',$newFields) , |[]);
+            
+            let existsName = $t.name->toOne() + '_exists_exp';
+            let existsFields = ['_exists']->map(s|
+                ^__InputValue(
+                  name=$s,
+                  type=wrap(^__Type(kind=__TypeKind.INPUT_OBJECT, name = $t.name->toOne() + '_bool_exp'), __TypeKind.NON_NULL)
+                )
+              );
+            let existsType = $res->get($existsName);
+            if($existsType->isNotEmpty(), | $existsType->toOne()->mutateAdd('inputFields',$existsFields) , |[]);
+            
+            $type;,
+          | if($t.kind == __TypeKind.ENUM,
+              | let newName = $t.name->toOne() + '_comparison_exp';
+                let newFields = ['_eq', '_in']->map(s|
+                    ^__InputValue(
+                      name=$s,
+                      type=^__Type(kind=__TypeKind.ENUM, name = $t.name->toOne())
+                    )
+                );
+                let type = $res->get($newName);
+                if($type->isNotEmpty(), | $type->toOne()->mutateAdd('inputFields',$newFields) , |[]);
+                $type;,
+              | []
+            )
+        )
+  );
+
+  let constant_bool_exp_fields = $m->keys()->map(s|
+    ^__Type(
+      name = $s + '_comparison_exp',
+      kind = __TypeKind.INPUT_OBJECT
+    )
+  );
+
+  $constant_bool_exp_fields->map(v|
+    let extractedName = $v.name->toOne()->split('_')->at(0);
+    let extractedType = $m->get($extractedName);
+    let fields = [
+      ^__InputValue(
+        type = ^__Type(kind=__TypeKind.SCALAR, name = $extractedType),
+        name = '_eq'
+      ),
+      ^__InputValue(
+        type = wrap(^__Type(kind=__TypeKind.SCALAR, name = $extractedType), __TypeKind.LIST),
+        name = '_in'
+      )
+    ];
+    let typedFields = [
+      pair($extractedName->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']), ^__InputValue(type = ^__Type(kind=__TypeKind.SCALAR, name = $extractedType),name = '_lt')),
+      pair($extractedName->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']), ^__InputValue(type = ^__Type(kind=__TypeKind.SCALAR, name = $extractedType),name = '_lte')),
+      pair($extractedName->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']), ^__InputValue(type = ^__Type(kind=__TypeKind.SCALAR, name = $extractedType),name = '_gt')),
+      pair($extractedName->in(['Int', 'Float', 'Number', 'Date', 'StrictDate', 'DateTime', 'BigDecimal']), ^__InputValue(type = ^__Type(kind=__TypeKind.SCALAR, name = $extractedType),name = '_gte')),
+      pair($extractedName->in(['String']), ^__InputValue(type = ^__Type(kind=__TypeKind.SCALAR, name = $extractedType),name = '_contains')),
+      pair($extractedName->in(['String']), ^__InputValue(type = ^__Type(kind=__TypeKind.SCALAR, name = $extractedType),name = '_eqIgnoreCase'))
+    ]->filter(p | $p.first)->fold({a,b | $b->concatenate($a.second)},[]);
+    $v->mutateAdd('inputFields',$fields->concatenate($typedFields));
+  );
+
+  $res->values()->concatenate($constant_bool_exp_fields)->meta::pure::functions::collection::sortBy(t|$t.name->toOne());
 }
 
 function <<access.private>> meta::external::query::graphQL::binding::fromPure::introspection::buildType(parameter:VariableExpression[1], map:Map<String,__Type>[1]):__Type[1]
@@ -157,3 +293,13 @@ function <<access.private>> meta::external::query::graphQL::binding::fromPure::i
     ofType = $type
   )
 }
+
+function <<access.private>> meta::external::query::graphQL::binding::fromPure::introspection::unWrap(type:__Type[1]):__Type[1]
+{
+  if($type.kind == __TypeKind.NON_NULL || $type.kind == __TypeKind.LIST,
+    |$type.ofType,
+    |$type;
+  )->toOne()
+}
+
+

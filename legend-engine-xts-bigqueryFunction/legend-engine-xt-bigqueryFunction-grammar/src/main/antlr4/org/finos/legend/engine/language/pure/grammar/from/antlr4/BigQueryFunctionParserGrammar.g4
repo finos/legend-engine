@@ -13,6 +13,8 @@ identifier:     VALID_STRING | STRING |
                 BIGQUERY_FUNCTION__DESCRIPTION |
                 BIGQUERY_FUNCTION__FUNCTION |
                 BIGQUERY_FUNCTION__OWNER |
+                BIGQUERY_FUNCTION__OWNER_DEPLOYMENT |
+                BIGQUERY_FUNCTION__OWNER_DEPLOYMENT_ID |
                 BIGQUERY_FUNCTION__ACTIVATION|
                 CONFIGURATION| DEPLOYMENT_STAGE
                 | ACTIVATION_CONNECTION |
@@ -49,7 +51,11 @@ description:                    BIGQUERY_FUNCTION__DESCRIPTION COLON STRING SEMI
 
 function:                       BIGQUERY_FUNCTION__FUNCTION COLON functionIdentifier SEMI_COLON;
 
-owner :                         BIGQUERY_FUNCTION__OWNER COLON STRING SEMI_COLON;
+owner :                         BIGQUERY_FUNCTION__OWNER COLON
+                                    BIGQUERY_FUNCTION__OWNER_DEPLOYMENT
+                                        BRACE_OPEN
+                                            BIGQUERY_FUNCTION__OWNER_DEPLOYMENT_ID COLON STRING
+                                        BRACE_CLOSE SEMI_COLON;
 
 activation:                     BIGQUERY_FUNCTION__ACTIVATION COLON qualifiedName SEMI_COLON ;
 

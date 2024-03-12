@@ -47,9 +47,6 @@ public class StagedFilesTable extends TableLike
     {
         validate();
 
-        builder.append(Clause.FILES.get());
-        builder.append(WHITE_SPACE);
-
         builder.append(OPEN_PARENTHESIS);
         builder.append("uris");
         builder.append(ASSIGNMENT_OPERATOR);

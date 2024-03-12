@@ -98,7 +98,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     @Override
     public PropertyMapping visit(PurePropertyMapping propertyMapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PurePropertyMapping pm = new Root_meta_external_store_model_PurePropertyMapping_Impl("", null, context.pureModel.getType("meta::external::store::model::PurePropertyMapping"));
+        org.finos.legend.pure.m3.coreinstance.meta.external.store.model.PurePropertyMapping pm = new Root_meta_external_store_model_PurePropertyMapping_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getType("meta::external::store::model::PurePropertyMapping"));
         Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         pm.setSourceInformation(SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation));
         pm._property(property)
@@ -180,7 +180,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
                 ._openVariables(cleanedOpenVariables)
                 ._expressionSequence(valueSpecifications);
 
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStorePropertyMapping xpm = new Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl("", null, context.pureModel.getClass("meta::pure::mapping::xStore::XStorePropertyMapping"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.xStore.XStorePropertyMapping xpm = new Root_meta_pure_mapping_xStore_XStorePropertyMapping_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::xStore::XStorePropertyMapping"));
 
         String propertyName = propertyMapping.property.property;
         String edgePointPropertyName = MilestoningFunctions.getEdgePointPropertyName(propertyName);
@@ -198,7 +198,7 @@ public class PropertyMappingBuilder implements PropertyMappingVisitor<org.finos.
     @Override
     public PropertyMapping visit(AggregationAwarePropertyMapping propertyMapping)
     {
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwarePropertyMapping apm = new Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl("", null, context.pureModel.getClass("meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.aggregationAware.AggregationAwarePropertyMapping apm = new Root_meta_pure_mapping_aggregationAware_AggregationAwarePropertyMapping_Impl("", SourceInformationHelper.toM3SourceInformation(propertyMapping.sourceInformation), context.pureModel.getClass("meta::pure::mapping::aggregationAware::AggregationAwarePropertyMapping"));
         Property property = HelperMappingBuilder.getMappedProperty(propertyMapping, this.context);
         apm._localMappingProperty(propertyMapping.localMappingProperty != null)
                 ._property(property)

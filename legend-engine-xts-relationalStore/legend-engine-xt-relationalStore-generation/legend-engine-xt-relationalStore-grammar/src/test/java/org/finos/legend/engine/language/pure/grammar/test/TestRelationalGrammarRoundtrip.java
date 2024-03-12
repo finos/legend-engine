@@ -881,4 +881,31 @@ public class TestRelationalGrammarRoundtrip extends TestGrammarRoundtrip.TestGra
         );
 
     }
+
+    @Test
+    public void testFunctionTest()
+
+    {
+        test("function model::PersonWithParams(firstName: String[1]): meta::pure::tds::TabularDataSet[1]\n" +
+                "{\n" +
+                "  model::Person.all()->filter(x|$x.firstName == $firstName)->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name'])->from(execution::RelationalMapping, execution::Runtime)\n" +
+                "}\n" +
+                "{\n" +
+                "  testSuite_1\n" +
+                "  (\n" +
+                "    store::TestDB:\n" +
+                "        Relational\n" +
+                "        #{\n" +
+                "          default.PersonTable:\n" +
+                "            'id,firm_id,firstName,lastName,employeeType\\n'+\n" +
+                "            '1,1,I\\'m John,\"Doe, Jr\",FTO\\n'+\n" +
+                "            '2,1,Nicole,Smith,FTC\\n'+\n" +
+                "            '3,2,Time,Smith,FTE\\n';\n" +
+                "        }#;\n" +
+                "    testFail | PersonWithParams('Nicole') => (JSON) '[]';\n" +
+                "    testPass | PersonWithParams('Nicole') => (JSON) '[{ \"First Name\" : \"Nicole\", \"Last Name\" : \"Smith\"} ]';\n" +
+                "  )\n" +
+                "}\n");
+    }
+
 }

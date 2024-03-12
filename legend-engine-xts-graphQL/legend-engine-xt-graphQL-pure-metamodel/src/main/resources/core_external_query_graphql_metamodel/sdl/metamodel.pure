@@ -208,6 +208,13 @@ Class meta::external::query::graphQL::metamodel::sdl::typeSystem::InputObjectTyp
 
 Class meta::external::query::graphQL::metamodel::sdl::value::ObjectValue extends meta::external::query::graphQL::metamodel::sdl::value::Value
 {
+  fields: meta::external::query::graphQL::metamodel::sdl::value::ObjectField[*];
+}
+
+Class meta::external::query::graphQL::metamodel::sdl::value::ObjectField
+{
+  name: String[1];
+  value: meta::external::query::graphQL::metamodel::sdl::value::Value[1];
 }
 
 Class meta::external::query::graphQL::metamodel::sdl::executable::OperationDefinition extends meta::external::query::graphQL::metamodel::sdl::executable::ExecutableDefinition

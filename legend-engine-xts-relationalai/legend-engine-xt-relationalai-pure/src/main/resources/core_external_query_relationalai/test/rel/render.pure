@@ -1,26 +1,27 @@
-import meta::rel::metamodel::*;
-import meta::rel::metamodel::render::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::metamodel::render::program::*;
+import meta::external::store::rel::metamodel::*;
 
 
-function <<test.Test>> meta::rel::test::metamodel::render::testSimpleRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testSimpleRendering(): Any[*] {
   assertEquals(
     '1',
-    const(1)->render()
+    const(1)->renderExpr()
   );
 
   assertEquals(
     '"test"',
-    const('test')->render()
+    const('test')->renderExpr()
   );
 
   assertEquals(
     ':label',
-    label('label')->render()
+    label('label')->renderExpr()
   );
 
   assertEquals(
     'x',
-    var('x')->render()
+    var('x')->renderExpr()
   );
 
   assertEquals(
@@ -30,38 +31,38 @@ function <<test.Test>> meta::rel::test::metamodel::render::testSimpleRendering()
 
   assertEquals(
     'true',
-    reltrue()->render()
+    reltrue()->renderExpr()
   );
 
   assertEquals(
     '(x)',
-    var('x')->group()->render()
+    var('x')->parenthesise()->renderExpr()
   );
 }
 
-function <<test.Test>> meta::rel::test::metamodel::render::testExprRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testExprRendering(): Any[*] {
   assertEquals(
     'edge',
-    rel('edge')->render()
+    rel('edge')->renderExpr()
   );
 
   assertEquals(
     'edge(x, y)',
-    atom('edge', ['x', 'y'])->render()
+    atom('edge', ['x', 'y'])->renderExpr()
   );
 
   assertEquals(
     'edge(x, y) from x, y',
     atom('edge', ['x', 'y'])
       ->from(['x', 'y'])
-      ->render()
+      ->renderExpr()
   );
 
   assertEquals(
     'edge.path',
     rel('edge')
       ->compose(rel('path'))
-      ->render()
+      ->renderExpr()
   );
 
   assertEquals(
@@ -71,7 +72,7 @@ function <<test.Test>> meta::rel::test::metamodel::render::testExprRendering(): 
       )
       ->abstract('z')
       ->exists()
-      ->render()
+      ->renderExpr()
   );
 
   assertEquals(
@@ -79,19 +80,19 @@ function <<test.Test>> meta::rel::test::metamodel::render::testExprRendering(): 
     rel('a')
       ->appl([label('label1')])
       ->appl([label('label2')])
-      ->render()
+      ->renderExpr()
   );
 
   assertEquals(
     'x = y',
     var('x')
       ->equals(var('y'))
-      ->render()
+      ->renderExpr()
   );
 }
 
 
-function <<test.Test>> meta::rel::test::metamodel::render::testDefRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testDefRendering(): Any[*] {
   assertEquals(
     'def edge = {(1, 2); (2, 3)}',
     def(rel('edge'), relation([
@@ -131,7 +132,7 @@ function <<test.Test>> meta::rel::test::metamodel::render::testDefRendering(): A
   );
 }
 
-function <<test.Test>> meta::rel::test::metamodel::render::testICRendering(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::render::testICRendering(): Any[*] {
   assertEquals(
     'ic test_ic {\n' + 
       'employee(_, name) implies String(name)\n' + 

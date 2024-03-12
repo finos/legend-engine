@@ -1,4 +1,4 @@
-//  Copyright 2023 Goldman Sachs
+//  Copyright 2024 Goldman Sachs
 //
 //  Licensed under the Apache License, Version 2.0 (the "License");
 //  you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.finos.legend.engine.changetoken.generation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.classgraph.ClassGraph;
-import org.finos.legend.engine.external.language.java.generation.GenerateJavaProject;
 import org.finos.legend.pure.generated.Root_meta_pure_changetoken_Versions;
 import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryClassLoader;
 import org.finos.legend.pure.runtime.java.compiled.compiler.MemoryFileManager;
@@ -48,33 +47,40 @@ public abstract class GenerateCastTestBase
     @ClassRule
     public static TemporaryFolder tmpFolder = new TemporaryFolder();
 
-    public static void setupSuite(String versionsFuncName) throws IOException, ClassNotFoundException
-    {
-        setupSuiteFrom(versionsFuncName, "function");
-    }
-
     public static void setupSuiteFromVersions(Root_meta_pure_changetoken_Versions versions) throws IOException, ClassNotFoundException
     {
-        setupSuiteFrom(versions, "versions");
+        setupSuiteFrom(versions, "versions", true, false, true, "@type", "version");
     }
 
     public static void setupSuiteFromJson(String json) throws IOException, ClassNotFoundException
     {
-        setupSuiteFrom(json, "json");
+        setupSuiteFromJson(json, true, false, true, "@type", "version");
     }
 
-    private static void setupSuiteFrom(Object fromValue, String generatorType) throws IOException, ClassNotFoundException
+    public static void setupSuiteFromJson(String json, String typeKeyName, String versionKeyName) throws IOException, ClassNotFoundException
+    {
+        setupSuiteFromJson(json, true, false, true, typeKeyName, versionKeyName);
+    }
+
+    public static void setupSuiteFromJson(String json, boolean alwaysStampAtRootVersion, boolean optionalStampAllVersions, boolean obsoleteJsonAsString) throws IOException, ClassNotFoundException
+    {
+        setupSuiteFrom(json, "json", alwaysStampAtRootVersion, optionalStampAllVersions, obsoleteJsonAsString, "@type", "version");
+    }
+
+    private static void setupSuiteFromJson(String json, boolean alwaysStampAtRootVersion, boolean optionalStampAllVersions, boolean obsoleteJsonAsString, String typeKeyName, String versionKeyName) throws IOException, ClassNotFoundException
+    {
+        setupSuiteFrom(json, "json", alwaysStampAtRootVersion, optionalStampAllVersions, obsoleteJsonAsString, typeKeyName, versionKeyName);
+    }
+
+    private static void setupSuiteFrom(Object fromValue, String generatorType, boolean alwaysStampAtRootVersion, boolean optionalStampAllVersions, boolean obsoleteJsonAsString, String typeKeyName, String versionKeyName) throws IOException, ClassNotFoundException
     {
         Path generatedSourcesDirectory = tmpFolder.newFolder("generated-sources", "java").toPath();
         String classpath = new ClassGraph().getClasspath();
 
         String baseClassName = "TestCastFunction";
-        GenerateJavaProject generateCastProject = null;
+        GenerateCastFromVersions generateCastProject = null;
         switch (generatorType)
         {
-            case "function":
-                generateCastProject = new GenerateCast(generatedSourcesDirectory.toString(), (String) fromValue, baseClassName);
-                break;
             case "versions":
                 generateCastProject = new GenerateCastFromVersions(generatedSourcesDirectory.toString(), (Root_meta_pure_changetoken_Versions) fromValue, baseClassName);
                 break;
@@ -84,6 +90,11 @@ public abstract class GenerateCastTestBase
             default:
                 Assert.fail(generatorType);
         }
+        generateCastProject.setAlwaysStampAtRootVersion(alwaysStampAtRootVersion);
+        generateCastProject.setOptionalStampAllVersions(optionalStampAllVersions);
+        generateCastProject.setObsoleteJsonAsString(obsoleteJsonAsString);
+        generateCastProject.setTypeKeyName(typeKeyName);
+        generateCastProject.setVersionKeyName(versionKeyName);
         generateCastProject.execute();
 
         Path fileName = generatedSourcesDirectory.resolve(
@@ -112,9 +123,19 @@ public abstract class GenerateCastTestBase
         return (Map<String, Object>) compiledClass.getMethod("upcast", Map.class).invoke(null, objectNode);
     }
 
+    private Map<String, Object> upcast(Map<String, Object> objectNode, String currentVersion) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        return (Map<String, Object>) compiledClass.getMethod("upcast", Map.class, String.class).invoke(null, objectNode, currentVersion);
+    }
+
     private Map<String, Object> downcast(Map<String, Object> objectNode, String targetVersion) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
         return (Map<String, Object>) compiledClass.getMethod("downcast", Map.class, String.class).invoke(null, objectNode, targetVersion);
+    }
+
+    private Map<String, Object> downcast(Map<String, Object> objectNode, String targetVersion, String currentVersion) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        return (Map<String, Object>) compiledClass.getMethod("downcast", Map.class, String.class, String.class).invoke(null, objectNode, targetVersion, currentVersion);
     }
 
     protected Map<String, Object> parse(String value) throws JsonProcessingException
@@ -135,12 +156,38 @@ public abstract class GenerateCastTestBase
         }
     }
 
+    public Map<String, Object> upcast(String input, String currentVersion) throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        Map<String, Object> jsonNode = parse(input);
+        try
+        {
+            return upcast(jsonNode, currentVersion);
+        }
+        finally
+        {
+            Assert.assertEquals(parse(input), jsonNode);
+        }
+    }
+
     public Map<String, Object> downcast(String input, String targetVersion) throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
     {
         Map<String, Object> jsonNode = parse(input);
         try
         {
             return downcast(jsonNode, targetVersion);
+        }
+        finally
+        {
+            Assert.assertEquals(parse(input), jsonNode);
+        }
+    }
+
+    public Map<String, Object> downcast(String input, String targetVersion, String currentVersion) throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException
+    {
+        Map<String, Object> jsonNode = parse(input);
+        try
+        {
+            return downcast(jsonNode, targetVersion, currentVersion);
         }
         finally
         {

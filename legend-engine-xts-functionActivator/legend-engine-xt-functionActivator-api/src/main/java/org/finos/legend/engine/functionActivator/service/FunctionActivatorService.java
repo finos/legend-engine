@@ -16,6 +16,7 @@ package org.finos.legend.engine.functionActivator.service;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
@@ -23,14 +24,21 @@ import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionAct
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.functionActivator.deployment.DeploymentResult;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 
 import java.util.List;
 
-public interface FunctionActivatorService<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorDeploymentConfiguration, V extends DeploymentResult>
+public interface FunctionActivatorService<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorDeploymentConfiguration, V extends DeploymentResult> extends LegendExtension
 {
+    @Override
+    default String type()
+    {
+        return "Function_Activator";
+    }
+
     FunctionActivatorInfo info(PureModel pureModel, String version);
 
     boolean supports(Root_meta_external_function_activator_FunctionActivator packageableElement);

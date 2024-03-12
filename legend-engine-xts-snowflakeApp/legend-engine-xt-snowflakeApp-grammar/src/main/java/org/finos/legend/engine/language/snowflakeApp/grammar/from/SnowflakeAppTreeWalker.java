@@ -20,6 +20,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ParseTreeWalkerSourceInformation;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.SnowflakeAppParserGrammar;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
@@ -77,11 +78,8 @@ public class SnowflakeAppTreeWalker
                 functionContext.functionIdentifier().getText(),
                 walkerSourceInformation.getSourceInformation(functionContext.functionIdentifier())
         );
-        SnowflakeAppParserGrammar.OwnerContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.owner(), "owner", snowflakeApp.sourceInformation);
-        if (ownerContext != null)
-        {
-            snowflakeApp.owner = PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true);
-        }
+        SnowflakeAppParserGrammar.OwnershipContext ownerContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.ownership(), "ownership", snowflakeApp.sourceInformation);
+        snowflakeApp.ownership = new DeploymentOwner(PureGrammarParserUtility.fromGrammarString(ownerContext.STRING().getText(), true));
         SnowflakeAppParserGrammar.DescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.description(), "description", snowflakeApp.sourceInformation);
         if (descriptionContext != null)
         {

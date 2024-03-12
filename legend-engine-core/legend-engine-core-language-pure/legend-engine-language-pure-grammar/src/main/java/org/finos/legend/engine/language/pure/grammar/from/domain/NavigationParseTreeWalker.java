@@ -54,7 +54,7 @@ public class NavigationParseTreeWalker
         path.startType = ctx.genericType() != null ? ctx.genericType().getText() : null;
         path.path = ctx.propertyWithParameters() == null ? FastList.newList() : ListIterate.collect(ctx.propertyWithParameters(), this::visitPropertyPathElement);
         path.sourceInformation = walkerSourceInformation.getSourceInformation(ctx);
-        return DomainParseTreeWalker.wrapWithClassInstance(path, "path");
+        return DomainParseTreeWalker.wrapWithClassInstance(path, path.sourceInformation, "path");
     }
 
     private PropertyPathElement visitPropertyPathElement(NavigationParserGrammar.PropertyWithParametersContext context)

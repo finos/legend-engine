@@ -17,7 +17,7 @@ package org.finos.legend.engine.language.hostedService.generation.control;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_Ownership;
+import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_UserList;
 
 import javax.security.auth.Subject;
@@ -41,7 +41,7 @@ public class UserListOwnerValidator implements HostedServiceOwnerValidator<Root_
     }
 
     @Override
-    public boolean supports(Root_meta_external_function_activator_hostedService_Ownership ownershipModel)
+    public boolean supports(Root_meta_external_function_activator_Ownership ownershipModel)
     {
         return ownershipModel instanceof Root_meta_external_function_activator_hostedService_UserList;
     }

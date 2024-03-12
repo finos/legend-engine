@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode;
 
+import org.finos.legend.engine.persistence.components.SnowflakeTestArtifacts;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.snowflake.SnowflakeSink;
 
@@ -24,5 +25,27 @@ public class NontemporalSnapshotTest extends org.finos.legend.engine.persistence
     public RelationalSink getRelationalSink()
     {
         return SnowflakeSink.get();
+    }
+
+    @Override
+    protected String getExpectedMetadataTableIngestQuery()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQuery;
+    }
+
+    @Override
+    protected String getExpectedMetadataTableIngestQueryWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableCreateQuery()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQuery;
+    }
+
+    protected String getExpectedMetadataTableCreateQueryWithUpperCase()
+    {
+        return SnowflakeTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase;
     }
 }

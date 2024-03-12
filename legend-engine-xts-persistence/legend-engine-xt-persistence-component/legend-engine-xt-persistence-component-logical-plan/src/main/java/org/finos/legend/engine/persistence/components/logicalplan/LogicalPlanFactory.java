@@ -15,8 +15,6 @@
 package org.finos.legend.engine.persistence.components.logicalplan;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
-import org.finos.legend.engine.persistence.components.ingestmode.BulkLoad;
-import org.finos.legend.engine.persistence.components.ingestmode.IngestMode;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -33,8 +31,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TabularValues;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataUtils;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
@@ -93,23 +89,12 @@ public class LogicalPlanFactory
             .build();
     }
 
-    public static LogicalPlan getLogicalPlanForNextBatchId(Datasets datasets, IngestMode ingestMode)
+    public static LogicalPlan getLogicalPlanForNextBatchId(Datasets datasets)
     {
         StringValue mainTable = StringValue.of(datasets.mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
-        Selection selection;
-        if (ingestMode instanceof BulkLoad)
-        {
-            BulkLoadMetadataDataset bulkLoadMetadataDataset = datasets.bulkLoadMetadataDataset().orElse(BulkLoadMetadataDataset.builder().build());
-            BulkLoadMetadataUtils bulkLoadMetadataUtils = new BulkLoadMetadataUtils(bulkLoadMetadataDataset);
-            selection = bulkLoadMetadataUtils.getBatchId(mainTable).selection();
-        }
-        else
-        {
-            MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
-            MetadataUtils metadataUtils = new MetadataUtils(metadataDataset);
-            selection = metadataUtils.getBatchId(mainTable).selection();
-        }
-
+        MetadataDataset metadataDataset = datasets.metadataDataset().orElse(MetadataDataset.builder().build());
+        MetadataUtils metadataUtils = new MetadataUtils(metadataDataset);
+        Selection selection = metadataUtils.getBatchId(mainTable).selection();
         return LogicalPlan.builder().addOps(selection).build();
     }
 

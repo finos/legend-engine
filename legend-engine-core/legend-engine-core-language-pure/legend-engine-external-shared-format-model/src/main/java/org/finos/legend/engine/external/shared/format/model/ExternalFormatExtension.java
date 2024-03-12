@@ -14,12 +14,15 @@
 
 package org.finos.legend.engine.external.shared.format.model;
 
+import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.external.shared.format.model.compile.ExternalSchemaCompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.shared.core.extension.LegendExternalFormatExtension;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_ExternalFormatContract;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_binding_Binding;
@@ -35,8 +38,20 @@ import java.util.List;
  * will represent the semantically checked and canonicalized data model (for example inclusions maybe
  * inlined and references reconciled).
  */
-public interface ExternalFormatExtension<Metamodel>
+public interface ExternalFormatExtension<Metamodel> extends LegendExternalFormatExtension
 {
+    @Override
+    default String type()
+    {
+        return "External_Format";
+    }
+
+    @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("External_Format");
+    }
+
     /**
      * Returns the contract for this external format written in PURE
      */

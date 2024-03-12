@@ -46,7 +46,9 @@ public class EnumerationMappingParseTreeWalker
     public EnumValueMapping visitEnumValueMapping(EnumerationMappingParserGrammar.EnumSingleEntryMappingContext enumerationMappingContext)
     {
         EnumValueMapping enumValueMapping = new EnumValueMapping();
+        enumValueMapping.sourceInformation = this.walkerSourceInformation.getSourceInformation(enumerationMappingContext);
         enumValueMapping.enumValue = PureGrammarParserUtility.fromIdentifier(enumerationMappingContext.enumName().identifier());
+        enumValueMapping.enumValueSourceInformation = this.walkerSourceInformation.getSourceInformation(enumerationMappingContext.enumName().identifier());
         enumValueMapping.sourceValues = new ArrayList<>();
         if (enumerationMappingContext.enumMultipleSourceValue() != null && enumerationMappingContext.enumMultipleSourceValue().enumSourceValue() != null)
         {

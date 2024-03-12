@@ -23,6 +23,18 @@ import org.finos.legend.engine.plan.generation.transformers.VersionPlanTransform
 public class LegendPlanGeneratorExtension implements PlanGeneratorExtension
 {
     @Override
+    public String type()
+    {
+        return "Protocol_Version_Transformer";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Version_Transformer");
+    }
+
+    @Override
     public MutableList<PlanTransformer> getExtraPlanTransformers()
     {
         return Lists.mutable.withAll(LegendPlanTransformers.transformers).with(new VersionPlanTransformer());

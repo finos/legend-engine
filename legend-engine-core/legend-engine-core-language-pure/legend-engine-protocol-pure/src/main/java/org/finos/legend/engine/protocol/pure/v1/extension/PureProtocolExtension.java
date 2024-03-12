@@ -17,13 +17,20 @@ package org.finos.legend.engine.protocol.pure.v1.extension;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
+import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public interface PureProtocolExtension
+public interface PureProtocolExtension extends LegendLanguageExtension
 {
+    @Override
+    default String type()
+    {
+        return "Protocol";
+    }
+
     @Deprecated
     default List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {

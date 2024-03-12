@@ -46,7 +46,7 @@ public class TestEmbeddedPureExtension extends TestGrammarParser.TestGrammarPars
         test("function f(): Any[*]\n" +
                 "{\n" +
                 "   let x = #Unknown{My random Parser #Test{ OK OK } Yo}#\n" +
-                "}\n", "PARSER error at [6:12-56]: Can't find an embedded Pure parser for the type 'Unknown' available ones: [Test]");
+                "}\n", "PARSER error at [6:12-56]: Can't find an embedded Pure parser for the type 'Unknown' available ones: [Test,>]");
     }
 
     @Test

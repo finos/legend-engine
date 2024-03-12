@@ -27,7 +27,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->project([p|$p.firstName, p|$p.firm.legalName], ['firstName', 'firmName'])
          ->restrictDistinct(['firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
@@ -39,7 +39,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->restrict(['firstName'])
          ->distinct(),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res2.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
@@ -53,7 +53,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->project([col(p|$p.firstName, 'firstName'), col(p|$p.firm.legalName, 'firmName')])
          ->restrictDistinct(['firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
@@ -65,7 +65,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->restrict(['firstName'])
          ->distinct(),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res2.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
@@ -80,7 +80,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->take(1000)
          ->restrictDistinct(['firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
@@ -93,7 +93,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->restrict(['firstName'])
          ->distinct(),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res2.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res2.values.rows.values->sort()->makeString(','));
@@ -109,7 +109,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->sort(asc('firstName'))
          ->distinct(),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res1.values.columns, 1);
    assertEquals('Anthony,David,Fabrice,John,Oliver,Peter', $res1.values.rows.values->sort()->makeString(','));
@@ -126,7 +126,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->sort(asc('firstName'))
          ->groupBy([], [agg('cnt', x|$x, y|$y->count())]),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res1.values.columns, 1);
    assertEquals('6', $res1.values.rows.values->sort()->makeString(','));
@@ -140,7 +140,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.firm.legalName, 'firmName')])
          ->restrictDistinct(['firmName', 'lastName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res1.values.columns, 2);
    assertEquals('Firm A|Roberts,Firm B|Hill,Firm C|Harris,Firm X|Allen,Firm X|Hill,Firm X|Johnson,Firm X|Smith', $res1.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
@@ -152,7 +152,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->restrict(['firmName', 'lastName'])
          ->distinct(),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res2.values.columns, 2);
    assertEquals('Firm A|Roberts,Firm B|Hill,Firm C|Harris,Firm X|Allen,Firm X|Hill,Firm X|Johnson,Firm X|Smith', $res2.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
@@ -166,7 +166,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.firm.legalName, 'firmName')])
          ->restrictDistinct(['lastName', 'firstName']),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res1.values.columns, 2);
    assertEquals('Allen|Anthony,Harris|David,Hill|John,Hill|Oliver,Johnson|John,Roberts|Fabrice,Smith|Peter', $res1.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));
@@ -178,7 +178,7 @@ function <<test.Test>> meta::relational::tests::tds::tdsRestrictDistinct::testRe
          ->restrict(['lastName', 'firstName'])
          ->distinct(),
       simpleRelationalMapping,
-      testRuntime(), meta::relational::extension::relationalExtensions());
+      meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSize($res2.values.columns, 2);
    assertEquals('Allen|Anthony,Harris|David,Hill|John,Hill|Oliver,Johnson|John,Roberts|Fabrice,Smith|Peter', $res2.values.rows->map(x|$x.values->makeString('|'))->sort()->makeString(','));

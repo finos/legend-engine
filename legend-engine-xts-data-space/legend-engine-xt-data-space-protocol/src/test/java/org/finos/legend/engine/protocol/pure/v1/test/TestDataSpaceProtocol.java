@@ -36,6 +36,14 @@ public class TestDataSpaceProtocol
     }
 
     @Test
+    public void testBasicProtocolForExecutableTemplate() throws Exception
+    {
+        PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("dataSpace_TestDataWithExecutableTemplate.json")), PureModelContextData.class);
+        Assert.assertEquals(1, context.getElementsOfType(DataSpace.class).size());
+        Assert.assertEquals(1, context.getElements().size());
+    }
+
+    @Test
     public void testProtocolBackwardCompatibility() throws Exception
     {
         PureModelContextData context = objectMapper.readValue(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("dataSpace_DeprecatedModel.json")), PureModelContextData.class);

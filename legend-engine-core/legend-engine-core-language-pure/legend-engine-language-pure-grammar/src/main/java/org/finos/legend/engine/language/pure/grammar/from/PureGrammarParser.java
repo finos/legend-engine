@@ -37,6 +37,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.RootGraphFetchTree;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -182,7 +184,7 @@ public class PureGrammarParser
                 String message = e instanceof UnsupportedOperationException && (e.getMessage() == null || e.getMessage().isEmpty())
                         ? "Unsupported syntax"
                         : e instanceof NullPointerException ? "An exception of type 'NullPointerException' occurred, please notify developer" : e.getMessage();
-                LOGGER.error(new LogInfo(null, LoggingEventType.GRAMMAR_PARSING_ERROR, message).toString(), e);
+                LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.GRAMMAR_PARSING_ERROR, message).toString(), e);
                 throw new EngineException(message, sectionSourceInformation, EngineErrorType.PARSER, e);
             }
         }

@@ -17,15 +17,12 @@ import meta::pure::executionPlan::engine::java::roadmap::*;
 import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::simple::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::simple::src::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::simple::bridge::*;
 import meta::pure::mapping::modelToModel::test::alloy::chain::simple::dest::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> {serverVersion.start='v1_19_0'}
 meta::pure::mapping::modelToModel::test::alloy::chain::simple::simpleChainSerializeFlat(): Boolean[1]
 {
@@ -495,7 +492,7 @@ meta::pure::mapping::modelToModel::test::alloy::chain::simple::chainWithFilter()
             element = ^ModelStore()
           )
          ]
-      )) ->serialize($tree)},[], ^ExecutionContext(),
+      )) ->serialize($tree)},[], ^meta::pure::runtime::ExecutionContext(),
       meta::pure::extension::defaultExtensions()
 );
 

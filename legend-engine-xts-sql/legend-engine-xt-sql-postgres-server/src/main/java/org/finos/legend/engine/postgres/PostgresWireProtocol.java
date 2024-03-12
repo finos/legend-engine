@@ -69,6 +69,7 @@ import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+
 import static org.finos.legend.engine.postgres.FormatCodes.getFormatCode;
 
 
@@ -887,10 +888,12 @@ public class PostgresWireProtocol
         }
         session.execute(portalName, maxRows, resultReceiver);*/
 
+
         try
         {
-            PostgresResultSet resultSet = session.execute(portalName, maxRows);
-            sendResultSet(channel, query, resultSet, false);
+            DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
+            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, false, null);
+            session.execute(portalName, maxRows, resultReceiver);
         }
         catch (Exception e)
         {
@@ -898,34 +901,6 @@ public class PostgresWireProtocol
         }
     }
 
-    private void sendResultSet(Channel channel, String query, PostgresResultSet rs,
-                               boolean isSimpleQuery)
-            throws Exception
-    {
-        int rowCount = 0;
-        if (rs != null)
-        {
-            if (isSimpleQuery)
-            {
-                //Simple query requires to send description
-                Messages.sendRowDescription(channel, rs.getMetaData(), null);
-            }
-            PostgresResultSetMetaData metaData = rs.getMetaData();
-            List<PGType> columnTypes = new ArrayList<>(metaData.getColumnCount());
-            for (int i = 0; i < metaData.getColumnCount(); i++)
-            {
-                PGType pgType = PGTypes.get(metaData.getColumnType(i + 1), metaData.getScale(i + 1));
-                columnTypes.add(pgType);
-            }
-            while (rs.next())
-            {
-                rowCount++;
-                Messages.sendDataRow(channel, rs, columnTypes, null);
-            }
-        }
-        LOGGER.info("Query complete with row count {}", rowCount);
-        Messages.sendCommandComplete(channel, query, rowCount);
-    }
 
     private void handleSync(DelayableWriteChannel channel)
     {
@@ -955,7 +930,6 @@ public class PostgresWireProtocol
         catch (Throwable t)
         {
             channel.discardDelayedWrites();
-            //Messages.sendErrorResponse(channel, getAccessControl.apply(session.sessionSettings()), t);
             Messages.sendErrorResponse(channel, t);
             Messages.sendReadyForQuery(channel);
         }
@@ -996,82 +970,31 @@ public class PostgresWireProtocol
             }
             composedFuture.whenComplete(new ReadyForQueryCallback(channel, TransactionState.IDLE));
         }*/
-    void handleSimpleQuery(ByteBuf buffer, final Channel channel)
+    void handleSimpleQuery(ByteBuf buffer, final DelayableWriteChannel channel)
     {
         String queryString = readCString(buffer);
         assert queryString != null : "query must not be nulL";
 
-        List<String> queries = QueryStringSplitter.splitQuery(queryString);
 
+        if (queryString.isEmpty() || ";".equals(queryString))
+        {
+            Messages.sendEmptyQueryResponse(channel);
+            Messages.sendReadyForQuery(channel);
+            return;
+        }
+
+        List<String> queries = QueryStringSplitter.splitQuery(queryString);
         CompletableFuture<?> composedFuture = CompletableFuture.completedFuture(null);
         for (String query : queries)
         {
-            composedFuture = composedFuture.thenCompose(result ->
-            {
-                try
-                {
-                    //TODO NEED A CLEANER SOLUTION
-                    return handleSingleQuery(query, channel);
-                }
-                catch (SQLException e)
-                {
-                    throw new RuntimeException(e);
-                }
-            });
+            composedFuture = composedFuture.thenCompose(result -> handleSingleQuery(query, channel));
         }
         composedFuture.whenComplete(new ReadyForQueryCallback(channel));
+
     }
 
 
-   /* private CompletableFuture<?> handleSingleQuery(String query, DelayableWriteChannel channel) {
-        CompletableFuture<?> result = new CompletableFuture<>();
-
-        String query;
-        try {
-            query = SqlFormatter.formatSql(statement);
-        } catch (Exception e) {
-            query = statement.toString();
-        }
-        AccessControl accessControl = getAccessControl.apply(session.sessionSettings());
-        try {
-            session.analyze("", statement, Collections.emptyList(), query);
-            session.bind("", "", Collections.emptyList(), null);
-            DescribeResult describeResult = session.describe('P', "");
-            List<Symbol> fields = describeResult.getFields();
-
-            if (fields == null) {
-                DelayedWrites delayedWrites = channel.delayWrites();
-                RowCountReceiver rowCountReceiver = new RowCountReceiver(
-                    query,
-                    channel,
-                    delayedWrites,
-                    accessControl
-                );
-                session.execute("", 0, rowCountReceiver);
-            } else {
-                Messages.sendRowDescription(channel, fields, null, describeResult.relation());
-                DelayedWrites delayedWrites = channel.delayWrites();
-                ResultSetReceiver resultSetReceiver = new ResultSetReceiver(
-                    query,
-                    channel,
-                    delayedWrites,
-                    TransactionState.IDLE,
-                    accessControl,
-                    Lists2.map(fields, x -> PGTypes.get(x.valueType())),
-                    null
-                );
-                session.execute("", 0, resultSetReceiver);
-            }
-            return session.sync();
-        } catch (Throwable t) {
-            channel.discardDelayedWrites();
-            Messages.sendErrorResponse(channel, accessControl, t);
-            result.completeExceptionally(t);
-            return result;
-        }
-    }*/
-
-    private CompletableFuture<?> handleSingleQuery(String query, Channel channel) throws SQLException
+    private CompletableFuture<?> handleSingleQuery(String query, DelayableWriteChannel channel)
     {
 
         CompletableFuture<?> result = new CompletableFuture<>();
@@ -1084,10 +1007,10 @@ public class PostgresWireProtocol
         }
         try
         {
-            PostgresResultSet resultSet = session.executeSimple(query);
-            sendResultSet(channel, query, resultSet, true);
-            result.complete(null);
-            return result;
+            DelayableWriteChannel.DelayedWrites delayedWrites = channel.delayWrites();
+            ResultSetReceiver resultReceiver = new ResultSetReceiver(query, channel, delayedWrites, true, null);
+            session.executeSimple(query, resultReceiver);
+            return session.sync();
         }
         catch (Throwable t)
         {
@@ -1101,6 +1024,7 @@ public class PostgresWireProtocol
 
 
     }
+
 
     private void handleCancelRequestBody(ByteBuf buffer, Channel channel)
     {

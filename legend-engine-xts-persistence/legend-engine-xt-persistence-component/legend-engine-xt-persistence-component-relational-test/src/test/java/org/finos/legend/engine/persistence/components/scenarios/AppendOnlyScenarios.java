@@ -28,6 +28,8 @@ import org.finos.legend.engine.persistence.components.ingestmode.versioning.Dige
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.MaxVersionStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.versioning.NoVersioningStrategy;
 
+import java.util.Arrays;
+
 public class AppendOnlyScenarios extends BaseTest
 {
 
@@ -168,9 +170,10 @@ public class AppendOnlyScenarios extends BaseTest
                     .performStageVersioning(true)
                     .build())
                 .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
+                .batchIdField(batchNumberField)
                 .filterExistingRecords(true)
                 .build();
-        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchemaAndDigest, ingestMode);
+        return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditFieldAndBatchNumber, stagingTableWithBaseSchemaAndDigest, ingestMode);
     }
 
     public TestScenario WITH_AUDITING__FAIL_ON_DUPS__MAX_VERSION__WITH_FILTER_EXISTING_RECORDS()
@@ -254,7 +257,7 @@ public class AppendOnlyScenarios extends BaseTest
                 .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(batchUpdateTimeField).build())
             .filterExistingRecords(false)
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(digestUdf).digestField(digestField).addAllFieldsToExcludeFromDigest(Arrays.asList(id.name(), amount.name())).build())
             .build();
         return new TestScenario(mainTableWithBaseSchemaHavingDigestAndAuditField, stagingTableWithBaseSchema, ingestMode);
     }

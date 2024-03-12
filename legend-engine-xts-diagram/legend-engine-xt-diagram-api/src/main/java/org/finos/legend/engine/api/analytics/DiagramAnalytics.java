@@ -32,6 +32,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -79,8 +81,9 @@ public class DiagramAnalytics
                                                 @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         Root_meta_pure_metamodel_diagram_Diagram diagram = getDiagram(input.diagram, null, pureModel.getContext());
 
         try (Scope scope = GlobalTracer.get().buildSpan("Analytics: diagram model coverage").startActive(true))
@@ -97,11 +100,11 @@ public class DiagramAnalytics
                 {
                     builder.addElement(Objects.requireNonNull(pureModelContextData.getElements().stream().filter(el -> input.diagram.equals(el.getPath())).findFirst().get()));
                 }
-                return ManageConstantResult.manageResult(profiles, builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations), objectMapper);
+                return ManageConstantResult.manageResult(identity.getName(), builder.build().combine(classes).combine(enums).combine(_profiles).combine(associations), objectMapper);
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }

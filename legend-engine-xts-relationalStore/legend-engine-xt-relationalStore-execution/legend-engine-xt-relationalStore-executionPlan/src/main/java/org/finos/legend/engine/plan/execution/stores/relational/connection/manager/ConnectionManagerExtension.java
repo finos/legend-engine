@@ -15,10 +15,11 @@
 package org.finos.legend.engine.plan.execution.stores.relational.connection.manager;
 
 import org.finos.legend.engine.plan.execution.stores.relational.connection.authentication.strategy.OAuthProfile;
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
 
 import java.util.List;
 
-public interface ConnectionManagerExtension
+public interface ConnectionManagerExtension extends LegendConnectionExtension
 {
     ConnectionManager getExtensionManager(int testDbPort, List<OAuthProfile> oauthProfiles);
 }

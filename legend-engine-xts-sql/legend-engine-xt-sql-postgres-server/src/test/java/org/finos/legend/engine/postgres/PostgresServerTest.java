@@ -30,6 +30,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.postgres.auth.AnonymousIdentityProvider;
 import org.finos.legend.engine.postgres.auth.NoPasswordAuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
+import org.finos.legend.engine.postgres.handler.legend.LegendExecutionService;
 import org.finos.legend.engine.postgres.handler.legend.LegendSessionFactory;
 import org.finos.legend.engine.postgres.handler.legend.LegendTdsTestClient;
 import org.finos.legend.engine.query.sql.api.execute.SqlExecuteTest;
@@ -57,7 +58,7 @@ public class PostgresServerTest
     public static void setUp()
     {
         LegendTdsTestClient client = new LegendTdsTestClient(resources);
-        LegendSessionFactory legendSessionFactory = new LegendSessionFactory(client);
+        LegendSessionFactory legendSessionFactory = new LegendSessionFactory(new LegendExecutionService(client));
 
         ServerConfig serverConfig = new ServerConfig();
         serverConfig.setPort(0);

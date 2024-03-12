@@ -42,6 +42,7 @@ public class MergeStatement implements DMLStatement
     private final List<Pair<Field, Value>> setUnmatchedPairs;
     private Condition onCondition;
     private Condition matchedCondition;
+    private Condition notMatchedCondition;
 
     public MergeStatement()
     {
@@ -55,7 +56,8 @@ public class MergeStatement implements DMLStatement
                           List<Pair<Field, Value>> setMatchedPairs,
                           List<Pair<Field, Value>> setUnmatchedPairs,
                           Condition onCondition,
-                          Condition matchedCondition)
+                          Condition matchedCondition,
+                          Condition notMatchedCondition)
     {
         this.sourceTable = sourceTable;
         this.targetTable = targetTable;
@@ -64,6 +66,7 @@ public class MergeStatement implements DMLStatement
         this.setUnmatchedPairs = setUnmatchedPairs;
         this.onCondition = onCondition;
         this.matchedCondition = matchedCondition;
+        this.notMatchedCondition = notMatchedCondition;
     }
 
     /*
@@ -71,7 +74,7 @@ public class MergeStatement implements DMLStatement
      MERGE INTO sourceTable USING targetTable ON (onCondition)
        WHEN MATCHED (AND matchedCondition) THEN
          UPDATE SET column1 = value1 [, column2 = value2 ...]
-       WHEN NOT MATCHED THEN
+       WHEN NOT MATCHED (AND notMatchedCondition) THEN
          INSERT (column1 [, column2 ...]) VALUES (value1 [, value2 ...]);
      */
 
@@ -128,6 +131,14 @@ public class MergeStatement implements DMLStatement
         // Add WHEN NOT MATCHED
         builder.append(WHITE_SPACE + Clause.WHEN_NOT_MATCHED.get() + WHITE_SPACE);
 
+        // Add notMatchedCondition Clause
+        if (notMatchedCondition != null)
+        {
+            builder.append(Clause.AND.get() + WHITE_SPACE);
+            notMatchedCondition.genSql(builder);
+            builder.append(WHITE_SPACE);
+        }
+
         // Add THEN INSERT
         builder.append(Clause.THEN.get() + WHITE_SPACE + Clause.INSERT.get() + WHITE_SPACE);
 
@@ -183,7 +194,14 @@ public class MergeStatement implements DMLStatement
             }
             else
             {
-                matchedCondition = (Condition) node;
+                if (matchedCondition == null)
+                {
+                    matchedCondition = (Condition) node;
+                }
+                else
+                {
+                    notMatchedCondition = (Condition) node;
+                }
             }
         }
         else if (node instanceof NumericalValue)

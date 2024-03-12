@@ -1,0 +1,49 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::query::sql::*;
+
+Class meta::external::query::sql::SQLExtension
+{
+   name:String[1];
+   udfs: meta::external::query::sql::UserDefinedFunctions[0..1];
+
+   udf(name:String[1]){
+    $this.udfs.processors->filter(p | toLower($this.udfs->toOne().prefix + '_' + $p.name) == $name->toLower())
+   }:meta::external::query::sql::transformation::queryToPure::FunctionProcessor[*];
+}
+
+Class meta::external::query::sql::UserDefinedFunctions[
+  prefixNotBlank: $this.prefix->length() > 0,
+  prefixOnlyChars: $this.prefix->matches('[a-zA-Z]*')
+]
+{
+  prefix: String[1];
+  processors: meta::external::query::sql::transformation::queryToPure::FunctionProcessor[*];
+
+  names(){
+    $this.processors->map(p | $this.prefix + '_' + $p.name)
+  }:String[*];
+}
+
+Profile meta::external::query::sql::sql
+{
+   stereotypes: [Extension];
+}
+
+function meta::external::query::sql::getSQLExtensions():SQLExtension[*]
+{
+  sql->stereotype('Extension').modelElements->cast(@meta::pure::metamodel::function::Function<{->SQLExtension[1]}>)
+    ->map(f| $f->eval());
+}

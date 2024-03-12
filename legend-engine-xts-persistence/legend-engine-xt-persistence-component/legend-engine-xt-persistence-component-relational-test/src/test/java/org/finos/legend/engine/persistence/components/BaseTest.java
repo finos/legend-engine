@@ -88,6 +88,8 @@ public class BaseTest
     protected String snapshotIdField = "snapshot_id";
     protected String dataSplitField = "data_split";
     protected String batchUpdateTimeField = "batch_update_time";
+    protected String batchIdField = "batch_id";
+    protected String batchNumberField = "batch_number";
     protected String batchIdInField = "batch_id_in";
     protected String batchIdOutField = "batch_id_out";
     protected String batchTimeInField = "batch_time_in";
@@ -135,6 +137,8 @@ public class BaseTest
     protected Field batchUpdateTime = Field.builder().name(batchUpdateTimeField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
 
     protected Field batchUpdateTimeNonPK = Field.builder().name(batchUpdateTimeField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build();
+    protected Field batchId = Field.builder().name(batchIdField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
+    protected Field batchNumber = Field.builder().name(batchNumberField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     protected Field batchIdIn = Field.builder().name(batchIdInField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).build();
     protected Field batchIdOut = Field.builder().name(batchIdOutField).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).build();
     protected Field batchTimeIn = Field.builder().name(batchTimeInField).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
@@ -156,11 +160,19 @@ public class BaseTest
         add(DataSplitRange.of(11, 14));
     }};
 
-    protected SchemaDefinition baseTableSchema = SchemaDefinition.builder()
+    protected SchemaDefinition stagingTableSchema = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
         .addFields(bizDate)
+        .build();
+
+    protected SchemaDefinition mainTableSchema = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(name)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(batchId)
         .build();
 
     protected SchemaDefinition baseTableShortenedSchema = SchemaDefinition.builder()
@@ -244,7 +256,7 @@ public class BaseTest
         .addFields(batchTimeOut)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithDigest = SchemaDefinition.builder()
+    protected SchemaDefinition stagingTableSchemaWithDigest = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
@@ -252,7 +264,16 @@ public class BaseTest
         .addFields(digest)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithDigestAndVersion = SchemaDefinition.builder()
+    protected SchemaDefinition mainTableSchemaWithDigest = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(name)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(digest)
+        .addFields(batchId)
+        .build();
+
+    protected SchemaDefinition stagingTableSchemaWithDigestAndVersion = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
@@ -261,7 +282,17 @@ public class BaseTest
             .addFields(version)
             .build();
 
-    protected SchemaDefinition baseTableSchemaWithNoPrimaryKeys = SchemaDefinition.builder()
+    protected SchemaDefinition mainTableSchemaWithDigestAndVersion = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(name)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(digest)
+        .addFields(version)
+        .addFields(batchId)
+        .build();
+
+    protected SchemaDefinition stagingTableSchemaWithNoPrimaryKeys = SchemaDefinition.builder()
         .addFields(idNonPrimary)
         .addFields(nameNonPrimary)
         .addFields(amount)
@@ -269,23 +300,33 @@ public class BaseTest
         .addFields(digest)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithNoPrimaryKeysAndNoDigest = SchemaDefinition.builder()
+    protected SchemaDefinition mainTableSchemaWithNoPrimaryKeys = SchemaDefinition.builder()
+        .addFields(idNonPrimary)
+        .addFields(nameNonPrimary)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(digest)
+        .addFields(batchId)
+        .build();
+
+    protected SchemaDefinition stagingTableSchemaWithNoPrimaryKeysAndNoDigest = SchemaDefinition.builder()
         .addFields(idNonPrimary)
         .addFields(nameNonPrimary)
         .addFields(amount)
         .addFields(bizDate)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithAuditAndNoPrimaryKeys = SchemaDefinition.builder()
+    protected SchemaDefinition mainTableSchemaWithAuditAndNoPrimaryKeys = SchemaDefinition.builder()
             .addFields(idNonPrimary)
             .addFields(nameNonPrimary)
             .addFields(amount)
             .addFields(bizDate)
             .addFields(digest)
             .addFields(batchUpdateTimeNonPK)
+            .addFields(batchId)
             .build();
 
-    protected SchemaDefinition baseTableSchemaWithDigestAndDataSplit = SchemaDefinition.builder()
+    protected SchemaDefinition stagingTableSchemaWithDigestAndDataSplit = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
@@ -294,21 +335,33 @@ public class BaseTest
         .addFields(dataSplit)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithDigestAndUpdateBatchTimeField = SchemaDefinition.builder()
+    protected SchemaDefinition mainTableSchemaWithDigestAndUpdateBatchTimeField = SchemaDefinition.builder()
         .addFields(id)
         .addFields(name)
         .addFields(amount)
         .addFields(bizDate)
         .addFields(digest)
         .addFields(batchUpdateTime)
+        .addFields(batchId)
         .build();
 
-    protected SchemaDefinition baseTableSchemaWithUpdateBatchTimeField = SchemaDefinition.builder()
+    protected SchemaDefinition mainTableSchemaWithDigestAndUpdateBatchTimeFieldAndBatchNumber = SchemaDefinition.builder()
+        .addFields(id)
+        .addFields(name)
+        .addFields(amount)
+        .addFields(bizDate)
+        .addFields(digest)
+        .addFields(batchUpdateTime)
+        .addFields(batchNumber)
+        .build();
+
+    protected SchemaDefinition mainTableSchemaWithUpdateBatchTimeField = SchemaDefinition.builder()
             .addFields(id)
             .addFields(name)
             .addFields(amount)
             .addFields(bizDate)
             .addFields(batchUpdateTime)
+            .addFields(batchId)
             .build();
 
     protected SchemaDefinition stagingTableSchemaWithLimitedColumns = SchemaDefinition.builder()
@@ -556,16 +609,16 @@ public class BaseTest
 
     protected Dataset mainTableWithBaseSchema = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchema)
+            .schema(mainTableSchema)
             .build();
 
     protected Dataset stagingTableWithBaseSchema = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchema)
+            .schema(stagingTableSchema)
             .build();
     protected Dataset mainTableWithNoPrimaryKeys = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithNoPrimaryKeys)
+            .schema(mainTableSchemaWithNoPrimaryKeys)
             .build();
 
     protected Dataset mainTableWithNoFields = DatasetDefinition.builder()
@@ -575,67 +628,67 @@ public class BaseTest
 
     protected Dataset stagingTableWithNoPrimaryKeys = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithNoPrimaryKeys)
+            .schema(stagingTableSchemaWithNoPrimaryKeys)
             .build();
 
     protected Dataset stagingTableWithNoPrimaryKeysAndNoDigest = DatasetDefinition.builder()
         .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-        .schema(baseTableSchemaWithNoPrimaryKeysAndNoDigest)
+        .schema(stagingTableSchemaWithNoPrimaryKeysAndNoDigest)
         .build();
 
     protected Dataset mainTableWithNoPrimaryKeysHavingAuditField = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithAuditAndNoPrimaryKeys)
+            .schema(mainTableSchemaWithAuditAndNoPrimaryKeys)
             .build();
 
     protected Dataset mainTableWithBaseSchemaAndDigest = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigest)
+            .schema(mainTableSchemaWithDigest)
             .build();
 
     protected Dataset stagingTableWithBaseSchemaAndDigest = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
+            .schema(stagingTableSchemaWithDigest)
             .build();
 
     protected Dataset stagingTableWithFilter = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
+            .schema(stagingTableSchemaWithDigest)
             .addDatasetFilters(DatasetFilter.of(batchIdInField, FilterType.GREATER_THAN, 5L))
             .build();
 
     protected Dataset stagingTableWithFilterAndVersion = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigestAndVersion)
+            .schema(stagingTableSchemaWithDigestAndVersion)
             .addDatasetFilters(DatasetFilter.of(batchIdInField, FilterType.GREATER_THAN, 5L))
             .build();
 
     protected Dataset stagingTableWithVersion = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigestAndVersion)
+            .schema(stagingTableSchemaWithDigestAndVersion)
             .build();
 
     protected Dataset stagingTableWithVersionAndSnapshotId = DerivedDataset.builder()
         .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-        .schema(baseTableSchemaWithDigestAndVersion)
+        .schema(stagingTableSchemaWithDigestAndVersion)
         .addDatasetFilters(DatasetFilter.of(snapshotIdField, FilterType.GREATER_THAN, 18972L))
         .build();
 
     protected Dataset mainTableWithVersion = DatasetDefinition.builder()
         .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-        .schema(baseTableSchemaWithDigestAndVersion)
+        .schema(mainTableSchemaWithDigestAndVersion)
         .build();
 
     protected Dataset stagingTableWithFilters = DerivedDataset.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigest)
+            .schema(stagingTableSchemaWithDigest)
             .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.GREATER_THAN, "2020-01-01"))
             .addDatasetFilters(DatasetFilter.of("biz_date", FilterType.LESS_THAN, "2020-01-03"))
             .build();
 
     protected Dataset filteredStagingTable = FilteredDataset.builder()
         .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-        .schema(baseTableSchemaWithDigest)
+        .schema(stagingTableSchemaWithDigest)
         .filter(GreaterThan.of(FieldValue.builder()
             .fieldName(batchIdInField)
             .datasetRefAlias(stagingTableAlias)
@@ -644,7 +697,7 @@ public class BaseTest
 
     protected Dataset filteredStagingTableWithVersion = FilteredDataset.builder()
         .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-        .schema(baseTableSchemaWithDigestAndVersion)
+        .schema(stagingTableSchemaWithDigestAndVersion)
         .filter(GreaterThan.of(FieldValue.builder()
             .fieldName(batchIdInField)
             .datasetRefAlias(stagingTableAlias)
@@ -653,7 +706,7 @@ public class BaseTest
 
     protected Dataset filteredStagingTableWithComplexFilter = FilteredDataset.builder()
         .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-        .schema(baseTableSchemaWithDigest)
+        .schema(stagingTableSchemaWithDigest)
         .filter(Or.builder()
             .addConditions(GreaterThan.of(FieldValue.builder().fieldName(bizDateField).datasetRefAlias(stagingTableAlias).build(), StringValue.of("2020-01-10")))
             .addConditions(And.builder()
@@ -670,17 +723,22 @@ public class BaseTest
 
     protected Dataset mainTableWithBaseSchemaHavingDigestAndAuditField = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithDigestAndUpdateBatchTimeField)
+            .schema(mainTableSchemaWithDigestAndUpdateBatchTimeField)
             .build();
+
+    protected Dataset mainTableWithBaseSchemaHavingDigestAndAuditFieldAndBatchNumber = DatasetDefinition.builder()
+        .database(mainDbName).name(mainTableName).alias(mainTableAlias)
+        .schema(mainTableSchemaWithDigestAndUpdateBatchTimeFieldAndBatchNumber)
+        .build();
 
     protected Dataset mainTableWithBaseSchemaHavingAuditField = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchemaWithUpdateBatchTimeField)
+            .schema(mainTableSchemaWithUpdateBatchTimeField)
             .build();
 
     protected Dataset stagingTableWithBaseSchemaHavingDigestAndDataSplit = DatasetDefinition.builder()
             .database(stagingDbName).name(stagingTableName).alias(stagingTableAlias)
-            .schema(baseTableSchemaWithDigestAndDataSplit)
+            .schema(stagingTableSchemaWithDigestAndDataSplit)
             .build();
 
     protected Dataset mainTableWithBatchIdBasedSchema = DatasetDefinition.builder()

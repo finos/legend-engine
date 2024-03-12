@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -34,29 +35,35 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAsserti
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
+
 public class CorePureGrammarComposer implements PureGrammarComposerExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Core");
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof DataElement)
+        {
+            return renderDataElement((DataElement) element, context);
+        }
+        return null;
+    });
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
+    @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with((elements, context, sectionName) ->
-        {
-            if ("Data".equals(sectionName))
-            {
-                return ListIterate.collect(elements, element ->
-                {
-                    if (element instanceof DataElement)
-                    {
-                        return renderDataElement((DataElement) element, context);
-                    }
-                    return "/* Can't transform element '" + element.getPath() + "' in this section */";
-                }).makeString("\n\n");
-            }
-            else
-            {
-                return null;
-            }
-        });
+        return Lists.mutable.with(buildSectionComposer("Data", renderers));
     }
 
     @Override

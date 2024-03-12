@@ -40,21 +40,7 @@ import org.finos.legend.authentication.credentialprovider.impl.PrivateKeyCredent
 import org.finos.legend.authentication.intermediationrule.IntermediationRule;
 import org.finos.legend.authentication.intermediationrule.impl.EncryptedPrivateKeyFromVaultRule;
 import org.finos.legend.authentication.vault.CredentialVaultProvider;
-import org.finos.legend.authentication.vault.impl.EnvironmentCredentialVault;
 import org.finos.legend.authentication.vault.impl.PropertiesFileCredentialVault;
-import org.finos.legend.authentication.vault.impl.SystemPropertiesCredentialVault;
-import org.finos.legend.connection.AuthenticationMechanism;
-import org.finos.legend.connection.ConnectionFactory;
-import org.finos.legend.connection.DatabaseSupport;
-import org.finos.legend.connection.LegendEnvironment;
-import org.finos.legend.connection.impl.CoreAuthenticationMechanismType;
-import org.finos.legend.connection.impl.HACKY__SnowflakeConnectionAdapter;
-import org.finos.legend.connection.impl.KerberosCredentialExtractor;
-import org.finos.legend.connection.impl.KeyPairCredentialBuilder;
-import org.finos.legend.connection.impl.RelationalDatabaseType;
-import org.finos.legend.connection.impl.SnowflakeConnectionBuilder;
-import org.finos.legend.connection.impl.StaticJDBCConnectionBuilder;
-import org.finos.legend.connection.impl.UserPasswordCredentialBuilder;
 import org.finos.legend.engine.api.analytics.BindingAnalytics;
 import org.finos.legend.engine.api.analytics.ClassAnalytics;
 import org.finos.legend.engine.api.analytics.DataSpaceAnalytics;
@@ -74,13 +60,10 @@ import org.finos.legend.engine.external.shared.format.extension.GenerationExtens
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.loaders.CodeGenerators;
 import org.finos.legend.engine.external.shared.format.generations.loaders.SchemaGenerators;
-import org.finos.legend.engine.external.shared.format.imports.loaders.CodeImports;
-import org.finos.legend.engine.external.shared.format.imports.loaders.SchemaImports;
 import org.finos.legend.engine.external.shared.format.model.api.ExternalFormats;
 import org.finos.legend.engine.functionActivator.api.FunctionActivatorAPI;
 import org.finos.legend.engine.generation.artifact.api.ArtifactGenerationExtensionApi;
 import org.finos.legend.engine.language.hostedService.api.HostedServiceService;
-import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.language.pure.compiler.api.Compile;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.api.grammarToJson.GrammarToJson;
@@ -95,7 +78,6 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.relational.api.relationalElement.RelationalElementAPI;
 import org.finos.legend.engine.language.snowflakeApp.api.SnowflakeAppService;
-import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanLegacy;
 import org.finos.legend.engine.plan.execution.api.ExecutePlanStrategic;
@@ -120,10 +102,15 @@ import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStore
 import org.finos.legend.engine.plan.execution.stores.service.plugin.ServiceStoreExecutorBuilder;
 import org.finos.legend.engine.plan.generation.extension.PlanGeneratorExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentConfiguration;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
 import org.finos.legend.engine.protocol.pure.v1.model.PureProtocol;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.EncryptedPrivateKeyPairAuthenticationConfiguration;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.UserPasswordAuthenticationConfiguration;
+import org.finos.legend.engine.protocol.snowflakeApp.deployment.SnowflakeAppDeploymentConfiguration;
+import org.finos.legend.engine.query.graphQL.api.format.generation.api.GraphQLGenerationService;
+import org.finos.legend.engine.external.format.jsonSchema.schema.generations.api.JSONSchemaGenerationService;
+import org.finos.legend.engine.external.format.daml.generation.api.DAMLGenerationService;
+import org.finos.legend.engine.external.format.protobuf.deprecated.generation.api.ProtobufGenerationService;
+import org.finos.legend.engine.external.format.avro.schema.generations.api.AvroGenerationService;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.query.graphQL.api.debug.GraphQLDebug;
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
@@ -156,7 +143,7 @@ import org.finos.legend.engine.shared.core.vault.Vault;
 import org.finos.legend.engine.shared.core.vault.VaultConfiguration;
 import org.finos.legend.engine.shared.core.vault.VaultFactory;
 import org.finos.legend.engine.testData.generation.api.TestDataGeneration;
-import org.finos.legend.engine.testable.api.Testable;
+import org.finos.legend.engine.testable.api.TestableApi;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.server.pac4j.LegendPac4jBundle;
 import org.finos.legend.server.shared.bundles.ChainFixingFilterHandler;
@@ -290,11 +277,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
             relationalExecution.setFlowProviderClass(LegendDefaultDatabaseAuthenticationFlowProvider.class);
             relationalExecution.setFlowProviderConfiguration(new LegendDefaultDatabaseAuthenticationFlowProviderConfiguration());
         }
-        relationalExecution.setConnectionFactory(this.setupConnectionFactory(serverConfiguration.vaults));
-        relationalExecution.setRelationalDatabaseConnectionAdapters(Lists.mutable.of(
-                new HACKY__SnowflakeConnectionAdapter.WithKeyPair()
-        ));
-
         relationalStoreExecutor = (RelationalStoreExecutor) Relational.build(serverConfiguration.relationalexecution);
 
         ServiceStoreExecutionConfiguration serviceStoreExecutionConfiguration = ServiceStoreExecutionConfiguration.builder().withCredentialProviderProvider(credentialProviderProvider).build();
@@ -371,10 +353,14 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         // Generation and Import
         MutableList<GenerationExtension> genExtensions = Iterate.addAllTo(ServiceLoader.load(GenerationExtension.class), Lists.mutable.empty());
         environment.jersey().register(new CodeGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
-        environment.jersey().register(new CodeImports(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Code).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
         environment.jersey().register(new SchemaGenerators(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getGenerationDescription).select(Objects::nonNull)));
-        environment.jersey().register(new SchemaImports(modelManager, genExtensions.select(p -> p.getMode() == GenerationMode.Schema).collect(GenerationExtension::getImportDescription).select(Objects::nonNull)));
-        genExtensions.forEach(p -> environment.jersey().register(p.getService(modelManager)));
+        // generator apis
+        environment.jersey().register(new GraphQLGenerationService(modelManager));
+        environment.jersey().register(new DAMLGenerationService(modelManager));
+        environment.jersey().register(new ProtobufGenerationService(modelManager));
+        environment.jersey().register(new GraphQLGenerationService(modelManager));
+        environment.jersey().register(new JSONSchemaGenerationService(modelManager));
+        environment.jersey().register(new AvroGenerationService(modelManager));
 
         // Execution
         MutableList<PlanGeneratorExtension> generatorExtensions = Lists.mutable.withAll(ServiceLoader.load(PlanGeneratorExtension.class));
@@ -426,63 +412,12 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         environment.jersey().register(new StoreEntitlementAnalytics(modelManager, entitlementServiceExtensions));
 
         // Testable
-        environment.jersey().register(new Testable(modelManager));
+        environment.jersey().register(new TestableApi(modelManager));
 
         //TestData Generation
         environment.jersey().register(new TestDataGeneration(modelManager));
 
         enableCors(environment, serverConfiguration);
-    }
-
-    // TODO: @akphi - this is temporary, rework when we find a better way to handle the initialization of connection factory from config or some external source.
-    private ConnectionFactory setupConnectionFactory(List<VaultConfiguration> vaultConfigurations)
-    {
-        LegendEnvironment environment = LegendEnvironment
-                .builder()
-                .vaults(
-                        new SystemPropertiesCredentialVault(),
-                        new EnvironmentCredentialVault(),
-                        new PropertiesFileCredentialVault(this.buildVaultProperties(vaultConfigurations))
-                )
-                .databaseSupports(
-                        DatabaseSupport
-                                .builder()
-                                .type(RelationalDatabaseType.POSTGRES)
-                                .authenticationMechanisms(
-                                        AuthenticationMechanism
-                                                .builder()
-                                                .type(CoreAuthenticationMechanismType.USER_PASSWORD)
-                                                .authenticationConfigurationTypes(
-                                                        UserPasswordAuthenticationConfiguration.class
-                                                ).build()
-                                )
-                                .build(),
-                        DatabaseSupport
-                                .builder()
-                                .type(RelationalDatabaseType.SNOWFLAKE)
-                                .authenticationMechanisms(
-                                        AuthenticationMechanism
-                                                .builder()
-                                                .type(CoreAuthenticationMechanismType.KEY_PAIR)
-                                                .authenticationConfigurationTypes(
-                                                        EncryptedPrivateKeyPairAuthenticationConfiguration.class
-                                                ).build()
-                                )
-                                .build()
-                ).build();
-
-        return ConnectionFactory.builder()
-                .environment(environment)
-                .credentialBuilders(
-                        new KerberosCredentialExtractor(),
-                        new UserPasswordCredentialBuilder(),
-                        new KeyPairCredentialBuilder()
-                )
-                .connectionBuilders(
-                        new StaticJDBCConnectionBuilder.WithPlaintextUsernamePassword(),
-                        new SnowflakeConnectionBuilder.WithKeyPair()
-                )
-                .build();
     }
 
     private void loadVaults(List<VaultConfiguration> vaultConfigurations)

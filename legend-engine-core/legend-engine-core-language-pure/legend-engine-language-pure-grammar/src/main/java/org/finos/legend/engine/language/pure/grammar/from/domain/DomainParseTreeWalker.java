@@ -21,7 +21,6 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.checkerframework.dataflow.qual.Pure;
 import org.eclipse.collections.api.list.ListIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -39,17 +38,20 @@ import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.Navi
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.navigation.NavigationParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
-import org.finos.legend.engine.language.pure.grammar.from.test.assertion.HelperTestAssertionGrammarParser;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreProviderPointerFactory;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.AggregationKind;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Association;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Class;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Constraint;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.DefaultValue;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Domain;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.EnumValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Enumeration;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Measure;
@@ -62,8 +64,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Unit;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualTo;
+import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.EqualToJson;
 import org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
@@ -81,6 +87,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Gen
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.KeyExpression;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.PackageableElementPtr;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpec;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.relation.ColSpecArray;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 import java.nio.charset.StandardCharsets;
@@ -92,6 +100,10 @@ import java.util.function.Consumer;
 public class DomainParseTreeWalker
 {
     private static final String TILDE = "~";
+
+    private static final String DEFAULT_TESTABLE_ID = "default";
+    private static final String KNOWN_JSON_CONTENT_TYPE = "JSON";
+    private static final String KNOWN_XML_CONTENT_TYPE = "XML";
 
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final PureGrammarParserContext parserContext;
@@ -424,86 +436,209 @@ public class DomainParseTreeWalker
             variable.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionVariableExpressionContext);
             return variable;
         });
-        if (ctx.functionTestSuites() != null)
+        if (ctx.functionTestSuiteDef() != null)
         {
-            func.tests = ListIterate.collect(ctx.functionTestSuites().functionTestSuite(), this::visitFunctionSuite);
+            List<FunctionTestSuite> suites = Lists.mutable.empty();
+            DomainParserGrammar.FunctionTestSuiteDefContext functionTestSuiteDefContext = ctx.functionTestSuiteDef();
+            if ((functionTestSuiteDefContext.simpleFunctionTest() != null && !functionTestSuiteDefContext.simpleFunctionTest().isEmpty()) || (functionTestSuiteDefContext.functionData() != null && !functionTestSuiteDefContext.functionData().isEmpty()))
+            {
+                org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite functionTestSuite = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite();
+                functionTestSuite.id = DEFAULT_TESTABLE_ID;
+                functionTestSuite.tests = Lists.mutable.empty();
+                functionTestSuite.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionTestSuiteDefContext);
+                if (functionTestSuiteDefContext.simpleFunctionTest() != null)
+                {
+                    for (DomainParserGrammar.SimpleFunctionTestContext simpleFunctionTestContext: functionTestSuiteDefContext.simpleFunctionTest())
+                    {
+                        this.processFuncTest(ctx, functionTestSuite,func.parameters, simpleFunctionTestContext);
+                    }
+                }
+                if (functionTestSuiteDefContext.functionData() != null)
+                {
+                    functionTestSuite.testData = Lists.mutable.empty();
+                    for (DomainParserGrammar.FunctionDataContext functionDataContext: functionTestSuiteDefContext.functionData())
+                    {
+                       functionTestSuite.testData.add(this.processStoreTestData(functionDataContext));
+                    }
+                }
+                suites.add(functionTestSuite);
+            }
+            if (functionTestSuiteDefContext.simpleFunctionSuite() != null)
+            {
+                for (DomainParserGrammar.SimpleFunctionSuiteContext simpleFunctionSuiteContext: ctx.functionTestSuiteDef().simpleFunctionSuite())
+                {
+                    org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite functionTestSuite = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite();
+                    functionTestSuite.id = PureGrammarParserUtility.fromIdentifier(simpleFunctionSuiteContext.identifier());
+                    functionTestSuite.tests = Lists.mutable.empty();
+                    functionTestSuite.sourceInformation = this.walkerSourceInformation.getSourceInformation(simpleFunctionSuiteContext);
+                    for (DomainParserGrammar.SimpleFunctionTestContext simpleFunctionTestContext: simpleFunctionSuiteContext.simpleFunctionTest())
+                    {
+                        this.processFuncTest(ctx, functionTestSuite,func.parameters, simpleFunctionTestContext);
+                    }
+                    if (simpleFunctionSuiteContext.functionData() != null)
+                    {
+                        functionTestSuite.testData = Lists.mutable.empty();
+                        for (DomainParserGrammar.FunctionDataContext functionDataContext: simpleFunctionSuiteContext.functionData())
+                        {
+                            functionTestSuite.testData.add(this.processStoreTestData(functionDataContext));
+                        }
+                    }
+                    suites.add(functionTestSuite);
+                }
+            }
+            func.tests = suites;
         }
         func.returnType = ctx.functionTypeSignature().type().getText();
         func.returnMultiplicity = this.buildMultiplicity(ctx.functionTypeSignature().multiplicity().multiplicityArgument());
         func.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
         func.name = PureGrammarParserUtility.fromIdentifier(ctx.qualifiedName().identifier()) + HelperValueSpecificationGrammarComposer.getFunctionSignature(func);
         return func;
+
     }
 
-    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite visitFunctionSuite(DomainParserGrammar.FunctionTestSuiteContext functionTestSuiteContext)
+    private void processFuncTest(DomainParserGrammar.FunctionDefinitionContext functionCtx, FunctionTestSuite parentSuite, List<Variable> functionParameters, DomainParserGrammar.SimpleFunctionTestContext simpleFunctionTestContext)
     {
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite suite = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTestSuite();
-        suite.sourceInformation = this.walkerSourceInformation.getSourceInformation(functionTestSuiteContext);
-        suite.id = PureGrammarParserUtility.fromIdentifier(functionTestSuiteContext.identifier());
-        // data
-        DomainParserGrammar.TestDataContext testDataContext = PureGrammarParserUtility.validateAndExtractOptionalField(functionTestSuiteContext.testData(), "data", suite.sourceInformation);
-        if (testDataContext != null)
+        DomainParserGrammar.IdentifierContext functionTestNameCtx = simpleFunctionTestContext.identifier(1);
+        String functionName = PureGrammarParserUtility.fromIdentifier(functionTestNameCtx);
+        String userTestFunctionName = PureGrammarParserUtility.fromIdentifier(functionCtx.qualifiedName().identifier());
+        if (!userTestFunctionName.equals(functionName))
         {
-            suite.testData = ListIterate.collect(testDataContext.storeTestData(), this::visitStoreTestData);
+            throw new EngineException("Function name in test '" + functionName + "' does not match function name '" + userTestFunctionName + "'", walkerSourceInformation.getSourceInformation(simpleFunctionTestContext.identifier(1)), EngineErrorType.PARSER);
         }
-        // Tests
-        DomainParserGrammar.FunctionTestSuiteTestsContext testSuiteTestsContext = PureGrammarParserUtility.validateAndExtractRequiredField(functionTestSuiteContext.functionTestSuiteTests(), "tests", suite.sourceInformation);
-        suite.tests = ListIterate.collect(testSuiteTestsContext.functionTestBlock(), this::visitFunctionTest);
-        return suite;
-    }
-
-    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData visitStoreTestData(DomainParserGrammar.StoreTestDataContext storeDataContext)
-    {
-        StoreTestData storeTestData = new StoreTestData();
-        DomainParserGrammar.StorePointerContext storePointerContext =  PureGrammarParserUtility.validateAndExtractRequiredField(storeDataContext.storePointer(), "store", storeTestData.sourceInformation);
-        storeTestData.store = PureGrammarParserUtility.fromQualifiedName(storePointerContext.qualifiedName().packagePath() == null ? Collections.emptyList() : storePointerContext.qualifiedName().packagePath().identifier(), storePointerContext.qualifiedName().identifier());
-        DomainParserGrammar.StoreDataContext dataContext  =  PureGrammarParserUtility.validateAndExtractRequiredField(storeDataContext.storeData(), "data", storeTestData.sourceInformation);
-        storeTestData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(dataContext.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        return storeTestData;
-    }
-
-    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest visitFunctionTest(DomainParserGrammar.FunctionTestBlockContext ctx)
-    {
-        org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest functionTest = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.FunctionTest();
-        functionTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
-        functionTest.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-
-        // parameters value
-        DomainParserGrammar.FunctionTestParametersContext testParameterContext =  PureGrammarParserUtility.validateAndExtractOptionalField(ctx.functionTestParameters(), "parameters", functionTest.sourceInformation);
-        if (testParameterContext != null)
+        FunctionTest functionTest = new FunctionTest();
+        functionTest.id = PureGrammarParserUtility.fromIdentifier(simpleFunctionTestContext.identifier(0));
+        if (simpleFunctionTestContext.STRING() != null)
         {
-            functionTest.parameters = ListIterate.collect(testParameterContext.functionTestParameter(), this::visitFunctionTestParameter);
+           functionTest.doc = PureGrammarParserUtility.fromGrammarString(simpleFunctionTestContext.STRING().getText(), true);
         }
-        DomainParserGrammar.FunctionTestAssertsContext testAssertsContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.functionTestAsserts(), "asserts", functionTest.sourceInformation);
-        functionTest.assertions = ListIterate.collect(testAssertsContext.functionTestAssert(), this::visitFunctionTestAsserts);
-        return functionTest;
+        functionTest.sourceInformation = this.walkerSourceInformation.getSourceInformation(simpleFunctionTestContext);
+        DomainParserGrammar.FunctionParamsContext functionParamsContext = simpleFunctionTestContext.functionParams();
+        if (functionParamsContext != null && !functionParamsContext.primitiveValue().isEmpty())
+        {
+            functionTest.parameters = Lists.mutable.empty();
+            for (int idx = 0; idx < functionParamsContext.primitiveValue().size(); idx++)
+            {
+                DomainParserGrammar.PrimitiveValueContext primitiveValueContext = functionParamsContext.primitiveValue().get(idx);
+                Variable variable = null;
+                try
+                {
+                    variable = functionParameters.get(idx);
+                }
+                catch (IndexOutOfBoundsException exception)
+                {
+                    // ignore
+                }
+                functionTest.parameters.add(this.visitFunctionTestParameter(primitiveValueContext, variable));
+            }
+        }
+        functionTest.assertions = Lists.mutable.with(visitTestAssertion(simpleFunctionTestContext));
+        parentSuite.tests.add(functionTest);
     }
 
-    private TestAssertion visitFunctionTestAsserts(DomainParserGrammar.FunctionTestAssertContext ctx)
-    {
-        TestAssertion testAssertion = HelperTestAssertionGrammarParser.parseTestAssertion(ctx.testAssertion(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
-        testAssertion.id = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        return testAssertion;
-    }
-
-    private ParameterValue visitFunctionTestParameter(DomainParserGrammar.FunctionTestParameterContext ctx)
+    private ParameterValue visitFunctionTestParameter(DomainParserGrammar.PrimitiveValueContext primitiveValueContext, Variable variable)
     {
         ParameterValue parameterValue = new ParameterValue();
-        parameterValue.name = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        parameterValue.value = this.visitTestParameter(ctx.primitiveValue());
-        return parameterValue;
-    }
-
-    private ValueSpecification visitTestParameter(DomainParserGrammar.PrimitiveValueContext primitiveValueContext)
-    {
         DomainParser parser = new DomainParser();
         int startLine = primitiveValueContext.getStart().getLine();
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + primitiveValueContext.getStart().getCharPositionInLine();
         ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
         String expectedValue = primitiveValueContext.start.getInputStream().getText(Interval.of(primitiveValueContext.start.getStartIndex(), primitiveValueContext.stop.getStopIndex()));
-        ValueSpecification valueSpecification = parser.parsePrimitiveValue(expectedValue, serviceParamSourceInformation, null);
-        return valueSpecification;
+        parameterValue.value = parser.parsePrimitiveValue(expectedValue, serviceParamSourceInformation, null);
+        if (variable != null)
+        {
+            parameterValue.name = variable.name;
+        }
+        parameterValue.sourceInformation = this.walkerSourceInformation.getSourceInformation(primitiveValueContext);
+        return parameterValue;
+    }
+
+    private org.finos.legend.engine.protocol.pure.v1.model.test.assertion.TestAssertion visitTestAssertion(DomainParserGrammar.SimpleFunctionTestContext functionTestSuiteContext)
+    {
+
+        TestAssertion assertion;
+        if (functionTestSuiteContext.externalFormatValue() != null)
+        {
+            String contentType = PureGrammarParserUtility.fromIdentifier(functionTestSuiteContext.externalFormatValue().contentType().identifier());
+            String value = PureGrammarParserUtility.fromGrammarString(functionTestSuiteContext.externalFormatValue().STRING().getText(), true);
+            assertion = createEqualToJSON(contentType, value, walkerSourceInformation.getSourceInformation(functionTestSuiteContext.externalFormatValue()));
+        }
+        else
+        {
+            DomainParser parser = new DomainParser();
+            int startLine = functionTestSuiteContext.primitiveValue().getStart().getLine();
+            int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+            int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + functionTestSuiteContext.primitiveValue().getStart().getCharPositionInLine();
+            ParseTreeWalkerSourceInformation serviceParamSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).build();
+            String expectedValue = functionTestSuiteContext.primitiveValue().start.getInputStream().getText(Interval.of(functionTestSuiteContext.primitiveValue().start.getStartIndex(), functionTestSuiteContext.primitiveValue().stop.getStopIndex()));
+            ValueSpecification valueSpecification = parser.parsePrimitiveValue(expectedValue, serviceParamSourceInformation, null);
+            EqualTo equalToAssertion = new EqualTo();
+            equalToAssertion.expected = valueSpecification;
+            assertion = equalToAssertion;
+        }
+        assertion.id = DEFAULT_TESTABLE_ID;
+        return assertion;
+    }
+
+    private EqualToJson createEqualToJSON(String contentType, String val, SourceInformation sourceInformation)
+    {
+        EqualToJson equalToJson = new EqualToJson();
+        equalToJson.expected = visitExternalFormat(contentType, val, sourceInformation);
+        equalToJson.sourceInformation = sourceInformation;
+        return equalToJson;
+    }
+
+    private ExternalFormatData visitExternalFormat(String contentType, String val, SourceInformation sourceInformation)
+    {
+        ExternalFormatData externalFormatData = new ExternalFormatData();
+        externalFormatData.sourceInformation = sourceInformation;
+        externalFormatData.data = val;
+        if (contentType.equals(KNOWN_JSON_CONTENT_TYPE))
+        {
+            externalFormatData.contentType = "application/json";
+        }
+        else if (contentType.equals(KNOWN_XML_CONTENT_TYPE))
+        {
+            externalFormatData.contentType = "application/xml";
+        }
+        else
+        {
+            externalFormatData.contentType = contentType;
+        }
+        return  externalFormatData;
+    }
+
+    private org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData processStoreTestData(DomainParserGrammar.FunctionDataContext functionDataContext)
+    {
+        StoreTestData storeTestData = new StoreTestData();
+        storeTestData.store = StoreProviderPointerFactory.create(functionDataContext.storeProviderPointer(), walkerSourceInformation.getSourceInformation(functionDataContext.storeProviderPointer()));
+        if (functionDataContext.functionDataValue() != null)
+        {
+            DomainParserGrammar.FunctionDataValueContext dataValueContext = functionDataContext.functionDataValue();
+            if (dataValueContext.qualifiedName() != null)
+            {
+                DataElementReference dataElementReference = new DataElementReference();
+                dataElementReference.dataElement = new PackageableElementPointer(
+                        PackageableElementType.DATA,
+                        PureGrammarParserUtility.fromQualifiedName(dataValueContext.qualifiedName().packagePath() == null ? Collections.emptyList() : dataValueContext.qualifiedName().packagePath().identifier(), dataValueContext.qualifiedName().identifier()),
+                        this.walkerSourceInformation.getSourceInformation(dataValueContext.qualifiedName())
+                );
+                storeTestData.data = dataElementReference;
+                dataElementReference.sourceInformation = this.walkerSourceInformation.getSourceInformation(dataValueContext.qualifiedName());
+            }
+            else if (dataValueContext.externalFormatValue() != null)
+            {
+                String contentType = PureGrammarParserUtility.fromIdentifier(dataValueContext.externalFormatValue().contentType().identifier());
+                SourceInformation sourceInformation = this.walkerSourceInformation.getSourceInformation(dataValueContext.externalFormatValue());
+                String value = PureGrammarParserUtility.fromGrammarString(dataValueContext.externalFormatValue().STRING().getText(), true);
+                storeTestData.data = this.visitExternalFormat(contentType, value, sourceInformation);
+            }
+            else if (dataValueContext.embeddedData() != null)
+            {
+                storeTestData.data = HelperEmbeddedDataGrammarParser.parseEmbeddedData(dataValueContext.embeddedData(), this.walkerSourceInformation, this.parserContext.getPureGrammarParserExtensions());
+            }
+        }
+        return storeTestData;
     }
 
     // ----------------------------------------------- MEASURE -----------------------------------------------
@@ -1201,12 +1336,57 @@ public class DomainParseTreeWalker
         {
             result = this.instanceReference(ctx.instanceReference(), typeParametersNames, lambdaContext, space, addLines);
         }
+        else if (ctx.columnBuilders() != null)
+        {
+            DomainParserGrammar.OneColSpecContext oneColSpec = ctx.columnBuilders().oneColSpec();
+            DomainParserGrammar.ColSpecArrayContext colSpecArray = ctx.columnBuilders().colSpecArray();
+            if (oneColSpec != null)
+            {
+                ColSpec colSpec = processOneColSpec(oneColSpec, typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions);
+                result = DomainParseTreeWalker.wrapWithClassInstance(colSpec, colSpec.sourceInformation, "colSpec");
+            }
+            else if (colSpecArray != null)
+            {
+                ColSpecArray colSpecArr = new ColSpecArray();
+                colSpecArr.colSpecs = ListIterate.collect(colSpecArray.oneColSpec(), c -> processOneColSpec(c, typeParametersNames, lambdaContext, space, wrapFlag, addLines, expressions));
+                result = DomainParseTreeWalker.wrapWithClassInstance(colSpecArr, walkerSourceInformation.getSourceInformation(colSpecArray), "colSpecArray");
+                ;
+            }
+            else
+            {
+                throw new RuntimeException("No Possible");
+            }
+        }
         else
         {
             // lambdaPipe
             result = this.lambdaPipe(ctx.lambdaPipe(), null, expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
         }
         return result;
+    }
+
+    private ColSpec processOneColSpec(DomainParserGrammar.OneColSpecContext oneColSpec, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines, List<Variable> expressions)
+    {
+        ValueSpecification result;
+        ColSpec colSpec = new ColSpec();
+
+        colSpec.sourceInformation = walkerSourceInformation.getSourceInformation(oneColSpec);
+
+        colSpec.name = oneColSpec.identifier().getText().trim();
+        colSpec.name = colSpec.name.charAt(0) == '\'' ? colSpec.name.substring(1, colSpec.name.length() - 1) : colSpec.name;
+        colSpec.type = oneColSpec.type() == null ? null : oneColSpec.type().getText();
+        if (oneColSpec.lambdaParam() != null && oneColSpec.lambdaPipe() != null)
+        {
+            Variable var = this.lambdaParam(oneColSpec.lambdaParam().lambdaParamType(), oneColSpec.lambdaParam().identifier(), typeParametersNames, space);
+            expressions.add(var);
+            colSpec.function1 = this.lambdaPipe(oneColSpec.lambdaPipe(), oneColSpec.lambdaParam().getStart(), expressions, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            if (oneColSpec.extraFunction() != null)
+            {
+                List<Variable> var2 = Lists.mutable.with(this.lambdaParam(oneColSpec.extraFunction().lambdaParam().lambdaParamType(), oneColSpec.extraFunction().lambdaParam().identifier(), typeParametersNames, space));
+                colSpec.function2 = this.lambdaPipe(oneColSpec.extraFunction().lambdaPipe(), oneColSpec.extraFunction().lambdaParam().getStart(), var2, typeParametersNames, lambdaContext, space, wrapFlag, addLines);
+            }
+        }
+        return colSpec;
     }
 
     private ListIterable<ValueSpecification> visitDsl(DomainParserGrammar.DslContext ctx, ParseTreeWalkerSourceInformation parentWalkerSourceInformation)
@@ -1233,7 +1413,7 @@ public class DomainParseTreeWalker
                     throw new EngineException("Can't find an embedded Pure parser for the type '" + openTag + "' available ones: [" + this.parserContext.getPureGrammarParserExtensions().getExtraEmbeddedPureParsers().collect(p -> p.getType()).makeString(",") + "]", walkerSourceInformation.getSourceInformation(ctx), EngineErrorType.PARSER);
                 }
                 String content = ListIterate.collect(ctx.dslExtension().dslExtensionContent(), RuleContext::getText).makeString("").trim();
-                return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions())));
+                return Lists.mutable.with(new ClassInstance(embeddedPureParser.getType(), embeddedPureParser.parse(content.substring(0, content.length() - 2), walkerSourceInformation, sourceInformation, this.parserContext.getPureGrammarParserExtensions()), sourceInformation));
             }
         }
         else if (ctx.dslNavigationPath() != null)
@@ -1308,7 +1488,7 @@ public class DomainParseTreeWalker
         return variable;
     }
 
-    private ValueSpecification lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
+    private Lambda lambdaPipe(DomainParserGrammar.LambdaPipeContext ctx, Token firstToken, List<Variable> params, List<String> typeParametersNames, LambdaContext lambdaContext, String space, boolean wrapFlag, boolean addLines)
     {
 //        List<ValueSpecification> block = this.codeBlock(ctx.codeBlock(), typeParametersNames, lambdaContext, addLines, space);
 //        ValueSpecification result;
@@ -1712,11 +1892,12 @@ public class DomainParseTreeWalker
         return m;
     }
 
-    public static ClassInstance wrapWithClassInstance(Object obj, String val)
+    public static ClassInstance wrapWithClassInstance(Object obj, SourceInformation sourceInformation, String val)
     {
         ClassInstance value = new ClassInstance();
         value.type = val;
         value.value = obj;
+        value.sourceInformation = sourceInformation;
         return value;
     }
 

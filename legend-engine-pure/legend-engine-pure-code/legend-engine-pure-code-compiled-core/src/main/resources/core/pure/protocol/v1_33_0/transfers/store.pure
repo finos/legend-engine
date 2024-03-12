@@ -14,7 +14,6 @@
 
 import meta::pure::extension::*;
 import meta::json::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 
 function meta::protocols::pure::v1_33_0::transformation::fromPureGraph::runtime::transformRuntime(pureRuntime:Runtime[1], extensions:Extension[*]):meta::protocols::pure::v1_33_0::metamodel::Runtime[1]

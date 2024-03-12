@@ -23,7 +23,11 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.ConnectionFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.core.EmbeddedDataCompilerHelper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.ModelStoreTestConnectionFactory;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.planHelper.PrimitiveValueSpecificationToObjectVisitor;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -34,8 +38,9 @@ import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedDataHelper;
+import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
@@ -56,6 +61,9 @@ import org.finos.legend.engine.testable.assertion.TestAssertionEvaluator;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Connection;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_JsonModelConnection;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_PureModelConnection;
+import org.finos.legend.pure.generated.Root_meta_external_store_model_XmlModelConnection;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
@@ -83,7 +91,8 @@ public class FunctionTestRunner implements TestRunner
     private final MutableList<PlanGeneratorExtension> extensions;
     private final PlanExecutor executor;
     private final String pureVersion;
-    private final MutableList<ConnectionFactoryExtension> factories = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
+
+    private final MutableList<ConnectionFactoryExtension> connectionBuilders = org.eclipse.collections.api.factory.Lists.mutable.withAll(ServiceLoader.load(ConnectionFactoryExtension.class));
     private List<Closeable> closeables = Lists.mutable.empty();
     private List<Pair<Root_meta_core_runtime_ConnectionStore, Root_meta_core_runtime_Connection>> storeConnectionsPairs = Lists.mutable.empty();
 
@@ -201,35 +210,88 @@ public class FunctionTestRunner implements TestRunner
         {
             return;
         }
-        runtime._connectionStores().forEach(connectionStore ->
+        Map<Root_meta_core_runtime_Connection, List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore>> connectionMap = Maps.mutable.empty();
+        runtime._connectionStores().forEach(connectionStores ->
         {
-            // find connections that have been mocked and replace
-            Object element = connectionStore._element();
-            if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store)
-            {
-                org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store store = (org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store) element;
-                String storePath = getElementFullPath(store, context.getPureModel().getExecutionSupport());
-                Optional<StoreTestData> optionalStoreTestData = protocolFunctionSuite.testData.stream().filter(pTestData -> pTestData.store.equals(storePath)).findFirst();
-                if (optionalStoreTestData.isPresent())
+                List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore> stores = connectionMap.get(connectionStores._connection());
+                if (stores == null)
                 {
-                    StoreTestData storeTestData = optionalStoreTestData.get();
-                    EmbeddedData testData = EmbeddedDataHelper.resolveEmbeddedDataInPMCD(context.getPureModelContextData(), storeTestData.data);
-                    Pair<Connection, List<Closeable>> closeableMockedConnections = this.factories.collect(f -> f.tryBuildTestConnectionsForStore(context.getDataElementIndex(), resolveStore(context.getPureModelContextData(), storePath), testData)).select(Objects::nonNull).select(Optional::isPresent)
-                            .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported store type for: '" + storePath + "' mentioned while running the function tests"));
-                    Connection mockedConnection = closeableMockedConnections.getOne();
-                    Root_meta_core_runtime_Connection mockedCompileConnection = mockedConnection.accept(context.getConnectionVisitor());
-                    // we replace with mocked connection. We set back to original at cleanup
-                    Root_meta_core_runtime_Connection realConnection = connectionStore._connection();
-                    this.storeConnectionsPairs.add(Tuples.pair(connectionStore, realConnection));
-                    connectionStore._connection(mockedCompileConnection);
+                     stores = Lists.mutable.empty();
+                     connectionMap.putIfAbsent(connectionStores._connection(), stores);
+                }
+                stores.add(connectionStores);
+        });
+        for (Map.Entry<Root_meta_core_runtime_Connection, List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore>> entry : connectionMap.entrySet())
+        {
+
+            Root_meta_core_runtime_Connection key = entry.getKey();
+            List<org.finos.legend.pure.generated.Root_meta_core_runtime_ConnectionStore> values = entry.getValue();
+            Map<Store, EmbeddedData> storeTestDataList = Maps.mutable.empty();
+            // collect test data
+            entry.getValue().forEach(connectionStore ->
+            {
+                Object element = connectionStore._element();
+                if (element instanceof org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store)
+                {
+                    org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store metamodelStore = (org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store) element;
+                    String connectionStorePath = getElementFullPath(metamodelStore, context.getPureModel().getExecutionSupport());
+                    Optional<StoreTestData> optionalStoreTestData = protocolFunctionSuite.testData.stream().filter(
+                            pTestData ->
+                            {
+                                String testDataStorePath = getElementFullPath(StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(pTestData.store, context.getPureModel().getContext()), context.getPureModel().getExecutionSupport());
+                                return testDataStorePath.equals(connectionStorePath);
+                            }).findFirst();
+                    if (optionalStoreTestData.isPresent())
+                    {
+                        StoreTestData resolvedStoreTestData = optionalStoreTestData.get();
+                        EmbeddedData testData = (resolvedStoreTestData.data instanceof DataElementReference)
+                                ? EmbeddedDataCompilerHelper.getEmbeddedDataFromDataElement((DataElementReference) resolvedStoreTestData.data, context.getPureModelContextData())
+                                : resolvedStoreTestData.data;
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store store = StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(resolvedStoreTestData.store, context.getPureModel().getContext());
+                        Store protocolStore = this.resolveStore(context.getPureModelContextData(), getElementFullPath(store, context.getPureModel().getExecutionSupport()));
+                        storeTestDataList.put(protocolStore, testData);
+                    }
+                }
+            });
+            if (!storeTestDataList.isEmpty())
+            {
+                Pair<Connection, List<Closeable>> closeableMockedConnections = this.buildTestConnection(context, key, storeTestDataList);
+                Connection mockedConnection = closeableMockedConnections.getOne();
+                Root_meta_core_runtime_Connection mockedCompileConnection = mockedConnection.accept(context.getConnectionVisitor());
+                // we replace with mocked connection. We set back to original at cleanup
+                for (Root_meta_core_runtime_ConnectionStore value : values)
+                {
+                    Root_meta_core_runtime_Connection realConnection = value._connection();
+                    this.storeConnectionsPairs.add(Tuples.pair(value, realConnection));
+                    value._connection(mockedCompileConnection);
                     this.closeables.addAll(closeableMockedConnections.getTwo());
                 }
-                else
+            }
+        }
+    }
+
+    private Pair<Connection, List<Closeable>> buildTestConnection(FunctionTestRunnerContext context,Root_meta_core_runtime_Connection connection, Map<Store, EmbeddedData> storeEmbeddedDataMap)
+    {
+        if (storeEmbeddedDataMap.size() == 1 && connection instanceof Root_meta_external_store_model_PureModelConnection)
+        {
+            EmbeddedData embeddedData = storeEmbeddedDataMap.values().stream().findFirst().get();
+            if (embeddedData instanceof ExternalFormatData)
+            {
+                ExternalFormatData externalFormatData = (ExternalFormatData) embeddedData;
+                if (connection instanceof Root_meta_external_store_model_JsonModelConnection)
                 {
-                    LOGGER.warn("No test data found store + " + storePath + ". When building test data for runtime");
+                    String _class = HelperModelBuilder.getElementFullPath(((Root_meta_external_store_model_JsonModelConnection) connection)._class(), context.getPureModel().getExecutionSupport());
+                    return new ModelStoreTestConnectionFactory().buildCloseableConnectionFromExternalFormat(externalFormatData, _class);
+                }
+                else if (connection instanceof Root_meta_external_store_model_XmlModelConnection)
+                {
+                    String _class = HelperModelBuilder.getElementFullPath(((Root_meta_external_store_model_XmlModelConnection) connection)._class(), context.getPureModel().getExecutionSupport());
+                    return  new ModelStoreTestConnectionFactory().buildCloseableConnectionFromExternalFormat(externalFormatData, _class);
                 }
             }
-        });
+        }
+        return this.connectionBuilders.collect(f -> f.tryBuildConnectionForStoreData(context.getDataElementIndex(), storeEmbeddedDataMap)).select(Objects::nonNull).select(Optional::isPresent)
+                .collect(Optional::get).getFirstOptional().orElseThrow(() -> new UnsupportedOperationException("Unsupported test data for function test suite: " + context.getTestSuite()._id()));
     }
 
     private void tearDown()

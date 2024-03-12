@@ -17,9 +17,15 @@ package org.finos.legend.engine.language.pure.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
+import org.antlr.v4.runtime.misc.Interval;
+import org.finos.legend.engine.language.pure.grammar.from.domain.DomainParser;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.DataSpaceParserGrammar;
+import org.finos.legend.engine.language.pure.grammar.from.data.embedded.HelperEmbeddedDataGrammarParser;
+import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpace;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceDiagram;
@@ -29,11 +35,17 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportCombinedInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportEmail;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceSupportInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpaceTemplateExecutable;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.DataSpacePackageableElementExecutable;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.DefaultCodeSection;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -44,13 +56,15 @@ public class DataSpaceParseTreeWalker
     private final ParseTreeWalkerSourceInformation walkerSourceInformation;
     private final Consumer<PackageableElement> elementConsumer;
     private final DefaultCodeSection section;
+    private final PureGrammarParserContext context;
 
-    public DataSpaceParseTreeWalker(CharStream input, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section)
+    public DataSpaceParseTreeWalker(CharStream input, ParseTreeWalkerSourceInformation walkerSourceInformation, Consumer<PackageableElement> elementConsumer, DefaultCodeSection section, PureGrammarParserContext context)
     {
         this.input = input;
         this.walkerSourceInformation = walkerSourceInformation;
         this.elementConsumer = elementConsumer;
         this.section = section;
+        this.context = context;
     }
 
     public void visit(DataSpaceParserGrammar.DefinitionContext ctx)
@@ -99,7 +113,7 @@ public class DataSpaceParseTreeWalker
 
         // Executables (optional)
         DataSpaceParserGrammar.ExecutablesContext executablesContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executables(), "executables", dataSpace.sourceInformation);
-        dataSpace.executables = executablesContext != null ? ListIterate.collect(executablesContext.executable(), this::visitDataSpaceExecutable) : null;
+        dataSpace.executables = executablesContext != null ? ListIterate.collect(executablesContext.executable(), executableContext -> visitDataSpaceExecutable(executableContext)) : null;
 
         // Diagrams (optional)
         DataSpaceParserGrammar.DiagramsContext diagramsContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.diagrams(), "diagrams", dataSpace.sourceInformation);
@@ -171,12 +185,41 @@ public class DataSpaceParseTreeWalker
         );
         executionContext.defaultRuntime.sourceInformation = walkerSourceInformation.getSourceInformation(defaultRuntimeContext);
 
+        // TestData
+        DataSpaceParserGrammar.ExecutionContextTestDataContext data = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executionContextTestData(), "testData", executionContext.sourceInformation);
+        if (data == null)
+        {
+            executionContext.testData = null;
+        }
+        else
+        {
+            EmbeddedData embeddedData = HelperEmbeddedDataGrammarParser.parseEmbeddedData(data.embeddedData(), this.walkerSourceInformation, this.context.getPureGrammarParserExtensions());
+            if (!(embeddedData instanceof DataElementReference))
+            {
+                throw new EngineException("Test data within a DataSpace must be created as a DataElementReference type, not an EmbeddedData type.", walkerSourceInformation.getSourceInformation(data), EngineErrorType.PARSER);
+            }
+            executionContext.testData = (DataElementReference) embeddedData;
+        }
+
         return executionContext;
     }
 
     private DataSpaceExecutable visitDataSpaceExecutable(DataSpaceParserGrammar.ExecutableContext ctx)
     {
-        DataSpaceExecutable executable = new DataSpaceExecutable();
+        if (ctx.executableTemplateQuery() != null && ctx.executableTemplateQuery().size() > 0)
+        {
+            return visitDataSpaceTemplateExecutable(ctx);
+        }
+        else if (ctx.executablePath() != null && ctx.executablePath().size() > 0)
+        {
+            return visitDataSpacePackageableElementExecutable(ctx);
+        }
+        throw new UnsupportedOperationException("Can't parse unsupported dataSpace executable. please specify token 'execute' or 'query'.");
+    }
+
+    private DataSpaceExecutable visitDataSpacePackageableElementExecutable(DataSpaceParserGrammar.ExecutableContext ctx)
+    {
+        DataSpacePackageableElementExecutable executable = new DataSpacePackageableElementExecutable();
         executable.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
 
         // Name
@@ -195,6 +238,54 @@ public class DataSpaceParseTreeWalker
         executable.executable.sourceInformation = walkerSourceInformation.getSourceInformation(pathContext);
 
         return executable;
+    }
+
+    private DataSpaceExecutable visitDataSpaceTemplateExecutable(DataSpaceParserGrammar.ExecutableContext ctx)
+    {
+        DataSpaceTemplateExecutable executable = new DataSpaceTemplateExecutable();
+        executable.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx);
+
+        // Name
+        DataSpaceParserGrammar.ExecutableTitleContext executableTitleContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTitle(), "title", executable.sourceInformation);
+        executable.title = PureGrammarParserUtility.fromGrammarString(executableTitleContext.STRING().getText(), true);
+
+        // Description (optional)
+        DataSpaceParserGrammar.ExecutableDescriptionContext descriptionContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableDescription(), "description", executable.sourceInformation);
+        executable.description = descriptionContext != null ? PureGrammarParserUtility.fromGrammarString(descriptionContext.STRING().getText(), true) : null;
+
+        // query
+        DataSpaceParserGrammar.ExecutableTemplateQueryContext queryContext = PureGrammarParserUtility.validateAndExtractRequiredField(ctx.executableTemplateQuery(), "query", executable.sourceInformation);
+        executable.query = visitLambda(queryContext.combinedExpression());
+
+        // executionContextKey
+        DataSpaceParserGrammar.ExecutableExecutionContextKeyContext executionContextKeyContext = PureGrammarParserUtility.validateAndExtractOptionalField(ctx.executableExecutionContextKey(), "executionContextKey", executable.sourceInformation);
+        executable.executionContextKey = executionContextKeyContext != null ? PureGrammarParserUtility.fromGrammarString(executionContextKeyContext.STRING().getText(), true) : null;
+
+        return executable;
+    }
+
+    private Lambda visitLambda(DataSpaceParserGrammar.CombinedExpressionContext ctx)
+    {
+        DomainParser parser = new DomainParser();
+        // prepare island grammar walker source information
+        int startLine = ctx.getStart().getLine();
+        int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
+        // only add current walker source information column offset if this is the first line
+        int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.getStart().getCharPositionInLine();
+        ParseTreeWalkerSourceInformation combineExpressionSourceInformation = new ParseTreeWalkerSourceInformation.Builder(walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        String lambdaString = this.input.getText(new Interval(ctx.start.getStartIndex(), ctx.stop.getStopIndex()));
+        ValueSpecification valueSpecification = parser.parseCombinedExpression(lambdaString, combineExpressionSourceInformation, null);
+        if (valueSpecification instanceof Lambda)
+        {
+            return (Lambda) valueSpecification;
+        }
+        // NOTE: If the user just provides the body of the lambda, we will wrap a lambda around it
+        // we might want to reconsider this behavior and throw error if this convenience causes any trouble
+        Lambda lambda = new Lambda();
+        lambda.body = new ArrayList<>();
+        lambda.body.add(valueSpecification);
+        lambda.parameters = new ArrayList<>();
+        return lambda;
     }
 
     private DataSpaceDiagram visitDataSpaceDiagram(DataSpaceParserGrammar.DiagramContext ctx)

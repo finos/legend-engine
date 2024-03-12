@@ -16,6 +16,8 @@ package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
 import org.immutables.value.Value;
 
+import java.util.Set;
+
 @Value.Immutable
 @Value.Style(
         typeAbstract = "*Abstract",
@@ -29,6 +31,8 @@ public interface UDFBasedDigestGenStrategyAbstract extends DigestGenStrategy
     String digestUdfName();
 
     String digestField();
+
+    Set<String> fieldsToExcludeFromDigest();
 
     @Override
     default <T> T accept(DigestGenStrategyVisitor<T> visitor)

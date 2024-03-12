@@ -47,4 +47,6 @@ public interface MergeAbstract extends Operation
     Optional<Condition> onCondition();
 
     Optional<Condition> matchedCondition();
+
+    Optional<Condition> notMatchedCondition();
 }

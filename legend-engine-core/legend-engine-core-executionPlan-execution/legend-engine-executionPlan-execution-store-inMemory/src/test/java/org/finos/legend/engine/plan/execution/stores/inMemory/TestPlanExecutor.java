@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.inMemory;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -32,8 +31,8 @@ import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemory;
 import org.finos.legend.engine.plan.execution.stores.inMemory.plugin.InMemoryStoreExecutor;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeRelationalStoreExecutorBuilder;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.FakeServiceStoreExecutorBuilder;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -187,14 +186,14 @@ public class TestPlanExecutor
         assertEquals("rvalue2", request2InjectedRelationalContext.getContextParams().get("rkey2"));
     }
 
-    static class RecordingExecutionNodeExecutorSupplier implements BiFunction<MutableList<CommonProfile>, ExecutionState, ExecutionNodeExecutor>
+    static class RecordingExecutionNodeExecutorSupplier implements BiFunction<Identity, ExecutionState, ExecutionNodeExecutor>
     {
         private ExecutionState executionState;
 
-        public ExecutionNodeExecutor apply(MutableList<CommonProfile> profiles, ExecutionState executionState)
+        public ExecutionNodeExecutor apply(Identity identity, ExecutionState executionState)
         {
             this.executionState = executionState;
-            return new ExecutionNodeExecutor(profiles, executionState);
+            return new ExecutionNodeExecutor(identity, executionState);
         }
 
         public ExecutionState getExecutionState()

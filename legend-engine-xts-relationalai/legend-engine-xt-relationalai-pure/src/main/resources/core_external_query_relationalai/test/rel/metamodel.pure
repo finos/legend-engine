@@ -1,6 +1,6 @@
-import meta::rel::metamodel::*;
+import meta::external::store::rel::metamodel::*;
 
-function <<test.Test>> meta::rel::test::metamodel::testIdentifier(): Any[*] {
+function <<test.Test>> meta::external::store::rel::test::metamodel::testIdentifier(): Any[*] {
   assertEquals(
     'output', 
     rel('output')->identifier()

@@ -16,7 +16,6 @@ package org.finos.legend.engine.persistence.components.planner;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.OptimizationFilter;
-import org.finos.legend.engine.persistence.components.common.Resources;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.transactionmilestoning.BatchIdAndDateTimeAbstract;
@@ -31,10 +30,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DatasetDefinition;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
-import org.finos.legend.engine.persistence.components.logicalplan.operations.Operation;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
-import org.finos.legend.engine.persistence.components.logicalplan.values.BatchEndTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
@@ -46,9 +42,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DiffBinaryValueOperator;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
-import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
-import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,10 +58,6 @@ import static org.finos.legend.engine.persistence.components.util.LogicalPlanUti
 
 abstract class UnitemporalPlanner extends Planner
 {
-    protected final MetadataUtils metadataUtils;
-    protected final StringValue mainTableName;
-    protected final BatchStartTimestamp batchStartTimestamp;
-    protected final BatchEndTimestamp batchEndTimestamp;
     protected final Condition openRecordCondition;
     protected final Condition digestMatchCondition;
     protected final Condition digestDoesNotMatchCondition;
@@ -76,9 +66,7 @@ abstract class UnitemporalPlanner extends Planner
 
     UnitemporalPlanner(Datasets datasets, TransactionMilestoned transactionMilestoned, PlannerOptions plannerOptions, Set<Capability> capabilities)
     {
-        super(datasets.metadataDataset().isPresent()
-                ? datasets
-                : datasets.withMetadataDataset(MetadataDataset.builder().build()),
+        super(datasets,
             transactionMilestoned,
             plannerOptions,
             capabilities);
@@ -88,10 +76,6 @@ abstract class UnitemporalPlanner extends Planner
         validatePrimaryKey(datasets.mainDataset().schema().fields(), transactionMilestoned.transactionMilestoning().accept(FIELD_INCLUDED_IN_PRIMARY_KEY));
 
         // initialize parameters
-        this.metadataUtils = new MetadataUtils(metadataDataset().orElseThrow(IllegalStateException::new));
-        this.mainTableName = StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new));
-        this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
-        this.batchEndTimestamp = BatchEndTimestamp.INSTANCE;
         this.digestField = transactionMilestoned.digestField();
         this.openRecordCondition = transactionMilestoned.transactionMilestoning().accept(new DetermineOpenRecordCondition(mainDataset()));
         this.digestMatchCondition = LogicalPlanUtils.getDigestMatchCondition(mainDataset(), stagingDataset(), transactionMilestoned.digestField());
@@ -106,37 +90,9 @@ abstract class UnitemporalPlanner extends Planner
     }
 
     @Override
-    public LogicalPlan buildLogicalPlanForMetadataIngest(Resources resources)
-    {
-        List<DatasetFilter> stagingFilters = LogicalPlanUtils.getDatasetFilters(originalStagingDataset());
-        return LogicalPlan.of(Arrays.asList(metadataUtils.insertMetaData(mainTableName, batchStartTimestamp, batchEndTimestamp, stagingFilters)));
-    }
-
-    @Override
     List<String> getDigestOrRemainingColumns()
     {
         return Arrays.asList(digestField);
-    }
-
-    @Override
-    public LogicalPlan buildLogicalPlanForPreActions(Resources resources)
-    {
-        List<Operation> operations = new ArrayList<>();
-        operations.add(Create.of(true, mainDataset()));
-        if (options().createStagingDataset())
-        {
-            operations.add(Create.of(true, originalStagingDataset()));
-        }
-        operations.add(Create.of(true, metadataDataset().orElseThrow(IllegalStateException::new).get()));
-        if (options().enableConcurrentSafety())
-        {
-            operations.add(Create.of(true, lockInfoDataset().orElseThrow(IllegalStateException::new).get()));
-        }
-        if (isTempTableNeededForStaging)
-        {
-            operations.add(Create.of(true, tempStagingDatasetWithoutPks()));
-        }
-        return LogicalPlan.of(operations);
     }
 
     protected void validatePrimaryKey(List<Field> fields, String targetFieldName)

@@ -136,7 +136,7 @@ public abstract class NontemporalSnapshotTestCases extends BaseTest
     {
         Dataset mainTable = DatasetDefinition.builder()
             .database(mainDbName).name(mainTableName).alias(mainTableAlias)
-            .schema(baseTableSchema)
+            .schema(stagingTableSchema)
             .build();
 
         try

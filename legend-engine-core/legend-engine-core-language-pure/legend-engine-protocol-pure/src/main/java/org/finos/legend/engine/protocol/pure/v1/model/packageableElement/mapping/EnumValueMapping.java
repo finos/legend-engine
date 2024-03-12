@@ -14,10 +14,12 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 public class EnumValueMapping
 {
@@ -29,4 +31,10 @@ public class EnumValueMapping
     @JsonDeserialize(contentUsing = EnumValueMappingSourceValueDeserializer.class)
     @JsonSerialize(contentUsing = EnumValueMappingSourceValueSerializer.class)
     public List<Object> sourceValues;
+
+    @JsonIgnore
+    public SourceInformation enumValueSourceInformation;
+
+    @JsonIgnore
+    public SourceInformation sourceInformation;
 }

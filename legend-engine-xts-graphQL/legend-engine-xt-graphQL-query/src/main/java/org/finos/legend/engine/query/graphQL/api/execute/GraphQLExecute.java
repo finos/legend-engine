@@ -19,6 +19,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -58,6 +60,8 @@ import org.finos.legend.engine.query.graphQL.api.execute.model.PlansResult;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
 import org.finos.legend.engine.query.graphQL.api.execute.model.error.GraphQLErrorMain;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -203,13 +207,14 @@ public class GraphQLExecute extends GraphQL
     private Response generatePlansDevWithWorkspaceImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, Query query, ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
-            return generateQueryPlans(queryClassPath, mappingPath, query, loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
+            return generateQueryPlans(queryClassPath, mappingPath, query, loadSDLCProjectModel(identity, request, projectId, workspaceId, isGroupWorkspace));
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, identity.getName());
         }
     }
 
@@ -220,13 +225,14 @@ public class GraphQLExecute extends GraphQL
     public Response generatePlansProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
-            return generateQueryPlans(queryClassPath, mappingPath, query, loadProjectModel(profiles, groupId, artifactId, versionId));
+            return generateQueryPlans(queryClassPath, mappingPath, query, loadProjectModel(identity, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, identity.getName());
         }
     }
 
@@ -240,7 +246,7 @@ public class GraphQLExecute extends GraphQL
                 "}").type(MediaType.TEXT_HTML_TYPE).build();
     }
 
-    private Response executeGraphQLQuery(Document document, GraphQLCacheKey graphQLCacheKey, MutableList<CommonProfile> profiles, Callable<PureModel> modelLoader)
+    private Response executeGraphQLQuery(Document document, GraphQLCacheKey graphQLCacheKey, Identity identity, Callable<PureModel> modelLoader) throws Exception
     {
         List<SerializedNamedPlans> planWithSerialized;
         OperationDefinition graphQLQuery = GraphQLExecutionHelper.findQuery(document);
@@ -259,14 +265,14 @@ public class GraphQLExecute extends GraphQL
                     planWithSerialized = graphQLPlanCache.getIfPresent(graphQLCacheKey);
                     if (planWithSerialized == null) //cache miss, generate the plan and add to the cache
                     {
-                        LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
+                        LOGGER.debug(new LogInfo(identity.getName(), LoggingEventType.GRAPHQL_EXECUTE, "Cache miss. Generating new plan").toString());
                         pureModel = modelLoader.call();
                         planWithSerialized = getSerializedNamedPlans(document, graphQLCacheKey, graphQLQuery, pureModel);
                         graphQLPlanCache.put(graphQLCacheKey, planWithSerialized);
                     }
                     else
                     {
-                        LOGGER.debug(new LogInfo(profiles, LoggingEventType.GRAPHQL_EXECUTE, "Cache hit. Using previously cached plan").toString());
+                        LOGGER.debug(new LogInfo(identity.getName(), LoggingEventType.GRAPHQL_EXECUTE, "Cache hit. Using previously cached plan").toString());
                     }
                 }
                 else   //no cache so we generate the plan
@@ -278,9 +284,16 @@ public class GraphQLExecute extends GraphQL
         }
         catch (Exception e)
         {
-            return ExceptionTool.exceptionManager(e, LoggingEventType.EXECUTE_INTERACTIVE_ERROR, profiles);
+            LOGGER.error(new LogInfo(identity.getName(), LoggingEventType.EXECUTE_INTERACTIVE_ERROR, e).toString());
+            Span activeSpan = GlobalTracer.get().activeSpan();
+            if (activeSpan != null)
+            {
+                Tags.ERROR.set(activeSpan, true);
+                activeSpan.setTag("error.message", e.getMessage());
+            }
+            throw e;
         }
-        return execute(profiles, planWithSerialized, graphQLQuery);
+        return execute(identity, planWithSerialized, graphQLQuery);
     }
 
     private List<SerializedNamedPlans> getSerializedNamedPlans(Document document, GraphQLCacheKey graphQLCacheKey,OperationDefinition graphQLQuery, PureModel pureModel)
@@ -308,7 +321,7 @@ public class GraphQLExecute extends GraphQL
         return planWithSerialized;
     }
 
-    private Response execute(MutableList<CommonProfile> profiles, List<SerializedNamedPlans> planWithSerialized, OperationDefinition graphQLQuery)
+    private Response execute(Identity identity, List<SerializedNamedPlans> planWithSerialized, OperationDefinition graphQLQuery)
     {
         return Response.ok(
                 (StreamingOutput) outputStream ->
@@ -330,7 +343,7 @@ public class GraphQLExecute extends GraphQL
                                 Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(graphQLQuery, p.propertyName);
 
                                 generator.writeFieldName(p.propertyName);
-                                result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, profiles);
+                                result = (JsonStreamingResult) planExecutor.execute(p.serializedPlan, parameterMap, null, identity);
                                 result.getJsonStream().accept(generator);
                             }
                             catch (IOException e)
@@ -346,7 +359,7 @@ public class GraphQLExecute extends GraphQL
                             }
                         });
                         generator.writeEndObject();
-                        Map<String, ?> extensions = this.computeExtensionsField(graphQLQuery, planWithSerialized, profiles);
+                        Map<String, ?> extensions = this.computeExtensionsField(graphQLQuery, planWithSerialized, identity);
                         if (!extensions.isEmpty())
                         {
                             generator.writeFieldName("extensions");
@@ -357,7 +370,7 @@ public class GraphQLExecute extends GraphQL
                 }).build();
     }
 
-    private Map<String, ?> computeExtensionsField(OperationDefinition query, List<SerializedNamedPlans> serializedNamedPlans, MutableList<CommonProfile> profiles)
+    private Map<String, ?> computeExtensionsField(OperationDefinition query, List<SerializedNamedPlans> serializedNamedPlans,Identity identity)
     {
         Map<String, Map<String, Object>> m = new HashMap<>();
         List<Directive> directives = GraphQLExecutionHelper.findDirectives(query);
@@ -369,7 +382,7 @@ public class GraphQLExecute extends GraphQL
             {
                 SingleExecutionPlan plan = serializedNamedPlans.stream().filter(serializedNamedPlan -> serializedNamedPlan.propertyName.equals(GraphQLExecutionHelper.getPlanNameForDirective(rootFieldName, directive))).findFirst().get().serializedPlan;
                 Map<String, Result> parameterMap = GraphQLExecutionHelper.getParameterMap(query, rootFieldName);
-                Object object = getExtensionForDirective(directive).executeDirective(directive, plan, planExecutor, parameterMap, profiles);
+                Object object = getExtensionForDirective(directive).executeDirective(directive, plan, planExecutor, parameterMap, identity);
                 m.get(rootFieldName).put(directive.name, object);
             });
         }
@@ -513,12 +526,13 @@ public class GraphQLExecute extends GraphQL
     private Response executeDevImpl(HttpServletRequest request, String projectId, String workspaceId, boolean isGroupWorkspace, String queryClassPath, String mappingPath, String runtimePath, Query query, ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             Document cachableGraphQLQuery = createCachableGraphQLQuery(document);
             GraphQLDevCacheKey key = new GraphQLDevCacheKey(projectId, workspaceId, queryClassPath, mappingPath, runtimePath, objectMapper.writeValueAsString(cachableGraphQLQuery));
-            return this.executeGraphQLQuery(document, key, profiles, () -> loadSDLCProjectModel(profiles, request, projectId, workspaceId, isGroupWorkspace));
+            return this.executeGraphQLQuery(document, key, identity, () -> loadSDLCProjectModel(identity, request, projectId, workspaceId, isGroupWorkspace));
         }
         catch (Exception ex)
         {
@@ -533,12 +547,13 @@ public class GraphQLExecute extends GraphQL
     public Response executeProd(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("queryClassPath") String queryClassPath, @PathParam("mappingPath") String mappingPath, @PathParam("runtimePath") String runtimePath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             GraphQLProdMappingRuntimeCacheKey key = new GraphQLProdMappingRuntimeCacheKey(groupId, artifactId, versionId, mappingPath, runtimePath, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            return this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {
@@ -553,12 +568,13 @@ public class GraphQLExecute extends GraphQL
     public Response executeProdWithDataspace(@Context HttpServletRequest request, @PathParam("groupId") String groupId, @PathParam("artifactId") String artifactId, @PathParam("versionId") String versionId, @PathParam("dataspacePath") String dataspacePath, @QueryParam("executionContext") @DefaultValue("defaultExecutionContext") String executionContext, @PathParam("queryClassPath") String queryClassPath, Query query, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("GraphQL: Execute").startActive(true))
         {
             Document document = GraphQLGrammarParser.newInstance().parseDocument(query.query);
             GraphQLProdDataspaceCacheKey key = new GraphQLProdDataspaceCacheKey(groupId, artifactId, versionId, dataspacePath, executionContext, queryClassPath, objectMapper.writeValueAsString(createCachableGraphQLQuery(document)));
 
-            return this.executeGraphQLQuery(document, key, profiles, () -> loadProjectModel(profiles, groupId, artifactId, versionId));
+            return this.executeGraphQLQuery(document, key, identity, () -> loadProjectModel(identity, groupId, artifactId, versionId));
         }
         catch (Exception ex)
         {

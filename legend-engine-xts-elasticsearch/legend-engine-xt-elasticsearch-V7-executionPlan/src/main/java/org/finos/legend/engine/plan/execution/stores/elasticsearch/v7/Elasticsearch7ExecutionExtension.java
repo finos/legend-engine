@@ -23,7 +23,7 @@ import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.store.elasticsearch.v7.metamodel.executionPlan.Elasticsearch7RequestExecutionNode;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,13 +31,19 @@ import java.util.List;
 public class Elasticsearch7ExecutionExtension implements ExecutionExtension
 {
     @Override
-    public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
+    public MutableList<String> group()
     {
-        return Collections.singletonList(((executionNode, profiles, executionState) ->
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Elastic");
+    }
+
+    @Override
+    public List<Function3<ExecutionNode, Identity, ExecutionState, Result>> getExtraNodeExecutors()
+    {
+        return Collections.singletonList(((executionNode, identity, executionState) ->
         {
             if (executionNode instanceof Elasticsearch7RequestExecutionNode)
             {
-                return executionNode.accept(executionState.getStoreExecutionState(StoreType.ESv7).getVisitor(profiles, executionState));
+                return executionNode.accept(executionState.getStoreExecutionState(StoreType.ESv7).getVisitor(identity, executionState));
             }
             return null;
         }));

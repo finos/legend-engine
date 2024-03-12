@@ -24,7 +24,6 @@ import org.finos.legend.engine.persistence.components.ingestmode.audit.DateTimeA
 import org.finos.legend.engine.persistence.components.ingestmode.audit.NoAuditingAbstract;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.DigestGenerationHandler;
-import org.finos.legend.engine.persistence.components.ingestmode.digest.UDFBasedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.ingestmode.digest.UserProvidedDigestGenStrategy;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
@@ -35,8 +34,12 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Datas
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Insert;
+import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.BatchStartTimestamp;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
@@ -107,7 +110,7 @@ class AppendOnlyPlanner extends Planner
         List<Value> fieldsToInsert = new ArrayList<>(dataFields);
 
         // Add digest generation (if applicable)
-        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), stagingDataset(), fieldsToSelect, fieldsToInsert));
+        ingestMode().digestGenStrategy().accept(new DigestGenerationHandler(mainDataset(), fieldsToSelect, fieldsToInsert));
 
         // Add auditing (if applicable)
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
@@ -118,11 +121,10 @@ class AppendOnlyPlanner extends Planner
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
         }
-        else if (!ingestMode().dataSplitField().isPresent() && !(ingestMode().digestGenStrategy() instanceof UDFBasedDigestGenStrategy))
-        {
-            // this is just to print a "*" when we are in the simplest case (no auditing, no data split, no digest generation)
-            fieldsToSelect = LogicalPlanUtils.ALL_COLUMNS();
-        }
+
+        // Add batch_id field
+        fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
+        fieldsToSelect.add(metadataUtils.getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new))));
 
         Dataset selectStage = ingestMode().filterExistingRecords() ? getSelectStageWithFilterExistingRecords(fieldsToSelect) : getSelectStage(fieldsToSelect);
 
@@ -183,18 +185,12 @@ class AppendOnlyPlanner extends Planner
 
     protected void addPostRunStatsForRowsInserted(Map<StatisticName, LogicalPlan> postRunStatisticsResult)
     {
-        if (ingestMode().auditing().accept(AUDIT_ENABLED))
-        {
-            // Rows inserted = rows in main with audit column equals latest timestamp
-            String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
-            postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder()
-                .addOps(LogicalPlanUtils.getRowsBasedOnLatestTimestamp(mainDataset(), auditField, ROWS_INSERTED.get()))
-                .build());
-        }
-        else
-        {
-            // Not supported at the moment
-        }
+        // Rows inserted = rows in main with batch_id column equals latest batch id value
+        List<Value> fields = Collections.singletonList(FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(ROWS_INSERTED.get()).build());
+        Condition condition = LogicalPlanUtils.getBatchIdEqualityCondition(mainDataset(), metadataUtils.getBatchId(mainTableName), ingestMode().batchIdField());
+        Selection selection = Selection.builder().source(mainDataset().datasetReference()).condition(condition).addAllFields(fields).build();
+
+        postRunStatisticsResult.put(ROWS_INSERTED, LogicalPlan.builder().addOps(selection).build());
     }
 
     public Optional<Condition> getDataSplitInRangeConditionForStatistics()

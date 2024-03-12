@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-executionPlan-execution</artifactId>
-        <version>4.37.1-SNAPSHOT</version>
+        <version>4.40.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-executionPlan-execution-store-inMemory</artifactId>
@@ -84,6 +84,10 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-extensions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-executionPlan-dependencies</artifactId>
         </dependency>
         <dependency>
@@ -99,13 +103,6 @@
             <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <!-- ENGINE -->
-
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>

@@ -16,15 +16,6 @@ package org.finos.legend.engine.plan.execution.api;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
-import org.finos.legend.engine.plan.execution.PlanExecutor;
-import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
-import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
-import org.pac4j.core.profile.CommonProfile;
-import org.pac4j.core.profile.ProfileManager;
-import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -35,6 +26,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.finos.legend.engine.plan.execution.PlanExecutor;
+import org.finos.legend.engine.plan.execution.api.request.ExecutionRequest;
+import org.finos.legend.engine.plan.execution.authorization.PlanExecutionAuthorizer;
+import org.finos.legend.engine.plan.execution.result.serialization.SerializationFormat;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.ProfileManager;
+import org.pac4j.jax.rs.annotations.Pac4JProfileManager;
 
 import static org.finos.legend.engine.shared.core.operational.http.InflateInterceptor.APPLICATION_ZLIB;
 
@@ -58,6 +58,14 @@ public class ExecutePlanStrategic extends ExecutePlan
     @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
     public Response executePlan(@Context HttpServletRequest request, ExecutionPlan execPlan, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
-        return super.doExecutePlan(request, execPlan, format, pm);
+        return this.executeRequest(request, new ExecutionRequest(execPlan), format, pm);
+    }
+
+    @POST
+    @Path("executeRequest")
+    @Consumes({MediaType.APPLICATION_JSON, APPLICATION_ZLIB})
+    public Response executeRequest(@Context HttpServletRequest request, ExecutionRequest executionRequest, @DefaultValue(SerializationFormat.defaultFormatString) @QueryParam("serializationFormat") SerializationFormat format, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
+    {
+        return super.doExecutePlan(request, executionRequest, format, pm);
     }
 }

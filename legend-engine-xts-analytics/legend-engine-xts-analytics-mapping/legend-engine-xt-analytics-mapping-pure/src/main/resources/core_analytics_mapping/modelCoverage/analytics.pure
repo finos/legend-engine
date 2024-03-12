@@ -19,7 +19,6 @@ import meta::pure::router::routing::*;
 import meta::analytics::mapping::modelCoverage::utility::*;
 import meta::analytics::class::modelCoverage::*;
 import meta::analytics::class::modelCoverage::utility::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::milestoning::*;
 

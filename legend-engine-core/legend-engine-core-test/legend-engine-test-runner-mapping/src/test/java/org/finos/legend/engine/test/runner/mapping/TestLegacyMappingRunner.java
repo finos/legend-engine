@@ -24,6 +24,8 @@ import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransforme
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.mappingTest.MappingTest_Legacy;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -117,7 +119,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -148,7 +150,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -180,7 +182,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 
@@ -217,7 +219,7 @@ public class TestLegacyMappingRunner
                         "    )\n" +
                         "  ]\n" +
                         ")\n");
-        PureModel pureModel = new PureModel(pureModelContextData, null, Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
+        PureModel pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), Thread.currentThread().getContextClassLoader(), DeploymentMode.PROD);
 
         RichMappingTestResult testResult = runTest(pureModelContextData, pureModel);
 

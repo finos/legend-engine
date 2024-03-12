@@ -40,6 +40,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.FieldType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.SchemaDefinition;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.finos.legend.engine.persistence.components.logicalplan.values.All;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Array;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DatetimeValue;
@@ -48,7 +49,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Functio
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
 import org.finos.legend.engine.persistence.components.logicalplan.values.InfiniteBatchIdValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.SelectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
@@ -72,14 +72,16 @@ import static org.finos.legend.engine.persistence.components.logicalplan.dataset
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.FLOAT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INT;
 import static org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType.INTEGER;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATHS;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_FILE_PATTERNS;
+import static org.finos.legend.engine.persistence.components.util.MetadataUtils.BATCH_SOURCE_INFO_STAGING_FILTERS;
 
 
 public class LogicalPlanUtils
 {
     public static final String INFINITE_BATCH_TIME = "9999-12-31 23:59:59";
     public static final String DEFAULT_META_TABLE = "batch_metadata";
-    public static final String DEFAULT_BULK_LOAD_META_TABLE = "bulk_load_batch_metadata";
-
     public static final String DATA_SPLIT_LOWER_BOUND_PLACEHOLDER = "{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}";
     public static final String DATA_SPLIT_UPPER_BOUND_PLACEHOLDER = "{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}";
     public static final String UNDERSCORE = "_";
@@ -267,38 +269,61 @@ public class LogicalPlanUtils
         return And.of(conditions);
     }
 
-    public static List<DatasetFilter> getDatasetFilters(Dataset dataSet)
+    public static Map<String, Object> jsonifyStagingFilters(List<DatasetFilter> filters)
     {
-        List<DatasetFilter> datasetFilters = new ArrayList();
-        if (dataSet instanceof DerivedDataset)
-        {
-            DerivedDataset derivedDataset = (DerivedDataset) dataSet;
-            datasetFilters = derivedDataset.datasetFilters();
-        }
-        return datasetFilters;
-    }
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
 
-    public static String jsonifyDatasetFilters(List<DatasetFilter> filters)
-    {
-        Map<String, Map<String, Object>> map = new HashMap<>();
+        Map<String, Map<String, Object>> stagingFiltersMap = new HashMap<>();
         for (DatasetFilter filter : filters)
         {
             String key = filter.fieldName();
             Object value = filter.getValue();
             String filterType = filter.filterType().getType();
-            Map<String, Object> mapValue = map.getOrDefault(key, new HashMap<>());
+            Map<String, Object> mapValue = stagingFiltersMap.getOrDefault(key, new HashMap<>());
             mapValue.put(filterType, value);
-            map.put(key, mapValue);
+            stagingFiltersMap.put(key, mapValue);
         }
-        ObjectMapper objectMapper = new ObjectMapper();
-        try
+        batchSourceInfoMap.put(BATCH_SOURCE_INFO_STAGING_FILTERS, stagingFiltersMap);
+
+        return batchSourceInfoMap;
+    }
+
+    public static Map<String, Object> jsonifyBulkLoadSourceInfo(StagedFilesDatasetProperties stagedFilesDatasetProperties, Optional<String> bulkLoadEventIdValue)
+    {
+        Map<String, Object> batchSourceInfoMap = new HashMap<>();
+
+        List<String> filePaths = stagedFilesDatasetProperties.filePaths();
+        List<String> filePatterns = stagedFilesDatasetProperties.filePatterns();
+        if (filePaths != null && !filePaths.isEmpty())
         {
-            return objectMapper.writeValueAsString(map);
+            batchSourceInfoMap.put(BATCH_SOURCE_INFO_FILE_PATHS, filePaths);
         }
-        catch (JsonProcessingException e)
+        if (filePatterns != null && !filePatterns.isEmpty())
         {
-            throw new RuntimeException(e);
+            batchSourceInfoMap.put(BATCH_SOURCE_INFO_FILE_PATTERNS, filePatterns);
         }
+
+        bulkLoadEventIdValue.ifPresent(s -> batchSourceInfoMap.put(BATCH_SOURCE_INFO_BULK_LOAD_EVENT_ID, s));
+
+        return batchSourceInfoMap;
+    }
+
+    public static Optional<StringValue> getStringValueFromMap(Map<String, Object> map)
+    {
+        if (!map.isEmpty())
+        {
+            ObjectMapper objectMapper = new ObjectMapper();
+            try
+            {
+                return Optional.of(StringValue.of(objectMapper.writeValueAsString(map)));
+            }
+            catch (JsonProcessingException e)
+            {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return Optional.empty();
     }
 
     public static Condition getBatchIdEqualsInfiniteCondition(Dataset mainDataSet, String batchIdOutField)
@@ -368,19 +393,6 @@ public class LogicalPlanUtils
             optimizationConditions.add(optimizationCondition);
         }
         return optimizationConditions;
-    }
-
-    // Used in Incremental
-    public static Selection getRowsBasedOnLatestTimestamp(Dataset dataset, String field, String alias)
-    {
-        FieldValue fieldValue = FieldValue.builder().datasetRef(dataset.datasetReference()).fieldName(field).build();
-
-        FunctionImpl maxFunction = FunctionImpl.builder().functionName(FunctionName.MAX).addValue(fieldValue).build();
-        SelectValue maxTs = SelectValue.of(Selection.builder().source(dataset.datasetReference()).addFields(maxFunction).build());
-        Equals<FieldValue, SelectValue> condition = Equals.of(fieldValue, maxTs);
-        FunctionImpl countFunction = FunctionImpl.builder().functionName(FunctionName.COUNT).addValue(All.INSTANCE).alias(alias).build();
-
-        return Selection.builder().source(dataset.datasetReference()).condition(condition).addFields(countFunction).build();
     }
 
     public static List<Field> findCommonPrimaryFieldsBetweenMainAndStaging(Dataset mainDataset, Dataset stagingDataset)

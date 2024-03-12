@@ -24,4 +24,5 @@ public class ResolutionQuery
     public ResolutionKeyType keyType;
     public Boolean optional;
     public Integer precedence;
+    public Lambda filter;
 }

@@ -131,7 +131,7 @@ public class MappingParseTreeWalker
         int lineOffset = walkerSourceInformation.getLineOffset() + startLine - 1;
         // only add current walker source information column offset if this is the first line
         int columnOffset = (startLine == 1 ? walkerSourceInformation.getColumnOffset() : 0) + ctx.mappingElementBody().BRACE_OPEN().getSymbol().getCharPositionInLine() + ctx.mappingElementBody().BRACE_OPEN().getText().length();
-        ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(mapping.getPath(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
+        ParseTreeWalkerSourceInformation mappingElementWalkerSourceInformation = new ParseTreeWalkerSourceInformation.Builder(this.walkerSourceInformation.getSourceId(), lineOffset, columnOffset).withReturnSourceInfo(this.walkerSourceInformation.getReturnSourceInfo()).build();
         MappingElementSourceCode mappingElementSourceCode = new MappingElementSourceCode(mappingElementCode, parserName, mappingElementWalkerSourceInformation, ctx, this.walkerSourceInformation);
         MappingElementParser extraParser = this.extensions.getExtraMappingElementParser(mappingElementSourceCode.name);
         if (extraParser == null)

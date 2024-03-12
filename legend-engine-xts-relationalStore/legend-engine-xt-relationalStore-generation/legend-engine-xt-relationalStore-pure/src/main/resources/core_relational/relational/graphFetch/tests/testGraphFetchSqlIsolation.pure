@@ -15,7 +15,6 @@
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::graphFetch::tests::isolation::*;
 import meta::relational::metamodel::*;
@@ -25,7 +24,7 @@ import meta::relational::runtime::*;
 
 function <<access.private>> meta::relational::graphFetch::tests::isolation::getRuntime(db: Database[1]):Runtime[1]
 {
-   ^Runtime(connectionStores= ^ConnectionStore(element=$db,connection=^TestDatabaseConnection(type=DatabaseType.H2)))
+   ^Runtime(connectionStores= ^ConnectionStore(element=$db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2)))
 }
 
 function <<test.Test, test.AlloyOnly>> {serverVersion.start='v1_19_0'} meta::relational::graphFetch::tests::isolation::testIsolationOfPropertyTargetFilter(): Boolean[1]

@@ -30,6 +30,8 @@ public enum PackageableElementType
     PERSISTENCE_CONTEXT,
     FLATTEN,
     DATASTORESPEC,
+    DATASPACE,
     DIAGRAM,
-    FILE_GENERATION
+    FILE_GENERATION,
+    DATA
 }

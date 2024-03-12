@@ -65,7 +65,7 @@ public class CopyStatement implements DDLStatement
         SqlGen.genSqlList(builder, columns, EMPTY, COMMA);
         builder.append(CLOSING_PARENTHESIS);
 
-        builder.append(WHITE_SPACE + Clause.FROM.get() + WHITE_SPACE);
+        builder.append(WHITE_SPACE + Clause.FROM.get() + WHITE_SPACE + Clause.FILES + WHITE_SPACE);
         stagedFilesTable.genSql(builder);
     }
 

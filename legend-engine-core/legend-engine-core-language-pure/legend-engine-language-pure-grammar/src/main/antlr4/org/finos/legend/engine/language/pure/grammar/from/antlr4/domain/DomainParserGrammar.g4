@@ -20,8 +20,6 @@ identifier:                                     VALID_STRING | STRING
                                                 | NATIVE | PROJECTS | AS
                                                 | CONSTRAINT_ENFORCEMENT_LEVEL_ERROR | CONSTRAINT_ENFORCEMENT_LEVEL_WARN
                                                 | AGGREGATION_TYPE_COMPOSITE | AGGREGATION_TYPE_SHARED | AGGREGATION_TYPE_NONE
-                                                | FUNCTION_TEST_DATA | FUNCTION_SUITE_TESTS | FUNCTION_TEST_PARAMETERS
-                                                | FUNCTION_TEST_ASSERTS | FUNCTION_TEST_DATA_STORE
 ;
 
 
@@ -172,47 +170,41 @@ functionDefinition:                             FUNCTION stereotypes? taggedValu
                                                     BRACE_OPEN
                                                         codeBlock
                                                     BRACE_CLOSE
-                                                functionTestSuites?
+                                                functionTestSuiteDef?
 ;
-functionTestSuites:                             BRACKET_OPEN
-                                                    functionTestSuite (COMMA functionTestSuite)*
-                                                BRACKET_CLOSE
-;
-functionTestSuite:                              identifier COLON BRACE_OPEN (testData | functionTestSuiteTests )* BRACE_CLOSE
-;
-testData:                                       FUNCTION_TEST_DATA COLON BRACKET_OPEN (storeTestData ( COMMA storeTestData )*)? BRACKET_CLOSE SEMI_COLON
-;
-storeTestData:                                  BRACE_OPEN
-                                                (
-                                                    storePointer |
-                                                    storeData
-                                                )*
+functionTestSuiteDef:                           BRACE_OPEN
+                                                    (simpleFunctionTest | simpleFunctionSuite | functionData)*
                                                 BRACE_CLOSE
 ;
-storePointer:                                   FUNCTION_TEST_DATA_STORE COLON qualifiedName SEMI_COLON
+simpleFunctionSuite:                            identifier
+                                                PAREN_OPEN
+                                                    (functionData)*
+                                                    simpleFunctionTest (simpleFunctionTest)*
+                                                PAREN_CLOSE
 ;
-storeData:                                      FUNCTION_TEST_DATA COLON embeddedData SEMI_COLON
+functionData:                                   storeProviderPointer COLON functionDataValue SEMI_COLON
+;
+storeProviderPointer:                           (storeProviderPointerType)? packageableElementPointer
+;
+storeProviderPointerType:                       PAREN_OPEN VALID_STRING PAREN_CLOSE
+;
+packageableElementPointer:                      qualifiedName
+;
+functionDataValue:                              (qualifiedName | externalFormatValue | embeddedData)
+;
+simpleFunctionTest:                             identifier (STRING)? PIPE identifier PAREN_OPEN functionParams PAREN_CLOSE EQUAL GREATER_THAN (externalFormatValue | primitiveValue) SEMI_COLON
+;
+externalFormatValue:                            contentType STRING
+;
+contentType:                                    PAREN_OPEN identifier PAREN_CLOSE
+;
+functionParams:                                 (primitiveValue (COMMA primitiveValue)*)?
 ;
 embeddedData:                                   identifier ISLAND_OPEN (embeddedDataContent)*
 ;
 embeddedDataContent:                            ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
 ;
-functionTestSuiteTests:                         FUNCTION_SUITE_TESTS COLON BRACKET_OPEN (functionTestBlock ( COMMA functionTestBlock )*)? BRACKET_CLOSE
-;
-functionTestBlock:                              identifier COLON BRACE_OPEN (functionTestParameters | functionTestAsserts )* BRACE_CLOSE
-;
-functionTestParameters:                         FUNCTION_TEST_PARAMETERS COLON BRACKET_OPEN ( functionTestParameter ( COMMA functionTestParameter )* )? BRACKET_CLOSE
-;
-functionTestParameter:                          identifier EQUAL primitiveValue
-;
-functionTestAsserts:                            FUNCTION_TEST_ASSERTS COLON BRACKET_OPEN ( functionTestAssert ( COMMA functionTestAssert )* )? BRACKET_CLOSE
-;
-functionTestAssert:                             identifier COLON testAssertion
-;
-testAssertion:                                  identifier ISLAND_OPEN (testAssertionContent)*
-;
-testAssertionContent:                           ISLAND_START | ISLAND_BRACE_OPEN | ISLAND_CONTENT | ISLAND_HASH | ISLAND_BRACE_CLOSE | ISLAND_END
-;
+
 // -------------------------------------- CONSTRAINT --------------------------------------
 
 constraints:                                    BRACKET_OPEN

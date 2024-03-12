@@ -15,19 +15,38 @@
 
 package org.finos.legend.engine.query.sql.providers.core;
 
+import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
+
+import java.util.List;
 
 public class SQLContext
 {
     private final Node query;
+    private final List<Object> positionalArguments = FastList.newList();
 
     public SQLContext(Node query)
     {
+        this(query, null);
+    }
+
+    public SQLContext(Node query, List<Object> positionalArguments)
+    {
         this.query = query;
+
+        if (positionalArguments != null)
+        {
+            this.positionalArguments.addAll(positionalArguments);
+        }
     }
 
     public Node getQuery()
     {
         return query;
+    }
+
+    public List<Object> getPositionalArguments()
+    {
+        return positionalArguments;
     }
 }

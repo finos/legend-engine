@@ -2352,7 +2352,7 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
     private boolean checkQualifiedExpressionForToOneAsTopLevelFunctionExpression(QualifiedProperty generatedMilestoningClassQualifiedProperty)
     {
         FunctionExpression topLevelExpression = ((FunctionExpression) generatedMilestoningClassQualifiedProperty._expressionSequence().getFirst());
-         return topLevelExpression._func()._functionName().equals("toOne");
+        return topLevelExpression._func()._functionName().equals("toOne");
     }
 
     @Test
@@ -2827,6 +2827,23 @@ public class TestDomainCompilationFromGrammar extends TestCompilationFromGrammar
                 "{\n" +
                 "   binary: Binary[1];" +
                 "}\n");
+    }
+
+    @Test
+    public void testCompilationOfRelationStoreAccessor()
+    {
+        try
+        {
+            test("function my::func():Any[*]" +
+                    "{" +
+                    "   #>{my::Store}#->filter(c|$c.val);" +
+                    "}");
+            Assert.fail();
+        }
+        catch (Exception e)
+        {
+            Assert.assertEquals("The store 'my::Store' can't be found.", e.getMessage());
+        }
     }
 
     @Test

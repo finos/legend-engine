@@ -1,0 +1,231 @@
+import meta::pure::functions::collection::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::binding::*;
+import meta::external::store::rel::metamodel::render::buffer::*;
+import meta::external::store::rel::metamodel::render::constant::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::utils::*;
+
+
+////////////////////////////////////////
+// Rendering non-constant expressions //
+////////////////////////////////////////
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], tuple: Tuple[1]): RelQueryBuffer[1] {
+  $buffer->append('(')->render($tuple.arguments)->append(')')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], tuples: Tuple[*]): RelQueryBuffer[1] {
+  $buffer->append($tuples, {accum: RelQueryBuffer[1], t: Tuple[1] | $accum->render($t)}, '; ')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], cons: RelationCons[1]): RelQueryBuffer[1] {
+  if ($cons.arguments->isEmpty(),
+    | $buffer->append('false'),
+    | if ($cons.arguments->size() == 1 && $cons.arguments->at(0).arguments->isEmpty(),
+        | $buffer->append('true'),
+        | $buffer->append('{')->render($cons.arguments)->append('}')
+        )
+    )
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], rel: RelationName[1]): RelQueryBuffer[1] {
+  $buffer->append($rel.identifier)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], expr: HeadExpr[1]): RelQueryBuffer[1] {
+  $expr->match([
+    rel: RelationName[1]     | $buffer->render($rel),
+    app: NamedApplication[1] | $buffer->render($app)
+  ])
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], app: NamedApplication[1]): RelQueryBuffer[1] {
+  $app->match([
+    atom: NamedAtom[1]     | $buffer->render($atom),
+    a: NamedApplication[1] |
+      let newBuffer = $buffer->render($a.head);
+      let renderedArguments =
+        if (!$a.arguments->isEmpty(),
+          | $newBuffer->append($a.arguments, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, '[', ', ', ']'),
+          | $newBuffer
+          );
+  ])
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], atom: NamedAtom[1]): RelQueryBuffer[1] {
+  let newBuffer = $buffer->render($atom.head);
+  let renderedArguments =
+    if (!$atom.arguments->isEmpty(),
+      | $newBuffer->append($atom.arguments, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, '(', ', ', ')'),
+      | $newBuffer
+      );
+  $renderedArguments;
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], atom: Atom[1]): RelQueryBuffer[1] {
+  let newBuffer = $buffer->render($atom.head);
+  let renderedArguments =
+    if (!$atom.arguments->isEmpty(),
+      | $newBuffer->append($atom.arguments, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, '(', ', ', ')'),
+      | $newBuffer
+      );
+  $renderedArguments;
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], and: And[1]): RelQueryBuffer[1] {
+  $buffer->append($and.conjuncts, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ' and ')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], or: Or[1]): RelQueryBuffer[1] {
+  $buffer->append($or.disjuncts, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ' or ')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], not: Not[1]): RelQueryBuffer[1] {
+  $buffer->append('not ')->render($not.inner)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], implies: Implies[1]): RelQueryBuffer[1] {
+  $buffer->render($implies.antecedence)->append(' implies ')->render($implies.consequence)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], exists: Exists[1]): RelQueryBuffer[1] {
+  $buffer->append('exists')->render($exists.inner)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], forAll: ForAll[1]): RelQueryBuffer[1] {
+  $buffer->append('forall(')->renderBinding($forAll.bindings)->append(': ')->render($forAll.inner)->append(')')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], equals: Equals[1]): RelQueryBuffer[1] {
+  $buffer->render($equals.left)->append(' = ')->render($equals.right)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], app: Application[1]): RelQueryBuffer[1] {
+  $app->match([
+    a: Atom[1] |
+      $buffer->render($a),
+    a: Application[1] |
+      let useParenthesis = !$app.head->canUnambigouslyApply();
+      let newBuffer =
+        if ($useParenthesis,
+          | $buffer->append('(')->render($app.head)->append(')'),
+          | $buffer->render($app.head)
+          );
+      if (!$app.arguments->isEmpty(),
+        | $newBuffer->append($app.arguments, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, '[', ', ', ']'),
+        | $newBuffer
+        );
+  ])
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], abstraction: Abstraction[1]): RelQueryBuffer[1] {
+  $buffer->append('(')->renderBinding($abstraction.bindings)->append(': ')->render($abstraction.body)->append(')')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], composition: Composition[1]): RelQueryBuffer[1] {
+  $buffer->render($composition.from)->append('.')->render($composition.to)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], from: From[1]): RelQueryBuffer[1] {
+  $buffer->render($from.expr)->append(' from ')->renderBinding($from.bindings)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], for: For[1]): RelQueryBuffer[1] {
+  $buffer->render($for.expr)->append(' for ')->renderBinding($for.bindings)
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], product: Product[1]): RelQueryBuffer[1] {
+  $buffer->append($product.exprs, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ', ')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], group: ExprGroup[1]): RelQueryBuffer[1] {
+  $buffer->append('(')->render($group.parent)->append(')')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], union: Union[1]): RelQueryBuffer[1] {
+  $buffer->append($union.exprs, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, '; ')
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], ifThenElse: IfThenElse[1]): RelQueryBuffer[1] {
+  $buffer->append('if ')->render($ifThenElse.condition)->append(' then ')->render($ifThenElse.then)
+         ->append(' else ')->render($ifThenElse.else);
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], expr: Expr[1]): RelQueryBuffer[1] {
+  $expr->match([
+    e: Fragment[1]         | $buffer->append($e.code),
+    e: Abstraction[1]      | $buffer->render($e),
+    e: And[1]              | $buffer->render($e),
+    e: Application[1]      | $buffer->render($e),
+    e: Atom[1]             | $buffer->render($e),
+    e: Composition[1]      | $buffer->render($e),
+    e: Constant[1]         | $buffer->append($e->toRelLiteral()),
+    e: DontCare[1]         | $buffer->append('_'),
+    e: Equals[1]           | $buffer->render($e),
+    e: Exists[1]           | $buffer->render($e),
+    e: ExprGroup[1]        | $buffer->render($e),
+    e: For[1]              | $buffer->render($e),
+    e: ForAll[1]           | $buffer->render($e),
+    e: From[1]             | $buffer->render($e),
+    e: HeadExpr[1]         | $buffer->render($e),
+    e: IfThenElse[1]       | $buffer->render($e),
+    e: Implies[1]          | $buffer->render($e),
+    e: NamedApplication[1] | $buffer->render($e),
+    e: NamedAtom[1]        | $buffer->render($e),
+    e: Not[1]              | $buffer->render($e),
+    e: Or[1]               | $buffer->render($e),
+    e: Product[1]          | $buffer->render($e),
+    e: RelationCons[1]     | $buffer->render($e),
+    e: Tuple[1]            | $buffer->render($e),
+    e: Union[1]            | $buffer->render($e),
+    e: Variable[1]         | $buffer->renderBinding($e),
+    e: Variables[1]        | $buffer->renderBinding($e)
+  ]);
+}
+
+function meta::external::store::rel::metamodel::render::expr::render(buffer: RelQueryBuffer[1], exprs: Expr[*]): RelQueryBuffer[1] {
+  $buffer->append($exprs, {accum: RelQueryBuffer[1], e: Expr[1] | $accum->render($e)}, ', ')
+}
+
+//////////////////////////////////////////////////////
+// Rendering entry point when not providing a state //
+//////////////////////////////////////////////////////
+
+function meta::external::store::rel::metamodel::render::expr::renderExpr(expr: Expr[1]): String[1] {
+  emptyBufferSingleLine()->render($expr)->toString()
+}
+
+function meta::external::store::rel::metamodel::render::expr::renderExprs(exprs: Expr[*]): String[1] {
+  emptyBufferSingleLine()->render($exprs)->toString()
+}
+
+///////////////////////
+// Utility functions //
+///////////////////////
+
+function <<access.private>> meta::external::store::rel::metamodel::render::expr::maybeParentheses(str: String[1], do: Boolean[1]): String[1] {
+  if ($do, | format('(%s)', $str), | $str)
+}
+
+function <<access.private>> meta::external::store::rel::metamodel::render::expr::canUnambigouslyApply(expr: Expr[1]): Boolean[1] {
+  $expr->match([
+    e: Abstraction[1]      | true,
+    e: Application[1]      | true,
+    e: Composition[1]      | true,
+    e: Constant[1]         | true,
+    e: DontCare[1]         | true,
+    e: ExprGroup[1]        | true,
+    e: HeadExpr[1]         | true,
+    e: NamedApplication[1] | true,
+    e: Product[1]          | true,
+    e: RelationCons[1]     | true,
+    e: Tuple[1]            | true,
+    e: Union[1]            | true,
+    e: Variable[1]         | true,
+    e: Variables[1]        | true,
+    e: For[1]              | false,
+    e: From[1]             | false,
+    e: Not[1]              | false
+  ])
+}

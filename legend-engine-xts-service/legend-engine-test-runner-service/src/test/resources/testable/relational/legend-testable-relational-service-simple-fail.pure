@@ -7,7 +7,7 @@ Service service::SimpleRelationalPassFailing
   execution: Single
   {
     query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
-    mapping: execution::RelationalMapping;
+    mapping: execution::FirmMapping;
     runtime: execution::Runtime;
   }
   testSuites:
@@ -18,10 +18,15 @@ Service service::SimpleRelationalPassFailing
       [
         connections:
         [
-          connection_1:
+          model::MyConnection:
             Reference
             #{
               data::RelationalData
+            }#,
+          model::MyConnection:
+            DataspaceTestData
+            #{
+              model::com::PersonDataspace
             }#
         ]
       ]

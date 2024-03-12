@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.dynamicTestConnections;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.memsql.test.MemSQLContainerWrapper;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.tests.api.DynamicTestConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
@@ -38,6 +39,12 @@ public class MemSQLTestContainer implements DynamicTestConnection
     private TestVaultImplementation vault;
 
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "MemSQL");
+    }
+
+    @Override
     public DatabaseType getDatabaseType()
     {
         return DatabaseType.MemSQL;
@@ -59,8 +66,8 @@ public class MemSQLTestContainer implements DynamicTestConnection
         }
         this.vault =
                 new TestVaultImplementation()
-                    .withValue(USERNAME_REFERENCE, this.memSQLContainerWrapper.getUser())
-                    .withValue(PASSWORD_REFERENCE, this.memSQLContainerWrapper.getPassword());
+                        .withValue(USERNAME_REFERENCE, this.memSQLContainerWrapper.getUser())
+                        .withValue(PASSWORD_REFERENCE, this.memSQLContainerWrapper.getPassword());
         Vault.INSTANCE.registerImplementation(this.vault);
     }
 

@@ -1,0 +1,54 @@
+###Service
+Service service::RelationalServiceWithEnumParams
+{
+  pattern: '/myService/{eType}';
+  documentation: '';
+  autoActivateUpdates: true;
+  execution: Single
+  {
+    query: eType : model::EmployeeType[1]|model::Person.all()->filter(p|$p.employeeType == $eType)->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
+    mapping: execution::RelationalMapping;
+    runtime: execution::Runtime;
+  }
+  testSuites:
+  [
+    testSuite1:
+    {
+      data:
+      [
+        connections:
+        [
+          connection_1:
+            Reference
+            #{
+              data::RelationalData
+            }#
+        ]
+      ]
+      tests:
+      [
+        test1:
+        {
+          serializationFormat: PURE_TDSOBJECT;
+          parameters:
+          [
+            eType = model::EmployeeType.CONTRACT
+          ]
+          asserts:
+          [
+            shouldPass:
+              EqualToJson
+              #{
+                expected :
+                  ExternalFormat
+                  #{
+                    contentType: 'application/json';
+                    data: '[{"First Name":"John","Last Name":"Doe"},{"First Name":"Nicole","Last Name":"Smith"}]\n';
+                  }#;
+              }#
+          ]
+        }
+      ]
+    }
+  ]
+}

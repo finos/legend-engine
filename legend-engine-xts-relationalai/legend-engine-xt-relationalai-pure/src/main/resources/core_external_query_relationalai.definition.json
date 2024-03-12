@@ -1,9 +1,10 @@
 {
   "name" : "core_external_query_relationalai",
-  "pattern" : "(meta::rel|meta::pure::mapping)(::.*)?",
+  "pattern" : "(meta::external::store::rel)(::.*)?",
   "dependencies": [
     "platform",
     "platform_functions",
+    "platform_dsl_store",
     "platform_dsl_mapping",
     "platform_dsl_graph",
     "platform_dsl_path",

@@ -19,7 +19,6 @@ import junit.framework.TestSuite;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.plan.execution.stores.relational.test.H2TestServerResource;
 import org.finos.legend.engine.server.test.shared.MetadataTestServerResource;
-import org.finos.legend.engine.server.test.shared.PureTestHelper;
 import org.finos.legend.engine.server.test.shared.PureWithEngineHelper;
 import org.finos.legend.engine.server.test.shared.ServerTestServerResource;
 import org.finos.legend.pure.m3.execution.test.TestCollection;

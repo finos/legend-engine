@@ -7,6 +7,7 @@
     "platform_dsl_graph",
     "platform_dsl_path",
     "platform_dsl_mapping",
+    "platform_dsl_store",
     "core_functions",
     "core",
     "core_external_format_json",

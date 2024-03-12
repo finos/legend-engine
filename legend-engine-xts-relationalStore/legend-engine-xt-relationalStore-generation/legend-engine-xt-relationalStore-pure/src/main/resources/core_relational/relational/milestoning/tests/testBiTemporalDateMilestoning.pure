@@ -26,7 +26,7 @@ function <<test.BeforePackage>> meta::relational::tests::milestoning::bitemporal
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiTemporalAllTypeQuery():Boolean[1]
 {
-  let result = execute(|BiTemporalProduct.all(%2017-6-10, %2017-6-9), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+  let result = execute(|BiTemporalProduct.all(%2017-6-10, %2017-6-9), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
   let products = $result.values;
   assertEquals(1, $products->size());
   assertEquals(%2017-6-10, $products->at(0).processingDate);
@@ -40,7 +40,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiT
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiTemporalPropertyUsageInProject():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-10, %2017-6-9).id, 'prodId'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-10, %2017-6-9).id, 'prodId'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals( ['1', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -52,7 +52,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiT
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiTemporalPropertyUsageInProjectPath():Boolean[1]
 {
-   let result = execute(|Order.all()->project(#/Order/biTemporalProduct(%2017-6-10, %2017-6-9)/id#), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(#/Order/biTemporalProduct(%2017-6-10, %2017-6-9)/id#), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals( ['1', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiT
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMultipleBiTemporalPropertyUsageInProject():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-10, %2017-6-9).biTemporalClassification(%2017-6-11, %2017-6-10).type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-10, %2017-6-9).biTemporalClassification(%2017-6-11, %2017-6-10).type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['STOCK', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -76,7 +76,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMul
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMultipleBiTemporalPropertyUsageInProjectWithMilestoningInfinityNotSpecifiedInDB():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification(%latest, %latest).type, 'type'), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification(%latest, %latest).type, 'type'), noMilestoningMap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['STOCK', 'STOCK', 'STOCK', 'STOCK', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertSameSQL('select "productclassificationtablenomilestoning_0".type as "type" from OrderTable as "root" left outer join ProductTableNoMilestoning as "producttablenomilestoning_0" on ("root".prodFk = "producttablenomilestoning_0".id) left outer join ProductClassificationTableNoMilestoning as "productclassificationtablenomilestoning_0" on ("producttablenomilestoning_0".type = "productclassificationtablenomilestoning_0".type)', $result);
@@ -84,7 +84,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMul
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMultipleBiTemporalPropertyUsageInProjectWithMilestoningInfinitySpecifiedInDB():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification(%latest, %latest).type, 'type'), latestbitemporalmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification(%latest, %latest).type, 'type'), latestbitemporalmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = \'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = \'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = DATE\'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = TIMESTAMP\'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
@@ -94,7 +94,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMul
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMultipleBiTemporalPropertyUsageInProjectPathWithMilestoningInfinitySpecifiedInDBPlusLatestPropagation():Boolean[1]
 {
-   let result = execute(|Order.all()->project(#/Order/biTemporalProduct(%latest, %latest)/biTemporalClassification(%latest, %latest)/type#), latestbitemporalmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(#/Order/biTemporalProduct(%latest, %latest)/biTemporalClassification(%latest, %latest)/type#), latestbitemporalmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = \'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = \'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = DATE\'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = TIMESTAMP\'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
@@ -104,7 +104,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMul
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testMultipleBiTemporalPropertyUsageInProjectWithMilestoningInfinitySpecifiedInDBPlusLatestPropagation():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification.type, 'type'), latestbitemporalmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification.type, 'type'), latestbitemporalmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = \'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = \'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = DATE\'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = TIMESTAMP\'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
@@ -116,14 +116,14 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testPop
 {
    let processingDate = %9999-12-31;
    let businessDate = %2015-10-16;
-   let result = execute(|BiTemporalProduct.all($processingDate, $businessDate)->project([p|$p.id, p|$p.biTemporalClassificationType],['id','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|BiTemporalProduct.all($processingDate, $businessDate)->project([p|$p.id, p|$p.biTemporalClassificationType],['id','classificationType']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".id as "id", "bitemporalproductclassificationtable_0".type as "classificationType" from BiTemporalProductTable as "root" left outer join BiTemporalProductClassificationTable as "bitemporalproductclassificationtable_0" on ("root".type = "bitemporalproductclassificationtable_0".type and ("bitemporalproductclassificationtable_0".in_z <= \'9999-12-31\' and "bitemporalproductclassificationtable_0".out_z > \'9999-12-31\' and "bitemporalproductclassificationtable_0".from_z <= \'2015-10-16\' and "bitemporalproductclassificationtable_0".thru_z > \'2015-10-16\')) where "root".in_z <= \'9999-12-31\' and "root".out_z > \'9999-12-31\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',
     'select "root".id as "id", "bitemporalproductclassificationtable_0".type as "classificationType" from BiTemporalProductTable as "root" left outer join BiTemporalProductClassificationTable as "bitemporalproductclassificationtable_0" on ("root".type = "bitemporalproductclassificationtable_0".type and ("bitemporalproductclassificationtable_0".in_z <= DATE\'9999-12-31\' and "bitemporalproductclassificationtable_0".out_z > DATE\'9999-12-31\' and "bitemporalproductclassificationtable_0".from_z <= DATE\'2015-10-16\' and "bitemporalproductclassificationtable_0".thru_z > DATE\'2015-10-16\')) where "root".in_z <= DATE\'9999-12-31\' and "root".out_z > DATE\'9999-12-31\' and "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\'',
     $result->sqlRemoveFormatting()
    );
 
-   let result2 = execute(|BiTemporalProduct.all($processingDate, $businessDate)->project([p|$p.id, p|$p.biTemporalClassificationTypeWithIndirect],['id','classificationType']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result2 = execute(|BiTemporalProduct.all($processingDate, $businessDate)->project([p|$p.id, p|$p.biTemporalClassificationTypeWithIndirect],['id','classificationType']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".id as "id", "bitemporalproductclassificationtable_0".type as "classificationType" from BiTemporalProductTable as "root" left outer join BiTemporalProductClassificationTable as "bitemporalproductclassificationtable_0" on ("root".type = "bitemporalproductclassificationtable_0".type and ("bitemporalproductclassificationtable_0".in_z <= \'9999-12-31\' and "bitemporalproductclassificationtable_0".out_z > \'9999-12-31\' and "bitemporalproductclassificationtable_0".from_z <= \'2015-10-16\' and "bitemporalproductclassificationtable_0".thru_z > \'2015-10-16\')) where "root".in_z <= \'9999-12-31\' and "root".out_z > \'9999-12-31\' and "root".from_z <= \'2015-10-16\' and "root".thru_z > \'2015-10-16\'',
     'select "root".id as "id", "bitemporalproductclassificationtable_0".type as "classificationType" from BiTemporalProductTable as "root" left outer join BiTemporalProductClassificationTable as "bitemporalproductclassificationtable_0" on ("root".type = "bitemporalproductclassificationtable_0".type and ("bitemporalproductclassificationtable_0".in_z <= DATE\'9999-12-31\' and "bitemporalproductclassificationtable_0".out_z > DATE\'9999-12-31\' and "bitemporalproductclassificationtable_0".from_z <= DATE\'2015-10-16\' and "bitemporalproductclassificationtable_0".thru_z > DATE\'2015-10-16\')) where "root".in_z <= DATE\'9999-12-31\' and "root".out_z > DATE\'9999-12-31\' and "root".from_z <= DATE\'2015-10-16\' and "root".thru_z > DATE\'2015-10-16\'',
@@ -136,13 +136,13 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testPop
    let processingDate = %9999-12-31;
    let businessDate = %2015-10-16;
 
-   let result = execute(|BiTemporalProduct.all($processingDate, $businessDate)->project([p|$p.id, p|$p.biTemporalClassificationTypeWithIndirect],['id','classificationType']), noMilestoningMap, testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
+   let result = execute(|BiTemporalProduct.all($processingDate, $businessDate)->project([p|$p.id, p|$p.biTemporalClassificationTypeWithIndirect],['id','classificationType']), noMilestoningMap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(), noDebug());
    assertSameSQL('select "root".id as "id", "productclassificationtablenomilestoning_0".type as "classificationType" from ProductTableNoMilestoning as "root" left outer join ProductClassificationTableNoMilestoning as "productclassificationtablenomilestoning_0" on ("root".type = "productclassificationtablenomilestoning_0".type)', $result);
 }
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propagation::testBiTemporalQueryMappedToSingleTemporalStore():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project([p|$p.name, p|$p.biTemporalClassification.type], ['productName', 'classificationType']), singleTemporalMappingForBiTemporalTypes, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project([p|$p.name, p|$p.biTemporalClassification.type], ['productName', 'classificationType']), singleTemporalMappingForBiTemporalTypes, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['ProductName2,STOCK', 'ProductName3,TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -154,7 +154,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propaga
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propagation::testBiTemporalToBiTemporalDatePropagation():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-11, %2017-6-10).biTemporalClassification.type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-11, %2017-6-10).biTemporalClassification.type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['STOCK', 'TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -166,7 +166,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propaga
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propagation::testBiTemporalToBiTemporalDatePropagationForAll():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project(o|$o.biTemporalClassification.type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project(o|$o.biTemporalClassification.type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['STOCK'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -178,7 +178,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propaga
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propagation::testBiTemporalToBiTemporalSingleDatePropagationForAll():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project(o|$o.biTemporalClassification(%2017-6-12).type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project(o|$o.biTemporalClassification(%2017-6-12).type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['STOCK'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -190,7 +190,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propaga
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propagation::testBiTemporalToSingleSingleTemporalDatePropagation():Boolean[1]
 {
-   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project(p|$p.classification.type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|BiTemporalProduct.all(%2017-6-11, %2017-6-10)->project(p|$p.classification.type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['STOCK'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -202,7 +202,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propaga
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propagation::testBusinessToBiTemporalDatePropagation():Boolean[1]
 {
-   let result = execute(|Product.all(%9999-12-29)->project([p|$p.name, p|$p.biTemporalClassification(%9999-12-30).type], ['name', 'type']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Product.all(%9999-12-29)->project([p|$p.name, p|$p.biTemporalClassification(%9999-12-30).type], ['name', 'type']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['ProductName2,STOCK', 'ProductName3,TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -214,7 +214,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propaga
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propagation::testProcessingToBiTemporalDatePropagation():Boolean[1]
 {
-   let result = execute(|Trader.all(%2015-10-16)->project([t|$t.kerberos, t|$t.location(%9999-12-28).place], ['traderName', 'traderLocation']), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trader.all(%2015-10-16)->project([t|$t.kerberos, t|$t.location(%9999-12-28).place], ['traderName', 'traderLocation']), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let tds = $result.values->toOne();
    assertEquals(['ggekko,miami', 'bfox,TDSNull'], $tds.rows->map(r|$r.values->makeString(',')));
    assertEqualsH2Compatible(
@@ -226,7 +226,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::propaga
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiTemporalToBiTemporalProjectWithMilestoningInfinitySpecifiedInDB():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification.type, 'type'), latestbitemporalmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification.type, 'type'), latestbitemporalmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = \'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = \'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = DATE\'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".thru_z = TIMESTAMP\'9999-12-31 00:00:00.0000\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
@@ -236,7 +236,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiT
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiTemporalToBiTemporalProcessingDateProjectWithMilestoningInfinitySpecifiedInDB():Boolean[1]
 {
-   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification(%2017-6-10).type, 'type'), latestbitemporalmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all()->project(o|$o.biTemporalProduct(%latest, %latest).biTemporalClassification(%2017-6-10).type, 'type'), latestbitemporalmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = \'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = \'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".from_z <= \'2017-06-10\' and "bitemporalproductclassificationtablewithlatest_1".thru_z > \'2017-06-10\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
     'select "bitemporalproductclassificationtablewithlatest_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTableWithLatest as "bitemporalproducttablewithlatest_0" on ("root".prodFk = "bitemporalproducttablewithlatest_0".id and ("bitemporalproducttablewithlatest_0".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproducttablewithlatest_0".thru_z = DATE\'9999-12-31\')) left outer join (select "bitemporalproductclassificationtablewithlatest_1".type as type from BiTemporalProductClassificationTableWithLatest as "bitemporalproductclassificationtablewithlatest_1" where ("bitemporalproductclassificationtablewithlatest_1".out_z = TIMESTAMP\'9999-12-31 00:00:00.0000\' and "bitemporalproductclassificationtablewithlatest_1".from_z <= DATE\'2017-06-10\' and "bitemporalproductclassificationtablewithlatest_1".thru_z > DATE\'2017-06-10\')) as "bitemporalproductclassificationtablewithlatest_0" on ("bitemporalproducttablewithlatest_0".type = "bitemporalproductclassificationtablewithlatest_0".type)',
@@ -246,7 +246,7 @@ function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiT
 
 function <<test.ToFix>> meta::relational::tests::milestoning::bitemporal::testBiTemporalPropertyUsageAfterExecute():Boolean[1]
 {
-   let result = execute(|Order.all(), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Order.all(), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    let orders = $result.values;
    assertEquals('1', $orders->first()->toOne().biTemporalProduct(today(), today()).id);
 }
@@ -270,11 +270,11 @@ function <<test.Test>> {meta::pure::executionPlan::profiles::serverVersion.start
 
 function <<test.Test>> meta::relational::tests::milestoning::bitemporal::testBiTemporalDateInjectionFromVarReference():Boolean[1]
 {
-   let result1 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), $o.orderDate->toOne()).biTemporalClassification.type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
-   let result2 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), $o.orderDate->toOne()).biTemporalClassification(%2017-6-10).type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
-   let result3 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), $o.orderDate->toOne()).biTemporalClassification(%2017-6-10, %2017-6-11).type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
-   let result4 = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-10, $o.orderDate->toOne()).biTemporalClassification.type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
-   let result5 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), %2017-6-10).biTemporalClassification.type, 'type'), milestoningmap, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result1 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), $o.orderDate->toOne()).biTemporalClassification.type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result2 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), $o.orderDate->toOne()).biTemporalClassification(%2017-6-10).type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result3 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), $o.orderDate->toOne()).biTemporalClassification(%2017-6-10, %2017-6-11).type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result4 = execute(|Order.all()->project(o|$o.biTemporalProduct(%2017-6-10, $o.orderDate->toOne()).biTemporalClassification.type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+   let result5 = execute(|Order.all()->project(o|$o.biTemporalProduct($o.orderDate->toOne(), %2017-6-10).biTemporalClassification.type, 'type'), milestoningmap, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
 
    assertSameSQL('select "bitemporalproductclassificationtable_0".type as "type" from OrderTable as "root" left outer join BiTemporalProductTable as "bitemporalproducttable_0" on ("root".prodFk = "bitemporalproducttable_0".id and ("bitemporalproducttable_0".in_z <= "root".orderDate and "bitemporalproducttable_0".out_z > "root".orderDate and "bitemporalproducttable_0".from_z <= "root".orderDate and "bitemporalproducttable_0".thru_z > "root".orderDate)) left outer join (select "bitemporalproductclassificationtable_1".type as type, "bitemporalproductclassificationtable_1".in_z as in_z, "bitemporalproductclassificationtable_1".out_z as out_z, "bitemporalproductclassificationtable_1".from_z as from_z, "bitemporalproductclassificationtable_1".thru_z as thru_z from BiTemporalProductClassificationTable as "bitemporalproductclassificationtable_1") as "bitemporalproductclassificationtable_0" on (("bitemporalproductclassificationtable_0".in_z <= "root".orderDate and "bitemporalproductclassificationtable_0".out_z > "root".orderDate and "bitemporalproductclassificationtable_0".from_z <= "root".orderDate and "bitemporalproductclassificationtable_0".thru_z > "root".orderDate) and "bitemporalproducttable_0".type = "bitemporalproductclassificationtable_0".type)',$result1);
    assertEqualsH2Compatible(

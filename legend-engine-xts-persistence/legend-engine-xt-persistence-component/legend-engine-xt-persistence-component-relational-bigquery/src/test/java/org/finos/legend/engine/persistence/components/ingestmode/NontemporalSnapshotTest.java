@@ -38,8 +38,10 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date` FROM `mydb`.`staging` as stage)";
+        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `batch_id`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+                "FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedStagingTableCreateQuery, preActionsSqlList.get(1));
@@ -57,8 +59,9 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> milestoningSqlList = operations.ingestSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
-            "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
+            "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`, `batch_id`) " +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+            "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
@@ -74,18 +77,22 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
     {
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
+        List<String> metaIngestSqlList = operations.metadataIngestSql();
         List<String> deduplicationAndVersioningSql = operations.deduplicationAndVersioningSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` " +
-                "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`) " +
+                "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`, `batch_id`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
-                "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') FROM " +
+                "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') FROM " +
                 "`mydb`.`staging_legend_persistence_temp_staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
-        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTempStagingTableWithCount, preActionsSqlList.get(2));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
         Assertions.assertEquals(insertSql, milestoningSqlList.get(1));
+        Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableIngestQuery, metaIngestSqlList.get(0));
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedTempStagingCleanupQuery, deduplicationAndVersioningSql.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates, deduplicationAndVersioningSql.get(1));
@@ -100,8 +107,10 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> preActionsSqlList = queries.preActionsSql();
         List<String> milestoningSqlList = queries.ingestSql();
 
-        String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`) " +
-                "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE` FROM `MYDB`.`STAGING` as stage)";
+        String insertSql = "INSERT INTO `MYDB`.`MAIN` (`ID`, `NAME`, `AMOUNT`, `BIZ_DATE`, `BATCH_ID`) " +
+                "(SELECT stage.`ID`,stage.`NAME`,stage.`AMOUNT`,stage.`BIZ_DATE`," +
+                "(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN') " +
+                "FROM `MYDB`.`STAGING` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithUpperCase, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanupMainTableSqlUpperCase, milestoningSqlList.get(0));
@@ -114,8 +123,10 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
         List<String> preActionsSqlList = operations.preActionsSql();
         List<String> milestoningSqlList = operations.ingestSql();
 
-        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`) " +
-                "(SELECT stage.`id`,stage.`name`,stage.`amount` FROM `mydb`.`staging` as stage)";
+        String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `batch_id`) " +
+                "(SELECT stage.`id`,stage.`name`,stage.`amount`," +
+                "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
+                "FROM `mydb`.`staging` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));

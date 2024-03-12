@@ -1,0 +1,56 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::changetoken::cast_generation::*;
+import meta::pure::changetoken::tests::*;
+
+function <<test.Test>> meta::pure::changetoken::tests::testToMultiplicity(): Any[*]
+{
+    assertToMultiplicity('0', 0, 0, PureZero);
+    assertToMultiplicity('1', 1, 1, PureOne);
+    assertToMultiplicity('0..1', 0, 1, ZeroOne);
+    assertToMultiplicity('2', 2, 2, []);
+    assertToMultiplicity('2..2', 2, 2, []);
+    assertToMultiplicity('*', 0, [], ZeroMany);
+    assertToMultiplicity('0..*', 0, [], ZeroMany);
+    assertToMultiplicity('1..*', 1, [], OneMany);
+    assertToMultiplicity('2..4', 2, 4, []);
+    assertToMultiplicity('0..4', 0, 4, []);
+    assertToMultiplicity('5..*', 5, [], []);
+}
+
+function <<access.private>> meta::pure::changetoken::tests::assertToMultiplicity(input: String[1], min: Integer[1], max: Integer[0..1], expected: Multiplicity[0..1]): Boolean[1]
+{
+    let multiplicity = $input->toMultiplicity();
+    assertEquals($min, $multiplicity->getLowerBound());
+    assertEquals($max, if($multiplicity->hasUpperBound(), | $multiplicity->getUpperBound(), | []));
+    if($expected != [], | assertEquals($expected, $multiplicity), | true);
+}
+
+function <<test.Test>> meta::pure::changetoken::tests::testExtractTypeMultiplicity(): Any[*]
+{
+    assertExtractTypeMultiplicity('String[1]', 'String', 1, 1);
+    assertExtractTypeMultiplicity('Integer[*]', 'Integer', 0, []);
+    assertExtractTypeMultiplicity('Float[0..1]', 'Float', 0, 1);
+    assertExtractTypeMultiplicity('Decimal[10]', 'Decimal', 10, 10);
+}
+
+function <<access.private>> meta::pure::changetoken::tests::assertExtractTypeMultiplicity(input: String[1], type: String[1], min: Integer[1], max: Integer[0..1]): Boolean[1]
+{
+    let typeMultiplicity = $input->extractTypeMultiplicity();
+    assertEquals($type, $typeMultiplicity.first);
+    let multiplicity = $typeMultiplicity.second;
+    assertEquals($min, $multiplicity->getLowerBound());
+    assertEquals($max, if($multiplicity->hasUpperBound(), | $multiplicity->getUpperBound(), | []));
+}

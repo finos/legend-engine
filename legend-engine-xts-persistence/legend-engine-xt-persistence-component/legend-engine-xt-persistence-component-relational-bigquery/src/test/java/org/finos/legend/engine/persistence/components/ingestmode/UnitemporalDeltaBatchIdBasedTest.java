@@ -315,7 +315,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestWithStagingFiltersQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithStagingFiltersAndAdditionalMetadata("{\"staging_filters\":{\"batch_id_in\":{\"GT\":5}}}"), metadataIngestSql.get(0));
     }
 
     @Override
@@ -502,7 +502,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithBatchSuccessValue(), metadataIngestSql.get(0));
     }
 
     @Override
@@ -531,7 +531,7 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
+        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase(), metadataIngestSql.get(0));
     }
 
     @Override
@@ -545,6 +545,11 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
         return BigQueryTestArtifacts.expectedMetadataTableIngestQuery;
     }
 
+    protected String getExpectedMetadataTableIngestQueryWithBatchSuccessValue()
+    {
+        return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithBatchSuccessValue;
+    }
+
     protected String getExpectedMetadataTableIngestWithStagingFiltersQuery()
     {
         return BigQueryTestArtifacts.expectedMetadataTableIngestWithStagingFiltersQuery;
@@ -553,5 +558,26 @@ public class UnitemporalDeltaBatchIdBasedTest extends UnitmemporalDeltaBatchIdBa
     protected String getExpectedMetadataTableIngestQueryWithUpperCase()
     {
         return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadata()
+    {
+        return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase()
+    {
+        return BigQueryTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase;
+    }
+
+    protected String getExpectedMetadataTableIngestQueryWithStagingFiltersAndAdditionalMetadata(String stagingFilters)
+    {
+        return "INSERT INTO batch_metadata " +
+            "(`table_name`, `table_batch_id`, `batch_start_ts_utc`, `batch_end_ts_utc`, `batch_status`, `batch_source_info`, `additional_metadata`) " +
+            "(SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata " +
+            "WHERE UPPER(batch_metadata.`table_name`) = 'MAIN')," +
+            "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000'),CURRENT_DATETIME(),'DONE'," +
+            String.format("PARSE_JSON('%s'),", stagingFilters) +
+            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
     }
 }

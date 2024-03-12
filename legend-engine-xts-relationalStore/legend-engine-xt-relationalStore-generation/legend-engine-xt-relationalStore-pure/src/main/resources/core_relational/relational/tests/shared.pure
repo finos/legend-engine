@@ -14,7 +14,6 @@
 
 import meta::relational::transform::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
 import meta::pure::mapping::modelToModel::test::shared::*;
@@ -25,7 +24,7 @@ function meta::pure::mapping::modelToModel::test::shared::getConnection():Connec
 {
   ^ConnectionStore(
     element = relationalDB,
-    connection=^TestDatabaseConnection(
+    connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
       type=DatabaseType.H2
    ));
 }

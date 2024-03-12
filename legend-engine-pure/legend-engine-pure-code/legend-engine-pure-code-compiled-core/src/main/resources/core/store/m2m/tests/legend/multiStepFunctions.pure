@@ -16,15 +16,12 @@ import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::multiStep::*;
 import meta::pure::mapping::modelToModel::test::multiStep::src::*;
 import meta::pure::mapping::modelToModel::test::multiStep::bridge::*;
 import meta::pure::mapping::modelToModel::test::multiStep::dest::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {
    serverVersion.start='v1_19_0',

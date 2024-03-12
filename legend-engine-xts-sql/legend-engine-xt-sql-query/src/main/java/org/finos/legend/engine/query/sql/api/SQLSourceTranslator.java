@@ -22,18 +22,45 @@ import org.eclipse.collections.impl.utility.internal.IterableIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ProcessingContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.ValueSpecificationBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.executionOption.ExecutionOption;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.executionContext.ExecutionContext;
+import org.finos.legend.engine.protocol.sql.metamodel.ProtocolToMetamodelTranslator;
 import org.finos.legend.engine.query.sql.providers.core.SQLSource;
 import org.finos.legend.engine.query.sql.providers.core.SQLSourceArgument;
 
 import org.finos.legend.pure.generated.*;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.VariableExpression;
 
+import java.util.List;
 import java.util.Objects;
 
 public class SQLSourceTranslator
 {
+    public RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter> translate(List<SQLQueryParameter> parameters, PureModel pureModel)
+    {
+        return ListIterate.collect(parameters, p -> translate(p, pureModel));
+    }
+
+    public Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter translate(SQLQueryParameter parameter, PureModel pureModel)
+    {
+        Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter p = new Root_meta_external_query_sql_transformation_queryToPure_SQLPlaceholderParameter_Impl("");
+
+        ValueSpecificationBuilder vsb = new ValueSpecificationBuilder(pureModel.getContext(), FastList.newList(), new ProcessingContext("build query parameter"));
+        VariableExpression variable = (VariableExpression) parameter.getVariable().accept(vsb);
+
+        ProtocolToMetamodelTranslator translator = new ProtocolToMetamodelTranslator();
+        Root_meta_external_query_sql_metamodel_Expression value = translator.translate(parameter.getValue(), pureModel);
+
+        p._value(value);
+        p._variable(variable);
+
+        return p;
+    }
+
     public RichIterable<Root_meta_external_query_sql_transformation_queryToPure_SQLSource> translate(RichIterable<SQLSource> sources, PureModel pureModel)
     {
         return IterableIterate.collect(sources, s -> translate(s, pureModel));

@@ -16,22 +16,30 @@ package org.finos.legend.engine.protocol.hostedService.deployment;
 
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorDeploymentContent;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 
 public class HostedServiceContent extends FunctionActivatorDeploymentContent
 {
+    public String pattern;
 
     public GenerationInfo info;
-    public PureModelContextData serviceData;
+    public PureModelContext serviceData;
 
-    public HostedServiceContent(GenerationInfo info)
+    public HostedServiceContent()
     {
+        //jackson
+    }
+
+    public HostedServiceContent(String pattern, GenerationInfo info)
+    {
+        this.pattern = pattern;
         this.info = info;
     }
 
-    public HostedServiceContent(GenerationInfo info, PureModelContextData serviceData)
+    public HostedServiceContent(String pattern, GenerationInfo info, PureModelContext serviceData)
     {
-        this.info = info;
+        this(pattern, info);
         this.serviceData = serviceData;
     }
 }

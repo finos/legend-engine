@@ -3,6 +3,7 @@
   "authenticationMethod": "NO_PASSWORD",
   "identityType": "ANONYMOUS",
   "handler": {
+    "className": "org.finos.legend.engine.postgres.config.LegendHandlerConfig",
     "protocol": "http",
     "host": "localhost",
     "port": "6300",

@@ -17,7 +17,6 @@ package org.finos.legend.engine.plan.execution.stores.mongodb.plugin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.authentication.credentialprovider.CredentialBuilder;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
@@ -28,6 +27,7 @@ import org.finos.legend.engine.plan.dependencies.domain.dataQuality.EnforcementL
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
 import org.finos.legend.engine.plan.execution.nodes.ExecutionNodeExecutor;
+import org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.ExecutionNodeJavaPlatformHelper;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
@@ -45,12 +45,9 @@ import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBExe
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.JavaPlatformImplementation;
-import org.finos.legend.engine.shared.core.identity.Credential;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionCategory;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,12 +60,12 @@ import java.util.stream.StreamSupport;
 
 public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    private final MutableList<CommonProfile> profiles;
+    Identity identity;
     private ExecutionState executionState;
 
-    public MongoDBExecutionNodeExecutor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public MongoDBExecutionNodeExecutor(Identity identity, ExecutionState executionState)
     {
-        this.profiles = profiles;
+        this.identity = identity;
         this.executionState = executionState;
     }
 
@@ -86,7 +83,7 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
         {
             try (Scope scope = GlobalTracer.get().buildSpan("MongoDB Document Internalize Execution").startActive(true))
             {
-                return executeDocumentInternalizeExecutionNode((MongoDBDocumentInternalizeExecutionNode) executionNode, this.profiles, this.executionState);
+                return executeDocumentInternalizeExecutionNode((MongoDBDocumentInternalizeExecutionNode) executionNode, this.identity, this.executionState);
             }
         }
         else
@@ -107,11 +104,11 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
             DatabaseCommand dbCommand = objectMapper.readValue(databaseCommand, DatabaseCommand.class);
             MongoDBQueryJsonComposer mongoDBQueryJsonComposer = new MongoDBQueryJsonComposer(false);
             String composedDbCommand = mongoDBQueryJsonComposer.parseDatabaseCommand(dbCommand);
+            String placeholderReplacedDbCommand = FreeMarkerExecutor.process(composedDbCommand, this.executionState);
 
             CredentialProviderProvider credentialProviderProvider = this.executionState.getCredentialProviderProvider();
-            Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
 
-            return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(composedDbCommand, mongoDBConnection, identity);
+            return new MongoDBExecutor(credentialProviderProvider).executeMongoDBQuery(placeholderReplacedDbCommand, mongoDBConnection, identity);
         }
         catch (IOException e)
         {
@@ -119,11 +116,11 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
         }
     }
 
-    private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private Result executeDocumentInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, Identity identity, ExecutionState executionState)
     {
 
-        MongoDBResult resultCursor = getResultCursor(node.executionNodes().getFirst().accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(profiles, executionState)));
-        StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, resultCursor, profiles, executionState);
+        MongoDBResult resultCursor = getResultCursor(node.executionNodes().getFirst().accept(executionState.getStoreExecutionState(StoreType.NonRelational_MongoDB).getVisitor(identity, executionState)));
+        StreamingObjectResult<?> streamingObjectResult = executeInternalizeExecutionNode(node, resultCursor, identity, executionState);
         return applyConstraints(streamingObjectResult, node.checked, node.enableConstraints);
     }
 
@@ -139,13 +136,13 @@ public class MongoDBExecutionNodeExecutor implements ExecutionNodeVisitor<Result
     }
 
 
-    private StreamingObjectResult<?> executeInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MongoDBResult mongoDBResult, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private StreamingObjectResult<?> executeInternalizeExecutionNode(MongoDBDocumentInternalizeExecutionNode node, MongoDBResult mongoDBResult, Identity identity, ExecutionState executionState)
     {
         try
         {
             String specificsClassName = JavaHelper.getExecutionClassFullName((JavaPlatformImplementation) node.implementation);
             //We don't need specifics class for reader - as we know the object.
-            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, profiles);
+            Class<?> specificsClass = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, specificsClassName, executionState, identity);
             IMongoDocumentDeserializeExecutionNodeSpecifics specifics = (IMongoDocumentDeserializeExecutionNodeSpecifics) specificsClass.getConstructor().newInstance();
 
             // checked made true and enableConstraints made false as these are incorporated in ExternalFormatRuntime centrally

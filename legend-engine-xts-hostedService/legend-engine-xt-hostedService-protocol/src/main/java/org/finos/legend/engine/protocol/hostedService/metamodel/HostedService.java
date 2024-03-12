@@ -15,7 +15,7 @@
 package org.finos.legend.engine.protocol.hostedService.metamodel;
 
 import org.finos.legend.engine.protocol.functionActivator.metamodel.FunctionActivator;
-import org.finos.legend.engine.protocol.hostedService.metamodel.control.Ownership;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.Ownership;
 import org.finos.legend.engine.protocol.pure.v1.model.test.TestSuite;
 
 import java.util.List;
@@ -27,7 +27,6 @@ public class HostedService extends FunctionActivator
 {
 //    public String applicationName;
     public String documentation;
-    public Ownership ownership;
     public String pattern;
     public List<TestSuite> testSuites;
     public boolean autoActivateUpdates = true;

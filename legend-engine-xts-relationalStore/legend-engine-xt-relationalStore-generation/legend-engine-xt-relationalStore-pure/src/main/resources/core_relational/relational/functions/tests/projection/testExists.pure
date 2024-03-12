@@ -16,7 +16,6 @@ import meta::relational::metamodel::execute::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::projection::exists::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::model::simple::*;
@@ -43,7 +42,7 @@ function <<test.Test>> meta::relational::tests::projection::exists::testSimpleEx
 {
    let result = execute(|Person.all()->project([p|$p.name, p|$p.addresses->exists(a|$a.name == 'Hoboken')], ['a', 'prop']),
                         	meta::relational::tests::simpleRelationalMapping,
-                        meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
+                        testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 7);
    assertSameElements(['Anthony Allen true', 'David Harris false', 'Fabrice Roberts false','John Johnson true','John Hill true','Oliver Hill false','Peter Smith true'], $result.values.rows->map(r | $r.values->at(0)->toString()+' '+$r.values->at(1)->toString()));
    assertEquals('select concat("root".FIRSTNAME, \' \', "root".LASTNAME) as "a", exists(select 1 from (select "addresstable_0".ID as ID, null as ADDRESSID, "addresstable_0".NAME as "addressTableNAME" from addressTable as "addresstable_0" UNION ALL select "firmtable_0".ID as ID, "firmtable_0".ADDRESSID as ADDRESSID, "addresstable_1".NAME as "addressTableNAME" from firmTable as "firmtable_0" left outer join addressTable as "addresstable_1" on ("addresstable_1".ID = "firmtable_0".ADDRESSID)) as "unionalias_0" where ("unionalias_0".ID = "root".FIRMID or "unionalias_0".ID = "root".ADDRESSID) and "unionalias_0"."addressTableNAME" = \'Hoboken\') as "prop" from personTable as "root"', $result->sqlRemoveFormatting());
@@ -94,7 +93,7 @@ function <<test.BeforePackage>> meta::relational::tests::projection::exists::set
 {
    meta::relational::tests::projection::setUp();
 
-   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(db, 'main', $connection);
 

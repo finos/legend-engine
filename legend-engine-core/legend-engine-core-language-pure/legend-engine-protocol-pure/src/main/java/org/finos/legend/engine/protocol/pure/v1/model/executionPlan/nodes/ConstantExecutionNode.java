@@ -14,11 +14,13 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes;
 
+import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+
 public class ConstantExecutionNode extends ExecutionNode
 {
-    public Object values;
+    public ValueSpecification values;
 
-    public Object values()
+    public ValueSpecification values()
     {
         return values;
     }

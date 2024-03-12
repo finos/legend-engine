@@ -95,7 +95,7 @@ Persistence test::TestPersistence
                    ExternalFormat
                    #{
                      contentType: 'application/json';
-                     data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"}]';
+                     data: '[{"ID":1, "NAME":"ANDY", "BATCH_ID":1},{"ID":2, "NAME":"BRAD", "BATCH_ID":1}]';
                    }#;
                }#
            ]
@@ -122,7 +122,7 @@ Persistence test::TestPersistence
                    ExternalFormat
                    #{
                      contentType: 'application/json';
-                     data: '[{"ID":1, "NAME":"ANDY"},{"ID":2, "NAME":"BRAD"},{"ID":2, "NAME":"BRAD"},{"ID":3, "NAME":"CATHY"},{"ID":4, "NAME":"TOM"}]';
+                     data: '[{"ID":1, "NAME":"ANDY", "BATCH_ID":1},{"ID":2, "NAME":"BRAD", "BATCH_ID":1},{"ID":2, "NAME":"BRAD", "BATCH_ID":2},{"ID":3, "NAME":"CATHY", "BATCH_ID":2},{"ID":4, "NAME":"TOM", "BATCH_ID":2}]';
                    }#;
                }#
            ]

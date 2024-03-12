@@ -15,7 +15,6 @@
 
 package org.finos.legend.engine.postgres.handler.legend;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.dropwizard.testing.junit.ResourceTestRule;
 
 import javax.ws.rs.client.Entity;
@@ -23,7 +22,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 
-public class LegendTdsTestClient extends LegendTdsClient
+public class LegendTdsTestClient extends LegendHttpClient
 {
     private final ResourceTestRule resourceTestRule;
 
@@ -35,14 +34,14 @@ public class LegendTdsTestClient extends LegendTdsClient
 
 
     @Override
-    protected InputStream executeQueryApi(String query)
+    public InputStream executeQueryApi(String query)
     {
         String path = "sql/v1/execution/executeQueryString";
         return executeApi(query, path);
     }
 
     @Override
-    protected InputStream executeSchemaApi(String query)
+    public InputStream executeSchemaApi(String query)
     {
         String path = "sql/v1/execution/getSchemaFromQueryString";
         return executeApi(query, path);

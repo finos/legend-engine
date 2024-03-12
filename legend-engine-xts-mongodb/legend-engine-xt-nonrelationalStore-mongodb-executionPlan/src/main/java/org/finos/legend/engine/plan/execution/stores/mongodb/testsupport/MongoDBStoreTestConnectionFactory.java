@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.testsupport;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.data.MongoDBStoreEmbeddedData;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDBConnection;
 import org.finos.legend.engine.protocol.mongodb.schema.metamodel.pure.MongoDatabase;
@@ -29,17 +31,21 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.data.Da
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
 
 import java.io.Closeable;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExtension
 {
     @Override
-    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, EmbeddedData data)
+    public MutableList<String> group()
     {
-        if (sourceConnection instanceof MongoDBConnection && data instanceof MongoDBStoreEmbeddedData)
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Mongo");
+    }
+
+    @Override
+    public Optional<Pair<Connection, List<Closeable>>> tryBuildTestConnection(Connection sourceConnection, List<EmbeddedData> data)
+    {
+        List<MongoDBStoreEmbeddedData> mongoDBStoreEmbeddedDataList = ListIterate.selectInstancesOf(data, MongoDBStoreEmbeddedData.class);
+        if (sourceConnection instanceof MongoDBConnection && data.size() == mongoDBStoreEmbeddedDataList.size() && !data.isEmpty())
         {
 
             MongoDBConnection testConnection = new MongoDBConnection();
@@ -55,7 +61,10 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
             testDataSourceSpec.serverURLs = Lists.mutable.of(serverUrl);
             testConnection.dataSourceSpecification = testDataSourceSpec;
 
-            inMemoryServer.setupData((MongoDBStoreEmbeddedData) data);
+            MongoDBStoreEmbeddedData mongoDBStoreEmbeddedData = new MongoDBStoreEmbeddedData();
+            mongoDBStoreEmbeddedData.testData = ListIterate.flatCollect(mongoDBStoreEmbeddedDataList, a -> a.testData);
+            mongoDBStoreEmbeddedData.databaseName = mongoDBStoreEmbeddedDataList.isEmpty() ? "" : mongoDBStoreEmbeddedDataList.get(0).databaseName;
+            inMemoryServer.setupData(mongoDBStoreEmbeddedData);
             Closeable closeable = new Closeable()
             {
                 @Override
@@ -78,7 +87,7 @@ public class MongoDBStoreTestConnectionFactory implements ConnectionFactoryExten
         {
             MongoDBConnection testConnection = new MongoDBConnection();
             testConnection.element = testStore.getPath();
-            return this.tryBuildTestConnection(testConnection, data);
+            return this.tryBuildTestConnection(testConnection, Lists.mutable.of(data));
         }
         return Optional.empty();
     }

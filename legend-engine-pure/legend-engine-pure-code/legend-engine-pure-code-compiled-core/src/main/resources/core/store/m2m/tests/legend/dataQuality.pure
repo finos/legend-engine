@@ -24,11 +24,8 @@ import meta::pure::mapping::modelToModel::test::alloy::utils::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::dest::*;
 import meta::pure::mapping::modelToModel::test::dataQuality::graphFetch::src::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly, feature.DataQuality>>
 {  serverVersion.start='v1_19_0',
    doc.doc='Given: a class that defines no constraints.',
@@ -842,7 +839,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    let mapping = simpleConstrainedDataMapping;
    let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":1, "b":false}');
 
-   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
+   let result = execute($func, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
    let expected =
    '{'+
@@ -871,7 +868,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::executionSucceedsFo
    let mapping = simpleConstrainedDataMapping;
    let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":1, "b":false}');
 
-   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
+   let result = execute($func, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
    let expected = '{"i":1,"b":false}';
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));
@@ -891,7 +888,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::returnCheckResultWi
    let mapping = simpleConstrainedDataMapping;
    let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":2, "b":false}');
 
-   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
+   let result = execute($func, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
    let expected =
    '{'+
@@ -920,7 +917,7 @@ meta::pure::mapping::modelToModel::test::alloy::dataQuality::executionSucceedsFo
    let mapping = simpleConstrainedDataMapping;
    let runtime = testJsonRuntime(_SomeDataConstrained, '{"i":2, "b":false}');
 
-   let result = execute($func, $mapping, $runtime, ^ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
+   let result = execute($func, $mapping, $runtime, ^meta::pure::runtime::ExecutionContext(enableConstraints=false), meta::pure::extension::defaultExtensions());
    let json = $result.values->toOne();
    let expected = '{"i":4,"b":false}';
    assert(jsonEquivalent($expected->parseJSON(), $json->parseJSON()));

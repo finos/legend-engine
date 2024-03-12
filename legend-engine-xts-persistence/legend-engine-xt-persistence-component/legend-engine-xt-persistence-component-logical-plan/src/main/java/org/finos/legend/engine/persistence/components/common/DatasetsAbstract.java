@@ -15,7 +15,6 @@
 package org.finos.legend.engine.persistence.components.common;
 
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
-import org.finos.legend.engine.persistence.components.util.BulkLoadMetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.immutables.value.Value.Immutable;
@@ -41,8 +40,6 @@ public interface DatasetsAbstract
     Dataset stagingDataset();
 
     Optional<MetadataDataset> metadataDataset();
-
-    Optional<BulkLoadMetadataDataset> bulkLoadMetadataDataset();
 
     Optional<Dataset> tempDataset();
 

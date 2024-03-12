@@ -32,7 +32,6 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::platformBinding::legendJava::*;
@@ -41,8 +40,6 @@ import meta::pure::mapping::xStore::*;
 import meta::pure::milestoning::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::LegendJavaInMemoryGraphFetchExtension extends LegendJavaPlatformBindingAdhocExtension
 {
    {doc.doc = 'Filter code generation'}
@@ -828,7 +825,8 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let sameLengthCheckCodes  = $explodeProperties->tail()->size()->range()->map({i |
       j_if(
          $explodePropertyVars->at($i + 1)->j_invoke('size', [], javaInt())->j_ne($explodeListLength),
-         javaIllegalArgumentException()->j_new(j_string('Explode properties do not have the same size.'))->j_throw()
+         javaIllegalArgumentException()->j_new(j_string('Explode properties do not have the same size. ' + $explodeProperties->at(0).name->toOne() + ' has size '  )->j_plus($explodeListLength)->j_plus(j_string(' and property ' + $explodeProperties->at($i+1).name->toOne() +' has size '))
+                                        ->j_plus(   $explodePropertyVars->at($i + 1)->j_invoke('size', [], javaInt()) ) ->j_plus(j_string(  ' in set ' + $set.id  ))  )->j_throw()
       )
    });
 

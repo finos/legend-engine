@@ -21,7 +21,9 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.infer
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ResolveTypeParameterInference;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.ReturnInference;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.inference.TypeAndMultiplicity;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.shared.core.operational.Assert;
+import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.pure.generated.Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.Function;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.FunctionType;
@@ -73,11 +75,19 @@ public class FunctionHandler
         this.resolvedTypeParametersInference = resolvedTypeParametersInference;
     }
 
-    public SimpleFunctionExpression process(List<ValueSpecification> vs)
+    public SimpleFunctionExpression process(List<ValueSpecification> vs, SourceInformation sourceInformation)
     {
-        TypeAndMultiplicity inferred = returnInference.infer(vs);
+        TypeAndMultiplicity inferred = null;
+        try
+        {
+            inferred = returnInference.infer(vs);
+        }
+        catch (EngineException e)
+        {
+            e.mayUpdateSourceInformation(sourceInformation);
+            throw e;
+        }
         RichIterable<? extends GenericType> resolvedTypeParameters = resolvedTypeParametersInference == null ? Lists.mutable.empty() : resolvedTypeParametersInference.infer(vs);
-
         Assert.assertTrue(func != null, () -> "Func is null");
         return new Root_meta_pure_metamodel_valuespecification_SimpleFunctionExpression_Impl("", null, this.pureModel.getClass("meta::pure::metamodel::valuespecification::SimpleFunctionExpression"))
                 ._func(func)

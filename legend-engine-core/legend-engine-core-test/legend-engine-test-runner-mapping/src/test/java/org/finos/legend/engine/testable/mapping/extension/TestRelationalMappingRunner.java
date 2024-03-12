@@ -26,6 +26,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.junit.Assert;
 import org.junit.Test;
@@ -339,7 +341,7 @@ public class TestRelationalMappingRunner
         MappingTestableRunnerExtension mappingTestableRunnerExtension = new MappingTestableRunnerExtension();
         mappingTestableRunnerExtension.setPureVersion("v1_23_0");
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(model1);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         Mapping mappingToTest = (Mapping) pureModelWithReferenceData.getPackageableElement("execution::RelationalMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
 
@@ -360,7 +362,7 @@ public class TestRelationalMappingRunner
         mappingTestableRunnerExtension.setPureVersion(PureClientVersions.production);
 
         PureModelContextData modelDataWithReferenceData = PureGrammarParser.newInstance().parseModel(model2);
-        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, null);
+        PureModel pureModelWithReferenceData = Compiler.compile(modelDataWithReferenceData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping mappingToTest = (org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping) pureModelWithReferenceData.getPackageableElement("execution::RelationalMapping");
         List<TestResult> mappingTestResults = mappingTestableRunnerExtension.executeAllTest(mappingToTest, pureModelWithReferenceData, modelDataWithReferenceData);
         Assert.assertEquals(2, mappingTestResults.size());

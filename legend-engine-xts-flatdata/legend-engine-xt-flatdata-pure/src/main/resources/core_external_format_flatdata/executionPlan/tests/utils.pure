@@ -16,8 +16,6 @@
 import meta::legend::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::external::format::flatdata::executionPlan::test::convertStringToBytes(data:String[1]): InstanceValue[1]
 {
   ^InstanceValue(genericType=^GenericType(rawType=Byte), multiplicity=ZeroMany, values=$data)
@@ -25,7 +23,7 @@ function meta::external::format::flatdata::executionPlan::test::convertStringToB
 
 function meta::external::format::flatdata::executionPlan::test::executeFlatdataBindingQuery(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): String[1]
 {
-  executeLegendQuery($f, $vars, ^ExecutionContext(), meta::external::format::flatdata::executionPlan::test::flatDataExtensions());
+  executeLegendQuery($f, $vars, ^meta::pure::runtime::ExecutionContext(), meta::external::format::flatdata::executionPlan::test::flatDataExtensions());
 }
 
 function meta::external::format::flatdata::executionPlan::test::flatDataExtensions(): Extension[*]

@@ -136,6 +136,12 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
                 "FROM `MYDB`.`STAGING_LEGEND_PERSISTENCE_TEMP_STAGING` as stage WHERE NOT (stage.`DIGEST` IN (SELECT sink.`DIGEST` FROM `MYDB`.`MAIN` as sink " +
                 "WHERE sink.`BATCH_ID_OUT` = 999999999)))";
 
+        String expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase = "INSERT INTO BATCH_METADATA " +
+            "(`TABLE_NAME`, `TABLE_BATCH_ID`, `BATCH_START_TS_UTC`, `BATCH_END_TS_UTC`, `BATCH_STATUS`, `ADDITIONAL_METADATA`)" +
+            " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
+            "WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'SUCCEEDED'," +
+            "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMainTableCreateQueryWithUpperCase, preActionsSql.get(0));
         Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableCreateQueryWithUpperCase, preActionsSql.get(1));
 
@@ -145,7 +151,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQueryWithUpperCase(), metadataIngestSql.get(0));
+        Assertions.assertEquals(expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessValueWithUpperCase, metadataIngestSql.get(0));
     }
 
     @Override
@@ -174,7 +180,7 @@ public class UnitemporalSnapshotBatchIdDateTimeBasedTest extends UnitmemporalSna
 
         Assertions.assertEquals(expectedMilestoneQuery, milestoningSql.get(0));
         Assertions.assertEquals(expectedUpsertQuery, milestoningSql.get(1));
-        Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), metadataIngestSql.get(0));
+        Assertions.assertEquals(MemsqlTestArtifacts.expectedMetadataTableIngestQueryWithAdditionalMetadata, metadataIngestSql.get(0));
 
         verifyStats(operations, incomingRecordCount, rowsUpdated, rowsDeleted, rowsInserted, rowsTerminated);
     }

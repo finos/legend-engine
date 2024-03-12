@@ -14,9 +14,11 @@
 
 package org.finos.legend.engine.shared.core.url;
 
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+
 import java.net.URLStreamHandler;
 
-public interface UrlProtocolHandler
+public interface UrlProtocolHandler extends LegendExtension
 {
     boolean handles(String protocol);
 

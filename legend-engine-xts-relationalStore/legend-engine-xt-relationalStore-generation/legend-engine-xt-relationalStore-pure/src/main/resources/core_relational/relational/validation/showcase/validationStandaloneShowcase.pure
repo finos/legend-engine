@@ -23,7 +23,6 @@ import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::validation::showcase::model::*;
 import meta::relational::validation::showcase::standalone::*;
 

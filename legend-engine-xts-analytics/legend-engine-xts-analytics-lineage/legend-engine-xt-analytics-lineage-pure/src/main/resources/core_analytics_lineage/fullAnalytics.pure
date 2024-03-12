@@ -14,9 +14,7 @@
 
 import meta::pure::executionPlan::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::lineage::scanRelations::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::lineage::scanProject::*;
 import meta::pure::lineage::scanColumns::*;

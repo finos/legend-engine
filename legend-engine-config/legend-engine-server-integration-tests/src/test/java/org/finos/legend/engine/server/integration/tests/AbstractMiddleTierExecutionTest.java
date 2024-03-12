@@ -38,7 +38,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.pac4j.core.profile.CommonProfile;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -56,7 +55,7 @@ public class AbstractMiddleTierExecutionTest
 {
     protected static PostgresTestContainerWrapper postgresTestContainerWrapper;
 
-    protected MutableList<CommonProfile> profiles;
+    protected Identity identity;
     public static final String MAC_KEY_VAULT_REFERENCE = "macReference";
     public static final String DB_CREDENTIAL_REFERENCE = "reference1";
     private TestVaultImplementation testVaultImplementation;
@@ -108,7 +107,7 @@ public class AbstractMiddleTierExecutionTest
     public void setup() throws Exception
     {
         DefaultIdentityFactory defaultIdentityFactory = new DefaultIdentityFactory();
-        this.profiles = Lists.mutable.withAll(defaultIdentityFactory.adapt(defaultIdentityFactory.makeUnknownIdentity()));
+        this.identity = defaultIdentityFactory.makeUnknownIdentity();
 
         this.testVaultImplementation = new TestVaultImplementation();
         MiddleTierUserPasswordCredential middleTierUserPasswordCredential = new MiddleTierUserPasswordCredential(postgresTestContainerWrapper.getUser(), postgresTestContainerWrapper.getPassword(), "unused");
