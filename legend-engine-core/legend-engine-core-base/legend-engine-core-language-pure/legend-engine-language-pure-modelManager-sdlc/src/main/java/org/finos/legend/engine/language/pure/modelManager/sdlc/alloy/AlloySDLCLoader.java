@@ -53,21 +53,25 @@ public class AlloySDLCLoader
         private final String artifactId;
         private final String versionId;
 
-        public ProjectVersion(String groupId, String artifactId, String versionId) {
+        public ProjectVersion(String groupId, String artifactId, String versionId)
+        {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.versionId = versionId;
         }
 
-        public String getGroupId() {
+        public String getGroupId()
+        {
             return groupId;
         }
 
-        public String getArtifactId() {
+        public String getArtifactId()
+        {
             return artifactId;
         }
 
-        public String getVersionId() {
+        public String getVersionId()
+        {
             return versionId;
         }
     }
@@ -81,13 +85,16 @@ public class AlloySDLCLoader
     {
         return SDLCLoader.loadMetadataFromHTTPURL(identity, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_START, LoggingEventType.METADATA_REQUEST_ALLOY_PROJECT_STOP, getMetaDataApiUrl(identity, alloySDLC, clientVersion), httpClientProvider, (url) ->
         {
-            try {
+            try
+            {
                 HttpPost httpPost = new HttpPost(url);
                 List<ProjectVersion> projectVersions = alloySDLC.stream().map(sdlc -> new ProjectVersion(sdlc.groupId, sdlc.artifactId, sdlc.version)).collect(Collectors.toList());
                 httpPost.setEntity(new StringEntity(objectMapper.writeValueAsString(projectVersions)));
                 httpPost.setHeader(new BasicHeader(CONTENT_TYPE, APPLICATION_JSON));
                 return httpPost;
-            } catch (Exception e) {
+            }
+            catch (Exception e)
+            {
                 throw new RuntimeException(e);
             }
         });
