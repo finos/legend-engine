@@ -262,6 +262,7 @@
                             <includeOnlyProperty>^git.(commit.time|closest.tag.name|branch|tags)$</includeOnlyProperty>
                             <includeOnlyProperty>^git.(commit.time|branch|tags)$</includeOnlyProperty>
                         </includeOnlyProperties>
+                        <useNativeGit>true</useNativeGit>
                     </configuration>
                 </plugin>
                 <plugin>
