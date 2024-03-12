@@ -178,10 +178,6 @@
             <artifactId>commons-io</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.finos.legend.shared</groupId>
-            <artifactId>legend-shared-pac4j-gitlab</artifactId>
-        </dependency>
         <!-- TEST -->
     </dependencies>
 </project>
