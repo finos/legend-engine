@@ -20,6 +20,8 @@ import com.google.common.cache.CacheBuilder;
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracer;
+
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.eclipse.collections.api.block.procedure.Procedure;
@@ -32,6 +34,7 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextText;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
@@ -125,6 +128,23 @@ public class ModelManager
             {
                 ModelLoader loader = this.modelLoaderForContext(context);
                 return loader.load(identity, context, clientVersion, scope.span());
+            }
+        }
+    }
+
+    public PureModelContextData loadData(List<PureModelContext> pureModelContextList, String clientVersion, Identity identity)
+    {
+        try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
+        {
+            scope.span().setTag("context", pureModelContextList.get(0).getClass().getSimpleName());
+            if (pureModelContextList.stream().allMatch(pureModelContext -> pureModelContext instanceof PureModelContextPointer))
+            {
+                ModelLoader loader = this.modelLoaderForContext(pureModelContextList.get(0));
+                return loader.load(identity, pureModelContextList, clientVersion, scope.span());
+            }
+            else
+            {
+                throw new UnsupportedOperationException("Invalid arguments - PureModelContextList should have all elements of type PureModelContextPointer");
             }
         }
     }

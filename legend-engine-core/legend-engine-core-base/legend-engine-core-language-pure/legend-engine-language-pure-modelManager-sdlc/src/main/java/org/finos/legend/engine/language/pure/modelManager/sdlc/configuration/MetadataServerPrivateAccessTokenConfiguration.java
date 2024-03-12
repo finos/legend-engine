@@ -17,4 +17,5 @@ package org.finos.legend.engine.language.pure.modelManager.sdlc.configuration;
 public class MetadataServerPrivateAccessTokenConfiguration extends MetadataServerPac4jConfiguration
 {
     public String accessTokenHeaderName;
+    public String clientName;
 }

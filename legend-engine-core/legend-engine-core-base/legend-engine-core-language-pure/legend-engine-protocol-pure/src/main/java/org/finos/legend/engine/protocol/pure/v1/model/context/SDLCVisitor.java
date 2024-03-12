@@ -15,6 +15,8 @@
 
 package org.finos.legend.engine.protocol.pure.v1.model.context;
 
+import java.util.List;
+
 public interface SDLCVisitor<T>
 {
     T visit(AlloySDLC alloySDLC);
@@ -22,4 +24,6 @@ public interface SDLCVisitor<T>
     T visit(PureSDLC pureSDLC);
 
     T visit(WorkspaceSDLC workspaceSDLC);
+
+    T visit(List<AlloySDLC> alloySDLCList);
 }
