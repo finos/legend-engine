@@ -14,11 +14,13 @@
 
 package org.finos.legend.engine.application.query.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 
 import java.util.List;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Query
 {
     public String id;
