@@ -14,15 +14,18 @@
 
 package org.finos.legend.engine.query.graphQL.api.test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.cache.CacheBuilder;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.DebugHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParser;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -56,7 +59,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
@@ -83,20 +88,21 @@ public abstract class TestGraphQLApiAbstract
                 buildJsonHandler("/api/projects/Project1/workspaces/Workspace2/revisions/HEAD/upstreamProjects", "[]"),
 
                 buildPMCDMetadataHandler("/api/projects/Project2/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project2_Workspace1.pure"),
-                buildJsonHandler("/api/projects/Project2/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]"),
+                buildJsonHandler("/api/projects/Project2/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]"),
 
                 buildPMCDMetadataHandler("/api/projects/Project3/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project3_Workspace1.pure"),
                 buildJsonHandler("/api/projects/Project3/workspaces/Workspace1/revisions/HEAD/upstreamProjects",  readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/Project3_upstreamProjects.json")),
-                buildPMCDMetadataHandler("/projects/org.finos.legend.graphql/models/versions/2.0.1/pureModelContextData","/org/finos/legend/engine/query/graphQL/api/test/Project4_Version_2.0.1.pure",new Protocol("pure", PureClientVersions.production),new PureModelContextPointer()),
 
                 buildPMCDMetadataHandler("/api/projects/Project5/workspaces/Workspace1/pureModelContextData", "/org/finos/legend/engine/query/graphQL/api/test/Project5_Workspace1.pure"),
-                buildJsonHandler("/api/projects/Project5/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]]"),
+                buildJsonHandler("/api/projects/Project5/workspaces/Workspace1/revisions/HEAD/upstreamProjects", "[]"),
 
-                buildJsonHandler("/api/projects/p3/workspaces/ws1/pureModelContextData", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/pmcd_p3_ws1.json")),
-                buildJsonHandler("/api/projects/p3/workspaces/ws1/revisions/HEAD/upstreamProjects", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/p3_ws1_upstream_projects.json")),
-                buildJsonHandler("/projects/org.finos.legend.abhishoya/first-project/versions/1.0.2/pureModelContextData", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/pmcd_p1_1.0.2.json")),
-                buildJsonHandler("/projects/org.finos.legend.abhishoya/second-project/versions/1.0.1/pureModelContextData", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/pmcd_p2_1.0.1.json"))
-
+                buildDepsMetadataHandler("/projects/dependencies/pureModelContextData",
+                        Maps.mutable.of(
+                                "org.finos.legend.graphql:models:2.0.1", readModelContentFromResource("/org/finos/legend/engine/query/graphQL/api/test/Project4_Version_2.0.1.pure")
+                        ),
+                        new Protocol("pure", PureClientVersions.production),
+                        new PureModelContextPointer()
+                )
         });
         server.setHandler(handlerCollection);
         server.start();
@@ -157,6 +163,43 @@ public abstract class TestGraphQLApiAbstract
         };
         contextHandler.setHandler(handler);
         return contextHandler;
+    }
+
+    protected static Handler buildDepsMetadataHandler(String path, Map<String, String> requestBodyResponseMap, Protocol serializer, PureModelContextPointer pointer) throws Exception
+    {
+        ContextHandler contextHandler = new ContextHandler(path);
+        AbstractHandler handler = new AbstractHandler()
+        {
+            @Override
+            public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
+            {
+                if (request.getMethod().equals("POST"))
+                {
+                    String requestBody = request.getReader().lines().collect(Collectors.joining("\n"));
+                    JsonNode jsonNode = OBJECT_MAPPER.readTree(requestBody);
+                    StringBuilder sb = new StringBuilder();
+                    for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); ) {
+                        JsonNode json = it.next();
+                        sb.append(json.get("groupId").textValue() + ":" + json.get("artifactId").textValue() + ":" + json.get("versionId").textValue());
+                        if(it.hasNext()) sb.append(",");
+                    }
+                    PureModelContextData pureModelContextData = PureModelContextData.newBuilder()
+                                                                    .withOrigin(pointer)
+                                                                    .withSerializer(serializer)
+                                                                    .withPureModelContextData(PureGrammarParser.newInstance().parseModel(requestBodyResponseMap.get(sb.toString())))
+                                                                    .build();
+                    byte[] bytes = OBJECT_MAPPER.writeValueAsBytes(pureModelContextData);
+                    OutputStream stream = httpServletResponse.getOutputStream();
+                    stream.write(bytes);
+                    stream.flush();
+                }
+            }
+        };
+        contextHandler.setHandler(handler);
+        contextHandler.setAllowNullPathInfo(true);
+        DebugHandler debugHandler = new DebugHandler();
+        debugHandler.setHandler(contextHandler);
+        return debugHandler;
     }
 
     protected static Handler buildJsonHandler(String path, String json)
