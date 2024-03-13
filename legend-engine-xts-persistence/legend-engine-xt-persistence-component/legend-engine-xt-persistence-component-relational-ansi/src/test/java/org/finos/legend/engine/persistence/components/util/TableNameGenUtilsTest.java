@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,10 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.common;
+package org.finos.legend.engine.persistence.components.util;
 
-public enum DedupAndVersionErrorStatistics
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+public class TableNameGenUtilsTest
 {
-    MAX_DUPLICATES,
-    MAX_DATA_ERRORS;
+    @Test
+    public void testTableNameGen()
+    {
+        String ingestRunId = "075605e3-bada-47d7-9ae9-7138f392fe22";
+        String expectedTableName = "person_temp_lp_yosulf";
+        String tableName = TableNameGenUtils.generateTableName("person", "temp", ingestRunId);
+        Assertions.assertEquals(expectedTableName, tableName);
+    }
 }

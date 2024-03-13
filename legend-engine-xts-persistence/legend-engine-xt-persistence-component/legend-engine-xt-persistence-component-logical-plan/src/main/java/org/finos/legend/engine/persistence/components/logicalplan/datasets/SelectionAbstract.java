@@ -47,6 +47,8 @@ public interface SelectionAbstract extends Dataset, Operation
 
     Optional<List<Value>> groupByFields();
 
+    Optional<Condition> havingCondition();
+
     Optional<String> alias();
 
     Optional<Integer> limit();

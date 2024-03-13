@@ -125,8 +125,7 @@ public class ConditionTest
             null,
             Collections.singletonList(item),
             Collections.singletonList(table),
-            condition,
-            Collections.emptyList());
+            condition);
 
         Condition existsCondition = new ExistsCondition(selectExpression);
         String expected = "EXISTS (SELECT \"item1\" FROM \"mydb\".\"mytable\" WHERE \"item1\" = 1)";
@@ -161,8 +160,7 @@ public class ConditionTest
             null,
             Collections.singletonList(field2),
             Collections.singletonList(tableB),
-            null,
-            Collections.emptyList());
+            null);
 
         String expected = "sink.\"col1\" IN (SELECT stage.\"col2\" FROM \"mydb\".\"mytable2\" as stage)";
         Condition condition = new InCondition(field1, selectExpression);

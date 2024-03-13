@@ -41,8 +41,8 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
         prev.push(selectStatement);
 
         List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>();
-        List<Condition> conditions = new ArrayList<>();
-        current.condition().ifPresent(conditions::add);
+        List<Condition> whereConditions = new ArrayList<>();
+        current.condition().ifPresent(whereConditions::add);
 
         if (current.source().isPresent())
         {
@@ -57,14 +57,14 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
             {
                 DerivedDataset derivedDataset = (DerivedDataset) dataset;
                 Condition filterCondition = LogicalPlanUtils.getDatasetFilterCondition(derivedDataset);
-                conditions.add(filterCondition);
+                whereConditions.add(filterCondition);
                 logicalPlanNodeList.add(derivedDataset.datasetReference());
             }
             else if (dataset instanceof FilteredDataset)
             {
                 FilteredDataset filteredDataset = (FilteredDataset) dataset;
                 Condition filterCondition = filteredDataset.filter();
-                conditions.add(filterCondition);
+                whereConditions.add(filterCondition);
                 logicalPlanNodeList.add(filteredDataset.datasetReference());
             }
             else
@@ -89,12 +89,14 @@ public class SelectionVisitor implements LogicalPlanVisitor<Selection>
             selectStatement.setLimit(current.limit().get());
         }
 
-        if (!conditions.isEmpty())
+        if (!whereConditions.isEmpty())
         {
-            logicalPlanNodeList.add(And.of(conditions));
+            selectStatement.setHasWhereCondition(true);
+            logicalPlanNodeList.add(And.of(whereConditions));
         }
 
         current.groupByFields().ifPresent(logicalPlanNodeList::addAll);
+        current.havingCondition().ifPresent(logicalPlanNodeList::add);
         current.quantifier().ifPresent(logicalPlanNodeList::add);
 
         return new VisitorResult(selectStatement, logicalPlanNodeList);

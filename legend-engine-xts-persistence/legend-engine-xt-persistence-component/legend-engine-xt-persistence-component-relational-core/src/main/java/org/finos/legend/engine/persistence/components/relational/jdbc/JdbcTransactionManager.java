@@ -83,19 +83,7 @@ public class JdbcTransactionManager
             {
                 while (resultSet.next())
                 {
-                    ResultSetMetaData metaData = resultSet.getMetaData();
-                    int columnCount = resultSet.getMetaData().getColumnCount();
-                    Map<String, Object> row = new HashMap<>();
-                    for (int i = 1; i <= columnCount; i++)
-                    {
-                        Object value = resultSet.getObject(i);
-                        if (metaData.getColumnTypeName(i).equalsIgnoreCase("JSON") && value instanceof byte[])
-                        {
-                            value = new String((byte[]) value, StandardCharsets.UTF_8);
-                        }
-                        row.put(metaData.getColumnName(i), value);
-                    }
-                    resultList.add(row);
+                    extractResults(resultList, resultSet);
                 }
             }
             return resultList;
@@ -104,5 +92,44 @@ public class JdbcTransactionManager
         {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<Map<String, Object>> convertResultSetToList(String sql, int rows)
+    {
+        try
+        {
+            List<Map<String, Object>> resultList = new ArrayList<>();
+            try (ResultSet resultSet = this.statement.executeQuery(sql))
+            {
+                int iter = 0;
+                while (resultSet.next() && iter < rows)
+                {
+                    iter++;
+                    extractResults(resultList, resultSet);
+                }
+            }
+            return resultList;
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void extractResults(List<Map<String, Object>> resultList, ResultSet resultSet) throws SQLException
+    {
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        int columnCount = resultSet.getMetaData().getColumnCount();
+        Map<String, Object> row = new HashMap<>();
+        for (int i = 1; i <= columnCount; i++)
+        {
+            Object value = resultSet.getObject(i);
+            if (metaData.getColumnTypeName(i).equalsIgnoreCase("JSON") && value instanceof byte[])
+            {
+                value = new String((byte[]) value, StandardCharsets.UTF_8);
+            }
+            row.put(metaData.getColumnName(i), value);
+        }
+        resultList.add(row);
     }
 }
