@@ -93,7 +93,7 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
             {
                 return PureModelContextData.newPureModelContextData();
             }
-            else if(sdlcCollection.stream().allMatch(sdlc -> sdlc instanceof AlloySDLC))
+            else if (sdlcCollection.stream().allMatch(sdlc -> sdlc instanceof AlloySDLC))
             {
                 return this.alloyLoader.loadAlloyProjects(identity, sdlcCollection.stream().map(sdlc1 -> (AlloySDLC) sdlc1).collect(Collectors.toList()), clientVersion, this.httpClientProvider);
             }

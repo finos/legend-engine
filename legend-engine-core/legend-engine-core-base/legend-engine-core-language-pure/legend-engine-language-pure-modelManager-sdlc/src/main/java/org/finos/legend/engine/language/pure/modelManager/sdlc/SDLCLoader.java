@@ -162,7 +162,7 @@ public class SDLCLoader implements ModelLoader
     @Override
     public PureModelContext cacheKey(PureModelContext context, Identity identity)
     {
-        if(context instanceof PureModelContextPointer)
+        if (context instanceof PureModelContextPointer)
         {
             if (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo))
             {
@@ -207,7 +207,7 @@ public class SDLCLoader implements ModelLoader
         PureModelContextData metaData;
         Assert.assertTrue(clientVersion != null, () -> "Client version should be set when pulling metadata from the metadata repository");
 
-        if(ctx instanceof PureModelContextPointer)
+        if (ctx instanceof PureModelContextPointer)
         {
             PureModelContextPointer context = (PureModelContextPointer) ctx;
             metaData = subject == null ? context.sdlcInfo.accept(fetcher) : exec(subject, () -> context.sdlcInfo.accept(fetcher));
