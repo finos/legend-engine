@@ -36,6 +36,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.Ser
 import org.finos.legend.engine.protocol.Protocol;
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextCollection;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
@@ -150,7 +151,7 @@ public class WorkspaceSDLCLoader
 
     private PureModelContextData loadDependencyData(Identity profiles, String clientVersion, List<SDLCProjectDependency> dependencies)
     {
-        List<PureModelContext> pointers = dependencies.stream().map(dependency -> {
+        List<PureModelContext> contexts = dependencies.stream().map(dependency -> {
             PureModelContextPointer pointer = new PureModelContextPointer();
             AlloySDLC sdlcInfo = new AlloySDLC();
             sdlcInfo.groupId = dependency.getGroupId();
@@ -160,7 +161,7 @@ public class WorkspaceSDLCLoader
             pointer.serializer = new Protocol("pure", clientVersion);
             return pointer;
         }).collect(Collectors.toList());
-        return this.modelManager.loadData(pointers, clientVersion, profiles);
+        return this.modelManager.loadData(new PureModelContextCollection(contexts), clientVersion, profiles);
     }
 
     private static class SDLCProjectDependency

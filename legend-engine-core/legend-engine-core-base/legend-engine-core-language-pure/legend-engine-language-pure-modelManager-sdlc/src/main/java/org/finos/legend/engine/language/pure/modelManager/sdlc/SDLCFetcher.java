@@ -18,8 +18,11 @@ package org.finos.legend.engine.language.pure.modelManager.sdlc;
 import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.security.auth.Subject;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.impl.factory.Lists;
@@ -30,6 +33,7 @@ import org.finos.legend.engine.language.pure.modelManager.sdlc.workspace.Workspa
 import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
+import org.finos.legend.engine.protocol.pure.v1.model.context.SDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.SDLCVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.identity.Identity;
@@ -80,14 +84,16 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
     }
 
     @Override
-    public PureModelContextData visit(List<AlloySDLC> sdlc)
+    public PureModelContextData visit(Collection<SDLC> sdlcCollection)
     {
-        parentSpan.setTag("sdlc", "alloy");
+        parentSpan.setTag("sdlc", "collection");
         try (Scope ignore = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
         {
-            PureModelContextData loadedProject = this.alloyLoader.loadAlloyProjects(identity, sdlc, clientVersion, this.httpClientProvider);
-            return loadedProject;
-            // TODO add check for missing paths
+            if(sdlcCollection.stream().allMatch(sdlc -> sdlc instanceof AlloySDLC))
+            {
+                return this.alloyLoader.loadAlloyProjects(identity, sdlcCollection.stream().map(sdlc1 -> (AlloySDLC) sdlc1).collect(Collectors.toList()), clientVersion, this.httpClientProvider);
+            }
+            throw new RuntimeException("Invalid collection of SDLC");
         }
     }
 
