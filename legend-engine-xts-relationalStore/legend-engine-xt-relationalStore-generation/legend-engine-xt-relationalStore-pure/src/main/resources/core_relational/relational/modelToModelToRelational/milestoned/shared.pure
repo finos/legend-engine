@@ -20,7 +20,6 @@ import meta::pure::graphFetch::execution::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
 import meta::relational::runtime::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 
 function meta::pure::graphFetch::tests::m2m2r::milestoning::getModelChainRuntime(m2m:meta::pure::mapping::Mapping[1]):meta::core::runtime::Runtime[1]

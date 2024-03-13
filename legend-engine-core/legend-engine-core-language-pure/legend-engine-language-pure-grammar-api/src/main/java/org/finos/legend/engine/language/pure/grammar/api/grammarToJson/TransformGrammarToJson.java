@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lam
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.grammar.ParserError;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
@@ -67,6 +69,7 @@ public class TransformGrammarToJson
     public Response transformGrammarToJson(GrammarToJsonInput grammarInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @DefaultValue("true") @QueryParam("returnSourceInfo") boolean returnSourceInfo)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try (Scope scope = GlobalTracer.get().buildSpan("Service: transformJsonToGrammar").startActive(true))
         {
             PureGrammarParserExtensions.logExtensionList();
@@ -92,7 +95,7 @@ public class TransformGrammarToJson
                         }
                         lambdaErrors.put(key, new ParserError(exception.getMessage(), exception.getSourceInformation()));
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, identity.getName());
                 }
             });
             JsonToGrammarInput symmetricResult = new JsonToGrammarInput();
@@ -117,14 +120,14 @@ public class TransformGrammarToJson
                         }
                         symmetricResult.codeError = new ParserError(exception.getMessage(), exception.getSourceInformation());
                     }
-                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+                    ExceptionTool.exceptionManager(e, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, identity.getName());
                 }
             }
-            return ManageConstantResult.manageResult(profiles, symmetricResult, objectMapper);
+            return ManageConstantResult.manageResult(identity.getName(), symmetricResult, objectMapper);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.TRANSFORM_GRAMMAR_TO_JSON_ERROR, identity.getName());
         }
     }
 

@@ -29,6 +29,8 @@ import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.http.InflateInterceptor;
@@ -73,8 +75,9 @@ public class FunctionAnalytics
                                               @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
-        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, profiles);
-        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        PureModelContextData pureModelContextData = this.modelManager.loadData(input.model, input.clientVersion, identity);
+        PureModel pureModel = this.modelManager.loadModel(pureModelContextData, input.clientVersion, identity, null);
         ConcreteFunctionDefinition<? extends Object> function = pureModel.getConcreteFunctionDefinition_safe(input.function);
 
         try (Scope scope = GlobalTracer.get().buildSpan("Analytics: function model coverage").startActive(true))
@@ -89,11 +92,11 @@ public class FunctionAnalytics
                 {
                     builder.addElement(Objects.requireNonNull(pureModelContextData.getElements().stream().filter(el -> input.function.equals(el.getPath())).findFirst().get()));
                 }
-                return ManageConstantResult.manageResult(profiles, builder.build().combine(classes).combine(enums), objectMapper);
+                return ManageConstantResult.manageResult(identity.getName(), builder.build().combine(classes).combine(enums), objectMapper);
             }
             catch (Exception e)
             {
-                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, profiles);
+                return ExceptionTool.exceptionManager(e, LoggingEventType.ANALYTICS_ERROR, Response.Status.BAD_REQUEST, identity.getName());
             }
         }
     }

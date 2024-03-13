@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.grammar.from;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.SnowflakeLexerGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.SnowflakeParserGrammar;
 import org.finos.legend.engine.language.pure.grammar.from.authentication.AuthenticationStrategySourceCode;
@@ -32,6 +33,12 @@ import java.util.function.Function;
 
 public class SnowflakeGrammarParserExtension implements IRelationalGrammarParserExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Snowflake");
+    }
+
     private String normalizeName(String elementName, String localPrefix)
     {
         String normalized = elementName.replaceAll("::", "-");
@@ -163,6 +170,12 @@ public class SnowflakeGrammarParserExtension implements IRelationalGrammarParser
         // nonProxyHosts
         SnowflakeParserGrammar.DbNonProxyHostsContext nonProxyHostsContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbNonProxyHosts(), "nonProxyHosts", dsSpec.sourceInformation);
         Optional.ofNullable(nonProxyHostsContext).ifPresent(nonProxyHostsCtx -> dsSpec.nonProxyHosts = PureGrammarParserUtility.fromGrammarString(nonProxyHostsCtx.STRING().getText(), true));
+        // tempTableDb
+        SnowflakeParserGrammar.DbTempTableDbContext tempTableDbContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbTempTableDb(), "tempTableDb", dsSpec.sourceInformation);
+        Optional.ofNullable(tempTableDbContext).ifPresent(tempTableDbCtx -> dsSpec.tempTableDb = PureGrammarParserUtility.fromGrammarString(tempTableDbCtx.STRING().getText(), true));
+        // tempTableSchema
+        SnowflakeParserGrammar.DbTempTableSchemaContext tempTableSchemaContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbTempTableSchema(), "tempTableSchema", dsSpec.sourceInformation);
+        Optional.ofNullable(tempTableSchemaContext).ifPresent(tempTableSchemaCtx -> dsSpec.tempTableSchema = PureGrammarParserUtility.fromGrammarString(tempTableSchemaCtx.STRING().getText(), true));
         // accountType
         SnowflakeParserGrammar.DbAccountTypeContext accountTypeContext = PureGrammarParserUtility.validateAndExtractOptionalField(dbSpecCtx.dbAccountType(), "accountType", dsSpec.sourceInformation);
         Optional.ofNullable(accountTypeContext).ifPresent(accountTypeCtx -> dsSpec.accountType = PureGrammarParserUtility.fromIdentifier(accountTypeCtx.identifier()));

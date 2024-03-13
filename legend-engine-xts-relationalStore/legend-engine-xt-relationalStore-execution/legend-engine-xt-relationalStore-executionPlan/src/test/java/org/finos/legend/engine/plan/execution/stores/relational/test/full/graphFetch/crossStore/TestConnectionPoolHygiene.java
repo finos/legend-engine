@@ -31,6 +31,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -269,7 +271,7 @@ public class TestConnectionPoolHygiene extends AlloyTestServer
     private SingleExecutionPlan buildPlanForFetchFunction(String fetchFunction)
     {
         PureModelContextData contextData = PureGrammarParser.newInstance().parseModel(LOGICAL_MODEL + STORE_MODEL + MAPPING + RUNTIME + fetchFunction);
-        PureModel pureModel = Compiler.compile(contextData, null, null);
+        PureModel pureModel = Compiler.compile(contextData, null, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
         List<ValueSpecification> fetchFunctionExpressions = contextData.getElementsOfType(Function.class).get(0).body;
 

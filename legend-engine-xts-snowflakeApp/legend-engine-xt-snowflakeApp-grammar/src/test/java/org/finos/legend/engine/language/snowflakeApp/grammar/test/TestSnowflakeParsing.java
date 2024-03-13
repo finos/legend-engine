@@ -37,7 +37,7 @@ public class TestSnowflakeParsing extends TestGrammarParser.TestGrammarParserTes
                 "SnowflakeApp " + ListAdapter.adapt(keywords).makeString("::") + "\n" +
                 "{\n" +
                 "   function : a::f():String[1];" +
-                "   ownership : 'testDeployment';" +
+                "   ownership : Deployment{identifier:'testDeployment'};" +
                 "   applicationName : 'sass';\n" +
                 "}\n";
     }
@@ -58,7 +58,7 @@ public class TestSnowflakeParsing extends TestGrammarParser.TestGrammarParserTes
         test("###Snowflake\n" +
                 "SnowflakeApp x::A\n" +
                 "{\n" +
-                "   ownership : 'pierre';\n" +
+                "   ownership : Deployment { identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-5:1]: Field 'applicationName' is required");
     }
 
@@ -69,7 +69,7 @@ public class TestSnowflakeParsing extends TestGrammarParser.TestGrammarParserTes
                 "SnowflakeApp x::A\n" +
                 "{\n" +
                 "   applicationName : 'MyApp';\n" +
-                "   ownership : 'pierre';\n" +
+                "   ownership : Deployment { identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-6:1]: Field 'function' is required");
     }
 

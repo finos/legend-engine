@@ -15,10 +15,8 @@
 
 import meta::pure::executionPlan::engine::java::roadmap::*;
 import meta::json::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::mapping::modelToModel::test::alloy::constraints::*;
@@ -56,7 +54,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnTypeWith
                               connection= ^JsonModelConnection(
                                 class=_Firm,
                                 url='data:application/json,{"name":"FirmX"}'))),
-                           ^ExecutionContext(enableConstraints=false),
+                           ^meta::pure::runtime::ExecutionContext(enableConstraints=false),
                            meta::pure::extension::defaultExtensions()
    );
 
@@ -95,7 +93,7 @@ meta::pure::mapping::modelToModel::test::alloy::constraints::testQueryOnSourceTy
                               connection= ^JsonModelConnection(
                                 class=_Firm2,
                                 url='data:application/json,{"name":"FirmX"}'))),
-                          ^ExecutionContext(enableConstraints=false),
+                          ^meta::pure::runtime::ExecutionContext(enableConstraints=false),
                           meta::pure::extension::defaultExtensions()
                      );
 

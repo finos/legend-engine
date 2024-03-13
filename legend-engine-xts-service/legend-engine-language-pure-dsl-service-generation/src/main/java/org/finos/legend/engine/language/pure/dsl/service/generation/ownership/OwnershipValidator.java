@@ -14,19 +14,18 @@
 
 package org.finos.legend.engine.language.pure.dsl.service.generation.ownership;
 
-import org.eclipse.collections.api.list.MutableList;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Ownership;
-import org.pac4j.core.profile.CommonProfile;
 
 public interface OwnershipValidator
 {
     boolean supports(Root_meta_legend_service_metamodel_Ownership ownership);
 
-    boolean validate(MutableList<CommonProfile> profiles, Root_meta_legend_service_metamodel_Ownership ownership);
+    boolean validate(Identity identity, Root_meta_legend_service_metamodel_Ownership ownership);
 
-    boolean isOwner(MutableList<CommonProfile> profiles, Root_meta_legend_service_metamodel_Ownership ownership);
+    boolean isOwner(Identity identity, Root_meta_legend_service_metamodel_Ownership ownership);
 
-    String authorizationFailureMessage(MutableList<CommonProfile> profiles, Root_meta_legend_service_metamodel_Ownership ownership);
+    String authorizationFailureMessage(Identity identity, Root_meta_legend_service_metamodel_Ownership ownership);
 
     void clearCache();
 }

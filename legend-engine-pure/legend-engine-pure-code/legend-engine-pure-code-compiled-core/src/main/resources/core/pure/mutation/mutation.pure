@@ -1,6 +1,5 @@
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::graphFetch::*;
 
 function <<functionType.NotImplementedFunction>> meta::pure::mutation::save<T>(values: T[*], rootGraphFetchTree: RootGraphFetchTree<T>[1], mapping: Mapping[1], runtime: Runtime[1]): T[*]

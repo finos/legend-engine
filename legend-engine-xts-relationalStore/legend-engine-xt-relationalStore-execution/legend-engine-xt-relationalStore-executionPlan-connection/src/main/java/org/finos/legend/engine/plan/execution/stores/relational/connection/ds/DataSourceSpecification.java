@@ -20,7 +20,6 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.block.procedure.Procedure;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.map.mutable.MapAdapter;
 import org.finos.legend.engine.authentication.credential.CredentialSupplier;
@@ -35,7 +34,6 @@ import org.finos.legend.engine.shared.core.identity.credential.KerberosUtils;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import javax.security.auth.Subject;
@@ -130,9 +128,9 @@ public abstract class DataSourceSpecification
         return this.extraDatasourceProperties;
     }
 
-    public Connection getConnectionUsingProfiles(MutableList<CommonProfile> profiles)
+    public Connection getConnectionUsingIdentity(Identity identity)
     {
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+
         return this.getConnectionUsingIdentity(identity, Optional.empty());
     }
 

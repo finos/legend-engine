@@ -60,6 +60,18 @@ import java.util.stream.Collectors;
 public class SnowflakeConnectionExtension implements RelationalConnectionExtension, StrategicConnectionExtension
 {
     @Override
+    public String type()
+    {
+        return "MIX_ConnectionExtension_&_Strategic_Connection_Extension";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Snowflake");
+    }
+
+    @Override
     public MutableList<DatabaseManager> getAdditionalDatabaseManager()
     {
         return Lists.mutable.of(new SnowflakeManager());
@@ -210,7 +222,9 @@ public class SnowflakeConnectionExtension implements RelationalConnectionExtensi
                         snowflakeDatasourceSpecification.nonProxyHosts,
                         snowflakeDatasourceSpecification.accountType,
                         snowflakeDatasourceSpecification.organization,
-                        snowflakeDatasourceSpecification.role);
+                        snowflakeDatasourceSpecification.role,
+                        snowflakeDatasourceSpecification.tempTableDb,
+                        snowflakeDatasourceSpecification.tempTableSchema);
             }
             return null;
         };

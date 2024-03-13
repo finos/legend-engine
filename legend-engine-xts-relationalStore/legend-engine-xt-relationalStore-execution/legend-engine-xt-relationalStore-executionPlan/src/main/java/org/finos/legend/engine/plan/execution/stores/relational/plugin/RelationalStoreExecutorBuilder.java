@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderConfiguration;
 import org.finos.legend.engine.authentication.provider.DatabaseAuthenticationFlowProviderSelector;
@@ -30,6 +31,13 @@ public class RelationalStoreExecutorBuilder implements StoreExecutorBuilder
 {
     private static final int DEFAULT_PORT = Integer.parseInt(System.getProperty("legend.test.h2.port", "-1"));
     public static final String DEFAULT_TEMP_PATH = "/tmp/";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
+    }
+
 
     @Override
     public StoreType getStoreType()

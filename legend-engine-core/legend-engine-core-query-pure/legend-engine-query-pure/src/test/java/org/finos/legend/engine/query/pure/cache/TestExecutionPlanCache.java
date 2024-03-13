@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Response;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelLoader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
@@ -41,9 +40,9 @@ import org.finos.legend.engine.query.pure.api.test.inMemory.TestExecutionUtility
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.model.ExecuteInput;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.pac4j.core.profile.CommonProfile;
 
 import static org.finos.legend.pure.generated.core_relational_java_platform_binding_legendJavaPlatformBinding_relationalLegendJavaPlatformBindingExtension.Root_meta_relational_executionPlan_platformBinding_legendJava_relationalExtensionsWithLegendJavaPlatformBinding__Extension_MANY_;
 import static org.junit.Assert.assertEquals;
@@ -132,7 +131,7 @@ public class TestExecutionPlanCache
         }
 
         @Override
-        public PureModelContextData load(MutableList<CommonProfile> profiles, PureModelContext context, String clientVersion, Span parentSpan)
+        public PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan)
         {
             return data;
 
@@ -151,7 +150,7 @@ public class TestExecutionPlanCache
         }
 
         @Override
-        public PureModelContext cacheKey(PureModelContext context, MutableList<CommonProfile> pm)
+        public PureModelContext cacheKey(PureModelContext context, Identity identity)
         {
             return data;
         }

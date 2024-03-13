@@ -72,7 +72,7 @@ function <<test.Test>>  meta::relational::tests::injection::testProjectThroughAs
 
 function meta::relational::tests::injection::createTablesAndInsert():Boolean[1]
 {
-   let connection = meta::relational::tests::injection::testRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = meta::relational::tests::injection::testRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'Trade', $connection);
 

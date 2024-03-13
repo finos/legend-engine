@@ -18,15 +18,19 @@ import meta::json::*;
 import meta::pure::changetoken::cast_generation::*;
 import meta::pure::changetoken::cast_generation::expand::*;
 
-function <<access.private>> meta::pure::changetoken::cast_generation::getValueAsFieldType(typeMultiplicityString: String[1], anyValue: Any[0..1]): Code[1]
+function <<access.private>> meta::pure::changetoken::cast_generation::getValueAsFieldType(typeMultiplicityString: String[1], anyValue: Any[0..1], typeKeyName: String[1], obsoleteJsonAsString: Boolean[1]): Code[1]
 {
     let typeMultiplicity = $typeMultiplicityString->extractTypeMultiplicity();
     let type = $typeMultiplicity.first;
     let multiplicity = $typeMultiplicity.second;
+    let isOptional = if($multiplicity->getLowerBound() == 0, | true, | false);
     let isSingle = $multiplicity == PureOne || $multiplicity == PureZero || $multiplicity == ZeroOne;
     let oneValue = if ($anyValue->size() == 0, | if($isSingle, | ^JSONNull(), | ^JSONArray()), | $anyValue->toOne());
-    let jsonValue = if ($oneValue->instanceOf(JSONElement), | $oneValue->cast(@JSONElement), | $oneValue->expandValue());
-    inlineJsonValueWithUnescaping($type, $isSingle, $jsonValue);
+    let jsonValue = if ($oneValue->instanceOf(JSONElement), | $oneValue->cast(@JSONElement), | $oneValue->expandValue($typeKeyName));
+    if($obsoleteJsonAsString,
+        | inlineJsonValueWithUnescaping($type, $isOptional, $isSingle, $jsonValue),
+        | inlineJsonValue($jsonValue)
+    );
 }
 
 function meta::pure::changetoken::cast_generation::extractTypeMultiplicity(type: String[1]): Pair<String, Multiplicity>[1]

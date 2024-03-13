@@ -21,16 +21,23 @@ import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.SqlLogging;
+import org.finos.legend.engine.persistence.components.util.SqlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan>
 {
     private final RelationalSink relationalSink;
     private final RelationalExecutionHelper relationalExecutionHelper;
+    private SqlLogging sqlLogging = SqlLogging.DISABLED;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(RelationalExecutor.class);
 
     public RelationalExecutor(RelationalSink relationalSink, RelationalExecutionHelper relationalExecutionHelper)
     {
@@ -42,16 +49,18 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     public void executePhysicalPlan(SqlPlan physicalPlan)
     {
         List<String> sqlList = physicalPlan.getSqlList();
+        sqlList.forEach(sql -> SqlUtils.logSql(LOGGER, sqlLogging, sql));
         relationalExecutionHelper.executeStatements(sqlList);
     }
 
     @Override
-    public void executePhysicalPlan(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
+    public void executePhysicalPlan(SqlPlan physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues)
     {
         List<String> sqlList = physicalPlan.getSqlList();
         for (String sql : sqlList)
         {
-            String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+            String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
+            SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
             relationalExecutionHelper.executeStatement(enrichedSql);
         }
     }
@@ -62,6 +71,7 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
+            SqlUtils.logSql(LOGGER, sqlLogging, sql);
             List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(sql);
             if (!queryResult.isEmpty())
             {
@@ -72,12 +82,29 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     }
 
     @Override
-    public List<TabularData> executePhysicalPlanAndGetResults(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
+    public List<TabularData> executePhysicalPlanAndGetResults(SqlPlan physicalPlan, int rows)
     {
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
-            String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+            SqlUtils.logSql(LOGGER, sqlLogging, sql);
+            List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(sql, rows);
+            if (!queryResult.isEmpty())
+            {
+                resultSetList.add(new TabularData(queryResult));
+            }
+        }
+        return resultSetList;
+    }
+
+    @Override
+    public List<TabularData> executePhysicalPlanAndGetResults(SqlPlan physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues)
+    {
+        List<TabularData> resultSetList = new ArrayList<>();
+        for (String sql : physicalPlan.getSqlList())
+        {
+            String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
+            SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
             List<Map<String, Object>> queryResult = relationalExecutionHelper.executeQuery(enrichedSql);
             if (!queryResult.isEmpty())
             {
@@ -103,6 +130,12 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     public Dataset constructDatasetFromDatabase(Dataset dataset)
     {
         return relationalSink.constructDatasetFromDatabaseFn().execute(this, relationalExecutionHelper, dataset);
+    }
+
+    @Override
+    public void setSqlLogging(SqlLogging sqlLogging)
+    {
+        this.sqlLogging = sqlLogging;
     }
 
     @Override
@@ -133,15 +166,5 @@ public class RelationalExecutor implements Executor<SqlGen, TabularData, SqlPlan
     public RelationalExecutionHelper getRelationalExecutionHelper()
     {
         return this.relationalExecutionHelper;
-    }
-
-    private String getEnrichedSql(Map<String, String> placeholderKeyValues, String sql)
-    {
-        String enrichedSql = sql;
-        for (Map.Entry<String, String> entry : placeholderKeyValues.entrySet())
-        {
-            enrichedSql = enrichedSql.replaceAll(Pattern.quote(entry.getKey()), entry.getValue());
-        }
-        return enrichedSql;
     }
 }

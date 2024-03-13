@@ -15,7 +15,6 @@
 import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
 
@@ -24,7 +23,7 @@ Class meta::pure::router::extension::RouterExtension
   // routing
   shouldStopRouting : Function<Any>[*];
   shouldStopPreeval : Function<{Any[*] -> Boolean[1]}>[0..1];
-  routeFunctionExpressions : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*];
+  routeFunctionExpressions : Pair<Function<{FunctionExpression[1]->Boolean[1]}>, Function<{Function<Any>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], meta::pure::extension::Extension[*], DebugContext[1]->RoutingState[1]}>>[*];
   connectionEquality : Function<{Connection[1] -> Function<{Nil[1]->Boolean[1]}>[*]}>[0..1];
   processModelJoinsInExecution : Function<{Mapping[1], Runtime[1] -> Function<{Nil[1]->Mapping[1]}>[*]}>[0..1];
   splitGraphFetchTreeForPropertyUnion : Boolean[1] = false;

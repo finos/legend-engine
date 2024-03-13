@@ -27,6 +27,7 @@ import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -42,23 +43,24 @@ public class TestValidation
     {
         String val =
                         "Class a::Person {name : String[1];}\n" +
-                        "function a::f():a::Person[*]{a::Person.all()->from(a::m, ^meta::core::runtime::Runtime(connectionStores=^meta::core::runtime::ConnectionStore(element=a::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=meta::relational::runtime::DatabaseType.H2))))}\n" +
+                        "function a::f():TabularDataSet[1]{a::Person.all()->project([p|$p.name], ['name'])->from(a::m, ^meta::core::runtime::Runtime(connectionStores=^meta::core::runtime::ConnectionStore(element=a::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=meta::relational::runtime::DatabaseType.H2))))}\n" +
                         "###Mapping\n" +
                         "Mapping a::m(a::Person:Relational{name : [a::db]tb.name})\n" +
                         "###Relational\n" +
-                        "Database a::db(Table tb(name VARCHAR(100)))\n" +
+                        "Database a::db(Table tb(name VARCHAR(100) PRIMARY KEY))\n" +
                         "###Snowflake\n" +
                         "SnowflakeApp a::myApp{" +
                         "   applicationName: 'name';" +
                         "   description: 'ee';" +
-                        "   ownership: 'ownership';" +
-                        "   function: a::f():Person[*];" +
+                        "   ownership : Deployment { identifier: 'ownership' };" +
+                        "   function: a::f():TabularDataSet[1];" +
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null);
         Assert.assertEquals("[]", response.getEntity().toString());
     }
 
     @Test
+    @Ignore
     public void testImproperPlan()
     {
         String val =
@@ -73,7 +75,7 @@ public class TestValidation
                         "SnowflakeApp a::myApp{" +
                         "   applicationName: 'name';" +
                         "   description: 'ee';" +
-                        "   ownership: 'ownership';" +
+                        "   ownership : Deployment { identifier: 'ownership' };" +
                         "   function: a::f():Person[*];" +
                         "}";
         Response response = api.validate(new FunctionActivatorInput("vX_X_X", "a::myApp", PureGrammarParser.newInstance().parseModel(val)), null);

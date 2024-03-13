@@ -14,13 +14,12 @@
 
 package org.finos.legend.engine.plan.execution.stores.mongodb.plugin;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class MongoDBStoreExecutionState implements StoreExecutionState
 {
@@ -47,9 +46,9 @@ public class MongoDBStoreExecutionState implements StoreExecutionState
     }
 
     @Override
-    public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+    public ExecutionNodeVisitor<Result> getVisitor(Identity identity, ExecutionState executionState)
     {
-        return new MongoDBExecutionNodeExecutor(profiles, executionState);
+        return new MongoDBExecutionNodeExecutor(identity, executionState);
     }
 
     @Override

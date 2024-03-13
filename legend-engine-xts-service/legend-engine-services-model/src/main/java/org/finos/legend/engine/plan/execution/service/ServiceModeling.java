@@ -48,6 +48,7 @@ import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.finos.legend.engine.service.post.validation.runner.LegendServicePostValidationRunner;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.engine.shared.core.operational.prometheus.Prometheus;
@@ -57,7 +58,6 @@ import org.finos.legend.engine.test.runner.service.ServiceTestRunner;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_Service;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.Package;
-import org.pac4j.core.profile.CommonProfile;
 
 import javax.ws.rs.core.Response;
 import java.io.IOException;
@@ -99,7 +99,7 @@ public class ServiceModeling
     }
 
     @Prometheus(name = "service test model resolve", doc = "Model resolution duration summary within service test execution")
-    public List<TestResult> testService(MutableList<CommonProfile> profiles, PureModelContext context, String metricsContext)
+    public List<TestResult> testService(Identity identity, PureModelContext context, String metricsContext)
     {
         Service invokedService = null;
         try
@@ -109,7 +109,7 @@ public class ServiceModeling
             Service service = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
             invokedService = service;
             PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(data.getOrigin()).withSerializer(data.getSerializer()).withElements(LazyIterate.select(data.getElements(), e -> e != service)).build();
-            PureModel pureModel  = new PureModel(dataWithoutService, profiles, deploymentMode);
+            PureModel pureModel  = new PureModel(dataWithoutService, identity.getName(), deploymentMode);
             Pair<PureModelContextData, PureModel> pureModelAndData  = Tuples.pair(dataWithoutService, pureModel);
             long end = System.currentTimeMillis();
             MetricsHandler.observe("service test model resolve", start, end);
@@ -155,13 +155,13 @@ public class ServiceModeling
     }
 
     @Prometheus(name = "service validation model resolve", doc = "Model resolution duration summary within service validation execution")
-    public Response validateService(MutableList<CommonProfile> profiles, PureModelContext context, String metricsContext, String assertionId, SerializationFormat format)
+    public Response validateService(Identity identity, PureModelContext context, String metricsContext, String assertionId, SerializationFormat format)
     {
         long start = System.currentTimeMillis();
         PureModelContextData data = ((PureModelContextData) context).shallowCopy();
         Service service = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
         PureModelContextData dataWithoutService = PureModelContextData.newBuilder().withOrigin(data.getOrigin()).withSerializer(data.getSerializer()).withElements(LazyIterate.select(data.getElements(), e -> e != service)).build();
-        PureModel pureModel = new PureModel(dataWithoutService, profiles, deploymentMode);
+        PureModel pureModel = new PureModel(dataWithoutService, identity.getName(), deploymentMode);
         long end = System.currentTimeMillis();
         MetricsHandler.observe("service validation model resolve", start, end);
         MetricsHandler.observeServerOperation("model_resolve", metricsContext, start, end);
@@ -169,7 +169,7 @@ public class ServiceModeling
         Root_meta_legend_service_metamodel_Service pureService = compileService(service, pureModel.getContext(service));
         List<Variable> rawParams = ((PureExecution) service.execution).func.parameters;
 
-        LegendServicePostValidationRunner postValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, rawParams, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, PureClientVersions.production, profiles, format,planExecutor);
+        LegendServicePostValidationRunner postValidationRunner = new LegendServicePostValidationRunner(pureModel, pureService, rawParams, Root_meta_relational_extension_relationalExtensions__Extension_MANY_(pureModel.getExecutionSupport()), LegendPlanTransformers.transformers, PureClientVersions.production, identity, format,planExecutor);
         return postValidationRunner.runValidationAssertion(assertionId);
     }
 }

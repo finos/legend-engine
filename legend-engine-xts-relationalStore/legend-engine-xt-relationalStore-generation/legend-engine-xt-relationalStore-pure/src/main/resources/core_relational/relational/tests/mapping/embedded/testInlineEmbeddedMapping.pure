@@ -16,7 +16,6 @@
 
 import meta::core::runtime::*;
 import meta::relational::functions::sqlQueryToString::h2::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
@@ -141,7 +140,7 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::embedded::adva
 
 function meta::relational::tests::mapping::embedded::advanced::store::createTablesAndFillDb():Boolean[1]
 {
-  let connection = testRuntime().connectionByElement(eDB)->cast(@TestDatabaseConnection);
+  let connection = testRuntime().connectionByElement(eDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'PRODUCT_DENORM', $connection);
   meta::relational::functions::toDDL::dropAndCreateTableInDb(eDB, 'BOND_DETAIL', $connection);

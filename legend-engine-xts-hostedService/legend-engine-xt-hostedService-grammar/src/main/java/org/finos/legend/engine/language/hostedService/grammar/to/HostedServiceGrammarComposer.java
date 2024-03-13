@@ -14,14 +14,12 @@
 
 package org.finos.legend.engine.language.hostedService.grammar.to;
 
-import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
 import org.eclipse.collections.impl.utility.LazyIterate;
-import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
@@ -43,6 +41,12 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class HostedServiceGrammarComposer implements PureGrammarComposerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Hosted_Service");
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
     {
         if (element instanceof HostedService)
@@ -95,7 +99,7 @@ public class HostedServiceGrammarComposer implements PureGrammarComposerExtensio
         }
         else if (owner instanceof DeploymentOwner)
         {
-            return "Deployment { identifier: " + ((DeploymentOwner)owner).id + " };\n";
+            return "Deployment { identifier: '" + ((DeploymentOwner)owner).id + "' };\n";
         }
         throw new RuntimeException("Owner type invalid");
     }

@@ -21,7 +21,6 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import java.util.List;
 
 import static org.immutables.value.Value.Immutable;
-import static org.immutables.value.Value.Parameter;
 import static org.immutables.value.Value.Style;
 
 @Immutable
@@ -34,15 +33,17 @@ import static org.immutables.value.Value.Style;
 )
 public interface CopyAbstract extends Operation
 {
-    @Parameter(order = 0)
     Dataset targetDataset();
 
-    @Parameter(order = 1)
     Dataset sourceDataset();
 
-    @Parameter(order = 2)
     List<Value> fields();
 
-    @Parameter(order = 3)
     StagedFilesDatasetProperties stagedFilesDatasetProperties();
+
+    @org.immutables.value.Value.Default
+    default boolean validationMode()
+    {
+        return false;
+    }
 }

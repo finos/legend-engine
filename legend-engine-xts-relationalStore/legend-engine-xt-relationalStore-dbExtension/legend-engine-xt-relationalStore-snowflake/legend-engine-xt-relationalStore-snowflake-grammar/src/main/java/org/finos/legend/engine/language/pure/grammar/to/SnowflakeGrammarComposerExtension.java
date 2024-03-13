@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function2;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.AuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SnowflakePublicAuthenticationStrategy;
@@ -28,6 +29,11 @@ import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarCompos
 
 public class SnowflakeGrammarComposerExtension implements IRelationalGrammarComposerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Snowflake");
+    }
 
     @Override
     public List<Function2<AuthenticationStrategy, PureGrammarComposerContext, String>> getExtraAuthenticationStrategyComposers()
@@ -72,6 +78,8 @@ public class SnowflakeGrammarComposerExtension implements IRelationalGrammarComp
                         (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyHost: " + convertString(spec.proxyHost, true) + ";\n" : "") +
                         (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyPort: " + convertString(spec.proxyPort, true) + ";\n" : "") +
                         (spec.nonProxyHosts != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "nonProxyHosts: " + convertString(spec.nonProxyHosts, true) + ";\n" : "") +
+                        (spec.tempTableDb != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "tempTableDb: " + convertString(spec.tempTableDb, true) + ";\n" : "") +
+                        (spec.tempTableSchema != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "tempTableSchema: " + convertString(spec.tempTableSchema, true) + ";\n" : "") +
                         (spec.accountType != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "accountType: " + spec.accountType + ";\n" : "") +
                         (spec.organization != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "organization: " + convertString(spec.organization, true) + ";\n" : "") +
 

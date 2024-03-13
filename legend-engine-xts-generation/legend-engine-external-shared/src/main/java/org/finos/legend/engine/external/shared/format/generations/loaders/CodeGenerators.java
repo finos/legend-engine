@@ -22,6 +22,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
@@ -56,9 +58,9 @@ public class CodeGenerators
     {
         try
         {
-            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, null, null).getTwo();
+            PureModel pureModel = this.modelManager.loadModelAndData(PureModelContextData.newPureModelContextData(), null, IdentityFactoryProvider.getInstance().getAnonymousIdentity(), null).getTwo();
             List<FileGenerationDescription> descriptions = codeConfigurationDescriptions.stream().map(e -> FileGenerationDescription.newDescription(e, pureModel)).collect(Collectors.toList());
-            return ManageConstantResult.manageResult(null, descriptions);
+            return ManageConstantResult.manageResult(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), descriptions);
         }
         catch (Exception ex)
         {

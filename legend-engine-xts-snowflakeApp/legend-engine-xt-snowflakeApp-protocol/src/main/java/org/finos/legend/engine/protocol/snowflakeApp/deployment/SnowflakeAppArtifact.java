@@ -19,6 +19,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 
 public class SnowflakeAppArtifact extends FunctionActivatorArtifact
 {
+    public String deployedLocation;
 
     public SnowflakeAppArtifact()
     {

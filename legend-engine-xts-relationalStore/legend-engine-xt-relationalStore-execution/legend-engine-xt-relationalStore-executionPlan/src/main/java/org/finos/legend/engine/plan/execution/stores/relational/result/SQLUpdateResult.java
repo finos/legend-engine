@@ -14,15 +14,13 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.result;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
-import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.stores.relational.activity.RelationalExecutionActivity;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
@@ -34,7 +32,7 @@ public class SQLUpdateResult extends SQLResult
 
     private final int updateCount;
 
-    public SQLUpdateResult(List<ExecutionActivity> activities, String databaseType, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, RequestContext requestContext)
+    public SQLUpdateResult(List<ExecutionActivity> activities, String databaseType, Connection connection, Identity identity, List<String> temporaryTables, RequestContext requestContext)
     {
         super("success", connection, activities, databaseType, temporaryTables, requestContext);
         try
@@ -42,10 +40,10 @@ public class SQLUpdateResult extends SQLResult
             long start = System.currentTimeMillis();
             RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
             String executedSql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_START).toString());
             this.getStatement().executeUpdate(executedSql);
             this.updateCount = this.getStatement().getUpdateCount();
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.close();
         }
         catch (Throwable e)

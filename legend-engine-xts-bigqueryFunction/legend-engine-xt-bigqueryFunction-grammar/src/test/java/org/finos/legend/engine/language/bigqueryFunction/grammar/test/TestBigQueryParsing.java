@@ -57,7 +57,7 @@ public class TestBigQueryParsing extends TestGrammarParser.TestGrammarParserTest
         test("###BigQuery\n" +
                 "BigQueryFunction x::A\n" +
                 "{\n" +
-                "   ownership : 'pierre';\n" +
+                "   ownership : Deployment {identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-5:1]: Field 'functionName' is required");
     }
 
@@ -68,7 +68,7 @@ public class TestBigQueryParsing extends TestGrammarParser.TestGrammarParserTest
                 "BigQueryFunction x::A\n" +
                 "{\n" +
                 "   functionName : 'MyApp';\n" +
-                "   ownership : 'pierre';\n" +
+                "   ownership : Deployment {identifier: 'pierre'};\n" +
                 "}\n", "PARSER error at [2:1-6:1]: Field 'function' is required");
     }
 }

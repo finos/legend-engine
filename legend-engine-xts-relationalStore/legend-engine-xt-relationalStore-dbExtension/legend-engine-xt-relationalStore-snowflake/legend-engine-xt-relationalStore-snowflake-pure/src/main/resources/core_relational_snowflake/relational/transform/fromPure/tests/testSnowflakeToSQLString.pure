@@ -161,7 +161,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testCbrt
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithQuoteIdentifiersFlag():Boolean[1]
 {
-   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^TestDatabaseConnection(
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                                                                                      type = DatabaseType.Snowflake,
                                                                                      quoteIdentifiers = true
                                                                                   )));
@@ -174,7 +174,7 @@ function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQ
 
 function <<test.Test>> meta::relational::tests::sqlToString::snowflake::testToSQLStringWithQuoteIdentifiersFlagInColumnName():Boolean[1]
 {
-   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection=^TestDatabaseConnection(
+   let runtime = ^meta::core::runtime::Runtime(connectionStores = ^meta::core::runtime::ConnectionStore(element = meta::relational::tests::db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(
                                                                                      type = DatabaseType.Snowflake,
                                                                                      quoteIdentifiers = true
                                                                                   )));

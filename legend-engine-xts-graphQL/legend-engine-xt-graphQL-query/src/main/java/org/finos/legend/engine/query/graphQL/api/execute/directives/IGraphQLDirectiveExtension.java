@@ -16,7 +16,6 @@ package org.finos.legend.engine.query.graphQL.api.execute.directives;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.Result;
@@ -25,10 +24,10 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.Directive;
 import org.finos.legend.engine.protocol.graphQL.metamodel.Document;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Map;
 
@@ -45,5 +44,5 @@ public interface IGraphQLDirectiveExtension extends LegendModuleSpecificExtensio
             RichIterable<? extends Root_meta_pure_extension_Extension> _extensions,
             Iterable<? extends PlanTransformer> transformers);
 
-    Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, MutableList<CommonProfile> profiles);
+    Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, Identity identity);
 }

@@ -869,6 +869,28 @@ public class TestServiceCompilationFromGrammar extends TestCompilationFromGramma
                 "    ];\n" +
                 "  }\n" +
                 "}\n", "COMPILATION error at [28:68-71]: Can't find a match for function 'from(class[*],Runtime[1],Mapping[1])'");
+
+        // test the assert with toOne compiles
+        test(resource + "###Service\n" +
+                "Service test::Service\n" +
+                "{\n" +
+                "  pattern: 'url/myUrl/';\n" +
+                "  owners: ['ownerName', 'ownerName2'];\n" +
+                "  documentation: 'test';\n" +
+                "  autoActivateUpdates: true;\n" +
+                "  execution: Single\n" +
+                "  {\n" +
+                "    query: |test::class.all()->graphFetch(#{test::class{prop1}}#);\n" +
+                "  }\n" +
+                "  test: Single\n" +
+                "  {\n" +
+                "    data: 'moreThanData';\n" +
+                "    asserts:\n" +
+                "    [\n" +
+                "        { [], res: meta::pure::mapping::Result[1]|$res.values->toOne()->size() == 1 }\n" +
+                "    ];\n" +
+                "  }\n" +
+                "}\n");
     }
 
     @Test

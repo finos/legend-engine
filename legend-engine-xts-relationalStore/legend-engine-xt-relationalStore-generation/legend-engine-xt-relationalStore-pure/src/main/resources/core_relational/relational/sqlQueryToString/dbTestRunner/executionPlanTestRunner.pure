@@ -20,8 +20,6 @@ import meta::pure::alloy::connections::*;
 import meta::external::store::relational::runtime::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::relational::dbTestRunner::DbTestConfig
 {
    dbType: DatabaseType[1];
@@ -100,13 +98,13 @@ function meta::relational::dbTestRunner::executeViaPlan<T|m>(f:FunctionDefinitio
   let pureRuntime = if($config.connection->isEmpty(),
      |
        println('**** Warning **** : No connection available for given dbtype, Skipping execution of plan');
-       ^Runtime(connectionStores= ^ConnectionStore(element = $db, connection=^TestDatabaseConnection(type= $config.dbType)));,
+       ^Runtime(connectionStores= ^ConnectionStore(element = $db, connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type= $config.dbType)));,
      |
        let conn = $config.connection->cast(@RelationalDatabaseConnection)->toOne();
        ^Runtime(connectionStores=^ConnectionStore(element=$db, connection=$conn));
   );
 
-  let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^ExecutionContext(), $extensions, noDebug());
+  let basicPlan = meta::pure::executionPlan::executionPlan($f, $m, $pureRuntime,^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
 
   if($config.expectedSql->isEmpty(), |true,
     |assertEquals($config.expectedSql->toOne(), $basicPlan.rootExecutionNode.childNodes()->filter(n|$n->instanceOf(SQLExecutionNode))->at(0)->cast(@SQLExecutionNode).sqlQuery));

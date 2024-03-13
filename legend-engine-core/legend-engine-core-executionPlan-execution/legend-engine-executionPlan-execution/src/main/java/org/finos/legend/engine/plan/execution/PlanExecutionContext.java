@@ -17,6 +17,8 @@ package org.finos.legend.engine.plan.execution;
 import org.finos.legend.engine.plan.execution.cache.graphFetch.GraphFetchCache;
 import org.finos.legend.engine.plan.execution.nodes.helpers.platform.JavaHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
 import org.finos.legend.engine.shared.javaCompiler.JavaCompileException;
 
@@ -35,7 +37,7 @@ public class PlanExecutionContext
 
     public PlanExecutionContext(SingleExecutionPlan singleExecutionPlan, List<GraphFetchCache> graphFetchCaches) throws JavaCompileException
     {
-        this.externalJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, null);
+        this.externalJavaCompiler = JavaHelper.compilePlan(singleExecutionPlan, IdentityFactoryProvider.getInstance().getAnonymousIdentity());
         this.graphFetchCaches = graphFetchCaches;
     }
 

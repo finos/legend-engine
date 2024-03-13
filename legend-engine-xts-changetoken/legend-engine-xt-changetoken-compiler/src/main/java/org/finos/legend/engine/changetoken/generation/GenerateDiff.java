@@ -22,6 +22,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepository;
 import org.finos.legend.pure.m3.serialization.filesystem.repository.CodeRepositoryProviderHelper;
@@ -47,6 +49,8 @@ public class GenerateDiff
 {
     private final CompiledExecutionSupport executionSupport;
     private final PureModel pureModel;
+    private String typeKeyName = "@type";
+    private String versionKeyName = "version";
 
     public GenerateDiff(List<PackageableElement> newEntities, List<PackageableElement> newDependencies, List<PackageableElement> oldEntities, List<PackageableElement> oldDependencies)
     {
@@ -65,7 +69,7 @@ public class GenerateDiff
         pureModelContextDataBuilder.addElements(newEntities);
         PureModelContextData pureModelContextData = pureModelContextDataBuilder.build();
         executionSupport = new CompiledExecutionSupport(new JavaCompilerState(null, classLoader), new CompiledProcessorSupport(classLoader, MetadataLazy.fromClassLoader(classLoader, CodeRepositoryProviderHelper.findCodeRepositories().collect(CodeRepository::getName)), Sets.mutable.empty()), null, new CompositeCodeStorage(new VersionControlledClassLoaderCodeStorage(classLoader, Lists.mutable.of(CodeRepositoryProviderHelper.findPlatformCodeRepository()), null)), null, null, new ConsoleCompiled(), new FunctionCache(), new ClassCache(), null, Sets.mutable.empty(), CompiledExtensionLoader.extensions());
-        pureModel = new PureModel(pureModelContextData, null, classLoader, DeploymentMode.PROD);
+        pureModel = new PureModel(pureModelContextData, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), classLoader, DeploymentMode.PROD);
         JavaSourceCodeGenerator javaSourceCodeGenerator = new JavaSourceCodeGenerator(pureModel.getExecutionSupport().getProcessorSupport(), new EmptyCodeStorage(), false, null, false, pureModel.getExecutionSupport().getCompiledExtensions(), "ChangeTokens", null, false);
         MutableSet<String> allTypes = pureModel.getModelClasses().collect(a ->
                 core_pure_corefunctions_metaExtension.Root_meta_pure_functions_meta_fullPackageName_PackageableElement_1__String_1__String_1_((org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement) a, "::", pureModel.getExecutionSupport())).toSet();
@@ -114,10 +118,32 @@ public class GenerateDiff
         return new PureMap(res);
     }
 
+    public String getTypeKeyName()
+    {
+        return typeKeyName;
+    }
+
+    public void setTypeKeyName(String typeKeyName)
+    {
+        this.typeKeyName = typeKeyName;
+    }
+
+    public String getVersionKeyName()
+    {
+        return versionKeyName;
+    }
+
+    public void setVersionKeyName(String versionKeyName)
+    {
+        this.versionKeyName = versionKeyName;
+    }
+
     public String execute(String jsonString, Map<String, Map<String, String>> propertyRenames, Map<String, String> classRenames, Map<String, Map<String, Object>> defaultValues)
     {
-        Root_meta_pure_changetoken_Versions oldVersions = core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_jsonToVersions_String_1__Versions_1_(jsonString, this.executionSupport);
-        Root_meta_pure_changetoken_Versions newVersions = core_pure_changetoken_diff_generation.Root_meta_pure_changetoken_diff_generation_generateDiffFromVersions_Versions_1__Map_$0_1$__Map_$0_1$__Map_$0_1$__Versions_1_(oldVersions, toPureMap(propertyRenames), toPureMap(classRenames), toPureMap(defaultValues), this.pureModel.getExecutionSupport());
-        return core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_versionsToJson_Versions_1__String_1_(newVersions, this.executionSupport);
+        Root_meta_pure_changetoken_Versions oldVersions = core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_jsonToVersions_String_1__String_1__Versions_1_(jsonString, typeKeyName, this.executionSupport);
+        Root_meta_pure_changetoken_Versions newVersions = core_pure_changetoken_diff_generation.Root_meta_pure_changetoken_diff_generation_generateDiffFromVersions_Versions_1__Map_$0_1$__Map_$0_1$__Map_$0_1$__String_1__String_$0_1$__Versions_1_(oldVersions, toPureMap(propertyRenames), toPureMap(classRenames), toPureMap(defaultValues),
+                typeKeyName, versionKeyName,
+                this.pureModel.getExecutionSupport());
+        return core_pure_changetoken_cast_generation.Root_meta_pure_changetoken_cast_generation_versionsToJson_Versions_1__String_1__String_1_(newVersions, typeKeyName, this.executionSupport);
     }
 }

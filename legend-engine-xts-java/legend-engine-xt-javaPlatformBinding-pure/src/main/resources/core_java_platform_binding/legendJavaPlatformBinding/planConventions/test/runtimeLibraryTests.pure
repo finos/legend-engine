@@ -16,8 +16,6 @@ import meta::external::language::java::factory::*;
 import meta::pure::executionPlan::platformBinding::legendJava::*;
 import meta::pure::executionPlan::platformBinding::legendJava::tests::utils::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>>
 {  meta::pure::executionPlan::profiles::serverVersion.start='v1_11_0' }
 meta::pure::executionPlan::platformBinding::legendJava::library::runtime::tests::testGenerateGuid() : Boolean[1]

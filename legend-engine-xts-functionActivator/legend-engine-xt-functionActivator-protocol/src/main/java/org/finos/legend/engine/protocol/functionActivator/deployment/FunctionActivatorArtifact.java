@@ -26,8 +26,6 @@ public class FunctionActivatorArtifact
     public FunctionActivatorDeploymentConfiguration deploymentConfiguration;
 
     public String version;
-    public String deployedLocation;
-
 
     public String getVersionInfo(AlloySDLC sdlc)
     {

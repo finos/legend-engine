@@ -21,7 +21,6 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::mapping::*;
 import meta::relational::tests::csv::*;
 
@@ -553,7 +552,7 @@ function meta::relational::tests::groupBy::datePeriods::testRuntime():Runtime[1]
 
 function meta::relational::tests::groupBy::datePeriods::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    meta::relational::functions::toDDL::dropAndCreateTableInDb(myDB, 'INCOME_FUNCTION', $connection);
 

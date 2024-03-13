@@ -21,7 +21,6 @@ import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
 import meta::pure::profiles::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::tests::mapping::propertyfunc::model::store::*;
 
@@ -115,7 +114,7 @@ function meta::relational::tests::mapping::propertyfunc::model::store::testDataT
 
 function meta::relational::tests::mapping::propertyfunc::model::store::createTablesAndFillDb():Boolean[1]
 {
-   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+   let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop table if exists personTable;', $connection);
    executeInDb('Create Table personTable(id INT, FULLNAME VARCHAR(200));', $connection);

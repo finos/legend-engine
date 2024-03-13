@@ -59,10 +59,9 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
     {
         HostedServiceDeploymentConfiguration deployConf;
         MutableList<HostedServiceDeploymentConfiguration> c = Lists.mutable.withAll(availableRuntimeConfigurations);
-        if (artifact.deploymentConfiguration == null
-                && c.select(conf -> conf.destination.equals(((HostedServiceDeploymentConfiguration) (artifact.deploymentConfiguration)).destination)).size() > 0)
+        if (artifact.version == null)
         {
-            deployConf = c.getFirst();
+            deployConf = c.select(conf -> conf.destination.equals(HostedServiceDestination.Sandbox)).getFirst();
         }
         else
         {
@@ -78,9 +77,9 @@ public class HostedServiceDeploymentManager implements  DeploymentManager<Hosted
         try
         {
             HttpPost request = new HttpPost(new URIBuilder()
-                    .setScheme("https")
+                    .setScheme("http")
                     .setHost(deployConf.domain)
-                    .setPort(deployConf.port)
+                    //.setPort(deployConf.port)
                     .setPath(deployConf.path)
                     .build());
             StringEntity stringEntity = new StringEntity(mapper.writeValueAsString(artifact));

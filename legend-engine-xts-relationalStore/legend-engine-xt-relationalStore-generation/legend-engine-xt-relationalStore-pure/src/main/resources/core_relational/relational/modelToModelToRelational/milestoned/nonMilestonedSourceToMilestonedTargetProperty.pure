@@ -19,7 +19,6 @@ import meta::pure::graphFetch::tests::m2m2r::milestoning::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::alloy::connections::alloy::specification::*;
 import meta::pure::alloy::connections::alloy::authentication::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 
 //empty target property in result because source is not milestoned

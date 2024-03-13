@@ -21,7 +21,6 @@ import meta::pure::router::metamodel::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::functions::meta::*;
 import meta::external::store::mongodb::metamodel::pure::*;
@@ -31,7 +30,7 @@ import meta::external::store::mongodb::metamodel::mapping::*;
 import meta::external::store::mongodb::metamodel::aggregation::*;
 import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 
-Class meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext extends ExecutionContext
+Class meta::external::store::mongodb::functions::pureToDatabaseCommand::MongoDBExecutionContext extends meta::pure::runtime::ExecutionContext
 {
 }
 

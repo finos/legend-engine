@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-config</artifactId>
-        <version>4.38.3-SNAPSHOT</version>
+        <version>4.40.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-server-integration-tests</artifactId>
@@ -118,13 +118,6 @@
             <artifactId>eclipse-collections-api</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- Authentication -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- Authentication -->
 
         <!-- LOG -->
         <dependency>

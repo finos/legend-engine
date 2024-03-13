@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserUtility;
 import org.finos.legend.engine.language.pure.grammar.from.SectionSourceCode;
@@ -49,6 +50,12 @@ public class MongoDBGrammarParserExtension implements IMongoDBGrammarParserExten
     public static final String NAME = "MongoDB";
     public static final String MONGO_DB_MAPPING_ELEMENT_TYPE = "MongoDB";
     public static final String MONGO_DB_CONNECTION_TYPE = "MongoDBConnection";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Mongo");
+    }
 
     private static SourceCodeParserInfo getMongoDBParserInfo(SectionSourceCode sectionSourceCode)
     {

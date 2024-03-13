@@ -26,7 +26,9 @@ import org.finos.legend.engine.plan.generation.PlanGenerator;
 import org.finos.legend.engine.plan.generation.transformers.LegendPlanTransformers;
 import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.lineage.Lineage;
+import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.CompositeExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.ExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
@@ -39,6 +41,8 @@ import org.finos.legend.pure.generated.core_hostedservice_generation_generation;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 
 import java.util.Map;
+
+import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HostedServiceArtifactGenerator
 {
@@ -87,4 +91,22 @@ public class HostedServiceArtifactGenerator
         }
         return service;
     }
+
+    public static PureModelContextData fetchHostedService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContextData data, PureModel pureModel)
+    {
+        return PureModelContextData.newBuilder()
+                .withElements(org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements()).select(e -> e instanceof HostedService && elementToPath(activator, pureModel).equals(fullName(e))))
+                .withOrigin(data.origin).build();
+    }
+
+    public static String elementToPath(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element, PureModel pureModel)
+    {
+        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, pureModel.getExecutionSupport());
+    }
+
+    public static String fullName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement e)
+    {
+        return e._package + "::" + e.name;
+    }
+
 }

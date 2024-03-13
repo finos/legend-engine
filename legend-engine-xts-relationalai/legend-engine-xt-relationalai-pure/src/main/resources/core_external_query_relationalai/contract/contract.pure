@@ -2,7 +2,6 @@ import meta::core::runtime::*;
 import meta::external::store::rel::mapping::*;
 import meta::pure::extension::*;
 import meta::pure::mapping::*;
-import meta::pure::runtime::*;
 import meta::pure::store::*;
 
 function meta::external::store::rel::contract::contract(): StoreContract[1] {

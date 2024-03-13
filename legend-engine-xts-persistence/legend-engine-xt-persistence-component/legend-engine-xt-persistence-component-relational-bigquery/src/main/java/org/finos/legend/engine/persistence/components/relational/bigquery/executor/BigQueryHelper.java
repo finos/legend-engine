@@ -368,6 +368,12 @@ public class BigQueryHelper implements RelationalExecutionHelper
         }
     }
 
+    @Override
+    public List<Map<String, Object>> executeQuery(String sql, int rows)
+    {
+        throw new RuntimeException("Not implemented for Big Query");
+    }
+
     public void executeStatementsInANewTransaction(List<String> sqls)
     {
         BigQueryTransactionManager txManager = null;

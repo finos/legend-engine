@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.sql.grammar.integration;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.sql.metamodel.Node;
@@ -22,6 +23,12 @@ import java.util.Map;
 
 public class SQLPureProtocolExtension implements PureProtocolExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "SQL");
+    }
+
     @Override
     public Map<String, Class> getExtraClassInstanceTypeMappings()
     {

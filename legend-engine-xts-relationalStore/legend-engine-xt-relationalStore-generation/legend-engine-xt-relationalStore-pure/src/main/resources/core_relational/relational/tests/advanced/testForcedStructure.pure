@@ -30,7 +30,7 @@ function <<test.Test>> meta::relational::tests::advanced::forced::structure::tes
    let result = execute(|Firm.all()->filter(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName == 'Peter' ||
                                               $f.employeesByCityOrManagerAndLastName('Johnson', 'New York', 'Bla').firstName == 'John'),
                                              simpleRelationalMapping,
-                                             testRuntime(), meta::relational::extension::relationalExtensions(),
+                                             meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),
                                              ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery)
                  );
    assertSize($result.values->at(0), 1);
@@ -42,7 +42,7 @@ function <<test.Test>> meta::relational::tests::advanced::forced::structure::tes
 {
    let result = execute(|Firm.all()->filter(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName == 'Peter'),
                                              simpleRelationalMapping,
-                                             testRuntime(), meta::relational::extension::relationalExtensions(),
+                                             meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),
                                              ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery));
    assertSize($result.values->at(0), 1);
    assertEquals('Firm X', $result.values->at(0).legalName);
@@ -53,7 +53,7 @@ function <<test.Test>> meta::relational::tests::advanced::forced::structure::tes
 {
    let result = execute(|Firm.all()->map(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName+'Test'),
                                              simpleRelationalMapping,
-                                             testRuntime(), meta::relational::extension::relationalExtensions(),
+                                             meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),
                                              ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery));
    assertSize($result.values->at(0), 1);
    assertEquals('PeterTest', $result.values->at(0));
@@ -64,7 +64,7 @@ function <<test.Test>> meta::relational::tests::advanced::forced::structure::tes
 {
    let result = execute(|Firm.all()->map(f|$f.employeesByCityOrManagerAndLastName('Smith', 'Hoboken', 'Bla').firstName+$f.employeesByCityOrManagerAndLastName('Hill', 'New York', 'Johnson').firstName),
                                              simpleRelationalMapping,
-                                             testRuntime(), meta::relational::extension::relationalExtensions(),
+                                             meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions(),
                                              ^RelationalDebugContext(debug=false, space='', forcedIsolation = IsolationStrategy.BuildCorrelatedSubQuery));
    assertSize($result.values->at(0), 1);
    assertEquals('PeterJohn', $result.values->at(0));

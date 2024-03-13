@@ -43,10 +43,7 @@ public class SnowflakeAppGenerator
 
     public static SnowflakeAppArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_snowflakeApp_SnowflakeApp activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        PackageableFunction<?> function = activator._function();
-        Root_meta_pure_executionPlan_ExecutionPlan executionPlan = PlanGenerator.generateExecutionPlanAsPure((FunctionDefinition<?>) function, null, null, null, pureModel, PlanPlatform.JAVA, null, routerExtensions.apply(pureModel));
-        RichIterable<String> sqlExpressions = extractSQLExpressions(executionPlan);
-        String functionColumns = executionPlan._rootExecutionNode()._resultType() instanceof Root_meta_pure_executionPlan_TDSResultType ? generateFunctionReturnColumns((Root_meta_pure_executionPlan_TDSResultType)executionPlan._rootExecutionNode()._resultType()) : "";
+        String sqlFunctionExpression = core_snowflakeapp_generation_generation.Root_meta_external_function_activator_snowflakeApp_generation_generateArtifact_SnowflakeApp_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
 
         RelationalDatabaseConnection connection;
         AlloySDLC sdlc = null;
@@ -58,7 +55,7 @@ public class SnowflakeAppGenerator
                 sdlc = (AlloySDLC) sdlcInfo;
             }
         }
-        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.withAll(sqlExpressions), activator._description(), functionColumns, ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), sdlc);
+        SnowflakeAppContent content = new SnowflakeAppContent(activator._applicationName(), Lists.mutable.of(sqlFunctionExpression), activator._description(), ((Root_meta_external_function_activator_DeploymentOwnership)activator._ownership())._id(), sdlc);
         if (activator._activationConfiguration() != null)
         {
             //identify connection

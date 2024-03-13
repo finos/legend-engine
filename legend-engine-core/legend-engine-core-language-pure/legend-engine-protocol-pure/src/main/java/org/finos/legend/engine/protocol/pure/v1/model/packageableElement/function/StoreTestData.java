@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functi
 
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 
 /** Use to mock data in function using a runtime for execution
  * store represents the store you want to mock data for
@@ -28,7 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 public class StoreTestData
 {
     public String doc;
-    public String store;
+    public StoreProviderPointer store;
     public EmbeddedData data;
     public SourceInformation sourceInformation;
+
 }

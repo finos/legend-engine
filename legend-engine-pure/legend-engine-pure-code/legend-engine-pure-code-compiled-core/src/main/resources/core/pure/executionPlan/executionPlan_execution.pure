@@ -17,9 +17,6 @@ import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
-
 function meta::pure::executionPlan::execute(plan:ExecutionPlan[1], parametersValues:Any[*], extensions:meta::pure::extension::Extension[*]):Result<Any|*>[1]
 {
    let parameters = $plan.func->functionType().parameters->evaluateAndDeactivate();

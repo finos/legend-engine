@@ -15,7 +15,6 @@
 import meta::relational::functions::sqlQueryToString::h2::*;
 import meta::relational::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::functions::toDDL::*;
@@ -194,7 +193,7 @@ function meta::relational::tests::functions::distance::testDistanceRuntime():Run
 
 function meta::relational::tests::functions::distance::createAndFillTestDb():Boolean[1]
 {
-   let connection = testDistanceRuntime().connectionByElement(testDistanceDB)->cast(@TestDatabaseConnection);
+   let connection = testDistanceRuntime().connectionByElement(testDistanceDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    dropAndCreateTableInDb(testDistanceDB, 'coordinatesTable', $connection);
    executeInDb('insert into coordinatesTable (id, name, latitude, longitude) values (1, \'Beijing\', 39.905489, 116.397771);', $connection);

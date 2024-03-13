@@ -29,7 +29,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
             ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
             ->olapGroupBy(['firstName'], func('age', y | $y->percentile(0.9)), 'testCol1')
       },
-      simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result1.values.rows, 7);
    meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by "root".AGE asc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result1);
@@ -41,7 +41,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
             ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
             ->olapGroupBy(['firstName'], func('age', y | $y->percentile(0.9, false, true)), 'testCol1')
       },
-      simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result2.values.rows, 7);
    meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_cont(CAST(0.9 AS FLOAT)) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result2);
@@ -54,7 +54,7 @@ meta::relational::tests::tds::tdsWindow::testPercentileWindowFunction():Boolean[
             ->project([col(p|$p.firstName, 'firstName'), col(p|$p.lastName, 'lastName'), col(p|$p.age, 'age')])
             ->olapGroupBy(['firstName'], func('age', y | $y->percentile(0.9, false, false)), 'testCol1')
       },
-      simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions()
+      simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()
    );
    assertSize($result3.values.rows, 7);
    meta::relational::functions::asserts::assertSameSQL('select "root".FIRSTNAME as "firstName", "root".LASTNAME as "lastName", "root".AGE as "age", percentile_disc(CAST(0.9 AS FLOAT)) within group (order by "root".AGE desc) OVER (Partition By "root".FIRSTNAME ) as "testCol1" from personTable as "root"', $result3);

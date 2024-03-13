@@ -18,7 +18,6 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::mapping::*;
 import meta::relational::dbTestRunner::*;
 import meta::pure::alloy::connections::*;

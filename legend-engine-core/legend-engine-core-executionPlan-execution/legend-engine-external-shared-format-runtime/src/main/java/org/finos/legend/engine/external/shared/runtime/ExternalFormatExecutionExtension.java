@@ -16,6 +16,7 @@ package org.finos.legend.engine.external.shared.runtime;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.external.shared.runtime.read.ExecutionHelper;
 import org.finos.legend.engine.external.shared.utils.ExternalFormatRuntime;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicChecked;
@@ -37,8 +38,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.extern
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatExternalizeTDSExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.ExternalFormatInternalizeExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.externalFormat.UrlStreamExecutionNode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.url.UrlFactory;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +56,13 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
     private final Map<String, ExternalFormatRuntimeExtension> EXTENSIONS = ExternalFormatRuntimeExtensionLoader.extensions();
 
     @Override
-    public List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "-Core");
+    }
+
+    @Override
+    public List<Function3<ExecutionNode, Identity, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.singletonList((executionNode, pm, executionState) ->
         {
@@ -87,7 +94,7 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         });
     }
 
-    private Result executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private Result executeInternalizeExecutionNode(ExternalFormatInternalizeExecutionNode node, Identity identity, ExecutionState executionState)
     {
         ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
         if (extension == null)
@@ -95,9 +102,9 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
         }
 
-        Result sourceResult = node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(profiles, new ExecutionState(executionState)));
+        Result sourceResult = node.executionNodes().getFirst().accept(new ExecutionNodeExecutor(identity, new ExecutionState(executionState)));
         InputStream stream = ExecutionHelper.inputStreamFromResult(sourceResult);
-        StreamingObjectResult<?> streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, profiles, executionState);
+        StreamingObjectResult<?> streamingObjectResult = extension.executeInternalizeExecutionNode(node, stream, identity, executionState);
         StreamingObjectResult<?> withConstraints = applyConstraints(streamingObjectResult, sourceResult, node.checked, node.enableConstraints);
         if (!executionState.realizeInMemory)
         {
@@ -106,7 +113,7 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         return new ConstantResult(withConstraints.getObjectStream().collect(Collectors.toList()));
     }
 
-    private Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private Result executeExternalizeExecutionNode(ExternalFormatExternalizeExecutionNode node, Identity identity, ExecutionState executionState)
     {
         ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
         if (extension == null)
@@ -114,11 +121,11 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
         }
 
-        Result result = node.executionNodes().getAny().accept(new ExecutionNodeExecutor(profiles, executionState));
-        return extension.executeExternalizeExecutionNode(node, result, profiles, executionState);
+        Result result = node.executionNodes().getAny().accept(new ExecutionNodeExecutor(identity, executionState));
+        return extension.executeExternalizeExecutionNode(node, result, identity, executionState);
     }
 
-    private Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private Result executeExternalizeTDSExecutionNode(ExternalFormatExternalizeTDSExecutionNode node, Identity identity, ExecutionState executionState)
     {
         ExternalFormatRuntimeExtension extension = EXTENSIONS.get(node.contentType);
         if (extension == null)
@@ -126,12 +133,12 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
             throw new IllegalStateException("No runtime extension for contentType " + node.contentType);
         }
 
-        Result result = node.executionNodes().getAny().accept(new ExecutionNodeExecutor(profiles, executionState));
-        return extension.executeExternalizeTDSExecutionNode(node, result, profiles, executionState);
+        Result result = node.executionNodes().getAny().accept(new ExecutionNodeExecutor(identity, executionState));
+        return extension.executeExternalizeTDSExecutionNode(node, result, identity, executionState);
     }
 
 
-    private Result executeUrlStream(UrlStreamExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private Result executeUrlStream(UrlStreamExecutionNode node, Identity identity, ExecutionState executionState)
     {
         try
         {
@@ -153,10 +160,10 @@ public class ExternalFormatExecutionExtension implements ExecutionExtension
         }
     }
 
-    private Result executeDataQuality(DataQualityExecutionNode node, MutableList<CommonProfile> profiles, ExecutionState executionState)
+    private Result executeDataQuality(DataQualityExecutionNode node, Identity identity, ExecutionState executionState)
     {
         ExecutionNode inputNode = node.executionNodes().getAny();
-        Result input = inputNode.accept(new ExecutionNodeExecutor(profiles, executionState));
+        Result input = inputNode.accept(new ExecutionNodeExecutor(identity, executionState));
         StreamingObjectResult<?> streamingObjectResult = (StreamingObjectResult<?>) input;
         return applyConstraints(streamingObjectResult, streamingObjectResult.getChildResult(), node.checked, node.enableConstraints);
     }

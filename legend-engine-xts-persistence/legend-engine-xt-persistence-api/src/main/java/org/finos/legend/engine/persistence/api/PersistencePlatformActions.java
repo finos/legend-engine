@@ -89,7 +89,8 @@ public class PersistencePlatformActions
     private void action(PersistencePlatformActionPayload payload, ProfileManager<CommonProfile> pm, Procedure2<PersistencePlatformActionsExtension, PersistencePlatformActionRequest> action)
     {
         FixedSizeList<CommonProfile> profiles = pm.get(true).map(Lists.fixedSize::of).orElse(null);
-        Pair<PureModelContextData, PureModel> pureModelContextDataPureModelPair = this.modelManager.loadModelAndData(payload.model, payload.clientVersion, profiles, null);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+        Pair<PureModelContextData, PureModel> pureModelContextDataPureModelPair = this.modelManager.loadModelAndData(payload.model, payload.clientVersion, identity, null);
         PureModel model = pureModelContextDataPureModelPair.getTwo();
         PackageableElement packageableElement = model.getPackageableElement(payload.persistenceContextPath);
         Assert.assertTrue(packageableElement instanceof Root_meta_pure_persistence_metamodel_PersistenceContext, () -> "Provided element is not of type PersistenceContext: " + payload.persistenceContextPath + " with type: " + packageableElement.getFullSystemPath());
@@ -97,7 +98,7 @@ public class PersistencePlatformActions
         PersistencePlatformActionsExtension platformActionsExtension = this.extensions.stream().filter(x -> x.platformType().isInstance(persistenceContext._platform())).findFirst().orElse(null);
         Assert.assertTrue(platformActionsExtension != null, () -> "No PlatformActionsExtension found for context platform type: " + persistenceContext._platform().getClass().getName());
 
-        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
+
         action.value(platformActionsExtension, new PersistencePlatformActionRequest(persistenceContext, pureModelContextDataPureModelPair.getOne(), model, payload.model, identity, this.systemIdentitySupplier.get()));
     }
 }

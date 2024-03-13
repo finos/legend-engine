@@ -104,8 +104,10 @@ function meta::relational::milestoning::getTemporalDateAlias(temporalStrategy:Si
 
 function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOperationElement[1], tableToFilterOp: meta::pure::metamodel::function::Function<{TableAlias[1]->Operation[0..1]}>[1],tableToTable : meta::pure::metamodel::function::Function<{Table[1]->Table[1]}>[1], shouldProcessViewSubSelect:Boolean[1], extensions:Extension[*]):RelationalOperationElement[1]
 {
-    $e->match([     v: VarSetPlaceHolder[1] | $v,
-                    pl: VarPlaceHolder[1]|$pl,
+    $e->match([     v:VarSetPlaceHolder[1] | $v,
+                    pl:VarPlaceHolder[1]|$pl,
+                    c:CommonTableExpressionReference[1] | $c,
+                    c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SQLQuery)),
                     s:SelectSQLQuery[1] | let rootTable = $s.data.alias;
                                           let sourceFilterOp = $s.filteringOperation->map(f|$f->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions));
                                           let tableFilterOp = $tableToFilterOp->eval($rootTable);
@@ -117,11 +119,18 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                                                                         ,|$sourceFilterOp);
                                           let newRoot = $s.data->toOne()->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@RootJoinTreeNode);
                                           let aliasRemap = $newRoot->getAllNodes()->cast(@RelationalTreeNode)->map(n | ^OldAliasToNewAlias(first = $n.alias.name, second = $n.alias));
-                                          ^$s(columns=$s.columns->map(c|$c->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))->reprocessAliases($aliasRemap),
+                                          let newS = ^$s(columns=$s.columns->map(c|$c->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))->reprocessAliases($aliasRemap),
                                               filteringOperation=$newSourceFilterOp->reprocessAliases($aliasRemap),
                                               data=$newRoot,
                                               leftSideOfFilter = if($s.leftSideOfFilter->isEmpty(),|[],|$s.leftSideOfFilter->toOne()->findOneNode($s.data->toOne(), $newRoot))
-                                           );,
+                                           );
+                                          if($newS->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+                                          |
+                                            let selectWithCte = $newS->cast(@SelectSQLQueryWithCommonTableExpressions);
+                                            ^$selectWithCte(commonTableExpressions = $selectWithCte.commonTableExpressions->map(cte | $cte->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@CommonTableExpression)));,
+                                          |
+                                            $newS;
+                                          );, 
                     a:Alias[1] | ^$a(relationalElement=$a.relationalElement->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     u:Union[1] | ^$u(queries=$u.queries->map(q|$q->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery))),
                     v:ViewSelectSQLQuery[1] | if($shouldProcessViewSubSelect,|^$v(selectSQLQuery=$v.selectSQLQuery->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@SelectSQLQuery)),|$v),
@@ -141,7 +150,8 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), property = $s.property->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->map(i | $i->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
                     s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
-                    s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn))     
+                    s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn)),
+                    t:TableFunctionParamPlaceHolder[1] | $t
                   ]);
 }
 
@@ -156,6 +166,7 @@ function meta::relational::milestoning::applyMilestoningFilters(j:RelationalTree
                                                         let newJoinOperation = if(!$sourceFilterContainTableFilter && $tableFilter!=[],|newAndOrDynaFunctionRelaxedBrackets('and', [$join.operation, $tableFilter->toOne()]);,
                                                                                                    |$join.operation);
                                                         let newJoin = ^$join(operation=$newJoinOperation);,
+                                           c:CommonTableExpressionReference[1] | $join,
                                            u:Union[1] | $join,
                                            s:SelectSQLQuery[1] | $join,
                                            s:SemiStructuredArrayFlatten[1] | $join
@@ -487,6 +498,11 @@ function meta::relational::milestoning::getQueryTableAliases(el: Any[*] ):TableA
 function meta::relational::milestoning::getQueryTableRelationalOperationElements(el: Any[*] ):RelationalOperationElement[*]{
    $el->match([
      u : Union[1] | $u.queries->getQueryTableRelationalOperationElements(),
+     c : CommonTableExpression[1] | $c.sqlQuery->getQueryTableRelationalOperationElements(),
+     s : SelectSQLQueryWithCommonTableExpressions[1] | let tablesInCtes = $s.commonTableExpressions->fold({c, res |
+                                                        $res->concatenate($c->getQueryTableRelationalOperationElements());
+                                                       }, []);
+                                                       $tablesInCtes->concatenate(getQueryTableAliases($s.data))->concatenate(getQueryTableAliases($s.filteringOperation));,
      s : SelectSQLQuery[1]|getQueryTableAliases($s.data)->concatenate(getQueryTableAliases($s.filteringOperation)),
      s : ViewSelectSQLQuery[1]|getQueryTableAliases($s.selectSQLQuery),
      a : RootJoinTreeNode[1]|getQueryTableAliases($a.alias)->concatenate(getQueryTableAliases($a->children())),

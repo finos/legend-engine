@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.testable.service.extension;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.ServiceProtocolExtension;
@@ -31,6 +32,12 @@ import java.util.List;
 public class ServiceTestableRunnerExtension implements TestableRunnerExtension
 {
     private String pureVersion = PureClientVersions.production;
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Service");
+    }
 
     @Override
     public String getSupportedClassifierPath()

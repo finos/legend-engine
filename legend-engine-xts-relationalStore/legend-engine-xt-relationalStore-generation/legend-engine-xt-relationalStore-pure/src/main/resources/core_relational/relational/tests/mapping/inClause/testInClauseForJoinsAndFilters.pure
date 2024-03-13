@@ -18,7 +18,6 @@ import meta::relational::tests::csv::*;
 import meta::relational::functions::asserts::*;
 import meta::relational::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::mapping::in::*;
 
 

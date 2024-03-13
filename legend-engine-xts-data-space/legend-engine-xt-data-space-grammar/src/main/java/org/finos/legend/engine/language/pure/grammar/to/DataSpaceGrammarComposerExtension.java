@@ -22,7 +22,13 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.DataSpaceParserExtension;
+import org.finos.legend.engine.language.pure.grammar.from.DataspaceDataElementReferenceParser;
+import org.finos.legend.engine.language.pure.grammar.to.data.HelperEmbeddedDataGrammarComposer;
+import org.finos.legend.engine.language.pure.grammar.to.extension.ContentWithType;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
+import org.finos.legend.engine.protocol.pure.v1.model.data.DataElementReference;
+import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.dataSpace.*;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
@@ -31,11 +37,16 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.convertString;
-import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.*;
 
 public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "DataSpace");
+    }
+
     private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = org.eclipse.collections.impl.factory.Lists.mutable.with((element, context) ->
     {
         if (element instanceof DataSpace)
@@ -91,7 +102,7 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         return getTabString() + "/* Unsupported data space support info type */";
     }
 
-    private static String renderDataSpaceExecutionContext(DataSpaceExecutionContext executionContext)
+    private static String renderDataSpaceExecutionContext(DataSpaceExecutionContext executionContext, PureGrammarComposerContext context)
     {
         return getTabString(2) + "{\n" +
                 (getTabString(3) + "name: " + convertString(executionContext.name, true) + ";\n") +
@@ -99,7 +110,19 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 (executionContext.description != null ? (getTabString(3) + "description: " + convertString(executionContext.description, true) + ";\n") : "") +
                 getTabString(3) + "mapping: " + PureGrammarComposerUtility.convertPath(executionContext.mapping.path) + ";\n" +
                 getTabString(3) + "defaultRuntime: " + PureGrammarComposerUtility.convertPath(executionContext.defaultRuntime.path) + ";\n" +
+                (executionContext.testData == null ? "" : (renderTestData(executionContext.testData, 3, context) + "\n")) +
                 getTabString(2) + "}";
+    }
+
+    private static String renderTestData(EmbeddedData embeddedData, int baseIndentation, PureGrammarComposerContext context)
+    {
+        StringBuilder str = new StringBuilder();
+
+        str.append(getTabString(baseIndentation)).append("testData").append(":\n");
+        str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(embeddedData, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(getTabString(baseIndentation + 1)).build()));
+        str.append(";");
+
+        return str.toString();
     }
 
     private static String renderDataSpaceDiagram(DataSpaceDiagram diagram)
@@ -111,12 +134,35 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
                 getTabString(2) + "}";
     }
 
-    private static String renderDataSpaceExecutable(DataSpaceExecutable executable)
+    private static String renderDataSpaceExecutable(DataSpaceExecutable executable, PureGrammarComposerContext context)
+    {
+        if (executable instanceof DataSpacePackageableElementExecutable)
+        {
+            return renderDataspacePackageableElementExecutable((DataSpacePackageableElementExecutable) executable, context);
+        }
+        else if (executable instanceof DataSpaceTemplateExecutable)
+        {
+            return renderDataspaceTemplateExecutable((DataSpaceTemplateExecutable) executable, context);
+        }
+        throw new UnsupportedOperationException();
+    }
+
+    private static String renderDataspacePackageableElementExecutable(DataSpacePackageableElementExecutable executable, PureGrammarComposerContext context)
     {
         return getTabString(2) + "{\n" +
                 (getTabString(3) + "title: " + convertString(executable.title, true) + ";\n") +
                 (executable.description != null ? (getTabString(3) + "description: " + convertString(executable.description, true) + ";\n") : "") +
                 getTabString(3) + "executable: " + PureGrammarComposerUtility.convertPath(executable.executable.path) + ";\n" +
+                getTabString(2) + "}";
+    }
+
+    private static String renderDataspaceTemplateExecutable(DataSpaceTemplateExecutable executable, PureGrammarComposerContext context)
+    {
+        return getTabString(2) + "{\n" +
+                (getTabString(3) + "title: " + convertString(executable.title, true) + ";\n") +
+                (executable.description != null ? (getTabString(3) + "description: " + convertString(executable.description, true) + ";\n") : "") +
+                getTabString(3) + "query: " + executable.query.accept(DEPRECATED_PureGrammarComposerCore.Builder.newInstance(context).withIndentation(getTabSize(2)).build()) + ";\n" +
+                getTabString(3) + "executionContextKey: " +  convertString(executable.executionContextKey, true) + ";\n" +
                 getTabString(2) + "}";
     }
 
@@ -142,13 +188,13 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         }
         return "DataSpace " + HelperDomainGrammarComposer.renderAnnotations(dataSpace.stereotypes, dataSpace.taggedValues) + PureGrammarComposerUtility.convertPath(dataSpace.getPath()) + "\n" +
                 "{\n" +
-                getTabString() + "executionContexts:" + (dataSpace.executionContexts.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, DataSpaceGrammarComposerExtension::renderDataSpaceExecutionContext).makeString(",\n") + "\n" + getTabString() + "]") + ";\n" +
+                getTabString() + "executionContexts:" + (dataSpace.executionContexts.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executionContexts, executionContext -> DataSpaceGrammarComposerExtension.renderDataSpaceExecutionContext(executionContext, context)).makeString(",\n") + "\n" + getTabString() + "]") + ";\n" +
                 getTabString() + "defaultExecutionContext: " + convertString(dataSpace.defaultExecutionContext, true) + ";\n" +
                 (dataSpace.title != null ? (getTabString() + "title: " + convertString(dataSpace.title, true) + ";\n") : "") +
                 (dataSpace.description != null ? (getTabString() + "description: " + convertString(dataSpace.description, true) + ";\n") : "") +
                 (dataSpace.diagrams != null ? (getTabString() + "diagrams:" + (dataSpace.diagrams.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.diagrams, DataSpaceGrammarComposerExtension::renderDataSpaceDiagram).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.elements != null ? (getTabString() + "elements:" + (dataSpace.elements.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + getTabString(2) + ListIterate.collect(dataSpace.elements, element -> (element.exclude != null && element.exclude ? "-" : "") + element.path).makeString(",\n" + getTabString(2)) + "\n" + getTabString() + "]") + ";\n") : "") +
-                (dataSpace.executables != null ? (getTabString() + "executables:" + (dataSpace.executables.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executables, DataSpaceGrammarComposerExtension::renderDataSpaceExecutable).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
+                (dataSpace.executables != null ? (getTabString() + "executables:" + (dataSpace.executables.isEmpty() ? " []" : "\n" + getTabString() + "[\n" + ListIterate.collect(dataSpace.executables, executable -> DataSpaceGrammarComposerExtension.renderDataSpaceExecutable(executable, context)).makeString(",\n") + "\n" + getTabString() + "]") + ";\n") : "") +
                 (dataSpace.supportInfo != null ? (getTabString() + "supportInfo: " + renderDataSpaceSupportInfo(dataSpace.supportInfo) + ";\n") : "") +
                 "}";
     }
@@ -165,6 +211,23 @@ public class DataSpaceGrammarComposerExtension implements PureGrammarComposerExt
         {
             MappingIncludeDataSpace mappingIncludeDataSpace = (MappingIncludeDataSpace) mappingInclude;
             return "include dataspace " + mappingIncludeDataSpace.includedDataSpace;
+        }
+        return null;
+    }
+
+    @Override
+    public List<Function2<EmbeddedData, PureGrammarComposerContext, ContentWithType>> getExtraEmbeddedDataComposers()
+    {
+        return Collections.singletonList(this::composeDataspaceDataElementReference);
+    }
+
+    private ContentWithType composeDataspaceDataElementReference(EmbeddedData embeddedData, PureGrammarComposerContext context)
+    {
+        if (embeddedData instanceof DataElementReference
+                && ((DataElementReference) embeddedData).dataElement.type.equals(PackageableElementType.DATASPACE))
+        {
+            String content = context.getIndentationString() + PureGrammarComposerUtility.convertPath(((DataElementReference) embeddedData).dataElement.path);
+            return new ContentWithType(DataspaceDataElementReferenceParser.TYPE, content);
         }
         return null;
     }

@@ -1497,6 +1497,34 @@ public class TestUtils
         return dataset.withSchema(dataset.schema().withFields(newFields));
     }
 
+    public static void assertEquals(List<Map<String, Object>> expectedList, List<Map<String, Object>> actualList)
+    {
+        if (expectedList.size() != actualList.size())
+        {
+            Assertions.fail("Size of expected List does not match actual List");
+        }
+
+        for (int i = 0; i < actualList.size(); i++)
+        {
+            Map<String, Object> expected = expectedList.get(i);
+            Map<String, Object> actual = actualList.get(i);
+            for (Map.Entry entry : expected.entrySet())
+            {
+                Object actualObj = actual.get(entry.getKey());
+                Object expectedObj = entry.getValue();
+                if (expectedObj == null && actualObj != null)
+                {
+                    Assertions.fail(String.format("Values mismatch. key: %s, actual value: %s, expected value: %s", entry.getKey(), actualObj, expectedObj));
+                }
+                if (expectedObj != null && !expectedObj.toString().equals(actualObj.toString()))
+                {
+                    Assertions.fail(String.format("Values mismatch. key: %s, actual value: %s, expected value: %s", entry.getKey(), actualObj, expectedObj));
+                }
+
+            }
+        }
+    }
+
     private static List<String[]> readCsvData(String path) throws IOException
     {
         List<String[]> lines = new ArrayList<>();

@@ -19,8 +19,6 @@ import meta::pure::metamodel::path::*;
 import meta::pure::graphFetch::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class meta::external::format::json::metamodel::internalize::JsonPathReference
 {
   path    : String[1];

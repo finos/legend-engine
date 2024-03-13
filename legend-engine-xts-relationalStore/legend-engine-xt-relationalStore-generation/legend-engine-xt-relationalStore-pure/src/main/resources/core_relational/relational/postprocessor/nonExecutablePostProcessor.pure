@@ -32,8 +32,9 @@ function meta::relational::postProcessor::processRelationalOperationForNonExecut
 {
    $relationalOperationElement->match([
                     u:Union[1] | ^$u(queries = $u.queries->map(q|$q->processRelationalOperationForNonExecutable($extensions))->cast(@SelectSQLQuery)),
+                    c:CommonTableExpression[1] | ^$c(sqlQuery=$c.sqlQuery->processRelationalOperationForNonExecutable($extensions)->cast(@SQLQuery)),
                     s:SelectSQLQuery[1] | let nonExecutableOperation = ^DynaFunction(name = 'equal', parameters=[^Literal(value=1),^Literal(value=2)]);
-                                            ^$s(
+                                          let newS = ^$s(
                                                 data=$s.data->toOne()->joinNonExecutable($extensions)->cast(@RootJoinTreeNode),
                                                 columns = $s.columns->map(c|$c->match([a:Alias[1] | $a.relationalElement->match([
                                                                                                           s:SelectSQLQuery[1]|^$a(relationalElement = $s->processRelationalOperationForNonExecutable($extensions)),
@@ -42,7 +43,14 @@ function meta::relational::postProcessor::processRelationalOperationForNonExecut
                                                                                        a:RelationalOperationElement[1] | $a])
                                                                      ),
                                                 filteringOperation= if($s.filteringOperation->isEmpty(), | $nonExecutableOperation, | meta::relational::functions::pureToSqlQuery::andFilters($nonExecutableOperation->concatenate($s.filteringOperation), $extensions))
-                                             );,
+                                             );
+                                          if($newS->instanceOf(SelectSQLQueryWithCommonTableExpressions),
+                                          |
+                                            let selectWithCte = $newS->cast(@SelectSQLQueryWithCommonTableExpressions);
+                                            ^$selectWithCte(commonTableExpressions = $selectWithCte.commonTableExpressions->map(cte | $cte->processRelationalOperationForNonExecutable($extensions)->cast(@CommonTableExpression)));,
+                                          |
+                                            $newS;
+                                          );,
                     a:Alias[1] | ^$a(relationalElement=$a.relationalElement->processRelationalOperationForNonExecutable($extensions)),
                     t:Table[1] | $t,
                     u:UnaryOperation[1] | ^$u(nested=processRelationalOperationForNonExecutable($u.nested, $extensions)),
@@ -50,6 +58,7 @@ function meta::relational::postProcessor::processRelationalOperationForNonExecut
                     ta : TableAliasColumn[1] | $ta,
                     va : VariableArityOperation[1] | ^$va(args=$va.args->map(e | $e->processRelationalOperationForNonExecutable($extensions))),
                     d : DynaFunction[1] | ^$d(parameters=$d.parameters->map(p | $p->processRelationalOperationForNonExecutable($extensions))),
+                    c : CommonTableExpressionReference[1] | $c,
                     l : Literal[1] | $l,
                     ll : LiteralList[1] | $ll,
                     rel: RelationalOperationElement[1] | $rel

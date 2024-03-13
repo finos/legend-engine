@@ -31,14 +31,14 @@ function <<test.BeforePackage>> meta::relational::tests::mapping::inheritance::r
 
 function <<test.Test>> meta::relational::tests::mapping::inheritance::relational::selfJoin::testSubTypeProjectSharedNonDirectlyRouted():Boolean[1]
 {
-   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), meta::relational::tests::mapping::inheritance::relational::selfJoin::inheritanceMappingDBSelfJoin, testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
+   let result1 = execute(|Person.all().roadVehicles->project([p|$p.id, p|$p->subType(@Car).engineType], ['id', 'engine']), meta::relational::tests::mapping::inheritance::relational::selfJoin::inheritanceMappingDBSelfJoin, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions()).values->at(0);
    assertEquals(5, $result1.rows->size());
    assertSameElements(['1 TDSNull', '1 V', '2 TDSNull', '2 U', '3 H'], $result1.rows->map(r|$r.get('id')->toString()+' '+$r.get('engine')->toString()));
 }
 
 function meta::relational::tests::mapping::inheritance::createTablesAndFillDbSelfJoin():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(db)->cast(@TestDatabaseConnection);
+   let connection = meta::external::store::relational::tests::testRuntime().connectionByElement(db)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    executeInDb('Drop table if exists OneTable;', $connection);
    executeInDb('Create Table OneTable (id INT, type INT, vid INT, name VARCHAR(200), wheelCount INT, engineType INT, description VARCHAR(200), personId INT);', $connection);

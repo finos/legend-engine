@@ -19,9 +19,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.opentracing.Scope;
 import io.opentracing.contrib.concurrent.TracedExecutorService;
 import io.opentracing.util.GlobalTracer;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
-import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.ListIterate;
@@ -30,9 +28,9 @@ import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.url.StreamProvider;
 import org.finos.legend.engine.shared.core.url.StreamProviderHolder;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.io.IOException;
 import java.util.List;
@@ -68,13 +66,13 @@ public final class ConcurrentExecutionNodeExecutorPool implements AutoCloseable
         this.executor.shutdown();
     }
 
-    public List<? extends Result> execute(final List<ExecutionNode> nodes, final MutableList<CommonProfile> profiles, final ExecutionState executionState)
+    public List<? extends Result> execute(final List<ExecutionNode> nodes, final Identity identity, final ExecutionState executionState)
     {
         if (!executor.isShutdown() && availableThreads.tryAcquire(nodes.size()))
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Parallel Execution Triggered").startActive(true))
             {
-                return executeConcurrently(nodes, profiles, executionState);
+                return executeConcurrently(nodes, identity, executionState);
             }
             catch (Exception e)
             {
@@ -89,12 +87,12 @@ public final class ConcurrentExecutionNodeExecutorPool implements AutoCloseable
         {
             try (Scope scope = GlobalTracer.get().buildSpan("Sequential Execution Triggered").startActive(true))
             {
-                return ListIterate.collect(nodes, node -> node.accept(new ExecutionNodeExecutor(profiles, executionState)));
+                return ListIterate.collect(nodes, node -> node.accept(new ExecutionNodeExecutor(identity, executionState)));
             }
         }
     }
 
-    private List<Result> executeConcurrently(final List<ExecutionNode> nodes, final MutableList<CommonProfile> profiles, final ExecutionState executionState)
+    private List<Result> executeConcurrently(final List<ExecutionNode> nodes, final Identity identity, final ExecutionState executionState)
     {
         List<CompletableFuture<Pair<Result, ExecutionState>>> elements = FastList.newList();
         StreamProvider streamProvider = StreamProviderHolder.streamProviderThreadLocal.get();
@@ -104,7 +102,7 @@ public final class ConcurrentExecutionNodeExecutorPool implements AutoCloseable
                     {
                         StreamProviderHolder.streamProviderThreadLocal.set(streamProvider);
                         ExecutionState executionStateForThread = executionState.copy();
-                        Result result = node.accept(new ExecutionNodeExecutor(Lists.mutable.withAll(profiles), executionStateForThread));
+                        Result result = node.accept(new ExecutionNodeExecutor(identity, executionStateForThread));
                         return Tuples.pair(result, executionStateForThread);
                     }
                 }, executor

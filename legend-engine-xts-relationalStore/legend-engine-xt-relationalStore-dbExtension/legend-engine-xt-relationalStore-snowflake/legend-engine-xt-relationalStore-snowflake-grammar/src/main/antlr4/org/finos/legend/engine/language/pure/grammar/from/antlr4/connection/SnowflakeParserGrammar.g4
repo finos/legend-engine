@@ -24,6 +24,8 @@ snowflakeDatasourceSpecification:           SNOWFLAKE
                                                         | dbProxyHost
                                                         | dbProxyPort
                                                         | dbNonProxyHosts
+                                                        | dbTempTableDb
+                                                        | dbTempTableSchema
                                                         | dbAccountType
                                                         | dbOrganization
                                                         | dbRole
@@ -42,6 +44,10 @@ dbProxyHost:                                PROXYHOST COLON STRING SEMI_COLON
 dbProxyPort:                                PROXYPORT COLON STRING SEMI_COLON
 ;
 dbNonProxyHosts:                            NONPROXYHOSTS COLON STRING SEMI_COLON
+;
+dbTempTableDb:                              TEMPTABLEDB COLON STRING SEMI_COLON
+;
+dbTempTableSchema:                          TEMPTABLESCHEMA COLON STRING SEMI_COLON
 ;
 dbAccountType:                              ACCOUNTTYPE COLON identifier SEMI_COLON
 ;

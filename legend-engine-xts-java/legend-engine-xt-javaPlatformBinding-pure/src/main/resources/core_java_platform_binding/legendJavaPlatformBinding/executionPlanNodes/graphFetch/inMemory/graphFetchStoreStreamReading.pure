@@ -28,13 +28,10 @@ import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legend
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::objectStream::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::storeStreamReading::platformBinding::legendJava::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 // To be removed when external format is ready
 Class <<doc.deprecated>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::LegendJavaGraphFetchStoreStreamReadingExtension extends LegendJavaPlatformBindingAdhocExtension
 {
@@ -57,9 +54,9 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
       ->map(ti| if($node.enableConstraints, |$ti->addConstraintsForGraphFetchTree($node.graphFetchTree), |$ti))
       ->addForClassesWithAllProperties($node.connection->map({c |
          $c->match([
-            json : JsonModelConnection[1] | JsonDataRecord,
-            xml  : XmlModelConnection[1]  | XmlDataRecord,
-            a    : Any[1]                 | JsonDataRecord
+            json : JsonModelConnection[1] | meta::pure::mapping::modelToModel::JsonDataRecord,
+            xml  : XmlModelConnection[1]  | meta::pure::mapping::modelToModel::XmlDataRecord,
+            a    : Any[1]                 | meta::pure::mapping::modelToModel::JsonDataRecord
          ])
       })->removeDuplicates());
 
@@ -74,7 +71,7 @@ function meta::pure::mapping::modelToModel::executionPlan::platformBinding::lege
 function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::sourceTypeFromConnection(connection: Connection[1], conventions: Conventions[1], extensions:meta::pure::extension::Extension[*]): JavaType[1]
 {
    let streamReadingAdhocExtensions = $extensions->extractLegendJavaAdhocExtensionsOfType(LegendJavaGraphFetchStoreStreamReadingExtension);
-   let dataRecordClass = $connection->match($streamReadingAdhocExtensions.dataRecordClassFromConnectionExtractors->concatenate([a : Any[1] | JsonDataRecord])->toOneMany());
+   let dataRecordClass = $connection->match($streamReadingAdhocExtensions.dataRecordClassFromConnectionExtractors->concatenate([a : Any[1] | meta::pure::mapping::modelToModel::JsonDataRecord])->toOneMany());
 
    ^SimpleJavaType(pureType = $dataRecordClass, javaType = $conventions->className($dataRecordClass));
 }

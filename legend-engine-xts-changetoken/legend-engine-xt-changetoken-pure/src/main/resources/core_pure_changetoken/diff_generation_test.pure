@@ -208,7 +208,7 @@ Class <<access.private>> meta::pure::changetoken::tests::old::entities::vX_X_X::
 
 function <<access.private>> meta::pure::changetoken::tests::generateNewVersion(oldVersions: Versions[1], newScope: String[1], oldScope: String[1], expectedPrevVersion: String[1], expectedVersion: String[1], expectedSize: Integer[1]): Version[1]
 {
-    let newVersions = $oldVersions->generateDiffFromVersionsAndScopes($newScope, $oldScope, [], [], []);
+    let newVersions = $oldVersions->generateDiffFromVersionsAndScopes($newScope, $oldScope, [], [], [], '@type', 'version');
     let versions = $newVersions.versions;
     assertEquals(2, $versions->size());
     let oldVersion = $versions->at(0);
@@ -271,6 +271,6 @@ function <<access.private>> meta::pure::changetoken::tests::assertStripVersionQu
 function <<test.Test>> meta::pure::changetoken::tests::testGetTokens(): Boolean[1]
 {
     let classes = [meta::pure::changetoken::tests::old::entities::vX_X_X]->packageClassesRecursive();
-    let tokens = getHashTokens($classes);
+    let tokens = getHashTokens($classes, 'version');
     assertEquals(['meta::pure::changetoken::tests::OldSampleClass', 'xyz', 'String[1]'], $tokens);
 }

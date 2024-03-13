@@ -73,7 +73,7 @@ public class TestSQLRoundTrip
     @Test
     public void testSelectQualified()
     {
-        check("SELECT col1, myTable.col2 FROM myTable");
+        check("SELECT col1, myTable.col2, \"col 3\" FROM myTable");
     }
 
     @Test

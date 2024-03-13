@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,50 +22,35 @@ import meta::json::*;
 import meta::pure::changetoken::cast_generation::collapse::*;
 import meta::pure::changetoken::cast_generation::expand::*;
 
-// entry point into cast generation
-function meta::pure::changetoken::cast_generation::generateCast(versionsFuncName:String[1], outputClassName:String[1]):Project[1]
+function meta::pure::changetoken::cast_generation::versionsToJson(versions:Versions[1], typeKeyName:String[1]):String[1]
 {
-  // load Versions()
-  let versions = $versionsFuncName->generateCastVersions();
-  generateCastFromVersions($versions, $outputClassName);
-}
-
-function meta::pure::changetoken::cast_generation::generateCastVersions(versionsFuncName:String[1]):Versions[1]
-{
-  functionDescriptorToId($versionsFuncName + '():Versions[1]')
-    ->pathToElement()->cast(@ConcreteFunctionDefinition<{->Versions[1]}>)
-    ->eval();
-}
-
-function meta::pure::changetoken::cast_generation::generateCastFromJson(jsonString:String[1], outputClassName:String[1]):Project[1]
-{
-  let versions = $jsonString->jsonToVersions();
-  generateCastFromVersions($versions, $outputClassName);
-}
-
-function meta::pure::changetoken::cast_generation::versionsToJson(versions:Versions[1]):String[1]
-{
-  let raw = $versions->toJSONElement([], 100, config(true, true, true, true, '@type', true));
-  let output = $raw->collapse();
+  let raw = $versions->toJSONElement([], 100, config(true, true, true, true, $typeKeyName, true));
+  let output = $raw->collapse($typeKeyName);
   $output->toCompactJSONString();
 }
 
-function meta::pure::changetoken::cast_generation::jsonToVersions(jsonString:String[1]):Versions[1]
+function meta::pure::changetoken::cast_generation::jsonToVersions(jsonString:String[1], typeKeyName:String[1]):Versions[1]
 {
   let raw = $jsonString->parseJSON();
-  let input = $raw->expand();
-  $input->fromJSON(Versions, ^JSONDeserializationConfig(typeKeyName='@type', failOnUnknownProperties=true))->cast(@Versions)->toOne();
+  let input = $raw->expand($typeKeyName);
+  $input->fromJSON(Versions, ^JSONDeserializationConfig(typeKeyName=$typeKeyName, failOnUnknownProperties=true))->cast(@Versions)->toOne();
 }
 
-function meta::pure::changetoken::cast_generation::generateCastFromVersions(versions:Versions[1], outputClassName:String[1]):Project[1]
+function meta::pure::changetoken::cast_generation::generateCastFromVersions(
+  alwaysStampAtRootVersion: Boolean[1],
+  optionalStampAllVersions: Boolean[1],
+  obsoleteJsonAsString: Boolean[1],
+  typeKeyName: String[1],
+  versionKeyName: String[0..1],
+  versions:Versions[1], outputClassName:String[1]):Project[1]
 {
   // generated class  
   let class = javaClass(['public'], javaPackage('org.finos.legend.engine.generated.meta.pure.changetoken.cast_generation'), $outputClassName);
   
   newProject()->addClass(
     $class
-      ->generateMainUpcast($versions)
-      ->generateMainDowncast($versions)
+      ->generateMainUpcast($alwaysStampAtRootVersion, $optionalStampAllVersions, $obsoleteJsonAsString, $typeKeyName, $versionKeyName, $versions)
+      ->generateMainDowncast($alwaysStampAtRootVersion, $optionalStampAllVersions, $obsoleteJsonAsString, $typeKeyName, $versionKeyName, $versions)
       ->generateMainVersions($versions)
       ->generateMainUtils()
   );
