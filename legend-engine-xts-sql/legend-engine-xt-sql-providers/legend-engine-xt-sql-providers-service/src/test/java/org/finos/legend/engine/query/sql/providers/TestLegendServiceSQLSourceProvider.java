@@ -33,7 +33,6 @@ import org.finos.legend.engine.query.sql.providers.core.TableSourceArgument;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateLoader;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectCoordinateWrapper;
 import org.finos.legend.engine.query.sql.providers.shared.project.ProjectResolvedContext;
-import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.junit.Assert;
 import org.junit.Before;
