@@ -18,11 +18,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
+import org.finos.legend.engine.postgres.utils.OpenTelemetry;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,13 +50,18 @@ public class LegendExecutionService
 
     public List<LegendColumn> getSchema(String query)
     {
-        try (InputStream inputStream = executionClient.executeSchemaApi(query);)
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("LegendExecutionService.getSchema").startSpan();
+        try (Scope scope = span.makeCurrent(); InputStream inputStream = executionClient.executeSchemaApi(query);)
         {
+            span.setAttribute("query", query);
             JsonNode jsonNode = mapper.readTree(inputStream);
             if (jsonNode.get("columns") != null)
             {
                 ArrayNode columns = (ArrayNode) jsonNode.get("columns");
-                return IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue()));
+                List<LegendColumn> legendColumns = Collections.unmodifiableList(IterableIterate.collect(columns, c -> new LegendColumn(c.get("name").textValue(), c.get("type").textValue())));
+                span.setAttribute(AttributeKey.stringArrayKey("columns"), legendColumns.stream().map(legendColumn -> legendColumn.toString()).collect(Collectors.toList()));
+                return legendColumns;
             }
             return Collections.emptyList();
         }
@@ -56,14 +69,22 @@ public class LegendExecutionService
         {
             throw new LegendTdsClientException("Failed to parse result", e);
         }
+        finally
+        {
+            span.end();
+        }
 
     }
 
     public LegendExecutionResult executeQuery(String query)
     {
-        try
+        Tracer tracer = OpenTelemetry.getTracer();
+        Span span = tracer.spanBuilder("LegendExecutionService.getSchema").startSpan();
+        try (Scope scope = span.makeCurrent();)
         {
+            span.setAttribute("query", query);
             InputStream inputStream = executionClient.executeQueryApi(query);
+            span.addEvent("receivedResponse");
             LegendTdsResultParser parser = new LegendTdsResultParser(inputStream);
 
             return new LegendExecutionResult()
@@ -115,6 +136,10 @@ public class LegendExecutionService
         catch (IOException e)
         {
             throw new LegendTdsClientException("Error while parsing response", e);
+        }
+        finally
+        {
+            span.end();
         }
     }
 

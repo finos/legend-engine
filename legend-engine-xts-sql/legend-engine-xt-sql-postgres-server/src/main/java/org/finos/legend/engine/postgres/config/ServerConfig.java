@@ -33,6 +33,13 @@ public class ServerConfig
     private IdentityType identityType;
     private GSSConfig gss;
 
+    public Integer getMetricsPort()
+    {
+        return metricsPort;
+    }
+
+    private Integer metricsPort;
+
     public String getLogConfigFile()
     {
         return logConfigFile;
