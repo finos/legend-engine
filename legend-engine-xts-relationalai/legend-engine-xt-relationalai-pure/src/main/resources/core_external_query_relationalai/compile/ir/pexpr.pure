@@ -181,7 +181,7 @@ Class meta::external::store::rel::compile::ir::PExprFilter extends PExpr {
   */
 Class meta::external::store::rel::compile::ir::PExprFunction<|n> extends PExpr {
   arguments: PExpr[n];
-  fn: FunctionDefinition<{meta::external::store::rel::metamodel::Expr[n]->meta::external::store::rel::metamodel::Expr[1]}>[1];
+  fn: FunctionDefinition<{meta::external::store::rel::metamodel::RelExpr[n]->meta::external::store::rel::metamodel::RelExpr[1]}>[1];
 }
 
 /**
@@ -222,9 +222,8 @@ Class meta::external::store::rel::compile::ir::PExprSetAccess extends PExpr {
   */
 Class meta::external::store::rel::compile::ir::PExprPropertyAccess extends PExpr {
   parent: PExpr[1];
-  property: Property<Nil, Any|*>[1];
-  /** The set implementation corresponding to the class owning the property. */
-  set: RelSetImplementation[0..1];
+  /** The property mapping of the property applied to the parent expression as argumemt. */
+  propertyMapping: RelPropertyMapping[1];
 }
 
 /**
@@ -279,11 +278,19 @@ Class meta::external::store::rel::compile::ir::PExprIn extends PExpr {
 }
 
 /**
-  * Type denoting projections.
+  * Type denoting `project` expressions.
   */
 Class meta::external::store::rel::compile::ir::PExprProject extends PExpr {
   parent: PExpr[1];
   projections: Pair<String,PExprScope>[*];
+}
+
+/**
+  * Type denoting `restrict` expressions.
+  */
+Class meta::external::store::rel::compile::ir::PExprRestrict extends PExpr {
+  parent: PExpr[1];
+  columns: String[*]; // TODO: Is it allowed to have an empty sequence of columns in a restrict?
 }
 
 /**
@@ -425,7 +432,7 @@ function meta::external::store::rel::compile::ir::variablePlaceholder(identifier
 
 function meta::external::store::rel::compile::ir::fexpr<|n>(
   arguments: PExpr[n],
-  fn: FunctionDefinition<{meta::external::store::rel::metamodel::Expr[n]->meta::external::store::rel::metamodel::Expr[1]}>[1]
+  fn: FunctionDefinition<{meta::external::store::rel::metamodel::RelExpr[n]->meta::external::store::rel::metamodel::RelExpr[1]}>[1]
 ): PExprFunction<|n>[1] {
   ^PExprFunction<|n>(arguments=$arguments, fn=$fn)
 }
@@ -438,12 +445,14 @@ function meta::external::store::rel::compile::ir::setAccess(set: RelSetImplement
   ^PExprSetAccess(set=$set, variable=$variable)
 }
 
+/**
+  * Represents the property (given in the specified mapping) applied to the given P-Expression as argument.
+  */
 function meta::external::store::rel::compile::ir::propertyAccess(
   parent: PExpr[1],
-  property: Property<Nil, Any|*>[1],
-  set: RelSetImplementation[1]
+  propertyMapping: RelPropertyMapping[1]
 ): PExprPropertyAccess[1] {
-  ^PExprPropertyAccess(parent=$parent, property=$property, set=$set)
+  ^PExprPropertyAccess(parent=$parent, propertyMapping=$propertyMapping)
 }
 
 
@@ -507,6 +516,10 @@ function meta::external::store::rel::compile::ir::project(parent: PExpr[1], proj
   ^PExprProject(parent=$parent, projections=$projections)
 }
 
+function meta::external::store::rel::compile::ir::restrict(parent: PExpr[1], columns: String[*]): PExprRestrict[1] {
+  ^PExprRestrict(parent=$parent, columns=$columns)
+}
+
 function meta::external::store::rel::compile::ir::aggregate(map: PExprScope[1], aggregateFunction: PExprScope[1]): PExprAggregate[1] {
   ^PExprAggregate(map=$map, aggregateFunction=$aggregateFunction)
 }
@@ -559,13 +572,16 @@ function meta::external::store::rel::compile::ir::matchExpr(parent: PExpr[1], ca
 // API functions //
 ///////////////////
 
+/*
+ * TODO: Remove this function if possible, or alternatively better define it.
+ */
 function meta::external::store::rel::compile::ir::set(expr: PExpr[1]): RelSetImplementation[0..1] {
   $expr->match([
     e: PExprAt[1]             | $e.parent->set(),
     e: PExprSetAccess[1]      | $e.set,
     e: PExprScope[1]          | $e.parent->map(p | $p->set()),
     e: PExprAll[1]            | $e.set,
-    e: PExprPropertyAccess[1] | $e.set,
+    e: PExprPropertyAccess[1] | $e.parent->set(),
     e: PExprCast[1]           | $e.set,
     e: PExprMap[1]            | $e.parent->set(),
     e: PExprFilter[1]         | $e.parent->set(),

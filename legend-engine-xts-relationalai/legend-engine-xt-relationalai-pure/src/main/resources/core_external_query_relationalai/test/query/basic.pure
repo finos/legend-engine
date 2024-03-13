@@ -16,7 +16,8 @@ function <<test.Test>> meta::external::store::rel::test::query::basic::testQuery
     [
       'def output[:query](x) = Person(x)',
       'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
-      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)',
+      'def output[:email] = Person:email[x] for x where output[:query](x)'
     ],
     $rai
       ->query(| Person.all())
@@ -48,7 +49,8 @@ function <<test.Test>> meta::external::store::rel::test::query::basic::testFilte
     [
       'def output[:query](x) = (x1 in Person: Person:firstName[x1] = "John")(x)',
       'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
-      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)',
+      'def output[:email] = Person:email[x] for x where output[:query](x)'
     ],
     $rai
       ->query(|
@@ -91,7 +93,8 @@ function <<test.Test>> meta::external::store::rel::test::query::basic::testCombi
     [
       'def output[:query](x) = (x1 in Person: Person:firstName[x1] = "John" and Person:lastName[x1] = "Doe")(x)',
       'def output[:firstName] = Person:firstName[x] for x where output[:query](x)',
-      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)'
+      'def output[:lastName] = Person:lastName[x] for x where output[:query](x)',
+      'def output[:email] = Person:email[x] for x where output[:query](x)'
     ],
     $rai
       ->query(|
@@ -139,6 +142,27 @@ function <<test.Test>> meta::external::store::rel::test::query::basic::testMap()
       ->query(|
         Person.all()
           ->map(p | 'foo')
+      )
+      ->rel()
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::basic::testEmpty(): Any[*] {
+  let rai = schema()->TestConnection();
+
+  /*
+   * Expected intermediate PExpr is:
+   * Map(All(meta_rel_test_query_models_basicmodel_Person), ScopeUntyped(foo, p))
+   */
+
+  assertEqualRel(
+    [
+      'def output = empty(Person:email[x1]) from x1 in Person'
+    ],
+    $rai
+      ->query(|
+        Person.all()
+          ->map(p | $p.email->isEmpty())
       )
       ->rel()
   );

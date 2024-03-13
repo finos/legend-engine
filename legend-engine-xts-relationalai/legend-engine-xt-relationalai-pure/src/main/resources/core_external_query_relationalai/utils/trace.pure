@@ -1,3 +1,4 @@
+import meta::external::store::rel::utils::*;
 import meta::external::store::rel::trace::*;
 
 /**
@@ -59,7 +60,7 @@ function meta::external::store::rel::trace::traceLog(trace: Trace[0..1]): String
               let line = format('stage %s: %s', [$p.first, $stage.stageName]);
               if ( $messages->isEmpty(),
                 | $line,
-                | $line + $messages->makeString('\n    ', '\n    ', '');
+                | $line + '\n' + $messages->concatenateMessages();
                 );
             )
             ->reverse()

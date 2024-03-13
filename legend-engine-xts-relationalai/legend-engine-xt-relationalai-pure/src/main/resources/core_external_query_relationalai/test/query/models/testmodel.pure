@@ -69,3 +69,12 @@ Class meta::external::store::rel::test::query::models::testmodel::TestClassC
   propertyC1: String[0..1];
   propertyC2: String[*];
 }
+
+Class meta::external::store::rel::test::query::models::testmodel::TestClassD
+{
+  propertyD1: String[*];
+  propertyD2: String[0..1];
+  propertyD3: String[0..1];
+  propertyD4: String[0..1];
+  propertyD5: String[0..1];
+}

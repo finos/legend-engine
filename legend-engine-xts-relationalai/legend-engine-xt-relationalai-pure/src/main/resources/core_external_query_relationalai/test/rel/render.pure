@@ -67,11 +67,12 @@ function <<test.Test>> meta::external::store::rel::test::metamodel::render::test
 
   assertEquals(
     'exists(z: edge(x, z) and path(z, y))',
-    atom('edge', ['x', 'z'])->and(
-        atom('path', ['z', 'y'])
+    var('z')
+      ->exists(
+        atom('edge', ['x', 'z'])->and(
+            atom('path', ['z', 'y'])
+          )
       )
-      ->abstract('z')
-      ->exists()
       ->renderExpr()
   );
 

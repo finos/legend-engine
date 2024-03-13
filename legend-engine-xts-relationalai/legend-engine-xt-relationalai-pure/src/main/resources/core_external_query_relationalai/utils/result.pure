@@ -21,8 +21,7 @@ function meta::external::store::rel::utils::errorTrace(message: String[1]): Quer
 
 function <<access.private>> meta::external::store::rel::utils::failMessage<T>(result: Result<T|*>[1]): String[1] {
   $result.errors->map({e: QueryRewriteError[1] |
-    let stage = $e.trace->traceLog()->makeString('\n  ', '\n  ', '');
-    '\nFailure at stage:' + $stage + '\n' + $e.message;
+    format('\nFailure: %s\n%s', [$e.message, $e.trace->traceLog()->concatenateMessages()])
   })->joinStrings()
 }
 

@@ -59,7 +59,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::valueSpecTo
       ->stage('valueSpecToPExpr(ValueSpecification[1],RelSetImplementation[0..1],Trace[1])')
       ->detail('spec', $spec->class().name)
       ->detail('typeInfo', $typeInfo->describe())
-      ->detail('set', $set->describeSetImpl());
+      ->detail('set', $set->describe());
 
   $spec->match([
     {
@@ -141,7 +141,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::instanceVal
   let newTrace =
     $trace
       ->stage('instanceValueToPExpr(InstanceValue[1],RelSetImplementation[0..1],Boolean[1],Trace[1])')
-      ->detail('set', $set->describeSetImpl());
+      ->detail('set', $set->describe());
   if($spec.values->isEmpty(),
     | constEmpty()->ok(),
     | $spec.values
@@ -164,7 +164,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::valueToPExp
     $trace
       ->stage('valueToPExpr(Any[1],RelSetImplementation[0..1],Trace[1])')
       ->detail('value', $value->type()->toString())
-      ->detail('set', $set->describeSetImpl());
+      ->detail('set', $set->describe());
   $value->match([
     s: String[1] | ok(string($s)),
     i: Integer[1] | ok(integer($i)),
@@ -200,36 +200,24 @@ function <<access.private>> meta::external::store::rel::compile::ir::propertyToP
     $trace
       ->stage('propertyToPExpr(Property<Nil,Any|*>[1],RelSetImplementation[0..1],Trace[1])')
       ->detail('typeInfo', $typeInfo->describe())
-      ->detail('set', $set->describeSetImpl());
+      ->detail('set', $set->describe());
 
   let param0 = $func.parametersValues->at(0);
 
   $func.func->match([
     {property: Property<Nil, Any|*>[1] |
-      $property.name
+      let traceWithDetail = $newTrace->detail('property.name', $property.name);
+      $typeInfo
+        ->mappingForProperty($property)
         ->okOr(|
-          errorTrace('Encountered empty name for property.', $newTrace)
+          errorTrace(format('No mapping for property `%s`.', $property.name), $newTrace)
         )
-        ->andThen(name: String[1] |
-          let traceWithDetail = $newTrace->detail('property.name', $name);
-
-          let set2 = $typeInfo->setForClass($property->ownerClass());
-
-          /*
-           * FIXME: Remove `set` argument because we are using type info instead.
-           * Originally we used `set` here instead of `set2`.
-           */
-          $set2
-            ->okOr(|
-              errorTrace(format('No set specified for property %s.\nType info:%s', [$name->quote(), $typeInfo->describe()]), $traceWithDetail)
+        ->andThen(propertyMapping: RelPropertyMapping[1] |
+          $param0
+            ->valueSpecToPExpr($typeInfo, $traceWithDetail)
+            ->then(inner: PExpr[1] |
+              $inner->propertyAccess($propertyMapping);
             )
-            ->andThen(set: RelSetImplementation[1] |
-              $param0
-                ->valueSpecToPExpr($typeInfo, $traceWithDetail)
-                ->then(inner: PExpr[1] |
-                  $inner->propertyAccess($property, $set);
-                );
-              );
         );
     },
     other: Any[*] |
@@ -243,14 +231,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::recursively
   $valueSpec->match([
     {
       routed: StoreMappingRoutedValueSpecification[1] |
-        let typeInfo = constructTypeInfo($routed);
-
-        let sets =
-          $routed.mapping.classMappings->map(s | $s->match([
-            set: RelSetImplementation[1]                     | $set,
-            other: meta::pure::mapping::SetImplementation[1] | []
-          ]));
-        ^TranspileTypeInfo(sets=$sets);
+        constructTypeInfo($routed)
     },
     {
       expr: SimpleFunctionExpression[1] |
@@ -289,7 +270,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::functionExp
     $trace
       ->stage('functionExprToPExpr(FunctionExpression[1],RelSetImplementation[0..1],Trace[1])')
       ->detail('typeInfo', $typeInfo->describe())
-      ->detail('set', $set->describeSetImpl());
+      ->detail('set', $set->describe());
 
   $func.func->match([
     {property: Property<Nil, Any|*>[1] |
@@ -369,6 +350,8 @@ function <<access.private>> meta::external::store::rel::compile::ir::functionExp
           handleCaseProject2($func, $typeInfo, $newTrace)),
         case($other == project_K_MANY__Function_MANY__String_MANY__TabularDataSet_1_,|
           handleCaseProject3($func, $typeInfo, $newTrace)),
+        case($other == restrict_TabularDataSet_1__String_MANY__TabularDataSet_1_,|
+          handleCaseRestrict($func, $typeInfo, $newTrace)),
         case($other == groupBy_K_MANY__Function_MANY__AggregateValue_MANY__String_MANY__TabularDataSet_1_,|
           handleCaseGroupBy1($func, $typeInfo, $newTrace)),
         case($other == groupBy_TabularDataSet_1__String_MANY__AggregateValue_MANY__TabularDataSet_1_,|
@@ -1126,21 +1109,21 @@ function <<access.private>> meta::external::store::rel::compile::ir::intoAggrega
 function <<access.private>> meta::external::store::rel::compile::ir::getFunctionExpr(
   fn: FunctionExpression[1],
   trace: Trace[1]
-): Result<FunctionDefinition<{Expr[*]->Expr[1]}>|0..1>[1] {
+): Result<FunctionDefinition<{RelExpr[*]->RelExpr[1]}>|0..1>[1] {
   let newTrace =
     $trace
       ->stage('getFunctionExpr(FunctionExpression[1],Trace[1])');
   let eval =
     switch([
       case($fn.func == sum_Integer_MANY__Integer_1_ || $fn.func == sum_Float_MANY__Float_1_ || $fn.func == sum_Number_MANY__Number_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->sum()
         }->ok()
       }),
       case($fn.func == count_Any_MANY__Integer_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->count()
@@ -1148,7 +1131,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == max_Integer_MANY__Integer_$0_1$_ || $fn.func == max_Float_MANY__Float_$0_1$_,  {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->max()
@@ -1156,7 +1139,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == min_Integer_MANY__Integer_$0_1$_ || $fn.func == min_Float_MANY__Float_$0_1$_,  {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->min()
@@ -1164,7 +1147,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == equal_Any_MANY__Any_MANY__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->equals($exprs->at(1))
@@ -1172,7 +1155,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == and_Boolean_1__Boolean_1__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->and($exprs->at(1))
@@ -1180,7 +1163,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == or_Boolean_1__Boolean_1__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->or($exprs->at(1))
@@ -1189,7 +1172,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == greaterThan_Number_1__Number_1__Boolean_1_ || $fn.func == greaterThan_Date_1__Date_1__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->greaterThan($exprs->at(1))
@@ -1197,7 +1180,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == greaterThanEqual_Number_1__Number_1__Boolean_1_ || $fn.func == greaterThanEqual_Date_1__Date_1__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->greaterThanEqual($exprs->at(1))
@@ -1205,7 +1188,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == lessThan_Number_1__Number_1__Boolean_1_ || $fn.func == lessThan_Date_1__Date_1__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->lessThan($exprs->at(1))
@@ -1213,7 +1196,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == lessThanEqual_Number_1__Number_1__Boolean_1_ || $fn.func == lessThanEqual_Date_1__Date_1__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->lessThanEqual($exprs->at(1))
@@ -1222,39 +1205,39 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
       }),
       case($fn.func == plus_Number_MANY__Number_1_ || $fn.func == plus_Integer_MANY__Integer_1_ ||
           $fn.func == plus_Float_MANY__Float_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs->plus()
         }
         ->ok()
       }),
       case($fn.func == minus_Number_MANY__Number_1_ || $fn.func == minus_Integer_MANY__Integer_1_ ||
           $fn.func == minus_Float_MANY__Float_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs->minus()
         }
         ->ok()
       }),
       case($fn.func == plus_String_MANY__String_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs->concat()
         }
         ->ok()
       }),
       case($fn.func == times_Number_MANY__Number_1_ || $fn.func == times_Integer_MANY__Integer_1_ ||
           $fn.func == times_Float_MANY__Float_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs->times()
         }
         ->ok()
       }),
       case($fn.func == divide_Number_1__Number_1__Float_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs->at(0)->divide($exprs->at(1))
         }
         ->ok()
       }),
       case($fn.func == not_Boolean_1__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->not()
@@ -1262,24 +1245,22 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
         ->ok()
       }),
       case($fn.func == isEmpty_Any_$0_1$__Boolean_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
-            ->parenthesise()
-            ->exists()
-            ->not()
+            ->empty()
         }
         ->ok()
       }),
       case($fn.func == toOne_T_MANY__T_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
         }
         ->ok()
       }),
       case($fn.func == toString_Any_1__String_1_, {|
-        {exprs: Expr[*] |
+        {exprs: RelExpr[*] |
           $exprs
             ->at(0)
             ->string()
@@ -1300,8 +1281,8 @@ function <<access.private>> meta::external::store::rel::compile::ir::getFunction
 
   // Annotate function result with `type`.
   $eval
-    ->then(inner: FunctionDefinition<{Expr[*]->Expr[1]}>[1] |
-      {exprs: Expr[*] |
+    ->then(inner: FunctionDefinition<{RelExpr[*]->RelExpr[1]}>[1] |
+      {exprs: RelExpr[*] |
         $inner
           ->eval($exprs)
           ->annotate($type);

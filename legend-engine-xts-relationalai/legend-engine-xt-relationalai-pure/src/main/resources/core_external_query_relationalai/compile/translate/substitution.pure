@@ -10,12 +10,12 @@ import meta::external::store::rel::utils::*;
 
 Class meta::external::store::rel::compile::substitution::VariableSubstitution {
   /** The mapping from variables names to expressions. The trace is for debugging only. */
-  function: FunctionDefinition<{String[1],Trace[1]->Result<Expr|0..1>[1]}>[1];
+  function: FunctionDefinition<{String[1],Trace[1]->Result<RelExpr|0..1>[1]}>[1];
 }
 
 Class meta::external::store::rel::compile::substitution::ColumnAccessRewrite {
   /** The mapping from column expressions to column expressions. The trace is for debugging only. */
-  function: FunctionDefinition<{PExprColumnAccess[1],Trace[1]->Result<Expr|0..1>[1]}>[1]; // TODO: Make the return type PExprColumnAccess
+  function: FunctionDefinition<{PExprColumnAccess[1],Trace[1]->Result<RelExpr|0..1>[1]}>[1]; // TODO: Make the return type PExprColumnAccess
 }
 
 function meta::external::store::rel::compile::substitution::emptySubstitution(): VariableSubstitution[1] {
@@ -30,7 +30,7 @@ function meta::external::store::rel::compile::substitution::emptyColumnAccessRew
   * Add a mapping to the expression rewriting, where the target expression is lazily evaluated.
   */
 function meta::external::store::rel::compile::substitution::newColumnAccessRewrite(
-  function: FunctionDefinition<{PExprColumnAccess[1],Trace[1]->Result<Expr|0..1>[1]}>[1] // TODO: Can we map only to PExprColumnAccess?
+  function: FunctionDefinition<{PExprColumnAccess[1],Trace[1]->Result<RelExpr|0..1>[1]}>[1] // TODO: Can we map only to PExprColumnAccess?
 ): ColumnAccessRewrite[1] {
   ^ColumnAccessRewrite(function=$function)
 }
@@ -39,7 +39,7 @@ function meta::external::store::rel::compile::substitution::newColumnAccessRewri
 function meta::external::store::rel::compile::substitution::addBinding(
   substitution: VariableSubstitution[1],
   key: String[1],
-  value: Variable[1]
+  value: RelVariable[1]
 ): VariableSubstitution[1] {
   /*
    * Add the mapping `key -> value` to the callback function.
@@ -58,7 +58,7 @@ function meta::external::store::rel::compile::substitution::addBinding(
 function meta::external::store::rel::compile::substitution::addBinding(
   substitution: VariableSubstitution[1],
   key: String[1],
-  expr: FunctionDefinition<{->Result<Expr|0..1>[1]}>[1]
+  expr: FunctionDefinition<{->Result<RelExpr|0..1>[1]}>[1]
 ): VariableSubstitution[1] {
   /*
    * Add the mapping `key -> value` to the substitution function.
@@ -75,7 +75,7 @@ function meta::external::store::rel::compile::substitution::apply(
   substitution: VariableSubstitution[1],
   key: String[1],
   trace: Trace[1]
-): Result<Expr|0..1>[1] {
+): Result<RelExpr|0..1>[1] {
   $substitution.function->eval($key, $trace);
 }
 
@@ -83,6 +83,6 @@ function meta::external::store::rel::compile::substitution::apply(
   mapping: ColumnAccessRewrite[1],
   key: PExprColumnAccess[1],
   trace: Trace[1]
-): Result<Expr|0..1>[1] {
+): Result<RelExpr|0..1>[1] {
   $mapping.function->eval($key, $trace);
 }

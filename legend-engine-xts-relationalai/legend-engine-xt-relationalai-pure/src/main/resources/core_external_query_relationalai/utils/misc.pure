@@ -72,3 +72,17 @@ function meta::external::store::rel::utils::escapeString(string: String[1], char
 function meta::external::store::rel::utils::indent(amount: Integer[1]): String[1] {
   range($amount)->map(_n | ' ')->joinStrings('');
 }
+
+/**
+  * Concatenate the given messages, separating by newlines, and indenting all nested newlines by two spaces.
+  */
+function meta::external::store::rel::utils::concatenateMessages(messages: String[*]): String[1] {
+  $messages->map(s: String[1] | $s->replace('\n', '\n  '))->makeString('', '\n', '')
+}
+
+/**
+  * Concatenate the given messages, vertically formatting as a collection, and indenting all nested newlines by two spaces.
+  */
+function meta::external::store::rel::utils::concatenateCollection(collection: String[*]): String[1] {
+  $collection->map(s: String[1] | $s->replace('\n', '\n  '))->makeString('[\n  ', ',\n  ', '\n]');
+}

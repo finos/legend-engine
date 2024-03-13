@@ -9,7 +9,7 @@ import meta::external::store::rel::utils::assert::*;
 
 // Basic test query.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryAll(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -36,7 +36,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 
 // Basic map query.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryMap(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -100,7 +100,7 @@ Filter(
 
 // Basic test of multi-level map.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryMapMultiLevel(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -123,7 +123,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 
 // Basic test of 'at'.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryAt(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -164,7 +164,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 
 // Test of 'at' after a multi-level map.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryMapMultiLevelAt(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -185,7 +185,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 
 // Basic project test.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProject(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -213,9 +213,41 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
   );
 }
 
+// Basic project with restricrt test.
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectRestrict(): Any[*] {
+  let schema = RAITestSchema()->includeSingleClass(TestRootClass);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestRootClass.all()->project([
+          x|$x.property1,
+          x|$x.property3,
+          x|$x.property5 ],
+          [ 'PropertyOne', 'PropertyThree', 'PropertyFive' ]
+        )
+        ->restrict(
+          [ 'PropertyOne', 'PropertyFive' ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestRootClass',
+      'def tbl1[:PropertyOne, x] = tbl1(:base, x), TestRootClass:property1[x]',
+      'def tbl1[:PropertyFive, x] = tbl1(:base, x), TestRootClass:property5[x]',
+      'def output = tbl1[:PropertyOne, i], tbl1[:PropertyFive, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
 // Basic multi-level project test.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevel(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -251,7 +283,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 
 // Basic multi-level project test with 'at' along a multihop path.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAt(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass)->includeClass(TestClassAA)->includeClass(TestClassAAA);
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -352,7 +384,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 
 // Basic test of cast operator.
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryCast(): Any[*] {
-  let schema = RAITestSchema()->includeAllRelatedClasses(TestRootClass);
+  let schema = RAITestSchema()->includeEverythingFrom(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -396,7 +428,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 }
 
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAtSimple1(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestClassAA);
+  let schema = RAITestSchema()->includeFromClassProperties(TestClassAA);
 
   let rai = $schema->TestConnection();
 
@@ -421,7 +453,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 }
 
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAtSimple2(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestClassA);
+  let schema = RAITestSchema()->includeFromClassProperties(TestClassA);
 
   let rai = $schema->TestConnection();
 
@@ -446,7 +478,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 }
 
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectMultiLevelWithAtSimple3(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestClassA);
+  let schema = RAITestSchema()->includeFromClassProperties(TestClassA);
 
   let rai = $schema->TestConnection();
 
@@ -505,7 +537,7 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
 }
 
 function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryProjectNestedIn(): Any[*] {
-  let schema = RAITestSchema()->includeClass(TestRootClass);
+  let schema = RAITestSchema()->includeFromClassProperties(TestRootClass);
 
   let rai = $schema->TestConnection();
 
@@ -522,8 +554,85 @@ function <<test.Test>> meta::external::store::rel::test::query::operators::testQ
   assertEqualRel(
     [
       'def tbl1[:base] = x from x in TestRootClass',
-      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), empty(Intersect[TestClassA:propertyA3[x1] from x1 in TestRootClass:property2[x], ("apple"; "orange"; "pear")])',
+      'def tbl1[:PropertyPath1, x] = tbl1(:base, x), empty(intersect[(TestClassA:propertyA3[x1] from x1 in TestRootClass:property2[x]), ("apple"; "orange"; "pear")])',
       'def output = tbl1[:PropertyPath1, i] from i'
+    ],
+    $transpiledQuery
+  );
+}
+
+function <<test.Test>> meta::external::store::rel::test::query::operators::testQueryJoinRestrict(): Any[*] {
+  let schema = RAITestSchema()->includeSingleClass(TestClassC)->includeSingleClass(TestClassD);
+
+  let rai = $schema->TestConnection();
+
+  let transpiledQuery =
+    $rai
+      ->meta::external::store::rel::runtime::query({|
+        TestClassC.all()->project(
+          [
+            x | $x.propertyC1,
+            x | $x.propertyC2
+          ],
+          [
+            'ColC1',
+            'ColC2'
+          ]
+        )->join(
+          TestClassD.all()->project(
+            [
+              x | $x.propertyD1,
+              x | $x.propertyD2,
+              x | $x.propertyD3,
+              x | $x.propertyD4,
+              x | $x.propertyD5
+            ],
+            [
+              'ColD1',
+              'ColD2',
+              'ColD3',
+              'ColD4',
+              'ColD5'
+            ]
+          ),
+          meta::relational::metamodel::join::JoinType.INNER,
+          {
+            row1: TDSRow[1],row2: TDSRow[1] |
+              ($row1.getString('ColC1') == $row2.getString('ColD1')) &&
+              ($row1.getInteger('ColC2') == $row2.getInteger('ColD3')) 
+          }
+        )
+        ->restrict(
+          [
+            // Here we project out column ColC2 and ColD1 which were used in the join. 
+            'ColC1',
+            'ColD2',
+            'ColD3',
+            'ColD4',
+            'ColD5'
+          ]
+        )
+      })
+      ->rel();
+
+  assertEqualRel(
+    [
+      'def tbl1[:base] = x from x in TestClassC',
+      'def tbl1[:ColC1, x] = tbl1(:base, x), TestClassC:propertyC1[x]',
+      'def tbl1[:ColC2, x] = tbl1(:base, x), TestClassC:propertyC2[x]',
+      'def tbl2[:base] = x from x in TestClassD',
+      'def tbl2[:ColD1, x] = tbl2(:base, x), TestClassD:propertyD1[x]',
+      'def tbl2[:ColD2, x] = tbl2(:base, x), TestClassD:propertyD2[x]',
+      'def tbl2[:ColD3, x] = tbl2(:base, x), TestClassD:propertyD3[x]',
+      'def tbl2[:ColD4, x] = tbl2(:base, x), TestClassD:propertyD4[x]',
+      'def tbl2[:ColD5, x] = tbl2(:base, x), TestClassD:propertyD5[x]',
+      'def tbl3[:base] = sort[(tbl1[:ColC1, i] = tbl2[:ColD1, j]) and (tbl1[:ColC2, i] = tbl2[:ColD3, j]) for i, j]',
+      'def tbl3[:ColC1] = k, tbl1[:ColC1, i], tbl3[:base, k, i, _] from i, k',
+      'def tbl3[:ColD2] = k, tbl2[:ColD2, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:ColD3] = k, tbl2[:ColD3, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:ColD4] = k, tbl2[:ColD4, i], tbl3[:base, k, _, i] from i, k',
+      'def tbl3[:ColD5] = k, tbl2[:ColD5, i], tbl3[:base, k, _, i] from i, k',
+      'def output = tbl3[:ColC1, i], tbl3[:ColD2, i], tbl3[:ColD3, i], tbl3[:ColD4, i], tbl3[:ColD5, i] from i'
     ],
     $transpiledQuery
   );
