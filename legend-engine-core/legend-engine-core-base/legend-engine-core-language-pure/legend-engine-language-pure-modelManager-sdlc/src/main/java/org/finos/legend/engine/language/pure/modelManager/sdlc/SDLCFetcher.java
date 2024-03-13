@@ -89,7 +89,11 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
         parentSpan.setTag("sdlc", "collection");
         try (Scope ignore = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
         {
-            if(sdlcCollection.stream().allMatch(sdlc -> sdlc instanceof AlloySDLC))
+            if (sdlcCollection.isEmpty())
+            {
+                return PureModelContextData.newPureModelContextData();
+            }
+            else if(sdlcCollection.stream().allMatch(sdlc -> sdlc instanceof AlloySDLC))
             {
                 return this.alloyLoader.loadAlloyProjects(identity, sdlcCollection.stream().map(sdlc1 -> (AlloySDLC) sdlc1).collect(Collectors.toList()), clientVersion, this.httpClientProvider);
             }
