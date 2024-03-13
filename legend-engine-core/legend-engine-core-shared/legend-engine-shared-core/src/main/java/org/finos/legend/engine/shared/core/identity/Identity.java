@@ -19,12 +19,15 @@ import org.eclipse.collections.api.list.ImmutableList;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.credential.AnonymousCredential;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
+import org.finos.legend.engine.shared.core.identity.transformer.IdentityTransformer;
+import org.finos.legend.engine.shared.core.identity.transformer.KerberosIdentityTransformer;
 
 import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
 public class Identity
@@ -106,9 +109,6 @@ public class Identity
 
     public Subject getSubjectFromIdentity()
     {
-        return LazyIterate.selectInstancesOf(getCredentials(), LegendKerberosCredential.class)
-                .select(Objects::nonNull)
-                .collect(LegendKerberosCredential::getSubject)
-                .getFirst();
+        return KerberosIdentityTransformer.INSTANCE.transform(this);
     }
 }
