@@ -247,9 +247,9 @@ public class DomainParseTreeWalker
         {
             result = this.newFunction(ctx.expressionInstance(), Lists.mutable.empty(), null, false, " ");
         }
-        else if (ctx.instanceLiteralToken() != null)
+        else if (ctx.instanceLiteral() != null)
         {
-            result = this.instanceLiteralToken(ctx.instanceLiteralToken(), false);
+            result = this.instanceLiteral(ctx.instanceLiteral(), "", Lists.mutable.empty(), null, " ", false, false);
         }
 
         if (ctx.propertyExpression() != null)
