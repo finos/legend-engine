@@ -62,7 +62,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
             "(`id`, `name`, `amount`, `biz_date`, `batch_update_time`, `batch_id`) " +
             "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
-            "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage)";
+            "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.cleanUpMainTableSql, milestoningSqlList.get(0));
@@ -85,7 +85,7 @@ public class NontemporalSnapshotTest extends NontemporalSnapshotTestCases
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
                 "PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
                 "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') FROM " +
-                "`mydb`.`staging_legend_persistence_temp_staging` as stage)";
+                "`mydb`.`staging_temp_staging_lp_yosulf` as stage)";
 
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableWithAuditPKCreateQuery, preActionsSqlList.get(0));
         Assertions.assertEquals(BigQueryTestArtifacts.expectedMetadataTableCreateQuery, preActionsSqlList.get(1));

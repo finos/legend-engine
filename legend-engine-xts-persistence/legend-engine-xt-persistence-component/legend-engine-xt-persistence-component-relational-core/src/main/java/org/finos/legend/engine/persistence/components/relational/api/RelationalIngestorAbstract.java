@@ -23,6 +23,8 @@ import org.finos.legend.engine.persistence.components.executor.Executor;
 import org.finos.legend.engine.persistence.components.importer.Importer;
 import org.finos.legend.engine.persistence.components.importer.Importers;
 import org.finos.legend.engine.persistence.components.ingestmode.*;
+import org.finos.legend.engine.persistence.components.ingestmode.deduplication.DatasetDeduplicationHandler;
+import org.finos.legend.engine.persistence.components.ingestmode.versioning.DeriveDataErrorRowsLogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
@@ -32,6 +34,7 @@ import org.finos.legend.engine.persistence.components.planner.Planners;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
 import org.finos.legend.engine.persistence.components.relational.RelationalSink;
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
+import org.finos.legend.engine.persistence.components.relational.exception.DataQualityException;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
@@ -42,6 +45,7 @@ import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataUtils;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.TableNameGenUtils;
 import org.finos.legend.engine.persistence.components.util.SchemaEvolutionCapability;
 import org.finos.legend.engine.persistence.components.util.SqlLogging;
 import org.immutables.value.Value.Default;
@@ -56,8 +60,12 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType.*;
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.TABLE_IS_NON_EMPTY;
 import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.*;
+import static org.finos.legend.engine.persistence.components.relational.api.ApiUtils.retrieveValueAsLong;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DATA_VERSION_ERRORS;
+import static org.finos.legend.engine.persistence.components.relational.api.DataErrorAbstract.NUM_DUPLICATES;
 import static org.finos.legend.engine.persistence.components.relational.api.RelationalGeneratorAbstract.BULK_LOAD_BATCH_STATUS_PATTERN;
 import static org.finos.legend.engine.persistence.components.transformer.Transformer.TransformOptionsAbstract.DATE_TIME_FORMATTER;
 
@@ -162,6 +170,18 @@ public abstract class RelationalIngestorAbstract
         return MetadataUtils.MetaTableStatus.DONE.toString();
     }
 
+    @Default
+    public int sampleRowCount()
+    {
+        return 20;
+    }
+
+    @Derived
+    public String getIngestRunId()
+    {
+        return UUID.randomUUID().toString();
+    }
+
     //---------- FIELDS ----------
 
     public abstract IngestMode ingestMode();
@@ -189,7 +209,6 @@ public abstract class RelationalIngestorAbstract
     private GeneratorResult generatorResult;
     boolean mainDatasetExists;
     private Planner planner;
-
     private boolean datasetsInitialized = false;
 
     // ---------- API ----------
@@ -258,6 +277,21 @@ public abstract class RelationalIngestorAbstract
         SchemaEvolutionResult schemaEvolveResult = SchemaEvolutionResult.builder().updatedDatasets(enrichedDatasets).addAllSchemaEvolutionSql(schemaEvolutionSql).build();
         return schemaEvolveResult;
     }
+
+    /*
+    - Perform dry run of Ingestion - only supported for Bulk Load
+    */
+    public DryRunResult dryRun()
+    {
+        LOGGER.info("Invoked dryRun method, will perform the dryRun");
+        validateDatasetsInitialization();
+        List<DataError> dataErrors = performDryRun();
+        IngestStatus ingestStatus = dataErrors.isEmpty() ? IngestStatus.SUCCEEDED : IngestStatus.FAILED;
+        DryRunResult dryRunResult = DryRunResult.builder().status(ingestStatus).addAllErrorRecords(dataErrors).build();
+        LOGGER.info("DryRun completed");
+        return dryRunResult;
+    }
+
 
     /*
     - Perform ingestion from staging to main dataset based on the Ingest mode, executes in current transaction
@@ -415,24 +449,43 @@ public abstract class RelationalIngestorAbstract
         {
             LOGGER.info("Executing Deduplication and Versioning");
             executor.executePhysicalPlan(generatorResult.deduplicationAndVersioningSqlPlan().get());
-            Map<DedupAndVersionErrorStatistics, Object> errorStatistics = executeDeduplicationAndVersioningErrorChecks(executor, generatorResult.deduplicationAndVersioningErrorChecksSqlPlan());
-            /* Error Checks
-            1. if Dedup = fail on dups, Fail the job if count > 1
-            2. If versioining = Max Version/ All Versioin, Check for data error
-            */
-            Optional<Long> maxDuplicatesValue = retrieveValueAsLong(errorStatistics.get(DedupAndVersionErrorStatistics.MAX_DUPLICATES));
-            Optional<Long> maxDataErrorsValue = retrieveValueAsLong(errorStatistics.get(DedupAndVersionErrorStatistics.MAX_DATA_ERRORS));
-            if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
+
+            Map<DedupAndVersionErrorSqlType, SqlPlan> dedupAndVersionErrorSqlTypeSqlPlanMap = generatorResult.deduplicationAndVersioningErrorChecksSqlPlan();
+
+            // Error Check for Duplicates: if Dedup = fail on dups, Fail the job if count > 1
+            if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DUPLICATES))
             {
-                String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
-                LOGGER.error(errorMessage);
-                throw new RuntimeException(errorMessage);
+                List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DUPLICATES));
+                Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+                Optional<Long> maxDuplicatesValue = retrieveValueAsLong(obj.orElse(null));
+                if (maxDuplicatesValue.isPresent() && maxDuplicatesValue.get() > 1)
+                {
+                    // Find the duplicate rows
+                    TabularData duplicateRows = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DUPLICATE_ROWS)).get(0);
+                    String errorMessage = "Encountered Duplicates, Failing the batch as Fail on Duplicates is set as Deduplication strategy";
+                    LOGGER.error(errorMessage);
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), duplicateRows.getData(),
+                            ErrorCategory.DUPLICATES, caseConversion(), DatasetDeduplicationHandler.COUNT, NUM_DUPLICATES);
+                    throw new DataQualityException(errorMessage, dataErrors);
+                }
             }
-            if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
+
+            // Error Check for Data Error: If versioning = Max Version/ All Versioning, Check for data error
+            if (dedupAndVersionErrorSqlTypeSqlPlanMap.containsKey(MAX_DATA_ERRORS))
             {
-                String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
-                LOGGER.error(errorMessage);
-                throw new RuntimeException(errorMessage);
+                List<TabularData> result = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(MAX_DATA_ERRORS));
+                Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
+                Optional<Long> maxDataErrorsValue = retrieveValueAsLong(obj.orElse(null));
+                if (maxDataErrorsValue.isPresent() && maxDataErrorsValue.get() > 1)
+                {
+                    // Find the data errors
+                    TabularData errors = executor.executePhysicalPlanAndGetResults(dedupAndVersionErrorSqlTypeSqlPlanMap.get(DATA_ERROR_ROWS)).get(0);
+                    String errorMessage = "Encountered Data errors (same PK, same version but different data), hence failing the batch";
+                    LOGGER.error(errorMessage);
+                    List<DataError> dataErrors = ApiUtils.constructDataQualityErrors(enrichedDatasets.stagingDataset(), errors.getData(),
+                            ErrorCategory.DATA_VERSION_ERROR, caseConversion(), DeriveDataErrorRowsLogicalPlan.DATA_VERSION_ERROR_COUNT, NUM_DATA_VERSION_ERRORS);
+                    throw new DataQualityException(errorMessage, dataErrors);
+                }
             }
         }
     }
@@ -487,6 +540,21 @@ public abstract class RelationalIngestorAbstract
         {
             LOGGER.info(String.format("Starting Ingestion with IngestMode: {%s}", enrichedIngestMode.getClass().getSimpleName()));
             return performIngestion(enrichedDatasets, transformer, planner, executor, generatorResult, dataSplitRanges, enrichedIngestMode, schemaEvolutionResult);
+        }
+    }
+
+    private List<DataError> performDryRun()
+    {
+        if (enrichedIngestMode instanceof BulkLoad)
+        {
+            executor.executePhysicalPlan(generatorResult.dryRunPreActionsSqlPlan());
+            List<DataError> results = relationalSink().performDryRun(enrichedDatasets, transformer, executor, generatorResult.dryRunSqlPlan(), generatorResult.dryRunValidationSqlPlan(), sampleRowCount(), caseConversion());
+            executor.executePhysicalPlan(generatorResult.dryRunPostCleanupSqlPlan());
+            return results;
+        }
+        else
+        {
+            throw new RuntimeException("Dry Run not supported for this ingest Mode : " + enrichedIngestMode.getClass().getSimpleName());
         }
     }
 
@@ -547,6 +615,7 @@ public abstract class RelationalIngestorAbstract
         {
             throw new IllegalStateException("Executor not initialized, call init(Connection) before invoking this method!");
         }
+
         // 1. Case handling
         enrichedIngestMode = ApiUtils.applyCase(ingestMode(), caseConversion());
         enrichedDatasets = ApiUtils.enrichAndApplyCase(datasets, caseConversion());
@@ -611,6 +680,8 @@ public abstract class RelationalIngestorAbstract
                 .putAllAdditionalMetadata(placeholderAdditionalMetadata)
                 .bulkLoadEventIdValue(bulkLoadEventIdValue())
                 .batchSuccessStatusValue(batchSuccessStatusValue())
+                .sampleRowCount(sampleRowCount())
+                .ingestRunId(getIngestRunId())
                 .build();
 
         planner = Planners.get(enrichedDatasets, enrichedIngestMode, generator.plannerOptions(), relationalSink().capabilities());
@@ -702,7 +773,7 @@ public abstract class RelationalIngestorAbstract
         DatasetReference mainDataSetReference = datasets.mainDataset().datasetReference();
 
         externalDatasetReference = externalDatasetReference
-            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : LogicalPlanUtils.generateTableNameWithSuffix(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING))
+            .withName(externalDatasetReference.name().isPresent() ? externalDatasetReference.name().get() : TableNameGenUtils.generateTableName(mainDataSetReference.name().orElseThrow(IllegalStateException::new), STAGING, getIngestRunId()))
             .withDatabase(externalDatasetReference.database().isPresent() ? externalDatasetReference.database().get() : mainDataSetReference.database().orElse(null))
             .withGroup(externalDatasetReference.group().isPresent() ? externalDatasetReference.group().get() : mainDataSetReference.group().orElse(null))
             .withAlias(externalDatasetReference.alias().isPresent() ? externalDatasetReference.alias().get() : mainDataSetReference.alias().orElseThrow(RuntimeException::new) + UNDERSCORE + STAGING);
@@ -757,20 +828,6 @@ public abstract class RelationalIngestorAbstract
         for (Map.Entry<StatisticName, SqlPlan> entry: statisticsSqlPlan.entrySet())
         {
             List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue(), placeHolderKeyValues);
-            Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
-            Object value = obj.orElse(null);
-            results.put(entry.getKey(), value);
-        }
-        return results;
-    }
-
-    private Map<DedupAndVersionErrorStatistics, Object> executeDeduplicationAndVersioningErrorChecks(Executor<SqlGen, TabularData, SqlPlan> executor,
-                                                                                                     Map<DedupAndVersionErrorStatistics, SqlPlan> errorChecksPlan)
-    {
-        Map<DedupAndVersionErrorStatistics, Object> results = new HashMap<>();
-        for (Map.Entry<DedupAndVersionErrorStatistics, SqlPlan> entry: errorChecksPlan.entrySet())
-        {
-            List<TabularData> result = executor.executePhysicalPlanAndGetResults(entry.getValue());
             Optional<Object> obj = getFirstColumnValue(getFirstRowForFirstResult(result));
             Object value = obj.orElse(null);
             results.put(entry.getKey(), value);

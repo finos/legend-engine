@@ -77,7 +77,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
         List<String> metaIngestSqlList = operations.metadataIngestSql();
 
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
-                "USING \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+                "USING \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
                 "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
                 "WHEN MATCHED AND sink.\"digest\" <> stage.\"digest\" " +
                 "THEN UPDATE SET " +
@@ -107,7 +107,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     public void verifyNonTemporalDeltaNoAuditingNoDedupAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
-                "USING (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+                "USING (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
                 "WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
                 "as stage ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
                 "WHEN MATCHED AND sink.\"digest\" <> stage.\"digest\" " +
@@ -161,7 +161,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
     public void verifyNonTemporalDeltaWithWithAuditingFailOnDupsAllVersion(List<GeneratorResult> operations, List<DataSplitRange> dataSplitRanges)
     {
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
-                "USING (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+                "USING (SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"digest\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
                 "WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) " +
                 "as stage ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
                 "WHEN MATCHED AND sink.\"digest\" <> stage.\"digest\" " +
@@ -343,7 +343,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
 
         String mergeSql = "MERGE INTO \"mydb\".\"main\" as sink " +
             "USING " +
-            "\"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+            "\"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
             "ON (sink.\"id\" = stage.\"id\") AND (sink.\"name\" = stage.\"name\") " +
             "WHEN MATCHED AND stage.\"version\" > sink.\"version\" " +
             "THEN UPDATE SET sink.\"id\" = stage.\"id\",sink.\"name\" = stage.\"name\",sink.\"amount\" = stage.\"amount\",sink.\"biz_date\" = stage.\"biz_date\",sink.\"digest\" = stage.\"digest\",sink.\"version\" = stage.\"version\"," +
@@ -426,7 +426,7 @@ public class NontemporalDeltaMergeTest extends NontemporalDeltaTest
 
         String mergeSql = "MERGE INTO \"MYDB\".\"MAIN\" as sink " +
             "USING " +
-            "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage " +
+            "\"MYDB\".\"STAGING_TEMP_STAGING_LP_YOSULF\" as stage " +
             "ON (sink.\"ID\" = stage.\"ID\") AND (sink.\"NAME\" = stage.\"NAME\") " +
             "WHEN MATCHED AND stage.\"VERSION\" >= sink.\"VERSION\" " +
             "THEN UPDATE SET sink.\"ID\" = stage.\"ID\",sink.\"NAME\" = stage.\"NAME\",sink.\"AMOUNT\" = stage.\"AMOUNT\",sink.\"BIZ_DATE\" = stage.\"BIZ_DATE\",sink.\"DIGEST\" = stage.\"DIGEST\",sink.\"VERSION\" = stage.\"VERSION\"," +

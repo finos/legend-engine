@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.logicalplan;
 
 import org.finos.legend.engine.persistence.components.common.Datasets;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
@@ -114,6 +115,16 @@ public class LogicalPlanFactory
         Selection selection = Selection.builder()
                 .addFields(FunctionImpl.builder().functionName(FunctionName.MAX).addValue(field).alias(MAX_OF_FIELD).build())
                 .source(dataset).build();
+        return LogicalPlan.builder().addOps(selection).build();
+    }
+
+    public static LogicalPlan getLogicalPlanForSelectAllFieldsWithStringFieldEquals(FieldValue field, String fieldValue)
+    {
+        Selection selection = Selection.builder()
+            .addFields(All.INSTANCE)
+            .source(field.datasetRef())
+            .condition(Equals.of(field, StringValue.of(fieldValue)))
+            .build();
         return LogicalPlan.builder().addOps(selection).build();
     }
 }
