@@ -132,23 +132,6 @@ public class ModelManager
         }
     }
 
-    public PureModelContextData loadData(List<PureModelContext> pureModelContextList, String clientVersion, Identity identity)
-    {
-        try (Scope scope = tracer.buildSpan("Load Model").startActive(true))
-        {
-            scope.span().setTag("context", pureModelContextList.get(0).getClass().getSimpleName());
-            if (pureModelContextList.stream().allMatch(pureModelContext -> pureModelContext instanceof PureModelContextPointer))
-            {
-                ModelLoader loader = this.modelLoaderForContext(pureModelContextList.get(0));
-                return loader.load(identity, pureModelContextList, clientVersion, scope.span());
-            }
-            else
-            {
-                throw new UnsupportedOperationException("Invalid arguments - PureModelContextList should have all elements of type PureModelContextPointer");
-            }
-        }
-    }
-
     public ModelLoader modelLoaderForContext(PureModelContext context)
     {
         MutableList<ModelLoader> loaders = modelLoaders.select(loader -> loader.supports(context));

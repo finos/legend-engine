@@ -27,8 +27,6 @@ public interface ModelLoader
 
     PureModelContextData load(Identity identity, PureModelContext context, String clientVersion, Span parentSpan);
 
-    PureModelContextData load(Identity identity, List<PureModelContext> contextList, String clientVersion, Span parentSpan);
-
     void setModelManager(ModelManager modelManager);
 
     // Caching
