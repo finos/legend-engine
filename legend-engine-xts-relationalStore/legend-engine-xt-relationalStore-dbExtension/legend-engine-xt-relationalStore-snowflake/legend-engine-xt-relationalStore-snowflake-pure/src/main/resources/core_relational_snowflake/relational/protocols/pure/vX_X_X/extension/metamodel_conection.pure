@@ -29,6 +29,9 @@ Class meta::protocols::pure::vX_X_X::metamodel::store::relational::connection::a
     proxyPort: String[0..1];
     nonProxyHosts: String[0..1];
 
+    tempTableDb: String[0..1];
+    tempTableSchema: String[0..1];
+
     role: String [0..1];
 }
 

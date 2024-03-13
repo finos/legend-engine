@@ -61,8 +61,17 @@ Class meta::pure::metamodel::dataSpace::DataSpaceExecutable
 {
   title: String[1];
   description: String[0..1];
-  // here we scan for Service and Executable
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpacePackageableElementExecutable extends meta::pure::metamodel::dataSpace::DataSpaceExecutable
+{
   executable: PackageableElement[1];
+}
+
+Class meta::pure::metamodel::dataSpace::DataSpaceTemplateExecutable extends meta::pure::metamodel::dataSpace::DataSpaceExecutable
+{
+   query: FunctionDefinition<Any>[1];
+   executionContextKey: String[0..1];
 }
 
 Class << typemodifiers.abstract >> meta::pure::metamodel::dataSpace::DataSpaceSupportInfo {

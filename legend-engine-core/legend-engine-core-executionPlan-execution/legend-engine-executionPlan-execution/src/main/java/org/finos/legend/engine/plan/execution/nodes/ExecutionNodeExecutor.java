@@ -86,6 +86,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Cla
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.SerializationConfig;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.classInstance.graph.PropertyGraphFetchTree;
 import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.pac4j.core.profile.ProfileManager;
 
 import java.util.Arrays;
@@ -367,7 +368,7 @@ public class ExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
                     String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
                     String executionMethodName = JavaHelper.getExecutionMethodName(javaPlatformImpl);
 
-                    Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(graphFetchExecutionNode, executionClassName, executionMethodName, Arrays.asList(StreamingObjectResult.class, ExecutionNode.class, ExecutionState.class, ProfileManager.class), Arrays.asList(objectResult, graphFetchExecutionNode, this.executionState, this.identity), this.executionState, this.identity);
+                    Stream<?> transformedResult = ExecutionNodeJavaPlatformHelper.executeStaticJavaMethod(graphFetchExecutionNode, executionClassName, executionMethodName, Arrays.asList(StreamingObjectResult.class, ExecutionNode.class, ExecutionState.class, ProfileManager.class), Arrays.asList(objectResult, graphFetchExecutionNode, this.executionState, Lists.mutable.withAll(IdentityFactoryProvider.getInstance().adapt(identity))), this.executionState, this.identity);
                     return new StreamingObjectResult<>(transformedResult, objectResult.getResultBuilder(), objectResult);
                 }
                 catch (Exception e)
