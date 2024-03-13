@@ -133,10 +133,10 @@ public class WorkspaceSDLCLoader
         {
             String patHeaderName = ((MetadataServerPrivateAccessTokenConfiguration) this.sdlcServerConnectionConfig.pac4j).accessTokenHeaderName;
             String clientName = ((MetadataServerPrivateAccessTokenConfiguration) this.sdlcServerConnectionConfig.pac4j).clientName;
-            if(identity != null && identity.getCredential(OAuthCredential.class).isPresent())
+            if (identity != null && identity.getCredential(OAuthCredential.class).isPresent())
             {
                 String accessToken = identity.getCredential(OAuthCredential.class).get().getAccessToken();
-                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, clientName)); // TODO client name for sdlc should also come from config and should match with sdlc config
+                httpRequest = new HttpGet(String.format("%s?client_name=%s", url, clientName));
                 httpRequest.addHeader(new BasicHeader(patHeaderName, accessToken));
             }
         }
