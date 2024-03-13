@@ -16,13 +16,10 @@
 package org.finos.legend.engine.persistence.components.relational.api;
 
 import org.finos.legend.engine.persistence.components.relational.SqlPlan;
-import org.finos.legend.engine.persistence.components.relational.SqlPlanAbstract;
 import org.immutables.value.Value.Immutable;
 import org.immutables.value.Value.Style;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 @Immutable
 @Style(
@@ -35,10 +32,6 @@ import java.util.Optional;
 public abstract class SinkCleanupGeneratorResultAbstract
 {
     public abstract SqlPlan preActionsSqlPlan();
-
-    public abstract Optional<SqlPlan> initializeLockSqlPlan();
-
-    public abstract Optional<SqlPlan> acquireLockSqlPlan();
 
     public abstract SqlPlan dropSqlPlan();
 
@@ -59,16 +52,4 @@ public abstract class SinkCleanupGeneratorResultAbstract
     {
         return dropSqlPlan().getSqlList();
     }
-
-    public List<String> initializeLockSql()
-    {
-        return initializeLockSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
-    }
-
-    public List<String> acquireLockSql()
-    {
-        return acquireLockSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
-    }
-
-
 }

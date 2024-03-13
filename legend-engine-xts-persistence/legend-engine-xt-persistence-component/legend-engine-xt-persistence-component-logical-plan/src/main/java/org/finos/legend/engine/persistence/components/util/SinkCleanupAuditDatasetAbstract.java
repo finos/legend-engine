@@ -55,21 +55,15 @@ public interface SinkCleanupAuditDatasetAbstract
     }
 
     @Default
-    default String batchStartTimeField()
+    default String executionTimeField()
     {
-        return "batch_start_ts_utc";
+        return "execution_ts_utc";
     }
 
     @Default
-    default String batchEndTimeField()
+    default String statusField()
     {
-        return "batch_end_ts_utc";
-    }
-
-    @Default
-    default String batchStatusField()
-    {
-        return "batch_status";
+        return "status";
     }
 
 
@@ -82,9 +76,8 @@ public interface SinkCleanupAuditDatasetAbstract
             .name(auditDatasetName())
             .schema(SchemaDefinition.builder()
                 .addFields(Field.builder().name(tableNameField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
-                .addFields(Field.builder().name(batchStartTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
-                .addFields(Field.builder().name(batchEndTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
-                .addFields(Field.builder().name(batchStatusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
+                .addFields(Field.builder().name(executionTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
+                .addFields(Field.builder().name(statusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
                 .addFields(Field.builder().name(requestedBy()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
                 .build())
             .build();

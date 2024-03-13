@@ -21,7 +21,6 @@ import org.finos.legend.engine.persistence.components.relational.api.RelationalS
 import org.finos.legend.engine.persistence.components.relational.api.SinkCleanupIngestorResult;
 import org.finos.legend.engine.persistence.components.relational.h2.H2Sink;
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnection;
-import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -57,38 +56,6 @@ public class RelationalSinkCleanerTest extends BaseTest
         //Table counts after sink cleanup
         List<Map<String, Object>> auditTableData = h2Sink.executeQuery("select count(*) as audit_table_count from \"sink_cleanup_audit\" where table_name = 'main'");
         Assertions.assertEquals(auditTableData.get(0).get("audit_table_count"), 1L);
-        List<Map<String, Object>> tableAfterSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
-        Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
-    }
-
-    @Test
-    void testExecuteSinkCleanupWithConcurrency()
-    {
-        MetadataDataset metadata = MetadataDataset.builder().metadataDatasetName("batch_metadata").build();
-        DatasetDefinition mainTable = TestUtils.getDefaultMainTable();
-        LockInfoDataset lockTable = LockInfoDataset.builder().name("lock_info").build();
-        createSampleMainTableWithData(mainTable.name());
-        createBatchMetadataTableWithData(metadata.metadataDatasetName(), mainTable.name());
-        RelationalSinkCleaner sinkCleaner = RelationalSinkCleaner.builder()
-                .relationalSink(H2Sink.get())
-                .mainDataset(mainTable)
-                .executionTimestampClock(fixedClock_2000_01_01)
-                .enableConcurrentSafety(true)
-                .lockInfoDataset(lockTable)
-                .requestedBy("lh_dev")
-                .metadataDataset(metadata)
-                .build();
-
-        //Table counts before sink cleanup
-        List<Map<String, Object>> tableBeforeSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
-        Assertions.assertEquals(tableBeforeSinkCleanup.get(0).get("batch_metadata_count"), 1L);
-
-        SinkCleanupIngestorResult result = sinkCleaner.executeOperationsForSinkCleanup(JdbcConnection.of(h2Sink.connection()));
-        Assertions.assertEquals(result.status(), IngestStatus.SUCCEEDED);
-
-        //Table counts after sink cleanup
-        List<Map<String, Object>> auditTableData = h2Sink.executeQuery("select count(*) as audit_table_count from \"sink_cleanup_audit\" where table_name = 'main'");
-        Assertions.assertEquals(auditTableData.get(0).get("audit_table_count"), 2L);
         List<Map<String, Object>> tableAfterSinkCleanup = h2Sink.executeQuery("select count(*) as batch_metadata_count from \"batch_metadata\" where table_name = 'main'");
         Assertions.assertEquals(tableAfterSinkCleanup.get(0).get("batch_metadata_count"), 0L);
     }
