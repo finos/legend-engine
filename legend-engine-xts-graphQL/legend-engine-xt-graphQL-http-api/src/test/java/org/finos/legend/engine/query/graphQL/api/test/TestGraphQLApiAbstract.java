@@ -170,6 +170,7 @@ public abstract class TestGraphQLApiAbstract
         ContextHandler contextHandler = new ContextHandler(path);
         AbstractHandler handler = new AbstractHandler()
         {
+            @SuppressWarnings("checkstyle:NeedBraces")
             @Override
             public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
             {
@@ -178,10 +179,14 @@ public abstract class TestGraphQLApiAbstract
                     String requestBody = request.getReader().lines().collect(Collectors.joining("\n"));
                     JsonNode jsonNode = OBJECT_MAPPER.readTree(requestBody);
                     StringBuilder sb = new StringBuilder();
-                    for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); ) {
+                    for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); )
+                    {
                         JsonNode json = it.next();
-                        sb.append(json.get("groupId").textValue() + ":" + json.get("artifactId").textValue() + ":" + json.get("versionId").textValue());
-                        if(it.hasNext()) sb.append(",");
+                        sb.append(json.get("groupId").textValue()).append(":").append(json.get("artifactId").textValue()).append(":").append(json.get("versionId").textValue());
+                        if (it.hasNext())
+                        {
+                            sb.append(",");
+                        }
                     }
                     PureModelContextData pureModelContextData = PureModelContextData.newBuilder()
                                                                     .withOrigin(pointer)

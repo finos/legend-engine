@@ -151,16 +151,18 @@ public class WorkspaceSDLCLoader
 
     private PureModelContextData loadDependencyData(Identity profiles, String clientVersion, List<SDLCProjectDependency> dependencies)
     {
-        List<PureModelContext> contexts = dependencies.stream().map(dependency -> {
-            PureModelContextPointer pointer = new PureModelContextPointer();
-            AlloySDLC sdlcInfo = new AlloySDLC();
-            sdlcInfo.groupId = dependency.getGroupId();
-            sdlcInfo.artifactId = dependency.getArtifactId();
-            sdlcInfo.version = dependency.getVersionId();
-            pointer.sdlcInfo = sdlcInfo;
-            pointer.serializer = new Protocol("pure", clientVersion);
-            return pointer;
-        }).collect(Collectors.toList());
+        List<PureModelContext> contexts = dependencies.stream().map(dependency ->
+            {
+                PureModelContextPointer pointer = new PureModelContextPointer();
+                AlloySDLC sdlcInfo = new AlloySDLC();
+                sdlcInfo.groupId = dependency.getGroupId();
+                sdlcInfo.artifactId = dependency.getArtifactId();
+                sdlcInfo.version = dependency.getVersionId();
+                pointer.sdlcInfo = sdlcInfo;
+                pointer.serializer = new Protocol("pure", clientVersion);
+                return pointer;
+            }
+        ).collect(Collectors.toList());
         return this.modelManager.loadData(new PureModelContextCollection(contexts), clientVersion, profiles);
     }
 
