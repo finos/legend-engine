@@ -296,3 +296,15 @@ function flatten::semiStructuredMultiFlatten(): TabularDataSet[1]
         col(x | $x.firm.otherNames, 'Firm Other Name')
     ])
 }
+
+function flatten::semiStructuredMultiLevelFlattenMerging(): TabularDataSet[1]
+{
+    flatten::model::Person.all()
+    ->project([
+        col(x | $x.firstName, 'First Name'),
+        col(x | $x.firm.addresses.name, 'Firm Address Name'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines.lineno, 'Firm Address Line No'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines->subType(@flatten::model::StreetAddressLine).street, 'Firm Address Street'),
+        col(x | $x.firm.addresses->subType(@flatten::model::AddressWithLines).lines->subType(@flatten::model::CityAddressLine).city, 'Firm Address City')
+    ])
+}

@@ -1940,7 +1940,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
          let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne());
          let leftAlias = $result.currentTreeNode->toOne().alias;
          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
-         let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(true, true, $extensions);
+         let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
          let join = ^Join(
             name = $joinName,
             target = $rightAlias,
@@ -7264,7 +7264,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   let leftAlias = $toExplodeRootTreeNode.alias;
   let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = ^SemiStructuredPropertyAccess(property = $pathToExplode, operand = ^$columnToExplode(alias = $toExplodeRootTreeNode.alias)));
   let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_0');
-  let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(true, true, $extensions);
+  let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
   let lateralJoin = ^Join(
     name      = $joinName,
     target    = $rightAlias,
