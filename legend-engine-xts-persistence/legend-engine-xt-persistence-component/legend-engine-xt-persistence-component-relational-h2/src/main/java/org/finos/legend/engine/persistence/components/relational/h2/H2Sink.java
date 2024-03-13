@@ -49,6 +49,8 @@ import org.finos.legend.engine.persistence.components.relational.ansi.AnsiSqlSin
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.LowerCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.ansi.optimizer.UpperCaseOptimizer;
 import org.finos.legend.engine.persistence.components.relational.api.DataError;
+import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
+import org.finos.legend.engine.persistence.components.relational.api.ApiUtils;
 import org.finos.legend.engine.persistence.components.relational.api.ErrorCategory;
 import org.finos.legend.engine.persistence.components.relational.api.IngestStatus;
 import org.finos.legend.engine.persistence.components.relational.api.IngestorResult;
@@ -79,7 +81,6 @@ import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcConnec
 import org.finos.legend.engine.persistence.components.relational.jdbc.JdbcHelper;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
-import org.finos.legend.engine.persistence.components.relational.api.RelationalConnection;
 import org.finos.legend.engine.persistence.components.relational.executor.RelationalExecutor;
 import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 import org.finos.legend.engine.persistence.components.util.ValidationCategory;
@@ -276,15 +277,16 @@ public class H2Sink extends AnsiSqlSink
     private List<DataError> parseH2Exceptions(Exception e)
     {
         String errorMessage = e.getMessage();
+        String errorMessageWithoutLineBreak = ApiUtils.removeLineBreaks(errorMessage);
 
         if (errorMessage.contains("IO Exception"))
         {
-            String fileName = extractProblematicValueFromErrorMessage(errorMessage);
-            Map<String, Object> errorDetails = buildErrorDetails(Optional.of(fileName), Optional.empty(), Optional.empty());
+            Optional<String> fileName = extractProblematicValueFromErrorMessage(errorMessage);
+            Map<String, Object> errorDetails = buildErrorDetails(fileName, Optional.empty(), Optional.empty());
             return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.FILE_NOT_FOUND).errorMessage(ErrorCategory.FILE_NOT_FOUND.getDefaultErrorMessage()).putAllErrorDetails(errorDetails).build());
         }
 
-        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN).errorMessage(errorMessage).build());
+        return Collections.singletonList(DataError.builder().errorCategory(ErrorCategory.UNKNOWN).errorMessage(errorMessageWithoutLineBreak).build());
     }
 
     public List<DataError> performDryRunWithValidationQueries(Datasets datasets, Transformer<SqlGen, SqlPlan> transformer, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan dryRunSqlPlan, Map<ValidationCategory, List<Pair<Set<FieldValue>, SqlPlan>>> dryRunValidationSqlPlan, int sampleRowCount, CaseConversion caseConversion)
@@ -315,20 +317,22 @@ public class H2Sink extends AnsiSqlSink
             }
             catch (RuntimeException e)
             {
-                String problematicValue = extractProblematicValueFromErrorMessage(e.getCause().getMessage());
-
-                // This loop will only be executed once as there is always only one element in the set
-                for (FieldValue validatedColumn : pair.getOne())
+                Optional<String> problematicValue = extractProblematicValueFromErrorMessage(e.getCause().getMessage());
+                if (problematicValue.isPresent())
                 {
-                    List<TabularData> results = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForSelectAllFieldsWithStringFieldEquals(validatedColumn, problematicValue)), sampleRowCount);
-                    if (!results.isEmpty())
+                    // This loop will only be executed once as there is always only one element in the set
+                    for (FieldValue validatedColumn : pair.getOne())
                     {
-                        List<Map<String, Object>> resultSets = results.get(0).getData();
-                        for (Map<String, Object> row : resultSets)
+                        List<TabularData> results = executor.executePhysicalPlanAndGetResults(transformer.generatePhysicalPlan(LogicalPlanFactory.getLogicalPlanForSelectAllFieldsWithStringFieldEquals(validatedColumn, problematicValue.get())), sampleRowCount);
+                        if (!results.isEmpty())
                         {
-                            DataError dataError = constructDataError(allFields, row, TYPE_CONVERSION, validatedColumn.fieldName(), caseConversion);
-                            dataErrorsByCategory.get(TYPE_CONVERSION).add(dataError);
-                            dataErrorsTotalCount++;
+                            List<Map<String, Object>> resultSets = results.get(0).getData();
+                            for (Map<String, Object> row : resultSets)
+                            {
+                                DataError dataError = constructDataError(allFields, row, TYPE_CONVERSION, validatedColumn.fieldName(), caseConversion);
+                                dataErrorsByCategory.get(TYPE_CONVERSION).add(dataError);
+                                dataErrorsTotalCount++;
+                            }
                         }
                     }
                 }
@@ -339,21 +343,22 @@ public class H2Sink extends AnsiSqlSink
         return getDataErrorsWithFairDistributionAcrossCategories(sampleRowCount, dataErrorsTotalCount, dataErrorsByCategory);
     }
 
-    private String extractProblematicValueFromErrorMessage(String errorMessage)
+    private Optional<String> extractProblematicValueFromErrorMessage(String errorMessage)
     {
         errorMessage = errorMessage.substring(0, errorMessage.indexOf("; SQL statement"));
+        Optional<String> value = Optional.empty();
         if (errorMessage.contains("Data conversion error"))
         {
-            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Data conversion error converting ", "").replaceAll("\"", "");
+            value = ApiUtils.findToken(errorMessage, "Data conversion error converting \"(.*)\"", 1);
         }
         else if (errorMessage.contains("Cannot parse"))
         {
-            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLDataException: Cannot parse \"(.*)\" constant ", "").replaceAll("\"", "");
+            value = ApiUtils.findToken(errorMessage, "Cannot parse \"(.*)\" constant \"(.*)\"", 2);
         }
         else if (errorMessage.contains("IO Exception"))
         {
-            return errorMessage.replaceFirst("org.h2.jdbc.JdbcSQLNonTransientException: IO Exception: \"IOException reading ", "").replaceAll("\"", "");
+            value = ApiUtils.findToken(errorMessage, "IO Exception: \"IOException reading (.*)\"", 1);
         }
-        return errorMessage;
+        return value;
     }
 }

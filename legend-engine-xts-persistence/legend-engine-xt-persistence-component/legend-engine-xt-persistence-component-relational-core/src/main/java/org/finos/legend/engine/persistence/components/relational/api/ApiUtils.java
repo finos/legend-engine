@@ -42,6 +42,8 @@ import org.finos.legend.engine.persistence.components.util.LockInfoDataset;
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory.MAX_OF_FIELD;
@@ -296,6 +298,22 @@ public class ApiUtils
         {
             throw new RuntimeException(e);
         }
+    }
+
+    public static String removeLineBreaks(String str)
+    {
+        return str.replaceAll("\n", " ").replaceAll("\r", " ");
+    }
+
+    public static Optional<String> findToken(String message, String regex, int group)
+    {
+        Optional<String> token = Optional.empty();
+        Matcher matcher = Pattern.compile(regex).matcher(message);
+        if (matcher.find())
+        {
+            token = Optional.of(matcher.group(group));
+        }
+        return token;
     }
 
 }
