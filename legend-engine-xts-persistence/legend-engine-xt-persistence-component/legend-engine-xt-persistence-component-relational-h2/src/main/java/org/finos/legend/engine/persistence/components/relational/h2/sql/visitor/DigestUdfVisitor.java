@@ -22,9 +22,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Functio
 import org.finos.legend.engine.persistence.components.logicalplan.values.ObjectValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
-import org.finos.legend.engine.persistence.components.relational.h2.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.transformer.VisitorContext;
@@ -32,6 +32,7 @@ import org.finos.legend.engine.persistence.components.transformer.VisitorContext
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
 {
@@ -56,13 +57,25 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
             else
             {
                 // Else need to convert the field into a String
-                columnValueList.add(FunctionImpl.builder().functionName(FunctionName.CONVERT).addValue(current.values().get(i), ObjectValue.of(DataType.VARCHAR.name())).build());
+                columnValueList.add(getTypeConversionUdf(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames()));
             }
         }
 
-        ToArrayFunction columnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
-        ToArrayFunction columnValues = ToArrayFunction.builder().addAllValues(columnValueList).build();
+        ToArrayFunction toArrayColumnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
+        ToArrayFunction toArrayColumnValues = ToArrayFunction.builder().addAllValues(columnValueList).build();
 
-        return new VisitorResult(udf, Arrays.asList(columnNames, columnValues));
+        return new VisitorResult(udf, Arrays.asList(toArrayColumnNames, toArrayColumnValues));
+    }
+
+    private Value getTypeConversionUdf(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
+    {
+        if (typeConversionUdfNames.containsKey(dataType))
+        {
+            return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(typeConversionUdfNames.get(dataType)).addValues(value).build();
+        }
+        else
+        {
+            return FunctionImpl.builder().functionName(FunctionName.CONVERT).addValue(value, ObjectValue.of(DataType.VARCHAR.name())).build();
+        }
     }
 }

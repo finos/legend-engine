@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.relational.h2.sql.visitor;
+package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
 import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
@@ -30,8 +30,8 @@ public class ToArrayFunctionVisitor implements LogicalPlanVisitor<ToArrayFunctio
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, ToArrayFunction current, VisitorContext context)
     {
-        org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.ToArrayFunction function =
-            new org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.ToArrayFunction(
+        org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.values.ToArrayFunction function =
+            new org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.values.ToArrayFunction(
                 new ArrayList<>(),
                 current.alias().orElse(null),
                 context.quoteIdentifier()
@@ -39,7 +39,7 @@ public class ToArrayFunctionVisitor implements LogicalPlanVisitor<ToArrayFunctio
 
         for (Optimizer optimizer : context.optimizers())
         {
-            function = (org.finos.legend.engine.persistence.components.relational.h2.sqldom.schemaops.values.ToArrayFunction) optimizer.optimize(function);
+            function = (org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.values.ToArrayFunction) optimizer.optimize(function);
         }
         prev.push(function);
 

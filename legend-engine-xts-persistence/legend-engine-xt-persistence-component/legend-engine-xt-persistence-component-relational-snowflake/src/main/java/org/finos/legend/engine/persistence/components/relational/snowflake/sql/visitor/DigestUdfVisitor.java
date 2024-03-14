@@ -14,7 +14,9 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
+import org.finos.legend.engine.persistence.components.logicalplan.values.Function;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
@@ -27,6 +29,7 @@ import org.finos.legend.engine.persistence.components.transformer.VisitorContext
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
 {
@@ -36,14 +39,29 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
     {
         Udf udf = new Udf(context.quoteIdentifier(), current.udfName());
         prev.push(udf);
-        List<Value> values = new ArrayList<>();
+        List<Value> columnNameList = new ArrayList<>();
+        List<Value> columnValueList = new ArrayList<>();
         for (int i = 0; i < current.values().size(); i++)
         {
-            values.add(StringValue.of(current.fieldNames().get(i)));
-            values.add(current.values().get(i));
+            columnNameList.add(StringValue.of(current.fieldNames().get(i)));
+            columnValueList.add(getTypeConversionUdf(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames()));
         }
 
-        FunctionImpl function = FunctionImpl.builder().functionName(FunctionName.OBJECT_CONSTRUCT).addAllValue(values).build();
-        return new VisitorResult(udf, Arrays.asList(function));
+        Function toArrayColumnNames = FunctionImpl.builder().functionName(FunctionName.ARRAY_CONSTRUCT).addAllValue(columnNameList).build();
+        Function toArrayColumnValues = FunctionImpl.builder().functionName(FunctionName.ARRAY_CONSTRUCT).addAllValue(columnValueList).build();
+
+        return new VisitorResult(udf, Arrays.asList(toArrayColumnNames, toArrayColumnValues));
+    }
+
+    private Value getTypeConversionUdf(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
+    {
+        if (typeConversionUdfNames.containsKey(dataType))
+        {
+            return org.finos.legend.engine.persistence.components.logicalplan.values.Udf.builder().udfName(typeConversionUdfNames.get(dataType)).addValues(value).build();
+        }
+        else
+        {
+            return value;
+        }
     }
 }

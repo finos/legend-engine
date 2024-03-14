@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,35 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package org.finos.legend.engine.persistence.components.ingestmode.digest;
+package org.finos.legend.engine.persistence.components.logicalplan.values;
 
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
-import org.immutables.value.Value;
+import java.util.List;
 
-import java.util.Map;
-import java.util.Set;
-
-@Value.Immutable
-@Value.Style(
+@org.immutables.value.Value.Immutable
+@org.immutables.value.Value.Style(
         typeAbstract = "*Abstract",
         typeImmutable = "*",
         jdkOnly = true,
         optionalAcceptNullable = true,
         strictBuilder = true
 )
-public interface UDFBasedDigestGenStrategyAbstract extends DigestGenStrategy
+public interface UdfAbstract extends Value
 {
-    String digestUdfName();
 
-    String digestField();
+    String udfName();
 
-    Set<String> fieldsToExcludeFromDigest();
-
-    Map<DataType, String> typeConversionUdfNames();
-
-    @Override
-    default <T> T accept(DigestGenStrategyVisitor<T> visitor)
-    {
-        return visitor.visitUDFBasedDigestGenStrategy(this);
-    }
+    List<Value> values();
 }

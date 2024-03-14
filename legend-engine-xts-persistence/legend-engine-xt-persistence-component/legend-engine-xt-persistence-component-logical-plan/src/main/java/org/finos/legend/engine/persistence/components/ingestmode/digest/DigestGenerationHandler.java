@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.digest;
 
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
@@ -28,13 +29,15 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
 {
     private List<Value> fieldsToSelect;
     private List<Value> fieldsToInsert;
+    private List<DataType> fieldTypes;
     private Dataset mainDataset;
 
-    public DigestGenerationHandler(Dataset mainDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
+    public DigestGenerationHandler(Dataset mainDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert, List<DataType> fieldTypes)
     {
         this.mainDataset = mainDataset;
         this.fieldsToSelect = fieldsToSelect;
         this.fieldsToInsert = fieldsToInsert;
+        this.fieldTypes = fieldTypes;
     }
 
     @Override
@@ -49,9 +52,12 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
         Set<String> fieldsToExclude = udfBasedDigestGenStrategy.fieldsToExcludeFromDigest();
         List<String> filteredStagingFieldNames = new ArrayList<>();
         List<Value> filteredStagingFieldValues = new ArrayList<>();
+        List<DataType> filteredStagingFieldTypes = new ArrayList<>();
 
-        for (Value value: fieldsToSelect)
+        for (int i = 0; i < fieldsToSelect.size(); i++)
         {
+            Value value = fieldsToSelect.get(i);
+            DataType dataType = fieldTypes.get(i);
             if (value instanceof FieldValue)
             {
                 FieldValue fieldValue = (FieldValue) value;
@@ -59,6 +65,7 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
                 {
                     filteredStagingFieldNames.add(fieldValue.fieldName());
                     filteredStagingFieldValues.add(fieldValue);
+                    filteredStagingFieldTypes.add(dataType);
                 }
             }
             else if (value instanceof StagedFilesFieldValue)
@@ -68,6 +75,7 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
                 {
                     filteredStagingFieldNames.add(stagedFilesFieldValue.fieldName());
                     filteredStagingFieldValues.add(stagedFilesFieldValue);
+                    filteredStagingFieldTypes.add(dataType);
                 }
             }
             else
@@ -81,6 +89,8 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
             .udfName(udfBasedDigestGenStrategy.digestUdfName())
             .addAllFieldNames(filteredStagingFieldNames)
             .addAllValues(filteredStagingFieldValues)
+            .addAllFieldTypes(filteredStagingFieldTypes)
+            .putAllTypeConversionUdfNames(udfBasedDigestGenStrategy.typeConversionUdfNames())
             .build();
 
         String digestField = udfBasedDigestGenStrategy.digestField();

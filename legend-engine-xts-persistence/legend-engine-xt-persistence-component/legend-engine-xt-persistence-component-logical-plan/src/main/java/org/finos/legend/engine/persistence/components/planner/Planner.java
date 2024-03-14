@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.eclipse.collections.api.tuple.Pair;
+import org.eclipse.collections.impl.tuple.Tuples;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorSqlType;
 import org.finos.legend.engine.persistence.components.common.Resources;
@@ -34,6 +35,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanFactory;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Condition;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.DataType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.DerivedDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Field;
@@ -233,6 +235,33 @@ public abstract class Planner
     protected Dataset tempStagingDatasetWithoutPks()
     {
         return tempStagingDatasetWithoutPks.orElseThrow(IllegalStateException::new);
+    }
+
+    protected Pair<List<Value>, List<DataType>> getDataFieldsWithTypes()
+    {
+        List<Value> allDataFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
+        List<DataType> allFieldTypes = new ArrayList<>(stagingDataset().schema().fields().stream().map(field -> field.type().dataType()).collect(Collectors.toList()));
+
+        List<Value> desiredDataFields = new ArrayList<>();
+        List<DataType> desiredFieldTypes = new ArrayList<>();
+
+        Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
+        Optional<String> dataSplitField = ingestMode.dataSplitField();
+
+        for (int i = 0; i < allDataFields.size(); i++)
+        {
+            FieldValue fieldValue = (FieldValue) allDataFields.get(i);
+            DataType datatype = allFieldTypes.get(i);
+            if ((dedupField.isPresent() && dedupField.get().equalsIgnoreCase(fieldValue.fieldName())) ||
+                (dataSplitField.isPresent() && dataSplitField.get().equalsIgnoreCase(fieldValue.fieldName())))
+            {
+                continue;
+            }
+            desiredDataFields.add(fieldValue);
+            desiredFieldTypes.add(datatype);
+        }
+
+        return Tuples.pair(desiredDataFields, desiredFieldTypes);
     }
 
     protected List<Value> getDataFields()
