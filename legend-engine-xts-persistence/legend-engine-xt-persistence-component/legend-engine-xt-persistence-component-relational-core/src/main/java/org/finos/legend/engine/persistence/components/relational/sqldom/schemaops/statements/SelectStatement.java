@@ -43,24 +43,39 @@ public class SelectStatement extends SelectExpression implements DMLStatement
     private final List<Value> selectItems;
     private Long selectItemsSize;
     private final List<TableLike> tables;
-    private Condition condition;
+    private Condition whereCondition;
     private final List<Value> groupByFields;
+    private Condition havingCondition;
     private Integer limit;
+    private boolean hasWhereCondition;
 
     public SelectStatement()
     {
         this.selectItems = new ArrayList<>();
         this.tables = new ArrayList<>();
         this.groupByFields = new ArrayList<>();
+        this.hasWhereCondition = false;
     }
 
-    public SelectStatement(Quantifier quantifier, List<Value> selectItems, List<TableLike> tables, Condition condition, List<Value> groupByFields)
+    public SelectStatement(Quantifier quantifier, List<Value> selectItems, List<TableLike> tables, Condition whereCondition)
     {
         this.quantifier = quantifier;
         this.selectItems = selectItems;
         this.tables = tables;
-        this.condition = condition;
+        this.whereCondition = whereCondition;
+        this.hasWhereCondition = whereCondition != null;
+        this.groupByFields = new ArrayList<>();
+    }
+
+    public SelectStatement(Quantifier quantifier, List<Value> selectItems, List<TableLike> tables, Condition whereCondition, List<Value> groupByFields, Condition havingCondition)
+    {
+        this.quantifier = quantifier;
+        this.selectItems = selectItems;
+        this.tables = tables;
+        this.whereCondition = whereCondition;
         this.groupByFields = groupByFields;
+        this.hasWhereCondition = whereCondition != null;
+        this.havingCondition = havingCondition;
     }
 
     /*
@@ -107,10 +122,10 @@ public class SelectStatement extends SelectExpression implements DMLStatement
         }
 
         // Add where clause
-        if (condition != null)
+        if (whereCondition != null)
         {
             builder.append(WHITE_SPACE + Clause.WHERE.get() + WHITE_SPACE);
-            condition.genSql(builder);
+            whereCondition.genSql(builder);
         }
 
         // Add group by clause
@@ -128,6 +143,13 @@ public class SelectStatement extends SelectExpression implements DMLStatement
                     builder.append(COMMA + WHITE_SPACE);
                 }
             }
+        }
+
+        // Add having clause
+        if (havingCondition != null)
+        {
+            builder.append(WHITE_SPACE + Clause.HAVING.get() + WHITE_SPACE);
+            havingCondition.genSql(builder);
         }
 
         // Add limit clause
@@ -156,7 +178,14 @@ public class SelectStatement extends SelectExpression implements DMLStatement
         }
         else if (node instanceof Condition)
         {
-            condition = (Condition) node;
+            if (whereCondition == null && hasWhereCondition)
+            {
+                whereCondition = (Condition) node;
+            }
+            else
+            {
+                havingCondition = (Condition) node;
+            }
         }
         else if (node instanceof Quantifier)
         {
@@ -215,5 +244,10 @@ public class SelectStatement extends SelectExpression implements DMLStatement
     public void setLimit(int limit)
     {
         this.limit = limit;
+    }
+
+    public void setHasWhereCondition(boolean hasWhereCondition)
+    {
+        this.hasWhereCondition = hasWhereCondition;
     }
 }

@@ -15,6 +15,7 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake.logicalplan.datasets;
 
+import org.finos.legend.engine.persistence.components.common.FileFormatType;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.StagedFilesDatasetProperties;
 import org.immutables.value.Value;
 
@@ -36,4 +37,18 @@ public interface SnowflakeStagedFilesDatasetPropertiesAbstract extends StagedFil
     Optional<FileFormat> fileFormat();
 
     Map<String, Object> copyOptions();
+
+    @Value.Derived
+    default boolean validationModeSupported()
+    {
+        // Only supported for CSV
+        boolean validationModeSuppoerted = false;
+        if (fileFormat().isPresent() && fileFormat().get() instanceof StandardFileFormat)
+        {
+            StandardFileFormat standardFileFormat = (StandardFileFormat) fileFormat().get();
+            validationModeSuppoerted = standardFileFormat.formatType().equals(FileFormatType.CSV);
+        }
+
+        return validationModeSuppoerted;
+    }
 }

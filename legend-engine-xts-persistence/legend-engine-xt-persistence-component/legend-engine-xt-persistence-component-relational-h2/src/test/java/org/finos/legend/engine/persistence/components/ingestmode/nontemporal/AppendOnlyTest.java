@@ -552,6 +552,7 @@ class AppendOnlyTest extends BaseTest
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId("075605e3-bada-47d7-9ae9-7138f392fe22")
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -568,7 +569,7 @@ class AppendOnlyTest extends BaseTest
             "LAKEHOUSE_MD5(ARRAY['id','name','income','start_time','expiry_date'],ARRAY[CONVERT(staging.\"id\",VARCHAR),CONVERT(staging.\"name\",VARCHAR),CONVERT(staging.\"income\",VARCHAR),CONVERT(staging.\"start_time\",VARCHAR),CONVERT(staging.\"expiry_date\",VARCHAR)])," +
             "'2000-01-01 00:00:00.000000'," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
-            "FROM \"TEST\".\"staging_legend_persistence_temp_staging\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
+            "FROM \"TEST\".\"staging_temp_staging_lp_yosulf\" as staging WHERE (staging.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (staging.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));

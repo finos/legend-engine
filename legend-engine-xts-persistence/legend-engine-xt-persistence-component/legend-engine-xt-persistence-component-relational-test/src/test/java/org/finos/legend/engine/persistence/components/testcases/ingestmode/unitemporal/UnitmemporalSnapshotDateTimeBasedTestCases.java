@@ -60,6 +60,7 @@ public abstract class UnitmemporalSnapshotDateTimeBasedTestCases extends BaseTes
                 .relationalSink(getRelationalSink())
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
+                .ingestRunId(ingestRunId)
                 .build();
         GeneratorResult operations = generator.generateOperations(scenario.getDatasets());
         verifyUnitemporalSnapshotWithoutPartitionFailOnDupsMaxVersion(operations);

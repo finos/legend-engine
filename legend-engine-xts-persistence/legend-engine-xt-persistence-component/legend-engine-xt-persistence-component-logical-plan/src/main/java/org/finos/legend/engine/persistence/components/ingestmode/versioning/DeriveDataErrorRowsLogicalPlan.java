@@ -1,4 +1,4 @@
-// Copyright 2023 Goldman Sachs
+// Copyright 2024 Goldman Sachs
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,29 +14,30 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.versioning;
 
-import org.finos.legend.engine.persistence.components.common.DedupAndVersionErrorStatistics;
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlan;
-import org.finos.legend.engine.persistence.components.logicalplan.datasets.*;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionImpl;
-import org.finos.legend.engine.persistence.components.logicalplan.values.FunctionName;
-import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
+import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.Selection;
+import org.finos.legend.engine.persistence.components.logicalplan.values.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisitor<LogicalPlan>
+public class DeriveDataErrorRowsLogicalPlan implements VersioningStrategyVisitor<LogicalPlan>
 {
+    private List<String> primaryKeys;
+    private List<String> remainingColumns;
+    private Dataset tempStagingDataset;
+    private int sampleRowCount;
 
-    List<String> primaryKeys;
-    List<String> remainingColumns;
-    Dataset tempStagingDataset;
+    public static final String DATA_VERSION_ERROR_COUNT = "legend_persistence_error_count";
 
-    public DeriveDataErrorCheckLogicalPlan(List<String> primaryKeys, List<String> remainingColumns, Dataset tempStagingDataset)
+    public DeriveDataErrorRowsLogicalPlan(List<String> primaryKeys, List<String> remainingColumns, Dataset tempStagingDataset, int sampleRowCount)
     {
         this.primaryKeys = primaryKeys;
         this.remainingColumns = remainingColumns;
         this.tempStagingDataset = tempStagingDataset;
+        this.sampleRowCount = sampleRowCount;
     }
 
     @Override
@@ -50,7 +51,7 @@ public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisito
     {
         if (maxVersionStrategy.performStageVersioning())
         {
-            return getLogicalPlanForDataErrorCheck(maxVersionStrategy.versioningField());
+            return getLogicalPlanForDataErrors(maxVersionStrategy.versioningField());
         }
         else
         {
@@ -63,7 +64,7 @@ public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisito
     {
         if (allVersionsStrategyAbstract.performStageVersioning())
         {
-            return getLogicalPlanForDataErrorCheck(allVersionsStrategyAbstract.versioningField());
+            return getLogicalPlanForDataErrors(allVersionsStrategyAbstract.versioningField());
         }
         else
         {
@@ -71,10 +72,8 @@ public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisito
         }
     }
 
-    private LogicalPlan getLogicalPlanForDataErrorCheck(String versionField)
+    private LogicalPlan getLogicalPlanForDataErrors(String versionField)
     {
-        String maxDataErrorAlias = DedupAndVersionErrorStatistics.MAX_DATA_ERRORS.name();
-        String distinctRowCount = "legend_persistence_distinct_rows";
         List<Value> pKsAndVersion = new ArrayList<>();
         for (String pk: primaryKeys)
         {
@@ -91,25 +90,19 @@ public class DeriveDataErrorCheckLogicalPlan implements VersioningStrategyVisito
         FunctionImpl countDistinct = FunctionImpl.builder()
                 .functionName(FunctionName.COUNT)
                 .addValue(FunctionImpl.builder().functionName(FunctionName.DISTINCT).addAllValue(distinctValueFields).build())
-                .alias(distinctRowCount)
+                .alias(DATA_VERSION_ERROR_COUNT)
                 .build();
 
-        Selection selectCountDataError = Selection.builder()
+        Selection selectDataError = Selection.builder()
                 .source(tempStagingDataset)
                 .groupByFields(pKsAndVersion)
+                .addAllFields(pKsAndVersion)
                 .addFields(countDistinct)
-                .alias(tempStagingDataset.datasetReference().alias())
+                .havingCondition(GreaterThan.of(FieldValue.builder().fieldName(DATA_VERSION_ERROR_COUNT).build(), ObjectValue.of(1)))
+                .limit(sampleRowCount)
                 .build();
-        FunctionImpl maxCount = FunctionImpl.builder()
-                .functionName(FunctionName.MAX)
-                .addValue(FieldValue.builder().fieldName(distinctRowCount).build())
-                .alias(maxDataErrorAlias)
-                .build();
-        Selection maxDataErrorCount = Selection.builder()
-                .source(selectCountDataError)
-                .addFields(maxCount)
-                .build();
-        return LogicalPlan.builder().addOps(maxDataErrorCount).build();
+
+        return LogicalPlan.builder().addOps(selectDataError).build();
     }
 
 }

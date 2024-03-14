@@ -86,6 +86,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
+            .ingestRunId(ingestRunId)
             .build();
 
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);
@@ -100,7 +101,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
             "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\"," +
             "LAKEHOUSE_MD5(OBJECT_CONSTRUCT('name',stage.\"name\",'biz_date',stage.\"biz_date\"))," +
             "'2000-01-01 00:00:00.000000',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') " +
-            "FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
+            "FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
 
         Assertions.assertEquals(AnsiTestArtifacts.expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery, generatorResults.get(0).preActionsSql().get(0));
         Assertions.assertEquals(getExpectedMetadataTableCreateQuery(), generatorResults.get(0).preActionsSql().get(1));
@@ -116,7 +117,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         Assertions.assertEquals(getExpectedMetadataTableIngestQuery(), generatorResults.get(0).metadataIngestSql().get(0));
 
         // Stats
-        String incomingRecordCount = "SELECT COALESCE(SUM(stage.\"legend_persistence_count\"),0) as \"incomingRecordCount\" FROM \"mydb\".\"staging_legend_persistence_temp_staging\" as stage " +
+        String incomingRecordCount = "SELECT COALESCE(SUM(stage.\"legend_persistence_count\"),0) as \"incomingRecordCount\" FROM \"mydb\".\"staging_temp_staging_lp_yosulf\" as stage " +
             "WHERE (stage.\"data_split\" >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.\"data_split\" <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsInserted = "SELECT COUNT(*) as \"rowsInserted\" FROM \"mydb\".\"main\" as sink WHERE sink.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')";
 

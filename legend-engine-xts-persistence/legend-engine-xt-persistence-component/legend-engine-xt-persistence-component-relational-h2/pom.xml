@@ -50,6 +50,13 @@
             <artifactId>value</artifactId>
         </dependency>
 
+        <!-- ECLIPSE COLLECTIONS -->
+        <dependency>
+            <groupId>org.eclipse.collections</groupId>
+            <artifactId>eclipse-collections-api</artifactId>
+        </dependency>
+        <!-- ECLIPSE COLLECTIONS -->
+
         <!-- H2 -->
         <dependency>
             <groupId>com.h2database</groupId>
