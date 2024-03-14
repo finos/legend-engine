@@ -577,7 +577,7 @@ public class BulkLoadTest
         String expectedIngestSql = "COPY INTO \"my_db\".\"my_name\" " +
             "(\"col_int\", \"col_integer\", \"col_bigint\", \"col_variant\", \"digest\", \"batch_id\", \"append_time\") FROM " +
             "(SELECT legend_persistence_stage.$1 as \"col_int\",legend_persistence_stage.$2 as \"col_integer\",legend_persistence_stage.$3 as \"col_bigint\",TO_VARIANT(PARSE_JSON(legend_persistence_stage.$4)) as \"col_variant\"," +
-            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_int','col_integer','col_bigint'),ARRAY_CONSTRUCT(intToString(legend_persistence_stage.$1),intToString(legend_persistence_stage.$2),longToString(legend_persistence_stage.$3)))," +
+            "LAKEHOUSE_UDF(ARRAY_CONSTRUCT('col_bigint','col_int','col_integer'),ARRAY_CONSTRUCT(longToString(legend_persistence_stage.$3),intToString(legend_persistence_stage.$1),intToString(legend_persistence_stage.$2)))," +
             "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MY_NAME'),'2000-01-01 00:00:00.000000' " +
             "FROM my_location as legend_persistence_stage) " +
             "FILES = ('/path/xyz/file1.csv', '/path/xyz/file2.csv') " +

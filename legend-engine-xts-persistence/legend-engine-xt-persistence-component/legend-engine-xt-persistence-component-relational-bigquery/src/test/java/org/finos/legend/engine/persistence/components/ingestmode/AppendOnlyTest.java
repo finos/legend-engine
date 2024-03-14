@@ -303,7 +303,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
         List<String> milestoningSqlList = operations.ingestSql();
 
         String insertSql = "INSERT INTO `mydb`.`main` (`id`, `name`, `amount`, `biz_date`, `digest`, `batch_id`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(['id','name','amount','biz_date'],[stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`])," +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(['amount','biz_date','id','name'],[stage.`amount`,stage.`biz_date`,stage.`id`,stage.`name`])," +
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging` as stage)";
         Assertions.assertEquals(BigQueryTestArtifacts.expectedBaseTableCreateQueryWithNoPKs, preActionsSqlList.get(0));
@@ -339,7 +339,7 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     {
         String insertSql  = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(['name','biz_date'],[stage.`name`,stage.`biz_date`]),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(['biz_date','name'],[stage.`biz_date`,stage.`name`]),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";
@@ -390,7 +390,8 @@ public class AppendOnlyTest extends org.finos.legend.engine.persistence.componen
     {
         String insertSql  = "INSERT INTO `mydb`.`main` " +
             "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_update_time`, `batch_id`) " +
-            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,LAKEHOUSE_MD5(['name','amount','biz_date'],[stage.`name`,doubleToString(stage.`amount`),dateToString(stage.`biz_date`)]),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
+            "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`," +
+            "LAKEHOUSE_MD5(['amount','biz_date','name'],[doubleToString(stage.`amount`),dateToString(stage.`biz_date`),stage.`name`]),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000')," +
             "(SELECT COALESCE(MAX(batch_metadata.`table_batch_id`),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.`table_name`) = 'MAIN') " +
             "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
             "WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}'))";

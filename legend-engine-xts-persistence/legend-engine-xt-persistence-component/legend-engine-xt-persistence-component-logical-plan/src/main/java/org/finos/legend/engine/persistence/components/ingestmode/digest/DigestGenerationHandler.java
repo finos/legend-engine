@@ -24,6 +24,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
 {
@@ -54,10 +55,24 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
         List<Value> filteredStagingFieldValues = new ArrayList<>();
         List<DataType> filteredStagingFieldTypes = new ArrayList<>();
 
-        for (int i = 0; i < fieldsToSelect.size(); i++)
+        List<Value> sortedFieldsToSelect = fieldsToSelect.stream().sorted((o1, o2) ->
         {
-            Value value = fieldsToSelect.get(i);
-            DataType dataType = fieldTypes.get(i);
+            if (o1 instanceof FieldValue && o2 instanceof FieldValue)
+            {
+                return ((FieldValue) o1).fieldName().compareTo(((FieldValue) o2).fieldName());
+            }
+            else if (o1 instanceof StagedFilesFieldValue && o2 instanceof StagedFilesFieldValue)
+            {
+                return ((StagedFilesFieldValue) o1).fieldName().compareTo(((StagedFilesFieldValue) o2).fieldName());
+            }
+            return 0;
+        }).collect(Collectors.toList());
+
+        for (Value value : sortedFieldsToSelect)
+        {
+            int index = fieldsToSelect.indexOf(value);
+            DataType dataType = fieldTypes.get(index);
+
             if (value instanceof FieldValue)
             {
                 FieldValue fieldValue = (FieldValue) value;
