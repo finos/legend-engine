@@ -34,7 +34,6 @@
         <module>legend-engine-server</module>
         <module>legend-engine-server-integration-tests</module>
         <module>legend-engine-server-support-core</module>
-        <module>legend-engine-connection-integration-tests</module>
         <module>legend-engine-repl</module>
     </modules>
 </project>
