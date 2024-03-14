@@ -471,6 +471,42 @@ public class JdbcHelper implements RelationalExecutionHelper
     }
 
     @Override
+    public List<Map<String, Object>> executeQuery(String sql, int rows)
+    {
+        if (this.transactionManager != null)
+        {
+            return this.transactionManager.convertResultSetToList(sql, rows);
+        }
+        else
+        {
+            JdbcTransactionManager txManager = null;
+            try
+            {
+                txManager = new JdbcTransactionManager(connection);
+                return txManager.convertResultSetToList(sql, rows);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Error executing SQL query: " + sql, e);
+            }
+            finally
+            {
+                if (txManager != null)
+                {
+                    try
+                    {
+                        txManager.close();
+                    }
+                    catch (SQLException e)
+                    {
+                        LOGGER.error("Error closing transaction manager.", e);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
     public List<Map<String, Object>> executeQuery(String sql)
     {
         if (this.transactionManager != null)

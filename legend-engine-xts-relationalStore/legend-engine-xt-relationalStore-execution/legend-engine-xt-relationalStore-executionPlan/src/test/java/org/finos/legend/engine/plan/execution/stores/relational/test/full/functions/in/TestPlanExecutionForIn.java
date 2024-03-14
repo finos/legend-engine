@@ -22,6 +22,8 @@ import org.finos.legend.engine.plan.execution.stores.relational.connection.Alloy
 import org.finos.legend.engine.plan.execution.stores.relational.connection.driver.vendors.h2.H2Manager;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.plan.execution.stores.relational.serialization.RelationalResultToJsonDefaultSerializer;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +32,13 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor.overridePropertyForTemplateModel;
+import static org.finos.legend.engine.plan.execution.nodes.helpers.freemarker.FreeMarkerExecutor.processRecursively;
 
 public class TestPlanExecutionForIn extends AlloyTestServer
 {
@@ -41,6 +49,7 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "{\n" +
             "  fullName: String[1];\n" +
             "  birthTime: DateTime[0..1];\n" +
+            "  firmName: String[1];\n" +
             "}\n" +
             "Class test::Address\n" +
             "{\n" +
@@ -79,7 +88,8 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             "    )\n" +
             "    ~mainTable [test::DB]PERSON\n" +
             "    fullName: [test::DB]PERSON.fullName,\n" +
-            "    birthTime: [test::DB]PERSON.birthTime\n" +
+            "    birthTime: [test::DB]PERSON.birthTime,\n" +
+            "    firmName: [test::DB]PERSON.firmName\n" +
             "  }\n" +
             "   test::Address: Relational\n" +
             "   {\n" +
@@ -237,6 +247,45 @@ public class TestPlanExecutionForIn extends AlloyTestServer
     }
 
     @Test
+    public void testFreeMarkerProcessingForCombinationalPlaceholdersWithSpecialCharactersInPlan() throws Exception
+    {
+        String fetchFunction = "###Pure\n" +
+                "function test::fetch(): Any[1]\n" +
+                "{\n" +
+                "  {names:String[*], firmName:String[1], birthTime:DateTime[0..1]| test::Person.all()\n" +
+                "                        ->filter(p:test::Person[1] | $p.fullName->in($names) && $p.firmName == $firmName && $p.birthTime == $birthTime)\n" +
+                "                        ->project([x | $x.fullName], ['fullName'])}\n" +
+                "}";
+
+        SingleExecutionPlan plan = buildPlanForFetchFunction(fetchFunction, false);
+        HashMap queryParameters = new HashMap();
+        queryParameters.put("names", org.eclipse.collections.impl.factory.Lists.mutable.with("user1", "user2", "user3"));
+        queryParameters.put("firmName", "abcd<@efg");
+
+        //assert that sql string contains placeholders that we need to process conditionally
+        ExecutionNode sqlNode  = plan.rootExecutionNode.executionNodes.get(2).executionNodes.get(0);
+        String sql = ((SQLExecutionNode)sqlNode).sqlQuery;
+        String expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}') and (${optionalVarPlaceHolderOperationSelector(birthTime![], '\"root\".birthTime = ${varPlaceHolderToString(birthTime![] \"TIMESTAMP\\'\" \"\\'\" {} \"null\")}', '\"root\".birthTime is null')}))";
+
+        int h2MajorVersion = H2Manager.getMajorVersion();
+        if (h2MajorVersion == LEGACY_H2_VERSION)
+        {
+            expectedSQL = "select \"root\".fullName as \"fullName\" from PERSON as \"root\" where ((\"root\".fullName in (${inFilterClause_names}) and \"root\".firmName = '${firmName?replace(\"'\", \"''\")}') and (${optionalVarPlaceHolderOperationSelector(birthTime![], '\"root\".birthTime = ${varPlaceHolderToString(birthTime![] \"\\'\" \"\\'\" {} \"null\")}', '\"root\".birthTime is null')}))";
+        }
+        Assert.assertEquals(expectedSQL, sql);
+
+        //executePlan with freemarker placeholders in sql Query
+        String expectedResult = "{\"builder\":{\"_type\":\"tdsBuilder\",\"columns\":[{\"name\":\"fullName\",\"type\":\"String\",\"relationalType\":\"VARCHAR(100)\"}]},\"activities\":[{\"_type\":\"relational\",\"sql\":\"select \\\"root\\\".fullName as \\\"fullName\\\" from PERSON as \\\"root\\\" where ((\\\"root\\\".fullName in ('user1','user2','user3') and \\\"root\\\".firmName = 'abcd<@efg') and (\\\"root\\\".birthTime is null))\"}],\"result\":{\"columns\":[\"fullName\"],\"rows\":[]}}";
+        Assert.assertEquals(expectedResult, RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
+
+        //check if old flow works as expected
+        System.setProperty(overridePropertyForTemplateModel, "true");
+        //in old flow, processing "<@" would fail ideally (this was our status quo)
+        Assert.assertThrows(RuntimeException.class, () -> RelationalResultToJsonDefaultSerializer.removeComment(executePlan(plan, queryParameters)));
+        System.clearProperty(overridePropertyForTemplateModel);
+    }
+
+    @Test
     public void testInExecutionWithIntegerList() throws JsonProcessingException
     {
         String fetchFunction = "###Pure\n" +
@@ -333,7 +382,8 @@ public class TestPlanExecutionForIn extends AlloyTestServer
             InputStream executionPlanJson = TestPlanExecutionForIn.class.getClassLoader().getResourceAsStream("org/finos/legend/engine/plan/execution/stores/relational/test/full/functions/in/tempTableExecutionPlanWithPostProcessor.json");
             String executionPlanJsonString = IOUtils.toString(executionPlanJson, StandardCharsets.UTF_8);
             SingleExecutionPlan plan = objectMapper.readValue(executionPlanJsonString, SingleExecutionPlan.class);
-            Assert.assertTrue(executePlan(plan).matches("\\{\\\"builder\\\": \\{\\\"_type\\\":\\\"tdsBuilder\\\",\\\"columns\\\":\\[\\{\\\"name\\\":\\\"Source Inquiry ID\\\",\\\"type\\\":\\\"String\\\",\\\"relationalType\\\":\\\"VARCHAR\\(64\\)\\\"}]}, \\\"activities\\\": \\[\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"comment\\\":\\\"-- \\\\\\\"executionTraceID\\\\\\\" : \\\\\\\"[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}\\\\\\\"\\\",\\\"sql\\\":\\\"select case when \\\\\\\"root\\\\\\\".CptyrRole like 'ebusiness\\\\\\\\_%' then 'ebusiness_' else \\\\\\\"root\\\\\\\".CptyrRole end as \\\\\\\"userRole\\\\\\\" from user_view.UV_User_Roles_Public as \\\\\\\"root\\\\\\\" where \\(\\\\\\\"root\\\\\\\".UserID = '_UNKNOWN_' and \\\\\\\"root\\\\\\\".CptyrRole in \\('cadm', 'sales_fg', 'rfq_mgmt', 'ebusiness_credit', 'ebusiness_rates', 'ebusiness_fx', 'ebusiness_commod', 'desk_sales_trading', 'sales_person'\\)\\)\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"comment\\\":\\\"-- \\\\\\\"executionTraceID\\\\\\\" : \\\\\\\"[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}\\\\\\\"\\\",\\\"sql\\\":\\\"select \\\\\\\"root\\\\\\\".rpt_inq_sourceinquiryid as \\\\\\\"Source Inquiry ID\\\\\\\" from user_view.UV_Inquiry__PL_Cadm as \\\\\\\"root\\\\\\\" where \\\\\\\"root\\\\\\\".rpt_inq_sourceinquiryid in \\(null\\)\\\"}], \\\"result\\\" : \\{\\\"columns\\\" : \\[\\\"Source Inquiry ID\\\"], \\\"rows\\\" : \\[\\]\\}\\}"));
+            String s = executePlan(plan);
+            Assert.assertTrue(s.matches("\\{\\\"builder\\\": \\{\\\"_type\\\":\\\"tdsBuilder\\\",\\\"columns\\\":\\[\\{\\\"name\\\":\\\"Source Inquiry ID\\\",\\\"type\\\":\\\"String\\\",\\\"relationalType\\\":\\\"VARCHAR\\(64\\)\\\"}]}, \\\"activities\\\": \\[\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"sql\\\":\\\"SET LOCK_TIMEOUT 100000000;\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"comment\\\":\\\"-- \\\\\\\"executionTraceID\\\\\\\" : \\\\\\\"[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}\\\\\\\"\\\",\\\"sql\\\":\\\"select case when \\\\\\\"root\\\\\\\".CptyrRole like 'ebusiness\\\\\\\\_%' then 'ebusiness_' else \\\\\\\"root\\\\\\\".CptyrRole end as \\\\\\\"userRole\\\\\\\" from user_view.UV_User_Roles_Public as \\\\\\\"root\\\\\\\" where \\(\\\\\\\"root\\\\\\\".UserID = 'Anonymous' and \\\\\\\"root\\\\\\\".CptyrRole in \\('cadm', 'sales_fg', 'rfq_mgmt', 'ebusiness_credit', 'ebusiness_rates', 'ebusiness_fx', 'ebusiness_commod', 'desk_sales_trading', 'sales_person'\\)\\)\\\"},\\{\\\"_type\\\":\\\"relational\\\",\\\"comment\\\":\\\"-- \\\\\\\"executionTraceID\\\\\\\" : \\\\\\\"[0-9a-f]{8}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{4}\\-[0-9a-f]{12}\\\\\\\"\\\",\\\"sql\\\":\\\"select \\\\\\\"root\\\\\\\".rpt_inq_sourceinquiryid as \\\\\\\"Source Inquiry ID\\\\\\\" from user_view.UV_Inquiry__PL_Cadm as \\\\\\\"root\\\\\\\" where \\\\\\\"root\\\\\\\".rpt_inq_sourceinquiryid in \\(null\\)\\\"}], \\\"result\\\" : \\{\\\"columns\\\" : \\[\\\"Source Inquiry ID\\\"], \\\"rows\\\" : \\[\\]\\}\\}"));
         }
         catch (IOException e)
         {

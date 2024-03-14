@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.38.3-SNAPSHOT</version>
+        <version>4.40.4-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -527,13 +527,6 @@
             <artifactId>legend-engine-xt-avro</artifactId>
         </dependency>
         <!-- Avro -->
-
-        <!-- Roestta -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-rosetta</artifactId>
-        </dependency>
-        <!-- Roestta -->
 
         <!-- GraphQL -->
         <dependency>

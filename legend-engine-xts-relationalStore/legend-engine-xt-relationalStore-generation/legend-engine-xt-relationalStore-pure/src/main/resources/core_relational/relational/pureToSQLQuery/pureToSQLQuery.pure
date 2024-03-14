@@ -1940,7 +1940,7 @@ function <<access.private>> meta::relational::functions::pureToSqlQuery::process
          let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = if($state.inFilter, | $result->cast(@SelectWithCursor).select.filteringOperation, | $result->cast(@SelectWithCursor).select.columns)->toOne());
          let leftAlias = $result.currentTreeNode->toOne().alias;
          let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_' + $nodeId);
-         let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(true, true, $extensions);
+         let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
          let join = ^Join(
             name = $joinName,
             target = $rightAlias,
@@ -6248,6 +6248,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          u:Union[1]|$u.queries->map(q|$q->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
          c:TableAliasColumnName[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.columnName;,
          c:TableAliasColumn[1]|$c.alias->buildUniqueName($alias, $selectColumns, $extensions)+$c.column.name;,
+         sc:CommonTableExpressionReference[1]|$sc.name,
          l:Literal[1]|if($l.value->instanceOf(VarPlaceHolder),|$l.value->cast(@VarPlaceHolder).name,|$l.value->toString()),
          l:LiteralList[1]|  $l.values->map(l|$l->buildUniqueName($alias, $selectColumns, $extensions))->joinStrings(),
          v:VariableArityOperation[1]|$v->type()->toOne().name->toOne() + '_' + $v.args->buildUniqueName($alias, $selectColumns, $extensions),
@@ -6260,6 +6261,7 @@ function meta::relational::functions::pureToSqlQuery::buildUniqueName(elements:R
          ssa:SemiStructuredArrayElementAccess[1]|'ssa('+$ssa.operand->buildUniqueName($alias, $selectColumns, $extensions)+'['+$ssa.index->buildUniqueName($alias, $selectColumns, $extensions)+'])',
          ssf:SemiStructuredArrayFlatten[1]|'ss_flatten('+$ssf.navigation->buildUniqueName($alias, $selectColumns, $extensions)+')',
          ssf:SemiStructuredArrayFlattenOutput[1]|'ss_flatten_output('+$ssf.tableAliasColumn->buildUniqueName($alias, $selectColumns, $extensions)+')',
+         t:TableFunctionParamPlaceHolder[1] | 'tablefunc_param_holder_(' + $t.var.name + ')',
          v:VarPlaceHolder[1]| $v.name
       ])->toOneMany()
    ))->joinStrings('_');
@@ -7262,7 +7264,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   let leftAlias = $toExplodeRootTreeNode.alias;
   let arrayFlattening = ^SemiStructuredArrayFlatten(navigation = ^SemiStructuredPropertyAccess(property = $pathToExplode, operand = ^$columnToExplode(alias = $toExplodeRootTreeNode.alias)));
   let rightAlias = ^TableAlias(relationalElement = $arrayFlattening, name = 'arrayFlatten_0');
-  let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(true, true, $extensions);
+  let joinName = 'join_arrayFlatten_' + $arrayFlattening->buildUniqueName(false, true, $extensions);
   let lateralJoin = ^Join(
     name      = $joinName,
     target    = $rightAlias,
@@ -7279,7 +7281,7 @@ function meta::relational::functions::pureToSqlQuery::applyJoinWithExplodeInCond
   );
   let explodedRootTreeNode = ^$toExplodeRootTreeNode(childrenData = $lateralJoinNode);
 
-  let flattenOutputAlias            = ^Alias(name = 'flattened_prop', relationalElement = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $lateralJoinNode.alias->toOne(), column = ^Column(name = 'value', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType = $pureReturnType));
+  let flattenOutputAlias            = ^Alias(name = 'flattened_prop', relationalElement = ^SemiStructuredArrayFlattenOutput(tableAliasColumn = ^TableAliasColumn(alias = $lateralJoinNode.alias->toOne(), column = ^Column(name = 'VALUE', type = ^meta::relational::metamodel::datatype::SemiStructured())), returnType = $pureReturnType));
   let columnsForInnerJoinWithTarget = $join.operation->extractTableAliasColumns()->filter(tac|$tac.alias == $tableToExplodeAlias && $tac != $columnToExplode)->map(c|^TableAliasColumn(column = $c.column, alias = $toExplodeRootTreeNode.alias));
   let additionalColumnsToFetch      = if($tableToExplodeAlias == $sourceAliasInJoin,
                                         | $srcPrimaryKeys->map(c|^Alias(name = 'leftJoinKey_' + $srcPrimaryKeys->indexOf($c)->toString(), relationalElement = ^TableAliasColumn(column=$c, alias=$leftAlias))),  // fetch pks from source

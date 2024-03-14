@@ -1,6 +1,6 @@
 lexer grammar DataSpaceLexerGrammar;
 
-import CoreLexerGrammar;
+import M3LexerGrammar;
 
 
 // ------------------------------------ KEYWORD --------------------------------------
@@ -14,12 +14,15 @@ TAGS:                                       'tags';
 DATA_SPACE__NAME:                           'name';
 DATA_SPACE__TITLE:                          'title';
 DATA_SPACE__DESCRIPTION:                    'description';
+DATA_SPACE__TEMPLATE_QUERY:                 'query';
+DATA_SPACE__EXECUTION_CONTEXT_KEY:          'executionContextKey';
 
 DATA_SPACE_EXECUTION_CONTEXTS:              'executionContexts';
 DATA_SPACE_DEFAULT_EXECUTION_CONTEXT:       'defaultExecutionContext';
 
 DATA_SPACE_MAPPING:                         'mapping';
 DATA_SPACE_DEFAULT_RUNTIME:                 'defaultRuntime';
+DATA_SPACE_TEST_DATA:                       'testData';
 
 DATA_SPACE_DIAGRAMS:                        'diagrams';
 DATA_SPACE_DIAGRAM:                         'diagram';

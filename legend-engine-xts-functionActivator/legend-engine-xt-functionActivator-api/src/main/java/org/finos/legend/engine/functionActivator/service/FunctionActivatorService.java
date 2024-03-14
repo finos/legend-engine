@@ -16,6 +16,7 @@ package org.finos.legend.engine.functionActivator.service;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
+import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.functionActivator.api.output.FunctionActivatorInfo;
 import org.finos.legend.engine.protocol.functionActivator.deployment.FunctionActivatorArtifact;
@@ -32,6 +33,12 @@ import java.util.List;
 
 public interface FunctionActivatorService<T extends Root_meta_external_function_activator_FunctionActivator, U extends FunctionActivatorDeploymentConfiguration, V extends DeploymentResult> extends LegendExtension
 {
+    @Override
+    default String type()
+    {
+        return "Function_Activator";
+    }
+
     FunctionActivatorInfo info(PureModel pureModel, String version);
 
     boolean supports(Root_meta_external_function_activator_FunctionActivator packageableElement);

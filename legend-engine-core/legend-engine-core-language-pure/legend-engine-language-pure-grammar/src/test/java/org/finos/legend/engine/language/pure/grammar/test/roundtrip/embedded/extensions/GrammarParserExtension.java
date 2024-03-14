@@ -14,12 +14,20 @@
 
 package org.finos.legend.engine.language.pure.grammar.test.roundtrip.embedded.extensions;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.extension.EmbeddedPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.PureGrammarParserExtension;
 
 public class GrammarParserExtension implements PureGrammarParserExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("__Test__");
+
+    }
+
     @Override
     public Iterable<? extends EmbeddedPureParser> getExtraEmbeddedPureParsers()
     {

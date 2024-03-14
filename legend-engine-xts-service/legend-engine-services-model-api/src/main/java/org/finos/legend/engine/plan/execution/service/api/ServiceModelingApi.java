@@ -30,6 +30,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.service.Service;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -81,6 +83,7 @@ public class ServiceModelingApi
     public Response doTest(PureModelContext service, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm, @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         long start = System.currentTimeMillis();
         try
         {
@@ -88,9 +91,9 @@ public class ServiceModelingApi
             {
                 throw new RuntimeException("Only Full Interactive mode currently supported.  Received " + service.getClass().getName());
             }
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
             String metricContext = uriInfo != null ? uriInfo.getPath() : null;
-            List<TestResult> results = this.serviceModeling.testService(profiles, service, metricContext);
+            List<TestResult> results = this.serviceModeling.testService(identity, service, metricContext);
             MetricsHandler.observe("service test", start, System.currentTimeMillis());
             MetricsHandler.observeRequest(uriInfo != null ? uriInfo.getPath() : null, start, System.currentTimeMillis());
             return Response.ok(objectMapper.writeValueAsString(results), MediaType.APPLICATION_JSON_TYPE).build();
@@ -104,7 +107,7 @@ public class ServiceModelingApi
                 Service invokedService = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
                 servicePattern = invokedService == null ? null : invokedService.pattern;
             }
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, identity.getName());
             MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, ex, servicePattern);
             return response;
         }
@@ -122,16 +125,17 @@ public class ServiceModelingApi
                                  @Context UriInfo uriInfo)
     {
         MutableList<CommonProfile> profiles  = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try
         {
             if (!(service instanceof PureModelContextData))
             {
                 throw new RuntimeException("Only Full Interactive mode currently supported.  Received " + service.getClass().getName());
             }
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.SERVICE_FACADE_R_TEST_SERVICE_FULL_INTERACTIVE, "").toString());
             String metricContext = uriInfo != null ? uriInfo.getPath() : null;
 
-            return this.serviceModeling.validateService(profiles, service, metricContext, assertionId, format);
+            return this.serviceModeling.validateService(identity, service, metricContext, assertionId, format);
         }
         catch (Exception ex)
         {
@@ -142,7 +146,7 @@ public class ServiceModelingApi
                 Service invokedService = (Service) Iterate.detect(data.getElements(), e -> e instanceof Service);
                 servicePattern = invokedService == null ? null : invokedService.pattern;
             }
-            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, profiles);
+            Response response = ExceptionTool.exceptionManager(ex, LoggingEventType.SERVICE_ERROR, identity.getName());
             MetricsHandler.observeError(LoggingEventType.SERVICE_TEST_EXECUTE_ERROR, ex, servicePattern);
             return response;
         }

@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.pure.code.core.ExternalFormatLegendPureCoreExtension;
 
 public class XMLLegendPureCoreExtension implements ExternalFormatLegendPureCoreExtension
@@ -28,5 +29,11 @@ public class XMLLegendPureCoreExtension implements ExternalFormatLegendPureCoreE
     public String functionSignature()
     {
         return "meta::external::format::xml::extension::xsdFormatExtension__Extension_1_";
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "XML");
     }
 }

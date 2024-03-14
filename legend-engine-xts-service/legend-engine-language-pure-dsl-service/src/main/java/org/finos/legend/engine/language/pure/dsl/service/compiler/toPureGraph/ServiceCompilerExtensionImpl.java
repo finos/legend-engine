@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.pure.dsl.service.compiler.toPureGraph;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.block.function.Function;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.factory.Maps;
 import org.eclipse.collections.impl.list.mutable.FastList;
@@ -61,6 +62,12 @@ import static org.finos.legend.engine.language.pure.dsl.service.compiler.toPureG
 
 public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Service");
+    }
+
     @Override
     public CompilerExtension build()
     {
@@ -357,7 +364,7 @@ public class ServiceCompilerExtensionImpl implements ServiceCompilerExtension
         return Collections.singletonList((handlers) ->
                 org.eclipse.collections.api.factory.Lists.mutable.with(
                         new FunctionExpressionBuilderRegistrationInfo(Lists.mutable.with(0),
-                                handlers.m(handlers.h("meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_", false, ps -> handlers.res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2))
+                                handlers.m(handlers.h("meta::pure::mapping::from_T_m__SingleExecutionParameters_1__T_m_", false, ps -> handlers.res(ps.get(0)._genericType(), ps.get(0)._multiplicity()), ps -> ps.size() == 2 && handlers.typeOne(ps.get(1), "SingleExecutionParameters")))
                         ),
                         // getter for execution parameters from execution environment
                         new FunctionExpressionBuilderRegistrationInfo(null, handlers.m(

@@ -17,6 +17,8 @@ package org.finos.legend.engine.language.pure.grammar.to.data;
 import org.finos.legend.engine.language.pure.grammar.to.HelperValueSpecificationGrammarComposer;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.data.*;
 import org.finos.legend.engine.protocol.pure.v1.model.data.ModelInstanceTestData;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
@@ -98,7 +100,11 @@ public class ModelStoreDataGrammarComposer implements ValueSpecificationVisitor<
             if (vs instanceof PackageableElementPtr)
             {
                 DataElementReference reference = new DataElementReference();
-                reference.dataElement = ((PackageableElementPtr) vs).fullPath;
+                reference.dataElement = new PackageableElementPointer(
+                        PackageableElementType.DATA,
+                        ((PackageableElementPtr) vs).fullPath,
+                        data.sourceInformation
+                );
                 str.append(HelperEmbeddedDataGrammarComposer.composeEmbeddedData(reference, PureGrammarComposerContext.Builder.newInstance(context).withIndentationString(indentString).build()));
             }
             else if (vs instanceof Collection && ((Collection) vs).values.size() == 1)

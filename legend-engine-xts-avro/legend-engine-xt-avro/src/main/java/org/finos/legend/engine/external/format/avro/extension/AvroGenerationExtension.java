@@ -15,17 +15,15 @@
 package org.finos.legend.engine.external.format.avro.extension;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationConfig;
-import org.finos.legend.engine.external.format.avro.schema.generations.AvroGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
-import org.finos.legend.engine.external.shared.format.imports.description.ImportConfigurationDescription;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
@@ -38,6 +36,12 @@ import java.util.List;
 
 public class AvroGenerationExtension implements GenerationExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Generation", "!!MoveToArtifact!!", "Avro");
+    }
+
     @Override
     public String getLabel()
     {
@@ -79,18 +83,6 @@ public class AvroGenerationExtension implements GenerationExtension
                 return FileGenerationDescription.extractGenerationProperties(core_external_format_avro_transformation_integration.Root_meta_external_format_avro_generation_describeConfiguration__GenerationParameter_MANY_(pureModel.getExecutionSupport()));
             }
         };
-    }
-
-    @Override
-    public ImportConfigurationDescription getImportDescription()
-    {
-        return null;
-    }
-
-    @Override
-    public Object getService(ModelManager modelManager)
-    {
-        return new AvroGenerationService(modelManager);
     }
 
     @Override

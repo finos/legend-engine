@@ -18,7 +18,6 @@ package org.finos.legend.engine.service.post.validation.runner;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -29,7 +28,8 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.plan.generation.transformers.PlanTransformer;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.Variable;
-import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.operational.prometheus.MetricsHandler;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_KeyedExecutionParameter;
 import org.finos.legend.pure.generated.Root_meta_legend_service_metamodel_PostValidation;
@@ -44,7 +44,6 @@ import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.InstanceValue;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -58,7 +57,7 @@ import javax.ws.rs.core.Response;
 
 abstract class ServicePostValidationRunner
 {
-    private final MutableList<CommonProfile> profiles;
+    private final Identity identity;
 
     protected final PlanExecutor planExecutor;
     protected final PureModel pureModel;
@@ -72,7 +71,7 @@ abstract class ServicePostValidationRunner
     protected Mapping mapping;
     protected Root_meta_core_runtime_Runtime runtime;
 
-    public ServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, MutableList<CommonProfile> profiles, SerializationFormat format,PlanExecutor planExecutor)
+    public ServicePostValidationRunner(PureModel pureModel, Root_meta_legend_service_metamodel_Service pureService, List<Variable> rawParams, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers, String pureVersion, Identity identity, SerializationFormat format,PlanExecutor planExecutor)
     {
         this.pureModel = pureModel;
         this.pureService = pureService;
@@ -80,7 +79,7 @@ abstract class ServicePostValidationRunner
         this.extensions = extensions;
         this.transformers = transformers;
         this.pureVersion = pureVersion;
-        this.profiles = profiles;
+        this.identity = identity;
         this.format = format;
         this.planExecutor = planExecutor;
         MetricsHandler.createMetrics(this.getClass());
@@ -175,7 +174,8 @@ abstract class ServicePostValidationRunner
 
     protected Result executePlan(SingleExecutionPlan plan, Map<String, Result> params) throws PrivilegedActionException
     {
-        return Subject.doAs(ProfileManagerHelper.extractSubject(this.profiles), (PrivilegedExceptionAction<Result>) () -> this.planExecutor.execute(plan, params, null, this.profiles));
+        Subject subject = identity.getSubjectFromIdentity();
+        return Subject.doAs(subject, (PrivilegedExceptionAction<Result>) () -> this.planExecutor.execute(plan, params, null, identity));
     }
 
     protected abstract MutableMap<String, Result> evaluateParameters(RichIterable<?> parameters);

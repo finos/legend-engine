@@ -37,8 +37,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -73,7 +75,7 @@ public class FunctionActivatorAPI
     {
         this.modelManager = modelManager;
         this.routerExtensions = routerExtensions;
-        this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, null);
+        this.emptyModel = Compiler.compile(PureModelContextData.newPureModelContextData(), DeploymentMode.PROD, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         this.identityFactory = new DefaultIdentityFactory();
     }
 
@@ -92,8 +94,9 @@ public class FunctionActivatorAPI
     public Response list(@ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         MutableList<FunctionActivatorInfo> values = this.availableActivatorServices.isEmpty() ? FunctionActivatorLoader.extensions().collect(x -> x.info(emptyModel, "vX_X_X")) : availableActivatorServices.collect(c -> c.info(emptyModel,"vX_X_X"));
-        return ManageConstantResult.manageResult(profiles, values, objectMapper);
+        return ManageConstantResult.manageResult(identity.getName(), values, objectMapper);
     }
 
     @POST
@@ -104,10 +107,11 @@ public class FunctionActivatorAPI
     public Response validate(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
-            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
+            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.validate(identityFactory.makeIdentity(profiles), pureModel, activator, input.model, routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -115,7 +119,7 @@ public class FunctionActivatorAPI
         catch (Exception ex)
         {
             ex.printStackTrace();
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
         }
     }
 
@@ -127,10 +131,11 @@ public class FunctionActivatorAPI
     public Response publishToSandbox(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
-            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
+            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator,pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.publishToSandbox(this.identityFactory.makeIdentity(profiles), pureModel, activator, input.model, service.selectConfig(this.runtimeDeploymentConfig),  routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -138,7 +143,7 @@ public class FunctionActivatorAPI
         catch (Exception ex)
         {
             ex.printStackTrace();
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
         }
     }
 
@@ -150,10 +155,11 @@ public class FunctionActivatorAPI
     public Response renderArtifact(FunctionActivatorInput input, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         try
         {
             String clientVersion = input.clientVersion == null ? PureClientVersions.production : input.clientVersion;
-            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, profiles, null);
+            PureModel pureModel = modelManager.loadModel(input.model, clientVersion, identity, null);
             Root_meta_external_function_activator_FunctionActivator activator = (Root_meta_external_function_activator_FunctionActivator) pureModel.getPackageableElement(input.functionActivator);
             FunctionActivatorService<Root_meta_external_function_activator_FunctionActivator, FunctionActivatorDeploymentConfiguration, DeploymentResult> service = getActivatorService(activator, pureModel);
             return Response.ok(objectMapper.writeValueAsString(service.renderArtifact(pureModel, activator, input.model, clientVersion,routerExtensions))).type(MediaType.APPLICATION_JSON_TYPE).build();
@@ -161,7 +167,7 @@ public class FunctionActivatorAPI
         catch (Exception ex)
         {
             ex.printStackTrace();
-            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, profiles);
+            return ExceptionTool.exceptionManager(ex, LoggingEventType.CATCH_ALL, identity.getName());
         }
     }
 

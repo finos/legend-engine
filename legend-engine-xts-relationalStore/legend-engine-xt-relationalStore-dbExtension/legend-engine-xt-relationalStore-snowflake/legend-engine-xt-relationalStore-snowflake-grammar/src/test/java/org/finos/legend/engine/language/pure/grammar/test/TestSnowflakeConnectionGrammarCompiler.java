@@ -74,12 +74,96 @@ public class TestSnowflakeConnectionGrammarCompiler
         Assert.assertEquals("sampleOrganization", specification._organization());
         Assert.assertEquals("DB_ROLE_123", specification._role());
 
+
         Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy authenticationStrategy = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) connection._authenticationStrategy();
 
         Assert.assertEquals("name", authenticationStrategy._publicUserName());
         Assert.assertEquals("privateKey", authenticationStrategy._privateKeyVaultReference());
         Assert.assertEquals("passPhrase", authenticationStrategy._passPhraseVaultReference());
 
+    }
+
+    private String getConnectionString(String tempTableDb, String tempTableSchema)
+    {
+        String tempTableDbSpec = tempTableDb == null ? "" : "    tempTableDb: '" + tempTableDb + "';\n";
+        String tempTableSchemaSpec = tempTableSchema == null ? "" : "    tempTableSchema: '" + tempTableSchema + "';\n";
+        String connString = "###Connection\n" +
+                "RelationalDatabaseConnection simple::StaticConnection\n" +
+                "{\n" +
+                "  store: apps::pure::studio::relational::tests::dbInc;\n" +
+                "  type: Snowflake;\n" +
+                "  specification: Snowflake\n" +
+                "  {\n" +
+                "    name: 'test';\n" +
+                "    account: 'account';\n" +
+                "    warehouse: 'warehouseName';\n" +
+                "    region: 'us-east2';\n" +
+                "    proxyHost: 'sampleHost';\n" +
+                "    proxyPort: 'samplePort';\n" +
+                "    nonProxyHosts: 'sample';\n" +
+                "    accountType: MultiTenant;\n" +
+                "    organization: 'sampleOrganization';\n" +
+                "    role: 'DB_ROLE_123';\n" +
+                tempTableDbSpec +
+                tempTableSchemaSpec +
+                "  };\n" +
+                "  auth: SnowflakePublic\n" +
+                "  {" +
+                "       publicUserName: 'name';\n" +
+                "       privateKeyVaultReference: 'privateKey';\n" +
+                "       passPhraseVaultReference: 'passPhrase';\n" +
+                "  };\n" +
+                "}\n";
+
+        return connString;
+    }
+
+    @Test
+    public void testSnowflakeConnectionWithTempTableSpecPropagatedToCompiledGraph()
+    {
+        Pair<PureModelContextData, PureModel> result = test(TestRelationalCompilationFromGrammar.DB_INC +
+                getConnectionString("temp_table_db", "temp_table_schema")
+        );
+
+
+        Root_meta_external_store_relational_runtime_RelationalDatabaseConnection connection = (Root_meta_external_store_relational_runtime_RelationalDatabaseConnection) result.getTwo().getConnection("simple::StaticConnection", SourceInformation.getUnknownSourceInformation());
+
+        Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification specification = (Root_meta_pure_alloy_connections_alloy_specification_SnowflakeDatasourceSpecification) connection._datasourceSpecification();
+
+        Assert.assertEquals("test", specification._databaseName());
+        Assert.assertEquals("account", specification._accountName());
+        Assert.assertEquals("warehouseName", specification._warehouseName());
+        Assert.assertEquals("us-east2", specification._region());
+        Assert.assertEquals("sampleHost", specification._proxyHost());
+        Assert.assertEquals("samplePort", specification._proxyPort());
+        Assert.assertEquals("sample", specification._nonProxyHosts());
+        Assert.assertEquals(result.getTwo().getEnumValue("meta::pure::alloy::connections::alloy::specification::SnowflakeAccountType", "MultiTenant"), specification._accountType());
+        Assert.assertEquals("sampleOrganization", specification._organization());
+        Assert.assertEquals("DB_ROLE_123", specification._role());
+        Assert.assertEquals("temp_table_db", specification._tempTableDb());
+        Assert.assertEquals("temp_table_schema", specification._tempTableSchema());
+
+
+        Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy authenticationStrategy = (Root_meta_pure_alloy_connections_alloy_authentication_SnowflakePublicAuthenticationStrategy) connection._authenticationStrategy();
+
+        Assert.assertEquals("name", authenticationStrategy._publicUserName());
+        Assert.assertEquals("privateKey", authenticationStrategy._privateKeyVaultReference());
+        Assert.assertEquals("passPhrase", authenticationStrategy._passPhraseVaultReference());
+
+    }
+
+    @Test
+    public void testSnowflakeConnectionTempTableDbPresentAndSchemaAbsent()
+    {
+        test(TestRelationalCompilationFromGrammar.DB_INC + getConnectionString("temp_table_db", null),
+                "COMPILATION error at [65:1-88:1]: Error in 'simple::StaticConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
+    }
+
+    @Test
+    public void testSnowflakeConnectionTempTableSchemaPresentAndDbAbsent()
+    {
+        test(TestRelationalCompilationFromGrammar.DB_INC + getConnectionString(null, "temp_table_schema"),
+                "COMPILATION error at [65:1-88:1]: Error in 'simple::StaticConnection': One of Database name and schema name for temp tables is missing. Please specify both tempTableDb and tempTableSchema");
     }
 
     @Test

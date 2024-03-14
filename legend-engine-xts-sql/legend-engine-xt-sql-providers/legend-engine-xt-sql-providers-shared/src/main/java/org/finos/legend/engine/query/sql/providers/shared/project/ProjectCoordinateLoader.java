@@ -19,7 +19,6 @@ import java.util.Optional;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.collections.api.block.function.Function;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.ServerConnectionConfiguration;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
@@ -27,9 +26,10 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.pac4j.core.profile.CommonProfile;
+
 
 public class ProjectCoordinateLoader
 {
@@ -37,27 +37,27 @@ public class ProjectCoordinateLoader
 
     public ProjectCoordinateLoader(ModelManager modelManager, ServerConnectionConfiguration sdlcServerConfig)
     {
-        this(modelManager, sdlcServerConfig, profiles -> (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore()));
+        this(modelManager, sdlcServerConfig, identity -> (CloseableHttpClient) HttpClientBuilder.getHttpClient(new BasicCookieStore()));
     }
 
-    public ProjectCoordinateLoader(ModelManager modelManager, ServerConnectionConfiguration sdlcServerConfig, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider)
+    public ProjectCoordinateLoader(ModelManager modelManager, ServerConnectionConfiguration sdlcServerConfig, Function<Identity, CloseableHttpClient> httpClientProvider)
     {
         this.modelManager = modelManager;
     }
 
-    public ProjectResolvedContext resolve(ProjectCoordinateWrapper projectCoordinateWrapper, MutableList<CommonProfile> profiles)
+    public ProjectResolvedContext resolve(ProjectCoordinateWrapper projectCoordinateWrapper, Identity identity)
     {
-        return resolve(projectCoordinateWrapper, true, profiles);
+        return resolve(projectCoordinateWrapper, true, identity);
     }
 
-    public ProjectResolvedContext resolve(ProjectCoordinateWrapper projectCoordinateWrapper, boolean required, MutableList<CommonProfile> profiles)
+    public ProjectResolvedContext resolve(ProjectCoordinateWrapper projectCoordinateWrapper, boolean required, Identity identity)
     {
         Optional<String> coordinates = projectCoordinateWrapper.getCoordinates();
         if (coordinates.isPresent())
         {
             PureModelContextPointer pointer = pointerFromCoordinates(coordinates.get());
 
-            PureModelContextData pmcd = modelManager.loadData(pointer, PureClientVersions.production, profiles);
+            PureModelContextData pmcd = modelManager.loadData(pointer, PureClientVersions.production, identity);
 
             return new ProjectResolvedContext(pointer, pmcd);
         }
@@ -70,7 +70,7 @@ public class ProjectCoordinateLoader
             boolean isGroup = groupWorkspace.isPresent();
             String projectId = project.get();
 
-            PureModelContextData pmcd = loadProjectPureModelContextData(projectId, workspaceId, isGroup, profiles);
+            PureModelContextData pmcd = loadProjectPureModelContextData(projectId, workspaceId, isGroup, identity);
 
             return new ProjectResolvedContext(pmcd, pmcd);
         }
@@ -105,7 +105,7 @@ public class ProjectCoordinateLoader
         alloySDLC.version = parts[2];
     }
 
-    private PureModelContextData loadProjectPureModelContextData(String project, String workspace, boolean isGroup, MutableList<CommonProfile> profiles)
+    private PureModelContextData loadProjectPureModelContextData(String project, String workspace, boolean isGroup, Identity identity)
     {
         WorkspaceSDLC sdlcInfo = new WorkspaceSDLC();
         sdlcInfo.project = project;
@@ -115,6 +115,6 @@ public class ProjectCoordinateLoader
         PureModelContextPointer pointer = new PureModelContextPointer();
         pointer.sdlcInfo = sdlcInfo;
 
-        return this.modelManager.loadData(pointer, PureClientVersions.production, profiles);
+        return this.modelManager.loadData(pointer, PureClientVersions.production, identity);
     }
 }

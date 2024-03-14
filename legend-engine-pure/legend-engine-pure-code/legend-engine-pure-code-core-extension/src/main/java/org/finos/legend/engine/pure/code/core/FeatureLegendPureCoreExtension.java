@@ -14,6 +14,20 @@
 
 package org.finos.legend.engine.pure.code.core;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
+
 public interface FeatureLegendPureCoreExtension extends LegendPureCoreExtension
 {
+    @Override
+    default String type()
+    {
+        return "Pure";
+    }
+
+    @Override
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("Feature");
+    }
 }

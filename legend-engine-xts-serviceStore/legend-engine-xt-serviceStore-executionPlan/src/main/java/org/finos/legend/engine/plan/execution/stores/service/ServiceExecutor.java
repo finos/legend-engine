@@ -25,7 +25,6 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.authentication.credentialprovider.CredentialProviderProvider;
@@ -43,16 +42,12 @@ import org.finos.legend.engine.plan.execution.stores.service.auth.ServiceStoreCo
 import org.finos.legend.engine.plan.execution.stores.service.auth.ServiceStoreConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.AuthenticationSchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RequestBodyDescription;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SingleAuthenticationSchemeRequirement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.HttpMethod;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.Location;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.SecurityScheme;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.service.model.ServiceParameter;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.pac4j.core.profile.CommonProfile;
 
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -71,7 +66,7 @@ public class ServiceExecutor
         this.credentialProviderProvider = credentialProviderProvider;
     }
 
-    public InputStreamResult executeHttpService(String url, List<Header> headers, StringEntity requestBodyEntity, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, List<AuthenticationSchemeRequirement> authenticationSchemeRequirements, MutableList<CommonProfile> profiles)
+    public InputStreamResult executeHttpService(String url, List<Header> headers, StringEntity requestBodyEntity, HttpMethod httpMethod, String mimeType, List<SecurityScheme> securitySchemes, List<AuthenticationSchemeRequirement> authenticationSchemeRequirements, Identity identity)
     {
         URI uri;
         try
@@ -85,10 +80,10 @@ public class ServiceExecutor
             throw new RuntimeException(errMsg, e);
         }
 
-        return executeRequest(httpMethod, url, uri, headers, requestBodyEntity, mimeType, securitySchemes, authenticationSchemeRequirements, profiles);
+        return executeRequest(httpMethod, url, uri, headers, requestBodyEntity, mimeType, securitySchemes, authenticationSchemeRequirements, identity);
     }
 
-    public InputStreamResult executeRequest(HttpMethod httpMethod, String url, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, List<AuthenticationSchemeRequirement> authenticationSchemeRequirements, MutableList<CommonProfile> profiles)
+    public InputStreamResult executeRequest(HttpMethod httpMethod, String url, URI uri, List<Header> headers, StringEntity requestBodyDescription, String mimeType, List<SecurityScheme> securitySchemes, List<AuthenticationSchemeRequirement> authenticationSchemeRequirements, Identity identity)
     {
         Span span = GlobalTracer.get().activeSpan();
 
@@ -98,7 +93,6 @@ public class ServiceExecutor
             ServiceStoreConnectionSpecification connectionSpecification = new ServiceStoreConnectionSpecification(uri, httpMethod.toString(), headers, requestBodyDescription, mimeType);
             ServiceStoreAuthenticationSpecification authenticationSpecification = new ServiceStoreAuthenticationSpecification(authenticationSchemeRequirements,securitySchemes);
 
-            Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
 
             HttpConnectionBuilder httpConnectionBuilder = serviceStoreConnectionProvider.makeConnection(connectionSpecification, authenticationSpecification, identity);
             CloseableHttpResponse httpResponse = httpConnectionBuilder.execute();

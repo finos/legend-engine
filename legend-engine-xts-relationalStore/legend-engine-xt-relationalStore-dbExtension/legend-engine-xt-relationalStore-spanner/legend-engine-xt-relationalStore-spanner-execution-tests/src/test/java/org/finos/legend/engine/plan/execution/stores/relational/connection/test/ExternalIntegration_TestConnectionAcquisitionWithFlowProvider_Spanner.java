@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.util.Collections;
 import java.util.Optional;
 import javax.security.auth.Subject;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
 import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProvider;
 import org.finos.legend.engine.authentication.SpannerTestDatabaseAuthenticationFlowProviderConfiguration;
@@ -30,6 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.GCPApplicationDefaultCredentialsAuthenticationStrategy;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.DatasourceSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SpannerDatasourceSpecification;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.vault.EnvironmentVaultImplementation;
 import org.finos.legend.engine.shared.core.vault.Vault;
 import static org.junit.Assert.assertTrue;
@@ -37,7 +38,6 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.pac4j.core.profile.CommonProfile;
 
 public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spanner extends RelationalConnectionTest
 {
@@ -94,10 +94,10 @@ public class ExternalIntegration_TestConnectionAcquisitionWithFlowProvider_Spann
     }
 
     @Test
-    public void testSpannerGCPADCConnection_profile() throws Exception
+    public void testSpannerGCPADCConnection_identity() throws Exception
     {
         RelationalDatabaseConnection systemUnderTest = this.SpannerWithGCPADCSpec();
-        Connection connection = this.connectionManagerSelector.getDatabaseConnection((MutableList<CommonProfile>) null, systemUnderTest);
+        Connection connection = this.connectionManagerSelector.getDatabaseConnection(IdentityFactoryProvider.getInstance().getAnonymousIdentity(), systemUnderTest);
         testConnection(connection, 5, TEST_QUERY);
     }
 

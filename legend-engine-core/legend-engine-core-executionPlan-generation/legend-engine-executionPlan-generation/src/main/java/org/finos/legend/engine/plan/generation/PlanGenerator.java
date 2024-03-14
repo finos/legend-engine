@@ -34,6 +34,7 @@ import org.finos.legend.engine.plan.platform.PlanPlatform;
 import org.finos.legend.engine.protocol.pure.PureClientVersions;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecutionPlan;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -41,7 +42,6 @@ import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionDefinition;
 import org.finos.legend.pure.m3.execution.Console;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 public class PlanGenerator
@@ -64,19 +64,19 @@ public class PlanGenerator
         return PlanGenerator.stringToPlan(generateExecutionPlanAsString(l, mapping, pureRuntime, context, pureModel, clientVersion, platform, planId, extensions, transformers));
     }
 
-    public static SingleExecutionPlan generateExecutionPlanWithTrace(FunctionDefinition<?> l, Mapping mapping, Root_meta_core_runtime_Runtime pureRuntime, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+    public static SingleExecutionPlan generateExecutionPlanWithTrace(FunctionDefinition<?> l, Mapping mapping, Root_meta_core_runtime_Runtime pureRuntime, Root_meta_pure_runtime_ExecutionContext context, PureModel pureModel, String clientVersion, PlanPlatform platform, Identity identity, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         Root_meta_pure_executionPlan_ExecutionPlan plan = generateExecutionPlanAsPure(l, mapping, pureRuntime, context, pureModel, platform, null, extensions);
-        return transformExecutionPlan(plan, pureModel, clientVersion, profiles, extensions, transformers);
+        return transformExecutionPlan(plan, pureModel, clientVersion, identity, extensions, transformers);
     }
 
-    public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, Iterable<? extends CommonProfile> profiles, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
+    public static SingleExecutionPlan transformExecutionPlan(Root_meta_pure_executionPlan_ExecutionPlan plan, PureModel pureModel, String clientVersion, Identity identity, RichIterable<? extends Root_meta_pure_extension_Extension> extensions, Iterable<? extends PlanTransformer> transformers)
     {
         try (Scope scope = GlobalTracer.get().buildSpan("Serialize plan to JSON").startActive(true))
         {
             String jsonPlan = serializeToJSON(plan, clientVersion, pureModel, extensions, transformers);
             scope.span().setTag("plan", jsonPlan);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.PLAN_GENERATED, jsonPlan).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.PLAN_GENERATED, jsonPlan).toString());
             return stringToPlan(jsonPlan);
         }
     }

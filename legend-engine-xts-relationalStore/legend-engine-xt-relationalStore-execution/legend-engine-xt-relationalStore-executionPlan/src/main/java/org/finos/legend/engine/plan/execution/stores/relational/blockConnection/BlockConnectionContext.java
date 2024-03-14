@@ -14,15 +14,14 @@
 
 package org.finos.legend.engine.plan.execution.stores.relational.blockConnection;
 
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.impl.factory.Maps;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.ConnectionKey;
 import org.finos.legend.engine.plan.execution.stores.relational.connection.manager.ConnectionManagerSelector;
 import org.finos.legend.engine.plan.execution.stores.relational.plugin.RelationalStoreExecutionState;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseConnection;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.Assert;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -40,14 +39,14 @@ public class BlockConnectionContext
         this(Maps.mutable.empty());
     }
 
-    public BlockConnection getBlockConnection(RelationalStoreExecutionState executionState, DatabaseConnection databaseConnection, MutableList<CommonProfile> profiles)
+    public BlockConnection getBlockConnection(RelationalStoreExecutionState executionState, DatabaseConnection databaseConnection, Identity identity)
     {
         BlockConnection requiredBlockConnection = this.blockConnectionMap.get(executionState.getRelationalExecutor().getConnectionManager().generateKeyFromDatabaseConnection(databaseConnection));
         if (requiredBlockConnection == null)
         {
             requiredBlockConnection = setBlockConnection(executionState.getRelationalExecutor().getConnectionManager(),
                     databaseConnection,
-                    new BlockConnection(executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(profiles, databaseConnection, executionState.getRuntimeContext())));
+                    new BlockConnection(executionState.getRelationalExecutor().getConnectionManager().getDatabaseConnection(identity, databaseConnection, executionState.getRuntimeContext())));
         }
         if (!requiredBlockConnection.blockConnectionState.isConnectionAvailable())
         {

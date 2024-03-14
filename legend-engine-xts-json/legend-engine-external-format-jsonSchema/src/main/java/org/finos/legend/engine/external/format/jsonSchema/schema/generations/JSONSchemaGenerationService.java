@@ -26,6 +26,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -72,17 +74,18 @@ public class JSONSchemaGenerationService
     public Response generateJSONSchema(GenerateJSONSchemaInput generateJSONSchemaInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         boolean interactive = generateJSONSchemaInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate JSON Schema").startActive(true))
         {
             return exec(generateJSONSchemaInput.config != null ? generateJSONSchemaInput.config : new JSONSchemaConfig(),
-                    () -> this.modelManager.loadModel(generateJSONSchemaInput.model, generateJSONSchemaInput.clientVersion, profiles, null),
+                    () -> this.modelManager.loadModel(generateJSONSchemaInput.model, generateJSONSchemaInput.clientVersion, identity, null),
                     interactive,
-                    profiles);
+                    identity);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_JSONSCHEMA_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_JSONSCHEMA_ERROR, identity.getName());
         }
     }
 
@@ -91,20 +94,20 @@ public class JSONSchemaGenerationService
         return core_external_format_json_transformation_toBeRefactored_jsonSchema.Root_meta_external_format_json_schema_generation_generateJsonSchemaFromPureWithScope_JSONSchemaConfig_1__JSONSchemaOutput_MANY_(jsonSchemaConfig.process(pureModel), pureModel.getExecutionSupport()).collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList();
     }
 
-    private Response exec(JSONSchemaConfig jsonSchemaConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> profiles)
+    private Response exec(JSONSchemaConfig jsonSchemaConfig, Function0<PureModel> pureModelFunc, boolean interactive, Identity identity)
     {
         try
         {
             long start = System.currentTimeMillis();
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_START : LoggingEventType.GENERATE_JSONSCHEMA_START).toString());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_START : LoggingEventType.GENERATE_JSONSCHEMA_START).toString());
             PureModel pureModel = pureModelFunc.value();
             List<GenerationOutput> result = generate(jsonSchemaConfig, pureModel);
-            LOGGER.info(new LogInfo(profiles, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_JSONSCHEMA_START, (double) System.currentTimeMillis() - start).toString());
-            return ManageConstantResult.manageResult(profiles, result);
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_STOP : LoggingEventType.GENERATE_JSONSCHEMA_START, (double) System.currentTimeMillis() - start).toString());
+            return ManageConstantResult.manageResult(identity.getName(), result);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_JSONSCHEMA_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_JSONSCHEMA_INTERACTIVE_ERROR : LoggingEventType.GENERATE_JSONSCHEMA_ERROR, identity.getName());
         }
     }
 }

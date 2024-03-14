@@ -15,9 +15,12 @@
 package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.impl.utility.LazyIterate;
+import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementType;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.EngineRuntime;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.IdentifiedConnection;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime.SingleConnectionEngineRuntime;
+import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.StoreProviderPointer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +55,24 @@ public class HelperRuntimeGrammarComposer
             builder.append(engineRuntime.mappings.stream().map(mappingPointer -> getTabString(baseIndentation + 1) + mappingPointer.path).collect(Collectors.joining(",\n"))).append(engineRuntime.mappings.isEmpty() ? "" : "\n");
             appendTabString(builder, baseIndentation).append("];");
         }
+        return engineRuntime instanceof SingleConnectionEngineRuntime
+                ? builder.append(renderSingleConnectionRuntimeValue((SingleConnectionEngineRuntime) engineRuntime, baseIndentation)).toString()
+                : builder.append(renderEngineRuntimeValue(engineRuntime, baseIndentation, isEmbeddedRuntime, transformer)).toString();
+    }
+
+    private static String renderSingleConnectionRuntimeValue(SingleConnectionEngineRuntime singleConnectionEngineRuntime, int baseIndentation)
+    {
+        StringBuilder builder = new StringBuilder();
+        if (!singleConnectionEngineRuntime.connectionStores.isEmpty())
+        {
+            appendTabString(builder.append("\n"), baseIndentation).append("connection: ").append(PureGrammarComposerUtility.convertPath(singleConnectionEngineRuntime.connectionStores.get(0).connectionPointer.connection)).append(";");
+        }
+        return builder.toString();
+    }
+
+    private static String renderEngineRuntimeValue(EngineRuntime engineRuntime, int baseIndentation, boolean isEmbeddedRuntime, DEPRECATED_PureGrammarComposerCore transformer)
+    {
+        StringBuilder builder = new StringBuilder();
         if (!engineRuntime.connections.isEmpty() && !engineRuntime.connections.parallelStream().allMatch(storeConnections -> storeConnections.storeConnections.isEmpty()))
         {
             List<String> storeConnectionStrings = new ArrayList<>();
@@ -82,7 +103,7 @@ public class HelperRuntimeGrammarComposer
                     connectionStoreStrings.add(
                             getTabString(baseIndentation + 1) + PureGrammarComposerUtility.convertPath(connectionPointerStore.connectionPointer.connection) + ":\n" +
                                     getTabString(baseIndentation + 1) + "[\n" +
-                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + PureGrammarComposerUtility.convertPath(storePointer.path))).makeString(",\n") + "\n" +
+                                    (LazyIterate.collect(connectionPointerStore.storePointers, storePointer -> getTabString(baseIndentation + 2) + renderStoreProviderPointer(storePointer))).makeString(",\n") + "\n" +
                                     getTabString(baseIndentation + 1) + "]"
                     );
                 }
@@ -93,5 +114,10 @@ public class HelperRuntimeGrammarComposer
             appendTabString(builder.append("\n"), baseIndentation).append("];");
         }
         return builder.toString();
+    }
+
+    public static String renderStoreProviderPointer(StoreProviderPointer storeProviderPointer)
+    {
+        return (storeProviderPointer.type.equals(PackageableElementType.STORE) ?  "" : ("(" + storeProviderPointer.type.toString().toLowerCase() + ") ")) + PureGrammarComposerUtility.convertPath(storeProviderPointer.path);
     }
 }

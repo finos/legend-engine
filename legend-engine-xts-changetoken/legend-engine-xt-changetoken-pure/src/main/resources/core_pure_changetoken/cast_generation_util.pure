@@ -23,11 +23,12 @@ function <<access.private>> meta::pure::changetoken::cast_generation::getValueAs
     let typeMultiplicity = $typeMultiplicityString->extractTypeMultiplicity();
     let type = $typeMultiplicity.first;
     let multiplicity = $typeMultiplicity.second;
+    let isOptional = if($multiplicity->getLowerBound() == 0, | true, | false);
     let isSingle = $multiplicity == PureOne || $multiplicity == PureZero || $multiplicity == ZeroOne;
     let oneValue = if ($anyValue->size() == 0, | if($isSingle, | ^JSONNull(), | ^JSONArray()), | $anyValue->toOne());
     let jsonValue = if ($oneValue->instanceOf(JSONElement), | $oneValue->cast(@JSONElement), | $oneValue->expandValue($typeKeyName));
     if($obsoleteJsonAsString,
-        | inlineJsonValueWithUnescaping($type, $isSingle, $jsonValue),
+        | inlineJsonValueWithUnescaping($type, $isOptional, $isSingle, $jsonValue),
         | inlineJsonValue($jsonValue)
     );
 }

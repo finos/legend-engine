@@ -1,3 +1,16 @@
+###Data
+Data com::entity::EntityData
+{
+    Relational
+    #{
+        Entity.LegalEntity:
+        'ENTITY_ID,name\n'+
+        'abc,EntityName1\n'+
+        'def,EntityName2\n';
+    }#
+}
+
+
 ###DataSpace
 DataSpace com::entity::EntityDataspace
 {
@@ -7,6 +20,11 @@ DataSpace com::entity::EntityDataspace
       name: 'default';
       mapping: com::entity::LegalEntityMapping;
       defaultRuntime: com::entity::EntityRuntime;
+      testData:
+        Reference
+        #{
+            com::entity::EntityData
+        }#;
     }
   ];
   defaultExecutionContext: 'default';
@@ -78,13 +96,10 @@ function com::trade::TestFunction(): meta::pure::tds::TabularDataSet[1]
 {
   testSuite_1
   (
-    com::entity::EntityDatabase:
-        Relational
+    (dataspace) com::entity::EntityDataspace:
+        DataspaceTestData
         #{
-          Entity.LegalEntity:
-            'ENTITY_ID,name\n'+
-            'abc,EntityName1\n'+
-            'def,EntityName2\n';
+          com::entity::EntityDataspace
         }#;
     com::trade::TradeDatabase:
         Relational
@@ -167,20 +182,13 @@ RelationalDatabaseConnection com::trade::TradeConnection
 
 
 ###Runtime
-Runtime com::trade::TradeRuntime
+SingleConnectionRuntime com::trade::TradeRuntime
 {
   mappings:
   [
     com::trade::TradeWithLegalEntityMapping
   ];
-  connectionStores:
-  [
-    com::trade::TradeConnection:
-    [
-      com::trade::TradeDatabase,
-      com::entity::EntityDatabase
-    ]
-  ];
+  connection: com::trade::TradeConnection;
 }
 
 Runtime com::entity::EntityRuntime

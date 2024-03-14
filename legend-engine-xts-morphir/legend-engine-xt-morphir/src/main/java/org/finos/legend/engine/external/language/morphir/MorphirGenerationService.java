@@ -29,6 +29,8 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.api.result.ManageConstantResult;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionTool;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
@@ -69,34 +71,35 @@ public class MorphirGenerationService
     public Response generateMorphirIR(MorphirGenerationInput generateMorphirIRInput, @ApiParam(hidden = true) @Pac4JProfileManager ProfileManager<CommonProfile> pm)
     {
         MutableList<CommonProfile> profiles = ProfileManagerHelper.extractProfiles(pm);
+        Identity identity = IdentityFactoryProvider.getInstance().makeIdentity(profiles);
         boolean interactive = generateMorphirIRInput.model instanceof PureModelContextData;
         try (Scope scope = GlobalTracer.get().buildSpan("Service: Generate Morphir IR").startActive(true))
         {
             return exec(
                     generateMorphirIRInput.config != null ? generateMorphirIRInput.config : new MorphirGenerationConfig(),
-                    () -> this.modelManager.loadModelAndData(generateMorphirIRInput.model, generateMorphirIRInput.clientVersion, profiles, null).getTwo(),
+                    () -> this.modelManager.loadModelAndData(generateMorphirIRInput.model, generateMorphirIRInput.clientVersion, identity, null).getTwo(),
                     interactive,
-                    profiles);
+                    identity);
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MORPHIR_ERROR, profiles);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MORPHIR_ERROR, identity.getName());
         }
     }
 
-    private Response exec(MorphirGenerationConfig morphirGenerationConfig, Function0<PureModel> pureModelFunc, boolean interactive, MutableList<CommonProfile> pm)
+    private Response exec(MorphirGenerationConfig morphirGenerationConfig, Function0<PureModel> pureModelFunc, boolean interactive, Identity identity)
     {
         try
         {
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_START : LoggingEventType.GENERATE_MORPHIR_START).toString());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_START : LoggingEventType.GENERATE_MORPHIR_START).toString());
             PureModel pureModel = pureModelFunc.value();
             RichIterable<? extends Root_meta_pure_generation_metamodel_GenerationOutput> output = core_external_language_morphir_transformation_integration.Root_meta_external_language_morphir_generation_generateMorphirIRFromPureWithScope_MorphirConfig_1__GenerationOutput_MANY_(morphirGenerationConfig.process(pureModel), pureModel.getExecutionSupport());
-            LOGGER.info(new LogInfo(pm, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_STOP : LoggingEventType.GENERATE_MORPHIR_STOP).toString());
-            return ManageConstantResult.manageResult(pm, output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
+            LOGGER.info(new LogInfo(identity.getName(), interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_STOP : LoggingEventType.GENERATE_MORPHIR_STOP).toString());
+            return ManageConstantResult.manageResult(identity.getName(), output.collect(v -> new GenerationOutput(v._content(), v._fileName(), v._format())).toList());
         }
         catch (Exception ex)
         {
-            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MORPHIR_ERROR, pm);
+            return ExceptionTool.exceptionManager(ex, interactive ? LoggingEventType.GENERATE_MORPHIR_INTERACTIVE_ERROR : LoggingEventType.GENERATE_MORPHIR_ERROR, identity.getName());
         }
     }
 }

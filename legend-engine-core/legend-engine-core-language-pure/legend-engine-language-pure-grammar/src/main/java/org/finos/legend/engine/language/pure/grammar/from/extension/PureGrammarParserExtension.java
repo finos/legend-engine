@@ -18,11 +18,18 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.data.Embedde
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingIncludeParser;
 import org.finos.legend.engine.shared.core.extension.LegendLanguageExtension;
+import org.finos.legend.engine.language.pure.grammar.from.runtime.StoreProviderPointerFactory;
 
 import java.util.Collections;
 
 public interface PureGrammarParserExtension extends LegendLanguageExtension
 {
+    @Override
+    default String type()
+    {
+        return "Parser";
+    }
+
     default Iterable<? extends SectionParser> getExtraSectionParsers()
     {
         return Collections.emptyList();
@@ -59,6 +66,11 @@ public interface PureGrammarParserExtension extends LegendLanguageExtension
     }
 
     default Iterable<? extends MappingIncludeParser> getExtraMappingIncludeParsers()
+    {
+        return Collections.emptyList();
+    }
+
+    default Iterable<? extends StoreProviderPointerFactory> getExtraIncludedStoreParsers()
     {
         return Collections.emptyList();
     }

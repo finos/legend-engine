@@ -33,6 +33,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.generated.Root_meta_external_format_shared_executionPlan_platformBinding_legendJava_ExternalFormatLegendJavaPlatformBindingDescriptor;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_pure_runtime_ExecutionContext_Impl;
@@ -69,7 +71,7 @@ public abstract class TestExternalFormatQueries
     {
         try
         {
-            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, null);
+            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             PureGrammarParser parser = PureGrammarParser.newInstance();
             Lambda lambdaProtocol = parser.parseLambda(query);
@@ -243,7 +245,7 @@ public abstract class TestExternalFormatQueries
             ObjectMapper objectMapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
             String json = objectMapper.writeValueAsString(modelData);
             modelData = objectMapper.readValue(json, PureModelContextData.class);
-            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, null);
+            PureModel model = Compiler.compile(modelData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
 
             PureGrammarParser parser = PureGrammarParser.newInstance();
             Lambda lambdaProtocol = parser.parseLambda(query);

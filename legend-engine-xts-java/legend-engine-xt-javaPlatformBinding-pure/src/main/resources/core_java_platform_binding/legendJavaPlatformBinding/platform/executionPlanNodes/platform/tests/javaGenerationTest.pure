@@ -180,8 +180,10 @@ function <<access.private>> meta::pure::executionPlan::platformBinding::legendJa
         meta::pure::functions::math::tests::trigonometry::testTangent__Boolean_1_, // requires eval
 		meta::pure::functions::math::testPercentile__Boolean_1_, // requires eval_Function_1__T_n__V_m_ 
 		meta::pure::functions::string::tests::evaluate::plus::testPlusInLambda__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_ 
-		meta::pure::functions::string::tests::parseDate::testParseDateTypes__Boolean_1_, // requires assertInstanceOf_Any_1__Type_1__Boolean_1_ 
-		meta::pure::functions::string::tests::plus::testPlusInIterate__Boolean_1_ // requires copy_T_1__String_1__KeyExpression_MANY__T_1_ 
+		meta::pure::functions::string::tests::format::testFormatInEval__Boolean_1_, // requires eval_Function_1__T_n__U_p__V_m_
+		meta::pure::functions::string::tests::format::testFormatInEvaluate__Boolean_1_, // requires evaluate_Function_1__List_MANY__Any_MANY_
+		meta::pure::functions::string::tests::parseDate::testParseDateTypes__Boolean_1_, // requires assertInstanceOf_Any_1__Type_1__Boolean_1_
+		meta::pure::functions::string::tests::plus::testPlusInIterate__Boolean_1_ // requires copy_T_1__String_1__KeyExpression_MANY__T_1_
   ];
 
   let misc = [    

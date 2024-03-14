@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.shared.core.url;
 
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 import org.slf4j.Logger;
@@ -25,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
 {
@@ -50,17 +52,17 @@ public class EngineUrlStreamHandlerFactory implements URLStreamHandlerFactory
             {
                 URL.setURLStreamHandlerFactory(INSTANCE);
                 factoryInitialized = State.INITIALIZED;
-                LOGGER.info(new LogInfo(null, LoggingEventType.URL_FACTORY_REGISTERED, "Registered Alloy URL Factory").toString());
+                LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.URL_FACTORY_REGISTERED, "Registered Alloy URL Factory").toString());
             }
             catch (Error e)
             {
                 factoryInitialized = State.INITIALIZATION_FAILED;
-                LOGGER.info(new LogInfo(null, LoggingEventType.URL_FACTORY_REGISTER_FAILED, "Unable to register Alloy URL Factory.  URL creation via direct constructors will fail for Alloy protocols").toString());
+                LOGGER.info(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.URL_FACTORY_REGISTER_FAILED, "Unable to register Alloy URL Factory.  URL creation via direct constructors will fail for Alloy protocols").toString());
             }
         }
     }
 
-    private final Map<String, URLStreamHandler> handlers = new TreeMap<>();
+    private final Map<String, URLStreamHandler> handlers = new ConcurrentHashMap<>();
 
     @Override
     public URLStreamHandler createURLStreamHandler(String protocol)

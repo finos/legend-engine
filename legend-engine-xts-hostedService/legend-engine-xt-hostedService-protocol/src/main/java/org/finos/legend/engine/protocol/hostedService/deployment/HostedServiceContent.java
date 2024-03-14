@@ -26,6 +26,11 @@ public class HostedServiceContent extends FunctionActivatorDeploymentContent
     public GenerationInfo info;
     public PureModelContext serviceData;
 
+    public HostedServiceContent()
+    {
+        //jackson
+    }
+
     public HostedServiceContent(String pattern, GenerationInfo info)
     {
         this.pattern = pattern;

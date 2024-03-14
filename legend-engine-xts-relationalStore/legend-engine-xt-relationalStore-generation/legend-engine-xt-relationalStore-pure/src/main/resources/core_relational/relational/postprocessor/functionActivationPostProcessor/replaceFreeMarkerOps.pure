@@ -1,0 +1,59 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::relational::functions::pureToSqlQuery::*;
+import meta::relational::postProcessor::*;
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
+import meta::pure::extension::*;
+import meta::pure::runtime::*;
+import meta::core::runtime::*;
+import meta::relational::metamodel::*;
+import meta::relational::mapping::*;
+
+function meta::relational::postProcessor::ReplaceFreeMarkerWithTableFunctionParamHolder(query:SQLQuery[1]): PostProcessorResult[1]
+{
+  let transformFunc = {r: RelationalOperationElement[1], uniqueId: Integer[1] |  
+                        $r->match([
+                          l: Literal[1] | $l->replaceLiteral(),
+                          v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
+                          v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
+                          v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
+                          f: FreeMarkerOperationHolder[1] | fail('replacement of FreeMarkerOperationHolder with Parameter not supported yet'); $f;,
+                          r: RelationalOperationElement[1] | $r;
+                        ]);
+                      };
+
+  let transformedQuery = $query->transform($transformFunc, ^Map<RelationalOperationElement, RelationalOperationElement>()).first; 
+  
+  ^PostProcessorResult(query = $transformedQuery->cast(@SQLQuery));
+}
+
+function <<access.private>> meta::relational::postProcessor::replaceVarPlaceHolder(v: VarPlaceHolder[1]): RelationalOperationElement[1]
+{  
+  ^TableFunctionParamPlaceHolder(var=$v);
+}
+
+function <<access.private>> meta::relational::postProcessor::replaceLiteral(l: Literal[1]): RelationalOperationElement[1]
+{  
+  if(!$l.value->instanceOf(RelationalOperationElement), 
+    | $l, 
+    | $l.value->match([
+                          v: VarPlaceHolder[1] | $v->replaceVarPlaceHolder(),
+                          v: VarSetPlaceHolder[1] | fail('replacement of VarSetPlaceHolder with Parameter not supported yet'); $v;,
+                          v: VarCrossSetPlaceHolder[1] | fail('replacement of VarCrossSetPlaceHolder with Parameter not supported yet'); $v;,
+                          f: FreeMarkerOperationHolder[1] | fail('replacement of FreeMarkerOperationHolder with Parameter not supported yet'); $f;,
+                          r: RelationalOperationElement[1] | $r;
+                     ]);
+    );
+}
