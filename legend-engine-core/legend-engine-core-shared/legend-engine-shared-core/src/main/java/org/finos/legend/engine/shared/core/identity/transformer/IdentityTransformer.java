@@ -16,7 +16,7 @@ package org.finos.legend.engine.shared.core.identity.transformer;
 
 import org.finos.legend.engine.shared.core.identity.Identity;
 
-public interface IdentityTransformer<S, T>
+public interface IdentityTransformer<T>
 {
     T transform(Identity identity);
 }

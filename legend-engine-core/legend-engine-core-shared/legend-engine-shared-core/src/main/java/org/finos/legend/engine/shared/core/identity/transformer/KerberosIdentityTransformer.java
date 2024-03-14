@@ -21,7 +21,7 @@ import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import javax.security.auth.Subject;
 import java.util.Objects;
 
-public class KerberosIdentityTransformer implements IdentityTransformer<Subject, Subject>
+public class KerberosIdentityTransformer implements IdentityTransformer<Subject>
 {
     KerberosIdentityTransformer()
     {
