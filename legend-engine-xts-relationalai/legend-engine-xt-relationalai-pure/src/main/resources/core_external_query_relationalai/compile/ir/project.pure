@@ -226,7 +226,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseR
   let newTrace =
     $trace
       ->stage('handleCaseRestrict(FunctionExpression[1],TranspileTypeInfo[1],Trace[1])')
-      ->detail('typeInfo', $typeInfo->describe());
+      ->detailLazy('typeInfo', $typeInfo->describeLazy());
 
   // First argument is the table.
   let param0 = $func.parametersValues->at(0);

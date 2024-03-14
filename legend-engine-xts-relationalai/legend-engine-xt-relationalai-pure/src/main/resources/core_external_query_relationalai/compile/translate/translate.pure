@@ -40,7 +40,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExpr[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
   $expr->match([
     s: ConstString[1]          | ^$state(current=meta::external::store::rel::metamodel::const($s.value)->annotate(String))->ok(),
     i: ConstInteger[1]         | ^$state(current=meta::external::store::rel::metamodel::const($i.value)->annotate(Integer))->ok(),
@@ -90,7 +90,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprAt[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('at', $at->describe());
+      ->detailLazy('at', $at->describeLazy());
   /*
    * Recursively compile the parent and apply partial relational application
    * using the index of the `at` operator.
@@ -131,7 +131,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprCast[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('cast', $cast->describe());
+      ->detailLazy('cast', $cast->describeLazy());
   let bound = var($state.variableFactory->next());
   /*
    * TODO:
@@ -170,7 +170,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     emptyTrace()
       ->stage('compile(PExprFilter[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('filter', $filter->describe());
+      ->detailLazy('filter', $filter->describeLazy());
   $filter.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
     ->step({parent: RelExpr[1] |
@@ -209,7 +209,7 @@ function meta::external::store::rel::compile::compile<|n>(
   let newTrace =
     $trace
       ->stage('compile(PExprFilter[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('fexpr', $fexpr->describe());
+      ->detailLazy('fexpr', $fexpr->describeLazy());
   $fexpr.arguments
     ->map(a | $a->compile($substitution, $rewrite, $state, $newTrace)->current())
     ->collect()
@@ -227,7 +227,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprFilter[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('exists', $exists->describe());
+      ->detailLazy('exists', $exists->describeLazy());
   $exists.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
     ->step({parent: RelExpr[1] |
@@ -272,7 +272,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     emptyTrace()
       ->stage('compile(PExprForAll[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('forAll', $forAll->describe());
+      ->detailLazy('forAll', $forAll->describeLazy());
   $forAll.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
     ->step({parent: RelExpr[1] |
@@ -320,7 +320,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprSet[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('set', $set->describe());
+      ->detailLazy('set', $set->describeLazy());
   ^$state(current=$set.set.classExpr)->ok();
 }
 
@@ -334,7 +334,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprSetAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('access', $access->describe());
+      ->detailLazy('access', $access->describeLazy());
   $substitution
     ->apply($access.variable,$newTrace)
     ->then(var: RelExpr[1] |
@@ -352,7 +352,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprColumnAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('access', $access->describe());
+      ->detailLazy('access', $access->describeLazy());
   $rewrite
     ->apply($access, $newTrace)
     ->then(expr: RelExpr[1] |
@@ -370,7 +370,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprPropertyAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('access', $access->describe());
+      ->detailLazy('access', $access->describeLazy());
   $access.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
     ->step(parent: RelExpr[1] |
@@ -393,7 +393,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprPropertyAccess[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
   $expr.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
     ->step(parent: RelExpr[1] |
@@ -436,7 +436,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprIn[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
   $expr.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
     ->step(parent: RelExpr[1] |
@@ -466,7 +466,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprScoped[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
   $expr.inner->compile($substitution, $rewrite, $state, $newTrace);
 }
 
@@ -479,7 +479,7 @@ function meta::external::store::rel::compile::compile(
 ): Result<CompilationState|0..1>[1] {
   let newTrace = $trace
     ->stage('compile(PExprProject[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-    ->detail('expr', $expr->describe());
+    ->detailLazy('expr', $expr->describeLazy());
 
   $expr.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
@@ -572,7 +572,7 @@ function meta::external::store::rel::compile::compile(
 ): Result<CompilationState|0..1>[1] {
   let newTrace = $trace
     ->stage('compile(PExprRestrict[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1],Trace[1])')
-    ->detail('expr', $expr->describe());
+    ->detailLazy('expr', $expr->describeLazy());
 
   $expr.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
@@ -592,7 +592,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(VariablePlaceholder[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
   $substitution
     ->apply($expr.identifier, $newTrace)
     ->then(subst: RelExpr[1] | ^$state(current=$subst));
@@ -608,7 +608,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprGroupByScopes[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
   $expr->match([
     gs: PExprGroupByScopes[1] | $gs->compile($substitution, $rewrite, $state, $newTrace),
     gc: PExprGroupByColumns[1] | $gc->compile($substitution, $rewrite, $state, $newTrace)
@@ -625,7 +625,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprGroupByScopes[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
 
   $expr.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
@@ -843,7 +843,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprGroupByColumns[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('expr', $expr->describe());
+      ->detailLazy('expr', $expr->describeLazy());
 
   $expr.parent
     ->compile($substitution, $rewrite, $state, $newTrace)
@@ -1019,7 +1019,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprIfThenElse[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('ifThenElse', $ifThenElse->describe());
+      ->detailLazy('ifThenElse', $ifThenElse->describeLazy());
   $ifThenElse.condition
     ->compile($substitution, $rewrite, $state, $newTrace)
     ->andThen({state: CompilationState[1] |
@@ -1050,7 +1050,7 @@ function meta::external::store::rel::compile::compile(
   let newTrace =
     $trace
       ->stage('compile(PExprMatch[1],VariableSubstitution[1],ColumnAccessRewrite[1],CompilationState[1])')
-      ->detail('match', $match->describe());
+      ->detailLazy('match', $match->describeLazy());
 
   $match.parent
     ->compile($substitution, $rewrite, $state, $newTrace)

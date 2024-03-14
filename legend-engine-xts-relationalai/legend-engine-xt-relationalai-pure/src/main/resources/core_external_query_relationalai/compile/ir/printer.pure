@@ -184,6 +184,10 @@ function meta::external::store::rel::compile::ir::utils::describe(expr: PExpr[1]
   ]);
 }
 
-function meta::external::store::rel::compile::ir::utils::describe(expr: PExpr[0..1]): String[0..1] {
-  $expr->map(e: PExpr[1] | $e->describe())
+function meta::external::store::rel::compile::ir::utils::describe(expr: PExpr[0..1]): String[1] {
+  $expr->map(e: PExpr[1] | $e->describe())->orElse('(no expr)')
+}
+
+function meta::external::store::rel::compile::ir::utils::describeLazy(expr: PExpr[0..1]): FunctionDefinition<{->String[1]}>[1] {
+  {| describe($expr) }
 }

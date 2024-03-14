@@ -64,6 +64,10 @@ function meta::external::store::rel::mapping::describe(set: RelSetImplementation
   $set->map(s | $s->describe())->orElse('[NO SET]')
 }
 
+function meta::external::store::rel::mapping::describeLazy(set: RelSetImplementation[0..1]): FunctionDefinition<{->String[1]}>[1] {
+  {| $set->describe() }
+}
+
 /////////////////////////
 /// Constructor methods
 /////////////////////////

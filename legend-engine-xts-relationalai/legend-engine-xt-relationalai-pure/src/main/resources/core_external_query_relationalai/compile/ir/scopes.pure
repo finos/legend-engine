@@ -22,7 +22,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseV
     $trace
       ->stage('handleCaseValueSpecToScopes(ValueSpecification[1],Boolean[1],PExpr[1],Trace[1])')
       ->detail('requireType', $requireType)
-      ->detail('parent', $parent->describe());
+      ->detailLazy('parent', $parent->describeLazy());
   $spec->match([
     spec: InstanceValue[1] |
       $spec.values
@@ -47,7 +47,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseV
     $trace
       ->stage('handleCaseValueSpecToScoped(ValueSpecification[1],Boolean[1],PExpr[0..1],Trace[1])')
       ->detail('requireType', $requireType)
-      ->detail('parent', $parent->describe());
+      ->detailLazy('parent', $parent->describeLazy());
   $spec->match([
     {
       spec: InstanceValue[1] |
@@ -99,7 +99,7 @@ function <<access.private>> meta::external::store::rel::compile::ir::handleCaseF
     $trace
       ->stage('handleCaseFunctionDefToScoped(FunctionDefinition<Any>[1],Boolean[1],PExpr[0..1],Trace[1])')
       ->detail('requireType', $requireType)
-      ->detail('parent', $parent->describe());
+      ->detailLazy('parent', $parent->describeLazy());
   let functionParams = $func->functionType().parameters;
 
   $func.expressionSequence
@@ -186,7 +186,7 @@ function meta::external::store::rel::compile::ir::valueSpecToUntypedScopes(
   let newTrace =
     $trace
       ->stage('valueSpecToUntypedScopes(ValueSpecification[1],Trace[1])')
-      ->detail('parent', $parent->describe());
+      ->detailLazy('parent', $parent->describeLazy());
   handleCaseValueSpecToScopes($spec, $typeInfo, false, $parent, $trace);
 }
 
@@ -209,7 +209,7 @@ function meta::external::store::rel::compile::ir::valueSpecToUntypedScoped(
   let newTrace =
     $trace
       ->stage('valueSpecToUntypedScoped(ValueSpecification[1],Trace[1])')
-      ->detail('parent', $parent->describe());
+      ->detailLazy('parent', $parent->describeLazy());
   handleCaseValueSpecToScoped($spec, $typeInfo, false, $parent, $trace);
 }
 
@@ -222,7 +222,7 @@ function meta::external::store::rel::compile::ir::functionDefToUntypedScoped(
   let newTrace =
     $trace
       ->stage('functionDefToUntypedScoped(ValueSpecification[1],Trace[1])')
-      ->detail('parent', $parent->describe());
+      ->detailLazy('parent', $parent->describeLazy());
   handleCaseFunctionDefToScoped($func, $typeInfo, false, $parent, $trace);
 }
 
@@ -255,7 +255,7 @@ function meta::external::store::rel::compile::ir::valueSpecToTypedScopes(
   let newTrace =
     $trace
       ->stage('valueSpecToTypedScopes(ValueSpecification[1],PExpr[1],Trace[1])')
-      ->detail('parent', $parent->describe());
+      ->detailLazy('parent', $parent->describeLazy());
   handleCaseValueSpecToScopes($spec, $typeInfo, true, $parent, $newTrace)
     ->map(result: Result<PExprScope|0..1>[1] |
       $result->tryCast(@PExprScopeTyped, $newTrace);

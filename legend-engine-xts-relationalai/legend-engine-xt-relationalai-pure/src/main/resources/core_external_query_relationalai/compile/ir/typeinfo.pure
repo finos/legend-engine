@@ -30,7 +30,7 @@ function meta::external::store::rel::compile::ir::typeinfo::union(
 }
 
 /**
-  * Return the set implementation id (i.e., the class name) for each set implementation held in the type info.
+  * Returns the set implementation id (i.e., the class name) for each set implementation held in the type info.
   */
 function meta::external::store::rel::compile::ir::typeinfo::describe(
   typeInfo: TranspileTypeInfo[1]
@@ -43,6 +43,15 @@ function meta::external::store::rel::compile::ir::typeinfo::describe(
      | '(no set implemtations)',
      | format('Type info for %s sets: %s', [$orderedSets->size(), $orderedSets->map(s: RelSetImplementation[1] | $s->describe())->makeString('[\n', ',\n','\n]')])
      );
+}
+
+/**
+  * Lazily returns the set implementation id (i.e., the class name) for each set implementation held in the type info.
+  */
+function meta::external::store::rel::compile::ir::typeinfo::describeLazy(
+  typeInfo: TranspileTypeInfo[1]
+): FunctionDefinition<{->String[1]}>[1] {
+  {| describe($typeInfo) }
 }
 
 /**
