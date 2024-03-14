@@ -78,6 +78,8 @@ public class SnowflakeGrammarComposerExtension implements IRelationalGrammarComp
                         (spec.proxyHost != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyHost: " + convertString(spec.proxyHost, true) + ";\n" : "") +
                         (spec.proxyPort != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "proxyPort: " + convertString(spec.proxyPort, true) + ";\n" : "") +
                         (spec.nonProxyHosts != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "nonProxyHosts: " + convertString(spec.nonProxyHosts, true) + ";\n" : "") +
+                        (spec.tempTableDb != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "tempTableDb: " + convertString(spec.tempTableDb, true) + ";\n" : "") +
+                        (spec.tempTableSchema != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "tempTableSchema: " + convertString(spec.tempTableSchema, true) + ";\n" : "") +
                         (spec.accountType != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "accountType: " + spec.accountType + ";\n" : "") +
                         (spec.organization != null ? context.getIndentationString() + getTabString(baseIndentation + 1) + "organization: " + convertString(spec.organization, true) + ";\n" : "") +
 

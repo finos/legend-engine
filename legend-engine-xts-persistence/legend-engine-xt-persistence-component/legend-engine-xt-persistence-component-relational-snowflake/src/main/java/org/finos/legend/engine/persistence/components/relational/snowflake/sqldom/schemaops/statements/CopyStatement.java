@@ -15,9 +15,11 @@
 package org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.statements;
 
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sqldom.schemaops.expressions.table.StagedFilesTable;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.common.Clause;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.Table;
+import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.expresssions.table.TableLike;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DMLStatement;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.SelectStatement;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Field;
@@ -40,7 +42,7 @@ public class CopyStatement implements DMLStatement
 {
     private Table table;
     private final List<Field> columns;
-    private SelectStatement selectStatement;
+    private TableLike srcTable;
     private List<String> filePatterns;
     private List<String> filePaths;
     private String userDefinedFileFormatName;
@@ -48,35 +50,51 @@ public class CopyStatement implements DMLStatement
     private Map<String, Object> fileFormatOptions;
     private Map<String, Object> copyOptions;
 
+    private String validationMode;
+
     public CopyStatement()
     {
         this.columns = new ArrayList<>();
     }
 
-    public CopyStatement(Table table, List<Field> columns, SelectStatement selectStatement)
+    public CopyStatement(Table table, List<Field> columns, TableLike srcTable)
     {
         this.table = table;
         this.columns = columns;
-        this.selectStatement = selectStatement;
+        this.srcTable = srcTable;
     }
 
     /*
      Copy GENERIC PLAN for Snowflake:
+
+     Standard data load
      --------------------------------
-     COPY INTO [<namespace>.]<table_name> (COLUMN_LIST)
-     FROM
-     ( SELECT [<alias>.]$<file_col_num>[.<element>] [ , [<alias>.]$<file_col_num>[.<element>] ... ]
-         FROM { internalStage | externalStage } )
-    [ FILES = ( '<file_name>' [ , '<file_name>' ] [ , ... ] ) ]
-    [ PATTERN = '<regex_pattern>' ]
-    [ FILE_FORMAT = ( { FORMAT_NAME = '[<namespace>.]<file_format_name>' |
-                    TYPE = { CSV | JSON | AVRO | ORC | PARQUET | XML } [ formatTypeOptions ] } ) ]
-    [ copyOptions ]
+        COPY INTO [<namespace>.]<table_name>
+        FROM { internalStage | externalStage | externalLocation }
+        [ FILES = ( '<file_name>' [ , '<file_name>' ] [ , ... ] ) ]
+        [ PATTERN = '<regex_pattern>' ]
+        [ FILE_FORMAT = ( { FORMAT_NAME = '[<namespace>.]<file_format_name>' |
+        TYPE = { CSV | JSON | AVRO | ORC | PARQUET | XML } [ formatTypeOptions ] } ) ]
+        [ copyOptions ]
+        [ VALIDATION_MODE = RETURN_<n>_ROWS | RETURN_ERRORS | RETURN_ALL_ERRORS ]
+
+     Data load with transformation
+     --------------------------------
+        COPY INTO [<namespace>.]<table_name> [ ( <col_name> [ , <col_name> ... ] ) ]
+        FROM ( SELECT [<alias>.]$<file_col_num>[.<element>] [ , [<alias>.]$<file_col_num>[.<element>] ... ]
+            FROM { internalStage | externalStage } )
+        [ FILES = ( '<file_name>' [ , '<file_name>' ] [ , ... ] ) ]
+        [ PATTERN = '<regex_pattern>' ]
+        [ FILE_FORMAT = ( { FORMAT_NAME = '[<namespace>.]<file_format_name>' |
+        TYPE = { CSV | JSON | AVRO | ORC | PARQUET | XML } [ formatTypeOptions ] } ) ]
+        [ copyOptions ]
+        --------------------------------
      */
 
     @Override
     public void genSql(StringBuilder builder) throws SqlDomException
     {
+        boolean dataLoadWithTransformation = srcTable instanceof SelectStatement;
         validate();
         builder.append("COPY INTO ");
 
@@ -101,9 +119,15 @@ public class CopyStatement implements DMLStatement
 
         builder.append(WHITE_SPACE + Clause.FROM.get() + WHITE_SPACE);
 
-        builder.append(OPEN_PARENTHESIS);
-        selectStatement.genSql(builder);
-        builder.append(CLOSING_PARENTHESIS);
+        if (dataLoadWithTransformation)
+        {
+            builder.append(OPEN_PARENTHESIS);
+        }
+        srcTable.genSql(builder);
+        if (dataLoadWithTransformation)
+        {
+            builder.append(CLOSING_PARENTHESIS);
+        }
 
         // File Paths
         if (filePaths != null && !filePaths.isEmpty())
@@ -138,6 +162,12 @@ public class CopyStatement implements DMLStatement
         {
             builder.append(WHITE_SPACE);
             addOptions(copyOptions, builder);
+        }
+        // Add validation mode
+        if (StringUtils.notEmpty(validationMode))
+        {
+            builder.append(WHITE_SPACE);
+            builder.append(String.format("VALIDATION_MODE = '%s'", validationMode));
         }
     }
 
@@ -181,20 +211,29 @@ public class CopyStatement implements DMLStatement
         }
         else if (node instanceof SelectStatement)
         {
-            selectStatement = (SelectStatement) node;
+            srcTable = (SelectStatement) node;
+        }
+        else if (node instanceof StagedFilesTable)
+        {
+            srcTable = (StagedFilesTable) node;
         }
     }
 
     void validate() throws SqlDomException
     {
-        if (selectStatement == null)
+        if (srcTable == null)
         {
-            throw new SqlDomException("selectStatement is mandatory for Copy Table Command");
+            throw new SqlDomException("srcTable is mandatory for Copy Table Command");
         }
 
         if (table == null)
         {
             throw new SqlDomException("table is mandatory for Copy Table Command");
+        }
+
+        if (StringUtils.notEmpty(validationMode) && srcTable instanceof SelectStatement)
+        {
+            throw new SqlDomException("VALIDATION_MODE is not supported for Data load with transformation");
         }
     }
 
@@ -221,6 +260,11 @@ public class CopyStatement implements DMLStatement
     public void setFileFormatOptions(Map<String, Object> fileFormatOptions)
     {
         this.fileFormatOptions = fileFormatOptions;
+    }
+
+    public void setValidationMode(String validationMode)
+    {
+        this.validationMode = validationMode;
     }
 
     public void setCopyOptions(Map<String, Object> copyOptions)

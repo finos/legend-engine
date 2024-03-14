@@ -21,7 +21,6 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.schemaop
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Function;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.OrderedField;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.WindowFunction;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -32,23 +31,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class WindowFunctionTest
 {
-
-    @Test
-    void testBothPartitionAndOrderByFieldsMissing()
-    {
-        Function rowNumber = new Function(FunctionName.ROW_NUMBER, null, BaseTest.QUOTE_IDENTIFIER);
-        WindowFunction windowFunction = new WindowFunction(BaseTest.QUOTE_IDENTIFIER, rowNumber, null, null);
-        try
-        {
-            String sql = BaseTest.genSql(windowFunction);
-            Assertions.fail("Should have thrown Exception");
-        }
-        catch (Exception e)
-        {
-            assertEquals("Both partitionByFields and orderByFields are empty", e.getMessage());
-        }
-    }
-
     @Test
     void testWithPartitionFields()
     {
@@ -99,4 +81,12 @@ public class WindowFunctionTest
         assertEquals("ROW_NUMBER() OVER (PARTITION BY stage.\"field1\",stage.\"field2\" ORDER BY stage.\"field1\" ASC,stage.\"field2\")", sql);
     }
 
+    @Test
+    void testPartitionAndOrderByBothEmpty()
+    {
+        Function rowNumber = new Function(FunctionName.ROW_NUMBER, null, BaseTest.QUOTE_IDENTIFIER);
+        WindowFunction windowFunction = new WindowFunction(BaseTest.QUOTE_IDENTIFIER, rowNumber, null, null);
+        String sql = BaseTest.genSql(windowFunction);
+        assertEquals("ROW_NUMBER() OVER ()", sql);
+    }
 }

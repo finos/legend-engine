@@ -72,7 +72,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         String expectedMilestoneQuery = "UPDATE `mydb`.`main` as sink SET " +
                 "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
-                "(EXISTS (SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "(EXISTS (SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) AND " +
                 "(sink.`digest` <> stage.`digest`)))";
 
@@ -80,7 +80,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, `batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
                 "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' " +
-                "FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') " +
@@ -98,7 +98,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         Assertions.assertEquals(2, operations.size());
 
         // Stats
-        String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000'";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
         String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_out` = '2000-01-01 00:00:00.000000') as `rowsInserted`";
@@ -154,7 +154,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "sink.`batch_time_out` = '2000-01-01 00:00:00.000000' " +
                 "WHERE " +
                 "(sink.`batch_time_out` = '9999-12-31 23:59:59') AND " +
-                "(EXISTS (SELECT * FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "(EXISTS (SELECT * FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND ((sink.`id` = stage.`id`) AND (sink.`name` = stage.`name`)) " +
                 "AND ((sink.`digest` <> stage.`digest`) OR (stage.`delete_indicator` IN ('yes','1','true')))))";
 
@@ -162,7 +162,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
                 "(`id`, `name`, `amount`, `biz_date`, `digest`, " +
                 "`batch_time_in`, `batch_time_out`) " +
                 "(SELECT stage.`id`,stage.`name`,stage.`amount`,stage.`biz_date`,stage.`digest`," +
-                "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `mydb`.`staging_legend_persistence_temp_staging` as stage " +
+                "'2000-01-01 00:00:00.000000','9999-12-31 23:59:59' FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage " +
                 "WHERE ((stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')) AND " +
                 "(NOT (EXISTS (SELECT * FROM `mydb`.`main` as sink " +
                 "WHERE (sink.`batch_time_out` = '9999-12-31 23:59:59') AND (sink.`digest` = stage.`digest`) " +
@@ -181,7 +181,7 @@ public class UnitemporalDeltaDateTimeBasedTest extends UnitmemporalDeltaDateTime
         Assertions.assertEquals(2, operations.size());
 
         // Stats
-        String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_legend_persistence_temp_staging` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
+        String incomingRecordCount = "SELECT COALESCE(SUM(stage.`legend_persistence_count`),0) as `incomingRecordCount` FROM `mydb`.`staging_temp_staging_lp_yosulf` as stage WHERE (stage.`data_split` >= '{DATA_SPLIT_LOWER_BOUND_PLACEHOLDER}') AND (stage.`data_split` <= '{DATA_SPLIT_UPPER_BOUND_PLACEHOLDER}')";
         String rowsUpdated = "SELECT COUNT(*) as `rowsUpdated` FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))";
         String rowsDeleted = "SELECT 0 as `rowsDeleted`";
         String rowsInserted = "SELECT (SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE sink.`batch_time_in` = '2000-01-01 00:00:00.000000')-(SELECT COUNT(*) FROM `mydb`.`main` as sink WHERE (sink.`batch_time_out` = '2000-01-01 00:00:00.000000') AND (EXISTS (SELECT * FROM `mydb`.`main` as sink2 WHERE ((sink2.`id` = sink.`id`) AND (sink2.`name` = sink.`name`)) AND (sink2.`batch_time_in` = '2000-01-01 00:00:00.000000')))) as `rowsInserted`";

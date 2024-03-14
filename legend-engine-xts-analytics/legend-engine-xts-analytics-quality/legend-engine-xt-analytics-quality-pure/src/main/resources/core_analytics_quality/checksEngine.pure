@@ -1,6 +1,9 @@
 import meta::analytics::quality::model::*;
 import meta::analytics::quality::model::domain::*;
 import meta::relational::tests::*;
+import meta::pure::runtime::*;
+
+
 Enum meta::analytics::quality::model::Severity
 {
    High, Medium, Low

@@ -17,16 +17,13 @@ package org.finos.legend.engine.external.format.jsonSchema.extension;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.format.jsonSchema.schema.generations.JSONSchemaConfig;
-import org.finos.legend.engine.external.format.jsonSchema.schema.generations.JSONSchemaGenerationService;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
-import org.finos.legend.engine.external.shared.format.imports.description.ImportConfigurationDescription;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
@@ -95,34 +92,9 @@ public class JSONSchemaGenerationExtension implements GenerationExtension
     }
 
     @Override
-    public ImportConfigurationDescription getImportDescription()
-    {
-        return new ImportConfigurationDescription()
-        {
-            @Override
-            public String getKey()
-            {
-                return JSONSchemaGenerationExtension.this.getKey();
-            }
-
-            @Override
-            public String getLabel()
-            {
-                return JSONSchemaGenerationExtension.this.getLabel();
-            }
-        };
-    }
-
-    @Override
     public Root_meta_pure_generation_metamodel_GenerationConfiguration defaultConfig(CompileContext compileContext)
     {
         return core_external_format_json_transformation_toBeRefactored_jsonSchema.Root_meta_external_format_json_schema_generation_defaultConfig__JSONSchemaConfig_1_(compileContext.pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public Object getService(ModelManager modelManager)
-    {
-        return new JSONSchemaGenerationService(modelManager);
     }
 
     @Override

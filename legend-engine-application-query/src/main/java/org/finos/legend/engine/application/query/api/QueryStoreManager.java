@@ -27,7 +27,6 @@ import com.mongodb.client.model.Projections;
 import com.mongodb.client.model.Sorts;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.SortedSets;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.set.sorted.MutableSortedSet;
@@ -35,12 +34,8 @@ import org.eclipse.collections.impl.utility.LazyIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.application.query.model.Query;
 import org.finos.legend.engine.application.query.model.QueryEvent;
-import org.finos.legend.engine.application.query.model.QueryParameterValue;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
 import org.finos.legend.engine.application.query.model.QueryStoreStats;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
-import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TaggedValue;
 import org.finos.legend.engine.shared.core.vault.Vault;
 
 import javax.lang.model.SourceVersion;
@@ -58,14 +53,14 @@ public class QueryStoreManager
     private static final int MAX_NUMBER_OF_QUERIES = 100;
     private static final int MAX_NUMBER_OF_EVENTS = 1000;
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private static final Document EMPTY_FILTER = Document.parse("{}");
 
     // NOTE: these are non-compilable profile and tag that we come up with for query
     // so that it records the dataSpace it is created from
     private static final String QUERY_PROFILE_PATH = "meta::pure::profiles::query";
     private static final String QUERY_PROFILE_TAG_DATA_SPACE = "dataSpace";
-    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
+    private static final List<String> LIGHT_QUERY_PROJECTION = Arrays.asList("id", "name", "versionId", "originalVersionId", "groupId", "artifactId", "owner", "createdAt", "lastUpdatedAt");
     private static final int GET_QUERIES_LIMIT = 50;
     private final MongoClient mongoClient;
 
@@ -101,58 +96,24 @@ public class QueryStoreManager
         throw new RuntimeException("Query event MongoDB collection has not been configured properly");
     }
 
-    private static Query documentToQuery(Document document)
+    private <T> T documentToClass(Document document, Class<T> _class)
     {
-        Query query = new Query();
-        query.id = document.getString("id");
-        query.name = document.getString("name");
-        query.description = document.getString("description");
-        query.groupId = document.getString("groupId");
-        query.artifactId = document.getString("artifactId");
-        query.versionId = document.getString("versionId");
-        query.mapping = document.getString("mapping");
-        query.runtime = document.getString("runtime");
-        query.content = document.getString("content");
-        query.owner = document.getString("owner");
-        query.lastUpdatedAt = document.getLong("lastUpdatedAt");
-        query.createdAt = document.getLong("createdAt");
-        if (document.get("taggedValues") != null)
+        try
         {
-            query.taggedValues = ListIterate.collect(document.getList("taggedValues", Document.class), _doc ->
-            {
-                TaggedValue taggedValue = new TaggedValue();
-                taggedValue.tag = new TagPtr();
-                taggedValue.tag.profile = _doc.getEmbedded(Lists.fixedSize.of("tag", "profile"), String.class);
-                taggedValue.tag.value = _doc.getEmbedded(Lists.fixedSize.of("tag", "value"), String.class);
-                taggedValue.value = _doc.getString("value");
-                return taggedValue;
-            });
+            return this.objectMapper.convertValue(document, _class);
         }
-        if (document.get("stereotypes") != null)
+        catch (Exception e)
         {
-            query.stereotypes = ListIterate.collect(document.getList("stereotypes", Document.class), _doc ->
-            {
-                StereotypePtr stereotypePtr = new StereotypePtr();
-                stereotypePtr.profile = _doc.getString("profile");
-                stereotypePtr.value = _doc.getString("value");
-                return stereotypePtr;
-            });
+            throw new ApplicationQueryException("Unable to deserialize document to class '" + _class.getName() + "':" + e.getMessage(), Response.Status.NOT_FOUND);
         }
-        String DEFAULT_PARAMETER_VALUES_CONST = "defaultParameterValues";
-        if (document.get(DEFAULT_PARAMETER_VALUES_CONST) != null)
-        {
-            query.defaultParameterValues = ListIterate.collect(document.getList(DEFAULT_PARAMETER_VALUES_CONST, Document.class), _doc ->
-            {
-                QueryParameterValue queryParameterValue = new QueryParameterValue();
-                queryParameterValue.name = _doc.getString("name");
-                queryParameterValue.content = _doc.getString("content");
-                return queryParameterValue;
-            });
-        }
-        return query;
     }
 
-    private static Document queryToDocument(Query query) throws JsonProcessingException
+    private Query documentToQuery(Document document)
+    {
+        return this.documentToClass(document, Query.class);
+    }
+
+    private Document queryToDocument(Query query) throws JsonProcessingException
     {
         return Document.parse(objectMapper.writeValueAsString(query));
     }
@@ -182,7 +143,7 @@ public class QueryStoreManager
         return event;
     }
 
-    private static Document queryEventToDocument(QueryEvent event) throws JsonProcessingException
+    private Document queryEventToDocument(QueryEvent event) throws JsonProcessingException
     {
         return Document.parse(objectMapper.writeValueAsString((event)));
     }
@@ -283,7 +244,7 @@ public class QueryStoreManager
         {
             throw new ApplicationQueryException("Can't fetch more than " + GET_QUERIES_LIMIT + " queries", Response.Status.BAD_REQUEST);
         }
-        MutableList<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.in("id", queryIds)).limit(GET_QUERIES_LIMIT), QueryStoreManager::documentToQuery).toList();
+        MutableList<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.in("id", queryIds)).limit(GET_QUERIES_LIMIT), this::documentToQuery).toList();
         // validate
         MutableSortedSet<String> notFoundQueries = SortedSets.mutable.empty();
         MutableSortedSet<String> duplicatedQueries = SortedSets.mutable.empty();
@@ -312,7 +273,7 @@ public class QueryStoreManager
 
     public Query getQuery(String queryId)
     {
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), this::documentToQuery).toList();
         if (matchingQueries.size() > 1)
         {
             throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");
@@ -344,7 +305,7 @@ public class QueryStoreManager
         // Force the current user as owner regardless of user input
         query.owner = currentUser;
 
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", query.id)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", query.id)), this::documentToQuery).toList();
         if (matchingQueries.size() >= 1)
         {
             throw new ApplicationQueryException("Query with ID '" + query.id + "' already existed", Response.Status.BAD_REQUEST);
@@ -362,7 +323,7 @@ public class QueryStoreManager
     {
         validateQuery(query);
 
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), this::documentToQuery).toList();
         if (!queryId.equals(query.id))
         {
             throw new ApplicationQueryException("Updating query ID is not supported", Response.Status.BAD_REQUEST);
@@ -386,6 +347,7 @@ public class QueryStoreManager
         query.owner = currentUser;
         query.createdAt = currentQuery.createdAt;
         query.lastUpdatedAt = Instant.now().toEpochMilli();
+        query.originalVersionId = currentQuery.originalVersionId;
         this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(query));
         QueryEvent updatedEvent = createEvent(query.id, QueryEvent.QueryEventType.UPDATED);
         updatedEvent.timestamp = query.lastUpdatedAt;
@@ -393,9 +355,45 @@ public class QueryStoreManager
         return query;
     }
 
+    public Query patchQuery(String queryId, Query updatedQuery, String currentUser) throws JsonProcessingException
+    {
+        Query currentQuery = this.getQuery(queryId);
+        // Make sure only the owner can update the query
+        // NOTE: if the query is created by an anonymous user previously, set the current user as the owner
+        if (currentQuery.owner != null && !currentQuery.owner.equals(currentUser))
+        {
+            throw new ApplicationQueryException("Only owner can update the query", Response.Status.FORBIDDEN);
+        }
+
+        Class<? extends Query> queryClass = currentQuery.getClass();
+        for (java.lang.reflect.Field field : queryClass.getDeclaredFields())
+        {
+            try
+            {
+                field.setAccessible(true);
+                Object updatedValue = field.get(updatedQuery);
+                if (updatedValue != null)
+                {
+                    field.set(currentQuery, updatedValue);
+                }
+            }
+            catch (IllegalAccessException e)
+            {
+                throw new ApplicationQueryException("Can't modify query field" + field.getName(), Response.Status.BAD_REQUEST);
+            }
+        }
+        currentQuery.owner = currentUser;
+        currentQuery.lastUpdatedAt = Instant.now().toEpochMilli();
+        this.getQueryCollection().findOneAndReplace(Filters.eq("id", queryId), queryToDocument(currentQuery));
+        QueryEvent updatedEvent = createEvent(queryId, QueryEvent.QueryEventType.UPDATED);
+        updatedEvent.timestamp = currentQuery.lastUpdatedAt;
+        this.getQueryEventCollection().insertOne(queryEventToDocument(updatedEvent));
+        return currentQuery;
+    }
+
     public void deleteQuery(String queryId, String currentUser) throws JsonProcessingException
     {
-        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), QueryStoreManager::documentToQuery).toList();
+        List<Query> matchingQueries = LazyIterate.collect(this.getQueryCollection().find(Filters.eq("id", queryId)), this::documentToQuery).toList();
         if (matchingQueries.size() > 1)
         {
             throw new IllegalStateException("Found multiple queries with ID '" + queryId + "'");

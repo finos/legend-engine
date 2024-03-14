@@ -15,11 +15,18 @@
 package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.runtime;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PackageableElementPointer;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type", defaultImpl = EngineRuntime.class)
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = EngineRuntime.class, name = "engineRuntime"),
+        @JsonSubTypes.Type(value = SingleConnectionEngineRuntime.class, name = "localEngineRuntime")
+})
 public class EngineRuntime extends Runtime
 {
     public List<PackageableElementPointer> mappings = new ArrayList<>();

@@ -152,20 +152,13 @@ RelationalDatabaseConnection model::MyConnection
 
 
 ###Runtime
-Runtime execution::Runtime
+SingleConnectionRuntime execution::Runtime
 {
   mappings:
   [
     execution::FirmMapping
   ];
-  connectionStores:
-  [
-    model::MyConnection:
-    [
-      store::FirmDB,
-      store::PersonDB
-    ]
-  ];
+  connection: model::MyConnection;
 }
 
 Runtime execution::Runtime2

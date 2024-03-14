@@ -23,6 +23,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Objects;
+import java.util.Scanner;
+
 public class TestCompatibilityAndMigration
 {
     private static final ObjectMapper objectMapper = PureProtocolObjectMapperFactory.getNewObjectMapper()
@@ -1256,6 +1259,15 @@ public class TestCompatibilityAndMigration
                 "    }\n" +
                 "  ]\n" +
                 "}\n");
+    }
+
+    @Test
+    public void testStoreTestData() throws Exception
+    {
+        check(
+                new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionBefore.json"), "Can't find resource '" + "simpleFunctionBefore.json" + "'"), "UTF-8").useDelimiter("\\A").next(),
+                new Scanner(Objects.requireNonNull(getClass().getClassLoader().getResourceAsStream("simpleFunctionAfter.json"), "Can't find resource '" + "simpleFunctionAfter.json" + "'"), "UTF-8").useDelimiter("\\A").next()
+                );
     }
 
     @Test
