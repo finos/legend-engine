@@ -107,8 +107,9 @@ public class Identity
         return credentials.isEmpty() || credentials.stream().allMatch(c -> c.isValid());
     }
 
+    @Deprecated
     public Subject getSubjectFromIdentity()
     {
-        return KerberosIdentityTransformer.INSTANCE.transform(this);
+        return KerberosIdentityTransformer.getInstance().transform(this);
     }
 }

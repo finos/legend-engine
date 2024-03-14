@@ -28,7 +28,6 @@ import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.message.BasicHeader;
 import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.SDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.configuration.MetadataServerPrivateAccessTokenConfiguration;
@@ -41,6 +40,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
+import org.finos.legend.engine.shared.core.identity.transformer.KerberosIdentityTransformer;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
 
@@ -127,7 +127,7 @@ public class WorkspaceSDLCLoader
 
     private PureModelContextData doAs(Identity identity, PrivilegedAction<PureModelContextData> action)
     {
-        Subject kerberosCredential = identity.getSubjectFromIdentity();
+        Subject kerberosCredential = KerberosIdentityTransformer.getInstance().transform(identity);
         return kerberosCredential == null ? action.run() : Subject.doAs(kerberosCredential, action);
     }
 
