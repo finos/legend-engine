@@ -170,7 +170,6 @@ public abstract class TestGraphQLApiAbstract
         ContextHandler contextHandler = new ContextHandler(path);
         AbstractHandler handler = new AbstractHandler()
         {
-            @SuppressWarnings("checkstyle:NeedBraces")
             @Override
             public void handle(String s, Request request, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws IOException
             {
@@ -202,9 +201,7 @@ public abstract class TestGraphQLApiAbstract
         };
         contextHandler.setHandler(handler);
         contextHandler.setAllowNullPathInfo(true);
-        DebugHandler debugHandler = new DebugHandler();
-        debugHandler.setHandler(contextHandler);
-        return debugHandler;
+        return contextHandler;
     }
 
     protected static Handler buildJsonHandler(String path, String json)
