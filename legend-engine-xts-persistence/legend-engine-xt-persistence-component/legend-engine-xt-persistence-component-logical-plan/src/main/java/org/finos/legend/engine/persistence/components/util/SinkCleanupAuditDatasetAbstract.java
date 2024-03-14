@@ -78,7 +78,7 @@ public interface SinkCleanupAuditDatasetAbstract
                 .addFields(Field.builder().name(tableNameField()).type(FieldType.of(DataType.VARCHAR, 255, null)).build())
                 .addFields(Field.builder().name(executionTimeField()).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).build())
                 .addFields(Field.builder().name(statusField()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
-                .addFields(Field.builder().name(requestedBy()).type(FieldType.of(DataType.VARCHAR, 32, null)).build())
+                .addFields(Field.builder().name(requestedBy()).type(FieldType.of(DataType.VARCHAR, 64, null)).build())
                 .build())
             .build();
     }
