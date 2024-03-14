@@ -135,6 +135,8 @@ public class TestSDLCLoader
 
         configureWireMockForRetries();
         SDLCLoader sdlcLoader = createSDLCLoader();
+        ModelManager modelManager = new ModelManager(DeploymentMode.TEST, tracer, sdlcLoader);
+        sdlcLoader.setModelManager(modelManager);
         PureModelContextData pmcdLoaded = sdlcLoader.load(Identity.getAnonymousIdentity(), pointer, CLIENT_VERSION, tracer.activeSpan());
         Assert.assertNotNull(pmcdLoaded);
         Assert.assertEquals(1, pmcdLoaded.getElements().size());
@@ -156,6 +158,7 @@ public class TestSDLCLoader
         SDLCLoader sdlcLoader = createSDLCLoader();
 
         ModelManager modelManager = new ModelManager(DeploymentMode.TEST, tracer, sdlcLoader);
+        sdlcLoader.setModelManager(modelManager);
 
         PureModelContextData pmcdLoaded = modelManager.loadData(pointer, CLIENT_VERSION, Identity.getAnonymousIdentity());
 
@@ -252,7 +255,7 @@ public class TestSDLCLoader
         WireMock.stubFor(WireMock.get("/sdlc/api/projects/proj-1235/workspaces/workspaceAbc/revisions/HEAD/upstreamProjects")
                 .willReturn(WireMock.okJson("[{\"projectId\": \"org.finos.legend.dependency:models\",\"versionId\": \"2.0.1\"}]")));
 
-        WireMock.stubFor(WireMock.get("/alloy/projects/org.finos.legend.dependency/models/versions/2.0.1/pureModelContextData?clientVersion=" + CLIENT_VERSION)
+        WireMock.stubFor(WireMock.post("/alloy/projects/dependencies/pureModelContextData?clientVersion=" + CLIENT_VERSION)
                 .willReturn(WireMock.okJson(pmcdJsonDep)));
     }
 
