@@ -22,6 +22,7 @@ import io.opentracing.util.GlobalTracer;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -132,17 +133,25 @@ public class SDLCLoader implements ModelLoader
     @Override
     public boolean shouldCache(PureModelContext context)
     {
-        return this.supports(context) && (
-                    (context instanceof PureModelContextCollection && isCacheableCollection((PureModelContextCollection) context)) ||
-                    (isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo) || isCacheableAlloySDLC(((PureModelContextPointer) context).sdlcInfo))
+        return this.supports(context) &&
+                (
+                    (
+                        context instanceof PureModelContextCollection &&
+                        isCacheableCollection((PureModelContextCollection) context)
+                    ) ||
+                    (
+                        context instanceof PureModelContextPointer &&
+                        (
+                            isCacheablePureSDLC(((PureModelContextPointer) context).sdlcInfo) ||
+                            isCacheableAlloySDLC(((PureModelContextPointer) context).sdlcInfo)
+                        )
+                    )
                 );
     }
 
-    private boolean isCacheableCollection(PureModelContextCollection contextCollection)
+    private boolean isCacheableCollection(PureModelContextCollection context)
     {
-        return contextCollection.getContexts().stream().allMatch(pureModelContext -> pureModelContext instanceof PureModelContextPointer) &&
-            contextCollection.getContexts().stream().map(pureModelContext -> (PureModelContextPointer) pureModelContext).allMatch(pureModelContextPointer -> pureModelContextPointer.sdlcInfo instanceof AlloySDLC) &&
-            contextCollection.getContexts().stream().map(pureModelContext -> (PureModelContextPointer) pureModelContext).map(pureModelContextPointer -> (AlloySDLC)pureModelContextPointer.sdlcInfo).allMatch(this::isCacheableAlloySDLC);
+        return !context.getContexts().isEmpty() && context.getContexts().stream().allMatch(this::shouldCache);
     }
 
     private boolean isCacheablePureSDLC(SDLC sdlc)
@@ -177,10 +186,8 @@ public class SDLCLoader implements ModelLoader
         }
         else if (context instanceof PureModelContextCollection)
         {
-            PureModelContextCollection pureModelContextCollection = (PureModelContextCollection) context;
-            Assert.assertTrue(pureModelContextCollection.getContexts().stream().allMatch(pureModelContext -> pureModelContext instanceof PureModelContextPointer), () -> "Invalid type of PureModelContext in PureModelContextCollection for cacheKey");
-            Assert.assertTrue(pureModelContextCollection.getContexts().stream().map(pureModelContext -> (PureModelContextPointer)pureModelContext).allMatch(pureModelContextPointer -> pureModelContextPointer.sdlcInfo instanceof AlloySDLC), () -> "Invalid type of SDLC in PureModelContextPointer (in PureModelContextCollection) for cacheKey");
-            return pureModelContextCollection;
+            List<PureModelContext> contextsCacheKeys = ((PureModelContextCollection) context).getContexts().stream().map(pureModelContext -> this.cacheKey(pureModelContext, identity)).collect(Collectors.toList());
+            return new PureModelContextCollection(contextsCacheKeys);
         }
         throw new RuntimeException("Invalid PureModelContext type for generating cache key");
     }
@@ -214,11 +221,7 @@ public class SDLCLoader implements ModelLoader
         }
         else if (ctx instanceof PureModelContextCollection)
         {
-            PureModelContextCollection pureModelContextCollection = (PureModelContextCollection) ctx;
-            Assert.assertTrue(pureModelContextCollection.getContexts().stream().allMatch(pureModelContext -> pureModelContext instanceof PureModelContextPointer), () -> "All elements in PureModelContextCollection should be of type PureModelContextPointer");
-            Collection<SDLC> sdlcList = pureModelContextCollection.getContexts().stream().map(context1 -> ((PureModelContextPointer) context1).sdlcInfo).collect(Collectors.toList());
-            Assert.assertTrue(sdlcList.stream().allMatch(sdlc -> sdlc instanceof AlloySDLC), () -> "All elements in PureModelContextCollection should have AlloySDLC info");
-
+            Collection<SDLC> sdlcList = ((PureModelContextCollection) ctx).getContexts().stream().map(context1 -> ((PureModelContextPointer) context1).sdlcInfo).collect(Collectors.toList());
             metaData = subject == null ? fetcher.visit(sdlcList) : exec(subject, () -> fetcher.visit(sdlcList));
         }
         else
