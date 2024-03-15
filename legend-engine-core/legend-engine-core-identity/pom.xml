@@ -21,6 +21,7 @@
 
     <modules>
         <module>legend-engine-identity-core</module>
+        <module>legend-engine-identity-extensions</module>
     </modules>
 
 </project>

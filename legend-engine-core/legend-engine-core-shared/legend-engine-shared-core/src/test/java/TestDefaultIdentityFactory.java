@@ -21,7 +21,7 @@ import org.finos.legend.engine.shared.core.identity.factory.DefaultIdentityFacto
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
 import org.finos.legend.engine.shared.core.identity.transformer.KerberosIdentityTransformer;
 import org.finos.legend.engine.shared.core.kerberos.ProfileManagerHelper;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.shared.core.identity.kerberos.SubjectTools;
 import org.finos.legend.server.pac4j.kerberos.KerberosProfile;
 import org.junit.Before;
 import org.junit.Test;

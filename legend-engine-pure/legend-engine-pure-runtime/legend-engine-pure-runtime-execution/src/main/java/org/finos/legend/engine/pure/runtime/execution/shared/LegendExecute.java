@@ -22,7 +22,7 @@ import org.finos.legend.engine.plan.execution.result.serialization.Serialization
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactory;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.shared.core.identity.kerberos.SubjectTools;
 import org.finos.legend.pure.m3.exception.PureExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

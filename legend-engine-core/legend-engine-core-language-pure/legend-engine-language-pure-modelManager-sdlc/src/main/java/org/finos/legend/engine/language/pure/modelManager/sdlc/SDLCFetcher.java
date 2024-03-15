@@ -32,7 +32,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.SDLCVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.shared.core.identity.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 
 final class SDLCFetcher implements SDLCVisitor<PureModelContextData>

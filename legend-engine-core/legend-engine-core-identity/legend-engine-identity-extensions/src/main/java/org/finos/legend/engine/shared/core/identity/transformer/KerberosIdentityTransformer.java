@@ -17,13 +17,12 @@ package org.finos.legend.engine.shared.core.identity.transformer;
 import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import javax.security.auth.Subject;
 import java.util.Objects;
 
 public class KerberosIdentityTransformer implements IdentityTransformer<Subject>
 {
-    KerberosIdentityTransformer()
+    private KerberosIdentityTransformer()
     {
         // Avoiding instantiation of this class
     }

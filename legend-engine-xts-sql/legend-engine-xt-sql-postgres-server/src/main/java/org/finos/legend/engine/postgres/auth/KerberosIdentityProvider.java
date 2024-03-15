@@ -17,7 +17,7 @@ package org.finos.legend.engine.postgres.auth;
 import javax.security.auth.Subject;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.IdentityFactoryProvider;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.shared.core.identity.kerberos.SubjectTools;
 
 
 public class KerberosIdentityProvider implements IdentityProvider

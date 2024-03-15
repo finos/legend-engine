@@ -1804,6 +1804,11 @@
             </dependency>
             <dependency>
                 <groupId>org.finos.legend.engine</groupId>
+                <artifactId>legend-engine-identity-extensions</artifactId>
+                <version>4.40.4-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.finos.legend.engine</groupId>
                 <artifactId>legend-engine-shared-extensions</artifactId>
                 <version>${project.version}</version>
             </dependency>
