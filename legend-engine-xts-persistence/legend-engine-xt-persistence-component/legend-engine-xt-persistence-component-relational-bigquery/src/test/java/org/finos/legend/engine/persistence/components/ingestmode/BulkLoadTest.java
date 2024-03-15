@@ -78,7 +78,6 @@ public class BulkLoadTest
         .name(COL_DATETIME)
         .type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty()))
         .build();
-
     private static Field col5 = Field.builder()
         .name(COL_VARIANT)
         .type(FieldType.of(DataType.VARIANT, Optional.empty(), Optional.empty()))
@@ -412,6 +411,74 @@ public class BulkLoadTest
             "(`COL_INT`, `COL_STRING`, `COL_DECIMAL`, `COL_DATETIME`, `COL_VARIANT`, `DIGEST`, `BATCH_ID`, `APPEND_TIME`) " +
             "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`," +
             "LAKEHOUSE_MD5(['COL_VARIANT'],[legend_persistence_temp.`COL_VARIANT`]),(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
+            "FROM `MY_DB`.`MY_NAME_TEMP_LP_YOSULF` as legend_persistence_temp)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedCopySql, preActionsSql.get(2));
+        Assertions.assertEquals(expectedInsertSql, ingestSql.get(0));
+
+        Assertions.assertNull(statsSql.get(INCOMING_RECORD_COUNT));
+        Assertions.assertNull(statsSql.get(ROWS_DELETED));
+        Assertions.assertNull(statsSql.get(ROWS_TERMINATED));
+        Assertions.assertNull(statsSql.get(ROWS_UPDATED));
+        Assertions.assertEquals("SELECT COUNT(*) as `ROWSINSERTED` FROM `MY_DB`.`MY_NAME` as my_alias WHERE my_alias.`BATCH_ID` = (SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME')", statsSql.get(ROWS_INSERTED));
+    }
+
+    @Test
+    public void testBulkLoadWithDigestGeneratedAndTypeConversionUdfsAuditEnabledNoExtraOptionsUpperCase()
+    {
+        Map<DataType, String> typeConversionUdfs = new HashMap<>();
+        typeConversionUdfs.put(DataType.INT, "intToString");
+        typeConversionUdfs.put(DataType.DECIMAL, "decimalToString");
+        typeConversionUdfs.put(DataType.DATETIME, "timestampToString");
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .batchIdField(BATCH_ID)
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestField(DIGEST).digestUdfName(DIGEST_UDF).putAllTypeConversionUdfNames(typeConversionUdfs).addAllFieldsToExcludeFromDigest(Arrays.asList(col1.name(), col5.name())).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                BigQueryStagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(filesList).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4, col5)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database("my_db").name("my_name").alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(BigQuerySink.get())
+            .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .bulkLoadEventIdValue(EVENT_ID)
+            .caseConversion(CaseConversion.TO_UPPER)
+            .ingestRunId(ingestRunId)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(Datasets.of(mainDataset, stagedFilesDataset));
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS `MY_DB`.`MY_NAME`" +
+            "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC(5,2),`COL_DATETIME` DATETIME,`COL_VARIANT` JSON,`DIGEST` STRING,`BATCH_ID` INT64,`APPEND_TIME` DATETIME)";
+
+        String expectedCopySql = "CREATE OR REPLACE EXTERNAL TABLE `MY_DB`.`MY_NAME_TEMP_LP_YOSULF` " +
+            "(`COL_INT` INT64,`COL_STRING` STRING,`COL_DECIMAL` NUMERIC,`COL_DATETIME` DATETIME,`COL_VARIANT` JSON) " +
+            "OPTIONS (uris=['/path/xyz/file1.csv','/path/xyz/file2.csv'], format='CSV')";
+
+        String expectedInsertSql = "INSERT INTO `MY_DB`.`MY_NAME` " +
+            "(`COL_INT`, `COL_STRING`, `COL_DECIMAL`, `COL_DATETIME`, `COL_VARIANT`, `DIGEST`, `BATCH_ID`, `APPEND_TIME`) " +
+            "(SELECT legend_persistence_temp.`COL_INT`,legend_persistence_temp.`COL_STRING`,legend_persistence_temp.`COL_DECIMAL`,legend_persistence_temp.`COL_DATETIME`,legend_persistence_temp.`COL_VARIANT`," +
+            "LAKEHOUSE_MD5(['COL_DATETIME','COL_DECIMAL','COL_STRING'],[timestampToString(legend_persistence_temp.`COL_DATETIME`),decimalToString(legend_persistence_temp.`COL_DECIMAL`),legend_persistence_temp.`COL_STRING`])" +
+            ",(SELECT COALESCE(MAX(BATCH_METADATA.`TABLE_BATCH_ID`),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.`TABLE_NAME`) = 'MY_NAME'),PARSE_DATETIME('%Y-%m-%d %H:%M:%E6S','2000-01-01 00:00:00.000000') " +
             "FROM `MY_DB`.`MY_NAME_TEMP_LP_YOSULF` as legend_persistence_temp)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
