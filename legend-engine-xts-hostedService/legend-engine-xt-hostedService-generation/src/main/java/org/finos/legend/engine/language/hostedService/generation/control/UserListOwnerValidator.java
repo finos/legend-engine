@@ -16,7 +16,7 @@ package org.finos.legend.engine.language.hostedService.generation.control;
 
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
-import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
+import org.finos.legend.engine.shared.core.identity.kerberos.SubjectTools;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_Ownership;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_hostedService_UserList;
 
