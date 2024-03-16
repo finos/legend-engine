@@ -28,5 +28,6 @@
 
     <modules>
         <module>legend-engine-repl-client</module>
+        <module>legend-engine-repl-relational</module>
     </modules>
 </project>

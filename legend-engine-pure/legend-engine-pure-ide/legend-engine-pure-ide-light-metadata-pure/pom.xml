@@ -159,7 +159,7 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
-            <artifactId>legend-pure-m2-functions-pure</artifactId>
+            <artifactId>legend-pure-m2-functions-base-pure</artifactId>
             <scope>runtime</scope>
         </dependency>
 

@@ -15,7 +15,7 @@
 package org.finos.legend.engine.repl.client.jline3;
 
 import org.eclipse.collections.api.list.MutableList;
-import org.finos.legend.engine.repl.client.Command;
+import org.finos.legend.engine.repl.core.Command;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;

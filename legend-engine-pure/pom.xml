@@ -27,9 +27,7 @@
     <name>Legend Engine - Pure</name>
 
     <modules>
-        <module>legend-engine-pure-code</module>
         <module>legend-engine-pure-ide</module>
-        <module>legend-engine-pure-platform-modular-generation</module>
         <module>legend-engine-pure-runtime</module>
     </modules>
 </project>

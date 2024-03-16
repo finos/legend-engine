@@ -81,7 +81,6 @@ import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParser
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
-import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
@@ -414,7 +413,7 @@ public class TestExtensions
                 .with(CoreLegendPureCoreExtension.class)
                 .with(JSONLegendPureCoreExtension.class)
                 .with(RelationalLegendPureCoreExtension.class)
-                .with(BindingJavaBindingLegendPureCoreExtension.class)
+                .with(ExternalFormatJavaBindingLegendPureCoreExtension.class)
                 .with(M2MJavaBindingLegendPureCoreExtension.class)
                 .with(ServiceStoreJavaBindingLegendPureCoreExtension.class)
                 .with(ServiceStoreLegendPureCoreExtension.class)
@@ -530,6 +529,7 @@ public class TestExtensions
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")
+                .with("core_java_platform_binding_external_format")
                 .with("core_relational_java_platform_binding")
                 .with("core_servicestore_java_platform_binding")
                 .with("core_external_format_flatdata_java_platform_binding")
