@@ -498,6 +498,26 @@
         </dependency>
         <!-- Snowflake App -->
 
+        <!-- Hosted Service -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-hostedService-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-hostedService-grammar</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-hostedService-protocol</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-xt-hostedService-generation</artifactId>
+        </dependency>
+
+        <!-- Hosted Service -->
+
         <!-- BigQuery Function -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>

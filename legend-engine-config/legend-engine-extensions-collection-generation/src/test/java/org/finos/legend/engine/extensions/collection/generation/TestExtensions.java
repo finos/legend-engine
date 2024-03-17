@@ -33,6 +33,10 @@ import org.finos.legend.engine.language.bigqueryFunction.grammar.from.BigQueryFu
 import org.finos.legend.engine.language.bigqueryFunction.grammar.to.BigQueryFunctionGrammarComposer;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLGrammarParserExtension;
 import org.finos.legend.engine.language.graphQL.grammar.integration.GraphQLPureGrammarComposerExtension;
+import org.finos.legend.engine.language.hostedService.compiler.toPureGraph.HostedServiceCompilerExtension;
+import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceArtifactGenerationExtension;
+import org.finos.legend.engine.language.hostedService.grammar.from.HostedServiceGrammarParserExtension;
+import org.finos.legend.engine.language.hostedService.grammar.to.HostedServiceGrammarComposer;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.dsl.authentication.grammar.from.AuthenticationGrammarParserExtension;
@@ -81,6 +85,8 @@ import org.finos.legend.engine.language.sql.grammar.integration.SQLGrammarParser
 import org.finos.legend.engine.language.sql.grammar.integration.SQLPureGrammarComposerExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.from.ElasticsearchGrammarParserExtension;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionProtocolExtension;
+import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.pure.code.core.ElasticsearchLegendPureCoreExtension;
 import org.finos.legend.engine.language.stores.elasticsearch.v7.to.ElasticsearchGrammarComposerExtension;
@@ -271,6 +277,7 @@ public class TestExtensions
                 .with(org.finos.legend.engine.protocol.pure.v1.CorePureProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DataSpaceProtocolExtension.class)
                 .with(SnowflakeAppProtocolExtension.class)
+                .with(HostedServiceProtocolExtension.class)
                 .with(BigQueryFunctionProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.DiagramProtocolExtension.class)
                 .with(org.finos.legend.engine.protocol.pure.v1.GenerationProtocolExtension.class)
@@ -315,6 +322,7 @@ public class TestExtensions
                 .with(CorePureGrammarParser.class)
                 .with(DataSpaceParserExtension.class)
                 .with(SnowflakeAppGrammarParserExtension.class)
+                .with(HostedServiceGrammarParserExtension.class)
                 .with(BigQueryFunctionGrammarParserExtension.class)
                 .with(DiagramParserExtension.class)
                 .with(ExternalFormatGrammarParserExtension.class)
@@ -342,6 +350,7 @@ public class TestExtensions
                 .with(CorePureGrammarComposer.class)
                 .with(DataSpaceGrammarComposerExtension.class)
                 .with(SnowflakeAppGrammarComposer.class)
+                .with(HostedServiceGrammarComposer.class)
                 .with(BigQueryFunctionGrammarComposer.class)
                 .with(DiagramGrammarComposerExtension.class)
                 .with(ExternalFormatGrammarComposerExtension.class)
@@ -374,6 +383,7 @@ public class TestExtensions
         return Lists.mutable.<Class<? extends CompilerExtension>>empty()
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DiagramCompilerExtension.class)
                 .with(SnowflakeAppCompilerExtension.class)
+                .with(HostedServiceCompilerExtension.class)
                 .with(BigQueryFunctionCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.DataSpaceCompilerExtension.class)
                 .with(org.finos.legend.engine.language.pure.compiler.toPureGraph.TextCompilerExtension.class)
@@ -461,7 +471,8 @@ public class TestExtensions
                 .with(DataSpaceAnalyticsArtifactGenerationExtension.class)
                 .with(SearchDocumentArtifactGenerationExtension.class)
                 .with(OpenApiArtifactGenerationExtension.class)
-                .with(SnowflakeAppArtifactGenerationExtension.class);
+                .with(SnowflakeAppArtifactGenerationExtension.class)
+                .with(HostedServiceArtifactGenerationExtension.class);
     }
 
     protected Iterable<? extends Class<? extends EntitlementServiceExtension>> getExpectedEntitlementServiceExtensions()
@@ -526,6 +537,7 @@ public class TestExtensions
                 .with("core_authentication")
                 .with("core_snowflakeapp")
                 .with("core_bigqueryfunction")
+                .with("core_hostedservice")
                 .with("core_text_metamodel")
                 .with("core_external_language_java")
                 .with("core_java_platform_binding")
