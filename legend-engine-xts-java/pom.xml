@@ -18,7 +18,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine</artifactId>
-        <version>4.40.4-SNAPSHOT</version>
+        <version>4.41.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -33,5 +33,6 @@
         <module>legend-engine-xt-javaGeneration-featureBased-pure</module>
         <module>legend-engine-xt-javaGeneration-pure</module>
         <module>legend-engine-xt-javaPlatformBinding-pure</module>
+        <module>legend-engine-xt-javaPlatformBinding-externalFormat-pure</module>
     </modules>
 </project>
