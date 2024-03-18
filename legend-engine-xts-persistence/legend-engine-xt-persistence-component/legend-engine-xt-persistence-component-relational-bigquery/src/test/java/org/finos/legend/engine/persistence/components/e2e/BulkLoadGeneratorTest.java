@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -118,6 +119,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> postActionsSql = operations.postActionsSql();
+        List<String> postCleanupSql = operations.postCleanupSql();
 
         List<String> newMetadataIngestSql = new ArrayList<>();
         for (String metadataSql : metadataIngestSql)
@@ -128,7 +130,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
         metadataIngestSql = newMetadataIngestSql;
 
 
-        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql);
+        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql, postCleanupSql);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`append_log` order by col_int asc");
@@ -140,9 +142,18 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
     @Test
     public void testMilestoningWithDigestGeneration() throws IOException, InterruptedException
     {
+        Map<DataType, String> typeConversionUdfs = new HashMap<>();
+        typeConversionUdfs.put(DataType.INT, "demo.numericToString");
+        typeConversionUdfs.put(DataType.DECIMAL, "demo.numericToString");
+        typeConversionUdfs.put(DataType.DATETIME, "demo.datetimeToString");
+
         BulkLoad bulkLoad = BulkLoad.builder()
             .batchIdField(BATCH_ID)
-            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName("demo.LAKEHOUSE_MD5").digestField(digestName).build())
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder()
+                .digestUdfName("demo.LAKEHOUSE_MD5")
+                .putAllTypeConversionUdfNames(typeConversionUdfs)
+                .digestField(digestName)
+                .build())
             .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
             .build();
 
@@ -170,20 +181,29 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
         delete("demo", "append_log");
 
         // Register UDF
-        runQuery("DROP FUNCTION IF EXISTS demo.stringifyJson;");
+        runQuery("DROP FUNCTION IF EXISTS demo.numericToString;");
+        runQuery("DROP FUNCTION IF EXISTS demo.datetimeToString;");
+        runQuery("DROP FUNCTION IF EXISTS demo.stringifyArr;");
         runQuery("DROP FUNCTION IF EXISTS demo.LAKEHOUSE_MD5;");
-        runQuery("CREATE FUNCTION demo.stringifyJson(json_data JSON)\n" +
+        runQuery("CREATE FUNCTION demo.numericToString(value NUMERIC)\n" +
+            "AS (\n" +
+            "  CAST(value AS STRING)\n" +
+            ");\n");
+        runQuery("CREATE FUNCTION demo.datetimeToString(value DATETIME)\n" +
+            "AS (\n" +
+            "  CAST(value AS STRING)\n" +
+            ");\n");
+        runQuery("CREATE FUNCTION demo.stringifyArr(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
             "            RETURNS STRING\n" +
             "            LANGUAGE js AS \"\"\"\n" +
             "            let output = \"\"; \n" +
-            "            Object.keys(json_data).sort().filter(field => json_data[field] != null).forEach(field => { output += field; output += json_data[field];})\n" +
+            "            for (const [index, element] of arr1.entries()) { output += arr1[index]; output += arr2[index]; }\n" +
             "            return output;\n" +
             "            \"\"\"; \n");
-        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(json_data JSON)\n" +
+        runQuery("CREATE FUNCTION demo.LAKEHOUSE_MD5(arr1 ARRAY<STRING>, arr2 ARRAY<STRING>)\n" +
             "AS (\n" +
-            "  TO_HEX(MD5(demo.stringifyJson(json_data)))\n" +
+            "  TO_HEX(MD5(demo.stringifyArr(arr1, arr2)))\n" +
             ");\n");
-
 
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(bulkLoad)
@@ -199,6 +219,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
         List<String> milestoningSqlList = operations.ingestSql();
         List<String> metadataIngestSql = operations.metadataIngestSql();
         List<String> postActionsSql = operations.postActionsSql();
+        List<String> postCleanupSql = operations.postCleanupSql();
 
         List<String> newMetadataIngestSql = new ArrayList<>();
         for (String metadataSql : metadataIngestSql)
@@ -209,7 +230,7 @@ public class BulkLoadGeneratorTest extends BigQueryEndToEndTest
         metadataIngestSql = newMetadataIngestSql;
 
 
-        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql);
+        ingest(preActionsSqlList, milestoningSqlList, metadataIngestSql, postActionsSql, postCleanupSql);
 
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`append_log` order by col_int asc");
