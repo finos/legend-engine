@@ -18,7 +18,6 @@ import java.security.PrivilegedAction;
 import javax.security.auth.Subject;
 import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
-import org.finos.legend.engine.postgres.utils.PrometheusCollector;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCredential;
 
