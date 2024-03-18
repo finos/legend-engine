@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xts-analytics-lineage</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - Analytics</name>
+    <name>Legend Engine - XTS - Analytics - Lineage</name>
 
     <modules>
         <module>legend-engine-xt-analytics-lineage-api</module>
