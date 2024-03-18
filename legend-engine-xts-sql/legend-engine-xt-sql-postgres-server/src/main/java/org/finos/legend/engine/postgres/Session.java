@@ -21,10 +21,10 @@
 
 package org.finos.legend.engine.postgres;
 
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Context;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Scope;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

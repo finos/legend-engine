@@ -23,11 +23,11 @@ package org.finos.legend.engine.postgres;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Scope;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
