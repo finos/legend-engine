@@ -292,12 +292,6 @@
             <version>1.35.0</version>
         </dependency>
 
-        <dependency>
-            <groupId>io.zipkin.reporter2</groupId>
-            <artifactId>zipkin-reporter</artifactId>
-            <version>3.3.0</version>
-        </dependency>
-
         <!-- WIREMOCK -->
         <dependency>
             <groupId>com.github.tomakehurst</groupId>
@@ -397,8 +391,6 @@
                 <artifactId>zipkin-reporter</artifactId>
                 <version>3.3.0</version>
             </dependency>
-
-
         </dependencies>
     </dependencyManagement>
 </project>
