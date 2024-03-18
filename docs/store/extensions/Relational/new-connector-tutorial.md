@@ -67,7 +67,7 @@ Let's create a class SqlServerStaticWithUserPasswordFlow in sqlserver-execution 
     import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
-    import org.finos.legend.engine.protocol.pure.org.finos.legend.engine.protocol.pure.v1.specification.StaticDatasourceSpecification;
+     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
     import org.finos.legend.engine.shared.core.identity.Credential;
     import org.finos.legend.engine.shared.core.identity.Identity;
     import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;
@@ -171,7 +171,7 @@ If your database supports it, we can alternatively launch a test instance at run
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.RelationalDatabaseConnection;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.UserNamePasswordAuthenticationStrategy;
-    import org.finos.legend.engine.protocol.pure.org.finos.legend.engine.protocol.pure.v1.specification.StaticDatasourceSpecification;
+     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.StaticDatasourceSpecification;
     import org.finos.legend.engine.shared.core.vault.PropertiesVaultImplementation;
     import org.finos.legend.engine.shared.core.vault.Vault;
     import org.finos.legend.engine.shared.core.vault.VaultImplementation;
@@ -527,7 +527,7 @@ Similarly, we will add a new authentication strategy specification specific to S
     // See the License for the specific language governing permissions and
     // limitations under the License.
     
-    package org.finos.legend.engine.protocol.pure.org.finos.legend.engine.protocol.pure.v1.specification;
+    package org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification;
     
     public class SqlServerTutorialDatasourceSpecification extends DatasourceSpecification
     {
@@ -947,7 +947,7 @@ Flows can potentially be created using all possible combinations of DatasourceSp
     import org.finos.legend.engine.authentication.DatabaseAuthenticationFlow;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.DatabaseType;
     import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.authentication.SqlServerTutorialAuthenticationStrategy;
-    import org.finos.legend.engine.protocol.pure.org.finos.legend.engine.protocol.pure.v1.specification.SqlServerTutorialDatasourceSpecification;
+    import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.connection.specification.SqlServerTutorialDatasourceSpecification;
     import org.finos.legend.engine.shared.core.identity.Credential;
     import org.finos.legend.engine.shared.core.identity.Identity;
     import org.finos.legend.engine.shared.core.identity.credential.PlaintextUserPasswordCredential;

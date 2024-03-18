@@ -209,7 +209,6 @@ public class Server<T extends ServerConfiguration> extends Application<T>
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(SnowflakeAppDeploymentConfiguration.class, "snowflakeAppConfig"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(BigQueryFunctionDeploymentConfiguration.class, "bigQueryFunctionConfig"));
         bootstrap.getObjectMapper().registerSubtypes(new NamedType(MemSqlFunctionDeploymentConfiguration.class, "memsqlFunctionConfig"));
-
     }
 
     public CredentialProviderProvider configureCredentialProviders(List<VaultConfiguration> vaultConfigurations)
