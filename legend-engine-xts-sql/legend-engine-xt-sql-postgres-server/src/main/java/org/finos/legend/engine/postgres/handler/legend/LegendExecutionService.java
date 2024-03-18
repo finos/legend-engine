@@ -18,10 +18,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Span;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.javaagent.shaded.io.opentelemetry.context.Scope;
+
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;

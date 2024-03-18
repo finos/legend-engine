@@ -15,6 +15,8 @@
 package org.finos.legend.engine.postgres;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 import java.io.File;
 import org.finos.legend.engine.postgres.auth.AuthenticationMethod;
 import org.finos.legend.engine.postgres.config.ServerConfig;
@@ -60,6 +62,8 @@ public class PostgresServerLauncher
         AuthenticationMethod authenticationMethod = serverConfig.buildAuthenticationMethod();
 
         logger.info("Starting server in port: " + serverConfig.getPort());
+
+
 
 
 //     /*   JvmMetrics.builder().register();
