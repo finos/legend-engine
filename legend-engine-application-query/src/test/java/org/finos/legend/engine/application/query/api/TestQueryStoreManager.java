@@ -24,6 +24,7 @@ import org.finos.legend.engine.application.query.model.QueryEvent;
 import org.finos.legend.engine.application.query.model.QueryParameterValue;
 import org.finos.legend.engine.application.query.model.QueryProjectCoordinates;
 import org.finos.legend.engine.application.query.model.QuerySearchSpecification;
+import org.finos.legend.engine.application.query.model.QuerySearchTermSpecification;
 import org.finos.legend.engine.application.query.utils.TestMongoClientProvider;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.StereotypePtr;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.TagPtr;
@@ -45,18 +46,21 @@ public class TestQueryStoreManager
 {
     static class TestQuerySearchSpecificationBuilder
     {
-        public String searchTerm;
+        public QuerySearchTermSpecification searchTermSpecification;
         public List<QueryProjectCoordinates> projectCoordinates;
         public List<TaggedValue> taggedValues;
         public List<StereotypePtr> stereotypes;
         public Integer limit;
         public Boolean showCurrentUserQueriesOnly;
-        public Boolean exactMatchName;
         public Boolean combineTaggedValuesCondition;
 
         TestQuerySearchSpecificationBuilder withSearchTerm(String searchTerm)
         {
-            this.searchTerm = searchTerm;
+            if (this.searchTermSpecification == null)
+            {
+                this.searchTermSpecification = new QuerySearchTermSpecification();
+            }
+            this.searchTermSpecification.searchTerm = searchTerm;
             return this;
         }
 
@@ -92,7 +96,21 @@ public class TestQueryStoreManager
 
         TestQuerySearchSpecificationBuilder withExactNameSearch(Boolean exactMatchName)
         {
-            this.exactMatchName = exactMatchName;
+            if (this.searchTermSpecification == null)
+            {
+                this.searchTermSpecification = new QuerySearchTermSpecification();
+            }
+            this.searchTermSpecification.exactMatchName = exactMatchName;
+            return this;
+        }
+
+        TestQuerySearchSpecificationBuilder withIncludeOwner(Boolean includeOwner)
+        {
+            if (this.searchTermSpecification == null)
+            {
+                this.searchTermSpecification = new QuerySearchTermSpecification();
+            }
+            this.searchTermSpecification.includeOwner = includeOwner;
             return this;
         }
 
@@ -105,13 +123,12 @@ public class TestQueryStoreManager
         QuerySearchSpecification build()
         {
             QuerySearchSpecification searchSpecification = new QuerySearchSpecification();
-            searchSpecification.searchTerm = this.searchTerm;
+            searchSpecification.searchTermSpecification = this.searchTermSpecification;
             searchSpecification.projectCoordinates = this.projectCoordinates;
             searchSpecification.taggedValues = this.taggedValues;
             searchSpecification.stereotypes = this.stereotypes;
             searchSpecification.limit = this.limit;
             searchSpecification.showCurrentUserQueriesOnly = this.showCurrentUserQueriesOnly;
-            searchSpecification.exactMatchName = this.exactMatchName;
             searchSpecification.combineTaggedValuesCondition = this.combineTaggedValuesCondition;
             return searchSpecification;
         }
@@ -539,6 +556,22 @@ public class TestQueryStoreManager
         Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query1").build(), currentUser).size());
         Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query2").build(), currentUser).size());
         Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("query").build(), currentUser).size());
+    }
+
+
+    @Test
+    public void testGetQueriesWithSearchTextSpec() throws Exception
+    {
+        String currentUser = "user1";
+        String user2 = "user2";
+        queryStoreManager.createQuery(TestQueryBuilder.create("1", "query1", currentUser).build(), currentUser);
+        queryStoreManager.createQuery(TestQueryBuilder.create("2", "query2", currentUser).build(), currentUser);
+        queryStoreManager.createQuery(TestQueryBuilder.create("3", "query3", user2).build(), user2);
+        Assert.assertEquals(1, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user2").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(2, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user1").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(3, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withExactNameSearch(true).withIncludeOwner(true).build(), currentUser).size());
+        Assert.assertEquals(0, queryStoreManager.searchQueries(new TestQuerySearchSpecificationBuilder().withSearchTerm("user").withIncludeOwner(false).build(), currentUser).size());
     }
 
     @Test
