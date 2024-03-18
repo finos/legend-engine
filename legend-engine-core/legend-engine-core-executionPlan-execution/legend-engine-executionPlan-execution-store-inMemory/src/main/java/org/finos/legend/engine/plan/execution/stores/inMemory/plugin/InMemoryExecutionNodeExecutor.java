@@ -18,7 +18,6 @@ import io.opentracing.Span;
 import io.opentracing.util.GlobalTracer;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.BasicDefect;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IChecked;
 import org.finos.legend.engine.plan.dependencies.domain.dataQuality.IDefect;
@@ -63,7 +62,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphF
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.store.inMemory.StoreStreamReadingExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.result.ClassResultType;
 import org.finos.legend.engine.shared.core.collectionsExtensions.DoubleStrategyHashMap;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,12 +81,12 @@ import java.util.stream.StreamSupport;
 
 public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Result>
 {
-    MutableList<CommonProfile> pm;
     ExecutionState executionState;
+    Identity identity;
 
-    public InMemoryExecutionNodeExecutor(MutableList<CommonProfile> pm, ExecutionState executionState)
+    public InMemoryExecutionNodeExecutor(Identity identity, ExecutionState executionState)
     {
-        this.pm = pm;
+        this.identity = identity;
         this.executionState = executionState;
     }
 
@@ -101,13 +100,13 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
     @Override
     public Result visit(GraphFetchM2MExecutionNode graphFetchM2MExecutionNode)
     {
-        return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(graphFetchM2MExecutionNode, GraphFetchM2MExecutionNodeContext.factory(graphFetchM2MExecutionNode), this.pm, this.executionState);
+        return ExecutionNodeJavaPlatformHelper.executeJavaImplementation(graphFetchM2MExecutionNode, GraphFetchM2MExecutionNodeContext.factory(graphFetchM2MExecutionNode), this.identity, this.executionState);
     }
 
     @Override
     public Result visit(StoreStreamReadingExecutionNode node)
     {
-        IStoreStreamReadingExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+        IStoreStreamReadingExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
         StoreStreamReadingExecutionNodeContext context = (StoreStreamReadingExecutionNodeContext) StoreStreamReadingExecutionNodeContext.factory(node).create(this.executionState, null);
         StoreStreamReadingObjectsIterator<?> storeObjectsIterator = StoreStreamReadingObjectsIterator.newObjectsIterator(nodeSpecifics.streamReader(context), node.enableConstraints, node.checked);
         return new StoreStreamReadingResult<>(storeObjectsIterator);
@@ -125,7 +124,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
         Result childResult = null;
         JavaPlatformImplementation javaPlatformImpl = (JavaPlatformImplementation) node.implementation;
         String executionClassName = JavaHelper.getExecutionClassFullName(javaPlatformImpl);
-        Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executionClassName, this.executionState, this.pm);
+        Class<?> clazz = ExecutionNodeJavaPlatformHelper.getClassToExecute(node, executionClassName, this.executionState, this.identity);
         Span graphFetchSpan = GlobalTracer.get().buildSpan("graph fetch").withTag("rootStoreType", "inMemory").withTag("batchSizeConfig", batchSize).start();
         GlobalTracer.get().activateSpan(graphFetchSpan);
 
@@ -139,9 +138,9 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
             }
             else
             {
-                IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+                IInMemoryRootGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
 
-                childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.pm, this.executionState));
+                childResult = node.executionNodes.get(0).accept(new ExecutionNodeExecutor(this.identity, this.executionState));
                 Iterator<?> sourceObjectsIterator;
                 if (childResult instanceof StoreStreamReadingResult)
                 {
@@ -250,7 +249,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
                         if (!resultObjects.isEmpty() && (!isLeaf))
                         {
                             newState.graphObjectsBatch = inMemoryGraphObjectsBatch;
-                            node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(InMemoryExecutionNodeExecutor.this.pm, newState)));
+                            node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(InMemoryExecutionNodeExecutor.this.identity, newState)));
 
                         }
                         if (!resultObjects.isEmpty() && node.filter != null  && node.filter)
@@ -310,7 +309,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
         try
         {
-            IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+            IInMemoryCrossStoreGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
 
             GraphObjectsBatch graphObjectsBatch = new GraphObjectsBatch(this.executionState.graphObjectsBatch);
             List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(node.parentIndex);
@@ -420,7 +419,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
     public Result visit(InMemoryPropertyGraphFetchExecutionNode node)
     {
         boolean isLeaf = node.children == null || node.children.isEmpty();
-        IInMemoryPropertyGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+        IInMemoryPropertyGraphFetchExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
 
         GraphObjectsBatch graphObjectsBatch = this.executionState.graphObjectsBatch;
         List<?> parentObjects = graphObjectsBatch.getObjectsForNodeIndex(node.parentIndex).stream().map(x -> x instanceof IChecked ? ((IChecked<?>) x).getValue() : x).collect(Collectors.toList());
@@ -436,7 +435,7 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
         if (!childObjects.isEmpty() && (!isLeaf))
         {
-            node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(this.pm, executionState)));
+            node.children.forEach(x -> x.accept(new ExecutionNodeExecutor(this.identity, executionState)));
         }
 
         return new ConstantResult(childObjects);
@@ -542,9 +541,9 @@ public class InMemoryExecutionNodeExecutor implements ExecutionNodeVisitor<Resul
 
     private Result mergeInMemoryNode(InMemoryRootGraphFetchExecutionNode node)
     {
-        IInMemoryRootGraphFetchMergeExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.pm);
+        IInMemoryRootGraphFetchMergeExecutionNodeSpecifics nodeSpecifics = ExecutionNodeJavaPlatformHelper.getNodeSpecificsInstance(node, this.executionState, this.identity);
 
-        List<GraphFetchResult> results = node.executionNodes.stream().map(n -> (GraphFetchResult) n.accept(new ExecutionNodeExecutor(this.pm, this.executionState))).collect(Collectors.toList());
+        List<GraphFetchResult> results = node.executionNodes.stream().map(n -> (GraphFetchResult) n.accept(new ExecutionNodeExecutor(this.identity, this.executionState))).collect(Collectors.toList());
 
         List<Object> subObjects = results.stream().map(g -> g.getGraphObjectsBatchStream().findFirst().get().getObjectsForNodeIndex(0).get(0)).collect(Collectors.toList());
 

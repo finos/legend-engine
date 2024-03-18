@@ -48,6 +48,7 @@ import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.execute.SerializedNamedPlans;
 import org.finos.legend.engine.query.graphQL.api.execute.model.GraphQLCachableVisitorHelper;
 import org.finos.legend.engine.query.graphQL.api.execute.model.Query;
+import org.finos.legend.engine.query.graphQL.api.execute.model.error.*;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
@@ -150,6 +151,44 @@ public class TestTotalCountDirective
                         "}" +
                     "}" +
                 "}";
+
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_TotalCountDirective_WithFilters() throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  employees(firstNameContains: \"Jo\", offset: 1, limit: 1) @totalCount {\n" +
+                "      firstName\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{\"data\":{\"employees\":{\"firstName\":\"John\"}},\"extensions\":{\"employees\":{\"totalCount\":{\"offset\":1,\"limit\":1,\"value\":2}}}}";
+
+        Assert.assertEquals(expected, responseAsString(response));
+    }
+
+    @Test
+    public void testGraphQLExecuteDevAPI_TotalCountDirective_WithDynamicFilters() throws Exception
+    {
+        GraphQLExecute graphQLExecute = getGraphQLExecute();
+        HttpServletRequest mockRequest = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(mockRequest.getCookies()).thenReturn(new Cookie[0]);
+        Query query = new Query();
+        query.query = "query Query {\n" +
+                "  allEmployees(where: { firstName: { _contains: \"Jo\" } }, offset: 1, limit: 1) @totalCount {\n" +
+                "      firstName\n" +
+                "    }\n" +
+                "  }";
+        Response response = graphQLExecute.executeDev(mockRequest, "Project1", "Workspace1", "simple::model::Query", "simple::mapping::Map", "simple::runtime::Runtime", query, null);
+
+        String expected = "{\"data\":{\"allEmployees\":{\"firstName\":\"John\"}},\"extensions\":{\"allEmployees\":{\"totalCount\":{\"offset\":1,\"limit\":1,\"value\":2}}}}";
 
         Assert.assertEquals(expected, responseAsString(response));
     }
@@ -305,7 +344,11 @@ public class TestTotalCountDirective
             output.write(byteArrayOutputStream);
             return byteArrayOutputStream.toString("UTF-8");
         }
-        throw new RuntimeException(((ExceptionError) entity).getMessage());
+        else if (entity instanceof GraphQLErrorMain)
+        {
+            return OBJECT_MAPPER.writeValueAsString(entity);
+        }
+        throw new RuntimeException("Unhandled exception");
     }
 
     private static List<ExecutionNode> allChildNodes(ExecutionNode node)

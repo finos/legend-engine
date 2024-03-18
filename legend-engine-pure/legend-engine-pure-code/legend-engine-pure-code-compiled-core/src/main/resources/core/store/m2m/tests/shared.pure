@@ -13,11 +13,9 @@
 // limitations under the License.
 
 import meta::pure::mapping::modelToModel::test::shared::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
 

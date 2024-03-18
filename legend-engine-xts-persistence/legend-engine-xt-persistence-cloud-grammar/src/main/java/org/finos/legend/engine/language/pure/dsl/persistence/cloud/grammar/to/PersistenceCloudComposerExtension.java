@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.dsl.persistence.cloud.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.dsl.persistence.grammar.to.IPersistenceComposerExtension;
 import org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerContext;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.cloud.context.AwsGluePersistencePlatform;
@@ -25,6 +26,12 @@ import java.util.List;
 
 public class PersistenceCloudComposerExtension implements IPersistenceComposerExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence", "Cloud");
+    }
+
     @Override
     public List<Function3<PersistencePlatform, Integer, PureGrammarComposerContext, String>> getExtraPersistencePlatformComposers()
     {

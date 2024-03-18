@@ -17,22 +17,22 @@ package org.finos.legend.engine.persistence.components.ingestmode.digest;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.logicalplan.values.DigestUdf;
 import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
 import org.finos.legend.engine.persistence.components.logicalplan.values.Value;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
 {
     private List<Value> fieldsToSelect;
     private List<Value> fieldsToInsert;
-    private Dataset stagingDataset;
     private Dataset mainDataset;
 
-    public DigestGenerationHandler(Dataset mainDataset, Dataset stagingDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
+    public DigestGenerationHandler(Dataset mainDataset, List<Value> fieldsToSelect, List<Value> fieldsToInsert)
     {
         this.mainDataset = mainDataset;
-        this.stagingDataset = stagingDataset;
         this.fieldsToSelect = fieldsToSelect;
         this.fieldsToInsert = fieldsToInsert;
     }
@@ -46,13 +46,43 @@ public class DigestGenerationHandler implements DigestGenStrategyVisitor<Void>
     @Override
     public Void visitUDFBasedDigestGenStrategy(UDFBasedDigestGenStrategyAbstract udfBasedDigestGenStrategy)
     {
+        Set<String> fieldsToExclude = udfBasedDigestGenStrategy.fieldsToExcludeFromDigest();
+        List<String> filteredStagingFieldNames = new ArrayList<>();
+        List<Value> filteredStagingFieldValues = new ArrayList<>();
+
+        for (Value value: fieldsToSelect)
+        {
+            if (value instanceof FieldValue)
+            {
+                FieldValue fieldValue = (FieldValue) value;
+                if (!fieldsToExclude.contains(fieldValue.fieldName()))
+                {
+                    filteredStagingFieldNames.add(fieldValue.fieldName());
+                    filteredStagingFieldValues.add(fieldValue);
+                }
+            }
+            else if (value instanceof StagedFilesFieldValue)
+            {
+                StagedFilesFieldValue stagedFilesFieldValue = (StagedFilesFieldValue) value;
+                if (!fieldsToExclude.contains(stagedFilesFieldValue.fieldName()))
+                {
+                    filteredStagingFieldNames.add(stagedFilesFieldValue.fieldName());
+                    filteredStagingFieldValues.add(stagedFilesFieldValue);
+                }
+            }
+            else
+            {
+                throw new IllegalStateException("Value can either be a FieldValue or StagedFilesFieldValue for UDF based digest generation");
+            }
+        }
+
         Value digestValue = DigestUdf
             .builder()
             .udfName(udfBasedDigestGenStrategy.digestUdfName())
-            .addAllFieldNames(stagingDataset.schemaReference().fieldValues().stream().map(fieldValue -> fieldValue.fieldName()).collect(Collectors.toList()))
-            .addAllValues(fieldsToSelect)
-            .dataset(stagingDataset)
+            .addAllFieldNames(filteredStagingFieldNames)
+            .addAllValues(filteredStagingFieldValues)
             .build();
+
         String digestField = udfBasedDigestGenStrategy.digestField();
         fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset.datasetReference()).fieldName(digestField).build());
         fieldsToSelect.add(digestValue);

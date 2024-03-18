@@ -154,6 +154,7 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -323,7 +324,8 @@ public class AnsiSqlSink extends RelationalSink
         return union;
     }
 
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    @Override
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         throw new UnsupportedOperationException("Bulk Load not supported!");
     }

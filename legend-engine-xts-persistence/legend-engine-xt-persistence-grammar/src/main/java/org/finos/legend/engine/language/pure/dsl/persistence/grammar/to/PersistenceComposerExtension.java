@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.dsl.persistence.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
@@ -32,30 +33,39 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
+
 public class PersistenceComposerExtension implements IPersistenceComposerExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Persistence");
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof Persistence)
+        {
+            return renderPersistence((Persistence) element, context);
+        }
+        else if (element instanceof PersistenceContext)
+        {
+            return renderPersistenceContext((PersistenceContext) element, context);
+        }
+        return null;
+    });
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
+    @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.fixedSize.of((elements, context, sectionName) ->
-        {
-            if (!PersistenceParserExtension.NAME.equals(sectionName))
-            {
-                return null;
-            }
-            return ListIterate.collect(elements, element ->
-            {
-                if (element instanceof Persistence)
-                {
-                    return renderPersistence((Persistence) element, context);
-                }
-                else if (element instanceof PersistenceContext)
-                {
-                    return renderPersistenceContext((PersistenceContext) element, context);
-                }
-                return "/* Can't transform element '" + element.getPath() + "' in this section */";
-            }).makeString("\n\n");
-        });
+        return Lists.mutable.with(buildSectionComposer(PersistenceParserExtension.NAME, renderers));
     }
 
     @Override
@@ -70,19 +80,19 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
             return composableElements.isEmpty()
                     ? null
                     : new PureFreeSectionGrammarComposerResult(composableElements
-                        .collect(element ->
+                    .collect(element ->
+                    {
+                        if (element instanceof Persistence)
                         {
-                            if (element instanceof Persistence)
-                            {
-                                return PersistenceComposerExtension.renderPersistence((Persistence) element, context);
-                            }
-                            else if (element instanceof PersistenceContext)
-                            {
-                                return PersistenceComposerExtension.renderPersistenceContext((PersistenceContext) element, context);
-                            }
-                            throw new UnsupportedOperationException("Unsupported type " + element.getClass().getName());
-                        })
-                        .makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
+                            return PersistenceComposerExtension.renderPersistence((Persistence) element, context);
+                        }
+                        else if (element instanceof PersistenceContext)
+                        {
+                            return PersistenceComposerExtension.renderPersistenceContext((PersistenceContext) element, context);
+                        }
+                        throw new UnsupportedOperationException("Unsupported type " + element.getClass().getName());
+                    })
+                    .makeString("###" + PersistenceParserExtension.NAME + "\n", "\n\n", ""), composableElements);
         });
     }
 
@@ -90,27 +100,27 @@ public class PersistenceComposerExtension implements IPersistenceComposerExtensi
     public List<Function3<PersistencePlatform, Integer, PureGrammarComposerContext, String>> getExtraPersistencePlatformComposers()
     {
         return Collections.singletonList((persistencePlatform, indentLevel, context) ->
-            persistencePlatform instanceof DefaultPersistencePlatform
-                    ? ""
-                    : null);
+                persistencePlatform instanceof DefaultPersistencePlatform
+                        ? ""
+                        : null);
     }
 
     @Override
     public List<Function3<Trigger, Integer, PureGrammarComposerContext, String>> getExtraTriggerComposers()
     {
         return Collections.singletonList((trigger, indentLevel, context) ->
-                {
-                    if (trigger instanceof ManualTrigger)
-                    {
-                        return "Manual";
-                    }
-                    else if (trigger instanceof CronTrigger)
-                    {
-                        //TODO: ledav -- implement cron render
-                        return null;
-                    }
-                    return null;
-                });
+        {
+            if (trigger instanceof ManualTrigger)
+            {
+                return "Manual";
+            }
+            else if (trigger instanceof CronTrigger)
+            {
+                //TODO: ledav -- implement cron render
+                return null;
+            }
+            return null;
+        });
     }
 
     private static String renderPersistence(Persistence persistence, PureGrammarComposerContext context)

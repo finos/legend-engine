@@ -20,7 +20,6 @@ import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::store::*;
 
 Class meta::pure::router::store::metamodel::StoreRoutedValueSpecification extends ExtendedRoutedValueSpecification
@@ -86,7 +85,7 @@ Class meta::pure::router::TDSRoutedValueSpecification extends RoutedValueSpecifi
    runtime:Runtime[1];
    mapping:Mapping[1];
    store:meta::pure::store::Store[1];
-   executionContext:ExecutionContext[1];
+   executionContext:meta::pure::runtime::ExecutionContext[1];
 }
 
 Class meta::pure::router::NoSetRoutedValueSpecification extends RoutedValueSpecification
@@ -114,7 +113,6 @@ import meta::pure::graphFetch::*;
 import meta::pure::graphFetch::routing::*;
 import meta::pure::mapping::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::store::*;
 
 Class meta::pure::graphFetch::routing::RoutedGraphFetchTree extends GraphFetchTree

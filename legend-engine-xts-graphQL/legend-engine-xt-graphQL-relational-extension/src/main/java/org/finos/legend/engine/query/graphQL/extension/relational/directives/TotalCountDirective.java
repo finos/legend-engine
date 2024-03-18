@@ -17,7 +17,6 @@ package org.finos.legend.engine.query.graphQL.extension.relational.directives;
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.ImmutableList;
-import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.plan.execution.PlanExecutor;
 import org.finos.legend.engine.plan.execution.result.ConstantResult;
@@ -35,13 +34,13 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.SingleExecut
 import org.finos.legend.engine.query.graphQL.api.execute.GraphQLExecute;
 import org.finos.legend.engine.query.graphQL.api.execute.SerializedNamedPlans;
 import org.finos.legend.engine.query.graphQL.api.execute.directives.IGraphQLDirectiveExtension;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_external_query_graphQL_transformation_queryToPure_NamedExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_executionPlan_ExecutionPlan;
 import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.generated.core_external_query_graphql_transformation_transformation_graphFetch;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -84,9 +83,9 @@ public class TotalCountDirective implements IGraphQLDirectiveExtension
     }
 
     @Override
-    public Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, MutableList<CommonProfile> profiles)
+    public Object executeDirective(Directive directive, ExecutionPlan executionPlan, PlanExecutor planExecutor, Map<String, Result> parameterMap, Identity identity)
     {
-        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) executionPlan, parameterMap, null, profiles);
+        RelationalResult result = (RelationalResult) planExecutor.execute((SingleExecutionPlan) executionPlan, parameterMap, null, identity);
         RealizedRelationalResult realizedResult = ((RealizedRelationalResult) ((result).realizeInMemory()));
         List<List<Object>> resultSetRows = (realizedResult).resultSetRows;
         Long totalCount = (Long)((resultSetRows.get(0)).get(0));

@@ -139,9 +139,11 @@ public class MappingTestRunner implements TestRunner
             connections.forEach(connection ->
             {
                 Connection conn = connection.getOne();
-                Root_meta_core_runtime_ConnectionStore connectionStore = new Root_meta_core_runtime_ConnectionStore_Impl("")
-                        ._connection(conn.accept(context.getConnectionVisitor()))
-                        ._element(getStore(conn.element, conn.elementSourceInformation, context.getPureModel().getContext()));
+                org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store element = getStore(conn.element, conn.elementSourceInformation, context.getPureModel().getContext());
+                Root_meta_core_runtime_ConnectionStore connectionStore =
+                        new Root_meta_core_runtime_ConnectionStore_Impl("")
+                                ._connection(conn.accept(context.getConnectionVisitor()))
+                                ._element(element);
                 runtime._connectionStoresAdd(connectionStore);
             });
             handleGenerationOfPlan(connections.stream().map(Pair::getOne).collect(Collectors.toList()), runtime, context);

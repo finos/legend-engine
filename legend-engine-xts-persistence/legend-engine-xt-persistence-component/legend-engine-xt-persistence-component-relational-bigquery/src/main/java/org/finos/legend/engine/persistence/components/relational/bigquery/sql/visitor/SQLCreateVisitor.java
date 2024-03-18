@@ -15,6 +15,7 @@
 package org.finos.legend.engine.persistence.components.relational.bigquery.sql.visitor;
 
 import org.finos.legend.engine.persistence.components.logicalplan.LogicalPlanNode;
+import org.finos.legend.engine.persistence.components.logicalplan.datasets.ExternalDataset;
 import org.finos.legend.engine.persistence.components.logicalplan.modifiers.IfNotExistsTableModifier;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Create;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
@@ -31,6 +32,11 @@ public class SQLCreateVisitor implements LogicalPlanVisitor<Create>
     @Override
     public VisitorResult visit(PhysicalPlanNode prev, Create current, VisitorContext context)
     {
+        if (current.dataset() instanceof ExternalDataset)
+        {
+            return new CreateExternalDatasetVisitor().visit(prev, current, context);
+        }
+
         CreateTable createTable = new CreateTable();
         prev.push(createTable);
 

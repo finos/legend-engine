@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-config</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.37.1-SNAPSHOT</version>
+        <version>4.40.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -249,21 +249,6 @@
             <artifactId>legend-engine-xt-mastery-protocol</artifactId>
         </dependency>
         <!-- Mastery -->
-
-        <!-- Connection -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-connection-grammar</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-connection-compiler</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-connection-protocol</artifactId>
-        </dependency>
-        <!-- Connection -->
 
         <!-- Diagram -->
         <dependency>
@@ -549,13 +534,6 @@
             <artifactId>legend-engine-xt-avro</artifactId>
         </dependency>
         <!-- Avro -->
-
-        <!-- Roestta -->
-        <dependency>
-            <groupId>org.finos.legend.engine</groupId>
-            <artifactId>legend-engine-xt-rosetta</artifactId>
-        </dependency>
-        <!-- Roestta -->
 
         <!-- GraphQL -->
         <dependency>

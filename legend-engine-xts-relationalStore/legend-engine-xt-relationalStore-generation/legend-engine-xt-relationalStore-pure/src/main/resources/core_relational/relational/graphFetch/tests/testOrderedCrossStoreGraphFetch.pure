@@ -257,7 +257,6 @@ Mapping meta::pure::graphFetch::tests::XStore::ordered::orderedCrossMapping4
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::executionPlan::toString::*;
 import meta::pure::executionPlan::*;
@@ -270,7 +269,7 @@ import meta::relational::runtime::*;
 
 function <<test.BeforePackage>> meta::pure::graphFetch::tests::XStore::ordered::createTablesInDb():Boolean[1]
 {
-   let runtime =  ^Runtime(connectionStores= [^ConnectionStore(element=DB1,connection=^TestDatabaseConnection(type=DatabaseType.H2))]);
+   let runtime =  ^Runtime(connectionStores= [^ConnectionStore(element=DB1,connection=^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2))]);
    let dbConn1 = $runtime.connectionStores.connection->at(0)->cast(@DatabaseConnection);
 
    dropAndCreateTableInDb(DB1, 'productTable', $dbConn1);

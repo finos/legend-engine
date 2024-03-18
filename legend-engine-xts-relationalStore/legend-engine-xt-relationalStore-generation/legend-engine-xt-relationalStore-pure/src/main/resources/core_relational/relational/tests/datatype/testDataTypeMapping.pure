@@ -29,7 +29,6 @@ import meta::relational::tests::*;
 import meta::external::store::relational::tests::*;
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::external::store::relational::runtime::authentication::*;
@@ -39,7 +38,7 @@ import meta::json::*;
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::dataType::setUp():Boolean[1]
 {
-    let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@TestDatabaseConnection);
+    let connection = testDataTypeMappingRuntime().connectionByElement(myDB)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
     dropAndCreateTableInDb(myDB, 'dataTable', $connection);
 

@@ -17,6 +17,8 @@ package org.finos.legend.engine.persistence.components.executor;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.Dataset;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlan;
 import org.finos.legend.engine.persistence.components.physicalplan.PhysicalPlanNode;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.SqlLogging;
 
 import java.util.List;
 import java.util.Map;
@@ -25,17 +27,19 @@ public interface Executor<C extends PhysicalPlanNode, R extends ResultData, P ex
 {
     void executePhysicalPlan(P physicalPlan);
 
-    void executePhysicalPlan(P physicalPlan, Map<String, String> placeholderKeyValues);
+    void executePhysicalPlan(P physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues);
 
     List<R> executePhysicalPlanAndGetResults(P physicalPlan);
 
-    List<R> executePhysicalPlanAndGetResults(P physicalPlan, Map<String, String> placeholderKeyValues);
+    List<R> executePhysicalPlanAndGetResults(P physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues);
 
     boolean datasetExists(Dataset dataset);
 
     void validateMainDatasetSchema(Dataset dataset);
 
     Dataset constructDatasetFromDatabase(Dataset dataset);
+
+    void setSqlLogging(SqlLogging sqlLogging);
 
     void begin();
 

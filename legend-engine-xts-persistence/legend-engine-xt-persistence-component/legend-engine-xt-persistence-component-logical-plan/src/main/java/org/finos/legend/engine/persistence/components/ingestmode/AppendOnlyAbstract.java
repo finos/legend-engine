@@ -33,6 +33,12 @@ import static org.immutables.value.Value.Style;
 public interface AppendOnlyAbstract extends IngestMode
 {
     @Value.Default
+    default String batchIdField()
+    {
+        return "batch_id";
+    }
+
+    @Value.Default
     default DigestGenStrategy digestGenStrategy()
     {
         return NoDigestGenStrategy.builder().build();

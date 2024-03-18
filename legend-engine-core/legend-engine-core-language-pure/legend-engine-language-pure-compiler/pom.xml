@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-language-pure</artifactId>
-        <version>4.37.1-SNAPSHOT</version>
+        <version>4.40.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>legend-engine-language-pure-compiler</artifactId>
@@ -35,6 +35,24 @@
                         <goals>
                             <goal>test-jar</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>dependency-analyze</id>
+                        <phase>test-compile</phase>
+                        <goals>
+                            <goal>analyze-only</goal>
+                        </goals>
+                        <configuration>
+                            <ignoredUnusedDeclaredDependencies>
+                                <ignoredUnusedDeclaredDependency>org.finos.legend.engine:legend-engine-pure-platform-dsl-store-java</ignoredUnusedDeclaredDependency>
+                            </ignoredUnusedDeclaredDependencies>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
@@ -68,7 +86,16 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-grammar</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
@@ -94,6 +121,15 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-pure-platform-dsl-mapping-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-dsl-store-java</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-pure-platform-functions-relation-java</artifactId>
+            <scope>runtime</scope>
         </dependency>
 
         <dependency>
@@ -123,6 +159,10 @@
         <!-- ENGINE -->
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-extensions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
         <dependency>
@@ -142,13 +182,6 @@
             <scope>runtime</scope>
         </dependency>
         <!-- JACKSON -->
-
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
 
         <!-- ECLIPSE COLLECTIONS -->
         <dependency>

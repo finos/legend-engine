@@ -24,11 +24,11 @@ import org.finos.legend.engine.shared.core.identity.credential.LegendKerberosCre
 public class LegendStatement implements PostgresStatement
 {
 
-    private LegendExecutionClient client;
+    private LegendExecutionService client;
     private LegendResultSet legendResultSet;
     private Identity identity;
 
-    public LegendStatement(LegendExecutionClient client, Identity identity)
+    public LegendStatement(LegendExecutionService client, Identity identity)
     {
         this.client = client;
         this.identity = identity;

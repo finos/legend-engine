@@ -59,6 +59,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.value.ValueVisitor;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.Variable;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class GraphQLGrammarComposer
 {
@@ -274,7 +275,7 @@ public class GraphQLGrammarComposer
             @Override
             public String visit(ObjectValue val)
             {
-                return null;
+                return "{ " + val.fields.stream().map(v -> v.name + ": " + renderValue(v.value)).collect(Collectors.joining(", ")) + " }";
             }
 
             @Override

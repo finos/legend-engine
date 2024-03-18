@@ -41,5 +41,6 @@ public enum FunctionName
     OBJECT_CONSTRUCT,
     TO_VARIANT,
     TO_JSON,
-    CONVERT;
+    CONVERT,
+    STRUCT;
 }

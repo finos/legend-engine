@@ -26,13 +26,9 @@ import java.util.List;
 public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
 {
     public MutableList<String> sqlExpressions = Lists.mutable.empty();
-    public String functionArguments;
     public String applicationName;
     public String description;
-    public List<String> owners;
-    public String groupId;
-    public String artifactId;
-    public String version;
+    public String ownership;
     public String creationTime;
 
     public SnowflakeAppContent()
@@ -40,25 +36,19 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         //Empty constructor for Jackson
     }
 
-    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String functionArguments, AlloySDLC sdlc)
+    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, AlloySDLC sdlc)
     {
         this.applicationName = applicationName;
         this.sqlExpressions = sqlExpressions;
         this.creationTime = convertToValidDate(new Date());
-        this.functionArguments = functionArguments;
-        if (sdlc != null)
-        {
-            this.groupId = sdlc.groupId;
-            this.artifactId = sdlc.artifactId;
-            this.version = sdlc.version;
-        }
+
     }
 
-    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String description, String functionArguments, List<String> owners, AlloySDLC sdlc)
+    public SnowflakeAppContent(String applicationName, MutableList<String> sqlExpressions, String description, String ownership, AlloySDLC sdlc)
     {
-        this(applicationName, sqlExpressions, functionArguments, sdlc);
+        this(applicationName, sqlExpressions, sdlc);
         this.description = description;
-        this.owners = owners;
+        this.ownership = ownership;
 
     }
 
@@ -68,13 +58,5 @@ public class SnowflakeAppContent extends FunctionActivatorDeploymentContent
         return format.format(date);
     }
 
-    public String getVersionInfo()
-    {
-        if (this.version != null)
-        {
-            return groupId + ":" + this.artifactId + ":" + this.version;
-        }
-        return "";
-    }
 }
 

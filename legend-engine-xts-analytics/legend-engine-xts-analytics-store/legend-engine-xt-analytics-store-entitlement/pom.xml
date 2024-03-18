@@ -19,7 +19,7 @@
     <parent>
         <artifactId>legend-engine-xts-analytics-store</artifactId>
         <groupId>org.finos.legend.engine</groupId>
-        <version>4.37.1-SNAPSHOT</version>
+        <version>4.40.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -34,6 +34,10 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-extensions</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-protocol-pure</artifactId>
         </dependency>
         <dependency>
@@ -43,6 +47,10 @@
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-language-pure-compiler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-core</artifactId>
         </dependency>
 
         <!-- LOG -->
@@ -62,13 +70,6 @@
             <artifactId>eclipse-collections</artifactId>
         </dependency>
         <!-- ECLIPSE COLLECTIONS -->
-
-        <!-- ANNOTATIONS -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- ANNOTATIONS -->
 
         <!-- JACKSON -->
         <dependency>

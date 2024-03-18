@@ -19,7 +19,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-core-executionPlan-generation</artifactId>
-        <version>4.37.1-SNAPSHOT</version>
+        <version>4.40.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -47,10 +47,13 @@
             <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
         </dependency>
-
         <!-- PURE -->
 
         <!-- ENGINE -->
+        <dependency>
+            <groupId>org.finos.legend.engine</groupId>
+            <artifactId>legend-engine-shared-extensions</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.finos.legend.engine</groupId>
             <artifactId>legend-engine-shared-core</artifactId>
@@ -69,12 +72,6 @@
         </dependency>
         <!-- ENGINE -->
 
-        <!-- PAC4J -->
-        <dependency>
-            <groupId>org.pac4j</groupId>
-            <artifactId>pac4j-core</artifactId>
-        </dependency>
-        <!-- PAC4J -->
         <!-- LOG -->
         <dependency>
             <groupId>org.slf4j</groupId>

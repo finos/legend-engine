@@ -16,10 +16,8 @@ import meta::json::*;
 import meta::pure::mapping::*;
 import meta::pure::mapping::modelToModel::test::alloy::filterGraphFetch::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::modelToModel::test::simple::*;
 import meta::pure::graphFetch::execution::*;
 import meta::pure::mapping::modelToModel::test::shared::dest::*;
@@ -138,8 +136,8 @@ function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly
 function <<access.private>> meta::pure::mapping::modelToModel::test::alloy::filterGraphFetch::executeGraphFetchWithParameters(f: FunctionDefinition<Any>[1], vars: Pair<String, Any>[*]): String[1]
 {
  let fStr = 'meta::legend::execute_FunctionDefinition_1__Pair_MANY__ExecutionContext_1__Extension_MANY__String_1_';
- let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Pair<String, Any>[*], ExecutionContext[1], meta::pure::extension::Extension[*]->String[1]}>);
- $func->eval($f, $vars, ^ExecutionContext(),  meta::pure::extension::defaultExtensions());
+ let func = $fStr->pathToElement()->cast(@Function<{FunctionDefinition<Any>[1], Pair<String, Any>[*], meta::pure::runtime::ExecutionContext[1], meta::pure::extension::Extension[*]->String[1]}>);
+ $func->eval($f, $vars, ^meta::pure::runtime::ExecutionContext(),  meta::pure::extension::defaultExtensions());
 
  }
 

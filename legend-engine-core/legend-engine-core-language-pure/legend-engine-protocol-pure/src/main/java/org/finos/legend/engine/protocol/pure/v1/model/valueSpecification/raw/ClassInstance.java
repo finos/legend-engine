@@ -25,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import org.eclipse.collections.api.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.PureProtocolObjectMapperFactory;
+import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.ValueSpecificationVisitor;
 
@@ -45,10 +46,11 @@ public class ClassInstance extends One
 
     }
 
-    public ClassInstance(String type, Object value)
+    public ClassInstance(String type, Object value, SourceInformation sourceInformation)
     {
         this.type = type;
         this.value = value;
+        this.sourceInformation = sourceInformation;
     }
 
     @Override

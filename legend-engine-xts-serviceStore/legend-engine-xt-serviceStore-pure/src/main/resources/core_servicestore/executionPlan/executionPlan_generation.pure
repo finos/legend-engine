@@ -23,7 +23,6 @@ import meta::pure::graphFetch::routing::*;
 import meta::pure::metamodel::path::*;
 
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::executionContext::*;
 import meta::pure::mapping::modelToModel::graphFetch::executionPlan::*;
@@ -32,8 +31,6 @@ import meta::pure::mapping::xStore::*;
 import meta::pure::extension::*;
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 import meta::pure::router::store::metamodel::*;
 import meta::pure::router::store::metamodel::clustering::*;
 import meta::pure::router::utils::*;
@@ -55,7 +52,7 @@ import meta::external::store::service::functions::pureToServiceStoreQuery::*;
 import meta::external::store::service::router::systemMapping::*;
 import meta::external::store::service::utils::helperFunction::*;
 
-function meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
+function meta::external::store::service::executionPlan::generation::planRootGraphFetchExecutionServiceStore(sq: StoreQuery[1], ext: RoutedValueSpecification[0..1], clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: meta::pure::extension::Extension[*], debug: DebugContext[1]): InMemoryRootGraphFetchExecutionNode[1]
 {
    let store       = $sq.store;
    assert($store->instanceOf(ServiceStore), | 'Expected a ServiceStore. Found - ' + $store->cast(@Store)->elementToPath());
@@ -108,7 +105,7 @@ function meta::external::store::service::executionPlan::generation::planRootGrap
    );
 }
 
-function meta::external::store::service::executionPlan::generation::planCrossStoreGraphFetchExecutionServiceStore(clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): InMemoryCrossStoreGraphFetchExecutionNode[1]
+function meta::external::store::service::executionPlan::generation::planCrossStoreGraphFetchExecutionServiceStore(clusteredTree: StoreMappingClusteredGraphFetchTree[1], orderedPaths: String[*], parentPath: String[1], inScopeVars: Map<String, List<Any>>[1], mapping: Mapping[1], runtime: Runtime[1], exeCtx: meta::pure::runtime::ExecutionContext[1], enableConstraints: Boolean[1], checked: Boolean[1], extensions: Extension[*], debug: DebugContext[1]): InMemoryCrossStoreGraphFetchExecutionNode[1]
 {
    let store            = $clusteredTree.store;
    assert($store->instanceOf(ServiceStore), | 'Expected a ServiceStore. Found - ' + $store->cast(@Store)->elementToPath());

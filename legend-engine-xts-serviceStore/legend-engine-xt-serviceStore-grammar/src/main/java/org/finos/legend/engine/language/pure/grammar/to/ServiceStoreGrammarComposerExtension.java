@@ -16,6 +16,7 @@ package org.finos.legend.engine.language.pure.grammar.to;
 
 import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
@@ -36,28 +37,36 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.s
 import java.util.Collections;
 import java.util.List;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
 import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposerUtility.getTabString;
 
 public class ServiceStoreGrammarComposerExtension implements IServiceStoreGrammarComposerExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Service");
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) ->
+    {
+        if (element instanceof ServiceStore)
+        {
+            return HelperServiceStoreGrammarComposer.renderServiceStore((ServiceStore) element);
+        }
+        return null;
+    });
+
+    @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Lists.mutable.with((elements, context, sectionName) ->
-        {
-            if (!ServiceStoreGrammarParserExtension.NAME.equals(sectionName))
-            {
-                return null;
-            }
-            return ListIterate.collect(elements, element ->
-            {
-                if (element instanceof ServiceStore)
-                {
-                    return HelperServiceStoreGrammarComposer.renderServiceStore((ServiceStore) element);
-                }
-                return "/* Can't transform element '" + element.getPath() + "' in this section */";
-            }).makeString("\n\n");
-        });
+        return Lists.mutable.with(buildSectionComposer(ServiceStoreGrammarParserExtension.NAME, renderers));
+    }
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
     }
 
     @Override

@@ -17,6 +17,7 @@ package org.finos.legend.engine.language.hostedService.grammar.from;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.grammar.from.ParserErrorListener;
 import org.finos.legend.engine.language.pure.grammar.from.PureGrammarParserContext;
@@ -35,6 +36,12 @@ import java.util.function.Consumer;
 public class HostedServiceGrammarParserExtension implements PureGrammarParserExtension
 {
     public static final String NAME = "HostedService";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Hosted_Service");
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

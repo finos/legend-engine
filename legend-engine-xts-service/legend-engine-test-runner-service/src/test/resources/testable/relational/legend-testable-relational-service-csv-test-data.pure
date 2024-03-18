@@ -7,7 +7,7 @@ Service service::RelationalServiceWithCSVWithCommaWithQuotes
   execution: Single
   {
     query: |model::Person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
-    mapping: execution::RelationalMapping;
+    mapping: execution::FirmMapping;
     runtime: execution::Runtime;
   }
   testSuites:
@@ -18,7 +18,7 @@ Service service::RelationalServiceWithCSVWithCommaWithQuotes
       [
         connections:
         [
-          connection_1:
+          model::MyConnection:
             Relational
             #{
               default.PersonTable:
@@ -61,7 +61,7 @@ Service service::RelationalServiceWithCSVWithComma
   execution: Single
   {
     query: |model::Person.all()->project([x|$x.firstName, x|$x.lastName], ['First Name', 'Last Name']);
-    mapping: execution::RelationalMapping;
+    mapping: execution::FirmMapping;
     runtime: execution::Runtime;
   }
   testSuites:
@@ -72,7 +72,7 @@ Service service::RelationalServiceWithCSVWithComma
       [
         connections:
         [
-          connection_1:
+          model::MyConnection:
             Relational
             #{
               default.PersonTable:

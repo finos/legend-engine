@@ -25,7 +25,6 @@ import meta::pure::router::routing::*;
 import meta::relational::metamodel::join::*;
 import meta::relational::metamodel::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 
 Class meta::analytics::store::entitlements::TableWithType
@@ -34,10 +33,10 @@ Class meta::analytics::store::entitlements::TableWithType
    type: String[1];
 }
 
-function meta::analytics::store::entitlements::getTablesFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1], extensions: meta::pure::extension::Extension[*], executionContext:ExecutionContext[0..1]):Table[*]
+function meta::analytics::store::entitlements::getTablesFromQuery(query:FunctionDefinition<{->TabularDataSet[1]}>[1], mapping:Mapping[1], runtime: Runtime[1], extensions: meta::pure::extension::Extension[*], executionContext:meta::pure::runtime::ExecutionContext[0..1]):Table[*]
 {
    let sql = meta::relational::functions::sqlstring::toSQL($query, $mapping, $runtime, $extensions).sqlQueries;
-   let ec = if ($executionContext->isEmpty(), | ^ExecutionContext(), | $executionContext->toOne());
+   let ec = if ($executionContext->isEmpty(), | ^meta::pure::runtime::ExecutionContext(), | $executionContext->toOne());
    let processedSql = $sql->map(s | meta::relational::mapping::postProcessSQLQuery($s, ^meta::relational::metamodel::Database(), [], [], $runtime, $ec, $extensions).query);
    $processedSql->map(q | $q->meta::relational::validation::functions::getTables())
       ->removeDuplicates()

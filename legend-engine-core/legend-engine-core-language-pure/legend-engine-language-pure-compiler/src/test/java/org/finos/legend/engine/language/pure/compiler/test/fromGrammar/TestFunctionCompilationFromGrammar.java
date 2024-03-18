@@ -29,314 +29,81 @@ public class TestFunctionCompilationFromGrammar
               "{\n" +
               "  ''\n" +
               "}\n" +
-              "[\n" +
-              "  testSuite_1:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testFail:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      },\n" +
-              "      testPass:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n");
+              "{\n" +
+              "  testSuite1\n" +
+              "  (\n" +
+              "      testFail | MyFunc() => (JSON) '[]';\n" +
+              "      testPass | MyFunc() => (JSON) '[]';\n" +
+              "  )\n" +
+              "  testFail | MyFunc() => (JSON) '[]';\n" +
+              "  testPass | MyFunc() => (JSON) '[]';\n" +
+              "}\n");
 
       test("function model::MyFunc(): String[1]\n" +
               "{\n" +
               "  ''\n" +
               "}\n" +
-              "[\n" +
-              "  testSuite_1:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      },\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n", "COMPILATION error at [6:3-43:3]: Multiple tests found with ids : 'testDuplicate'");
-
-      test("function model::MyFunc(): String[1]\n" +
               "{\n" +
-              "  ''\n" +
-              "}\n" +
-              "[\n" +
-              "  duplicateSuite:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  },\n" +
-              "  duplicateSuite:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n", "COMPILATION error at [1:1-50:1]: Multiple testSuites found with ids : 'duplicateSuite'");
-
+              "  testSuite1\n" +
+              "  (\n" +
+              "      testDuplicate | MyFunc() => (JSON) '[]';\n" +
+              "      testDuplicate | MyFunc() => (JSON) '[]';\n" +
+              "  )\n" +
+              "}\n", "COMPILATION error at [6:3-10:3]: Multiple tests found with ids : 'testDuplicate'");
+      test("function model::MyFunc(): String[1]\n" +
+                      "{\n" +
+                      "  ''\n" +
+                      "}\n" +
+                      "{\n" +
+                      "  duplicateSuite\n" +
+                      "  (\n" +
+                      "      testDuplicate | MyFunc() => (JSON) '[]';\n" +
+                      "  )\n" +
+                      "  duplicateSuite\n" +
+                      "  (\n" +
+                      "      testDuplicate | MyFunc() => (JSON) '[]';\n" +
+                      "  )\n" +
+                      "}\n", "COMPILATION error at [1:1-14:1]: Multiple testSuites found with ids : 'duplicateSuite'");
 
       test("function model::MyFunc(firstName: String[1]): String[1]\n" +
               "{\n" +
               "  ''\n" +
               "}\n" +
-              "[\n" +
-              "  duplicateSuite:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        parameters:\n" +
-              "        [\n" +
-              "          firstName = 'Nicole'\n" +
-              "        ]\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n");
+              "{\n" +
+              "      testDuplicate | MyFunc('Nicole') => (JSON) '[]';\n" +
+              "}\n");
 
       test("function model::MyFunc(firstName: String[1]): String[1]\n" +
               "{\n" +
               "  ''\n" +
               "}\n" +
-              "[\n" +
-              "  duplicateSuite:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n", "COMPILATION error at [10:7-25:7]: Parameter value required for parameter: 'firstName'");
+              "{\n" +
+              "  testDuplicate | MyFunc() => (JSON) '[]';\n" +
+              "}\n", "COMPILATION error at [6:3-42]: Parameter value required for parameter: 'firstName'");
 
-      test("function model::MyFunc(firstName: String[1]): String[1]\n" +
+      test("function model::MyFunc(firstName: String[1], test: Integer[1], whoops: String[1]): String[1]\n" +
               "{\n" +
               "  ''\n" +
               "}\n" +
-              "[\n" +
-              "  duplicateSuite:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n", "COMPILATION error at [10:7-25:7]: Parameter value required for parameter: 'firstName'");
+              "{\n" +
+              "  testDuplicate | MyFunc('John', 1) => (JSON) '[]';\n" +
+              "}\n", "COMPILATION error at [6:3-51]: Parameter value required for parameter: 'whoops'");
 
       test("function model::MyFunc(): String[1]\n" +
               "{\n" +
               "  ''\n" +
               "}\n" +
-              "[\n" +
-              "  duplicateSuite:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "         parameters: [" +
-              "              notFound =  'xx'   " +
-              "         ]" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "            EqualToJson\n" +
-              "            #{\n" +
-              "              expected:\n" +
-              "                ExternalFormat\n" +
-              "                #{\n" +
-              "                  contentType: 'application/json';\n" +
-              "                  data: '[]';\n" +
-              "                }#;\n" +
-              "            }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n", "COMPILATION error at [10:7-25:7]: Parameter values not found in function parameter: notFound");
-
-      test("function model::MyFunc(): String[1]\n" +
               "{\n" +
-              "  ''\n" +
-              "}\n" +
-              "[\n" +
-              "  duplicateSuite:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testDuplicate:\n" +
-              "      {\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n", "COMPILATION error at [10:7-15:7]: Tests should have at least 1 assert");
-
+              "  testDuplicate | MyFunc('John') => (JSON) '[]';\n" +
+              "}\n", "COMPILATION error at [6:26-31]: No associated parameter found for value.");
 
       test("function model::Hello(name: String[1]): String[1]\n" +
               "{\n" +
               "  'Hello!. My name is ' + $name + '.';\n" +
               "}\n" +
-              "[\n" +
-              "  testSuite_1:\n" +
-              "  {\n" +
-              "    tests:\n" +
-              "    [\n" +
-              "      testFail:\n" +
-              "      {\n" +
-              "        parameters: \n" +
-              "        [\n" +
-              "          name = 'John'\n" +
-              "        ]\n" +
-              "        asserts:\n" +
-              "        [\n" +
-              "          assertion_1:\n" +
-              "          EqualTo\n" +
-              "          #{\n" +
-              "             expected: 'Hello!. My name is John.';\n" +
-              "          }#\n" +
-              "        ]\n" +
-              "      }\n" +
-              "    ]\n" +
-              "  }\n" +
-              "]\n");
+              "{\n" +
+              "  myTest | Hello('John') => 'Hello! My name is John.';\n" +
+              "}\n");
   }
 
 }

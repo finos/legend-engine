@@ -21,11 +21,9 @@ import meta::external::store::mongodb::functions::pureToDatabaseCommand::*;
 import meta::external::store::mongodb::runtime::*;
 import meta::pure::graphFetch::executionPlan::*;
 import meta::pure::router::clustering::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::store::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
@@ -57,7 +55,7 @@ function meta::external::store::mongodb::contract::mongoDBStoreContract(): Store
   )
 }
 
-function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): meta::pure::executionPlan::ExecutionNode[1]
+function meta::external::store::mongodb::contract::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]): meta::pure::executionPlan::ExecutionNode[1]
 {
     let store = $sq.store->cast(@MongoDatabase);
     let fe = $sq.fe->evaluateAndDeactivate();

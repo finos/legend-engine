@@ -357,12 +357,12 @@ public class TestLambdaRoundtrip
         testLambda("|%9999-12-30T19:00:00.0000->someDateFn()", "|someDateFn(%9999-12-30T19:00:00.0000)");
     }
 
-    private static void testLambda(String text)
+    static void testLambda(String text)
     {
         testLambda(text, text);
     }
 
-    private static void testLambda(String text, String formattedText)
+    static void testLambda(String text, String formattedText)
     {
         Lambda postJSON_lambda;
         try

@@ -21,7 +21,6 @@ import meta::external::store::elasticsearch::v7::metamodel::property::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 

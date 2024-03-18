@@ -79,7 +79,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
 
         if (classMapping instanceof MergeOperationClassMapping)
         {
-            MergeOperationSetImplementation res = new Root_meta_pure_mapping_MergeOperationSetImplementation_Impl(id)._id(id);
+            MergeOperationSetImplementation res = new Root_meta_pure_mapping_MergeOperationSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), null)._id(id);
             res._class(pureClass)
                     ._root(classMapping.root)
                     ._parent(parentMapping)
@@ -89,7 +89,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
         }
         else
         {
-            OperationSetImplementation res = new Root_meta_pure_mapping_OperationSetImplementation_Impl(id)._id(id);
+            OperationSetImplementation res = new Root_meta_pure_mapping_OperationSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), null)._id(id);
             res._class(pureClass)
                     ._root(classMapping.root)
                     ._parent(parentMapping)
@@ -103,7 +103,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     {
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> pureClass = this.context.resolveClass(classMapping._class, classMapping.sourceInformation);
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.type.Class<?> srcClass = classMapping.srcClass == null ? null : this.context.resolveClass(classMapping.srcClass, classMapping.sourceClassSourceInformation);
-        PureInstanceSetImplementation mappingClass = new Root_meta_external_store_model_PureInstanceSetImplementation_Impl("", null, context.pureModel.getClass("meta::external::store::model::PureInstanceSetImplementation"));
+        PureInstanceSetImplementation mappingClass = new Root_meta_external_store_model_PureInstanceSetImplementation_Impl("", SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), context.pureModel.getClass("meta::external::store::model::PureInstanceSetImplementation"));
         String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
         PureInstanceSetImplementation rootSetImpl = mappingClass
                 ._id(id)
@@ -132,7 +132,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
             }
 
             LambdaFunction lambda = HelperValueSpecificationBuilder.buildLambdaWithContext(filterName, classMapping.filter.body, params, this.context, ctx);
-            lambda.setSourceInformation(new SourceInformation(mappingPath, 0, 0, 0, 0));
+            lambda.setSourceInformation(SourceInformationHelper.toM3SourceInformation(classMapping.filter.sourceInformation));
             rootSetImpl._filter(lambda);
         }
         HelperMappingBuilder.buildMappingClassOutOfLocalProperties(rootSetImpl, rootSetImpl._propertyMappings(), this.context);
@@ -143,7 +143,7 @@ public class ClassMappingFirstPassBuilder implements ClassMappingVisitor<Pair<Se
     public Pair<SetImplementation, RichIterable<EmbeddedSetImplementation>> visit(AggregationAwareClassMapping classMapping)
     {
         String id = HelperMappingBuilder.getClassMappingId(classMapping, this.context);
-        final AggregationAwareSetImplementation res = new Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl(id)._id(id);
+        final AggregationAwareSetImplementation res = new Root_meta_pure_mapping_aggregationAware_AggregationAwareSetImplementation_Impl(id, SourceInformationHelper.toM3SourceInformation(classMapping.sourceInformation), null)._id(id);
 
         this.context.getCompilerExtensions().getExtraAggregationAwareClassMappingFirstPassProcessors().forEach(processor -> processor.value(classMapping, this.parentMapping, this.context));
 

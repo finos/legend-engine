@@ -57,6 +57,7 @@ RESOLUTION_QUERY_KEY_TYPE_GENERATED_PRIMARY_KEY:'GeneratedPrimaryKey'; //Validat
 RESOLUTION_QUERY_KEY_TYPE_SUPPLIED_PRIMARY_KEY: 'SuppliedPrimaryKey'; //Validated against equality key to ensure an actuial PK and create if don't find match
 RESOLUTION_QUERY_KEY_TYPE_ALTERNATE_KEY:        'AlternateKey'; //AlternateKey (In an AlternateKey is specified then at least one required in the input record or fail resolution). AlternateKey && (CurationModel field == Create) then the input source is attempting to create a new record (e.g. from UI) block if existing record found
 RESOLUTION_QUERY_KEY_TYPE_OPTIONAL:             'Optional';
+RESOLUTION_QUERY_FILTER:                        'filter';
 
 // -------------------------------------- PRECEDENCE RULES --------------------------------------
 PRECEDENCE_RULES:                               'precedenceRules';

@@ -31,6 +31,7 @@ import org.finos.legend.engine.persistence.components.scenarios.TestScenario;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 public abstract class AppendOnlyTestCases extends BaseTest
@@ -133,6 +134,7 @@ public abstract class AppendOnlyTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
 
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(scenario.getDatasets(), dataSplitRangesOneToTwo);

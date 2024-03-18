@@ -15,11 +15,9 @@
 import meta::pure::mapping::*;
 import meta::pure::router::systemMapping::tests::*;
 import meta::pure::extension::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::pure::mapping::aggregationAware::*;
 import meta::pure::router::printer::*;
@@ -41,14 +39,14 @@ function meta::pure::mapping::aggregationAware::contract::aggregationAwareStoreC
    )
 }
 
-function meta::pure::mapping::aggregationAware::contract::planExecution(f:meta::pure::mapping::StoreQuery[1], e:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function meta::pure::mapping::aggregationAware::contract::planExecution(f:meta::pure::mapping::StoreQuery[1], e:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let reprocessedFunction = reprocessFunction($f.fe->evaluateAndDeactivate(), $f.inScopeVars, $e, $m->toOne(), $debug);
    let node = meta::pure::executionPlan::executionPlan($reprocessedFunction, $m->toOne(), $runtime->toOne(), $exeCtx, $extensions, $debug).rootExecutionNode;
    ^AggregationAwareExecutionNode(executionNodes = $node, resultType = $node.resultType, aggregationAwareActivity = $reprocessedFunction->asString());
 }
 
-function meta::pure::mapping::aggregationAware::contract::execution(f:meta::pure::mapping::StoreQuery[1], e:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:ExecutionContext[1],  extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::pure::mapping::aggregationAware::contract::execution(f:meta::pure::mapping::StoreQuery[1], e:RoutedValueSpecification[0..1], m:Mapping[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1],  extensions:Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let reprocessedFunction = reprocessFunction($f.fe->evaluateAndDeactivate(), $f.inScopeVars, $e, $m, $debug);
    print(if($debug.debug,|$reprocessedFunction->evaluateAndDeactivate()->asString()->debug($debug.space+'Agg Aware Reprocessed Function: '),|''));

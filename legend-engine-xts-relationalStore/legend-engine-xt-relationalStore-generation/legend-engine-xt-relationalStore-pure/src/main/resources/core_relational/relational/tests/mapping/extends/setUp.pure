@@ -186,8 +186,6 @@ import meta::relational::tests::mapping::extend::store::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 function meta::relational::tests::mapping::extend::testRuntime():Runtime[1]
 {
   meta::external::store::relational::tests::testRuntime(testDatabase);
@@ -195,7 +193,7 @@ function meta::relational::tests::mapping::extend::testRuntime():Runtime[1]
 
 function <<test.BeforePackage>> meta::relational::tests::mapping::extend::setUp():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(testDatabase)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(testDatabase)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    dropAndCreateTableInDb(testDatabase, 'ABC', $connection);
    dropAndCreateTableInDb(testDatabase, 'DEF', $connection);

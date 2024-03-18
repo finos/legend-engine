@@ -17,6 +17,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -45,6 +46,12 @@ import java.util.Map;
 public class ServiceProtocolExtension implements PureProtocolExtension
 {
     public static final String SERVICE_CLASSIFIER_PATH = "meta::legend::service::metamodel::Service";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Service");
+    }
 
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()

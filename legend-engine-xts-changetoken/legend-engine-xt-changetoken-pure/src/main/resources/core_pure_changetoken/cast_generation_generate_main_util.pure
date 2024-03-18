@@ -1,0 +1,204 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::generateMainUtils(
+    class: meta::external::language::java::metamodel::Class[1]): meta::external::language::java::metamodel::Class[1]
+{
+    $class->addMethods(
+    [
+    javaMethod(['public', 'static'], javaObject(), 'resolveRelativeReference', [
+        j_parameter(objectNode(), 'rootObjectNode'),
+        j_parameter(javaList(javaObject()), 'path'),
+        j_parameter(javaString(), 'relativeReference')
+    ],
+        '        List<Object> newPath = resolvePath(path, relativeReference);\n' +
+        '\n' +
+        '        /*\n' +
+        '            extract the value by path\n' +
+        '         */\n' +
+        '        Object cur = rootObjectNode;\n' +
+        '        int i = 0;\n' +
+        '        for (Object key : newPath)\n' +
+        '        {\n' +
+        '            try\n' +
+        '            {\n' +
+        '                if (cur instanceof Map)\n' +
+        '                {\n' +
+        '                    cur = ((Map<String, Object>) cur).get((String) key);\n' +
+        '                }\n' +
+        '                else if (cur instanceof List)\n' +
+        '                {\n' +
+        '                    cur = ((List<Object>) cur).get(toInt(key));\n' +
+        '                }\n' +
+        '                else\n' +
+        '                {\n' +
+        '                    throw new RuntimeException("Unexpected key on a non-container object of type " + cur.getClass().getName());\n' +
+        '                }\n' +
+        '                if (cur == null)\n' +
+        '                {\n' +
+        '                    throw new RuntimeException("No such element");\n' +
+        '                }\n' +
+        '            }\n' +
+        '            catch (RuntimeException ex)\n' +
+        '            {\n' +
+        '                throw new RuntimeException(\n' +
+        '                        ex + ": at index " + i + " of " + pathToString(newPath), ex);\n' +
+        '            }\n' +
+        '            ++i;\n' +
+        '        }\n' +
+        '        return cur;\n'
+    ),
+    javaMethod(['public', 'static'], javaVoid(), 'setRelativeReference', [
+        j_parameter(objectNode(), 'rootObjectNode'),
+        j_parameter(javaList(javaObject()), 'path'),
+        j_parameter(javaString(), 'relativeReference'),
+        j_parameter(javaObject(), 'value')
+    ],
+        '        List<Object> newPath = resolvePath(path, relativeReference);\n' +
+        '\n' +
+        '        /*\n' +
+        '            set the value by path\n' +
+        '         */\n' +
+        '        Object cur = rootObjectNode;\n' +
+        '        int i = 0;\n' +
+        '        for (Object key : newPath.subList(0, newPath.size() - 1))\n' +
+        '        {\n' +
+        '            try\n' +
+        '            {\n' +
+        '                if (cur instanceof Map)\n' +
+        '                {\n' +
+        '                    cur = ((Map<String, Object>) cur).get((String) key);\n' +
+        '                }\n' +
+        '                else if (cur instanceof List)\n' +
+        '                {\n' +
+        '                    cur = ((List<Object>) cur).get(toInt(key));\n' +
+        '                }\n' +
+        '                else\n' +
+        '                {\n' +
+        '                    throw new RuntimeException("Unexpected key on a non-container object of type " + cur.getClass().getName());\n' +
+        '                }\n' +
+        '                if (cur == null)\n' +
+        '                {\n' +
+        '                    throw new RuntimeException("No such element");\n' +
+        '                }\n' +
+        '            }\n' +
+        '            catch (RuntimeException ex)\n' +
+        '            {\n' +
+        '                throw new RuntimeException(\n' +
+        '                        ex + ": at index " + i + " of " + pathToString(newPath), ex);\n' +
+        '            }\n' +
+        '            ++i;\n' +
+        '        }\n' +
+        '        try\n' +
+        '        {\n' +
+        '            if (cur instanceof Map)\n' +
+        '            {\n' +
+        '                ((Map<String, Object>) cur).put((String) newPath.get(newPath.size() - 1), value);\n' +
+        '            }\n' +
+        '            else if (cur instanceof List)\n' +
+        '            {\n' +
+        '                ((List<Object>) cur).set(toInt(newPath.get(newPath.size() - 1)), value);\n' +
+        '            }\n' +
+        '            else\n' +
+        '            {\n' +
+        '                throw new RuntimeException("Unexpected non-container object of type " + cur.getClass().getName());\n' +
+        '            }\n' +
+        '        }\n' +
+        '        catch (RuntimeException ex)\n' +
+        '        {\n' +
+        '            throw new RuntimeException(\n' +
+        '                    ex + ": at index " + i + " of " + pathToString(newPath), ex);\n' +
+        '        }\n'
+    ),
+    javaMethod(['public', 'static'], javaList(javaObject()), 'resolvePath', [
+        j_parameter(javaList(javaObject()), 'path'),
+        j_parameter(javaString(), 'relativeReference')
+    ],
+        '        List<Object> newPath = new java.util.ArrayList<>(path);\n' +
+        '        String[] parts = relativeReference.split("/");\n' +
+        '        for (int i = 0; i < parts.length; i++)\n' +
+        '        {\n' +
+        '            String part = parts[i];\n' +
+        '            if ("..".equals(part))\n' +
+        '            {\n' +
+        '                try\n' +
+        '                {\n' +
+        '                    newPath.remove(newPath.size() - 1);\n' +
+        '                }\n' +
+        '                catch (IndexOutOfBoundsException e)\n' +
+        '                {\n' +
+        '                    throw new RuntimeException("Relative reference escapes root ("\n' +
+        '                            + pathToString(path)\n' +
+        '                            + ") at index " + i + " of " + relativeReference, e);\n' +
+        '                }\n' +
+        '            }\n' +
+        '            else\n' +
+        '            {\n' +
+        '                newPath.add(part);\n' +
+        '            }\n' +
+        '        }\n' +
+        '        return newPath;\n'
+    ),
+    javaMethod(['private', 'static'], javaInt(), 'toInt', [
+        j_parameter(javaObject(), 'key')
+    ],
+        '        return (key instanceof Integer) ? (Integer) key : Integer.valueOf((String)key);\n'
+    ),
+    javaMethod(['private', 'static'], javaString(), 'pathToString', [
+        j_parameter(javaList(javaObject()), 'path')
+    ],
+        '        return path.stream().map(Object::toString).collect(java.util.stream.Collectors.joining("/"));\n'
+    ),
+    javaMethod(['public', 'static'], javaString(), 'convertField_IntegerToString', [
+        j_parameter(javaList(javaObject()), 'path'),
+        j_parameter(javaObject(), 'value')
+    ],
+        '        if (!(value instanceof Integer))\n' +
+        '        {\n' +
+        '            throw new RuntimeException("Expected an Integer, not " + value + " at path " + pathToString(path));\n' +
+        '        }\n' +
+        '        return value.toString();\n'
+    ),
+    javaMethod(['public', 'static'], javaObject(), 'convertField_Ignore', [
+        j_parameter(javaList(javaObject()), 'path'),
+        j_parameter(javaObject(), 'value')
+    ],
+    '        return value;\n'
+    ),
+    javaMethod(['public', 'static'], toBoxed(javaInt()), 'convertField_StringToInteger', [
+        j_parameter(javaList(javaObject()), 'path'),
+        j_parameter(javaObject(), 'value')
+    ],
+        '        try\n' +
+        '        {\n' +
+        '            if (!(value instanceof String))\n' +
+        '            {\n' +
+        '                throw new RuntimeException("Expected a String, not " + value);\n' +
+        '            }\n' +
+        '\n' +
+        '            return Integer.parseInt((String) value);\n' +
+        '        }\n' +
+        '        catch (RuntimeException ex)\n' +
+        '        {\n' +
+        '            throw new RuntimeException(ex + " at path " + pathToString(path), ex);\n' +
+        '        }\n'
+    )
+    ]
+    );
+}

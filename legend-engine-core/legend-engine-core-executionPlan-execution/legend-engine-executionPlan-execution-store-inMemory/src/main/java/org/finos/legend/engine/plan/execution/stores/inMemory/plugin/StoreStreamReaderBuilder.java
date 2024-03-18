@@ -16,8 +16,9 @@ package org.finos.legend.engine.plan.execution.stores.inMemory.plugin;
 
 import org.finos.legend.engine.plan.dependencies.store.inMemory.IStoreStreamReader;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.Store;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 
-public interface StoreStreamReaderBuilder
+public interface StoreStreamReaderBuilder extends LegendModuleSpecificExtension
 {
     IStoreStreamReader newStoreStreamReader(String url, Store store);
 }

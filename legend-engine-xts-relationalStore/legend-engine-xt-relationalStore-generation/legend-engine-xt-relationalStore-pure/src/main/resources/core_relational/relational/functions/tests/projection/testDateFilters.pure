@@ -37,7 +37,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::now::
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::adjust::testAdjust():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date == %2014-11-30->adjust(1, DurationUnit.DAYS))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date == %2014-11-30->adjust(1, DurationUnit.DAYS))->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, 1, \'2014-11-30\')',
     'select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, 1, DATE\'2014-11-30\')',
@@ -49,7 +49,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::adjus
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::adjust::testAdjustWithMicroseconds():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | ($d.settlementDateTime > %2014-12-04T15:22:23->adjust(123456, DurationUnit.MICROSECONDS)) && ($d.settlementDateTime < %2014-12-04T15:22:23->adjust(123457, DurationUnit.MICROSECONDS)))->project(x | $x.settlementDateTime, 'settlementDateTime'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | ($d.settlementDateTime > %2014-12-04T15:22:23->adjust(123456, DurationUnit.MICROSECONDS)) && ($d.settlementDateTime < %2014-12-04T15:22:23->adjust(123457, DurationUnit.MICROSECONDS)))->project(x | $x.settlementDateTime, 'settlementDateTime'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where (("root".settlementDateTime is not null and "root".settlementDateTime > dateadd(MICROSECOND, 123456, \'2014-12-04 15:22:23\')) and ("root".settlementDateTime is not null and "root".settlementDateTime < dateadd(MICROSECOND, 123457, \'2014-12-04 15:22:23\')))',
     'select "root".settlementDateTime as "settlementDateTime" from tradeTable as "root" where (("root".settlementDateTime is not null and "root".settlementDateTime > dateadd(MICROSECOND, 123456, TIMESTAMP\'2014-12-04 15:22:23\')) and ("root".settlementDateTime is not null and "root".settlementDateTime < dateadd(MICROSECOND, 123457, TIMESTAMP\'2014-12-04 15:22:23\')))',
@@ -61,7 +61,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::adjus
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfWeek():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfWeek() == %2017-09-18)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfWeek() == %2017-09-18)->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) = \'2017-09-18\'',
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(mod(dayofweek("root".tradeDate)+5, 7)), "root".tradeDate) = DATE\'2017-09-18\'',
@@ -72,13 +72,13 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::first
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfThisMonth():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisMonth())->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisMonth())->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, -(dayofmonth(current_date()) - 1), current_date())', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfMonth():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfMonth() == %2017-02-01)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfMonth() == %2017-02-01)->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) = \'2017-02-01\'',
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(dayofmonth("root".tradeDate) - 1), "root".tradeDate) = DATE\'2017-02-01\'',
@@ -89,13 +89,13 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::first
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfThisQuarter():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisQuarter())->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisQuarter())->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(MONTH, 3 * quarter(current_date) - 3, dateadd(DAY, -(dayofyear(current_date()) - 1), current_date()))', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfQuarter():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfQuarter() == %2017-04-01)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfQuarter() == %2017-04-01)->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(MONTH, 3 * quarter("root".tradeDate) - 3, dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate)) = \'2017-04-01\'',
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(MONTH, 3 * quarter("root".tradeDate) - 3, dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate)) = DATE\'2017-04-01\'',
@@ -106,13 +106,13 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::first
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfThisYear():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisYear())->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date == firstDayOfThisYear())->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, -(dayofyear(current_date()) - 1), current_date())', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::firstDay::testFirstDayOfYear():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfYear() == %2017-01-01)->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date->firstDayOfYear() == %2017-01-01)->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEqualsH2Compatible(
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) = \'2017-01-01\'',
     'select "root".tradeDate as "date" from tradeTable as "root" where dateadd(DAY, -(dayofyear("root".tradeDate) - 1), "root".tradeDate) = DATE\'2017-01-01\'',
@@ -130,13 +130,13 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::recen
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testPreviousDayOfWeek():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date == previousDayOfWeek(DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date == previousDayOfWeek(DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertEquals('select "root".tradeDate as "date" from tradeTable as "root" where "root".tradeDate = dateadd(DAY, case when 2 - DAY_OF_WEEK(current_date()) >= 0 then 2 - DAY_OF_WEEK(current_date()) - 7 else 2 - DAY_OF_WEEK(current_date()) end, current_date())', $result->sqlRemoveFormatting());
 }
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testMostRecentDayOfWeekWithDate():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date == mostRecentDayOfWeek(%2014-12-04, DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date == mostRecentDayOfWeek(%2014-12-04, DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([%2014-12-01,%2014-12-01,%2014-12-01], $result.values.rows.values);
    assertEqualsH2Compatible(
@@ -148,7 +148,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::recen
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::recent::testPreviousDayOfWeekWithDate():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.date == previousDayOfWeek(%2014-12-08, DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.date == previousDayOfWeek(%2014-12-08, DayOfWeek.Monday))->project(x | $x.date, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([%2014-12-01,%2014-12-01,%2014-12-01], $result.values.rows.values);
    assertEqualsH2Compatible(
@@ -160,7 +160,7 @@ function <<test.Test>> meta::relational::tests::projection::filter::dates::recen
 
 function <<test.Test>> meta::relational::tests::projection::filter::dates::testDateWithSeconds():Boolean[1]
 {
-   let result = execute(|Trade.all()->filter(d | $d.settlementDateTime > %2014-12-04T15:22:24)->project(x | $x.settlementDateTime, 'date'), simpleRelationalMapping, testRuntime(), meta::relational::extension::relationalExtensions());
+   let result = execute(|Trade.all()->filter(d | $d.settlementDateTime > %2014-12-04T15:22:24)->project(x | $x.settlementDateTime, 'date'), simpleRelationalMapping, meta::external::store::relational::tests::testRuntime(), meta::relational::extension::relationalExtensions());
    assertSize($result.values.rows, 3);
    assertSameElements([%2014-12-04T21:00:00.000000000+0000, %2014-12-05T21:00:00.000000000+0000, %2014-12-05T21:00:00.000000000+0000], $result.values.rows.values);
    assertEqualsH2Compatible(

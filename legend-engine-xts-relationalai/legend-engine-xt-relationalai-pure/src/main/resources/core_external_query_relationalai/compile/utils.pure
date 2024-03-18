@@ -1,31 +1,31 @@
-import meta::rel::compile::utils::*;
-import meta::rel::metamodel::*;
-import meta::rel::utils::*;
-import meta::rel::utils::collection::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::collection::*;
 
-Class meta::rel::compile::utils::IdentifierFactory {
+Class meta::external::store::rel::compile::utils::IdentifierFactory {
   produced: Integer[*];
   prefix: String[0..1];
 }
 
-function meta::rel::compile::utils::next(factory: IdentifierFactory[1]): String[1] {
+function meta::external::store::rel::compile::utils::next(factory: IdentifierFactory[1]): String[1] {
   $factory.prefix
     ->map(inner | $factory->next($inner))
     ->else(| $factory->next('x'));
 }
 
-function meta::rel::compile::utils::next(factory: IdentifierFactory[1], prefix: String[1]): String[1] {
+function meta::external::store::rel::compile::utils::next(factory: IdentifierFactory[1], prefix: String[1]): String[1] {
   let new = max($factory.produced->else(| [0])) + 1;
   $factory->mutateAdd('produced', $new);
 
   $prefix + $new->toString();
 }
 
-function meta::rel::compile::utils::reset(factory: IdentifierFactory[1]): IdentifierFactory[1] {
+function meta::external::store::rel::compile::utils::reset(factory: IdentifierFactory[1]): IdentifierFactory[1] {
   ^$factory(produced=[]);
 }
 
-Class meta::rel::compile::utils::Columns {
+Class meta::external::store::rel::compile::utils::Columns {
   names: String[*];
   positions: BiMap<String, Integer>[1];
 
@@ -46,27 +46,27 @@ Class meta::rel::compile::utils::Columns {
   }: Boolean[1];
 }
 
-function meta::rel::compile::utils::columns(): Columns[1] {
+function meta::external::store::rel::compile::utils::columns(): Columns[1] {
   ^Columns(positions=BiMap(@String, @Integer))
 }
 
-function meta::rel::compile::utils::columns(names: String[*]): Columns[1] {
+function meta::external::store::rel::compile::utils::columns(names: String[*]): Columns[1] {
   columns()->putAll($names);
 }
 
-function meta::rel::compile::utils::put(columns: Columns[1], column: String[1]): Columns[1] {
+function meta::external::store::rel::compile::utils::put(columns: Columns[1], column: String[1]): Columns[1] {
   let cols = $columns.names->concatenate($column);
   let positions = $columns.positions->put($column, $cols->size() - 1);
 
   ^$columns(names=$cols, positions=$positions);
 }
 
-function meta::rel::compile::utils::putAll(columns: Columns[1], names: String[*]): Columns[1] {
+function meta::external::store::rel::compile::utils::putAll(columns: Columns[1], names: String[*]): Columns[1] {
   $names->fold({elem, accum |
     $accum->put($elem);
   }, $columns);
 }
 
-function meta::rel::compile::utils::clear(columns: Columns[1]): Columns[1] {
+function meta::external::store::rel::compile::utils::clear(columns: Columns[1]): Columns[1] {
   ^$columns(names=[], positions=BiMap(@String, @Integer));
 }

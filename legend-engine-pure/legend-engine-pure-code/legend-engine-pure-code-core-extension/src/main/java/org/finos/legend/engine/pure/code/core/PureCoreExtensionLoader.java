@@ -18,14 +18,13 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.LazyIterate;
 
-import java.util.List;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class PureCoreExtensionLoader
 {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(PureCoreExtensionLoader.class);
-    private static final AtomicReference<MutableList<PureCoreExtension>> INSTANCE = new AtomicReference<>();
+    private static final AtomicReference<MutableList<LegendPureCoreExtension>> INSTANCE = new AtomicReference<>();
 
     public static void logExtensionList()
     {
@@ -35,14 +34,14 @@ public class PureCoreExtensionLoader
         }
     }
 
-    public static MutableList<PureCoreExtension> extensions()
+    public static MutableList<LegendPureCoreExtension> extensions()
     {
         return INSTANCE.updateAndGet(existing ->
         {
             if (existing == null)
             {
-                MutableList<PureCoreExtension> extensions = Lists.mutable.empty();
-                for (PureCoreExtension extension : ServiceLoader.load(PureCoreExtension.class))
+                MutableList<LegendPureCoreExtension> extensions = Lists.mutable.empty();
+                for (LegendPureCoreExtension extension : ServiceLoader.load(LegendPureCoreExtension.class))
                 {
                     try
                     {

@@ -16,7 +16,6 @@ package org.finos.legend.engine.plan.execution.stores.relational.result;
 
 import io.opentracing.Span;
 import org.eclipse.collections.api.factory.Lists;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.list.mutable.FastList;
 import org.finos.legend.engine.plan.execution.result.ExecutionActivity;
 import org.finos.legend.engine.plan.execution.result.ResultVisitor;
@@ -25,9 +24,9 @@ import org.finos.legend.engine.plan.execution.stores.relational.activity.Relatio
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.result.SQLResultColumn;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
-import org.pac4j.core.profile.CommonProfile;
 import org.slf4j.Logger;
 
 import java.sql.Connection;
@@ -56,17 +55,17 @@ public class SQLExecutionResult extends SQLResult
     private final List<SQLResultColumn> sqlResultColumns;
     public Span topSpan;
 
-    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan)
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, Identity identity, List<String> temporaryTables, Span topSpan)
     {
-        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, new RequestContext());
+        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, identity, temporaryTables, topSpan, new RequestContext());
     }
 
-    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, Identity identity, List<String> temporaryTables, Span topSpan, RequestContext requestContext)
     {
-        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, profiles, temporaryTables, topSpan, requestContext, true);
+        this(activities, SQLExecutionNode, databaseType, databaseTimeZone, connection, identity, temporaryTables, topSpan, requestContext, true);
     }
 
-    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, MutableList<CommonProfile> profiles, List<String> temporaryTables, Span topSpan, RequestContext requestContext, boolean logSQLWithParamValues)
+    public SQLExecutionResult(List<ExecutionActivity> activities, SQLExecutionNode SQLExecutionNode, String databaseType, String databaseTimeZone, Connection connection, Identity identity, List<String> temporaryTables, Span topSpan, RequestContext requestContext, boolean logSQLWithParamValues)
     {
         super("success", connection, activities, databaseType, temporaryTables, requestContext);
         this.SQLExecutionNode = SQLExecutionNode;
@@ -79,13 +78,13 @@ public class SQLExecutionResult extends SQLResult
             RelationalExecutionActivity activity = ((RelationalExecutionActivity) activities.get(activities.size() - 1));
             String sql = activity.comment != null ? activity.comment.concat("\n").concat(activity.sql) : activity.sql;
             String logMessage = logSQLWithParamValues ? sql : SQLExecutionNode.sqlQuery();
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_START, logMessage).toString());
             if (this.getRequestContext() != null)
             {
                 StoreExecutableManager.INSTANCE.addExecutable(this.getRequestContext(), this);
             }
             this.resultSet = this.getStatement().executeQuery(sql);
-            LOGGER.info(new LogInfo(profiles, LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
+            LOGGER.info(new LogInfo(identity.getName(), LoggingEventType.EXECUTION_RELATIONAL_STOP, (double) System.currentTimeMillis() - start).toString());
             this.executedSql = sql;
 
             this.resultSetMetaData = resultSet.getMetaData();

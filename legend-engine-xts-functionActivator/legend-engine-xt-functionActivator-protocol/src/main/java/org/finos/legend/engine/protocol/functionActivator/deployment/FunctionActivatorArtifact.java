@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.functionActivator.deployment;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "_type")
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -23,5 +24,15 @@ public class FunctionActivatorArtifact
 {
     public FunctionActivatorDeploymentContent content;
     public FunctionActivatorDeploymentConfiguration deploymentConfiguration;
-    public String deployedLocation;
+
+    public String version;
+
+    public String getVersionInfo(AlloySDLC sdlc)
+    {
+        if (this.version != null)
+        {
+            return sdlc.groupId + ":" + sdlc.artifactId + ":" + sdlc.version;
+        }
+        return "";
+    }
 }

@@ -18,6 +18,7 @@ import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.data.EmbeddedDataFirstPassBuilder;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers.StoreProviderCompilerHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.TestBuilderHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.test.assertion.TestAssertionFirstPassBuilder;
 import org.finos.legend.engine.protocol.pure.v1.model.context.EngineErrorType;
@@ -28,7 +29,6 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.functio
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.function.StoreTestData;
 import org.finos.legend.engine.shared.core.operational.Assert;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.finos.legend.pure.generated.Root_meta_external_store_model_ModelStore_Impl;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTest;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite;
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_FunctionTestSuite_Impl;
@@ -39,6 +39,7 @@ import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_Store
 import org.finos.legend.pure.generated.Root_meta_legend_function_metamodel_StoreTestData_Impl;
 import org.finos.legend.pure.generated.Root_meta_pure_test_AtomicTest;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store;
 
 public class HelperFunctionBuilder
 {
@@ -60,10 +61,10 @@ public class HelperFunctionBuilder
             FunctionTestSuite testSuite = (FunctionTestSuite) test;
             TestBuilderHelper.validateNonEmptySuite(testSuite);
             TestBuilderHelper.validateTestIds(testSuite.tests, testSuite.sourceInformation);
-            Root_meta_legend_function_metamodel_FunctionTestSuite metamodelSuite =  new Root_meta_legend_function_metamodel_FunctionTestSuite_Impl("",null, compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTestSuite"));
+            Root_meta_legend_function_metamodel_FunctionTestSuite metamodelSuite =  new Root_meta_legend_function_metamodel_FunctionTestSuite_Impl("", SourceInformationHelper.toM3SourceInformation(test.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTestSuite"));
             if (testSuite.testData != null && !testSuite.testData.isEmpty())
             {
-                TestBuilderHelper.validateIds(ListIterate.collect(testSuite.testData, testData -> testData.store), testSuite.sourceInformation, "Multiple test data found for stores");
+                TestBuilderHelper.validateIds(ListIterate.collect(testSuite.testData, testData -> testData.store.path), testSuite.sourceInformation, "Multiple test data found for stores");
                 RichIterable<? extends org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime>  runtimes;
                 // TODO: we can remove some of these checks once we support these use cases
                 try
@@ -94,8 +95,9 @@ public class HelperFunctionBuilder
         else if (test instanceof FunctionTest)
         {
             FunctionTest functionTest = (FunctionTest) test;
-            Root_meta_legend_function_metamodel_FunctionTest metamodelTest = new Root_meta_legend_function_metamodel_FunctionTest_Impl("",null, compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTest"))
-                    ._id(functionTest.id);
+            Root_meta_legend_function_metamodel_FunctionTest metamodelTest = new Root_meta_legend_function_metamodel_FunctionTest_Impl("", SourceInformationHelper.toM3SourceInformation(test.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::FunctionTest"))
+                    ._id(functionTest.id)
+                    ._doc(functionTest.doc);
             if (functionTest.parameters != null && !functionTest.parameters.isEmpty())
             {
                 metamodelTest._parameters(ListIterate.collect(functionTest.parameters, param -> processFunctionTestParameterValue(param, compileContext)));
@@ -113,16 +115,8 @@ public class HelperFunctionBuilder
 
     private static Root_meta_legend_function_metamodel_StoreTestData buildFunctionTestData(org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime runtime, StoreTestData storeTestData, CompileContext compileContext, ProcessingContext ctx)
     {
-        Root_meta_legend_function_metamodel_StoreTestData_Impl metamodelStoreTestData = new Root_meta_legend_function_metamodel_StoreTestData_Impl("", null, compileContext.pureModel.getClass("meta::legend::function::metamodel::StoreTestData"));
-        org.finos.legend.pure.m3.coreinstance.meta.pure.store.Store resolvedStore = null;
-        if (storeTestData.store.equals("ModelStore"))
-        {
-           resolvedStore =  new Root_meta_external_store_model_ModelStore_Impl("");
-        }
-        else
-        {
-            resolvedStore =  compileContext.resolveStore(storeTestData.store, storeTestData.sourceInformation);
-        }
+        Root_meta_legend_function_metamodel_StoreTestData_Impl metamodelStoreTestData = new Root_meta_legend_function_metamodel_StoreTestData_Impl("", SourceInformationHelper.toM3SourceInformation(storeTestData.sourceInformation), compileContext.pureModel.getClass("meta::legend::function::metamodel::StoreTestData"));
+        Store resolvedStore = StoreProviderCompilerHelper.getStoreFromStoreProviderPointers(storeTestData.store, compileContext);
         try
         {
             org.finos.legend.pure.generated.Root_meta_core_runtime_Connection connection = runtime.connectionByElement(resolvedStore, compileContext.pureModel.getExecutionSupport());
@@ -140,7 +134,11 @@ public class HelperFunctionBuilder
 
     private static Root_meta_legend_function_metamodel_ParameterValue processFunctionTestParameterValue(ParameterValue parameterValue, CompileContext context)
     {
-        Root_meta_legend_function_metamodel_ParameterValue pureParameterValue = new Root_meta_legend_function_metamodel_ParameterValue_Impl("", null, context.pureModel.getClass("meta::legend::function::metamodel::ParameterValue"));
+        Root_meta_legend_function_metamodel_ParameterValue pureParameterValue = new Root_meta_legend_function_metamodel_ParameterValue_Impl("", SourceInformationHelper.toM3SourceInformation(parameterValue.sourceInformation), context.pureModel.getClass("meta::legend::function::metamodel::ParameterValue"));
+        if (parameterValue.name == null || parameterValue.name.isEmpty())
+        {
+            throw new EngineException("No associated parameter found for value.", parameterValue.sourceInformation, EngineErrorType.COMPILATION);
+        }
         pureParameterValue._name(parameterValue.name);
         pureParameterValue._value(Lists.immutable.with(parameterValue.value.accept(new ValueSpecificationBuilder(context, Lists.mutable.empty(), new ProcessingContext("")))));
         return pureParameterValue;

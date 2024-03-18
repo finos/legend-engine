@@ -15,10 +15,8 @@
 import meta::json::*;
 import meta::pure::executionPlan::profiles::*;
 import meta::pure::graphFetch::execution::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::alloy::simple::*;
-import meta::pure::runtime::*;
 import meta::core::runtime::*;
 
 function <<meta::pure::profiles::test.Test, meta::pure::profiles::test.AlloyOnly>> { serverVersion.start='v1_19_0' }

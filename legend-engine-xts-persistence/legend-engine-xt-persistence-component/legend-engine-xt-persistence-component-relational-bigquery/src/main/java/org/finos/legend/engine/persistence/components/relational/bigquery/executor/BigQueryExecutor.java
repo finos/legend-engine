@@ -23,17 +23,24 @@ import org.finos.legend.engine.persistence.components.relational.bigquery.BigQue
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.statements.DDLStatement;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.finos.legend.engine.persistence.components.util.SqlLogging;
+import org.finos.legend.engine.persistence.components.util.SqlUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
 {
     private final BigQuerySink bigQuerySink;
     private final BigQueryHelper bigQueryHelper;
+    private SqlLogging sqlLogging = SqlLogging.DISABLED;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryExecutor.class);
 
     public BigQueryExecutor(BigQuerySink bigQuerySink, BigQueryHelper bigQueryHelper)
     {
@@ -48,7 +55,7 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     }
 
     @Override
-    public void executePhysicalPlan(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
+    public void executePhysicalPlan(SqlPlan physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues)
     {
         boolean containsDDLStatements = physicalPlan.ops().stream().anyMatch(DDLStatement.class::isInstance);
         List<String> sqlList = physicalPlan.getSqlList();
@@ -57,7 +64,8 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
         {
             for (String sql : sqlList)
             {
-                String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+                String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
+                SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
                 bigQueryHelper.executeQuery(enrichedSql);
             }
         }
@@ -65,23 +73,18 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
         {
             for (String sql : sqlList)
             {
-                String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+                String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
+                SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
                 bigQueryHelper.executeStatement(enrichedSql);
             }
         }
     }
 
-    public Map<StatisticName, Object> executeLoadPhysicalPlanAndGetStats(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
+    public Map<StatisticName, Object> executeLoadPhysicalPlanAndGetStats(SqlPlan physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues)
     {
-        List<String> sqlList = physicalPlan.getSqlList();
-
-        // Load statement (Not supported in Bigquery to run in a transaction)
-        Map<StatisticName, Object> loadStats = bigQueryHelper.executeLoadStatement(getEnrichedSql(placeholderKeyValues, sqlList.get(0)));
-
-        // Isolation level of Bigquery is Snapshot,
-        // So Insert statement has to run in a new transaction so that it can see the changes of Load
-        bigQueryHelper.executeStatementInANewTransaction(getEnrichedSql(placeholderKeyValues, sqlList.get(1)));
-        return loadStats;
+        String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, physicalPlan.getSqlList().get(0));
+        SqlUtils.logSql(LOGGER, sqlLogging, physicalPlan.getSqlList().get(0), enrichedSql, placeholderKeyValues);
+        return bigQueryHelper.executeLoadStatement(enrichedSql);
     }
 
     @Override
@@ -91,12 +94,13 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     }
 
     @Override
-    public List<TabularData> executePhysicalPlanAndGetResults(SqlPlan physicalPlan, Map<String, String> placeholderKeyValues)
+    public List<TabularData> executePhysicalPlanAndGetResults(SqlPlan physicalPlan, Map<String, PlaceholderValue> placeholderKeyValues)
     {
         List<TabularData> resultSetList = new ArrayList<>();
         for (String sql : physicalPlan.getSqlList())
         {
-            String enrichedSql = getEnrichedSql(placeholderKeyValues, sql);
+            String enrichedSql = SqlUtils.getEnrichedSql(placeholderKeyValues, sql);
+            SqlUtils.logSql(LOGGER, sqlLogging, sql, enrichedSql, placeholderKeyValues);
             List<Map<String, Object>> queryResult = bigQueryHelper.executeQuery(enrichedSql);
             if (!queryResult.isEmpty())
             {
@@ -122,6 +126,12 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     public Dataset constructDatasetFromDatabase(Dataset dataset)
     {
         return bigQuerySink.constructDatasetFromDatabaseFn().execute(this, bigQueryHelper, dataset);
+    }
+
+    @Override
+    public void setSqlLogging(SqlLogging sqlLogging)
+    {
+        this.sqlLogging = sqlLogging;
     }
 
     @Override
@@ -153,15 +163,4 @@ public class BigQueryExecutor implements Executor<SqlGen, TabularData, SqlPlan>
     {
         return this.bigQueryHelper;
     }
-
-    private String getEnrichedSql(Map<String, String> placeholderKeyValues, String sql)
-    {
-        String enrichedSql = sql;
-        for (Map.Entry<String, String> entry : placeholderKeyValues.entrySet())
-        {
-            enrichedSql = enrichedSql.replaceAll(Pattern.quote(entry.getKey()), entry.getValue());
-        }
-        return enrichedSql;
-    }
-
 }

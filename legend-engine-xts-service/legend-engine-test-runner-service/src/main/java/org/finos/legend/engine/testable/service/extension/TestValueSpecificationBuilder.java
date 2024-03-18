@@ -101,13 +101,13 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
             RuntimeInstance runtimeInstance = new RuntimeInstance();
             runtimeInstance.runtime = testRuntimeWithCloseable.getOne();
             closeables.addAll(testRuntimeWithCloseable.getTwo());
-            return new ClassInstance("runtimeInstance", runtimeInstance);
+            return new ClassInstance("runtimeInstance", runtimeInstance, runtimeInstance.sourceInformation);
         }
         else if (packageableElement instanceof ExecutionEnvironmentInstance)
         {
             ExecutionEnvironmentInstance testExecutionEnvironment = (ExecutionEnvironmentInstance) packageableElement;
             testExecutionEnvironment.executionParameters.stream().forEach(param -> getTestParameters(param));
-            return new ClassInstance("executionEnvironmentInstance", testExecutionEnvironment);
+            return new ClassInstance("executionEnvironmentInstance", testExecutionEnvironment, testExecutionEnvironment.sourceInformation);
         }
         return packageableElementPtr;
     }
@@ -207,7 +207,7 @@ public class TestValueSpecificationBuilder implements ValueSpecificationVisitor<
         org.eclipse.collections.api.tuple.Pair<Runtime, List<Closeable>> testRuntimeWithCloseable = TestRuntimeBuilder.getTestRuntimeAndClosableResources(runtimeInstance.runtime, testData, pureModelContextData);
         runtimeInstance.runtime = testRuntimeWithCloseable.getOne();
         closeables.addAll(testRuntimeWithCloseable.getTwo());
-        return new ClassInstance("runtimeInstance", runtimeInstance);
+        return new ClassInstance("runtimeInstance", runtimeInstance, runtimeInstance.sourceInformation);
     }
 
     @Override

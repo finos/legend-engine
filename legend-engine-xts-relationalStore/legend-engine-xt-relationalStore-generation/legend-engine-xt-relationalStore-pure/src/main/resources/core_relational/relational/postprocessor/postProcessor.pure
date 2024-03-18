@@ -21,7 +21,6 @@ import meta::relational::transform::fromPure::*;
 import meta::relational::functions::sqlQueryToString::*;
 import meta::pure::executionPlan::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::relational::mapping::*;
 import meta::external::store::relational::runtime::*;
@@ -44,15 +43,16 @@ Class meta::relational::mapping::PostProcessorResult
 }
 
 //Execution Plan
-function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
+function meta::relational::mapping::postProcessSQLQuery(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let postProcessorResult = $query->defaultPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx, $extensions)
+                                   ->contextBasedPostProcessors($runtime,$ext,$m,$store,$exeCtx)
                                    ->userPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx);
 
    $extensions->map(e|$e.moduleExtension('relational')->cast(@RelationalExtension).relational_plan_postProcessors)->fold({pp, result | $pp->eval($result, $runtime, $ext, $m, $store, $exeCtx)}, $postProcessorResult);
 }
 
-function meta::relational::mapping::postProcessSQLQueryWithDefaultPostProcessors(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
+function meta::relational::mapping::postProcessSQLQueryWithDefaultPostProcessors(query: SQLQuery[1], store:Database[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*]):PostProcessorResult[1]
 {
    let postProcessorResult = $query->defaultPlanPostProcessors($runtime,$ext,$m,$store,$exeCtx, $extensions);
 
@@ -60,7 +60,7 @@ function meta::relational::mapping::postProcessSQLQueryWithDefaultPostProcessors
 }
 
 //Execution
-function meta::relational::mapping::postProcessQuery(exeCtx:ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[*], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
+function meta::relational::mapping::postProcessQuery(exeCtx:meta::pure::runtime::ExecutionContext[1], query:SQLQuery[1], runtime: Runtime[1], store:Database[*], extensions:meta::pure::extension::Extension[*]):PostProcessorResult[1]
 {
    let defaultPostProcessors = sqlQueryDefaultPostProcessors();
    let postProcesedQuery = if($defaultPostProcessors->isEmpty(), | $query, | $defaultPostProcessors->fold({pp,q|$pp->eval($q, $extensions).values->toOne()}, $query->cast(@SelectSQLQuery)));

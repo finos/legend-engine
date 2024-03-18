@@ -161,6 +161,7 @@ public class PureGrammarComposerUtility
 
     public static String unsupported(java.lang.Class<?> _class, String typeName)
     {
+        Thread.dumpStack();
         return "/* Unsupported transformation for " + (typeName != null ? (typeName + " ") : "") + "'" + _class.getName() + "' */";
     }
 

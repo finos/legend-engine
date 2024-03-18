@@ -48,6 +48,12 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     }
 
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "BigQuery");
+    }
+
+    @Override
     public FunctionActivatorInfo info(PureModel pureModel, String version)
     {
         return new FunctionActivatorInfo(
@@ -67,14 +73,14 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     @Override
     public MutableList<? extends FunctionActivatorError> validate(Identity identity, PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        BigQueryFunctionArtifact artifact = BigQueryFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        BigQueryFunctionArtifact artifact = BigQueryFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
         return this.validateArtifact(artifact);
     }
 
     @Override
     public BigQueryFunctionDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, List<BigQueryFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        BigQueryFunctionArtifact artifact = BigQueryFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        BigQueryFunctionArtifact artifact = BigQueryFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
         MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact);
 
         Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration) activator._activationConfiguration());
@@ -86,7 +92,7 @@ public class BigQueryFunctionService implements FunctionActivatorService<Root_me
     @Override
     public BigQueryFunctionArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return BigQueryFunctionGenerator.generateArtifact(pureModel, activator, routerExtensions);
+        return BigQueryFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
     }
 
     @Override

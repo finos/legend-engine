@@ -1,63 +1,63 @@
-import meta::rel::metamodel::*;
-import meta::rel::lib::*;
-import meta::rel::metamodel::render::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::lib::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::render::expr::*;
+import meta::external::store::rel::utils::*;
 
-function meta::rel::lib::booleanTrue(): Expr[1] {
+function meta::external::store::rel::lib::booleanTrue(): Expr[1] {
   rel('boolean_true');
 }
 
-function meta::rel::lib::booleanFalse(): Expr[1] {
+function meta::external::store::rel::lib::booleanFalse(): Expr[1] {
   rel('boolean_false');
 }
 
-function meta::rel::lib::enumerate(expr: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::enumerate(expr: Expr[1]): Expr[1] {
   rel('enumerate')->appl($expr);
 }
 
-function meta::rel::lib::count(expr: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::count(expr: Expr[1]): Expr[1] {
   rel('count')->appl($expr);
 }
 
-function meta::rel::lib::sum(expr: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::sum(expr: Expr[1]): Expr[1] {
   rel('sum')->appl($expr);
 }
 
-function meta::rel::lib::min(expr: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::min(expr: Expr[1]): Expr[1] {
   rel('min')->appl($expr);
 }
 
-function meta::rel::lib::max(expr: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::max(expr: Expr[1]): Expr[1] {
   rel('max')->appl($expr);
 }
 
-function meta::rel::lib::transpose(expr: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::transpose(expr: Expr[1]): Expr[1] {
   rel('transpose')->appl($expr);
 }
 
-function meta::rel::lib::plus(left: Expr[1], right: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::plus(left: Expr[1], right: Expr[1]): Expr[1] {
   [$left, $right]->plus();
 }
 
-function meta::rel::lib::plus(exprs: Expr[*]): Expr[1] {
+function meta::external::store::rel::lib::plus(exprs: Expr[*]): Expr[1] {
   $exprs
-    ->stringify(elem | $elem->render(), ' + ')
+    ->stringify(elem | $elem->renderExpr(), ' + ')
     ->fragment();
 }
 
-function meta::rel::lib::times(exprs: Expr[*]): Expr[1] {
+function meta::external::store::rel::lib::times(exprs: Expr[*]): Expr[1] {
   $exprs
-    ->stringify(elem | $elem->render(), ' * ')
+    ->stringify(elem | $elem->renderExpr(), ' * ')
     ->fragment();
 }
 
-function meta::rel::lib::minus(exprs: Expr[*]): Expr[1] {
+function meta::external::store::rel::lib::minus(exprs: Expr[*]): Expr[1] {
   $exprs
-    ->stringify(elem | $elem->render(), ' - ')
+    ->stringify(elem | $elem->renderExpr(), ' - ')
     ->fragment();
 }
 
-function meta::rel::lib::concat(exprs: Expr[*]): Expr[1] {
+function meta::external::store::rel::lib::concat(exprs: Expr[*]): Expr[1] {
   if ($exprs->size() == 0, 
     | const(''),
     {|
@@ -67,31 +67,31 @@ function meta::rel::lib::concat(exprs: Expr[*]): Expr[1] {
         ->fold({expr, accum | 
           rel('concat')->appl([$accum, $expr]);
         }, $init)
-        ->group();
+        ->parenthesise();
     }
   )  
 }
 
-function meta::rel::lib::divide(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s / %s', [$left->render(), $right->render()]));
+function meta::external::store::rel::lib::divide(left: Expr[1], right: Expr[1]): Expr[1] {
+  fragment(format('%s / %s', [$left->renderExpr(), $right->renderExpr()]));
 }
 
-function meta::rel::lib::greaterThan(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s > %s', [$left->render(), $right->render()]))
+function meta::external::store::rel::lib::greaterThan(left: Expr[1], right: Expr[1]): Expr[1] {
+  fragment(format('%s > %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
-function meta::rel::lib::greaterThanEqual(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s >= %s', [$left->render(), $right->render()]))
+function meta::external::store::rel::lib::greaterThanEqual(left: Expr[1], right: Expr[1]): Expr[1] {
+  fragment(format('%s >= %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
-function meta::rel::lib::lessThan(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s < %s', [$left->render(), $right->render()]))
+function meta::external::store::rel::lib::lessThan(left: Expr[1], right: Expr[1]): Expr[1] {
+  fragment(format('%s < %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
-function meta::rel::lib::lessThanEqual(left: Expr[1], right: Expr[1]): Expr[1] {
-  fragment(format('%s <= %s', [$left->render(), $right->render()]))
+function meta::external::store::rel::lib::lessThanEqual(left: Expr[1], right: Expr[1]): Expr[1] {
+  fragment(format('%s <= %s', [$left->renderExpr(), $right->renderExpr()]))
 }
 
-function meta::rel::lib::string(expr: Expr[1]): Expr[1] {
+function meta::external::store::rel::lib::string(expr: Expr[1]): Expr[1] {
   rel('string')->appl($expr);
 }

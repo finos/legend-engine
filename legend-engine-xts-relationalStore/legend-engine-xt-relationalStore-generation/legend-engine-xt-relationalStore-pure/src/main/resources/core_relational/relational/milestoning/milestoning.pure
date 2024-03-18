@@ -141,7 +141,8 @@ function meta::relational::milestoning::applyMilestoningFilters(e:RelationalOper
                     s:SemiStructuredPropertyAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), property = $s.property->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->map(i | $i->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions))),
                     s:SemiStructuredArrayElementAccess[1] | ^$s(operand = $s.operand->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions), index = $s.index->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
                     s:SemiStructuredArrayFlatten[1] | ^$s(navigation = $s.navigation->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)),
-                    s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn))     
+                    s:SemiStructuredArrayFlattenOutput[1] | ^$s(tableAliasColumn = $s.tableAliasColumn->applyMilestoningFilters($tableToFilterOp, $tableToTable, $shouldProcessViewSubSelect, $extensions)->cast(@TableAliasColumn)),
+                    t:TableFunctionParamPlaceHolder[1] | $t
                   ]);
 }
 
@@ -778,7 +779,8 @@ function meta::pure::milestoning::dateParamCount(s:TemporalStrategy[1]):Integer[
 function meta::pure::milestoning::isMilestonedEqualityOperation(vs:ValueSpecification[1]) : Boolean[1]{
     let isSimpleFuncExpression =  { vs:ValueSpecification[1] | $vs->instanceOf(SimpleFunctionExpression)};
     let withSimpleFunctionExpressionArg =  { vs:ValueSpecification[1] | $vs->cast(@SimpleFunctionExpression).parametersValues->at(0)->byPassRouterInfo()->instanceOf(SimpleFunctionExpression)};
-    let isGeneratedMilestoningProperty =  { vs:ValueSpecification[1] | $vs->cast(@SimpleFunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@SimpleFunctionExpression).func->hasGeneratedMilestoningPropertyStereotype()};
+    let isGeneratedMilestoningProperty =  { vs:ValueSpecification[1] | let f = $vs->cast(@SimpleFunctionExpression).parametersValues->at(0)->byPassRouterInfo()->cast(@SimpleFunctionExpression).func;
+                                                                      $f->instanceOf(ElementWithStereotypes) && $f->hasGeneratedMilestoningPropertyStereotype();};
     $isSimpleFuncExpression->eval($vs) && $withSimpleFunctionExpressionArg->eval($vs) && $isGeneratedMilestoningProperty->eval($vs);
 }
 

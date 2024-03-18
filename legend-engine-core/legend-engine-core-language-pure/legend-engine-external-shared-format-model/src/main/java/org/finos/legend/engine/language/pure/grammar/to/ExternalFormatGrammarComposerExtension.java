@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.language.pure.grammar.to;
 
+import org.eclipse.collections.api.block.function.Function2;
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.Iterate;
-import org.eclipse.collections.impl.utility.LazyIterate;
 import org.finos.legend.engine.language.pure.grammar.from.ExternalFormatGrammarParserExtension;
 import org.finos.legend.engine.language.pure.grammar.to.extension.PureGrammarComposerExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
@@ -31,14 +31,28 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.finos.legend.engine.language.pure.grammar.to.PureGrammarComposer.buildSectionComposer;
+
 public class ExternalFormatGrammarComposerExtension implements PureGrammarComposerExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("External_Format", "-Core");
+    }
+
+    private MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> renderers = Lists.mutable.with((element, context) -> renderElement(element));
+
+    @Override
+    public MutableList<Function2<PackageableElement, PureGrammarComposerContext, String>> getExtraPackageableElementComposers()
+    {
+        return renderers;
+    }
+
+    @Override
     public List<Function3<List<PackageableElement>, PureGrammarComposerContext, String, String>> getExtraSectionComposers()
     {
-        return Collections.singletonList((elements, context, sectionName) -> ExternalFormatGrammarParserExtension.NAME.equals(sectionName)
-                ? LazyIterate.collect(elements, ExternalFormatGrammarComposerExtension::renderElement).makeString("\n\n")
-                : null);
+        return Lists.mutable.with(buildSectionComposer(ExternalFormatGrammarParserExtension.NAME, renderers));
     }
 
     @Override

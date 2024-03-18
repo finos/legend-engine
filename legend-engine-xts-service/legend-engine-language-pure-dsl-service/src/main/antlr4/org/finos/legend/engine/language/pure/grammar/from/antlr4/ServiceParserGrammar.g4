@@ -151,7 +151,7 @@ serviceTestSuiteData:                   SERVICE_TEST_DATA COLON BRACKET_OPEN (se
 ;
 serviceTestConnectionsData:             SERVICE_TEST_CONNECTION_DATA COLON BRACKET_OPEN (serviceTestConnectionData ( COMMA serviceTestConnectionData )*)? BRACKET_CLOSE
 ;
-serviceTestConnectionData:              identifier COLON embeddedData
+serviceTestConnectionData:              qualifiedName COLON embeddedData
 ;
 embeddedData:                           identifier ISLAND_OPEN (embeddedDataContent)*
 ;

@@ -18,6 +18,7 @@ import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.connection.modelConnection.ModelConnectionLexerGrammar;
@@ -45,6 +46,7 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.*;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.*;
+import org.finos.legend.engine.language.pure.grammar.from.relation.RelationStoreAccessorPureParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToGrammarParser;
 import org.finos.legend.engine.language.pure.grammar.from.test.assertion.EqualToJsonGrammarParser;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
@@ -83,6 +85,14 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
     public static final String XSTORE_ASSOCIATION_MAPPING_TYPE = "XStore";
     public static final String AGGREGATION_AWARE_MAPPING_TYPE = "AggregationAware";
     public static final String AGGREGATE_SPECIFICATION = "AggregateSpecification";
+
+    private static RelationStoreAccessorPureParser relationStoreAccessorPureParser = new RelationStoreAccessorPureParser();
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Core");
+    }
 
     @Override
     public Iterable<? extends MappingElementParser> getExtraMappingElementParsers()
@@ -431,5 +441,12 @@ public class CorePureGrammarParser implements PureGrammarParserExtension
             mappingIncludeMapping.targetDatabasePath = null;
         }
         return mappingIncludeMapping;
+    }
+
+    @Override
+    public Iterable<? extends EmbeddedPureParser> getExtraEmbeddedPureParsers()
+    {
+        // Path #/...# and Graph #{....# should also be handled here...
+        return Lists.mutable.with(relationStoreAccessorPureParser);
     }
 }

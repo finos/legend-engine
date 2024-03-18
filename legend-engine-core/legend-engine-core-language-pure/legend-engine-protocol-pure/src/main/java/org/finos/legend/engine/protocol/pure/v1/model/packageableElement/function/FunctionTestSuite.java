@@ -21,7 +21,6 @@ import java.util.List;
 
 public class FunctionTestSuite extends TestSuite
 {
-    public List<ConnectionTestData> connectionsTestData;
 
     public List<StoreTestData> testData;
 

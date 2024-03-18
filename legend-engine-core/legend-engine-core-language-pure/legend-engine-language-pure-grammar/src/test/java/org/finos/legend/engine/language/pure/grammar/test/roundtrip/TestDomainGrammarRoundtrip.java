@@ -490,131 +490,76 @@ public class TestDomainGrammarRoundtrip extends TestGrammarRoundtrip.TestGrammar
     @Test
     public void testFunctionTest()
     {
-        test("function model::Simple(): String[1]\n" +
-                "{\n" +
-                "  'Hello ' + ' World!'\n" +
-                "}\n" +
-                "[\n" +
-                "  testSuite_1:\n" +
-                "  {\n" +
-                "    tests:\n" +
-                "    [\n" +
-                "      test_1:\n" +
-                "      {\n" +
-                "        asserts:\n" +
-                "        [\n" +
-                "          assertion_1:\n" +
-                "            EqualToJson\n" +
-                "            #{\n" +
-                "              expected:\n" +
-                "                ExternalFormat\n" +
-                "                #{\n" +
-                "                  contentType: 'application/json';\n" +
-                "                  data: '{}';\n" +
-                "                }#;\n" +
-                "            }#\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "]\n\n" +
-                "function model::Simple2(): String[1]\n" +
-                "{\n" +
-                "  'Hello ' + ' World!'\n" +
-                "}\n" +
-                "[\n" +
-                "  testSuite_1:\n" +
-                "  {\n" +
-                "    tests:\n" +
-                "    [\n" +
-                "      test_1:\n" +
-                "      {\n" +
-                "        asserts:\n" +
-                "        [\n" +
-                "          assertion_1:\n" +
-                "            EqualToJson\n" +
-                "            #{\n" +
-                "              expected:\n" +
-                "                ExternalFormat\n" +
-                "                #{\n" +
-                "                  contentType: 'application/json';\n" +
-                "                  data: '{}';\n" +
-                "                }#;\n" +
-                "            }#\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "]\n");
-        test("function model::P(): String[1]\n" +
-                "{\n" +
-                "  'x'\n" +
-                "}\n" +
-                "[\n" +
-                "  testSuite_1:\n" +
-                "  {\n" +
-                "    data:\n" +
-                "    [\n" +
-                "      {\n" +
-                "        store: store::TestDB;\n" +
-                "        data:\n" +
-                "          Reference\n" +
-                "          #{\n" +
-                "            testServiceStoreTestSuites::TestData\n" +
-                "          }#;\n" +
-                "      }\n" +
-                "    ];\n" +
-                "    tests:\n" +
-                "    [\n" +
-                "      test_1:\n" +
-                "      {\n" +
-                "        asserts:\n" +
-                "        [\n" +
-                "          assertion_1:\n" +
-                "            EqualToJson\n" +
-                "            #{\n" +
-                "              expected:\n" +
-                "                ExternalFormat\n" +
-                "                #{\n" +
-                "                  contentType: 'application/json';\n" +
-                "                  data: '[]';\n" +
-                "                }#;\n" +
-                "            }#\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "]\n"
-                );
 
-        test("function model::Hello(name: String[1]): String[1]\n" +
+        test("function my::SimpleFunction(): String[1]\n" +
                 "{\n" +
-                "  'Hello! My name is ' + $name + '.'\n" +
+                "  'Hello World!'\n" +
                 "}\n" +
-                "[\n" +
-                "  testSuite_1:\n" +
-                "  {\n" +
-                "    tests:\n" +
-                "    [\n" +
-                "      testFail:\n" +
-                "      {\n" +
-                "        parameters:\n" +
-                "        [\n" +
-                "          name = 'John'\n" +
-                "        ]\n" +
-                "        asserts:\n" +
-                "        [\n" +
-                "          assertion_1:\n" +
-                "            EqualTo\n" +
-                "            #{\n" +
-                "              expected:\n" +
-                "                'Hello! My name is John.';\n" +
-                "            }#\n" +
-                "        ]\n" +
-                "      }\n" +
-                "    ]\n" +
-                "  }\n" +
-                "]\n");
+                "{\n" +
+                "  myTest | SimpleFunction() => 'Hello World!';\n" +
+                "}\n\n" +
+                "function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => 'Hello John!';\n" +
+                "}\n");
+
+        test("function my::Hello(name: String[1], age: Integer[1]): String[1]\n" +
+                        "{\n" +
+                        "  'Hello ' + $name\n" +
+                        "}\n" +
+                        "{\n" +
+                        "  myTest 'this is some documentation for the test' | Hello('John',20) => 'Hello John!';\n" +
+                        "  myOtherTest | Hello('Nicole',20) => 'Hello Nicole!';\n" +
+                        "}\n");
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  myTest | Hello('John') => 'Hello John!';\n" +
+                "  myTest | Hello('Nicole') => 'Hello Nicole!';\n" +
+                "\n" +
+                "  MySuite\n" +
+                "  (\n" +
+                "    myTest | Hello('John') => 'Hello John!';\n" +
+                "    myTest | Hello('Nicole') => 'Hello Nicole!';\n" +
+                "  )\n\n" +
+                "  MySuite2\n" +
+                "  (\n" +
+                "    ModelStore: (JSON) '{}';\n" +
+                "    store::MyStore: testing::MyReference;\n" +
+                "    myTest | Hello('John') => (XML) 'Hello John!';\n" +
+                "    myTest | Hello('Nicole') => (JSON) 'Hello Nicole!';\n" +
+                "  )\n" +
+                "}\n");
+
+        test("function my::Hello(name: String[1], age: Integer[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  ModelStore: (JSON) '{}';\n" +
+                "  store::MyStore: testing::MyReference;\n" +
+                "  myTest | Hello('John',20) => 'Hello John!';\n" +
+                "  myOtherTest | Hello('Nicole',20) => 'Hello Nicole!';\n" +
+                "}\n");
+        test("function my::Hello(name: String[1]): String[1]\n" +
+                "{\n" +
+                "  'Hello ' + $name\n" +
+                "}\n" +
+                "{\n" +
+                "  MySuite2\n" +
+                "  (\n" +
+                "    ModelStore: (JSON) '[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\\n';\n" +
+                "    store::MyStore: testing::MyReference;\n" +
+                "    myTest | Hello('John') => (XML) 'Hello John!';\n" +
+                "    myTest | Hello('Nicole') => (JSON) '[{\"Employees/First Name\":\"John\",\"Employees/Last Name\":\"Doe\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Nicole\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Finos\"},{\"Employees/First Name\":\"Time\",\"Employees/Last Name\":\"Smith\",\"Legal Name\":\"Apple\"}]\\n';\n" +
+                "  )\n" +
+                "}\n");
+
     }
 
     @Test

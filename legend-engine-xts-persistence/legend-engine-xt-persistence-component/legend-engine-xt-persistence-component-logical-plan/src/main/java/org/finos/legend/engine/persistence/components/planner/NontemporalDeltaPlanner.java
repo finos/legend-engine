@@ -36,6 +36,9 @@ import org.finos.legend.engine.persistence.components.logicalplan.operations.Ope
 import org.finos.legend.engine.persistence.components.logicalplan.operations.Update;
 import org.finos.legend.engine.persistence.components.logicalplan.operations.UpdateAbstract;
 import org.finos.legend.engine.persistence.components.logicalplan.values.*;
+import org.finos.legend.engine.persistence.components.logicalplan.values.BatchIdValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.FieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.StringValue;
 import org.finos.legend.engine.persistence.components.util.Capability;
 import org.finos.legend.engine.persistence.components.util.LogicalPlanUtils;
 
@@ -60,6 +63,7 @@ class NontemporalDeltaPlanner extends Planner
     private final Optional<Condition> deleteIndicatorIsNotSetCondition;
     private final Optional<Condition> deleteIndicatorIsSetCondition;
     private final BatchStartTimestamp batchStartTimestamp;
+    private final BatchIdValue batchIdValue;
 
     private final Optional<Condition> dataSplitInRangeCondition;
     private List<Value> dataFields;
@@ -82,6 +86,7 @@ class NontemporalDeltaPlanner extends Planner
         this.deleteIndicatorIsNotSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsNotSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.deleteIndicatorIsSetCondition = deleteIndicatorField.map(field -> LogicalPlanUtils.getDeleteIndicatorIsSetCondition(stagingDataset(), field, deleteIndicatorValues));
         this.batchStartTimestamp = BatchStartTimestamp.INSTANCE;
+        this.batchIdValue = metadataUtils.getBatchId(StringValue.of(mainDataset().datasetReference().name().orElseThrow(IllegalStateException::new)));
         this.dataSplitInRangeCondition = ingestMode.dataSplitField().map(field -> LogicalPlanUtils.getDataSplitInRangeCondition(stagingDataset(), field));
         this.dataFields = getDataFields();
     }
@@ -174,6 +179,9 @@ class NontemporalDeltaPlanner extends Planner
             keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), batchStartTimestamp));
         }
 
+        // Add batch_id field
+        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build(), batchIdValue));
+
         Merge merge = Merge.builder()
             .dataset(mainDataset())
             .usingDataset(stagingDataset)
@@ -181,6 +189,7 @@ class NontemporalDeltaPlanner extends Planner
             .addAllUnmatchedKeyValuePairs(keyValuePairs)
             .onCondition(this.pkMatchCondition)
             .matchedCondition(versioningCondition)
+            .notMatchedCondition(this.deleteIndicatorIsNotSetCondition)
             .build();
 
         return merge;
@@ -197,7 +206,15 @@ class NontemporalDeltaPlanner extends Planner
      */
     private Update getUpdateOperation()
     {
-        Condition joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition).build();
+        Condition joinCondition;
+        if (this.deleteIndicatorIsNotSetCondition.isPresent())
+        {
+            joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition, this.deleteIndicatorIsNotSetCondition.get()).build();
+        }
+        else
+        {
+            joinCondition = And.builder().addConditions(this.pkMatchCondition, this.versioningCondition).build();
+        }
         Dataset stagingDataset = stagingDataset();
         List<Pair<FieldValue, Value>> keyValuePairs = getKeyValuePairs();
 
@@ -206,6 +223,9 @@ class NontemporalDeltaPlanner extends Planner
             String auditField = ingestMode().auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).orElseThrow(IllegalStateException::new);
             keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build(), this.batchStartTimestamp));
         }
+
+        // Add batch_id field
+        keyValuePairs.add(Pair.of(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build(), this.batchIdValue));
 
         if (ingestMode().dataSplitField().isPresent())
         {
@@ -259,7 +279,11 @@ class NontemporalDeltaPlanner extends Planner
         Condition selectCondition = notExistInSinkCondition;
         if (ingestMode().dataSplitField().isPresent())
         {
-            selectCondition = And.builder().addConditions(this.dataSplitInRangeCondition.get(), notExistInSinkCondition).build();
+            selectCondition = And.builder().addConditions(this.dataSplitInRangeCondition.get(), selectCondition).build();
+        }
+        if (deleteIndicatorIsNotSetCondition.isPresent())
+        {
+            selectCondition = And.builder().addConditions(this.deleteIndicatorIsNotSetCondition.get(), selectCondition).build();
         }
 
         if (ingestMode().auditing().accept(AUDIT_ENABLED))
@@ -268,6 +292,10 @@ class NontemporalDeltaPlanner extends Planner
             fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(auditField).build());
             fieldsToSelect.add(this.batchStartTimestamp);
         }
+
+        // Add batch_id field
+        fieldsToInsert.add(FieldValue.builder().datasetRef(mainDataset().datasetReference()).fieldName(ingestMode().batchIdField()).build());
+        fieldsToSelect.add(this.batchIdValue);
 
         Dataset selectStage = Selection.builder().source(stagingDataset()).condition(selectCondition).addAllFields(fieldsToSelect).build();
         return Insert.of(mainDataset(), selectStage, fieldsToInsert);

@@ -99,12 +99,23 @@ atomicExpression:                               dsl
                                                 | expressionInstance
                                                 | unitInstance
                                                 | variable
+                                                | columnBuilders
                                                 | (AT type)
                                                 | lambdaPipe
                                                 | lambdaFunction
                                                 | instanceReference
                                                 | (lambdaParam lambdaPipe)
 ;
+
+columnBuilders: TILDE (oneColSpec | colSpecArray)
+;
+oneColSpec: identifier ((COLON (type | lambdaParam lambdaPipe) extraFunction? ))?
+;
+colSpecArray: (BRACKET_OPEN oneColSpec(COMMA oneColSpec)* BRACKET_CLOSE)
+;
+extraFunction: (COLON lambdaParam lambdaPipe)
+;
+
 instanceReference:                              (PATH_SEPARATOR | qualifiedName | unitName) allOrFunction?
 ;
 lambdaFunction:                                 BRACE_OPEN (lambdaParam (COMMA lambdaParam)* )? lambdaPipe BRACE_CLOSE

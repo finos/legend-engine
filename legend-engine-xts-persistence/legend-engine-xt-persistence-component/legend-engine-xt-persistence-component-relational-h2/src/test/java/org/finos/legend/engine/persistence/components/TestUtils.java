@@ -14,14 +14,12 @@
 
 package org.finos.legend.engine.persistence.components;
 
-import com.opencsv.CSVReader;
 import org.finos.legend.engine.persistence.components.common.DatasetFilter;
 import org.finos.legend.engine.persistence.components.common.FilterType;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.And;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Equals;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.GreaterThanEqualTo;
-import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThan;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.LessThanEqualTo;
 import org.finos.legend.engine.persistence.components.logicalplan.conditions.Or;
 import org.finos.legend.engine.persistence.components.logicalplan.datasets.CsvExternalDatasetReference;
@@ -41,6 +39,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.StringV
 import org.finos.legend.engine.persistence.components.util.MetadataDataset;
 import org.junit.jupiter.api.Assertions;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -50,6 +49,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -99,6 +99,7 @@ public class TestUtils
     public static String digestUDF = "LAKEHOUSE_MD5";
     public static String versionName = "version";
     public static String batchUpdateTimeName = "batch_update_time";
+    public static String batchIdName = "batch_id";
     public static String batchIdInName = "batch_id_in";
     public static String batchIdOutName = "batch_id_out";
     public static String batchTimeInName = "batch_time_in";
@@ -114,6 +115,7 @@ public class TestUtils
     public static String dataSplitName = "data_split";
     public static String batchName = "batch";
     public static String ratingName = "rating";
+    public static String COMMA_DELIMITER = ",";
 
     public static HashMap<String, Set<String>> partitionFilter = new HashMap<String, Set<String>>()
     {{
@@ -147,6 +149,7 @@ public class TestUtils
     public static Field version = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).build();
     public static Field versionPk = Field.builder().name(versionName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(versionName).primaryKey(true).build();
     public static Field batchUpdateTimestamp = Field.builder().name(batchUpdateTimeName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).build();
+    public static Field batchId = Field.builder().name(batchIdName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdName).build();
     public static Field batchIdIn = Field.builder().name(batchIdInName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchIdInName).build();
     public static Field batchIdOut = Field.builder().name(batchIdOutName).type(FieldType.of(DataType.INT, Optional.empty(), Optional.empty())).fieldAlias(batchIdOutName).build();
     public static Field batchTimeIn = Field.builder().name(batchTimeInName).type(FieldType.of(DataType.DATETIME, Optional.empty(), Optional.empty())).primaryKey(true).fieldAlias(batchTimeInName).build();
@@ -179,6 +182,7 @@ public class TestUtils
                 .addFields(startTime)
                 .addFields(expiryDate)
                 .addFields(digest)
+                .addFields(batchId)
                 .build()
             )
             .build();
@@ -206,6 +210,7 @@ public class TestUtils
                 .addFields(expiryDate)
                 .addFields(digest)
                 .addFields(version)
+                .addFields(batchId)
                 .build()
             )
             .build();
@@ -224,6 +229,7 @@ public class TestUtils
                 .addFields(expiryDate)
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
                 .build())
             .build();
     }
@@ -1214,6 +1220,7 @@ public class TestUtils
                 .addFields(expiryDate)
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
                 .build())
             .build();
     }
@@ -1279,6 +1286,7 @@ public class TestUtils
                 .addFields(expiryDate)
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
                 .build())
             .build();
     }
@@ -1328,6 +1336,7 @@ public class TestUtils
                 .addFields(expiryDate)
                 .addFields(digest)
                 .addFields(batchUpdateTimestamp)
+                .addFields(batchId)
                 .build())
             .build();
     }
@@ -1490,9 +1499,16 @@ public class TestUtils
 
     private static List<String[]> readCsvData(String path) throws IOException
     {
-        FileReader fileReader = new FileReader(path);
-        CSVReader csvReader = new CSVReader(fileReader);
-        List<String[]> lines = csvReader.readAll();
+        List<String[]> lines = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(path)))
+        {
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                String[] values = line.split(COMMA_DELIMITER);
+                lines.add(values);
+            }
+        }
         return lines;
     }
 

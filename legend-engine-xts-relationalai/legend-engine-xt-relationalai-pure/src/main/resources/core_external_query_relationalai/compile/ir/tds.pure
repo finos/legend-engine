@@ -1,79 +1,81 @@
-import meta::rel::compile::ir::*;
-import meta::rel::compile::ir::tds::*;
-import meta::rel::utils::*;
-import meta::rel::utils::lang::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
 
-Class meta::rel::compile::ir::tds::Join extends PExpr {
+Class meta::external::store::rel::compile::ir::tds::Join extends PExpr {
   type: meta::relational::metamodel::join::JoinType[1];
-  condition: Scoped[1];
+  condition: PExprScope[1];
   left: PExpr[1];
   right: PExpr[1];
 }
 
-Class meta::rel::compile::ir::tds::TDSFilter extends PExpr {
+Class meta::external::store::rel::compile::ir::tds::TDSFilter extends PExpr {
   parent: PExpr[1];
-  predicate: Scoped[1];
+  predicate: PExprScope[1];
 }
 
-function meta::rel::compile::ir::tds::join(
+function meta::external::store::rel::compile::ir::tds::join(
   left: PExpr[1], 
   right: PExpr[1], 
   type: meta::relational::metamodel::join::JoinType[1],
-  condition: Scoped[1]
+  condition: PExprScope[1]
 ): Join[1] {
   ^Join(type=$type, condition=$condition, left=$left, right=$right);
 }
 
-function meta::rel::compile::ir::tds::filter(parent: PExpr[1], predicate: Scoped[1]): TDSFilter[1] {
+function meta::external::store::rel::compile::ir::tds::filter(parent: PExpr[1], predicate: PExprScope[1]): TDSFilter[1] {
   ^TDSFilter(parent=$parent, predicate=$predicate);
 }
 
-function meta::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1]): Result<PExpr|0..1>[1] {
+function meta::external::store::rel::compile::ir::tds::intoPExpr(func: FunctionExpression[1], trace: Trace[1]): Result<PExpr|0..1>[1] {
+  let newTrace = $trace->stage('intoPExpr(FunctionExpression[1],Trace[1])');
   switch([
     case($func.func == meta::pure::tds::join_TabularDataSet_1__TabularDataSet_1__JoinType_1__Function_1__TabularDataSet_1_, {|
       $func.parametersValues
         ->at(0)
-        ->meta::rel::compile::ir::intoPExpr()
-        ->andThen({left: PExpr[1] |
+        ->valueSpecToPExpr($newTrace)
+        ->andThen(left: PExpr[1] |
           $func.parametersValues
             ->at(1)
-            ->meta::rel::compile::ir::intoPExpr()
-            ->andThen({right: PExpr[1] | 
+            ->valueSpecToPExpr($newTrace)
+            ->andThen(right: PExpr[1] | 
               $func.parametersValues
                 ->at(2)
                 ->reactivate(^Map<String, List<Any>>())
-                ->tryCastm(@meta::relational::metamodel::join::JoinType)
-                ->them({js | $js->toOne()})
-                ->andThen({joinType: meta::relational::metamodel::join::JoinType[1] |
+                ->tryCastm(@meta::relational::metamodel::join::JoinType, $newTrace)
+                ->them(js | $js->toOne())
+                ->andThen(joinType: meta::relational::metamodel::join::JoinType[1] |
                   $func.parametersValues
                     ->at(3)
-                    ->intoScoped()
-                    ->then(condition: Scoped[1] | join($left, $right, $joinType, $condition));
-                });
-            });
-        });
+                    ->valueSpecToUntypedScoped($newTrace)
+                    ->then(condition: PExprScope[1] | join($left, $right, $joinType, $condition))
+                )
+            )
+        )
     }),
     case($func.func == meta::pure::tds::filter_TabularDataSet_1__Function_1__TabularDataSet_1_, {|
       $func.parametersValues
         ->at(0)
-        ->meta::rel::compile::ir::intoPExpr()
-        ->andThen({parent: PExpr[1] |
+        ->valueSpecToPExpr($newTrace)
+        ->andThen(parent: PExpr[1] |
           $func.parametersValues
             ->at(1)
-            ->meta::rel::compile::ir::intoScoped()
-            ->then({predicate: Scoped[1] |
-              meta::rel::compile::ir::tds::filter($parent, $predicate);
-            });
-        });
+            ->valueSpecToUntypedScoped($newTrace)
+            ->then(predicate: PExprScope[1] |
+              meta::external::store::rel::compile::ir::tds::filter($parent, $predicate)
+            )
+        )
     })
-  ], {| 
-    let error = error(| 
-      'Encountered unknown instance while translating: ' +
+  ], | 
+    error(
+      'Encountered unknown instance when constructing PExpr for TDS function with type: ' +
         $func.func
           ->elementToPath()
           ->else(| '<<unknown>>')
-          ->quote();
-    );
-    error($error);
-  })
+          ->quote(),
+      $newTrace
+    )
+  );
 }

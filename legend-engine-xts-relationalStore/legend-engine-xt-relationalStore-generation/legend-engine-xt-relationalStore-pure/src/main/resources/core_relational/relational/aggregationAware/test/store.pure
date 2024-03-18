@@ -148,7 +148,6 @@ Database meta::relational::tests::aggregationAware::store::aggregationAwareStore
 
 ###Pure
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::tests::aggregationAware::store::*;
 import meta::relational::tests::aggregationAware::*;
 import meta::external::store::relational::runtime::*;
@@ -163,7 +162,7 @@ function meta::relational::tests::aggregationAware::runtime(): Runtime[1]
 
 function <<test.BeforePackage>> meta::relational::tests::aggregationAware::setUp():Any[*]
 {
-   let connection = runtime().connectionByElement(aggregationAwareStore)->cast(@TestDatabaseConnection);
+   let connection = runtime().connectionByElement(aggregationAwareStore)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
    [
       dropSchemaStatement('base_view'),
       dropSchemaStatement('user_view_agg'),

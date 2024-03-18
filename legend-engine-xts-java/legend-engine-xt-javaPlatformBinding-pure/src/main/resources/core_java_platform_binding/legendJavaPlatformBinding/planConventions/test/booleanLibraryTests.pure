@@ -77,7 +77,8 @@ meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests:
 {
    javaPureTests(engineConventions([]), [
       meta::pure::functions::boolean::tests::testIsPrimitive__Boolean_1_,
-      meta::pure::functions::boolean::tests::testIsEnum__Boolean_1_
+      meta::pure::functions::boolean::tests::testIsEnum__Boolean_1_,
+      meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::testInstanceEquality__Boolean_1_
       //meta::pure::functions::boolean::tests::testIsNonPrimitive__Boolean_1_, // TODO Requires New
       //meta::pure::functions::boolean::tests::testIsNativeFunctions__Boolean_1_, // TODO Requires Metadata
       //meta::pure::functions::boolean::tests::testIsConcreteFunctionDefinitions, // TODO Requires Metadata
@@ -85,4 +86,29 @@ meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests:
       ->generate(meta::pure::functions::boolean::tests::equalitymodel::TestEnum1)
       ->generate(meta::pure::functions::boolean::tests::equalitymodel::TestEnum2)
       ->runTests();
+}
+
+function <<meta::pure::profiles::test.Test>>
+meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::testInstanceEquality():Boolean[1]
+{
+  let v1=  ^meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::TestInstanceValues(float=1.0,decimal=1.0d);
+  let v2 = ^meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::TestInstanceValues(float=1.0,decimal=1.0d);
+  let v3 = ^meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::TestInstanceValues(string='test');
+  let v4 = ^meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::TestInstanceValues(float=1.1,decimal=1.1d);
+  assert($v1.float==$v2.float);
+  assert($v1.float==1.0);
+  assert(1.0==$v1.float);
+  assert($v1.float!=$v3.float);
+  assert($v1.float!=$v4.float);
+  assert($v1.decimal==$v2.decimal);
+  assert($v1.decimal==1.0d);
+  assert(1.0d==$v1.decimal);
+  assert($v1.decimal!=$v3.decimal);
+}
+
+Class meta::pure::executionPlan::platformBinding::legendJava::library::boolean::tests::TestInstanceValues
+{
+    string:String[0..1];
+    decimal:Decimal[0..1];
+    float:Float[0..1];
 }

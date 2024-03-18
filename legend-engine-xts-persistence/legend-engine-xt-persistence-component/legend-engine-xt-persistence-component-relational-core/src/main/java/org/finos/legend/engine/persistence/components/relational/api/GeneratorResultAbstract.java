@@ -55,7 +55,7 @@ public abstract class GeneratorResultAbstract
 
     public abstract Optional<DataSplitRange> ingestDataSplitRange();
 
-    public abstract Optional<SqlPlan> metadataIngestSqlPlan();
+    public abstract SqlPlan metadataIngestSqlPlan();
 
     public abstract Optional<SqlPlan> deduplicationAndVersioningSqlPlan();
 
@@ -101,7 +101,7 @@ public abstract class GeneratorResultAbstract
 
     public List<String> metadataIngestSql()
     {
-        return metadataIngestSqlPlan().map(SqlPlanAbstract::getSqlList).orElse(Collections.emptyList());
+        return metadataIngestSqlPlan().getSqlList();
     }
 
     public List<String> deduplicationAndVersioningSql()

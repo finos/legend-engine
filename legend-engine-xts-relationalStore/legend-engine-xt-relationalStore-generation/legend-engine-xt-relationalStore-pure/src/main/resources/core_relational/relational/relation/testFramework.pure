@@ -20,6 +20,7 @@ import meta::external::store::relational::runtime::*;
 import meta::core::runtime::*;
 import meta::relational::metamodel::*;
 import meta::pure::mapping::*;
+import meta::pure::store::*;
 import meta::pure::metamodel::relation::*;
 import meta::relational::relation::testUtils::*;
 
@@ -85,7 +86,7 @@ function meta::relational::relation::testUtils::reprocess(f:Function<{->Any[*]}>
             //println($setUpSQLs);
 
             // Count is here to ensure lazy execution is actually flushing...
-            $setUpSQLs->map(sql | executeInDb($sql, $reprocessed.runtime.connectionStores.connection->toOne()->cast(@TestDatabaseConnection)))->count();
+            $setUpSQLs->map(sql | executeInDb($sql, $reprocessed.runtime.connectionStores.connection->toOne()->cast(@meta::external::store::relational::runtime::TestDatabaseConnection)))->count();
 
             $result;
     ]
@@ -164,6 +165,7 @@ import meta::relational::metamodel::relation::*;
 import meta::relational::metamodel::*;
 import meta::pure::metamodel::relation::*;
 import  meta::relational::relation::testUtils::*;
+import meta::pure::store::*;
 
 function meta::relational::relation::testUtils::reprocess(a:Any[1], state:ProcessingState[1]):ProcessingState[1]
 {
@@ -171,15 +173,27 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
     [
       z:FunctionExpression[1]| if($z.func == new_Class_1__String_1__KeyExpression_MANY__T_1_,
                                 | meta::relational::relation::testUtils::reprocessNew($z->reactivate()->evaluateAndDeactivate(), $z.genericType.rawType->toOne()->cast(@Class<Any>), $state);,
-                                | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
-                                  ^$state
-                                  (
-                                      current = ^$z(parametersValues = $repro.current->cast(@ValueSpecification))->evaluateAndDeactivate(),
-                                      mapping = $repro.mapping->first(),
-                                      replaced = $repro.replaced,
-                                      tables = $repro.tables,
-                                      csvs = $repro.csvs
-                                  );
+                                | if (!$z.func->in(
+                                              [
+                                                  meta::pure::functions::relation::funcColSpecArray_FuncColSpec_MANY__P_1__FuncColSpecArray_1_,
+                                                  meta::pure::functions::relation::funcColSpec_Function_1__String_1__T_1__FuncColSpec_1_,
+                                                  meta::pure::functions::relation::aggColSpecArray_AggColSpec_MANY__P_1__AggColSpecArray_1_,
+                                                  meta::pure::functions::relation::aggColSpec_Function_1__Function_1__String_1__T_1__AggColSpec_1_
+                                              ]),
+                                    | let repro = $z.parametersValues->evaluateAndDeactivate()->map(x|$x->reprocess($state));
+                                      ^$state
+                                      (
+                                          current = ^$z(parametersValues = $repro.current->cast(@ValueSpecification))->evaluateAndDeactivate(),
+                                          mapping = $repro.mapping->first(),
+                                          replaced = $repro.replaced,
+                                          tables = $repro.tables,
+                                          csvs = $repro.csvs
+                                      );,
+                                    | ^$state
+                                      (
+                                        current = $z
+                                      )
+                                  )                                  
                                );,
       ix:InstanceValue[1]|
                           let i = $ix->evaluateAndDeactivate();
@@ -243,7 +257,11 @@ function meta::relational::relation::testUtils::reprocess(a:Any[1], state:Proces
       s:String[1] |  ^$state
                      (
                       current = $s
-                     );                     
+                     );,
+      x:Float[1] |  ^$state
+                     (
+                      current = $x
+                     );
     ]
   );
 }
@@ -289,17 +307,16 @@ function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], stat
 
   $state.schema->mutateAdd('tables', $table);
 
-  let relAccessor = ^RelationDatabaseAccessor<Any>
+  let relAccessor = ^RelationStoreAccessor<Any>
   (
     store = $state.database,
-    database = $state.database,
-    relation = $table
+    sourceElement = $table
   );
 
   // Create CSV out of TDS data
   let cols = $tds->columns();
   let csv = $state.schema.name+'\n' + 
-            $relAccessor.relation.name + '\n' +
+            $relAccessor.sourceElement->cast(@Table).name + '\n' +
             $cols->map(x|$x.name)->joinStrings(',' ) + '\n' +
             $tds->map(x|$cols->map(c|$c->eval($x)->toOne()->toString())->joinStrings(','))
             ->joinStrings('\n');
@@ -319,7 +336,7 @@ function meta::relational::relation::testUtils::processTDS(tds:TDS<Any>[1], stat
 function meta::relational::relation::testUtils::testTDSDatabaseRun(f:Function<{->Any[*]}>[1]):Any[*]
 {
     // //For debug
-    // meta::pure::executionPlan::executionPlan($f->meta::relational::relation::testUtils::reprocess().first, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), debug());
+     //meta::pure::executionPlan::executionPlan($f->meta::relational::relation::testUtils::reprocess().first, ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions(), debug());
     // [];
 
     let x = meta::legend::executeLegendQuery($f->meta::relational::relation::testUtils::reprocess().first, [], ^meta::pure::runtime::ExecutionContext(), meta::relational::extension::relationalExtensions());

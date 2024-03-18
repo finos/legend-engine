@@ -16,23 +16,36 @@ package org.finos.legend.engine.plan.execution.extension;
 
 import org.eclipse.collections.api.block.function.Function3;
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.extension.LegendPlanExtension;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 import java.util.Collections;
 import java.util.List;
 
-public interface ExecutionExtension
+public interface ExecutionExtension extends LegendPlanExtension
 {
-    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraNodeExecutors()
+    default List<Function3<ExecutionNode, Identity, ExecutionState, Result>> getExtraNodeExecutors()
     {
         return Collections.emptyList();
     }
 
-    default List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> getExtraSequenceNodeExecutors()
+    default List<Function3<ExecutionNode, Identity, ExecutionState, Result>> getExtraSequenceNodeExecutors()
     {
         return Collections.emptyList();
+    }
+
+    @Override
+    default String type()
+    {
+        return "Execution";
+    }
+
+    default MutableList<String> typeGroup()
+    {
+        return Lists.mutable.with("Plan");
     }
 }

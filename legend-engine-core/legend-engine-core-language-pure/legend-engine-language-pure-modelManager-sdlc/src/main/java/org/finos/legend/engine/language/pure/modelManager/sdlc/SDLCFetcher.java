@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.function.Function;
 import javax.security.auth.Subject;
 import org.apache.http.impl.client.CloseableHttpClient;
-import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.alloy.AlloySDLCLoader;
 import org.finos.legend.engine.language.pure.modelManager.sdlc.pure.PureServerLoader;
@@ -32,26 +31,26 @@ import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextDa
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureSDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.SDLCVisitor;
 import org.finos.legend.engine.protocol.pure.v1.model.context.WorkspaceSDLC;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
-import org.pac4j.core.profile.CommonProfile;
 
 final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
 {
     private final Span parentSpan;
     private final String clientVersion;
-    private final Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider;
-    private final MutableList<CommonProfile> pm;
+    private final Function<Identity, CloseableHttpClient> httpClientProvider;
+    private final Identity identity;
     private final PureServerLoader pureLoader;
     private final AlloySDLCLoader alloyLoader;
     private final WorkspaceSDLCLoader workspaceLoader;
 
-    public SDLCFetcher(Span parentSpan, String clientVersion, Function<MutableList<CommonProfile>, CloseableHttpClient> httpClientProvider, MutableList<CommonProfile> pm, PureServerLoader pureLoader, AlloySDLCLoader alloyLoader, WorkspaceSDLCLoader workspaceLoader)
+    public SDLCFetcher(Span parentSpan, String clientVersion, Function<Identity, CloseableHttpClient> httpClientProvider, Identity identity, PureServerLoader pureLoader, AlloySDLCLoader alloyLoader, WorkspaceSDLCLoader workspaceLoader)
     {
         this.parentSpan = parentSpan;
         this.clientVersion = clientVersion;
         this.httpClientProvider = httpClientProvider;
-        this.pm = pm;
+        this.identity = identity;
         this.pureLoader = pureLoader;
         this.alloyLoader = alloyLoader;
         this.workspaceLoader = workspaceLoader;
@@ -63,7 +62,7 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
         parentSpan.setTag("sdlc", "alloy");
         try (Scope ignore = GlobalTracer.get().buildSpan("Request Alloy Metadata").startActive(true))
         {
-            PureModelContextData loadedProject = this.alloyLoader.loadAlloyProject(pm, sdlc, clientVersion, this.httpClientProvider);
+            PureModelContextData loadedProject = this.alloyLoader.loadAlloyProject(identity, sdlc, clientVersion, this.httpClientProvider);
             loadedProject.origin.sdlcInfo.packageableElementPointers = sdlc.packageableElementPointers;
             List<String> missingPaths = this.alloyLoader.checkAllPathsExist(loadedProject, sdlc);
             if (missingPaths.isEmpty())
@@ -74,7 +73,7 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
             {
                 throw new EngineException("The following entities:" + missingPaths + " do not exist in the project data loaded from the metadata server. " +
                         "Please make sure the corresponding Gitlab pipeline for version " + (this.alloyLoader.isLatestRevision(sdlc) ? "latest" : sdlc.version) + " has completed and also metadata server has updated with corresponding entities " +
-                        "by confirming the data returned from <a href=\"" + this.alloyLoader.getMetaDataApiUrl(pm, sdlc, clientVersion) + "\"/> this API </a>.");
+                        "by confirming the data returned from <a href=\"" + this.alloyLoader.getMetaDataApiUrl(identity, sdlc, clientVersion) + "\"/> this API </a>.");
             }
         }
     }
@@ -90,7 +89,7 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
             return ListIterate.injectInto(
                     new PureModelContextData.Builder(),
                     pureSDLC.packageableElementPointers,
-                    (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(pm, pointers, clientVersion, subject == null ? "" : "?auth=kerberos", pureSDLC.overrideUrl))
+                    (builder, pointers) -> builder.withPureModelContextData(this.pureLoader.loadPurePackageableElementPointer(identity, pointers, clientVersion, subject == null ? "" : "?auth=kerberos", pureSDLC.overrideUrl))
             ).distinct().sorted().build();
         }
     }
@@ -105,8 +104,8 @@ final class SDLCFetcher implements SDLCVisitor<PureModelContextData>
 
         try (Scope scope = GlobalTracer.get().buildSpan("Request Workspace Metadata").startActive(true))
         {
-            PureModelContextData loadedProject = this.workspaceLoader.loadWorkspace(pm, sdlc, this.httpClientProvider);
-            PureModelContextData sdlcDependenciesPMCD = this.workspaceLoader.getSDLCDependenciesPMCD(pm, this.clientVersion, sdlc, this.httpClientProvider);
+            PureModelContextData loadedProject = this.workspaceLoader.loadWorkspace(identity, sdlc, this.httpClientProvider);
+            PureModelContextData sdlcDependenciesPMCD = this.workspaceLoader.getSDLCDependenciesPMCD(identity, this.clientVersion, sdlc, this.httpClientProvider);
             return loadedProject.combine(sdlcDependenciesPMCD);
         }
     }

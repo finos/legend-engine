@@ -17,8 +17,8 @@ package org.finos.legend.engine.pure.code.core.core;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.pure.code.core.CorePureCoreExtension;
-import org.finos.legend.engine.pure.code.core.PureCoreExtension;
+import org.finos.legend.engine.pure.code.core.CoreLegendPureCoreExtension;
+import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
 import org.junit.Assert;
 import org.junit.Test;
@@ -28,8 +28,8 @@ public class TestExtensionAvailable
     @Test
     public void testServiceAvailable()
     {
-        MutableList<PureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
-        Assert.assertEquals(2, extensions.selectInstancesOf(CorePureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
+        MutableList<LegendPureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
+        Assert.assertEquals(2, extensions.selectInstancesOf(CoreLegendPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
         Assert.assertEquals("defaultExtensions,externalFormat", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).collect(v -> v._type()).toSortedList().makeString(","));
     }
 }

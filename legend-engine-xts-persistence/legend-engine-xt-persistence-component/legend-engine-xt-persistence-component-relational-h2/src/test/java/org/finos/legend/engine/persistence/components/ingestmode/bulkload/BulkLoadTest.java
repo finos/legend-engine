@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.ingestmode.bulkload;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.BaseTest;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.FileFormatType;
@@ -63,8 +65,9 @@ public class BulkLoadTest extends BaseTest
     private static final String DIGEST = "digest";
     private static final String DIGEST_UDF = "LAKEHOUSE_MD5";
     private static final String BATCH_ID = "batch_id";
-    private static final String TASK_ID_VALUE_1 = "xyz123";
-    private static final String TASK_ID_VALUE_2 = "abc987";
+    private static final String EVENT_ID_1 = "xyz123";
+    private static final String EVENT_ID_2 = "abc987";
+    private static final Map<String, Object> ADDITIONAL_METADATA = Collections.singletonMap("watermark", "my_watermark_value");
     private static final String COL_INT = "col_int";
     private static final String COL_STRING = "col_string";
     private static final String COL_DECIMAL = "col_decimal";
@@ -91,7 +94,7 @@ public class BulkLoadTest extends BaseTest
     protected final Clock fixedClock_2000_01_01 = Clock.fixed(fixedZonedDateTime_2000_01_01.toInstant(), ZoneOffset.UTC);
 
     @Test
-    public void testBulkLoadWithDigestNotGeneratedAuditEnabledNoTaskId() throws Exception
+    public void testBulkLoadWithDigestNotGeneratedAuditEnabledNoBulkLoadEventId() throws Exception
     {
         String filePath = "src/test/resources/data/bulk-load/input/staged_file1.csv";
 
@@ -142,7 +145,7 @@ public class BulkLoadTest extends BaseTest
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = {NEXT_BATCH_ID_PATTERN}", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -159,8 +162,8 @@ public class BulkLoadTest extends BaseTest
         RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.empty());
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
 
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.empty());
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.empty(), Optional.empty());
     }
 
     @Test
@@ -195,7 +198,7 @@ public class BulkLoadTest extends BaseTest
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
             .executionTimestampClock(fixedClock_2000_01_01)
-            .bulkLoadEventIdValue(TASK_ID_VALUE_1)
+            .putAllAdditionalMetadata(ADDITIONAL_METADATA)
             .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -210,11 +213,11 @@ public class BulkLoadTest extends BaseTest
         String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
                 "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"batch_id\") " +
                 "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
-                "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MAIN') FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file2.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN') FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file2.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertNull(statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -224,13 +227,14 @@ public class BulkLoadTest extends BaseTest
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
         expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table2.csv";
 
-        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(TASK_ID_VALUE_1));
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.empty(), ADDITIONAL_METADATA);
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(TASK_ID_VALUE_1));
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.empty(), Optional.of(ADDITIONAL_METADATA));
     }
 
     @Test
@@ -267,7 +271,7 @@ public class BulkLoadTest extends BaseTest
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .bulkLoadEventIdValue(TASK_ID_VALUE_1)
+            .bulkLoadEventIdValue(EVENT_ID_1)
             .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
@@ -284,11 +288,11 @@ public class BulkLoadTest extends BaseTest
                 "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
                 "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
                 "LAKEHOUSE_MD5(ARRAY['col_int','col_string','col_decimal','col_datetime'],ARRAY[\"col_int\",\"col_string\",\"col_decimal\",\"col_datetime\"])," +
-                "(SELECT COALESCE(MAX(bulk_load_batch_metadata.\"batch_id\"),0)+1 FROM bulk_load_batch_metadata as bulk_load_batch_metadata WHERE UPPER(bulk_load_batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+                "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"append_time\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -302,10 +306,90 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table3.csv";
 
-        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(TASK_ID_VALUE_1));
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1));
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(TASK_ID_VALUE_1));
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.empty());
+    }
+
+    @Test
+    public void testBulkLoadWithDigestGeneratedWithFieldsToExcludeAuditEnabled() throws Exception
+    {
+        // Register UDF
+        H2DigestUtil.registerMD5Udf(h2Sink, DIGEST_UDF);
+
+        String filePath = "src/test/resources/data/bulk-load/input/staged_file3.csv";
+
+        BulkLoad bulkLoad = BulkLoad.builder()
+            .digestGenStrategy(UDFBasedDigestGenStrategy.builder().digestUdfName(DIGEST_UDF).digestField(DIGEST).addAllFieldsToExcludeFromDigest(Arrays.asList(col2.name(), col4.name())).build())
+            .auditing(DateTimeAuditing.builder().dateTimeField(APPEND_TIME).build())
+            .batchIdField(BATCH_ID)
+            .build();
+
+        Dataset stagedFilesDataset = StagedFilesDataset.builder()
+            .stagedFilesDatasetProperties(
+                H2StagedFilesDatasetProperties.builder()
+                    .fileFormat(FileFormatType.CSV)
+                    .addAllFilePaths(Collections.singletonList(filePath)).build())
+            .schema(SchemaDefinition.builder().addAllFields(Arrays.asList(col1, col2, col3, col4)).build())
+            .build();
+
+        Dataset mainDataset = DatasetDefinition.builder()
+            .database(testDatabaseName).group(testSchemaName).name(mainTableName).alias("my_alias")
+            .schema(SchemaDefinition.builder().build())
+            .build();
+
+        Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
+
+        Map<String, Object> additionalMetadata = new HashMap<>();
+        additionalMetadata.put("watermark", "my_watermark_value");
+        additionalMetadata.put("external_uuid", "my_external_uuid");
+
+        // Verify SQLs using generator
+        RelationalGenerator generator = RelationalGenerator.builder()
+            .ingestMode(bulkLoad)
+            .relationalSink(H2Sink.get())
+            .collectStatistics(true)
+            .bulkLoadEventIdValue(EVENT_ID_1)
+            .putAllAdditionalMetadata(additionalMetadata)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .build();
+
+        GeneratorResult operations = generator.generateOperations(datasets);
+
+        List<String> preActionsSql = operations.preActionsSql();
+        List<String> ingestSql = operations.ingestSql();
+        Map<StatisticName, String> statsSql = operations.postIngestStatisticsSql();
+
+        String expectedCreateTableSql = "CREATE TABLE IF NOT EXISTS \"TEST_DB\".\"TEST\".\"main\"" +
+            "(\"col_int\" INTEGER,\"col_string\" VARCHAR,\"col_decimal\" DECIMAL(5,2),\"col_datetime\" TIMESTAMP,\"digest\" VARCHAR,\"batch_id\" INTEGER,\"append_time\" TIMESTAMP)";
+
+        String expectedIngestSql = "INSERT INTO \"TEST_DB\".\"TEST\".\"main\" " +
+            "(\"col_int\", \"col_string\", \"col_decimal\", \"col_datetime\", \"digest\", \"batch_id\", \"append_time\") " +
+            "SELECT CONVERT(\"col_int\",INTEGER),CONVERT(\"col_string\",VARCHAR),CONVERT(\"col_decimal\",DECIMAL(5,2)),CONVERT(\"col_datetime\",TIMESTAMP)," +
+            "LAKEHOUSE_MD5(ARRAY['col_int','col_decimal'],ARRAY[\"col_int\",\"col_decimal\"])," +
+            "(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000' FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file3.csv','col_int,col_string,col_decimal,col_datetime',NULL)";
+
+        Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
+        Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
+        Assertions.assertEquals("SELECT COUNT(*) as \"rowsInserted\" FROM \"TEST_DB\".\"TEST\".\"main\" as my_alias WHERE my_alias.\"batch_id\" = (SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
+
+
+        // Verify execution using ingestor
+        PlannerOptions options = PlannerOptions.builder().collectStatistics(true).build();
+        String[] schema = new String[]{COL_INT, COL_STRING, COL_DECIMAL, COL_DATETIME, DIGEST, BATCH_ID, APPEND_TIME};
+
+        Map<String, Object> expectedStats = new HashMap<>();
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
+        expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
+        expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
+
+        String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table6.csv";
+
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1), additionalMetadata);
+        executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.of(additionalMetadata));
     }
 
     @Test
@@ -337,12 +421,17 @@ public class BulkLoadTest extends BaseTest
 
         Datasets datasets = Datasets.of(mainDataset, stagedFilesDataset);
 
+        Map<String, Object> additionalMetadata = new HashMap<>();
+        additionalMetadata.put("watermark", "my_watermark_value");
+        additionalMetadata.put("external_uuid", "my_external_uuid");
+
         // Verify SQLs using generator
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(bulkLoad)
             .relationalSink(H2Sink.get())
             .collectStatistics(true)
-            .bulkLoadEventIdValue(TASK_ID_VALUE_1)
+            .bulkLoadEventIdValue(EVENT_ID_1)
+            .putAllAdditionalMetadata(additionalMetadata)
             .executionTimestampClock(fixedClock_2000_01_01)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
@@ -360,12 +449,12 @@ public class BulkLoadTest extends BaseTest
                 "(\"COL_INT\", \"COL_STRING\", \"COL_DECIMAL\", \"COL_DATETIME\", \"DIGEST\", \"BATCH_ID\", \"APPEND_TIME\") " +
                 "SELECT CONVERT(\"COL_INT\",INTEGER),CONVERT(\"COL_STRING\",VARCHAR),CONVERT(\"COL_DECIMAL\",DECIMAL(5,2)),CONVERT(\"COL_DATETIME\",TIMESTAMP)," +
                 "LAKEHOUSE_MD5(ARRAY['COL_INT','COL_STRING','COL_DECIMAL','COL_DATETIME'],ARRAY[\"COL_INT\",\"COL_STRING\",\"COL_DECIMAL\",\"COL_DATETIME\"])," +
-                "(SELECT COALESCE(MAX(BULK_LOAD_BATCH_METADATA.\"BATCH_ID\"),0)+1 FROM BULK_LOAD_BATCH_METADATA as BULK_LOAD_BATCH_METADATA WHERE UPPER(BULK_LOAD_BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000' " +
+                "(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000' " +
                 "FROM CSVREAD('src/test/resources/data/bulk-load/input/staged_file4.csv','COL_INT,COL_STRING,COL_DECIMAL,COL_DATETIME',NULL)";
 
         Assertions.assertEquals(expectedCreateTableSql, preActionsSql.get(0));
         Assertions.assertEquals(expectedIngestSql, ingestSql.get(0));
-        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"APPEND_TIME\" = '2000-01-01 00:00:00.000000'", statsSql.get(ROWS_INSERTED));
+        Assertions.assertEquals("SELECT COUNT(*) as \"ROWSINSERTED\" FROM \"TEST_DB\".\"TEST\".\"MAIN\" as my_alias WHERE my_alias.\"BATCH_ID\" = (SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN')", statsSql.get(ROWS_INSERTED));
 
 
         // Verify execution using ingestor
@@ -379,10 +468,10 @@ public class BulkLoadTest extends BaseTest
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table4.csv";
 
-        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(TASK_ID_VALUE_1));
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.TO_UPPER, Optional.of(EVENT_ID_1), additionalMetadata);
         executePlansAndVerifyForCaseConversion(ingestor, datasets, schema, expectedDataPath, expectedStats);
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from BULK_LOAD_BATCH_METADATA").get(0);
-        verifyBulkLoadMetadataForUpperCase(appendMetadata, filePath, 1, Optional.of(TASK_ID_VALUE_1));
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from BATCH_METADATA").get(0);
+        verifyBulkLoadMetadataForUpperCase(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.of(additionalMetadata));
     }
 
     @Test
@@ -419,24 +508,25 @@ public class BulkLoadTest extends BaseTest
         Map<String, Object> expectedStats = new HashMap<>();
         expectedStats.put(StatisticName.FILES_LOADED.name(), 1);
         expectedStats.put(StatisticName.ROWS_WITH_ERRORS.name(), 0);
+        expectedStats.put(StatisticName.ROWS_INSERTED.name(), 3);
 
         String expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table2.csv";
 
-        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(TASK_ID_VALUE_1));
+        RelationalIngestor ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_1));
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
-        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(TASK_ID_VALUE_1));
+        Map<String, Object> appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.empty());
 
 
         // Verify execution using ingestor (second batch)
         expectedDataPath = "src/test/resources/data/bulk-load/expected/expected_table5.csv";
 
-        ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(TASK_ID_VALUE_2));
+        ingestor = getRelationalIngestor(bulkLoad, options, fixedClock_2000_01_01, CaseConversion.NONE, Optional.of(EVENT_ID_2));
         executePlansAndVerifyResults(ingestor, datasets, schema, expectedDataPath, expectedStats, false);
-        appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(0);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(TASK_ID_VALUE_1));
-        appendMetadata = h2Sink.executeQuery("select * from bulk_load_batch_metadata").get(1);
-        verifyBulkLoadMetadata(appendMetadata, filePath, 2, Optional.of(TASK_ID_VALUE_2));
+        appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(0);
+        verifyBulkLoadMetadata(appendMetadata, filePath, 1, Optional.of(EVENT_ID_1), Optional.empty());
+        appendMetadata = h2Sink.executeQuery("select * from batch_metadata").get(1);
+        verifyBulkLoadMetadata(appendMetadata, filePath, 2, Optional.of(EVENT_ID_2), Optional.empty());
     }
 
     @Test
@@ -499,7 +589,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                     .ingestMode(bulkLoad)
                     .relationalSink(H2Sink.get())
-                    .bulkLoadEventIdValue(TASK_ID_VALUE_1)
+                    .bulkLoadEventIdValue(EVENT_ID_1)
                     .collectStatistics(true)
                     .executionTimestampClock(fixedClock_2000_01_01)
                     .build();
@@ -546,7 +636,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(H2Sink.get())
-                .bulkLoadEventIdValue(TASK_ID_VALUE_1)
+                .bulkLoadEventIdValue(EVENT_ID_1)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
@@ -593,7 +683,7 @@ public class BulkLoadTest extends BaseTest
             RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(bulkLoad)
                 .relationalSink(H2Sink.get())
-                .bulkLoadEventIdValue(TASK_ID_VALUE_1)
+                .bulkLoadEventIdValue(EVENT_ID_1)
                 .collectStatistics(true)
                 .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
@@ -647,7 +737,21 @@ public class BulkLoadTest extends BaseTest
         }
     }
 
-    RelationalIngestor getRelationalIngestor(IngestMode ingestMode, PlannerOptions options, Clock executionTimestampClock, CaseConversion caseConversion, Optional<String> taskId)
+    RelationalIngestor getRelationalIngestor(IngestMode ingestMode, PlannerOptions options, Clock executionTimestampClock, CaseConversion caseConversion, Optional<String> eventId)
+    {
+        return RelationalIngestor.builder()
+            .ingestMode(ingestMode)
+            .relationalSink(H2Sink.get())
+            .executionTimestampClock(executionTimestampClock)
+            .cleanupStagingData(options.cleanupStagingData())
+            .collectStatistics(options.collectStatistics())
+            .bulkLoadEventIdValue(eventId)
+            .enableConcurrentSafety(true)
+            .caseConversion(caseConversion)
+            .build();
+    }
+
+    RelationalIngestor getRelationalIngestor(IngestMode ingestMode, PlannerOptions options, Clock executionTimestampClock, CaseConversion caseConversion, Optional<String> eventId, Map<String, Object> additionalMetadata)
     {
         return RelationalIngestor.builder()
                 .ingestMode(ingestMode)
@@ -655,45 +759,71 @@ public class BulkLoadTest extends BaseTest
                 .executionTimestampClock(executionTimestampClock)
                 .cleanupStagingData(options.cleanupStagingData())
                 .collectStatistics(options.collectStatistics())
-                .bulkLoadEventIdValue(taskId)
+                .bulkLoadEventIdValue(eventId)
+                .putAllAdditionalMetadata(additionalMetadata)
                 .enableConcurrentSafety(true)
                 .caseConversion(caseConversion)
                 .build();
     }
 
-    private void verifyBulkLoadMetadata(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> taskId)
+    private void verifyBulkLoadMetadata(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> eventId, Optional<Map<String, Object>> additionalMetadata) throws JsonProcessingException
     {
-        Assertions.assertEquals(batchId, appendMetadata.get("batch_id"));
+        Assertions.assertEquals(batchId, appendMetadata.get("table_batch_id"));
         Assertions.assertEquals("SUCCEEDED", appendMetadata.get("batch_status"));
         Assertions.assertEquals("main", appendMetadata.get("table_name"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_start_ts_utc").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("batch_end_ts_utc").toString());
-        Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
-        if (taskId.isPresent())
+        String batchSourceInfoStr = (String) appendMetadata.get("batch_source_info");
+        HashMap<String,Object> batchSourceInfoMap = new ObjectMapper().readValue(batchSourceInfoStr, HashMap.class);
+        Assertions.assertEquals(batchSourceInfoMap.get("file_paths").toString(), String.format("[%s]", fileName));
+
+        if (eventId.isPresent())
         {
-            Assertions.assertTrue(appendMetadata.get("batch_source_info").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
+            Assertions.assertEquals(batchSourceInfoMap.get("event_id"), eventId.get());
         }
         else
         {
-            Assertions.assertFalse(appendMetadata.get("batch_source_info").toString().contains("\"event_id\""));
+            Assertions.assertFalse(batchSourceInfoMap.containsKey("event_id"));
+        }
+        if (additionalMetadata.isPresent())
+        {
+            String additionalMetaStr = (String) appendMetadata.get("additional_metadata");
+            Assertions.assertNotNull(additionalMetaStr);
+            HashMap<String,Object> additionalMetaMap = new ObjectMapper().readValue(additionalMetaStr, HashMap.class);
+            for (Map.Entry<String, Object> entry :additionalMetadata.get().entrySet())
+            {
+                Assertions.assertEquals(additionalMetaMap.get(entry.getKey()), entry.getValue());
+            }
+        }
+        else
+        {
+            Assertions.assertNull(appendMetadata.get("additional_metadata"));
         }
     }
 
-    private void verifyBulkLoadMetadataForUpperCase(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> taskId)
+    private void verifyBulkLoadMetadataForUpperCase(Map<String, Object> appendMetadata, String fileName, int batchId, Optional<String> eventId, Optional<Map<String, Object>> additionalMetadata)
     {
-        Assertions.assertEquals(batchId, appendMetadata.get("BATCH_ID"));
+        Assertions.assertEquals(batchId, appendMetadata.get("TABLE_BATCH_ID"));
         Assertions.assertEquals("SUCCEEDED", appendMetadata.get("BATCH_STATUS"));
         Assertions.assertEquals("MAIN", appendMetadata.get("TABLE_NAME"));
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_START_TS_UTC").toString());
         Assertions.assertEquals("2000-01-01 00:00:00.0", appendMetadata.get("BATCH_END_TS_UTC").toString());
         Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"file_paths\":[\"%s\"]", fileName)));
-        if (taskId.isPresent())
+        if (eventId.isPresent())
         {
-            Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"event_id\":\"%s\"", taskId.get())));
+            Assertions.assertTrue(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains(String.format("\"event_id\":\"%s\"", eventId.get())));
         }
         else
         {
             Assertions.assertFalse(appendMetadata.get("BATCH_SOURCE_INFO").toString().contains("\"event_id\""));
+        }
+        if (additionalMetadata.isPresent())
+        {
+            Assertions.assertNotNull(appendMetadata.get("ADDITIONAL_METADATA"));
+        }
+        else
+        {
+            Assertions.assertNull(appendMetadata.get("ADDITIONAL_METADATA"));
         }
     }
 

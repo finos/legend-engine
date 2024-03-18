@@ -20,7 +20,7 @@ env:
   CI_GPG_PASSPHRASE: ${{ secrets.CI_GPG_PASSPHRASE }}
   DOCKER_USERNAME: finos
   DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-  MAVEN_OPTS: -Xmx10g
+  MAVEN_OPTS: -Xmx16g
 
 on:
   workflow_dispatch:

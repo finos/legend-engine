@@ -42,8 +42,8 @@ public class MemSqlFunctionGenerator
     public static MemSqlFunctionArtifact generateArtifact(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, Function<PureModel,RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl, RichIterable<String>> artifactDetails = extractArtifactDetails(pureModel, activator, routerExtensions);
-        Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl memSqlDatasourceSpecification = artifactDetails.getOne();
-        RichIterable<String> sqlExpressions = artifactDetails.getTwo();
+
+        String sqlExpressions = core_memsqlfunction_generation_generation.Root_meta_external_function_activator_memSqlFunction_generation_generateArtifact_MemSqlFunction_1__Extension_MANY__String_1_(activator, routerExtensions.apply(pureModel), pureModel.getExecutionSupport());
 
         RelationalDatabaseConnection connection;
 
@@ -55,9 +55,9 @@ public class MemSqlFunctionGenerator
                     .getFirst();
             connection = (RelationalDatabaseConnection) org.eclipse.collections.impl.factory.Lists.mutable.withAll(((PureModelContextData) inputModel).getElementsOfType(PackageableConnection.class))
                     .select(c -> c.getPath().equals(((org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionDeploymentConfiguration) protocolActivator.activationConfiguration).activationConnection.connection)).getFirst().connectionValue;
-            return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.withAll(sqlExpressions), new MemSqlFunctionDeploymentConfiguration(connection));
+            return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.of(sqlExpressions), new MemSqlFunctionDeploymentConfiguration(connection));
         }
-        return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.withAll(sqlExpressions));
+        return new MemSqlFunctionArtifact(activator._functionName(), Lists.mutable.of(sqlExpressions));
     }
 
     private static Pair<Root_meta_pure_alloy_connections_alloy_specification_MemsqlDatasourceSpecification_Impl, RichIterable<String>> extractArtifactDetails(PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)

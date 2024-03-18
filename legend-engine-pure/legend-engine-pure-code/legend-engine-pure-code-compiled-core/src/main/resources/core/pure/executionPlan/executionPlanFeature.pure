@@ -1,0 +1,88 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::*;
+import meta::pure::router::routing::*;
+import meta::pure::extension::*;
+import meta::pure::executionPlan::featureFlag::*;
+
+
+Enum  meta::pure::executionPlan::features::Feature
+{
+    PUSH_DOWN_ENUM_TRANSFORM  
+}
+
+function  meta::pure::executionPlan::featureFlag::withFeatureFlags<T>(object:T[*],e:Enum[*]):T[*]
+{
+    $object;
+}
+
+Class meta::pure::executionPlan::featureFlag::FeatureFlagOption  extends meta::pure::executionPlan::ExecutionOption
+{
+  flags:Enum[*];
+}
+
+
+function meta::pure::executionPlan::featureFlag::contextHasFlag(context:meta::pure::runtime::ExecutionContext[1],flag:Enum[1]) : Boolean[1]
+{
+  $context ->getContexts()->filter(c|$c->instanceOf(ExecutionOptionContext))->cast(@ExecutionOptionContext)->map(c| $c.executionOptions->filter(f| $f->instanceOf(FeatureFlagOption))->cast(@FeatureFlagOption).flags)->contains($flag);
+}
+
+function meta::pure::executionPlan::featureFlag::addFlagToContext(context:meta::pure::runtime::ExecutionContext[1],flag:Enum[*]) : meta::pure::runtime::ExecutionContext[1]
+{
+ let flagOption =^FeatureFlagOption(flags = $flag);
+    if($context->instanceOf(ExecutionOptionContext),
+      |let optionContext = $context->cast(@ExecutionOptionContext);
+        ^$optionContext(executionOptions += $flagOption);,
+      |  let  option = ^ExecutionOptionContext(executionOptions=$flagOption);
+        $context->meta::pure::executionPlan::mergeContext($option);    
+   );
+}
+
+
+function meta::pure::executionPlan::featureFlag::wrapFnWithFeatureFlag<T>(function:Function<T>[1],flags:Enum[*]) : Function<T>[1]
+{
+   $function;
+}
+
+
+
+
+function meta::pure::executionPlan::featureFlag::ExecutionPlanFeatureFlagExtension() : Extension[1]
+{
+   let shared = ^Extension(
+      type = 'featureFlag',
+      availableFeatures          = ^FeatureExtension
+                                   (
+                                     id = 'featureFlag',
+                                     routeFunctionExpressions = [
+                                                            pair(
+                                                                fe:FunctionExpression[1] | $fe.func == meta::pure::executionPlan::featureFlag::withFeatureFlags_T_MANY__Enum_MANY__T_MANY_,
+                                                                {f:Function<Any>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1] |
+                       
+                                                                 let flags = $fe.parametersValues->at(1)->match([  s: SimpleFunctionExpression[1] | $s->at(0)->cast(@SimpleFunctionExpression)->reactivate()->cast(@Enum);,
+                                                                                                                      i :InstanceValue[*] |  $i.values->map(v|$v->cast(@SimpleFunctionExpression)->reactivate()->cast(@Enum));,
+                                                                                                                      a :Any[*] |  fail('Found unsupported feature flag Specification,  Parameters are not supported  for feature flags'); @Enum;
+                                                                                                                    ]);
+
+
+                                                                 let updatedContext =meta::pure::executionPlan::featureFlag::addFlagToContext($executionContext,$flags);
+                                                                  routeFunctionExpressionFunctionDefinition($f, $fe,  ^$state(executionContext=$updatedContext), $updatedContext, $vars, $inScopeVars, $extensions, $debug);
+                                                                }
+                                                            )]
+                                 )
+        
+
+   )
+}

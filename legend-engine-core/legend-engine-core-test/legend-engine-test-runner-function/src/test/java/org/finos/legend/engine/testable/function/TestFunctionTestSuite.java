@@ -26,13 +26,14 @@ import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecuted;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestExecutionStatus;
 import org.finos.legend.engine.protocol.pure.v1.model.test.result.TestResult;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.testable.extension.TestRunner;
 import org.finos.legend.engine.testable.function.extension.FunctionTestableRunnerExtension;
 import org.finos.legend.pure.generated.Root_meta_pure_test_TestSuite;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.test.TestAccessor;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.URL;
@@ -42,22 +43,31 @@ public class TestFunctionTestSuite
 {
 
     @Test
-    public void testFunctionTest()
+    public void testSimpleFunction()
     {
-        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonQuery__TabularDataSet_1_");
-        Assert.assertEquals(1, inlineServiceStoreTestResults.size());
-        Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
-        TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
-        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+        List<TestResult> testResults = executeFunctionTest("legend-testable-function-test-model.pure", "model::Simple__String_1_");
+        Assert.assertEquals(1, testResults.size());
+        Assert.assertTrue(hasTestPassed(findTestById(testResults, "testPass")));
     }
 
     @Test
-    public void testFunctionPrimitiveValue()
+    public void testSimpleFunctionReference()
+    {
+        List<TestResult> testResults = executeFunctionTest("legend-testable-function-test-model.pure", "model::SimpleReference__String_1_");
+        Assert.assertEquals(2, testResults.size());
+        Assert.assertTrue(hasTestPassed(findTestById(testResults, "testPass")));
+        TestResult failedResult = findTestById(testResults, "testFail");
+        Assert.assertTrue(failedResult instanceof TestExecuted);
+        TestExecuted executed = (TestExecuted) failedResult;
+        Assert.assertEquals(TestExecutionStatus.FAIL, executed.testExecutionStatus);
+    }
+
+    @Test
+    public void testSimpleFunctionWithParameters()
     {
         List<TestResult> testResults = executeFunctionTest("legend-testable-function-test-model.pure", "model::Hello_String_1__String_1_");
         Assert.assertEquals(2, testResults.size());
         Assert.assertTrue(hasTestPassed(findTestById(testResults, "testPass")));
-        // TODO: assert failure for equalTo should return expected value as separate value in class
         String message = "expected:Hello World! My name is Johnx., Found : Hello World! My name is John.";
         TestResult failedResult = findTestById(testResults, "testFail");
         Assert.assertTrue(failedResult instanceof TestExecuted);
@@ -68,15 +78,74 @@ public class TestFunctionTestSuite
         Assert.assertTrue(assertionStatus instanceof AssertFail);
         AssertFail fail = (AssertFail) assertionStatus;
         Assert.assertEquals(message, fail.message);
+    }
+
+    @Test
+    public void testRelationalFunctionTest()
+    {
+        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonQuery__TabularDataSet_1_");
+        Assert.assertEquals(1, inlineServiceStoreTestResults.size());
+        Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
 
     }
 
     @Test
-    @Ignore
-    // TODO: fix test
+    public void testRelationalWithSharedData()
+    {
+        List<TestResult> usingSharedData = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonQuerySharedData__TabularDataSet_1_");
+        Assert.assertEquals(1, usingSharedData.size());
+        Assert.assertTrue(usingSharedData.get(0) instanceof TestExecuted);
+        TestExecuted sharedTextExecuted = (TestExecuted) usingSharedData.get(0);
+        Assert.assertEquals(TestExecutionStatus.FAIL, sharedTextExecuted.testExecutionStatus);
+        String expected = "[ {\n" +
+                "  \"First Name\" : \"I'm John\",\n" +
+                "  \"Last Name\" : \"Doe, Jr\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Nicole\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Time\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "} ]";
+        String actual = "[ {\n" +
+                "  \"First Name\" : \"John\",\n" +
+                "  \"Last Name\" : \"Doe\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Nicole\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "}, {\n" +
+                "  \"First Name\" : \"Time\",\n" +
+                "  \"Last Name\" : \"Smith\"\n" +
+                "} ]";
+        testFailingTest(findTestById(usingSharedData, "test_1"), expected, actual);
+    }
+
+    @Test
+    public void testRelationalWithConnectionStores()
+    {
+        List<TestResult> usingSharedData = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonWithConnectionStores__TabularDataSet_1_");
+        Assert.assertEquals(1, usingSharedData.size());
+        Assert.assertTrue(usingSharedData.get(0) instanceof TestExecuted);
+        TestExecuted sharedTextExecuted = (TestExecuted) usingSharedData.get(0);
+        Assert.assertEquals(TestExecutionStatus.FAIL, sharedTextExecuted.testExecutionStatus);
+    }
+
+    @Test
     public void testFunctionTestM2M()
     {
         List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-m2m.pure", "model::PersonQuery__String_1_");
+        Assert.assertEquals(1, inlineServiceStoreTestResults.size());
+        Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
+    public void testFunctionTestM2MReferenceData()
+    {
+        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-m2m.pure", "model::PersonQuerySharedData__String_1_");
         Assert.assertEquals(1, inlineServiceStoreTestResults.size());
         Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
         TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
@@ -98,7 +167,17 @@ public class TestFunctionTestSuite
     }
 
     @Test
-    public void testFunctionTestWithM2M()
+    public void testRelationalWithModelJoin()
+    {
+        List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-join-relational.pure", "com::trade::TestFunction__TabularDataSet_1_");
+        Assert.assertEquals(1, inlineServiceStoreTestResults.size());
+        Assert.assertTrue(inlineServiceStoreTestResults.get(0) instanceof TestExecuted);
+        TestExecuted testExecuted = (TestExecuted) inlineServiceStoreTestResults.get(0);
+        Assert.assertEquals(TestExecutionStatus.PASS, testExecuted.testExecutionStatus);
+    }
+
+    @Test
+    public void testRelationalPass()
     {
         List<TestResult> inlineServiceStoreTestResults = executeFunctionTest("legend-testable-function-test-model-relational.pure", "model::PersonQuery__TabularDataSet_1_");
         Assert.assertEquals(1, inlineServiceStoreTestResults.size());
@@ -112,7 +191,7 @@ public class TestFunctionTestSuite
         FunctionTestableRunnerExtension functionTestableRunnerExtension = new FunctionTestableRunnerExtension();
         String pureModelString = getResourceAsString("testable/" + grammar);
         PureModelContextData pureModelContextData = PureGrammarParser.newInstance().parseModel(pureModelString);
-        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, null);
+        PureModel pureModel = Compiler.compile(pureModelContextData, DeploymentMode.TEST, IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName());
         org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element = pureModel.getPackageableElement(fullPath);
         Assert.assertTrue(element instanceof  org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.ConcreteFunctionDefinition);
         ConcreteFunctionDefinition<?> functionMetamodel = (ConcreteFunctionDefinition<?>) element;

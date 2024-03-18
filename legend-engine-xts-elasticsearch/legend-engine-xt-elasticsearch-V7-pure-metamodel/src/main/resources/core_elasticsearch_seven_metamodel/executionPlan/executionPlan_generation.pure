@@ -20,11 +20,10 @@ import meta::external::store::elasticsearch::v7::metamodel::executionPlan::*;
 import meta::external::store::elasticsearch::v7::metamodel::executionPlan::tds::*;
 import meta::pure::extension::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
 
-function meta::external::store::elasticsearch::v7::executionPlan::generation::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function meta::external::store::elasticsearch::v7::executionPlan::generation::planExecution(sq:meta::pure::mapping::StoreQuery[1], ext:RoutedValueSpecification[0..1], m:Mapping[0..1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
   let esCtx = if ($exeCtx->instanceOf(Elasticsearch7ExecutionContext), |$exeCtx->cast(@Elasticsearch7ExecutionContext), |^Elasticsearch7ExecutionContext());
 

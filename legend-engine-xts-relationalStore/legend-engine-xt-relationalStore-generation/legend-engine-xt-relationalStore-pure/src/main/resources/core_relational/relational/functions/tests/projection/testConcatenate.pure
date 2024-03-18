@@ -140,7 +140,6 @@ import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::execute::*;
 import meta::relational::functions::toDDL::*;
 import meta::relational::tests::projection::concatenate::tdsQueries::*;
@@ -152,7 +151,7 @@ function meta::relational::tests::projection::concatenate::tdsQueries::testRunti
 
 function <<test.BeforePackage>> meta::relational::tests::projection::concatenate::tdsQueries::setUp():Boolean[1]
 {
-   let connection = testRuntime().connectionByElement(ProductDatabase)->cast(@TestDatabaseConnection);
+   let connection = testRuntime().connectionByElement(ProductDatabase)->cast(@meta::external::store::relational::runtime::TestDatabaseConnection);
 
    dropAndCreateTableInDb(ProductDatabase, 'ProductTable', $connection);
 

@@ -27,7 +27,6 @@ import meta::pure::executionPlan::platformBinding::legendJava::shared::units::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::xml::*;
 import meta::pure::mapping::modelToModel::executionPlan::platformBinding::legendJava::graphFetch::storeStreamReading::*;
 import meta::pure::executionPlan::platformBinding::typeInfo::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::pure::mapping::modelToModel::test::shared::src::*;
 import meta::pure::metamodel::serialization::grammar::*;
@@ -585,7 +584,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::executionPlan::pl
    let ioEx            = j_parameter(javaIOException(), 'e');
    let xmlStreamEx     = j_parameter(xmlStreamException(), 'e');
    let jThis           = j_this($fetchClass);
-   let recordType      = $conv->className(XmlDataRecord);
+   let recordType      = $conv->className(meta::pure::mapping::modelToModel::XmlDataRecord);
    let xml             = j_variable(javaString(), 'xml');
    let recordNumber    = j_variable(javaLong(), 'recordNumber');
    let source          = j_variable($recordType, 'source');

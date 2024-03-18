@@ -36,8 +36,8 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNode;
 import org.finos.legend.engine.shared.core.api.request.RequestContext;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.javaCompiler.EngineJavaCompiler;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Collections;
 import java.util.EnumMap;
@@ -77,8 +77,8 @@ public class ExecutionState
     private final Map<StoreType, StoreExecutionState> states = new EnumMap<>(StoreType.class);
     private final boolean logSQLWithParamValues;
 
-    public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraNodeExecutors;
-    public final List<Function3<ExecutionNode, MutableList<CommonProfile>, ExecutionState, Result>> extraSequenceNodeExecutors;
+    public final List<Function3<ExecutionNode,Identity, ExecutionState, Result>> extraNodeExecutors;
+    public final List<Function3<ExecutionNode, Identity, ExecutionState, Result>> extraSequenceNodeExecutors;
     public RequestContext requestContext;
     private final CredentialProviderProvider credentialProviderProvider;
 

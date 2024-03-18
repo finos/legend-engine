@@ -1,47 +1,54 @@
-import meta::rel::compile::*;
-import meta::rel::compile::utils::*;
-import meta::rel::compile::ir::*;
-import meta::rel::compile::ir::tds::*;
-import meta::rel::utils::*;
-import meta::rel::metamodel::*;
+import meta::external::store::rel::compile::*;
+import meta::external::store::rel::compile::ir::*;
+import meta::external::store::rel::compile::ir::tds::*;
+import meta::external::store::rel::compile::substitution::*;
+import meta::external::store::rel::compile::utils::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::metamodel::utils::*;
+import meta::external::store::rel::trace::*;
+import meta::external::store::rel::utils::*;
 
-function meta::rel::compile::tds::compile(
+function meta::external::store::rel::compile::tds::compile(
   join: Join[1], 
-  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
-  state: CompilationState[1]
+  substitution: VariableSubstitution[1],
+  mapping: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
 ): Result<CompilationState|0..1>[1] {
+  let newTrace = $trace->stage('compile(Join[1],VariableSubstitution[1],CompilationState[1])');
   $join.left
-    ->compile($callback, $state)
+    ->compile($substitution, $mapping, $state, $newTrace)
     ->andThen({leftState: CompilationState[1] |
       let left = $leftState.current->toOne();
 
       $join.right
-        ->compile($callback, $leftState)
+        ->compile($substitution, $mapping, $leftState, $newTrace)
         ->andThen({rightState: CompilationState[1] |
           let right = $rightState.current->toOne();
           
-          let leftVar = $join.condition.variables->at(0);
-          let rightVar = $join.condition.variables->at(1);
+          let leftVar = $join.condition->variables()->at(0);
+          let rightVar = $join.condition->variables()->at(1);
 
           let target = $leftState.relFactory->next('tbl');
           let vi = var('i');
           let vj = var('j');
 
           $join.condition
-            ->compile({a: Any[1] |
-              $a->tryCast(@ColumnAccess)
-                ->then({access: ColumnAccess[1] |
+            ->compile(
+              $substitution,
+              newColumnAccessRewrite({access: PExprColumnAccess[1], trace: Trace[1] |
                   let var = $access
                     ->root()
                     ->cast(@VariablePlaceholder);
 
                   if ($var.identifier == $leftVar, {|
-                    $left->appl([label($access.column), $vi]);
+                    $left->appl([label($access.column), $vi])
                   }, {|
-                    $right->appl([label($access.column), $vj]);
-                  });
-                });
-            }, $rightState)
+                    $right->appl([label($access.column), $vj])
+                  })->ok();
+              }),
+              $rightState,
+              $newTrace)
             ->then({joinedState: CompilationState[1] |
               let joined = $joinedState.current->toOne();
 
@@ -95,33 +102,37 @@ function meta::rel::compile::tds::compile(
     });
 }
 
-function meta::rel::compile::tds::compile(
+function meta::external::store::rel::compile::tds::compile(
   filter: TDSFilter[1],
-  callback: FunctionDefinition<{Any[1]->Result<Expr|0..1>[1]}>[1],
-  state: CompilationState[1]
+  substitution: VariableSubstitution[1],
+  rewrite: ColumnAccessRewrite[1],
+  state: CompilationState[1],
+  trace: Trace[1]
 ): Result<CompilationState|0..1>[1] {
+  let newTrace = $trace->stage('compile(TDSFilter[1],VariableSubstitution[1],CompilationState[1])');
   $filter.parent
-    ->compile($callback, $state)
+    ->compile($substitution, $rewrite, $state, $newTrace)
     ->andThen({parentState: CompilationState[1] |
       let parent = $parentState.current->toOne();
       let vx = var('x');
       
       $filter.predicate
-        ->compile({a: Any[1] |
-          $a->tryCast(@ColumnAccess)
-            ->andThen({access: ColumnAccess[1] |
+        ->compile(
+          $substitution,
+          newColumnAccessRewrite({access: PExprColumnAccess[1], trace: Trace[1] |
               let var = $access
                 ->root()
                 ->cast(@VariablePlaceholder)
                 .identifier;
 
-              if ($var == $filter.predicate.variables, {|
+              if ($var == $filter.predicate->variables(), {|
                 $parent
                   ->appl([label($access.column), $vx])
                   ->ok();
-              }, | $callback->eval($a));
-            });
-        }, $parentState)
+              }, | $rewrite->apply($access, $trace));
+          }),
+          $parentState,
+          $newTrace)
         ->then({next: CompilationState[1] |
           let table = $next.relFactory->next('tbl');
           let predicate = $next.current->toOne();

@@ -13,13 +13,11 @@
 // limitations under the License.
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::executionPlan::*;
 import meta::pure::router::routing::*;
 import meta::pure::router::store::metamodel::*;
 import meta::pure::mapping::modelToModel::inMemory::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 
 Class meta::pure::mapping::modelToModel::inMemory::ModelPayload extends MappingInstanceData
@@ -27,7 +25,7 @@ Class meta::pure::mapping::modelToModel::inMemory::ModelPayload extends MappingI
    src : Any[1];
 }
 
-function meta::pure::mapping::modelToModel::inMemory::executeInMemory(v:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping: Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
+function meta::pure::mapping::modelToModel::inMemory::executeInMemory(v:ValueSpecification[1], e:StoreMappingRoutedValueSpecification[0..1], mapping: Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Result<Any|*>[1]
 {
    let res = $v->match([
                f:FunctionExpression[1]|if($f.func.name == 'getAll_Class_1__T_MANY_' || $f.func.name == 'getAllVersions_Class_1__T_MANY_' || $f.func.name == 'getAll_Class_1__Date_1__T_MANY_',
@@ -91,7 +89,7 @@ function <<access.private>> meta::pure::mapping::modelToModel::inMemory::routeGe
              ]);
 }
 
-function meta::pure::mapping::modelToModel::inMemory::inMemoryGetAll(impl:PureInstanceSetImplementation[1], e:StoreMappingRoutedValueSpecification[1], mapping:Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
+function meta::pure::mapping::modelToModel::inMemory::inMemoryGetAll(impl:PureInstanceSetImplementation[1], e:StoreMappingRoutedValueSpecification[1], mapping:Mapping[1], mc:ModelConnection[1], runtime:Runtime[1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):Any[*]
 {
    let srcClass = $impl.srcClass->toOne();
    let list = $mc.instances->get($srcClass);
@@ -343,7 +341,7 @@ function meta::pure::mapping::modelToModel::inMemory::getter(o:Any[1], property:
    $o->internal_getter($property, []);
 }
 
-function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:meta::pure::mapping::StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping: Mapping[0..1], mc:ModelConnection[1], runtime:Runtime[0..1], exeCtx:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
+function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:meta::pure::mapping::StoreQuery[1], e:StoreMappingRoutedValueSpecification[0..1], mapping: Mapping[0..1], mc:ModelConnection[1], runtime:Runtime[0..1], exeCtx:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionNode[1]
 {
    let jsonFeWithPpt = if($sq.fe.func.name == 'toJSON_T_MANY__LambdaFunction_MANY__String_1_',
                           | let inputFeToJson = $sq.fe.parametersValues->at(0)->byPassRouterInfo()->cast(@FunctionExpression);
@@ -357,7 +355,7 @@ function meta::pure::mapping::modelToModel::inMemory::planExecutionInMemory(sq:m
    let fd = ^LambdaFunction<{->Any[*]}>(expressionSequence = $fe);
 
    let possibleClass = $fe.genericType.rawType->toOne();
-   let class = if ($possibleClass == Any, | let getAllClass = findMainClassInGetAllExpression($fe); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
+   let class = if ($possibleClass == Any, | let getAllClass = meta::pure::mapping::modelToModel::findMainClassInGetAllExpression($fe); if($getAllClass->isEmpty(), | $possibleClass, | $getAllClass);, | $possibleClass );
 
    assert(!$class->genericType().typeArguments->at(0)->instanceOf(TabularDataSet),'ExecutionPlan not supported for Alloy ModelToModel queries returning \'TabularDataSet\'');
 

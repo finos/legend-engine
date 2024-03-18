@@ -116,7 +116,7 @@ public class MemSqlFunctionDeploymentManager implements DeploymentManager<MemSql
     public MutableList<String> createFunctionStatements(MemSqlFunctionContent content)
     {
         MutableList<String> statements = org.eclipse.collections.impl.factory.Lists.mutable.empty();
-        statements.add(content.sqlExpressions.getOnly());
+        statements.add(String.format("CREATE OR REPLACE FUNCTION %s", content.sqlExpressions.getOnly()));
         return statements;
     }
 }

@@ -29,6 +29,8 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.Package
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.ImportAwareCodeSection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.section.Section;
 import org.finos.legend.engine.shared.core.deployment.DeploymentMode;
+import org.finos.legend.engine.shared.core.identity.Identity;
+import org.finos.legend.engine.shared.core.identity.factory.*;
 import org.finos.legend.engine.shared.core.operational.errorManagement.EngineException;
 import org.finos.legend.engine.shared.core.operational.logs.LogInfo;
 import org.finos.legend.engine.shared.core.operational.logs.LoggingEventType;
@@ -86,6 +88,7 @@ public class CompileContext
             "meta::pure::functions::asserts",
             "meta::pure::functions::test",
             "meta::pure::functions::multiplicity",
+            "meta::pure::functions::relation",
             "meta::pure::router",
             "meta::pure::service",
             "meta::pure::tds",
@@ -405,7 +408,7 @@ public class CompileContext
                     ? "Pure graph function: '" + functionName + "' doesn't have a matched function - stack:" + processingContext.getStack()
                     // TODO: check if we call function by its name or full path here
                     : "Pure graph function: '" + functionName + "' doesn't match the found function: '" + handler._func()._name() + "' - stack:" + processingContext.getStack();
-            LOGGER.warn(new LogInfo(null, LoggingEventType.GRAPH_WRONG_FUNCTION_MATCHING_WARN, message).toString());
+            LOGGER.warn(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.GRAPH_WRONG_FUNCTION_MATCHING_WARN, message).toString());
             if (DeploymentMode.TEST == this.pureModel.getDeploymentMode())
             {
                 throw new EngineException(message);
@@ -431,7 +434,7 @@ public class CompileContext
             {
                 // Since we have tried to find basic function initially, this means the function builder is not found, we report error
                 String message = "Can't resolve the builder for function '" + functionName + "' - stack:" + processingContext.getStack();
-                LOGGER.error(new LogInfo(null, LoggingEventType.GRAPH_MISSING_FUNCTION, message).toString());
+                LOGGER.error(new LogInfo(IdentityFactoryProvider.getInstance().getAnonymousIdentity().getName(), LoggingEventType.GRAPH_MISSING_FUNCTION, message).toString());
                 throw new EngineException(message, sourceInformation, EngineErrorType.COMPILATION);
             }
             case 1:

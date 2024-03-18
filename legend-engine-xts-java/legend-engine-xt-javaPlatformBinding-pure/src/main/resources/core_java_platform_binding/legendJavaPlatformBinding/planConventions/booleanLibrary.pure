@@ -53,14 +53,8 @@ function meta::pure::executionPlan::platformBinding::legendJava::library::boolea
 function meta::pure::executionPlan::platformBinding::legendJava::library::boolean::equalTo(ctx:FuncCoderContext[1], left:Code[1], right:Code[1], library:meta::external::language::java::metamodel::Class[1]): Code[1]
 {
    let eq = if ($left.type->isPrimitive() && $right.type->isPrimitive(),
-      | $left->j_eq($right),
-      |
-   if (($left.type == javaLong() || $left.type == javaLongBoxed()) && ($right.type == javaLong() || $right.type == javaLongBoxed()),
-      | $left->j_eq($right),
-      |
-   if (($left.type == javaDouble() || $left.type == javaDoubleBoxed()) && ($right.type == javaDouble() || $right.type == javaDoubleBoxed()),
-      | $left->j_eq($right),
-      | $library->j_invoke('equals', [$left, $right], javaBoolean())
-   )));
+                | $left->j_eq($right),
+                | $library->j_invoke('equals', [$left, $right], javaBoolean())
+             );
 }
 

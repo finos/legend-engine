@@ -59,15 +59,7 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.SchemaDefin
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeReference;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.TypeSystemDirectiveLocation;
 import org.finos.legend.engine.protocol.graphQL.metamodel.typeSystem.UnionTypeDefinition;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.BooleanValue;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.EnumValue;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.FloatValue;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.IntValue;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.ListValue;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.NullValue;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.StringValue;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.Value;
-import org.finos.legend.engine.protocol.graphQL.metamodel.value.Variable;
+import org.finos.legend.engine.protocol.graphQL.metamodel.value.*;
 import org.finos.legend.engine.protocol.pure.v1.model.SourceInformation;
 
 import java.util.BitSet;
@@ -519,6 +511,18 @@ public class GraphQLGrammarParser
             ListValue listValue = new ListValue();
             listValue.values = ListIterate.collect(valueContext.listValue().value(), this::visitValue);
             return listValue;
+        }
+        if (valueContext.objectValue() != null && valueContext.objectValue().objectField() != null)
+        {
+            ObjectValue objectValue = new ObjectValue();
+            objectValue.fields = valueContext.objectValue().objectField().stream().map(objectFieldContext ->
+            {
+                ObjectField field = new ObjectField();
+                field.name = objectFieldContext.name().getText();
+                field.value = this.visitValue(objectFieldContext.value());
+                return field;
+            }).collect(Collectors.toList());
+            return objectValue;
         }
         throw new RuntimeException("Error");
     }

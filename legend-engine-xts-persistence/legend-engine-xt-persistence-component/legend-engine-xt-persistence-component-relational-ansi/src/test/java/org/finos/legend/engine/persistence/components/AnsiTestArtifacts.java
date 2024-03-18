@@ -23,7 +23,8 @@ public class AnsiTestArtifacts
             "\"batch_end_ts_utc\" DATETIME," +
             "\"batch_status\" VARCHAR(32)," +
             "\"table_batch_id\" INTEGER," +
-            "\"staging_filters\" JSON)";
+            "\"batch_source_info\" JSON," +
+            "\"additional_metadata\" JSON)";
 
     public static String expectedMetadataTableCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS BATCH_METADATA" +
             "(\"TABLE_NAME\" VARCHAR(255)," +
@@ -31,7 +32,8 @@ public class AnsiTestArtifacts
             "\"BATCH_END_TS_UTC\" DATETIME," +
             "\"BATCH_STATUS\" VARCHAR(32)," +
             "\"TABLE_BATCH_ID\" INTEGER," +
-            "\"STAGING_FILTERS\" JSON)";
+            "\"BATCH_SOURCE_INFO\" JSON," +
+            "\"ADDITIONAL_METADATA\" JSON)";
 
     public static String expectedMainTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
             "(\"id\" INTEGER NOT NULL," +
@@ -86,6 +88,7 @@ public class AnsiTestArtifacts
             "\"name\" VARCHAR NOT NULL," +
             "\"amount\" DOUBLE," +
             "\"biz_date\" DATE," +
+            "\"batch_id\" INTEGER," +
             "PRIMARY KEY (\"id\", \"name\"))";
 
     public static String expectedBaseStagingTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
@@ -100,6 +103,7 @@ public class AnsiTestArtifacts
             "\"NAME\" VARCHAR NOT NULL," +
             "\"AMOUNT\" DOUBLE," +
             "\"BIZ_DATE\" DATE," +
+            "\"BATCH_ID\" INTEGER," +
             "PRIMARY KEY (\"ID\", \"NAME\"))";
 
     public static String expectedBaseTablePlusDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
@@ -108,6 +112,7 @@ public class AnsiTestArtifacts
             "\"amount\" DOUBLE," +
             "\"biz_date\" DATE," +
             "\"digest\" VARCHAR," +
+            "\"batch_id\" INTEGER," +
             "PRIMARY KEY (\"id\", \"name\"))";
 
     public static String expectedStagingTableWithDigestCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
@@ -125,6 +130,7 @@ public class AnsiTestArtifacts
         "\"biz_date\" DATE," +
         "\"digest\" VARCHAR," +
         "\"version\" INTEGER," +
+        "\"batch_id\" INTEGER," +
         "PRIMARY KEY (\"id\", \"name\"))";
 
     public static String expectedBaseTablePlusDigestPlusVersionCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
@@ -134,9 +140,10 @@ public class AnsiTestArtifacts
         "\"BIZ_DATE\" DATE," +
         "\"DIGEST\" VARCHAR," +
         "\"VERSION\" INTEGER," +
+        "\"BATCH_ID\" INTEGER," +
         "PRIMARY KEY (\"ID\", \"NAME\"))";
     public static String expectedBaseTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
+            "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR,\"batch_id\" INTEGER)";
 
     public static String expectedBaseStagingTableCreateQueryWithNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging\"(" +
             "\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR)";
@@ -166,15 +173,13 @@ public class AnsiTestArtifacts
         return String.format("DROP TABLE IF EXISTS %s CASCADE", tableName);
     }
 
-    public static String expectedBaseTableCreateQueryWithAuditAndNoPKs = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"" +
-            "(\"id\" INTEGER,\"name\" VARCHAR,\"amount\" DOUBLE,\"biz_date\" DATE,\"digest\" VARCHAR,\"batch_update_time\" DATETIME)";
-
     public static String expectedBaseTablePlusDigestCreateQueryWithUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
             "\"ID\" INTEGER NOT NULL," +
             "\"NAME\" VARCHAR NOT NULL," +
             "\"AMOUNT\" DOUBLE," +
             "\"BIZ_DATE\" DATE," +
             "\"DIGEST\" VARCHAR," +
+            "\"BATCH_ID\" INTEGER," +
             "PRIMARY KEY (\"ID\", \"NAME\"))";
 
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
@@ -184,6 +189,7 @@ public class AnsiTestArtifacts
             "\"biz_date\" DATE," +
             "\"digest\" VARCHAR," +
             "\"batch_update_time\" DATETIME NOT NULL," +
+            "\"batch_id\" INTEGER," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
     public static String expectedBaseTablePlusDigestPlusUpdateTimestampCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"(" +
@@ -193,16 +199,18 @@ public class AnsiTestArtifacts
         "\"BIZ_DATE\" DATE," +
         "\"DIGEST\" VARCHAR," +
         "\"BATCH_UPDATE_TIME\" DATETIME NOT NULL," +
+        "\"BATCH_ID\" INTEGER," +
         "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_UPDATE_TIME\"))";
 
-    public static String expectedBaseTableWithAuditNotPkCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
-            "\"id\" INTEGER NOT NULL," +
-            "\"name\" VARCHAR NOT NULL," +
-            "\"amount\" DOUBLE," +
-            "\"biz_date\" DATE," +
-            "\"digest\" VARCHAR," +
-            "\"batch_update_time\" DATETIME," +
-            "PRIMARY KEY (\"id\", \"name\"))";
+    public static String expectedBaseTablePlusDigestPlusUpdateTimestampAndBatchNumberCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
+        "\"id\" INTEGER NOT NULL," +
+        "\"name\" VARCHAR NOT NULL," +
+        "\"amount\" DOUBLE," +
+        "\"biz_date\" DATE," +
+        "\"digest\" VARCHAR," +
+        "\"batch_update_time\" DATETIME NOT NULL," +
+        "\"batch_number\" INTEGER," +
+        "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
     public static String expectedBaseTableWithAuditPkCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"main\"(" +
             "\"id\" INTEGER NOT NULL," +
@@ -210,6 +218,7 @@ public class AnsiTestArtifacts
             "\"amount\" DOUBLE," +
             "\"biz_date\" DATE," +
             "\"batch_update_time\" DATETIME NOT NULL," +
+            "\"batch_id\" INTEGER," +
             "PRIMARY KEY (\"id\", \"name\", \"batch_update_time\"))";
 
     public static String expectedBaseTempStagingTablePlusDigest = "CREATE TABLE IF NOT EXISTS \"mydb\".\"staging_legend_persistence_temp_staging\"" +
@@ -398,18 +407,6 @@ public class AnsiTestArtifacts
             "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
             "PRIMARY KEY (\"ID\", \"NAME\", \"BATCH_ID_IN\", \"VALIDITY_FROM_TARGET\"))";
 
-    public static String expectedBitemporalFromOnlyMainTableCreateQueryUpperCase = "CREATE TABLE IF NOT EXISTS \"MYDB\".\"MAIN\"" +
-            "(\"ID\" INTEGER NOT NULL," +
-            "\"NAME\" VARCHAR NOT NULL," +
-            "\"AMOUNT\" DOUBLE," +
-            "\"VALIDITY_FROM_REFERENCE\" DATETIME NOT NULL," +
-            "\"DIGEST\" VARCHAR," +
-            "\"BATCH_ID_IN\" INTEGER NOT NULL," +
-            "\"BATCH_ID_OUT\" INTEGER," +
-            "\"VALIDITY_FROM_TARGET\" DATETIME NOT NULL," +
-            "\"VALIDITY_THROUGH_TARGET\" DATETIME," +
-            "PRIMARY KEY (\"ID\", \"NAME\", \"VALIDITY_FROM_REFERENCE\", \"BATCH_ID_IN\", \"VALIDITY_FROM_TARGET\"))";
-
     public static String expectedBitemporalFromOnlyTempTableCreateQuery = "CREATE TABLE IF NOT EXISTS \"mydb\".\"temp\"" +
             "(\"id\" INTEGER NOT NULL," +
             "\"name\" VARCHAR NOT NULL," +
@@ -515,6 +512,29 @@ public class AnsiTestArtifacts
             "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\") " +
             "(SELECT 'main',{BATCH_ID_PATTERN},'{BATCH_START_TS_PATTERN}','{BATCH_END_TS_PATTERN}','DONE')";
 
+    public static String expectedMetadataTableIngestQueryWithBatchSuccessValue = "INSERT INTO batch_metadata " +
+        "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\")" +
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+        "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'SUCCEEDED')";
+
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadata = "INSERT INTO batch_metadata " +
+        "(\"table_name\", \"table_batch_id\", \"batch_start_ts_utc\", \"batch_end_ts_utc\", \"batch_status\", \"additional_metadata\")" +
+        " (SELECT 'main',(SELECT COALESCE(MAX(batch_metadata.\"table_batch_id\"),0)+1 FROM batch_metadata as batch_metadata " +
+        "WHERE UPPER(batch_metadata.\"table_name\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
+        "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithUpperCase = "INSERT INTO BATCH_METADATA " +
+        "(\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"ADDITIONAL_METADATA\")" +
+        " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
+        "WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'DONE'," +
+        "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+
+    public static String expectedMetadataTableIngestQueryWithAdditionalMetadataWithBatchSuccessWithUpperCase = "INSERT INTO BATCH_METADATA " +
+        "(\"TABLE_NAME\", \"TABLE_BATCH_ID\", \"BATCH_START_TS_UTC\", \"BATCH_END_TS_UTC\", \"BATCH_STATUS\", \"ADDITIONAL_METADATA\")" +
+        " (SELECT 'MAIN',(SELECT COALESCE(MAX(BATCH_METADATA.\"TABLE_BATCH_ID\"),0)+1 FROM BATCH_METADATA as BATCH_METADATA " +
+        "WHERE UPPER(BATCH_METADATA.\"TABLE_NAME\") = 'MAIN'),'2000-01-01 00:00:00.000000',CURRENT_TIMESTAMP(),'SUCCEEDED'," +
+        "PARSE_JSON('{\"watermark\":\"my_watermark_value\"}'))";
+
     public static String expectedInsertIntoBaseTempStagingWithMaxVersionAndFilterDuplicates = "INSERT INTO \"mydb\".\"staging_legend_persistence_temp_staging\" " +
         "(\"id\", \"name\", \"amount\", \"biz_date\", \"legend_persistence_count\") " +
         "(SELECT stage.\"id\",stage.\"name\",stage.\"amount\",stage.\"biz_date\",stage.\"legend_persistence_count\" as \"legend_persistence_count\" FROM " +
@@ -600,6 +620,4 @@ public class AnsiTestArtifacts
     public static String dataErrorCheckSqlWithBizDateAsVersionUpperCase = "SELECT MAX(\"LEGEND_PERSISTENCE_DISTINCT_ROWS\") as \"MAX_DATA_ERRORS\" " +
             "FROM (SELECT COUNT(DISTINCT(\"DIGEST\")) as \"LEGEND_PERSISTENCE_DISTINCT_ROWS\" FROM " +
             "\"MYDB\".\"STAGING_LEGEND_PERSISTENCE_TEMP_STAGING\" as stage GROUP BY \"ID\", \"NAME\", \"BIZ_DATE\") as stage";
-
-
 }

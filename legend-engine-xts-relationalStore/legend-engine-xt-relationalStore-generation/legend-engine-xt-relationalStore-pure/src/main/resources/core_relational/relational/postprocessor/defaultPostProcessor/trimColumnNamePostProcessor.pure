@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
 import meta::relational::metamodel::join::*;
@@ -54,7 +53,7 @@ function meta::relational::postProcessor::reAliasColumnName::lengthConfig(runtim
 {
   let type =  $runtime.connectionStores.connection->filter(c|$c->instanceOf(DatabaseConnection))->cast(@DatabaseConnection).type;
 
-  let length = $type->cast(@DatabaseType)->toOne()->createDbConfig([]).dbExtension.aliasLimit;
+  let length = $type->cast(@DatabaseType)->distinct()->toOne('Provided runtime has multiple database connections of different types')->createDbConfig([]).dbExtension.aliasLimit;
   if($length->isEmpty(),
      | fail('Db not configured for column rename');0;,
      | $length

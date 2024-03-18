@@ -1,0 +1,175 @@
+// Copyright 2021 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+###Pure
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::eq::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::exists::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::in::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operators::contains::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::contains::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::exists::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::in::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::operations::eq::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::or::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::expressions::and::*;
+import meta::external::query::graphQL::metamodel::sdl::*;
+import meta::external::query::graphQL::metamodel::sdl::value::*;
+import meta::external::query::graphQL::metamodel::sdl::executable::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::*;
+import meta::external::query::graphQL::transformation::queryToPure::dynamic::metamodel::*;
+import meta::pure::graphFetch::*;
+import meta::pure::functions::lang::*;
+import meta::pure::functions::multiplicity::*;
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::nodesToString(node: Node[*], fieldName: String[1]): String[1]
+{
+ $node->match([
+  c: FieldExpression[1] | let newFieldName = if($fieldName != '', |$fieldName + '.' + $c.fieldName, |$c.fieldName); $c.values->nodesToString($newFieldName);,
+  a: AndExpression[1] | 'and(' + $a.first->nodesToString($fieldName) + ',' + $a.second->nodesToString($fieldName) + ')',
+  o: OrExpression[1] | 'or(' + $o.first->nodesToString($fieldName) + ',' + $o.second->nodesToString($fieldName) + ')',
+  e: EqOperator[1] | 'equals(' + $fieldName + ',' + $e.value->nodesToString('') + ')',
+  l: Literal[1] | '$' + $l.name->toString();
+ ])
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::constructVarName(count: Integer[1]): String[1]
+{
+  'p_' + $count->toString();
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::handleEnum(ic: IntermediateClass[1], prop: ValueSpecification[1]): IntermediateClass[1]
+{
+  let vs2 = $ic.valueSpecifications->toOne()->evaluateAndDeactivate();
+  let vs2CorrectType = if($prop.genericType.rawType->toOne()->instanceOf(Enumeration), | ^$vs2(genericType = $prop.genericType), | $vs2)->evaluateAndDeactivate()->cast(@VariableExpression);
+  let varsCorrected = if($prop.genericType.rawType->toOne()->instanceOf(Enumeration), | $ic.vars->filter(v|$v->evaluateAndDeactivate().name != $vs2CorrectType.name)->concatenate($vs2CorrectType), |$ic.vars);
+  ^IntermediateClass(
+    valueSpecifications = $vs2CorrectType,
+    vars = $varsCorrected
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::handleDate(ic: IntermediateClass[1], prop: ValueSpecification[1]): IntermediateClass[1]
+{
+  let vs2 = $ic.valueSpecifications->toOne()->evaluateAndDeactivate();
+  if($prop.genericType.rawType->toOne()->instanceOf(PrimitiveType),
+    | let p = $prop.genericType.rawType->toOne()->cast(@PrimitiveType);
+      let vs2CorrectType = if($p == Date || $p->subTypeOf(Date), | ^$vs2(genericType = $prop.genericType), | $vs2)->evaluateAndDeactivate()->cast(@VariableExpression);
+      let varsCorrected = if($p == Date || $p->subTypeOf(Date), | $ic.vars->filter(v|$v->evaluateAndDeactivate().name != $vs2CorrectType.name)->concatenate($vs2CorrectType), |$ic.vars);
+      ^IntermediateClass(
+        valueSpecifications = $vs2CorrectType,
+        vars = $varsCorrected
+      );,
+
+    | $ic
+  );
+  
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::findProperty(cl: Class<Any>[1], fieldName: String[*]): AbstractProperty<Any>[0..1]
+{
+  if($fieldName->size()>1,
+    |$fieldName->at(0)->println(); [];,
+    |$cl->allProperties()->filter(p | $p.name == $fieldName)->toOne()
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::createProperty(fieldNames: String[*], cl: Class<Any>[1], varName: String[1]): SimpleFunctionExpression[1]
+{
+  let p = $cl->allProperties()->filter(p | $p.name == $fieldNames->at(0))->toOne()->evaluateAndDeactivate();
+  let sfe = ^SimpleFunctionExpression(
+    importGroup=system::imports::coreImport,
+    func=$p,
+    multiplicity=$p.multiplicity,
+    parametersValues = [
+      ^VariableExpression(multiplicity=PureOne, genericType=^GenericType(rawType=$cl), name=$varName)
+    ],
+    genericType=$p.genericType
+  )->evaluateAndDeactivate();
+
+  $fieldNames->drop(1)->fold(
+    { a,b | createProperty($b.genericType.rawType->toOne()->cast(@Class<Any>)->allProperties()->filter(p|$p.name == $a)->toOne()->evaluateAndDeactivate(),$b)->evaluateAndDeactivate() }, 
+    $sfe
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::createProperty(p: AbstractProperty<Any>[1], sfe: SimpleFunctionExpression[1]): SimpleFunctionExpression[1]
+{
+  ^SimpleFunctionExpression(
+    importGroup=system::imports::coreImport,
+    func=$p,
+    multiplicity=$p.multiplicity,
+    parametersValues = [$sfe],
+    genericType=$p.genericType
+  )->evaluateAndDeactivate();
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::sfe(func: meta::pure::metamodel::function::Function<Any>[1], genericType:GenericType[1], resolvedTypeParameters:GenericType[*], multiplicity: Multiplicity[1], pvs:ValueSpecification[*]): SimpleFunctionExpression[1]
+{
+  let zipped = $func->getParameters()->evaluateAndDeactivate()->zip($pvs);
+  let parameters = $zipped->map(p | 
+
+    [
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroOne(), | sfe(toOne_T_MANY__T_1_, $p.second->evaluateAndDeactivate().genericType, [], PureOne, $p.second->evaluateAndDeactivate());),
+      pair($p.first.multiplicity->hasLowerBound() && $p.second->isZeroMany(), | sfe(toOneMany_T_MANY__T_$1_MANY$_, $p.second->evaluateAndDeactivate().genericType, [], OneMany, $p.second->evaluateAndDeactivate()))
+    ]->getValue(true, | $p.second->evaluateAndDeactivate())->eval();
+  );
+  ^SimpleFunctionExpression(
+    func = $func,
+    genericType = $genericType,
+    resolvedTypeParameters = $resolvedTypeParameters,
+    importGroup = system::imports::coreImport,
+    multiplicity = $multiplicity,
+    parametersValues = $parameters
+  )->evaluateAndDeactivate();
+}
+
+// TODO Similar functions are present in sql layer, can these be moved higher up to common query layer
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::getValue<X, Y>(pairs : Pair<X, Y>[*], key : X[1], defaultValue : Y[1]) : Y[1]
+{
+  let r = newMap($pairs)->get($key);
+  if ($r->isEmpty(),
+    | $defaultValue,
+    | $r->toOne();
+  );
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::getParameters(f:Function<Any>[1]):VariableExpression[*]
+{
+   $f.classifierGenericType.typeArguments.rawType->match([
+      f:FunctionType[1] | $f.parameters,
+      a:Any[*] | []
+   ]);
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::isZeroOne(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroOne;
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::isPureOne(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == PureOne;
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::isZeroMany(v:ValueSpecification[1]):Boolean[1]
+{
+  $v->evaluateAndDeactivate().multiplicity == ZeroMany;
+}
+
+function meta::external::query::graphQL::transformation::queryToPure::dynamic::utility::simpleType(type:Type[0..1]): Type[0..1]
+{
+   if ($type == Float || $type == Integer || $type == Decimal, |Number, |$type);
+}

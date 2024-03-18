@@ -1,0 +1,54 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::handleAddFieldDowncast(
+    class: meta::external::language::java::metamodel::Class[1],
+    token: AddRemoveField[1],
+    objVar: Code[1],
+    typeVar: Code[1],
+    typeKeyName: String[1],
+    obsoleteJsonAsString: Boolean[1],
+    version: String[1],
+    pathVar: Code[1],
+    rootObjVar: Code[1],
+    resVar: Code[1]): Code[1]
+{
+    let valVar = j_variable(javaObject(), 'value');
+    j_if($typeVar->j_invoke('equals', [j_string($token.class)]),
+        $token.defaultValue->match([
+            df: ConstValue[1] |
+            [
+                $valVar->j_declare(getValueAsFieldType($token.fieldType, $df.value, $typeKeyName, $obsoleteJsonAsString)),
+                j_if($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_ne(j_null())->j_and($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject())->j_invoke('equals', $valVar)->j_not()),
+                    javaRuntimeException()->j_new([j_string('Cannot remove non-default value:')->j_plus($resVar->j_invoke('get', [j_string($token.fieldName)], javaObject()))])->j_throw()),
+                $resVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
+            ],
+            df: CopyValue[1] |
+            [
+                $class->j_invoke('setRelativeReference', [
+                    $rootObjVar,
+                    $pathVar,
+                    j_string($df.source->cast(@RelativeFieldReference).path),
+                    $resVar->j_invoke('get', [j_string($token.fieldName)], javaVoid())
+                ], javaObject()),
+                $resVar->j_invoke('remove', [j_string($token.fieldName)], javaVoid())
+            ]
+        ])
+    );
+}

@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.finos.legend.engine</groupId>
         <artifactId>legend-engine-xts-mongodb</artifactId>
-        <version>4.37.1-SNAPSHOT</version>
+        <version>4.40.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-engine-xt-nonrelationalStore-mongodb-pure</artifactId>
@@ -96,11 +96,6 @@
                         <artifactId>legend-engine-xt-authentication-pure</artifactId>
                         <version>${project.version}</version>
                     </dependency>
-                    <dependency>
-                        <groupId>org.finos.legend.pure</groupId>
-                        <artifactId>legend-pure-m2-dsl-diagram-grammar</artifactId>
-                        <version>${legend.pure.version}</version>
-                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
@@ -124,7 +119,11 @@
                     </execution>
                 </executions>
                 <dependencies>
-
+                    <dependency>
+                        <groupId>org.finos.legend.pure</groupId>
+                        <artifactId>legend-pure-m2-dsl-store-grammar</artifactId>
+                        <version>${legend.pure.version}</version>
+                    </dependency>
                     <dependency>
                         <groupId>org.finos.legend.pure</groupId>
                         <artifactId>legend-pure-m2-dsl-mapping-grammar</artifactId>
@@ -175,7 +174,15 @@
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-m2-dsl-store-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
             <artifactId>legend-pure-m2-dsl-mapping-pure</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.finos.legend.pure</groupId>
+            <artifactId>legend-pure-runtime-java-extension-dsl-store</artifactId>
         </dependency>
         <dependency>
             <groupId>org.finos.legend.pure</groupId>

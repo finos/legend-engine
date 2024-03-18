@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.persistence.components.testcases.ingestmode.nontemporal;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.finos.legend.engine.persistence.components.BaseTest;
@@ -62,6 +63,8 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .collectStatistics(true)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -94,6 +97,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
                 .collectStatistics(true)
                 .build();
 
@@ -111,6 +115,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .collectStatistics(true)
+                .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
 
         List<GeneratorResult> operations = generator.generateOperationsWithDataSplits(testScenario.getDatasets(), dataSplitRangesOneToTwo);
@@ -144,6 +149,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
                 .caseConversion(CaseConversion.TO_UPPER)
+                .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -162,6 +168,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
                 .ingestMode(testScenario.getIngestMode())
                 .relationalSink(getRelationalSink())
+                .executionTimestampClock(fixedClock_2000_01_01)
                 .build();
 
         GeneratorResult operations = generator.generateOperations(datasets);
@@ -175,7 +182,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
     {
         TestScenario testScenario = scenarios.NO_AUDTING__NO_DEDUP__NO_VERSIONING();
         // Staging table has no pks
-        Dataset stagingTable = testScenario.getStagingTable().withSchema(baseTableSchemaWithNoPrimaryKeys);
+        Dataset stagingTable = testScenario.getStagingTable().withSchema(stagingTableSchemaWithNoPrimaryKeys);
         Datasets datasets = Datasets.of(testScenario.getMainTable(), stagingTable);
         try
         {
@@ -220,6 +227,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .cleanupStagingData(true)
             .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
             .build();
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
         verifyNontemporalDeltaPostActionSqlAndCleanStagingData(operations);
@@ -236,6 +244,8 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
                 .relationalSink(getRelationalSink())
                 .cleanupStagingData(false)
                 .collectStatistics(true)
+                .executionTimestampClock(fixedClock_2000_01_01)
+                .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
                 .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -253,6 +263,8 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .cleanupStagingData(false)
             .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
+            .putAllAdditionalMetadata(Collections.singletonMap("watermark", "my_watermark_value"))
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -268,6 +280,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
         RelationalGenerator generator = RelationalGenerator.builder()
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
+            .executionTimestampClock(fixedClock_2000_01_01)
             .cleanupStagingData(false)
             .collectStatistics(true)
             .build();
@@ -287,6 +300,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .relationalSink(getRelationalSink())
             .cleanupStagingData(false)
             .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -303,6 +317,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
             .build();
 
         GeneratorResult operations = generator.generateOperations(testScenario.getDatasets());
@@ -319,6 +334,7 @@ public abstract class NontemporalDeltaTestCases extends BaseTest
             .ingestMode(testScenario.getIngestMode())
             .relationalSink(getRelationalSink())
             .collectStatistics(true)
+            .executionTimestampClock(fixedClock_2000_01_01)
             .caseConversion(CaseConversion.TO_UPPER)
             .build();
 

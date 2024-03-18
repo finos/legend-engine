@@ -15,7 +15,6 @@
 import meta::relational::metamodel::relation::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::relational::metamodel::*;
 import meta::external::store::relational::runtime::*;
 import meta::relational::runtime::*;
@@ -68,7 +67,7 @@ function meta::relational::metamodel::execute::loadCsvToDbTable(filePath:String[
 
 function meta::relational::metamodel::execute::createTestDatabaseConnection():DatabaseConnection[1]
 {
-   ^TestDatabaseConnection(type=DatabaseType.H2);
+   ^meta::external::store::relational::runtime::TestDatabaseConnection(type=DatabaseType.H2);
 }
 
 function meta::relational::metamodel::execute::resultSetToTDS(resultSet:ResultSet[1]):TabularDataSet[1]

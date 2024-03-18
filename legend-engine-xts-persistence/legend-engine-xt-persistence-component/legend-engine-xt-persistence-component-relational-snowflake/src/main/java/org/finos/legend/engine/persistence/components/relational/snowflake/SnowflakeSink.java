@@ -14,6 +14,8 @@
 
 package org.finos.legend.engine.persistence.components.relational.snowflake;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.finos.legend.engine.persistence.components.common.Datasets;
 import org.finos.legend.engine.persistence.components.common.StatisticName;
 import org.finos.legend.engine.persistence.components.executor.Executor;
@@ -69,6 +71,9 @@ import org.finos.legend.engine.persistence.components.relational.sqldom.utils.Sq
 import org.finos.legend.engine.persistence.components.relational.transformer.RelationalTransformer;
 import org.finos.legend.engine.persistence.components.transformer.LogicalPlanVisitor;
 import org.finos.legend.engine.persistence.components.util.Capability;
+import org.finos.legend.engine.persistence.components.util.PlaceholderValue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -90,6 +95,7 @@ import static org.finos.legend.engine.persistence.components.relational.api.Rela
 
 public class SnowflakeSink extends AnsiSqlSink
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSink.class);
     private static final RelationalSink INSTANCE;
 
     private static final Set<Capability> CAPABILITIES;
@@ -102,6 +108,8 @@ public class SnowflakeSink extends AnsiSqlSink
     private static final String BULK_LOAD_STATUS = "status";
     private static final String ROWS_LOADED = "rows_loaded";
     private static final String ERRORS_SEEN = "errors_seen";
+    private static final String FIRST_ERROR = "first_error";
+    private static final String FIRST_ERROR_COLUMN_NAME = "first_error_column_name";
 
     static
     {
@@ -137,6 +145,7 @@ public class SnowflakeSink extends AnsiSqlSink
         implicitDataTypeMapping.put(DataType.BIGINT, new HashSet<>(Arrays.asList(DataType.TINYINT, DataType.SMALLINT, DataType.INTEGER, DataType.INT)));
         implicitDataTypeMapping.put(DataType.VARCHAR, new HashSet<>(Arrays.asList(DataType.CHAR, DataType.STRING, DataType.TEXT)));
         implicitDataTypeMapping.put(DataType.TIMESTAMP, Collections.singleton(DataType.DATETIME));
+        implicitDataTypeMapping.put(DataType.JSON, Collections.singleton(DataType.VARIANT));
         IMPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(implicitDataTypeMapping);
 
         EXPLICIT_DATA_TYPE_MAPPING = Collections.unmodifiableMap(new HashMap<>());
@@ -225,35 +234,45 @@ public class SnowflakeSink extends AnsiSqlSink
     }
 
     @Override
-    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, String> placeHolderKeyValues)
+    public IngestorResult performBulkLoad(Datasets datasets, Executor<SqlGen, TabularData, SqlPlan> executor, SqlPlan ingestSqlPlan, Map<StatisticName, SqlPlan> statisticsSqlPlan, Map<String, PlaceholderValue> placeHolderKeyValues)
     {
         List<TabularData> results = executor.executePhysicalPlanAndGetResults(ingestSqlPlan, placeHolderKeyValues);
         List<Map<String, Object>> resultSets = results.get(0).getData();
-        List<String> dataFilePathsWithFailedBulkLoad = new ArrayList<>();
+        List<String> dataFilePathsWithErrors = new ArrayList<>();
 
         long totalFilesLoaded = 0;
         long totalRowsLoaded = 0;
         long totalRowsWithError = 0;
+        List<String> errorMessages = new ArrayList<>();
 
         for (Map<String, Object> row: resultSets)
         {
             Object bulkLoadStatus = row.get(BULK_LOAD_STATUS);
             Object filePath = row.get(FILE);
-            if (Objects.nonNull(bulkLoadStatus) && bulkLoadStatus.equals(LOADED))
+            if (Objects.nonNull(bulkLoadStatus) && Objects.nonNull(filePath))
             {
-                totalFilesLoaded++;
-                totalRowsLoaded += (Long) row.get(ROWS_LOADED);
-            }
-
-            if (Objects.nonNull(bulkLoadStatus) && !bulkLoadStatus.equals(LOADED) && Objects.nonNull(filePath))
-            {
-                dataFilePathsWithFailedBulkLoad.add(filePath.toString());
+                if (bulkLoadStatus.equals(LOADED))
+                {
+                    totalFilesLoaded++;
+                }
+                else
+                {
+                    // if partially loaded or load failed
+                    dataFilePathsWithErrors.add(filePath.toString());
+                    errorMessages.add(getErrorMessage(row));
+                }
             }
 
             Object rowsWithError = row.get(ERRORS_SEEN);
             if (Objects.nonNull(rowsWithError))
             {
                 totalRowsWithError += (Long) row.get(ERRORS_SEEN);
+            }
+
+            Object rowsLoaded = row.get(ROWS_LOADED);
+            if (Objects.nonNull(rowsLoaded))
+            {
+                totalRowsLoaded += (Long) row.get(ROWS_LOADED);
             }
         }
 
@@ -265,11 +284,11 @@ public class SnowflakeSink extends AnsiSqlSink
         IngestorResult.Builder resultBuilder = IngestorResult.builder()
             .updatedDatasets(datasets)
             .putAllStatisticByName(stats)
-            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN))
-            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN)) : null));
+            .ingestionTimestampUTC(placeHolderKeyValues.get(BATCH_START_TS_PATTERN).value())
+            .batchId(Optional.ofNullable(placeHolderKeyValues.containsKey(BATCH_ID_PATTERN) ? Integer.valueOf(placeHolderKeyValues.get(BATCH_ID_PATTERN).value()) : null));
         IngestorResult result;
 
-        if (dataFilePathsWithFailedBulkLoad.isEmpty())
+        if (dataFilePathsWithErrors.isEmpty())
         {
             result = resultBuilder
                 .status(IngestStatus.SUCCEEDED)
@@ -277,7 +296,8 @@ public class SnowflakeSink extends AnsiSqlSink
         }
         else
         {
-            String errorMessage = String.format("Unable to bulk load these files: %s", String.join(",", dataFilePathsWithFailedBulkLoad));
+            String errorMessage = "Errors encountered: " + String.join(",", errorMessages);
+            LOGGER.error(errorMessage);
             result = resultBuilder
                 .status(IngestStatus.FAILED)
                 .message(errorMessage)
@@ -286,4 +306,28 @@ public class SnowflakeSink extends AnsiSqlSink
         return result;
     }
 
+    private String getErrorMessage(Map<String, Object> row)
+    {
+        Map<String, Object> errorInfoMap = new HashMap<>();
+        Object filePath = row.get(FILE);
+        Object bulkLoadStatus = row.get(BULK_LOAD_STATUS);
+        Object errorsSeen = row.get(ERRORS_SEEN);
+        Object firstError = row.get(FIRST_ERROR);
+        Object firstErrorColumnName = row.get(FIRST_ERROR_COLUMN_NAME);
+        errorInfoMap.put(FILE, filePath);
+        errorInfoMap.put(BULK_LOAD_STATUS, bulkLoadStatus);
+        errorInfoMap.put(ERRORS_SEEN, errorsSeen);
+        errorInfoMap.put(FIRST_ERROR, firstError);
+        errorInfoMap.put(FIRST_ERROR_COLUMN_NAME, firstErrorColumnName);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try
+        {
+            return objectMapper.writeValueAsString(errorInfoMap);
+        }
+        catch (JsonProcessingException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
 }

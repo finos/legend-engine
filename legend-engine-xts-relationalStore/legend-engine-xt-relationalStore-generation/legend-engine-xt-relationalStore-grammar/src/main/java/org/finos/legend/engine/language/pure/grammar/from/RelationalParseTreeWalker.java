@@ -188,10 +188,19 @@ public class RelationalParseTreeWalker
         }
         column.nullable = nullable;
         String dataType = PureGrammarParserUtility.fromIdentifier(ctx.identifier());
-        switch (dataType.toUpperCase())
+        RelationalDataType val;
+        try
+        {
+            val = RelationalDataType.valueOf(dataType.toUpperCase());
+        }
+        catch (Exception e)
+        {
+            val = RelationalDataType.UNKNOWN;
+        }
+        switch (val)
         {
             // String
-            case "CHAR":
+            case CHAR:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -201,11 +210,11 @@ public class RelationalParseTreeWalker
                 }
                 else
                 {
-                    throw new EngineException("Column data type CHAR requires 1 parameter (size) in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type CHAR requires 1 parameter (size) in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "VARCHAR":
+            case VARCHAR:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -215,12 +224,12 @@ public class RelationalParseTreeWalker
                 }
                 else
                 {
-                    throw new EngineException("Column data type VARCHAR requires 1 parameter (size) in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type VARCHAR requires 1 parameter (size) in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
             // Binary
-            case "BINARY":
+            case BINARY:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -230,11 +239,11 @@ public class RelationalParseTreeWalker
                 }
                 else
                 {
-                    throw new EngineException("Column data type BINARY requires 1 parameter (size) in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type BINARY requires 1 parameter (size) in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "VARBINARY":
+            case VARBINARY:
             {
                 if (ctx.INTEGER().size() == 1)
                 {
@@ -244,78 +253,78 @@ public class RelationalParseTreeWalker
                 }
                 else
                 {
-                    throw new EngineException("Column data type VARBINARY requires 1 parameter (size) in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type VARBINARY requires 1 parameter (size) in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "BIT":
+            case BIT:
             {
                 column.type = new Bit();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type BIT does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type BIT does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
             // Integer
-            case "INT":
-            case "INTEGER":
+            case INT:
+            case INTEGER:
             {
                 column.type = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Integer();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type INTEGER does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type INTEGER does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "BIGINT":
+            case BIGINT:
             {
                 column.type = new BigInt();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type BIGINT does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type BIGINT does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "SMALLINT":
+            case SMALLINT:
             {
                 column.type = new SmallInt();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type SMALLINT does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type SMALLINT does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "TINYINT":
+            case TINYINT:
             {
                 column.type = new TinyInt();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type TINYINT does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type TINYINT does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
             // Timestamp
-            case "TIMESTAMP":
+            case TIMESTAMP:
             {
                 column.type = new Timestamp();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type TIMESTAMP does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type TIMESTAMP does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "DATE":
+            case DATE:
             {
                 column.type = new Date();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type DATE does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type DATE does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
             // Numeric
-            case "NUMERIC":
+            case NUMERIC:
             {
                 if (ctx.INTEGER().size() == 2)
                 {
@@ -326,11 +335,11 @@ public class RelationalParseTreeWalker
                 }
                 else
                 {
-                    throw new EngineException("Column data type NUMERIC requires 2 parameters (precision, scale) in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type NUMERIC requires 2 parameters (precision, scale) in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "DECIMAL":
+            case DECIMAL:
             {
                 if (ctx.INTEGER().size() == 2)
                 {
@@ -341,71 +350,71 @@ public class RelationalParseTreeWalker
                 }
                 else
                 {
-                    throw new EngineException("Column data type DECIMAL requires 2 parameters (precision, scale) in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type DECIMAL requires 2 parameters (precision, scale) in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "FLOAT":
+            case FLOAT:
             {
                 column.type = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Float();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type FLOAT does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type FLOAT does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "DOUBLE":
+            case DOUBLE:
             {
                 column.type = new org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.relational.model.datatype.Double();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type DOUBLE does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type DOUBLE does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "REAL":
+            case REAL:
             {
                 column.type = new Real();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type REAL does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type REAL does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
             // Other
-            case "ARRAY":
+            case ARRAY:
             {
                 column.type = new Other();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type ARRAY does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type ARRAY does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "OTHER":
+            case OTHER:
             {
                 column.type = new Other();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type OTHER does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type OTHER does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "SEMISTRUCTURED":
+            case SEMISTRUCTURED:
             {
                 column.type = new SemiStructured();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type SEMISTRUCTURED does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type SEMISTRUCTURED does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
-            case "JSON":
+            case JSON:
             {
                 column.type = new Json();
                 if (!ctx.INTEGER().isEmpty())
                 {
-                    throw new EngineException("Column data type JSON does not expect any parameters in declaration", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
+                    throw new EngineException("Column data type JSON does not expect any parameters in declaration '" + ctx.getText() + "'", this.walkerSourceInformation.getSourceInformation(ctx.identifier().getStart(), ctx.PAREN_CLOSE() != null ? ctx.PAREN_CLOSE().getSymbol() : ctx.identifier().getStop()), EngineErrorType.PARSER);
                 }
                 break;
             }
@@ -1146,6 +1155,7 @@ public class RelationalParseTreeWalker
         String binding = PureGrammarParserUtility.fromQualifiedName(ctx.qualifiedName().packagePath() == null ? Collections.emptyList() : ctx.qualifiedName().packagePath().identifier(), ctx.qualifiedName().identifier());
         BindingTransformer bindingTransformer = new BindingTransformer();
         bindingTransformer.binding = binding;
+        bindingTransformer.sourceInformation = this.walkerSourceInformation.getSourceInformation(ctx.qualifiedName());
         return bindingTransformer;
     }
 

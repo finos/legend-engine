@@ -1,8 +1,8 @@
-import meta::rel::utils::*;
-import meta::rel::utils::lang::*;
-import meta::rel::utils::collection::*;
+import meta::external::store::rel::utils::*;
+import meta::external::store::rel::utils::lang::*;
+import meta::external::store::rel::utils::collection::*;
 
-function meta::rel::utils::stringify<T>(
+function meta::external::store::rel::utils::stringify<T>(
   list: T[*], 
   elem: FunctionDefinition<{T[1]->String[1]}>[1], 
   separator: String[1]
@@ -14,61 +14,61 @@ function meta::rel::utils::stringify<T>(
   );
 }
 
-function meta::rel::utils::type(spec: ValueSpecification[1]): Type[1] {
+function meta::external::store::rel::utils::type(spec: ValueSpecification[1]): Type[1] {
   $spec.genericType.rawType->toOne();
 }
 
-function meta::rel::utils::inspect<T|m>(any: T[m]): T[m] {
+function meta::external::store::rel::utils::inspect<T|m>(any: T[m]): T[m] {
   println($any);
   $any;
 }
 
-function meta::rel::utils::inspect<T|m>(any: T[m], label: String[1]): T[m] {
+function meta::external::store::rel::utils::inspect<T|m>(any: T[m], label: String[1]): T[m] {
   print($label + ': ');
   println($any);
   $any;
 }
 
-function meta::rel::utils::inspect<T|m>(any: T[m], fun: FunctionDefinition<{T[m]->Any[*]}>[1]): T[m] {
+function meta::external::store::rel::utils::inspect<T|m>(any: T[m], fun: FunctionDefinition<{T[m]->Any[*]}>[1]): T[m] {
   println($fun->eval($any));
   $any;
 }
 
-function meta::rel::utils::inspect<T|m>(any: T[m], fun: FunctionDefinition<{T[m]->Any[*]}>[1], label: String[1]): T[m] {
+function meta::external::store::rel::utils::inspect<T|m>(any: T[m], fun: FunctionDefinition<{T[m]->Any[*]}>[1], label: String[1]): T[m] {
   print($label + ': ');
   println($fun->eval($any));
   $any;
 }
 
-function meta::rel::utils::debugInspect<T|m>(any: T[m], ctx: DebugContext[1]): T[m] {
+function meta::external::store::rel::utils::debugInspect<T|m>(any: T[m], ctx: DebugContext[1]): T[m] {
   $ctx->debug($any, 'DEBUG: ');
   $any;
 }
 
-function meta::rel::utils::debug(ctx: DebugContext[1], message: Any[*], label: String[1]): Any[*] {
+function meta::external::store::rel::utils::debug(ctx: DebugContext[1], message: Any[*], label: String[1]): Any[*] {
   $ctx->debug(| $message, $label);
 }
 
-function meta::rel::utils::debug(ctx: DebugContext[1], message: Any[*]): Any[*] {
+function meta::external::store::rel::utils::debug(ctx: DebugContext[1], message: Any[*]): Any[*] {
   $ctx->debug($message, '');
 }
 
-function meta::rel::utils::debug(ctx: DebugContext[1], message: FunctionDefinition<{->Any[*]}>[1]): Any[*] {
+function meta::external::store::rel::utils::debug(ctx: DebugContext[1], message: FunctionDefinition<{->Any[*]}>[1]): Any[*] {
   $ctx->debug($message, '');
 }
 
-function meta::rel::utils::debug(ctx: DebugContext[1], message: FunctionDefinition<{->Any[*]}>[1], label: String[1]): Any[*] {
+function meta::external::store::rel::utils::debug(ctx: DebugContext[1], message: FunctionDefinition<{->Any[*]}>[1], label: String[1]): Any[*] {
   if($ctx.debug, | print($label); $message->eval()->println(); $message;, | '');
 }
 
-function meta::rel::utils::quote(str: String[1]): String[1] {
+function meta::external::store::rel::utils::quote(str: String[1]): String[1] {
   '`' + $str + '`'; 
 }
 
-function meta::rel::utils::escapeString(string: String[1], character: String[1]): String[1] {
+function meta::external::store::rel::utils::escapeString(string: String[1], character: String[1]): String[1] {
   $string->replace($character, format('\\%s', $character));
 }
 
-function meta::rel::utils::indent(amount: Integer[1]): String[1] {
+function meta::external::store::rel::utils::indent(amount: Integer[1]): String[1] {
   range($amount)->map(_n | ' ')->joinStrings('');
 }

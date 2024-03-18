@@ -19,10 +19,10 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.impl.factory.Lists;
 import org.eclipse.collections.impl.tuple.Tuples;
 import org.eclipse.collections.impl.utility.Iterate;
+import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.protocol.pure.v1.extension.ConnectionFactoryExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
-import org.finos.legend.engine.protocol.pure.v1.model.data.ExternalFormatData;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.Connection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.ConnectionPointer;
@@ -32,26 +32,18 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.m
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelChainConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.ModelConnection;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.modelToModel.connection.XmlModelConnection;
-import org.finos.legend.engine.shared.core.url.DataProtocolHandler;
 
-import javax.ws.rs.core.MediaType;
 import java.io.Closeable;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.ServiceLoader;
+import java.util.*;
 
 public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection, List<Closeable>>>
 {
-    private EmbeddedData embeddedData;
+    private List<EmbeddedData> embeddedData;
     private PureModelContextData pureModelContextData;
 
-    public TestConnectionBuilder(EmbeddedData embeddedData, PureModelContextData pureModelContextData)
+    public TestConnectionBuilder(List<EmbeddedData> embeddedData, PureModelContextData pureModelContextData)
     {
-        this.embeddedData = embeddedData;
+        this.embeddedData = Objects.isNull(embeddedData) ? Lists.mutable.empty() : ListIterate.select(embeddedData, Objects::nonNull);
         this.pureModelContextData = pureModelContextData;
     }
 
@@ -67,9 +59,9 @@ public class TestConnectionBuilder implements ConnectionVisitor<Pair<Connection,
                 .getFirstOptional()
                 .orElseThrow(() ->
                 {
-                    String errorMessage = embeddedData == null
+                    String errorMessage = (embeddedData.isEmpty())
                             ? "No test data provided for connection type '" + connection.getClass().getSimpleName() + "'. Either you need to provide test data for the connection type or connection type is not supported."
-                            : "Unsupported test data type '" + embeddedData.getClass().getSimpleName() + "' with connection type '" + connection.getClass().getSimpleName() + '"';
+                            : "Unsupported test data type '" + String.join(",",ListIterate.collect(embeddedData, data -> data.getClass().getSimpleName())) + "' with connection type '" + connection.getClass().getSimpleName() + '"';
                     return new UnsupportedOperationException(errorMessage);
                 });
     }

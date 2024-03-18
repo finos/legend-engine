@@ -1,0 +1,46 @@
+{
+  "__TYPE": "meta::external::query::sql::Schema",
+  "columns": [
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "String",
+      "name": "stringColumn"
+    },
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "Boolean",
+      "name": "boolColumn"
+    },
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "EnumType",
+      "name": "enumColumn"
+    },
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "DateTime",
+      "name": "dateTimeColumn"
+    },
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "DateTime",
+      "name": "dateColumn"
+    },
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "StrictDate",
+      "name": "strictDateColumn"
+    },
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "Float",
+      "name": "longColumn"
+    },
+    {
+      "__TYPE": "meta::external::query::sql::PrimitiveValueSchemaColumn",
+      "type": "Integer",
+      "name": "integerColumn"
+    }
+  ],
+  "enums": []
+}

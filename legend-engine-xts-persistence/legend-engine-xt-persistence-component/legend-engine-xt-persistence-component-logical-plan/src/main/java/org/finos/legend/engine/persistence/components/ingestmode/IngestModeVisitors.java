@@ -158,6 +158,7 @@ public class IngestModeVisitors
             Set<String> metaFields = new HashSet<>();
 
             metaFields.add(nontemporalDelta.digestField());
+            nontemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             nontemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
             return metaFields;
@@ -175,7 +176,7 @@ public class IngestModeVisitors
             Set<String> metaFields = new HashSet<>();
 
             metaFields.add(unitemporalDelta.digestField());
-            unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
+            unitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             unitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
             return metaFields;
@@ -193,7 +194,7 @@ public class IngestModeVisitors
             Set<String> metaFields = new HashSet<>();
 
             metaFields.add(bitemporalDelta.digestField());
-            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD);
+            bitemporalDelta.mergeStrategy().accept(MergeStrategyVisitors.EXTRACT_DELETE_FIELD).ifPresent(metaFields::add);
             bitemporalDelta.dataSplitField().ifPresent(metaFields::add);
 
             return metaFields;
@@ -203,60 +204,8 @@ public class IngestModeVisitors
         public Set<String> visitBulkLoad(BulkLoadAbstract bulkLoad)
         {
             Set<String> metaFields = new HashSet<>();
-            Optional<String> digestField = bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY);
-            digestField.ifPresent(metaFields::add);
+            bulkLoad.digestGenStrategy().accept(EXTRACT_DIGEST_FIELD_FROM_DIGEST_GEN_STRATEGY).ifPresent(metaFields::add);
             return metaFields;
-        }
-    };
-
-    public static final IngestModeVisitor<Boolean> IS_INGEST_MODE_TEMPORAL = new IngestModeVisitor<Boolean>()
-    {
-        @Override
-        public Boolean visitAppendOnly(AppendOnlyAbstract appendOnly)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
-        {
-            return false;
-        }
-
-        @Override
-        public Boolean visitUnitemporalSnapshot(UnitemporalSnapshotAbstract unitemporalSnapshot)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitUnitemporalDelta(UnitemporalDeltaAbstract unitemporalDelta)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBitemporalSnapshot(BitemporalSnapshotAbstract bitemporalSnapshot)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBitemporalDelta(BitemporalDeltaAbstract bitemporalDelta)
-        {
-            return true;
-        }
-
-        @Override
-        public Boolean visitBulkLoad(BulkLoadAbstract bulkLoad)
-        {
-            return false;
         }
     };
 

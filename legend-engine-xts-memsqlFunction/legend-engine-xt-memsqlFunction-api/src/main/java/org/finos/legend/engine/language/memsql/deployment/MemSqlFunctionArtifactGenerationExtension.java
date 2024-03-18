@@ -24,7 +24,7 @@ import java.util.List;
 
 public class MemSqlFunctionArtifactGenerationExtension implements ArtifactGenerationExtension
 {
-    private static final String ROOT_PATH = "bigQueryFunction";
+    private static final String ROOT_PATH = "memSqlFunction";
 
     @Override
     public String getKey()

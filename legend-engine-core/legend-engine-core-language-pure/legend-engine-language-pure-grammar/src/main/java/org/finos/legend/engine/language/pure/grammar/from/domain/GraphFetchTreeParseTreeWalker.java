@@ -69,7 +69,7 @@ public class GraphFetchTreeParseTreeWalker
         result.sourceInformation = walkerSourceInformation.getSourceInformation(definitionContext.qualifiedName());
         result.subTrees = subTrees;
         result.subTypeTrees = subTypeTrees;
-        return DomainParseTreeWalker.wrapWithClassInstance(result, "rootGraphFetchTree");
+        return DomainParseTreeWalker.wrapWithClassInstance(result, result.sourceInformation, "rootGraphFetchTree");
     }
 
     private PropertyGraphFetchTree visitGraphPathContext(GraphFetchTreeParserGrammar.GraphPathContext graphPathContext)

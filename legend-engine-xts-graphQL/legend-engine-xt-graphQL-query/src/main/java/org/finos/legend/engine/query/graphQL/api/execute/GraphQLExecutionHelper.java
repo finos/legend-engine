@@ -52,13 +52,14 @@ import org.finos.legend.engine.protocol.graphQL.metamodel.value.Value;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.ValueVisitor;
 import org.finos.legend.engine.protocol.graphQL.metamodel.value.Variable;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Iterator;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 public class GraphQLExecutionHelper
 {
@@ -105,7 +106,7 @@ public class GraphQLExecutionHelper
             @Override
             public Object visit(ObjectValue val)
             {
-                throw new UnsupportedOperationException("Unsupported value specification type");
+                return val;
             }
 
             @Override
@@ -264,7 +265,120 @@ public class GraphQLExecutionHelper
     static Map<String, Result> getParameterMap(OperationDefinition graphQLQuery, String fieldName)
     {
         Map<String, Result> parameterMap = new HashMap<>();
-        extractFieldByName(graphQLQuery, fieldName).arguments.forEach(a -> parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value))));
+        extractFieldByName(graphQLQuery, fieldName).arguments.forEach(a ->
+            {
+                if (a.name.equals("where"))
+                {
+                    parameterMap.putAll(visitWhere(a.value, "where"));
+                }
+                else
+                {
+                    parameterMap.put(a.name, new ConstantResult(argumentValueToObject(a.value)));
+                }
+            }
+        );
         return parameterMap;
+    }
+
+    public static Map<String, Result> visitWhere(Value value, String prefix)
+    {
+        return value.accept(new ValueVisitor<Map<String, Result>>()
+        {
+            @Override
+            public Map<String, Result> visit(BooleanValue val)
+            {
+                Map<String, Result> m = new HashMap<>();
+                m.put(prefix, new ConstantResult(val.value));
+                return m;
+            }
+
+            @Override
+            public Map<String, Result> visit(EnumValue val)
+            {
+                Map<String, Result> m = new HashMap<>();
+                m.put(prefix, new ConstantResult(val.value));
+                return m;
+            }
+
+            @Override
+            public Map<String, Result> visit(FloatValue val)
+            {
+                Map<String, Result> m = new HashMap<>();
+                m.put(prefix, new ConstantResult(val.value));
+                return m;
+            }
+
+            @Override
+            public Map<String, Result> visit(IntValue val)
+            {
+                Map<String, Result> m = new HashMap<>();
+                m.put(prefix, new ConstantResult(val.value));
+                return m;
+            }
+
+            @Override
+            public Map<String, Result> visit(ListValue val)
+            {
+                Map<String, Result> m = new HashMap<>();
+                List<Object> l = new ArrayList<>();
+                Iterator<Value> v = val.values.stream().iterator();
+                int idx = 0;
+                while (v.hasNext())
+                {
+                    if (prefix.endsWith("__in"))
+                    {
+                        l.add(argumentValueToObject(v.next()));
+                    }
+                    else
+                    {
+                        m.putAll(visitWhere(v.next(), prefix + idx));
+                        idx++;
+                    }
+                }
+                if (prefix.endsWith("__in"))
+                {
+                    m.put(prefix, new ConstantResult(l));
+                }
+                return m;
+            }
+
+            @Override
+            public Map<String, Result> visit(NullValue val)
+            {
+                return new HashMap<String, Result>();
+            }
+
+            @Override
+            public Map<String, Result> visit(ObjectValue val)
+            {
+                Map<String, Result> m = new HashMap<>();
+                val.fields.stream().map(v ->
+                {
+                    if (Objects.equals(v.name, "_contains"))
+                    {
+                        return visitWhere(v.value, prefix.replace("_","") + v.name.replace("_",""));
+                    }
+                    else
+                    {
+                        return visitWhere(v.value, prefix + "_" + v.name);
+                    }
+                }).forEach(m::putAll);
+                return m;
+            }
+
+            @Override
+            public Map<String, Result> visit(StringValue val)
+            {
+                Map<String, Result> m = new HashMap<>();
+                m.put(prefix, new ConstantResult(val.value));
+                return m;
+            }
+
+            @Override
+            public Map<String, Result> visit(Variable val)
+            {
+                throw new UnsupportedOperationException("Variables are not supported yet");
+            }
+        });
     }
 }

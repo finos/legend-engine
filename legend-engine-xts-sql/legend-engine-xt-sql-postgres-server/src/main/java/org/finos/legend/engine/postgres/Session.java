@@ -21,6 +21,13 @@
 
 package org.finos.legend.engine.postgres;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import org.finos.legend.engine.language.sql.grammar.from.SQLGrammarParser;
 import org.finos.legend.engine.language.sql.grammar.from.antlr4.SqlBaseParser;
 import org.finos.legend.engine.postgres.handler.PostgresPreparedStatement;
@@ -31,12 +38,6 @@ import org.finos.legend.engine.postgres.utils.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-
 public class Session implements AutoCloseable
 {
 
@@ -44,9 +45,12 @@ public class Session implements AutoCloseable
     private final Map<String, Prepared> parsed = new HashMap<>();
     private final Map<String, Portal> portals = new HashMap<>();
     private final ExecutionDispatcher dispatcher;
+    private ExecutorService executorService;
+    private CompletableFuture<?> activeExecution;
 
-    public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler)
+    public Session(SessionHandler dataSessionHandler, SessionHandler metaDataSessionHandler, ExecutorService executorService)
     {
+        this.executorService = executorService;
         this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
     }
 
@@ -54,10 +58,18 @@ public class Session implements AutoCloseable
     {
         //TODO do we need to handle batch requests?
         LOGGER.info("Sync");
-        CompletableFuture<String> completableFuture = new CompletableFuture<>();
-        completableFuture.complete(null);
-        return completableFuture;
-
+        if (activeExecution == null)
+        {
+            CompletableFuture<String> completableFuture = new CompletableFuture<>();
+            completableFuture.complete(null);
+            return completableFuture;
+        }
+        else
+        {
+            CompletableFuture result = activeExecution;
+            activeExecution = null;
+            return result;
+        }
     }
 
     public void parse(String statementName, String query, List<Integer> paramTypes)
@@ -305,7 +317,7 @@ public class Session implements AutoCloseable
         }
     }
 
-    public PostgresResultSet execute(String portalName, int maxRows)
+    public CompletableFuture<?> execute(String portalName, int maxRows, ResultSetReceiver resultSetReceiver)
     {
         Portal portal = getSafePortal(portalName);
         if (LOGGER.isDebugEnabled())
@@ -318,15 +330,23 @@ public class Session implements AutoCloseable
             PostgresPreparedStatement preparedStatement = portal.prep.prep;
             if (preparedStatement == null)
             {
-                return null;
+                resultSetReceiver.allFinished();
+                return CompletableFuture.completedFuture(Boolean.TRUE);
             }
+
             preparedStatement.setMaxRows(maxRows);
-            boolean results = preparedStatement.execute();
-            if (!results)
+            executorService.submit(new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver));
+
+            if (activeExecution == null)
             {
-                return null;
+                activeExecution = resultSetReceiver.completionFuture();
             }
-            return preparedStatement.getResultSet();
+            else
+            {
+                activeExecution = activeExecution
+                        .thenCompose(ignored -> resultSetReceiver.completionFuture());
+            }
+            return activeExecution;
         }
         catch (Exception e)
         {
@@ -334,7 +354,8 @@ public class Session implements AutoCloseable
         }
     }
 
-    public PostgresResultSet executeSimple(String query)
+
+    public CompletableFuture<?> executeSimple(String query, ResultSetReceiver resultSetReceiver)
     {
         if (LOGGER.isDebugEnabled())
         {
@@ -343,16 +364,22 @@ public class Session implements AutoCloseable
         try
         {
             PostgresStatement statement = getSessionHandler(query).createStatement();
-            boolean results = statement.execute(query);
-            if (!results)
+            executorService.submit(new StatementExecutionTask(statement, query, resultSetReceiver));
+
+            if (activeExecution == null)
             {
-                return null;
+                activeExecution = resultSetReceiver.completionFuture();
             }
-            return statement.getResultSet();
+            else
+            {
+                activeExecution = activeExecution
+                        .thenCompose(ignored -> resultSetReceiver.completionFuture());
+            }
+            return activeExecution;
         }
         catch (Exception e)
         {
-            throw new RuntimeException(e);
+            throw ExceptionUtil.wrapException(e);
         }
     }
 
@@ -447,6 +474,82 @@ public class Session implements AutoCloseable
             this.name = portalName;
             this.prep = preparedStmt;
             this.resultColumnFormat = resultColumnFormat;
+        }
+    }
+
+
+    private static class StatementExecutionTask implements Callable<Boolean>
+    {
+        private final PostgresStatement statement;
+        private final ResultSetReceiver resultSetReceiver;
+
+        private String query;
+
+        public StatementExecutionTask(PostgresStatement statement, String query, ResultSetReceiver resultSetReceiver)
+        {
+            this.statement = statement;
+            this.resultSetReceiver = resultSetReceiver;
+            this.query = query;
+        }
+
+        @Override
+        public Boolean call() throws Exception
+        {
+            try
+            {
+                boolean results = statement.execute(query);
+                if (!results)
+                {
+                    resultSetReceiver.allFinished();
+                }
+                else
+                {
+                    PostgresResultSet rs = statement.getResultSet();
+                    resultSetReceiver.sendResultSet(rs);
+                    resultSetReceiver.allFinished();
+                }
+            }
+            catch (Exception e)
+            {
+                resultSetReceiver.fail(e);
+            }
+            return true;
+        }
+    }
+
+    private static class PreparedStatementExecutionTask implements Callable<Boolean>
+    {
+        private final PostgresPreparedStatement preparedStatement;
+        private final ResultSetReceiver resultSetReceiver;
+
+        public PreparedStatementExecutionTask(PostgresPreparedStatement preparedStatement, ResultSetReceiver resultSetReceiver)
+        {
+            this.preparedStatement = preparedStatement;
+            this.resultSetReceiver = resultSetReceiver;
+        }
+
+        @Override
+        public Boolean call() throws Exception
+        {
+            try
+            {
+                boolean results = preparedStatement.execute();
+                if (!results)
+                {
+                    resultSetReceiver.allFinished();
+                }
+                else
+                {
+                    PostgresResultSet rs = preparedStatement.getResultSet();
+                    resultSetReceiver.sendResultSet(rs);
+                    resultSetReceiver.allFinished();
+                }
+            }
+            catch (Exception e)
+            {
+                resultSetReceiver.fail(e);
+            }
+            return true;
         }
     }
 

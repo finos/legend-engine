@@ -1,26 +1,26 @@
-import meta::rel::utils::visitor::*;
+import meta::external::store::rel::utils::visitor::*;
 
-Class meta::rel::utils::visitor::Visited<T> {
+Class meta::external::store::rel::utils::visitor::Visited<T> {
   values: T[*];
   explored: Map<Any, Any>[1];
 }
 
-function meta::rel::utils::visitor::report<T>(visited: Visited<T>[1], object: Any[1]): Visited<T>[1] {
+function meta::external::store::rel::utils::visitor::report<T>(visited: Visited<T>[1], object: Any[1]): Visited<T>[1] {
   ^$visited(explored=$visited.explored->put($object, $object));
 }
 
-function meta::rel::utils::visitor::report<T>(visited: Visited<T>[1], other: Visited<T>[1]): Visited<T>[1] {
+function meta::external::store::rel::utils::visitor::report<T>(visited: Visited<T>[1], other: Visited<T>[1]): Visited<T>[1] {
   ^$visited(explored=$visited.explored->putAll($other.explored));
 }
 
-function meta::rel::utils::visitor::with<T>(visited: Visited<T>[1], values: T[*]): Visited<T>[1] {
+function meta::external::store::rel::utils::visitor::with<T>(visited: Visited<T>[1], values: T[*]): Visited<T>[1] {
     ^$visited(values=$visited.values->concatenate($values));
 }
 
-function meta::rel::utils::visitor::update<T>(visited: Visited<T>[1], other: Visited<T>[1]): Visited<T>[1] {
+function meta::external::store::rel::utils::visitor::update<T>(visited: Visited<T>[1], other: Visited<T>[1]): Visited<T>[1] {
     ^$visited(values=$visited.values->concatenate($other.values), explored=$visited.explored->putAll($other.explored));
 }
 
-function meta::rel::utils::visitor::hasVisited<T>(visited: Visited<T>[1], object: T[1]): Boolean[1] {
+function meta::external::store::rel::utils::visitor::hasVisited<T>(visited: Visited<T>[1], object: T[1]): Boolean[1] {
   !$visited.explored->get($object)->isEmpty();
 }

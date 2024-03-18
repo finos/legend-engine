@@ -14,6 +14,7 @@
 
 package org.finos.legend.engine.language.pure.compiler.toPureGraph;
 
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.text.Text;
@@ -24,6 +25,12 @@ import java.util.Collections;
 public class TextCompilerExtension implements CompilerExtension
 {
     @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("PackageableElement", "Text");
+    }
+
+    @Override
     public CompilerExtension build()
     {
         return new TextCompilerExtension();
@@ -33,6 +40,6 @@ public class TextCompilerExtension implements CompilerExtension
     public Iterable<? extends Processor<?>> getExtraProcessors()
     {
         return Collections.singletonList(Processor.newProcessor(Text.class,
-                (text, context) -> new Root_meta_pure_metamodel_text_Text_Impl(text.name, null, context.pureModel.getClass("meta::pure::metamodel::text::Text"))._name(text.name)._type(text.type)._content(text.content)));
+                (text, context) -> new Root_meta_pure_metamodel_text_Text_Impl(text.name, SourceInformationHelper.toM3SourceInformation(text.sourceInformation), context.pureModel.getClass("meta::pure::metamodel::text::Text"))._name(text.name)._type(text.type)._content(text.content)));
     }
 }

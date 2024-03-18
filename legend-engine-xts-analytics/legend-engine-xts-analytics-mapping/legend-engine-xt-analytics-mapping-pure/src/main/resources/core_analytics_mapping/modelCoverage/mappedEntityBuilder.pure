@@ -15,7 +15,6 @@
 import meta::relational::mapping::*;
 import meta::analytics::mapping::modelCoverage::*;
 import meta::pure::mapping::*;
-import meta::pure::mapping::modelToModel::*;
 import meta::external::store::model::*;
 import meta::analytics::mapping::modelCoverage::utility::*;
 

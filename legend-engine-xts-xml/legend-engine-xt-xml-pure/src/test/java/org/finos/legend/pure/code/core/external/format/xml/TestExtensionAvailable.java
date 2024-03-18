@@ -17,9 +17,9 @@ package org.finos.legend.pure.code.core.external.format.xml;
 
 import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.pure.code.core.PureCoreExtension;
+import org.finos.legend.engine.pure.code.core.LegendPureCoreExtension;
 import org.finos.legend.engine.pure.code.core.PureCoreExtensionLoader;
-import org.finos.legend.pure.code.core.XMLPureCoreExtension;
+import org.finos.legend.pure.code.core.XMLLegendPureCoreExtension;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,8 +28,8 @@ public class TestExtensionAvailable
     @Test
     public void testServiceAvailable()
     {
-        MutableList<PureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
-        Assert.assertEquals(1, extensions.selectInstancesOf(XMLPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
+        MutableList<LegendPureCoreExtension> extensions =  PureCoreExtensionLoader.extensions();
+        Assert.assertEquals(1, extensions.selectInstancesOf(XMLLegendPureCoreExtension.class).get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).size());
         Assert.assertEquals("External Format - XSD", extensions.get(0).extraPureCoreExtensions(PureModel.CORE_PURE_MODEL.getExecutionSupport()).getFirst()._type());
     }
 }

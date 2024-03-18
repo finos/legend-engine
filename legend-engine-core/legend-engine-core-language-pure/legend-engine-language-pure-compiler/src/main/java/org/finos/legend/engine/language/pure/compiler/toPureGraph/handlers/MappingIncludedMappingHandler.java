@@ -15,6 +15,7 @@
 package org.finos.legend.engine.language.pure.compiler.toPureGraph.handlers;
 
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingInclude;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.mapping.MappingIncludeMapping;
 import org.finos.legend.pure.generated.Root_meta_pure_mapping_MappingInclude_Impl;
@@ -33,7 +34,7 @@ public class MappingIncludedMappingHandler implements IncludedMappingHandler
     public org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude processMappingInclude(MappingInclude mappingInclude, CompileContext context, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping parentMapping, org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping includedMapping)
     {
         MappingIncludeMapping mappingIncludeMapping = (MappingIncludeMapping) mappingInclude;
-        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude include = new Root_meta_pure_mapping_MappingInclude_Impl("", null, context.pureModel.getClass("meta::pure::mapping::MappingInclude"));
+        org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.MappingInclude include = new Root_meta_pure_mapping_MappingInclude_Impl("", SourceInformationHelper.toM3SourceInformation(mappingInclude.sourceInformation), context.pureModel.getClass("meta::pure::mapping::MappingInclude"));
         include._owner(parentMapping);
         if (mappingIncludeMapping.sourceDatabasePath != null && mappingIncludeMapping.targetDatabasePath != null)
         {

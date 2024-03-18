@@ -15,7 +15,6 @@
 import meta::pure::mapping::*;
 import meta::pure::store::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::json::*;
 
 import meta::protocols::pure::v1_29_0::extension::*;
@@ -60,11 +59,11 @@ Class meta::protocols::pure::v1_29_0::extension::SerializerExtension_v1_29_0 ext
    scan_buildBasePureModel_extractStores : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::pure::store::Store[*]}>[*]}>[0..1];
    scan_buildBasePureModel_processProperties : Function<{Mapping[1], meta::pure::extension::Extension[*] -> Function<{Nil[1]->meta::pure::store::Store[*]}>[*]}>[0..1];
 
-   invocation_execution_execute1 : Function<{ExecutionContext[1]->Boolean[1]}>[*];
-   invocation_execution_execute2_pre : Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*];
-   invocation_execution_execute2_pre2 : Function<{meta::pure::extension::Extension[*] -> Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*]}>[0..1];
-   invocation_execution_execute2_post : Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*];
-   invocation_execution_execute2_post2 : Function<{meta::pure::extension::Extension[*] -> Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*]}>[0..1];
+   invocation_execution_execute1 : Function<{meta::pure::runtime::ExecutionContext[1]->Boolean[1]}>[*];
+   invocation_execution_execute2_pre : Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],meta::pure::runtime::ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*];
+   invocation_execution_execute2_pre2 : Function<{meta::pure::extension::Extension[*] -> Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],meta::pure::runtime::ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*]}>[0..1];
+   invocation_execution_execute2_post : Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],meta::pure::runtime::ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*];
+   invocation_execution_execute2_post2 : Function<{meta::pure::extension::Extension[*] -> Pair<Function<{String[1]->Boolean[1]}>, Function<{String[1], JSONObject[1], Mapping[1], Runtime[1],ExtendedJSONDeserializationConfig[1],meta::pure::runtime::ExecutionContext[0..1]->Pair<List<Any>,List<Activity>>[1]}>>[*]}>[0..1];
    invocation_execution_transformContext : Function<{Nil[1]->meta::protocols::pure::v1_29_0::metamodel::ExecutionContext[1]}>[*];
 }
 

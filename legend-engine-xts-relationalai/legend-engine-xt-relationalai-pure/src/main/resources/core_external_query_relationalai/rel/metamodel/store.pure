@@ -1,8 +1,8 @@
-import meta::rel::metamodel::store::*;
-import meta::rel::metamodel::*;
-import meta::rel::utils::*;
+import meta::external::store::rel::metamodel::store::*;
+import meta::external::store::rel::metamodel::*;
+import meta::external::store::rel::utils::*;
 
-Class meta::rel::metamodel::store::RAIDatabase extends meta::pure::store::Store {
+Class meta::external::store::rel::metamodel::store::RAIDatabase extends meta::pure::store::Store {
   // In the case of relational databases, we find schema definitions here (tables, joins).
   // In the case of RAI, we specify schemas of relations. Those relations are assumed to
   // be installed.
@@ -20,14 +20,14 @@ Class meta::rel::metamodel::store::RAIDatabase extends meta::pure::store::Store 
 /**
   * Abstract type representing the declaration of a relation.
   */
-Class <<typemodifiers.abstract>> meta::rel::metamodel::store::RelationDeclaration { }
+Class <<typemodifiers.abstract>> meta::external::store::rel::metamodel::store::RelationDeclaration { }
 
-Class meta::rel::metamodel::store::NamedRelationDeclaration extends RelationDeclaration {
+Class meta::external::store::rel::metamodel::store::NamedRelationDeclaration extends RelationDeclaration {
   name: String[1];
   type: RelationType[1];
 }
 
-Class meta::rel::metamodel::store::NestedRelationDeclaration extends RelationDeclaration {
+Class meta::external::store::rel::metamodel::store::NestedRelationDeclaration extends RelationDeclaration {
   parent: RelationDeclaration[1];
   this: RelationDeclaration[1];
 }
@@ -37,31 +37,31 @@ Class meta::rel::metamodel::store::NestedRelationDeclaration extends RelationDec
 /// Constructor methods
 /////////////////////////
 
-function meta::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], program: Program[0..1], name: String[0..1]): RAIDatabase[1] {
+function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], program: Program[0..1], name: String[0..1]): RAIDatabase[1] {
   ^RAIDatabase(declarations=$declarations, program=$program, name=$name);
 }
 
-function meta::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], name: String[0..1]): RAIDatabase[1] {
+function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*], name: String[0..1]): RAIDatabase[1] {
   RAIDatabase($declarations, [], $name);
 }
 
-function meta::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*]): RAIDatabase[1] {
+function meta::external::store::rel::metamodel::store::RAIDatabase(declarations: RelationDeclaration[*]): RAIDatabase[1] {
   RAIDatabase($declarations, []);
 }
 
-function meta::rel::metamodel::store::relation(name: String[1], type: RelationType[1]): NamedRelationDeclaration[1] {
+function meta::external::store::rel::metamodel::store::relation(name: String[1], type: RelationType[1]): NamedRelationDeclaration[1] {
   ^NamedRelationDeclaration(name=$name, type=$type);
 }
 
-function meta::rel::metamodel::store::relation(name: String[1], arguments: ConstType[1..*]): NamedRelationDeclaration[1] {
+function meta::external::store::rel::metamodel::store::relation(name: String[1], arguments: ConstType[1..*]): NamedRelationDeclaration[1] {
   relation($name, relationType($arguments));
 }
 
-function meta::rel::metamodel::store::nestedRelation(parent: RelationDeclaration[1], this: RelationDeclaration[1]): NestedRelationDeclaration[1] {
+function meta::external::store::rel::metamodel::store::nestedRelation(parent: RelationDeclaration[1], this: RelationDeclaration[1]): NestedRelationDeclaration[1] {
   ^NestedRelationDeclaration(parent=$parent, this=$this);
 }
 
-function meta::rel::metamodel::store::with(database: RAIDatabase[1], declarations: RelationDeclaration[*]): RAIDatabase[1] {
+function meta::external::store::rel::metamodel::store::with(database: RAIDatabase[1], declarations: RelationDeclaration[*]): RAIDatabase[1] {
   $database->mutateAdd('declarations', $declarations);
 }
 
@@ -69,7 +69,7 @@ function meta::rel::metamodel::store::with(database: RAIDatabase[1], declaration
 /// API methods
 /////////////////////////
 
-function meta::rel::metamodel::store::name(decl: RelationDeclaration[1]): String[1] {
+function meta::external::store::rel::metamodel::store::name(decl: RelationDeclaration[1]): String[1] {
   $decl->match([
     {named: NamedRelationDeclaration[1] | $named.name},
     {nested: NestedRelationDeclaration[1] | format('%s:%s', [$nested.parent->name(), $nested.this->name()])}
@@ -80,10 +80,10 @@ function meta::rel::metamodel::store::name(decl: RelationDeclaration[1]): String
 /// Misc methods
 /////////////////////////
 
-function meta::rel::metamodel::store::toString(rel: NamedRelationDeclaration[1]): String[1] {
+function meta::external::store::rel::metamodel::store::toString(rel: NamedRelationDeclaration[1]): String[1] {
   $rel.name + '(' + $rel.type->toString() + ')';
 }
 
-function meta::rel::metamodel::store::toString(db: RAIDatabase[1]): String[1] {
+function meta::external::store::rel::metamodel::store::toString(db: RAIDatabase[1]): String[1] {
   $db.declarations->stringify(e | $e->toString(), '\n');
 }

@@ -18,41 +18,40 @@ import meta::pure::router::clustering::*;
 import meta::pure::router::metamodel::clustering::*;
 import meta::pure::router::utils::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
 import meta::pure::mapping::*;
 import meta::pure::executionPlan::*;
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   $f->executionPlan(^ExecutionContext(), $extensions, noDebug());
+   $f->executionPlan(^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
-   $f->executionPlan(^ExecutionContext(), $extensions, $debugContext);
+   $f->executionPlan(^meta::pure::runtime::ExecutionContext(), $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
    $f->executionPlan($context, $extensions, noDebug());
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
-   $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, $debugContext);
+   $f->executionPlan($m, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions, $debugContext);
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, noDebug());
+   $f->executionPlan($m, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions, noDebug());
 }
 
 function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], shouldDebug:Boolean[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
-   $f->executionPlan($m, $runtime, ^ExecutionContext(), $extensions, if($shouldDebug,|debug(),|noDebug()));
+   $f->executionPlan($m, $runtime, ^meta::pure::runtime::ExecutionContext(), $extensions, if($shouldDebug,|debug(),|noDebug()));
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*]):ExecutionPlan[1]
 {
    $f->executionPlan($m, $runtime, $context, $extensions, noDebug());
 }
@@ -67,7 +66,50 @@ Class meta::pure::executionPlan::ExecutionOption
 {
 }
 
-Class meta::pure::executionPlan::ExecutionOptionContext extends ExecutionContext
+Class meta::pure::executionPlan::MultiExecutionContext extends meta::pure::runtime::ExecutionContext
+{
+    childExecutionContext:meta::pure::runtime::ExecutionContext[*];
+    allContexts()  {$this.childExecutionContext->map(e |if($e->instanceOf(MultiExecutionContext),
+                                                              | $e->concatenate($e->cast(@MultiExecutionContext)->collectionMultiExecutionContexts([])),
+                                                              |$e)
+                                                        );  
+                       }:meta::pure::runtime::ExecutionContext[*];
+}
+function meta::pure::executionPlan::getContexts(context:meta::pure::runtime::ExecutionContext[1]):meta::pure::runtime::ExecutionContext[*]
+{
+      if($context->instanceOf(MultiExecutionContext),
+          | $context->concatenate($context->cast(@MultiExecutionContext).allContexts()),
+          |$context);
+}
+
+function meta::pure::executionPlan::allContextsOfType<T>(context:meta::pure::runtime::ExecutionContext[1],contextFilter:Class<T>[1]):T[*]
+{
+      $context->getContexts()->filter(c|$c->instanceOf($contextFilter))->cast(@T);
+}
+
+
+function meta::pure::executionPlan::mergeContext(rootContext:meta::pure::runtime::ExecutionContext[1],childContext:meta::pure::runtime::ExecutionContext[1]):MultiExecutionContext[1]
+  {
+      if($rootContext->instanceOf(MultiExecutionContext),
+              | let mult = $rootContext->cast(@MultiExecutionContext);
+                 ^$mult(childExecutionContext+=$childContext );,
+               |^MultiExecutionContext(childExecutionContext =$rootContext ->concatenate($childContext) );
+
+      );      
+              
+  }
+
+
+
+function <<access.private>> meta::pure::executionPlan::collectionMultiExecutionContexts(context:MultiExecutionContext[1], visited : meta::pure::runtime::ExecutionContext[*]):meta::pure::runtime::ExecutionContext[*]
+{
+       $context.childExecutionContext->map(e |if($e->instanceOf(MultiExecutionContext) && !$e->in($visited),
+                                                              |$e->concatenate( $e->cast(@MultiExecutionContext)->collectionMultiExecutionContexts( $visited->concatenate($e) )),
+                                                              |$e)
+                                                        )  
+}
+
+Class meta::pure::executionPlan::ExecutionOptionContext extends MultiExecutionContext
 {
    executionOptions : ExecutionOption[*];
 }
@@ -85,19 +127,19 @@ Class meta::pure::executionPlan::PlanSetPlaceHolder
     tdsColumns: TDSColumn[*];
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let routed = $f->routeFunction($context, $extensions, $debugContext);
    meta::pure::executionPlan::executionPlan($routed, $f, ^Mapping(package=meta::pure::executionPlan, name='dummy'), ^meta::core::runtime::Runtime(), $context, $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let routed = $f->routeFunction($m, $runtime, $context, $extensions, $debugContext);
    meta::pure::executionPlan::executionPlan($routed, $f, $m, $runtime, $context, $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let clusters = $routedFunction.expressionSequence->evaluateAndDeactivate()->cast(@ClusteredValueSpecification);
 
@@ -108,7 +150,7 @@ function meta::pure::executionPlan::executionPlan(routedFunction:FunctionDefinit
    meta::pure::executionPlan::executionPlan($clusters, $routedFunction, $f, $m, $runtime, $context, $inScopeVars, $extensions, $debugContext);
 }
 
-function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecification[*], routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
+function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecification[*], routedFunction:FunctionDefinition<Any>[1], f:FunctionDefinition<Any>[1], m:Mapping[1], runtime:meta::core::runtime::Runtime[1], context:meta::pure::runtime::ExecutionContext[1], inScopeVars:Map<String, List<Any>>[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionPlan[1]
 {
    let functionParameters = $f->stubFuncParameters();
 
@@ -136,7 +178,7 @@ function meta::pure::executionPlan::executionPlan(clusters:ClusteredValueSpecifi
 
    let executionOptionParameters = $context->match([
                                                 p: meta::pure::executionPlan::ExecutionOptionContext[1] | $p->meta::pure::executionPlan::stubExecutionOptionParameters($extensions),
-                                                c: ExecutionContext[1] | []
+                                                c: meta::pure::runtime::ExecutionContext[1] | []
                                              ]);
 
    let updatedNode = addFunctionParametersValidationNode($node, $f, $functionParameters->concatenate($executionOptionParameters)->checkConflictingParameters(), $routedFunction);
@@ -163,6 +205,7 @@ function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], 
 function meta::pure::executionPlan::generatePlatformCode(plan:ExecutionPlan[1], platformId:String[1], config:meta::pure::executionPlan::platformBinding::PlatformBindingConfig[1], extensions:meta::pure::extension::Extension[*], debug:DebugContext[1]):ExecutionPlan[1]
 {
    let platformBinding = $extensions->meta::pure::executionPlan::platformBinding::extractPlatformBindingById($platformId);
+
    $platformBinding.bindPlanToPlatform->eval($plan, $config, $extensions, $debug);
 }
 
@@ -213,7 +256,7 @@ function meta::pure::executionPlan::stubFuncParameters(f:FunctionDefinition<Any>
    $f->functionType().parameters->evaluateAndDeactivate()->map(p|^PlanVarPlaceHolder(name=$p.name, type = $p.genericType.rawType->toOne(), multiplicity=$p.multiplicity));
 }
 
-function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], context:ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
+function meta::pure::executionPlan::plan(cluster:ClusteredValueSpecification[1], inScopeVars:Map<String, List<Any>>[1], context:meta::pure::runtime::ExecutionContext[1], extensions:meta::pure::extension::Extension[*], debugContext:DebugContext[1]):ExecutionNode[1]
 {
    $cluster->generateExecutionNodeFromCluster($inScopeVars, $context, $extensions, $debugContext)
 }
@@ -225,14 +268,14 @@ function meta::pure::executionPlan::nodeFromConnection(c:Connection[1], tree:Roo
 
 function meta::pure::executionPlan::isExecutionOptionPresent(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):Boolean[1]
 {
-   let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
+   let executionOptionsList = $execCtx->allContextsOfType(ExecutionOptionContext).executionOptions->filter(f| $f->instanceOf($execOption)); 
    assert($executionOptionsList->size() <= 1, |'Execution Option :' + $execOption.name->toOne() + 'has more than one instance specified in the context');
    $executionOptionsList->isNotEmpty();
 }
 
 function meta::pure::executionPlan::validateAndReturnExecutionOptionOfType(execCtx: ExecutionOptionContext[1], execOption: Class<Any>[1]):ExecutionOption[1]
 {
-   let executionOptionsList = $execCtx.executionOptions->filter(f| $f->instanceOf($execOption));
+   let executionOptionsList =   $execCtx->allContextsOfType(ExecutionOptionContext).executionOptions->filter(f| $f->instanceOf($execOption));  
    assert($executionOptionsList->size() == 1, |'Execution Option:' + $execOption.name->toOne() + 'not mentioned or mentioned more than once as part of the context');
    $executionOptionsList->head()->toOne();
 }

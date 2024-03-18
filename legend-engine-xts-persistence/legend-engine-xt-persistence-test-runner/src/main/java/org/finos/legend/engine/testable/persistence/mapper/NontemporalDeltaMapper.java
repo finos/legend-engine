@@ -22,6 +22,7 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persist
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.persistence.relational.temporality.auditing.NoAuditing;
 import org.finos.legend.engine.testable.persistence.mapper.v1.MappingVisitors;
 
+import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.BATCH_ID_FIELD_DEFAULT;
 import static org.finos.legend.engine.testable.persistence.mapper.v1.IngestModeMapper.DIGEST_FIELD_DEFAULT;
 
 public class NontemporalDeltaMapper
@@ -32,6 +33,7 @@ public class NontemporalDeltaMapper
                 .digestField(DIGEST_FIELD_DEFAULT)
                 .auditing(nontemporalDelta.auditing.accept(MappingVisitors.MAP_TO_COMPONENT_AUDITING))
                 .mergeStrategy(nontemporalDelta.mergeStrategy.accept(MappingVisitors.MAP_TO_COMPONENT_MERGE_STRATEGY))
+                .batchIdField(BATCH_ID_FIELD_DEFAULT)
                 .build();
     }
 
@@ -49,6 +51,7 @@ public class NontemporalDeltaMapper
                 .digestField(DIGEST_FIELD_DEFAULT)
                 .auditing(temporality.auditing.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_NONTEMPORAL_AUDITING))
                 .mergeStrategy(((Delta) datasetType).actionIndicator.accept(org.finos.legend.engine.testable.persistence.mapper.v2.MappingVisitors.MAP_TO_COMPONENT_DELETE_STRATEGY))
+                .batchIdField(BATCH_ID_FIELD_DEFAULT)
                 .build();
     }
 }

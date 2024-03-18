@@ -15,12 +15,14 @@
 package org.finos.legend.engine.language.bigqueryFunction.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunction;
 import org.finos.legend.engine.protocol.bigqueryFunction.metamodel.BigQueryFunctionDeploymentConfiguration;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.pure.generated.*;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunction;
 import org.finos.legend.pure.generated.Root_meta_external_function_activator_bigQueryFunction_BigQueryFunctionDeploymentConfiguration;
@@ -29,12 +31,16 @@ import org.finos.legend.pure.generated.Root_meta_external_function_activator_big
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
 import org.finos.legend.pure.m3.navigation.function.FunctionDescriptor;
 
-import java.util.Collections;
-
 public class BigQueryFunctionCompilerExtension implements CompilerExtension
 {
     // Here only for dependency check error ...
     CoreFunctionActivatorCodeRepositoryProvider forDependencies;
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "BigQuery");
+    }
 
     @Override
     public CompilerExtension build()
@@ -70,7 +76,7 @@ public class BigQueryFunctionCompilerExtension implements CompilerExtension
                     ._functionName(bigQueryFunction.functionName)
                     ._function(func)
                     ._description(bigQueryFunction.description)
-                    ._owner(bigQueryFunction.owner)
+                    ._ownership(new Root_meta_external_function_activator_DeploymentOwnership_Impl("")._id(((DeploymentOwner)bigQueryFunction.ownership).id))
                     ._activationConfiguration(bigQueryFunction.activationConfiguration != null ? buildDeploymentConfig((BigQueryFunctionDeploymentConfiguration) bigQueryFunction.activationConfiguration, context) : null);
         }
         catch (Exception e)

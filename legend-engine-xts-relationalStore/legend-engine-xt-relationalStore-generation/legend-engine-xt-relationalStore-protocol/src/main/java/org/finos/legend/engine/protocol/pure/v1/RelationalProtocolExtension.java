@@ -17,10 +17,9 @@ package org.finos.legend.engine.protocol.pure.v1;
 import org.eclipse.collections.api.block.function.Function0;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
-import org.finos.legend.engine.protocol.pure.v1.packageableElement.connection.ConnectionSpecification;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
-import org.finos.legend.engine.protocol.pure.v1.model.connection.StaticJDBCConnectionSpecification;
 import org.finos.legend.engine.protocol.pure.v1.model.data.EmbeddedData;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.RelationResultType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.CreateAndPopulateTempTableExecutionNode;
@@ -30,9 +29,9 @@ import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.Relati
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalDataTypeInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalRelationDataInstantiationExecutionNode;
+import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalSaveNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalTdsInstantiationExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.SQLExecutionNode;
-import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.RelationalSaveNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalClassQueryTempTableGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalCrossRootGraphFetchExecutionNode;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.graphFetch.RelationalCrossRootQueryTempTableGraphFetchExecutionNode;
@@ -88,6 +87,12 @@ import java.util.Map;
 
 public class RelationalProtocolExtension implements PureProtocolExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
+    }
+
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {
@@ -186,11 +191,6 @@ public class RelationalProtocolExtension implements PureProtocolExtension
                         .withSubtype(BusinessMilestoning.class, "businessMilestoning")
                         .withSubtype(BusinessSnapshotMilestoning.class, "businessSnapshotMilestoning")
                         .withSubtype(ProcessingMilestoning.class, "processingMilestoning")
-                        .build(),
-
-                // Connection Specification
-                ProtocolSubTypeInfo.newBuilder(ConnectionSpecification.class)
-                        .withSubtype(StaticJDBCConnectionSpecification.class, "staticJDBC")
                         .build()
         ));
     }

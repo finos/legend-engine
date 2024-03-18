@@ -81,7 +81,7 @@ public class TestMongoDBStoreTestConnectionBuilder
         embeddedData.databaseName = LEGEND_DB;
         embeddedData.testData = Lists.mutable.of(getNameCollectionData());
 
-        Optional<Pair<Connection, List<Closeable>>> result = testConnectionFactory.tryBuildTestConnection(connection, embeddedData);
+        Optional<Pair<Connection, List<Closeable>>> result = testConnectionFactory.tryBuildTestConnection(connection, Lists.mutable.of(embeddedData));
         if (result.isPresent())
         {
             MongoDBConnection conn = (MongoDBConnection) result.get().getOne();

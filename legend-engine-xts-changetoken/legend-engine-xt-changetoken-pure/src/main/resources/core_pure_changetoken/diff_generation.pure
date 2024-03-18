@@ -1,0 +1,269 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::json::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::expand::*;
+import meta::pure::changetoken::diff_generation::*;
+import meta::pure::functions::hash::*;
+import meta::pure::metamodel::serialization::grammar::*;
+
+function meta::pure::changetoken::diff_generation::generateDiffFromVersions(versions: Versions[1], propertyRenames: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], typeKeyName: String[1], versionKeyName: String[0..1]): Versions[1]
+{
+    $versions->generateDiffFromVersionsAndScopes('new::entities::vX_X_X', 'old::entities::vX_X_X', $propertyRenames, $classRenames, $defaultValues, $typeKeyName, $versionKeyName);
+}
+
+function meta::pure::changetoken::diff_generation::generateDiffFromVersionsAndScopes(versions: Versions[1], newScope: String[1], oldScope: String[1], propertyRenames: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], typeKeyName: String[1], versionKeyName: String[0..1]): Versions[1]
+{
+    let newClasses = getClasses($newScope);
+    let oldClasses = getClasses($oldScope);
+    generateDiffFromVersionsAndClasses($versions, $newClasses, $oldClasses, $propertyRenames, $classRenames, $defaultValues, $typeKeyName, $versionKeyName);
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getClasses(scope: String[1]): Class<Any>[*]
+{
+    let entities = $scope->pathToPackage(true);
+    $entities->packageClassesRecursive();
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::generateDiffFromVersionsAndClasses(versions: Versions[1], newClasses: Class<Any>[*], oldClasses: Class<Any>[*], propertyRenames: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], typeKeyName: String[1], versionKeyName: String[0..1]): Versions[1]
+{
+    let prevVersion = if($versions.versions->size() > 0, | $versions.versions->at($versions.versions->size() - 1).version, | []);
+    let version = ^Version(
+        version = getHash($prevVersion, getHashTokens($newClasses, $versionKeyName)),
+        prevVersion = $prevVersion,
+        changeTokens = getChangeTokens($newClasses, $oldClasses, $propertyRenames, $classRenames, $defaultValues, $typeKeyName, $versionKeyName)
+    );
+    ^Versions(versions = concatenate($versions.versions, [$version]));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getHash(prevVersion: String[0..1], tokens: String[*]): String[1]
+{
+    hash($prevVersion->concatenate($tokens)->joinStrings(), HashType.SHA1);
+}
+
+function meta::pure::changetoken::diff_generation::getHashTokens(classes: Class<Any>[*], versionKeyName: String[0..1]): String[*]
+{
+    $classes
+    ->sort({x, y | stripedPaths($x, $y)})
+    ->map(c | stripPath($c)->concatenate($c.properties
+    ->filter(p | $p.name != $versionKeyName)
+    ->sort({x, y | $x.name->toOne()->compare($y.name->toOne())})
+    ->map(p | $p.name->toOne()->concatenate(stripVersionQualifier(printGenericType($p.genericType)) + '[' + printMultiplicity($p.multiplicity) + ']'))));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::stripPath(element: PackageableElement[1]): String[1]
+{
+    stripVersionQualifier(elementToPath($element));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::stripPaths(elements: PackageableElement[*]): String[*]
+{
+    $elements->map(m | $m->stripPath());
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::stripedPaths(x: PackageableElement[1], y: PackageableElement[1]): Integer[1]
+{
+    compare(stripPath($x), stripPath($y));
+}
+
+function meta::pure::changetoken::diff_generation::stripVersionQualifier(path: String[1]): String[1]
+{
+    if($path->matches('.*v[^_]+_[^_]+_[^_]+.*'), | $path->split('::')->fold({s: String[1], r: String[*] | if($s->matches('^v[^_]+_[^_]+_[^_]+$')->and($r->size() >= 2), | $r->take($r->size() - 2), | $r->concatenate($s))}, [])->joinStrings('::'), | $path);
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getChangeTokens(newClasses: Class<Any>[*], oldClasses: Class<Any>[*], propertyRenames: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], typeKeyName: String[1], versionKeyName: String[0..1]): ChangeToken[*]
+{
+    let classRenamesReverse = $classRenames->map(m | flipMap($m));
+    let propertyRenamesReverse = $propertyRenames->map(m | flipNestedMaps($m));
+    concatenate(mergeChangeTokens(getAddedClass($classRenamesReverse, $newClasses, $oldClasses), getAddField($propertyRenamesReverse, $classRenamesReverse, $defaultValues, $newClasses, $oldClasses, $typeKeyName, $versionKeyName)),
+        mergeChangeTokens(getRemovedClass($classRenames, $newClasses, $oldClasses), getRemoveField($propertyRenames, $classRenames, $defaultValues, $newClasses, $oldClasses, $typeKeyName, $versionKeyName)))
+    ->concatenate(getRenameField($propertyRenames, $oldClasses, $versionKeyName))
+    ->concatenate(getRenamedClass($classRenames, $oldClasses));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::flipMap<K, V>(m: Map<K, V>[1]): Map<V, K>[1]
+{
+    newMap($m->keys()->map(k | pair($m->get($k)->toOne(), $k)));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::flipNestedMaps<S, T, U>(m: Map<S, Map<T, U>>[1]): Map<S, Map<U, T>>[1]
+{
+    newMap($m->keys()->map(k | pair($k, $m->get($k)->toOne()->flipMap())));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::mergeChangeTokens(x: ChangeToken[*], y: ChangeToken[*]): ChangeToken[*]
+{
+    $x->concatenate($y)->sort({x, y | $x->cast(@ClassChangeToken).class->compare($y->cast(@ClassChangeToken).class)});
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getAddedClass(classRenames: Map<String, String>[0..1], newClasses: Class<Any>[*], oldClasses: Class<Any>[*]): ChangeToken[*]
+{
+    $newClasses
+    ->filter(c | not(contains(stripPaths($oldClasses), lookupOrDefault($classRenames, stripPath($c)))))
+    ->sort({x, y | stripedPaths($x, $y)})
+    ->map(c | ^AddedClass(
+            class = stripPath($c)
+    ));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::lookupOrDefault<T>(m: Map<T, T>[0..1], v: T[1]): T[1]
+{
+    if($m->isEmpty()->not()
+    ->and($m->toOne()->keys()->contains($v)),
+    | $m->toOne()->get($v)->toOne(),
+    | $v);
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::lookupOrDefault<K, V>(m: Map<K, Map<V, V>>[0..1], k: K[1], v: V[1]): V[1]
+{
+    if($m->isEmpty()->not()
+    ->and($m->toOne()->keys()->contains($k))
+    ->and($m->toOne()->get($k)->toOne()->keys()->contains($v)),
+    | $m->toOne()->get($k)->toOne()->get($v)->toOne(),
+    | $v);
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::lookupOrAny<K, V>(m: Map<K, Map<V, Any>>[0..1], k: K[1], v: V[1], a: Any[1], property: Property<Nil,Any|*>[1], typeKeyName: String[1], versionKeyName: String[0..1]): Any[1]
+{
+    if($m->isEmpty()->not()
+    ->and($m->toOne()->keys()->contains($k))
+    ->and($m->toOne()->get($k)->toOne()->keys()->contains($v)),
+    | $m->toOne()->get($k)->toOne()->get($v)->serializeAny($property, $typeKeyName, $versionKeyName),
+    | $a);
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getAddField(renamedProperties: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], newClasses: Class<Any>[*], oldClasses: Class<Any>[*], typeKeyName: String[1], versionKeyName: String[0..1]): ChangeToken[*]
+{
+    $newClasses
+    ->map(c | $c.properties->map(p | pair($c, $p)))
+    ->filter(cp | $oldClasses->map(c | $c.properties->map(p | pair(stripPath($c), $p.name->toOne())))->contains(pair(lookupOrDefault($classRenames, stripPath($cp.first)),
+    lookupOrDefault($renamedProperties, lookupOrDefault($classRenames, stripPath($cp.first)), $cp.second.name->toOne())))->not())
+    ->filter(cp | $cp.second.name != $versionKeyName)
+    ->sort({x, y | compare($x.second.name->toOne(), $y.second.name->toOne())})
+    ->sort({x, y | stripedPaths($x.first, $y.first)})
+    ->map(cp | ^AddField(
+            class = stripPath($cp.first),
+            fieldName = $cp.second.name->toOne(),
+            fieldType = stripVersionQualifier(printGenericType($cp.second.genericType)) + '[' + printMultiplicity($cp.second.multiplicity) + ']',
+            safeCast = true,
+            defaultValue = ^ConstValue(value = lookupOrAny($defaultValues, stripPath($cp.first), $cp.second.name->toOne(), if($cp.second.defaultValue->isEmpty(), | generateDefault($cp.second, $typeKeyName, $versionKeyName), | $cp.second.defaultValue.functionDefinition->toOne()->cast(@Function<{->Any[1]}>)->eval()->serializeAny($cp.second, $typeKeyName, $versionKeyName)), $cp.second, $typeKeyName, $versionKeyName))
+    ));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getRemovedClass(classRenames: Map<String, String>[0..1], newClasses: Class<Any>[*], oldClasses: Class<Any>[*]): ChangeToken[*]
+{
+    $oldClasses
+    ->filter(c | not(contains(stripPaths($newClasses), lookupOrDefault($classRenames, stripPath($c)))))
+    ->sort({x, y | stripedPaths($x, $y)})
+    ->map(c | ^RemovedClass(
+            class = stripPath($c)
+    ));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getRemoveField(renamedProperties: Map<String, Map<String, String>>[0..1], classRenames: Map<String, String>[0..1], defaultValues: Map<String, Map<String, Any>>[0..1], newClasses: Class<Any>[*], oldClasses: Class<Any>[*], typeKeyName: String[1], versionKeyName: String[0..1]): ChangeToken[*]
+{
+    $oldClasses
+    ->map(c | $c.properties->map(p | pair($c, $p)))
+    ->filter(cp | $newClasses->map(c | $c.properties->map(p | pair(stripPath($c), $p.name->toOne())))->contains(pair(lookupOrDefault($classRenames, stripPath($cp.first)),
+    lookupOrDefault($renamedProperties, stripPath($cp.first), $cp.second.name->toOne())))->not())
+    ->filter(cp | $cp.second.name != $versionKeyName)
+    ->sort({x, y | compare($x.second.name->toOne(), $y.second.name->toOne())})
+    ->sort({x, y | stripedPaths($x.first, $y.first)})
+    ->map(cp | ^RemoveField(
+            class = stripPath($cp.first),
+            fieldName = $cp.second.name->toOne(),
+            fieldType = stripVersionQualifier(printGenericType($cp.second.genericType)) + '[' + printMultiplicity($cp.second.multiplicity) + ']',
+            safeCast = true,
+            defaultValue = ^ConstValue(value = lookupOrAny($defaultValues, stripPath($cp.first), $cp.second.name->toOne(), if($cp.second.defaultValue->isEmpty(), | generateDefault($cp.second, $typeKeyName, $versionKeyName), | $cp.second.defaultValue.functionDefinition->toOne()->cast(@Function<{->Any[1]}>)->eval()->serializeAny($cp.second, $typeKeyName, $versionKeyName)), $cp.second, $typeKeyName, $versionKeyName))
+    ));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getRenameField(renamedProperties: Map<String, Map<String, String>>[0..1], oldClasses: Class<Any>[*], versionKeyName: String[0..1]): ChangeToken[*]
+{
+    if($renamedProperties->isEmpty(), | [], |
+    $oldClasses
+    ->map(c | $c.properties->map(p | pair($c, $p)))
+    ->filter(cp | $renamedProperties->toOne()->keys()->contains(stripPath($cp.first))->and($renamedProperties->toOne()->get(stripPath($cp.first))->toOne()->keys()->contains($cp.second.name->toOne())))
+    ->filter(cp | $cp.second.name != $versionKeyName)
+    ->sort({x, y | compare($x.second.name->toOne(), $y.second.name->toOne())})
+    ->sort({x, y | stripedPaths($x.first, $y.first)})
+    ->map(cp | ^RenameField(
+            class = stripPath($cp.first),
+            oldFieldName = $cp.second.name->toOne(),
+            newFieldName = $renamedProperties->toOne()->get(stripPath($cp.first))->toOne()->get($cp.second.name->toOne())->toOne()
+    )));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::getRenamedClass(renamedClasses: Map<String, String>[0..1], oldClasses: Class<Any>[*]): ChangeToken[*]
+{
+    if($renamedClasses->isEmpty(), | [], |
+    $oldClasses
+    ->filter(c | $renamedClasses->toOne()->keys()->contains(stripPath($c)))
+    ->sort({x, y | stripedPaths($x, $y)})
+    ->map(c | ^RenamedClass(
+        class = stripPath($c),
+        newName = $renamedClasses->toOne()->get(stripPath($c))->toOne()
+    )));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::serializeAny(any: Any[*], property: Property<Nil,Any|*>[1], typeKeyName: String[1], versionKeyName: String[0..1]): JSONElement[1]
+{
+    let values = $any->map(i | $i->match([
+        s: String[1] | ^JSONString(value = $s),
+        d: Date[1] | ^JSONString(value = $d->toString()),
+        d: DateTime[1] | ^JSONString(value = $d->toString()),
+        d: StrictDate[1] | ^JSONString(value = $d->toString()),
+        b: Boolean[1] | ^JSONBoolean(value = $b),
+        i: Integer[1] | ^JSONNumber(value = $i),
+        f: Float[1] | ^JSONNumber(value = $f),
+        d: Decimal[1] | ^JSONNumber(value = $d),
+        n: Number[1] | ^JSONNumber(value = $n),
+        e: Enum[1] | ^JSONString(value = stripVersionQualifier($e->type()->toOne()->elementToPath() + '.' + $e->id())),
+        m: Map<String, Any>[1] | $m->expandValue($typeKeyName),
+        l: List<Any>[1] | $l->expandValue($typeKeyName)->cast(@JSONArray).values,
+        a: Any[1] | let c = $a->class(); newJSONObject([newJSONKeyValue($typeKeyName, ^JSONString(value = stripVersionQualifier($c->elementToPath()->toString())))]->concatenate($c.properties->filter(p | $p.name != $versionKeyName)->map(p | newJSONKeyValue($p.name->toOne(), serializeAny($p->eval($a), $p, $typeKeyName, $versionKeyName)))));
+    ]));
+    if($property.multiplicity == PureOne || $property.multiplicity == PureZero || $property.multiplicity == ZeroOne, | if($property.multiplicity == PureZero || $property.multiplicity == ZeroOne && $values->size() == 0, | ^JSONNull(), | $values->toOne('Expecting one for property: ' + $property.name->toOne())), | ^JSONArray(values = $values));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::generateDefault(property: Property<Nil,Any|*>[1], typeKeyName: String[1], versionKeyName: String[0..1]): JSONElement[1]
+{
+    if($property.multiplicity->getLowerBound() == 0, | if($property.multiplicity == PureZero || $property.multiplicity == ZeroOne, | ^JSONNull(), | ^JSONArray()), | meta::pure::changetoken::diff_generation::multiply(
+        $property.genericType.rawType->match([
+            p: PrimitiveType[1] | $p->primitiveType(),
+            en: Enumeration<Enum>[1] | if($en->enumValues()->size() == 0, | fail($en->toString() + ' has 0 values'); ^JSONNull();, | let e = $en->enumValues()->at(0); let value = $e->type()->toOne()->elementToPath() + '.' + $e->id(); ^JSONString(value = stripVersionQualifier($value));),
+            c: Class<Any>[1] | newJSONObject([newJSONKeyValue($typeKeyName, ^JSONString(value = stripVersionQualifier($c->elementToPath()->toString())))]->concatenate($c.properties->filter(p | $p.name != $versionKeyName)->map(p | newJSONKeyValue($p.name->toOne(), generateDefault($p, $typeKeyName, $versionKeyName)))))
+        ]), $property.multiplicity->getLowerBound(), $property.multiplicity == PureOne));
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::primitiveType(type: PrimitiveType[1]): JSONElement[1]
+{
+    [
+        pair(String, ^JSONString(value = '')),
+        pair(Date, ^JSONString(value = toString(%1970-01-01T00:00:00.000+0000))),
+        pair(DateTime, ^JSONString(value = 0->fromEpochValue()->toString())),
+        pair(StrictDate, ^JSONString(value = toString(%1970-01-01))),
+        pair(Boolean, ^JSONBoolean(value = false)),
+        pair(Integer, ^JSONNumber(value = 0)),
+        pair(Float, ^JSONNumber(value = 0.0)),
+        pair(Decimal, ^JSONNumber(value = 0d)),
+        pair(Number, ^JSONNumber(value = 0))
+    ]->filter(t | $t.first == $type).second->toOne('Cannot find type match for primitive type: ' + $type.name->toOne());
+}
+
+function <<access.private>> meta::pure::changetoken::diff_generation::multiply(instance: JSONElement[1], instances: Integer[1], single: Boolean[1]): JSONElement[1]
+{
+    if($single, | $instance, | ^JSONArray(values = $instances->range()->map(i | $instance)));
+}

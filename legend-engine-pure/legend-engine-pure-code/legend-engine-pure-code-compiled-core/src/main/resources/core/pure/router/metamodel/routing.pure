@@ -15,12 +15,10 @@
 import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
 import meta::core::runtime::*;
-import meta::pure::runtime::*;
-
 Class <<typemodifiers.abstract>> meta::pure::router::metamodel::ExtendedRoutedValueSpecification extends RoutedValueSpecification
 {
    id                 : String[1];
-   executionContext   : ExecutionContext[1];
+   executionContext   : meta::pure::runtime::ExecutionContext[1];
    routingStrategy    : RoutingStrategy[1];
 }
 
@@ -33,34 +31,34 @@ import meta::pure::metamodel::relation::*;
 import meta::pure::extension::*;
 import meta::pure::router::metamodel::*;
 import meta::pure::router::routing::*;
-import meta::core::runtime::*;
-import meta::pure::runtime::*;
+import meta::pure::store::*;
+
 
 Class <<typemodifiers.abstract>> meta::pure::router::metamodel::RoutingStrategy
 {
    // Process Class
-   processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[1];
-   processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1])
+   processClass : Function<{Class<Any>[1], InstanceValue[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[1];
+   processClass(c:Class<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1])
    {
      $this.processClass->eval($c, $i, $state, $executionContext, $debug)
    }: RoutingState[1];
 
-   processRelationStoreAccessor : Function<{RelationStoreAccessor<Any>[1], InstanceValue[1], RoutingState[1], ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[0..1];
-   processRelationStoreAccessor(c:RelationStoreAccessor<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:ExecutionContext[1], debug:DebugContext[1])
+   processRelationStoreAccessor : Function<{RelationStoreAccessor<Any>[1], InstanceValue[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], DebugContext[1] -> RoutingState[1]}>[0..1];
+   processRelationStoreAccessor(c:RelationStoreAccessor<Any>[1], i:InstanceValue[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], debug:DebugContext[1])
    {
      $this.processRelationStoreAccessor->toOne()->eval($c, $i, $state, $executionContext, $debug)
    }: RoutingState[1];
 
    // Process Property
-   processProperty : Function<{Property<Nil,Any|*>[1], FunctionExpression[1], RoutingState[1], ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], Extension[*], DebugContext[1] -> RoutingState[1]}>[1];
-   processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1])
+   processProperty : Function<{Property<Nil,Any|*>[1], FunctionExpression[1], RoutingState[1], meta::pure::runtime::ExecutionContext[1], Map<VariableExpression, ValueSpecification>[1], Map<String, List<Any>>[1], Extension[*], DebugContext[1] -> RoutingState[1]}>[1];
+   processProperty(p:Property<Nil,Any|*>[1], fe:FunctionExpression[1], state:RoutingState[1], executionContext:meta::pure::runtime::ExecutionContext[1], vars:Map<VariableExpression, ValueSpecification>[1], inScopeVars:Map<String, List<Any>>[1], extensions:Extension[*], debug:DebugContext[1])
    {
      $this.processProperty->evaluate([list($p), list($fe), list($state), list($executionContext), list($vars), list($inScopeVars), list($extensions), list($debug)])->toOne()->cast(@RoutingState);
    }: RoutingState[1];
 
    // Wrap VS into ExtendedRoutedValueSpecification
-   wrapValueSpec : Function<{ValueSpecification[1], RoutingStrategy[1], String[1], ExecutionContext[1], Extension[*], DebugContext[1] -> ExtendedRoutedValueSpecification[1]}>[1];
-   wrapValueSpec(value:ValueSpecification[1], id:String[1], executionContext:ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1])
+   wrapValueSpec : Function<{ValueSpecification[1], RoutingStrategy[1], String[1], meta::pure::runtime::ExecutionContext[1], Extension[*], DebugContext[1] -> ExtendedRoutedValueSpecification[1]}>[1];
+   wrapValueSpec(value:ValueSpecification[1], id:String[1], executionContext:meta::pure::runtime::ExecutionContext[1], extensions:Extension[*], debug:DebugContext[1])
    {
      $this.wrapValueSpec->eval($value, $this, $id, $executionContext, $extensions, $debug);
    }:ExtendedRoutedValueSpecification[1];

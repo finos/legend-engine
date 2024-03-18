@@ -43,7 +43,7 @@ public class MemSqlCompilerExtension implements IRelationalCompilerExtension
                 _memsql._host(memSqlDatasourceSpecification.host);
                 _memsql._port(memSqlDatasourceSpecification.port);
                 _memsql._databaseName(memSqlDatasourceSpecification.databaseName);
-                _memsql._useSsl(String.valueOf(memSqlDatasourceSpecification.useSsl));
+                _memsql._useSsl(memSqlDatasourceSpecification.useSsl);
                 return _memsql;
             }
             return null;

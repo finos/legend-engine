@@ -35,9 +35,3 @@ AS:                                         'as';
 AGGREGATION_TYPE_COMPOSITE:                 'composite';
 AGGREGATION_TYPE_SHARED:                    'shared';
 AGGREGATION_TYPE_NONE:                      'none';
-
-FUNCTION_TEST_DATA:                         'data';
-FUNCTION_SUITE_TESTS:                       'tests';
-FUNCTION_TEST_PARAMETERS:                   'parameters';
-FUNCTION_TEST_ASSERTS:                      'asserts';
-FUNCTION_TEST_DATA_STORE:                   'store';

@@ -1,3 +1,4 @@
+import meta::relational::functions::pureToSqlQuery::metamodel::*;
 import meta::relational::functions::sqlQueryToString::memsql::*;
 import meta::relational::functions::sqlQueryToString::default::*;
 import meta::relational::functions::sqlQueryToString::*;
@@ -31,6 +32,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       literalProcessor = $literalProcessor,
       windowColumnProcessor = processWindowColumn_WindowColumn_1__SqlGenerationContext_1__String_1_,
       semiStructuredElementProcessor = processSemiStructuredElementForMemSQL_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
+      tableFunctionParamProcessor = processTableFunctionParamPlaceHolder_RelationalOperationElement_1__SqlGenerationContext_1__String_1_,
       joinStringsProcessor = processJoinStringsOperationWithConcatCall_JoinStrings_1__SqlGenerationContext_1__String_1_,
       selectSQLQueryProcessor = processSelectSQLQueryForMemSQL_SelectSQLQuery_1__SqlGenerationContext_1__Boolean_1__String_1_,
       upsertSQLQueryProcessor = processUpsertSQLQueryForMemSQL_UpsertSQLQuery_1__SqlGenerationContext_1__String_1_,
@@ -38,7 +40,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
       identifierProcessor = processIdentifierWithBackTicks_String_1__DbConfig_1__String_1_,
       dynaFuncDispatch = $dynaFuncDispatch,
       ddlCommandsTranslator = getDDLCommandsTranslator(),
-      processTempTableName = processTempTableNameDefault_String_1__String_1_
+      processTempTableName = processTempTableNameDefault_String_1__DatabaseConnection_1__String_1_
    );
 }
 
@@ -157,7 +159,7 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
   if ($returnType == 'DATE', | 'date(json_extract_string(' + $fullPath + '))', |
   if ($returnType == 'BOOLEAN', | 'json_extract_json(' + $fullPath + ')', |
   if ($returnType == 'FLOAT', | 'json_extract_double(' + $fullPath + ')', |
-  if ($returnType == 'INTEGER', | 'json_extract_double(' + $fullPath + ')', |
+  if ($returnType == 'INTEGER', | 'json_extract_bigint(' + $fullPath + ')', |
   'json_extract_json(' + $fullPath + ')'))))));
 }
 
@@ -227,6 +229,22 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
    ['YYYY-MM-DD', 'MMMYYYY', 'YYYYMMDD'];
 }
 
+function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processTableFunctionParamPlaceHolder(r:RelationalOperationElement[1], sgc: SqlGenerationContext[1]): String[1]
+{
+  assert($r->instanceOf(TableFunctionParamPlaceHolder), 'sqlQueryToString for relational element ' + $r->type().name->toOne() + ' has not been implemented yet for snowflake');
+  $r->match([
+    t: TableFunctionParamPlaceHolder[1] | $t.var->replaceVarPlaceHolderForAppGeneration($sgc)
+  ]);
+}
+
+function <<access.private>>  meta::relational::functions::sqlQueryToString::memsql::replaceVarPlaceHolderForAppGeneration(v:VarPlaceHolder[1], sgc:SqlGenerationContext[1]): String[1]
+{
+  assertEmpty($v.propertyPath, 'processing for variable with propertyPath access is not implemented');
+  assertFalse($v->isCollectionPlaceHolder() || $v->isOptionalPlaceHolder() || $v.type->instanceOf(Enumeration), 'only variables of primitive types and multiplicity one can be used');
+
+  $v.name;
+}
+
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processSemiStructuredElementForMemSQL(s:RelationalOperationElement[1], sgc:SqlGenerationContext[1]): String[1]
 {
    $s->match([
@@ -251,8 +269,9 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
 
   // MemSQL does not allow for fluent casting of date values, must explicitly cast the full operand after parsing as json string
   if($s.returnType == StrictDate, | 'date(' + $fullOperand + ')', |
+  if($s.returnType == Integer, | $fullOperand + ' !:> bigint', |
   if($s.returnType->isNotEmpty() && $s.returnType->toOne()->_subTypeOf(Date), | 'timestamp(' + $fullOperand + ')', |
-  $fullOperand));
+  $fullOperand)));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::castOperatorForMemSQLSemiStructuredData(type:Type[0..1]): String[1]
@@ -261,9 +280,10 @@ function <<access.private>> meta::relational::functions::sqlQueryToString::memsq
    // Dates treated as strings and explicitly casted after
    if($type == StrictDate, | '::$', |
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Date), | '::$', |
+   if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Integer), | '::', |
    if($type->isNotEmpty() && $type->toOne()->_subTypeOf(Number), | '::%', |
    if($type->isNotEmpty() && $type->toOne()->instanceOf(Enumeration), | '::$', |
-   '::')))));
+   '::'))))));
 }
 
 function <<access.private>> meta::relational::functions::sqlQueryToString::memsql::processUpsertSQLQueryForMemSQL(upsertQuery:UpsertSQLQuery[1], sgc:SqlGenerationContext[1]):String[1]

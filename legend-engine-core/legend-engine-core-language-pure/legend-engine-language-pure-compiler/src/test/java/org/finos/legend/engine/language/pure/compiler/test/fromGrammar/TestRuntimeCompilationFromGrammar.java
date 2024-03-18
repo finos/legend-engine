@@ -14,11 +14,11 @@
 
 package org.finos.legend.engine.language.pure.compiler.test.fromGrammar;
 
-import java.util.Collections;
-
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.language.pure.compiler.test.TestCompilationFromGrammar;
 import org.junit.Test;
+
+import java.util.Collections;
 
 public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGrammar.TestCompilationFromGrammarTestSuite
 {
@@ -33,6 +33,35 @@ public class TestRuntimeCompilationFromGrammar extends TestCompilationFromGramma
                 "{\n" +
                 " mappings: [anything::somethingelse];\n" +
                 "}";
+    }
+
+    @Test
+    public void testSingleConnectionRuntimeCompilation()
+    {
+        String resource = "Class test::class\n" +
+                "{\n" +
+                "  ok : Integer[0..1];\n" +
+                "}\n" +
+                "###Mapping\n" +
+                "Mapping test::mapping::someMapping\n" +
+                "(\n" +
+                ")\n" +
+                "###Connection\n" +
+                "JsonModelConnection com::test::connection\n" +
+                "{\n" +
+                "  class : test::class;" +
+                "  url : 'asd';\n" +
+                "}\n";
+        test(resource + "###Runtime\n" +
+                "SingleConnectionRuntime com::test::singleConnectionRuntime\n" +
+                "{\n" +
+                "  mappings:\n" +
+                "  [\n" +
+                "    test::mapping::someMapping\n" +
+                "  ];\n" +
+                "  connection: com::test::connection;\n" +
+                "}\n"
+        );
     }
 
     @Override

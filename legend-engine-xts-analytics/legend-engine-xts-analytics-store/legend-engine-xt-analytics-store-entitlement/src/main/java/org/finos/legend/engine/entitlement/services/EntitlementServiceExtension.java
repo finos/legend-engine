@@ -22,21 +22,24 @@ import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.valueSpecification.raw.Lambda;
+import org.finos.legend.engine.shared.core.extension.LegendConnectionExtension;
+import org.finos.legend.engine.shared.core.extension.LegendExtension;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
+import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.Root_meta_core_runtime_Runtime;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.mapping.Mapping;
-import org.pac4j.core.profile.CommonProfile;
 
 import java.util.Collections;
 import java.util.List;
 
-public interface EntitlementServiceExtension
+public interface EntitlementServiceExtension extends LegendModuleSpecificExtension
 {
    default List<DatasetSpecification> generateDatasetSpecifications(Lambda query, String runtimePath, Root_meta_core_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel)
    {
       return Collections.emptyList();
    }
 
-   default List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_core_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, MutableList<CommonProfile> profiles)
+   default List<DatasetEntitlementReport> generateDatasetEntitlementReports(List<DatasetSpecification> datasets, Lambda query, String runtimePath, Root_meta_core_runtime_Runtime runtime, String mappingPath, Mapping mapping, PureModelContext model, PureModel pureModel, Identity identity)
    {
       return Collections.emptyList();
    }

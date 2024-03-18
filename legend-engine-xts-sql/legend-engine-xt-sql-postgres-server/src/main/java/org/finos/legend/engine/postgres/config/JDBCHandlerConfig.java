@@ -15,6 +15,8 @@
 package org.finos.legend.engine.postgres.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.finos.legend.engine.postgres.SessionsFactory;
+import org.finos.legend.engine.postgres.handler.jdbc.JDBCSessionFactory;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JDBCHandlerConfig implements HandlerConfig
@@ -36,12 +38,6 @@ public class JDBCHandlerConfig implements HandlerConfig
         this.password = password;
     }
 
-    @Override
-    public HandlerType getType()
-    {
-        return HandlerType.JDBC;
-    }
-
     public String getConnectionString()
     {
         return connectionString;
@@ -55,6 +51,13 @@ public class JDBCHandlerConfig implements HandlerConfig
     public String getPassword()
     {
         return password;
+    }
+
+
+    @Override
+    public SessionsFactory buildSessionsFactory()
+    {
+        return new JDBCSessionFactory(getConnectionString(), getUser(), getPassword());
     }
 
     @Override

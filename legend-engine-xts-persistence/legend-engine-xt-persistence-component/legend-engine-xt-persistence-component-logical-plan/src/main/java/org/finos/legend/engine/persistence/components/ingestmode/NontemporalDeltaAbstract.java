@@ -37,6 +37,12 @@ import static org.immutables.value.Value.Style;
 )
 public interface NontemporalDeltaAbstract extends IngestMode
 {
+    @Value.Default
+    default String batchIdField()
+    {
+        return "batch_id";
+    }
+
     String digestField();
 
     Auditing auditing();

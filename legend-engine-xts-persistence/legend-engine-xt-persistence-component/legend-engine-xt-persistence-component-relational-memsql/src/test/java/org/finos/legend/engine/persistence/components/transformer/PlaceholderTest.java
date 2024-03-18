@@ -38,7 +38,7 @@ public class PlaceholderTest
         RelationalTransformer transformer = new RelationalTransformer(MemSqlSink.get(), TransformOptions.builder().batchStartTimestampPattern("{BATCH_START_TIMESTAMP_PLACEHOLDER}").batchEndTimestampPattern("{BATCH_END_TIMESTAMP_PLACEHOLDER}").build());
         MetadataUtils store = new MetadataUtils(MetadataDataset.builder().build());
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(
-            store.insertMetaData(StringValue.of("main"), BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE)).build();
+            store.insertMetaData(StringValue.of("main"), BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()))).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
@@ -52,7 +52,7 @@ public class PlaceholderTest
         RelationalTransformer transformer = new RelationalTransformer(MemSqlSink.get(), TransformOptions.builder().batchStartTimestampPattern("{BATCH_START_TIMESTAMP_PLACEHOLDER}").batchEndTimestampPattern("{BATCH_END_TIMESTAMP_PLACEHOLDER}").addOptimizers(new UpperCaseOptimizer()).build());
         MetadataUtils store = new MetadataUtils(MetadataDataset.builder().build());
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(
-            store.insertMetaData(StringValue.of("main"), BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE)).build();
+            store.insertMetaData(StringValue.of("main"), BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()))).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 
@@ -66,7 +66,7 @@ public class PlaceholderTest
         RelationalTransformer transformer = new RelationalTransformer(MemSqlSink.get(), TransformOptions.builder().batchIdPattern("{BATCH_ID_PATTERN}").batchStartTimestampPattern("{BATCH_START_TIMESTAMP_PLACEHOLDER}").batchEndTimestampPattern("{BATCH_END_TIMESTAMP_PLACEHOLDER}").build());
         MetadataUtils store = new MetadataUtils(MetadataDataset.builder().build());
         LogicalPlan logicalPlan = LogicalPlan.builder().addOps(
-            store.insertMetaData(StringValue.of("main"), BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE)).build();
+            store.insertMetaData(StringValue.of("main"), BatchStartTimestamp.INSTANCE, BatchEndTimestamp.INSTANCE, StringValue.of(MetadataUtils.MetaTableStatus.DONE.toString()))).build();
         SqlPlan physicalPlan = transformer.generatePhysicalPlan(logicalPlan);
         List<String> list = physicalPlan.getSqlList();
 

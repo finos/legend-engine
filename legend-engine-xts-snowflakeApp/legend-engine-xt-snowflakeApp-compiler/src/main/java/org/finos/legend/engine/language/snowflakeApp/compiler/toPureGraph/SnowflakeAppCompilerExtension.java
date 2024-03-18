@@ -15,10 +15,13 @@
 package org.finos.legend.engine.language.snowflakeApp.compiler.toPureGraph;
 
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.code.core.CoreFunctionActivatorCodeRepositoryProvider;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
+import org.finos.legend.engine.language.pure.compiler.toPureGraph.SourceInformationHelper;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.CompilerExtension;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.extension.Processor;
+import org.finos.legend.engine.protocol.functionActivator.metamodel.DeploymentOwner;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.connection.PackageableConnection;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeApp;
 import org.finos.legend.engine.protocol.snowflakeApp.metamodel.SnowflakeAppDeploymentConfiguration;
@@ -30,6 +33,12 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
 {
     // Here only for dependency check error ...
     CoreFunctionActivatorCodeRepositoryProvider forDependencies;
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Snowflake");
+    }
 
     @Override
     public CompilerExtension build()
@@ -55,15 +64,15 @@ public class SnowflakeAppCompilerExtension implements CompilerExtension
         {
             PackageableFunction<?> func = (PackageableFunction<?>) context.resolvePackageableElement(FunctionDescriptor.functionDescriptorToId(app.function.path), app.sourceInformation);
             return new Root_meta_external_function_activator_snowflakeApp_SnowflakeApp_Impl(
-                        app.name,
-                        null,
-                        context.pureModel.getClass("meta::external::function::activator::snowflakeApp::SnowflakeApp")
-                        )
-                        ._applicationName(app.applicationName)
-                        ._function(func)
-                        ._description(app.description)
-                        ._owner(app.owner)
-                        ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeAppDeploymentConfiguration) app.activationConfiguration, context) : null);
+                    app.name,
+                    SourceInformationHelper.toM3SourceInformation(app.sourceInformation),
+                    context.pureModel.getClass("meta::external::function::activator::snowflakeApp::SnowflakeApp")
+            )
+                    ._applicationName(app.applicationName)
+                    ._function(func)
+                    ._description(app.description)
+                    ._ownership(new Root_meta_external_function_activator_DeploymentOwnership_Impl("")._id(((DeploymentOwner)app.ownership).id))
+                    ._activationConfiguration(app.activationConfiguration != null ? buildDeploymentConfig((SnowflakeAppDeploymentConfiguration) app.activationConfiguration, context) : null);
         }
         catch (Exception e)
         {

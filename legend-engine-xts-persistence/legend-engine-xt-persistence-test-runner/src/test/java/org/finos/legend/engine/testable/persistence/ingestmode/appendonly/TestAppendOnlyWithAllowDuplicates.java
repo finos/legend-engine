@@ -67,9 +67,9 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         AssertPass batch2Status = (AssertPass) testFailed.assertStatuses.get(1);
 
         // no space
-        Assert.assertEquals("[{\"ID\":1,\"DIGEST\":\"fd0de4a73667047d16c76c8a6a61610f\",\"NAME\":\"ANDY\"},{\"ID\":2,\"DIGEST\":\"5c38f8982fc67a7f1cdf2e3c00a29339\",\"NAME\":\"BRAD\"}]", batch1Status.actual);
+        Assert.assertEquals("[{\"ID\":1,\"DIGEST\":\"fd0de4a73667047d16c76c8a6a61610f\",\"BATCH_ID\":1,\"NAME\":\"ANDY\"},{\"ID\":2,\"DIGEST\":\"5c38f8982fc67a7f1cdf2e3c00a29339\",\"BATCH_ID\":1,\"NAME\":\"BRAD\"}]", batch1Status.actual);
         // with space
-        Assert.assertEquals("[{\"ID\":1, \"NAME\":\"CHLOE\"},{\"ID\":2, \"NAME\":\"BRAD\"}]", batch1Status.expected);
+        Assert.assertEquals("[{\"ID\":1, \"NAME\":\"CHLOE\", \"BATCH_ID\":1},{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID\":1}]", batch1Status.expected);
         Assert.assertTrue(batch1Status.message.contains("AssertionError: Results do not match the expected data"));
     }
 
@@ -129,9 +129,9 @@ public class TestAppendOnlyWithAllowDuplicates extends TestPersistenceBase
         AssertPass batch2Status = (AssertPass) testFailed.assertStatuses.get(1);
 
         // no space
-        Assert.assertEquals("[{\"ID\":1,\"DIGEST\":\"fd0de4a73667047d16c76c8a6a61610f\",\"NAME\":\"ANDY\"},{\"ID\":2,\"DIGEST\":\"5c38f8982fc67a7f1cdf2e3c00a29339\",\"NAME\":\"BRAD\"}]", batch1Status.actual);
+        Assert.assertEquals("[{\"ID\":1,\"DIGEST\":\"fd0de4a73667047d16c76c8a6a61610f\",\"BATCH_ID\":1,\"NAME\":\"ANDY\"},{\"ID\":2,\"DIGEST\":\"5c38f8982fc67a7f1cdf2e3c00a29339\",\"BATCH_ID\":1,\"NAME\":\"BRAD\"}]", batch1Status.actual);
         // with space
-        Assert.assertEquals("[{\"ID\":1, \"NAME\":\"CHLOE\"},{\"ID\":2, \"NAME\":\"BRAD\"}]", batch1Status.expected);
+        Assert.assertEquals("[{\"ID\":1, \"NAME\":\"CHLOE\", \"BATCH_ID\":1},{\"ID\":2, \"NAME\":\"BRAD\", \"BATCH_ID\":1}]", batch1Status.expected);
         Assert.assertTrue(batch1Status.message.contains("AssertionError: Results do not match the expected data"));
     }
 }

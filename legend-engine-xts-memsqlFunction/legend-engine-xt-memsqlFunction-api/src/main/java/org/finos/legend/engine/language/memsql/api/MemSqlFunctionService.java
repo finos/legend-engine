@@ -33,10 +33,7 @@ import org.finos.legend.engine.protocol.memsqlFunction.deployment.MemSqlFunction
 import org.finos.legend.engine.protocol.memsqlFunction.metamodel.MemSqlFunctionProtocolExtension;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.shared.core.identity.Identity;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_FunctionActivator;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_memSqlFunction_MemSqlFunction;
-import org.finos.legend.pure.generated.Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration;
-import org.finos.legend.pure.generated.Root_meta_pure_extension_Extension;
+import org.finos.legend.pure.generated.*;
 
 import java.util.List;
 
@@ -77,6 +74,7 @@ public class MemSqlFunctionService implements FunctionActivatorService<Root_meta
     public MemSqlFunctionDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_memSqlFunction_MemSqlFunction activator, PureModelContext inputModel, List<MemSqlFunctionDeploymentConfiguration> runtimeConfigurations, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         MemSqlFunctionArtifact artifact = MemSqlFunctionGenerator.generateArtifact(pureModel, activator, inputModel, routerExtensions);
+
         MutableList<? extends FunctionActivatorError> validationErrors = this.validateArtifact(artifact);
 
         Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration deploymentConfiguration = ((Root_meta_external_function_activator_memSqlFunction_MemSqlFunctionDeploymentConfiguration) activator._activationConfiguration());

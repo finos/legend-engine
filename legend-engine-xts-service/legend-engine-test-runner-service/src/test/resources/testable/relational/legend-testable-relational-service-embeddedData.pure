@@ -7,7 +7,7 @@ Service service::SimpleRelationalPassWithSpecialEmbeddedData
   execution: Single
   {
     query: |model::Firm.all()->project([x|$x.employees.firstName, x|$x.employees.lastName, x|$x.legalName], ['Employees/First Name', 'Employees/Last Name', 'Legal Name']);
-    mapping: execution::RelationalMapping;
+    mapping: execution::FirmMapping;
     runtime: execution::Runtime;
   }
   testSuites:
@@ -18,12 +18,12 @@ Service service::SimpleRelationalPassWithSpecialEmbeddedData
       [
         connections:
         [
-          connection_1:
+          model::MyConnection:
           Relational
           #{
             default.PersonTable:
               'id,firm_id,firstName,lastName\n' +
-              '1,1,"John;\'",Doe\n' +
+              '1,1,John,Doe\n' +
               '2,1,Nicole,Smith\n' +
               '3,2,Time,Smith\n';
 
@@ -48,7 +48,7 @@ Service service::SimpleRelationalPassWithSpecialEmbeddedData
                   ExternalFormat
                   #{
                     contentType: 'application/json';
-                    data: '[{"Employees/First Name":"\\"John;\'\\"","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
+                    data: '[{"Employees/First Name":"John","Employees/Last Name":"Doe","Legal Name":"Finos"},{"Employees/First Name":"Nicole","Employees/Last Name":"Smith","Legal Name":"Finos"},{"Employees/First Name":"Time","Employees/Last Name":"Smith","Legal Name":"Apple"}]\n';
                   }#;
               }#
           ]

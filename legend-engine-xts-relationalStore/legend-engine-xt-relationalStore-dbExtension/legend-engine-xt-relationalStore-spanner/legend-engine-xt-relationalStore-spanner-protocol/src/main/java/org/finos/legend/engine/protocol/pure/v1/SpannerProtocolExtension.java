@@ -16,6 +16,7 @@ package org.finos.legend.engine.protocol.pure.v1;
 
 import java.util.List;
 import org.eclipse.collections.api.block.function.Function0;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.protocol.pure.v1.extension.ProtocolSubTypeInfo;
 import org.finos.legend.engine.protocol.pure.v1.extension.PureProtocolExtension;
@@ -24,6 +25,12 @@ import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.store.r
 
 public class SpannerProtocolExtension implements PureProtocolExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "Spanner");
+    }
+
     @Override
     public List<Function0<List<ProtocolSubTypeInfo<?>>>> getExtraProtocolSubTypeInfoCollectors()
     {

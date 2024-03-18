@@ -1,0 +1,81 @@
+// Copyright 2024 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::external::language::java::factory::*;
+import meta::external::language::java::metamodel::*;
+import meta::pure::changetoken::*;
+import meta::pure::changetoken::cast_generation::*;
+
+function <<access.private>> meta::pure::changetoken::cast_generation::generateRecurseObject(
+    class: meta::external::language::java::metamodel::Class[1],
+    objRecurseFuncName: String[1],
+    arrRecurseFuncName: String[1],
+    objVar: Code[1],
+    pathVar: Code[1],
+    rootObjVar: Code[1],
+    resVar: Code[1]): Code[1..*]
+{
+    let entryType = ^ParameterizedType(
+            rawType = javaClass('java.util.Map.Entry'),
+            typeArguments = [javaString(), javaObject()]);
+    let itType = ^ParameterizedType(
+        rawType = javaClass('java.util.Iterator'),
+        typeArguments = [$entryType]);
+    let itVar = j_variable($itType, 'it');
+    let enVar = j_variable($entryType, 'en');
+    let innerObjectNodeVar = j_variable(objectNode(), 'innerObjectNode');
+    let newInnerObjectNodeVar = j_variable(objectNode(), 'newInnerObjectNode');
+    let arrayNodeVar = j_variable(arrayNode(), 'arrayNode');
+    let newArrayNodeVar = j_variable(arrayNode(), 'newArrayNode');
+    let newPathVar = j_variable(javaList(javaObject()), 'newPath');
+    let newPathDeclare = $newPathVar->j_declare(
+        javaStream()->j_invoke('concat',
+        [
+            $pathVar->j_invoke('stream', [], javaVoid()),
+            javaStream()->j_invoke('of',
+            [
+                $enVar->j_invoke('getKey', [], javaVoid())
+            ], javaVoid())
+        ], javaVoid())
+        ->j_invoke('collect', [javaCollectors()->j_invoke('toList', [], javaVoid())], javaVoid()));
+    [
+        $itVar->j_declare($objVar->j_invoke('entrySet', [], javaVoid())->j_invoke('iterator', [], javaVoid())),
+        j_while($itVar->j_invoke('hasNext', [], javaBoolean()), [
+            $enVar->j_declare($itVar->j_invoke('next', [], $entryType)),
+            j_if($enVar->j_invoke('getValue', [], javaObject())->j_instanceof(javaRawMap()),
+                [
+                    $newPathDeclare,
+                    $resVar->j_invoke('put',
+                    [
+                        $enVar->j_invoke('getKey', [], javaVoid()),
+                        $class->j_invoke($objRecurseFuncName, [$rootObjVar, $newPathVar, $enVar->j_invoke('getValue', [], javaVoid())->j_cast(objectNode())], javaVoid())
+                    ], javaVoid())
+                ],
+                j_if($enVar->j_invoke('getValue', [], javaObject())->j_instanceof(javaList()),
+                [
+                    $newPathDeclare,
+                    $resVar->j_invoke('put',
+                    [
+                        $enVar->j_invoke('getKey', [], javaVoid()),
+                        $class->j_invoke($arrRecurseFuncName, [$rootObjVar, $newPathVar, $enVar->j_invoke('getValue', [], javaVoid())->j_cast(arrayNode())], javaVoid())
+                    ], javaVoid())
+                ],
+                [
+                    $resVar->j_invoke('putIfAbsent', [$enVar->j_invoke('getKey', [], javaVoid()), $enVar->j_invoke('getValue', [], javaVoid())], javaVoid())
+                ]
+                )
+            )
+        ])
+    ];
+}

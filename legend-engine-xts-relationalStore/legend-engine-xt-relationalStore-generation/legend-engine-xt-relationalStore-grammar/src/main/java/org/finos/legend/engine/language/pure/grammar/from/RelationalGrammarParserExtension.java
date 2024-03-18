@@ -19,6 +19,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.eclipse.collections.api.factory.Lists;
+import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.impl.utility.ArrayIterate;
 import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.language.pure.grammar.from.antlr4.RelationalLexerGrammar;
@@ -41,7 +42,6 @@ import org.finos.legend.engine.language.pure.grammar.from.extension.MappingEleme
 import org.finos.legend.engine.language.pure.grammar.from.extension.MappingTestInputDataParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.SectionParser;
 import org.finos.legend.engine.language.pure.grammar.from.extension.data.EmbeddedDataParser;
-import org.finos.legend.engine.language.pure.grammar.from.extension.test.assertion.TestAssertionParser;
 import org.finos.legend.engine.language.pure.grammar.from.mapping.MappingElementSourceCode;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningParseTreeWalker;
 import org.finos.legend.engine.language.pure.grammar.from.milestoning.MilestoningSpecificationSourceCode;
@@ -75,6 +75,12 @@ public class RelationalGrammarParserExtension implements IRelationalGrammarParse
     public static final String NAME = "Relational";
     public static final String RELATIONAL_MAPPING_ELEMENT_TYPE = "Relational";
     public static final String RELATIONAL_DATABASE_CONNECTION_TYPE = "RelationalDatabaseConnection";
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Store", "Relational", "-Core");
+    }
 
     @Override
     public Iterable<? extends SectionParser> getExtraSectionParsers()

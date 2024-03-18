@@ -39,11 +39,13 @@ public class NonTemporalDeltaExecutorTest extends BigQueryEndToEndTest
         NontemporalDelta ingestMode = NontemporalDelta.builder()
                 .digestField("digest")
                 .auditing(DateTimeAuditing.builder().dateTimeField("audit_ts").build())
+                .batchIdField("batch_id")
                 .build();
 
         // Clean up
         delete("demo", "main");
         delete("demo", "staging");
+        delete("demo", "batch_metadata");
 
         // Pass 1
         System.out.println("--------- Batch 1 started ------------");
@@ -54,7 +56,7 @@ public class NonTemporalDeltaExecutorTest extends BigQueryEndToEndTest
         // Verify
         List<Map<String, Object>> tableData = runQuery("select * from `demo`.`main` order by id asc");
         String expectedPath = "src/test/resources/expected/nontemporal_delta/data_pass1.csv";
-        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts"};
+        String [] schema = new String[] {"id", "name", "amount", "biz_date", "digest", "insert_ts", "audit_ts", "batch_id"};
         assertFileAndTableDataEquals(schema, expectedPath, tableData);
 
         long incomingRecords = (long) result.statisticByName().get(INCOMING_RECORD_COUNT);

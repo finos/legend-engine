@@ -26,19 +26,17 @@ import org.finos.legend.engine.functionActivator.service.FunctionActivatorError;
 import org.finos.legend.engine.functionActivator.service.FunctionActivatorService;
 import org.finos.legend.engine.language.hostedService.generation.deployment.HostedServiceDeploymentManager;
 import org.finos.legend.engine.protocol.hostedService.deployment.model.GenerationInfoData;
-import org.finos.legend.engine.protocol.hostedService.metamodel.HostedService;
 import org.finos.legend.engine.protocol.hostedService.deployment.HostedServiceDeploymentResult;
 import org.finos.legend.engine.language.hostedService.generation.HostedServiceArtifactGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
 import org.finos.legend.engine.protocol.hostedService.metamodel.HostedServiceProtocolExtension;
+import org.finos.legend.engine.protocol.pure.v1.model.context.AlloySDLC;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContext;
 import org.finos.legend.engine.protocol.pure.v1.model.context.PureModelContextData;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.pure.generated.*;
 
 import java.util.List;
-
-import static org.finos.legend.pure.generated.platform_pure_basics_meta_elementToPath.Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_;
 
 public class HostedServiceService implements FunctionActivatorService<Root_meta_external_function_activator_hostedService_HostedService, HostedServiceDeploymentConfiguration, HostedServiceDeploymentResult>
 {
@@ -50,6 +48,12 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
 
         this.hostedServiceArtifactgenerator = new HostedServiceArtifactGenerator();
         this.hostedServiceDeploymentManager = new HostedServiceDeploymentManager();
+    }
+
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Function_Activator", "Hosted_Service");
     }
 
     @Override
@@ -90,7 +94,7 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
     @Override
     public HostedServiceArtifact renderArtifact(PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, String clientVersion, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
-        return new HostedServiceArtifact(this.hostedServiceArtifactgenerator.renderArtifact(pureModel,activator,inputModel,clientVersion,routerExtensions));
+        return new HostedServiceArtifact(activator._pattern(), this.hostedServiceArtifactgenerator.renderArtifact(pureModel,activator,inputModel,clientVersion,routerExtensions), null);
     }
 
     @Override
@@ -99,31 +103,12 @@ public class HostedServiceService implements FunctionActivatorService<Root_meta_
         return Lists.mutable.withAll(configurations).select(e -> e instanceof HostedServiceDeploymentConfiguration).collect(e -> (HostedServiceDeploymentConfiguration)e);
     }
 
-
     @Override
     public HostedServiceDeploymentResult publishToSandbox(Identity identity, PureModel pureModel, Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContext inputModel, List<HostedServiceDeploymentConfiguration> runtimeConfigs, Function<PureModel, RichIterable<? extends Root_meta_pure_extension_Extension>> routerExtensions)
     {
         GenerationInfoData generation = this.hostedServiceArtifactgenerator.renderArtifact(pureModel, activator, inputModel, "vX_X_X",routerExtensions);
-        HostedServiceArtifact artifact = new HostedServiceArtifact(generation, fetchHostedService(activator, (PureModelContextData)inputModel, pureModel));
+        HostedServiceArtifact artifact = new HostedServiceArtifact(activator._pattern(), generation, HostedServiceArtifactGenerator.fetchHostedService(activator, (PureModelContextData)inputModel, pureModel), ((PureModelContextData)inputModel).origin != null ? (AlloySDLC) ((PureModelContextData)inputModel).origin.sdlcInfo : null);
         return this.hostedServiceDeploymentManager.deploy(identity, artifact, runtimeConfigs);
-//        return new HostedServiceDeploymentResult();
-    }
-
-    public static PureModelContextData fetchHostedService(Root_meta_external_function_activator_hostedService_HostedService activator, PureModelContextData data, PureModel pureModel)
-    {
-        return PureModelContextData.newBuilder()
-                .withElements(org.eclipse.collections.api.factory.Lists.mutable.withAll(data.getElements()).select(e -> e instanceof HostedService && elementToPath(activator, pureModel).equals(fullName(e))))
-                .withOrigin(data.origin).build();
-    }
-
-    private static String elementToPath(org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.PackageableElement element, PureModel pureModel)
-    {
-        return Root_meta_pure_functions_meta_elementToPath_PackageableElement_1__String_1_(element, pureModel.getExecutionSupport());
-    }
-
-    private static String fullName(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement e)
-    {
-        return e._package + "::" + e.name;
     }
 
 

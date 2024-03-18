@@ -28,41 +28,50 @@ function model::PersonQuery(): String[1]
     model::MyRuntime
   )
 }
-[
-    testSuite_1:
-    {
-      data:
-      [
-            {
-            store: ModelStore;
-            data: ExternalFormat
-            #{
-              contentType: 'application/json';
-              data: '{\n  "firstName": "John",\n  "lastName": "Doe"\n}';
-            }#;
-            }
-      ];
-      tests:
-      [
-        test_1:
-        {
-          asserts:
-          [
-            assertion_1:
-              EqualToJson
-              #{
-                expected:
-                  ExternalFormat
-                  #{
-                    contentType: 'application/json';
-                    data: '{\n  "fullName" : "John Doe"\n}';
-                  }#;
-              }#
-          ]
-        }
-      ]
-    }
-  ]
+{
+  testSuite_1
+  (
+    ModelStore: (JSON) '{\n  "firstName": "John",\n  "lastName": "Doe"\n}';
+    test_1 | PersonQuery() => (JSON) '{\n  "fullName" : "John Doe"\n}';
+  )
+}
+
+function model::PersonQuerySharedData(): String[1]
+{
+  model::DifferentPerson.all()->graphFetch(
+    #{
+      model::DifferentPerson{
+        fullName
+      }
+    }#
+  )->serialize(
+    #{
+      model::DifferentPerson{
+        fullName
+      }
+    }#
+  )->from(
+    model::M2MMapping,
+    model::MyRuntime
+  )
+}
+{
+  testSuite_1
+  (
+    ModelStore: data::SharedPersonData;
+    test_1 | PersonQuerySharedData() => (JSON) '{\n  "fullName" : "John Doe"\n}';
+  )
+}
+
+###Data
+Data data::SharedPersonData
+{
+   ExternalFormat
+   #{
+       contentType: 'application/json';
+       data: '{\n  "firstName": "John",\n  "lastName": "Doe"\n}';
+   }#
+}
 
 ###Mapping
 Mapping model::M2MMapping

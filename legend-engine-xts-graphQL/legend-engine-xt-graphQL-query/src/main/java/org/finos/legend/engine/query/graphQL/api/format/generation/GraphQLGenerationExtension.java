@@ -15,15 +15,14 @@
 package org.finos.legend.engine.query.graphQL.api.format.generation;
 
 import org.eclipse.collections.api.RichIterable;
+import org.eclipse.collections.api.list.MutableList;
 import org.finos.legend.engine.external.shared.format.extension.GenerationExtension;
 import org.finos.legend.engine.external.shared.format.extension.GenerationMode;
 import org.finos.legend.engine.external.shared.format.generations.description.FileGenerationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationConfigurationDescription;
 import org.finos.legend.engine.external.shared.format.generations.description.GenerationProperty;
-import org.finos.legend.engine.external.shared.format.imports.description.ImportConfigurationDescription;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.CompileContext;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
-import org.finos.legend.engine.language.pure.modelManager.ModelManager;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.PackageableElement;
 import org.finos.legend.engine.protocol.pure.v1.model.packageableElement.fileGeneration.FileGenerationSpecification;
 import org.finos.legend.pure.generated.Root_meta_pure_generation_metamodel_GenerationConfiguration;
@@ -36,6 +35,18 @@ import java.util.List;
 @Deprecated
 public class GraphQLGenerationExtension implements GenerationExtension
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return org.eclipse.collections.impl.factory.Lists.mutable.with("Query", "GraphQL");
+    }
+
+    @Override
+    public String type()
+    {
+        return "Generation - To Delete?";
+    }
+
     @Override
     public String getLabel()
     {
@@ -80,21 +91,9 @@ public class GraphQLGenerationExtension implements GenerationExtension
     }
 
     @Override
-    public ImportConfigurationDescription getImportDescription()
-    {
-        return null;
-    }
-
-    @Override
     public Root_meta_pure_generation_metamodel_GenerationConfiguration defaultConfig(CompileContext context)
     {
         return core_external_query_graphql_deprecated_generation.Root_meta_external_query_graphQL_generation_defaultConfig__GraphQLConfig_1_(context.pureModel.getExecutionSupport());
-    }
-
-    @Override
-    public Object getService(ModelManager modelManager)
-    {
-        return new GraphQLGenerationService(modelManager);
     }
 
     @Override

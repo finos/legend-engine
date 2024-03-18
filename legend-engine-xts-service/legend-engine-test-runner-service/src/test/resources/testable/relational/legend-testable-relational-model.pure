@@ -3,28 +3,39 @@ Data data::RelationalData
 {
   Relational
   #{
+    default.FirmTable:
+          'id,legal_name\n' +
+          '1,Finos\n' +
+          '2,Apple';
+  }#
+}
+
+Data data::PersonData
+{
+  Relational
+  #{
     default.PersonTable:
               'id,firm_id,firstName,lastName,employeeType\n' +
               '1,1,John,Doe,FTO\n' +
               '2,1,Nicole,Smith,FTC\n' +
               '3,2,Time,Smith,FTE\n';
-
-    default.FirmTable:
-          'id,legal_name\n' +
-          '1,Finos\n' +
-          '2,Apple';
-
   }#
 }
 
+
 ###Relational
-Database store::TestDB
+Database store::FirmDB
 (
   Table FirmTable
   (
     id INTEGER PRIMARY KEY,
     legal_name VARCHAR(200)
   )
+)
+
+
+Database store::PersonDB
+(
   Table PersonTable
   (
     id INTEGER PRIMARY KEY,
@@ -33,8 +44,6 @@ Database store::TestDB
     lastName VARCHAR(200),
     employeeType VARCHAR(200)
   )
-
-  Join FirmPerson(PersonTable.firm_id = FirmTable.id)
 )
 
 
@@ -55,23 +64,50 @@ Enum model::EmployeeType
 Class model::Firm
 {
   legalName: String[1];
+}
+
+Association model::Person_Firm
+{
   employees: model::Person[*];
+  firm: model::Firm[1];
 }
 
 
 ###Mapping
-Mapping execution::RelationalMapping
+Mapping execution::FirmMapping
+(
+  include dataspace model::com::PersonDataspace
+
+  *model::Firm: Relational
+  {
+    ~primaryKey
+    (
+      [store::FirmDB]FirmTable.id
+    )
+    ~mainTable [store::FirmDB]FirmTable
+    legalName: [store::FirmDB]FirmTable.legal_name,
+    +id: String[1]: toString([store::FirmDB] FirmTable.id)
+  }
+
+  model::Person_Firm: XStore
+  {
+    employees[model_Firm, model_Person]: $this.id == $that.firmIdFK
+  }
+)
+
+Mapping execution::PersonMapping
 (
   *model::Person: Relational
   {
     ~primaryKey
     (
-      [store::TestDB]PersonTable.id
+      [store::PersonDB]PersonTable.id
     )
-    ~mainTable [store::TestDB]PersonTable
-    firstName: [store::TestDB]PersonTable.firstName,
-    lastName: [store::TestDB]PersonTable.lastName,
-    employeeType: EnumerationMapping EmployeeTypeMapping: [store::TestDB]PersonTable.employeeType
+    ~mainTable [store::PersonDB]PersonTable
+    firstName: [store::PersonDB]PersonTable.firstName,
+    lastName: [store::PersonDB]PersonTable.lastName,
+    employeeType: EnumerationMapping EmployeeTypeMapping: [store::PersonDB] PersonTable.employeeType,
+    +firmIdFK: String[1]: toString(toString([store::PersonDB] PersonTable.firm_id))
   }
 
   model::EmployeeType: EnumerationMapping EmployeeTypeMapping
@@ -79,47 +115,63 @@ Mapping execution::RelationalMapping
     CONTRACT: ['FTC', 'FTO'],
     FULL_TIME: 'FTE'
   }
-
-  *model::Firm: Relational
-  {
-    ~primaryKey
-    (
-      [store::TestDB]FirmTable.id
-    )
-    ~mainTable [store::TestDB]FirmTable
-    legalName: [store::TestDB]FirmTable.legal_name,
-    employees[model_Person]: [store::TestDB]@FirmPerson
-  }
 )
+
+
+###DataSpace
+DataSpace model::com::PersonDataspace
+{
+    executionContexts:
+    [
+        {
+            name:'default';
+            description:'asdfas';
+            mapping: execution::PersonMapping;
+            defaultRuntime: execution::Runtime2;
+            testData:
+                Reference
+                #{
+                    data::PersonData
+                }#;
+        }
+    ];
+    defaultExecutionContext: 'default';
+}
 
 
 ###Connection
 RelationalDatabaseConnection model::MyConnection
 {
-  store: store::TestDB;
+  store: store::FirmDB;
   type: H2;
   specification: LocalH2
   {
-    testDataSetupSqls: [
-      'Drop table if exists FirmTable;\nDrop table if exists PersonTable;\nCreate Table FirmTable(id INT, Legal_Name VARCHAR(200));\nCreate Table PersonTable(id INT, firm_id INT, lastName VARCHAR(200), firstName VARCHAR(200), employeeType VARCHAR(200));\nInsert into FirmTable (id, Legal_Name) values (1, \'FirmA\');\nInsert into FirmTable (id, Legal_Name) values (2, \'Apple\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (1, 1, \'John\', \'Doe\', \'FTC\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (2, 2, \'Tim\', \'Smith\', \'FTE\');\nInsert into PersonTable (id, firm_id, lastName, firstName, employeeType) values (3, 3, \'Nicole\', \'Doe\', \'FTO\');\n\n'
-      ];
   };
   auth: DefaultH2;
 }
 
 
 ###Runtime
-Runtime execution::Runtime
+SingleConnectionRuntime execution::Runtime
 {
   mappings:
   [
-    execution::RelationalMapping
+    execution::FirmMapping
   ];
-  connections:
+  connection: model::MyConnection;
+}
+
+Runtime execution::Runtime2
+{
+  mappings:
   [
-    store::TestDB:
+    execution::PersonMapping
+  ];
+  connectionStores:
+  [
+    model::MyConnection:
     [
-      connection_1: model::MyConnection
+      store::PersonDB
     ]
   ];
 }

@@ -16,6 +16,7 @@ package org.finos.legend.engine.external.format.flatdata.driver.spi;
 
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatData;
 import org.finos.legend.engine.external.format.flatdata.metamodel.FlatDataSection;
+import org.finos.legend.engine.shared.core.extension.LegendModuleSpecificExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.function.Function;
 /**
  * Providers should implement this interface to describe the configuration of a {@link FlatDataDriver}.
  */
-public interface FlatDataDriverDescription
+public interface FlatDataDriverDescription extends LegendModuleSpecificExtension
 {
     static List<FlatDataDriverDescription> loadAll()
     {

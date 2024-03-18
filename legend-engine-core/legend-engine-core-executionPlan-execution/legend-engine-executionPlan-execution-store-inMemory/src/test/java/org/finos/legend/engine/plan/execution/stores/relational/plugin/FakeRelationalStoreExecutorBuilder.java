@@ -15,6 +15,7 @@
 package org.finos.legend.engine.plan.execution.stores.relational.plugin;
 
 import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import org.finos.legend.engine.plan.execution.nodes.state.ExecutionState;
 import org.finos.legend.engine.plan.execution.result.Result;
 import org.finos.legend.engine.plan.execution.stores.StoreExecutionState;
@@ -24,10 +25,15 @@ import org.finos.legend.engine.plan.execution.stores.StoreExecutorConfiguration;
 import org.finos.legend.engine.plan.execution.stores.StoreState;
 import org.finos.legend.engine.plan.execution.stores.StoreType;
 import org.finos.legend.engine.protocol.pure.v1.model.executionPlan.nodes.ExecutionNodeVisitor;
-import org.pac4j.core.profile.CommonProfile;
+import org.finos.legend.engine.shared.core.identity.Identity;
 
 public class FakeRelationalStoreExecutorBuilder implements StoreExecutorBuilder
 {
+    @Override
+    public MutableList<String> group()
+    {
+        return Lists.mutable.with("__Test__");
+    }
 
     @Override
     public StoreType getStoreType()
@@ -85,7 +91,7 @@ public class FakeRelationalStoreExecutorBuilder implements StoreExecutorBuilder
                 }
 
                 @Override
-                public ExecutionNodeVisitor<Result> getVisitor(MutableList<CommonProfile> profiles, ExecutionState executionState)
+                public ExecutionNodeVisitor<Result> getVisitor(Identity identity, ExecutionState executionState)
                 {
                     return null;
                 }

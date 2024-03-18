@@ -1,0 +1,64 @@
+// Copyright 2023 Goldman Sachs
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+import meta::pure::executionPlan::toString::*;
+import meta::pure::mapping::*;
+import meta::pure::executionPlan::*;
+import meta::pure::executionPlan::featureFlag::*;
+import meta::relational::functions::asserts::*;
+import meta::relational::mapping::*;
+import meta::relational::runtime::*;
+import meta::relational::tests::model::simple::*;
+import meta::relational::tests::*;
+import meta::pure::profiles::*;
+import meta::relational::functions::sqlstring::*;
+import meta::external::store::relational::tests::*;
+
+
+function <<test.Test>> meta::relational::tests::query::enumPushDown::testPushDownProject():Boolean[1]
+{  
+ 
+let fn = {|Synonym.all()->project([s|$s.type,s|$s.name],['type','name'])->filter(t|$t.getEnum('type')==meta::relational::tests::model::simple::ProductSynonymType.CUSIP)->withFeatureFlags(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM )};
+
+  let extensions = meta::relational::extension::relationalExtensions();
+  let result = execute($fn, simpleRelationalMapping, meta::external::store::relational::tests::testRuntime() ,$extensions);
+   assertSameElements(['CUSIP,CUSIP1','CUSIP,CUSIP2', 'CUSIP,CUSIP3'], $result.values.rows->map(r|$r.values->makeString(',')));
+   assertSize($result.values.rows, 3);
+}
+
+function <<test.Test>> meta::relational::tests::query::enumPushDown::testPushDownProjectWithParameter():Boolean[1]
+{   
+   let fn = {syn:ProductSynonymType[1]|Synonym.all()->filter(t|$t.type==$syn)->project([s|$s.type,s|$s.name],['syntype','name'])->withFeatureFlags(meta::pure::executionPlan::features::Feature.PUSH_DOWN_ENUM_TRANSFORM)->from( simpleRelationalMapping, meta::external::store::relational::tests::testRuntime())};
+  let extensions = meta::relational::extension::relationalExtensions();
+  let plan =  executionPlan($fn,$extensions)->planToString($extensions);
+ let expected  = 'Sequence\n'+
+'(\n'+
+'  type = TDS[(syntype, String, VARCHAR(200), ""), (name, String, VARCHAR(200), "")]\n'+
+'  (\n'+
+'    FunctionParametersValidationNode\n'+
+'    (\n'+
+'      functionParameters = [syn:meta::relational::tests::model::simple::ProductSynonymType[1]]\n'+
+'    )\n'+
+'    Relational\n'+
+'    (\n'+
+'      type = TDS[(syntype, String, VARCHAR(200), ""), (name, String, VARCHAR(200), "")]\n'+
+'      resultColumns = [("syntype", ""), ("name", VARCHAR(200))]\n'+
+'      sql = select case when "root".TYPE = \'CUSIP\' then \'CUSIP\' when "root".TYPE = \'ISIN\' then \'ISIN\' else null end as "syntype", "root".NAME as "name" from productSchema.synonymTable as "root" where (${optionalVarPlaceHolderOperationSelector(syn, equalEnumOperationSelector(enumMap_meta_relational_tests_simpleRelationalMapping_SynonymEnum(syn), \'"root".TYPE in (${enumMap_meta_relational_tests_simpleRelationalMapping_SynonymEnum(syn)})\', \'"root".TYPE = ${enumMap_meta_relational_tests_simpleRelationalMapping_SynonymEnum(syn)}\'), \'0 = 1\')})\n'+
+'      connection = TestDatabaseConnection(type = "H2")\n'+
+'    )\n'+
+'  )\n'+
+')\n' ;
+assertEquals($expected,$plan);
+
+}

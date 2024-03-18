@@ -320,14 +320,14 @@ public class BaseTest
 
     public IngestorResult executePlansAndVerifyForCaseConversion(RelationalIngestor ingestor, Datasets datasets, String[] schema, String expectedDataPath, Map<String, Object> expectedStats) throws Exception
     {
-        Executor executor = ingestor.init(JdbcConnection.of(h2Sink.connection()));
+        Executor executor = ingestor.initExecutor(JdbcConnection.of(h2Sink.connection()));
 
-        datasets = ingestor.create(datasets);
-        datasets = ingestor.evolve(datasets);
-        datasets = ingestor.dedupAndVersion(datasets);
+        ingestor.initDatasets(datasets);
+        ingestor.create();
+        ingestor.evolve();
 
         executor.begin();
-        IngestorResult result = ingestor.ingest(datasets).get(0);
+        IngestorResult result = ingestor.ingest().get(0);
         // Do more stuff if needed
         executor.commit();
 

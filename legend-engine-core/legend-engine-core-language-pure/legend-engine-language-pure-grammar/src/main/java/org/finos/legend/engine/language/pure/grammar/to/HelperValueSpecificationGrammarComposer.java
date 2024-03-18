@@ -254,6 +254,12 @@ public class HelperValueSpecificationGrammarComposer
         return fn._package == null || fn._package.isEmpty() ? name : fn._package + "::" + name;
     }
 
+    public static String getFunctionNameWithNoPackage(org.finos.legend.engine.protocol.pure.v1.model.packageableElement.domain.Function fn)
+    {
+        int signatureIndex = fn.name.indexOf(getFunctionSignature(fn));
+        return signatureIndex > 0 ? fn.name.substring(0, signatureIndex) : fn.name;
+    }
+
     public static String getFunctionSignature(Function function)
     {
         String functionSignature = LazyIterate.collect(function.parameters, HelperValueSpecificationGrammarComposer::getParameterSignature).select(Objects::nonNull).makeString("__")

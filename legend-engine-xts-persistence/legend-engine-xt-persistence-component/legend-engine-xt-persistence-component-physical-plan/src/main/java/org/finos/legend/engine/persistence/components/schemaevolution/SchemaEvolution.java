@@ -379,25 +379,28 @@ public class SchemaEvolution
         @Override
         public Set<String> visitAppendOnly(AppendOnlyAbstract appendOnly)
         {
-            return appendOnly.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD)
-                    .map(Collections::singleton)
-                    .orElse(Collections.emptySet());
+            Set<String> fieldsToIgnore = new HashSet<>();
+            fieldsToIgnore.add(appendOnly.batchIdField());
+            appendOnly.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).ifPresent(fieldsToIgnore::add);
+            return fieldsToIgnore;
         }
 
         @Override
         public Set<String> visitNontemporalSnapshot(NontemporalSnapshotAbstract nontemporalSnapshot)
         {
-            return nontemporalSnapshot.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD)
-                    .map(Collections::singleton)
-                    .orElse(Collections.emptySet());
+            Set<String> fieldsToIgnore = new HashSet<>();
+            fieldsToIgnore.add(nontemporalSnapshot.batchIdField());
+            nontemporalSnapshot.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).ifPresent(fieldsToIgnore::add);
+            return fieldsToIgnore;
         }
 
         @Override
         public Set<String> visitNontemporalDelta(NontemporalDeltaAbstract nontemporalDelta)
         {
-            return nontemporalDelta.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD)
-                    .map(Collections::singleton)
-                    .orElse(Collections.emptySet());
+            Set<String> fieldsToIgnore = new HashSet<>();
+            fieldsToIgnore.add(nontemporalDelta.batchIdField());
+            nontemporalDelta.auditing().accept(AuditingVisitors.EXTRACT_AUDIT_FIELD).ifPresent(fieldsToIgnore::add);
+            return fieldsToIgnore;
         }
 
         @Override

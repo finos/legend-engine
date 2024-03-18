@@ -49,11 +49,6 @@ public class ClassInstanceWrapper extends ValueSpecification
 {
     protected static ObjectMapper om = PureProtocolObjectMapperFactory.getNewObjectMapper();
 
-    protected static ClassInstance wrapClassInstance(JsonNode node, java.lang.Class _class, String id) throws IOException
-    {
-        return new ClassInstance(id, om.treeToValue(node, _class));
-    }
-
     public static class ClassInstanceWrapperDeserializer extends JsonDeserializer<ValueSpecification>
     {
         @Override
@@ -74,56 +69,69 @@ public class ClassInstanceWrapper extends ValueSpecification
             node.fieldNames().forEachRemaining(fields::add);
             if ("path".equals(type) || node.get("path") != null)
             {
-                return wrapClassInstance(node, Path.class, "path");
+                Path p = om.treeToValue(node, Path.class);
+                return new ClassInstance("path", p, p.sourceInformation);
             }
             if ("rootGraphFetchTree".equals(type) || node.get("class") != null)
             {
                 ((ObjectNode) node).set("_type", new TextNode("rootGraphFetchTree"));
-                return wrapClassInstance(node, RootGraphFetchTree.class, "rootGraphFetchTree");
+                RootGraphFetchTree p = om.treeToValue(node, RootGraphFetchTree.class);
+                return new ClassInstance("rootGraphFetchTree", p, p.sourceInformation);
             }
             if ("listInstance".equals(type) || node.get("values") != null || fields.isEmpty() || (fields.size() == 1 && "sourceInformation".equals(fields.get(0))))
             {
-                return wrapClassInstance(node, PureList.class, "listInstance");
+                PureList p = om.treeToValue(node, PureList.class);
+                return new ClassInstance("listInstance", p, p.sourceInformation);
             }
             if ("pair".equals(type) || node.get("first") != null)
             {
-                return wrapClassInstance(node, Pair.class, "pair");
+                Pair p = om.treeToValue(node, Pair.class);
+                return new ClassInstance("pair", p, p.sourceInformation);
             }
             if ("aggregateValue".equals(type) || node.get("mapFn") != null && node.get("name") == null)
             {
-                return wrapClassInstance(node, AggregateValue.class, "aggregateValue");
+                AggregateValue p = om.treeToValue(node, AggregateValue.class);
+                return new ClassInstance("aggregateValue", p, p.sourceInformation);
             }
             if ("tdsAggregateValue".equals(type) || node.get("mapFn") != null && node.get("name") != null)
             {
-                return wrapClassInstance(node, TDSAggregateValue.class, "tdsAggregateValue");
+                TDSAggregateValue p = om.treeToValue(node, TDSAggregateValue.class);
+                return new ClassInstance("tdsAggregateValue", p, p.sourceInformation);
             }
             if ("tdsColumnInformation".equals(type) || node.get("columnFn") != null)
             {
-                return wrapClassInstance(node, TDSColumnInformation.class, "tdsColumnInformation");
+                TDSColumnInformation p = om.treeToValue(node, TDSColumnInformation.class);
+                return new ClassInstance("tdsColumnInformation", p, p.sourceInformation);
             }
             if ("tdsSortInformation".equals(type) || node.get("direction") != null)
             {
-                return wrapClassInstance(node, TDSSortInformation.class, "tdsSortInformation");
+                TDSSortInformation p = om.treeToValue(node, TDSSortInformation.class);
+                return new ClassInstance("tdsSortInformation", p, p.sourceInformation);
             }
             if ("tdsOlapRank".equals(type) || node.get("function") != null && node.get("columnName") == null)
             {
-                return wrapClassInstance(node, TdsOlapRank.class, "tdsOlapRank");
+                TdsOlapRank p = om.treeToValue(node, TdsOlapRank.class);
+                return new ClassInstance("tdsOlapRank", p, p.sourceInformation);
             }
             if ("tdsOlapAggregation".equals(type) || node.get("function") != null && node.get("columnName") != null)
             {
-                return wrapClassInstance(node, TdsOlapAggregation.class, "tdsOlapAggregation");
+                TdsOlapAggregation p = om.treeToValue(node, TdsOlapAggregation.class);
+                return new ClassInstance("tdsOlapAggregation", p, p.sourceInformation);
             }
             if ("runtimeInstance".equals(type) || node.get("runtime") != null)
             {
-                return wrapClassInstance(node, RuntimeInstance.class, "runtimeInstance");
+                RuntimeInstance p = om.treeToValue(node, RuntimeInstance.class);
+                return new ClassInstance("runtimeInstance", p, p.sourceInformation);
             }
             if ("executionContextInstance".equals(type) || node.get("executionContext") != null)
             {
-                return wrapClassInstance(node, ExecutionContextInstance.class, "executionContextInstance");
+                ExecutionContextInstance p = om.treeToValue(node, ExecutionContextInstance.class);
+                return new ClassInstance("executionContextInstance", p, p.sourceInformation);
             }
             if ("alloySerializationConfig".equals(type) || node.get("typeKeyName") != null)
             {
-                return wrapClassInstance(node, SerializationConfig.class, "alloySerializationConfig");
+                SerializationConfig p = om.treeToValue(node, SerializationConfig.class);
+                return new ClassInstance("alloySerializationConfig", p, p.sourceInformation);
             }
             throw new RuntimeException("NOT SUPPORTED\n" + node.toPrettyString());
         }
