@@ -815,7 +815,7 @@ public class PostgresWireProtocol
         long startTime = System.currentTimeMillis();
 
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("PostgresWireProtocol.handleDescribeMessage").startSpan();
+        Span span = tracer.spanBuilder("WireProtocol Handle Describe Message").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             byte type = buffer.readByte();
@@ -861,7 +861,7 @@ public class PostgresWireProtocol
     private void handleExecute(ByteBuf buffer, DelayableWriteChannel channel)
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("PostgresWireProtocol.handleExecute").startSpan();
+        Span span = tracer.spanBuilder("WireProtocol Handle Execute").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             String portalName = readCString(buffer);
@@ -1009,7 +1009,7 @@ public class PostgresWireProtocol
     void handleSimpleQuery(ByteBuf buffer, final DelayableWriteChannel channel)
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("PostgresWireProtocol.handleSimpleQuery").startSpan();
+        Span span = tracer.spanBuilder("WireProtocol Handle Simple Query").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             String queryString = readCString(buffer);
@@ -1047,7 +1047,7 @@ public class PostgresWireProtocol
     {
 
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("PostgresWireProtocol.handleSimpleQuery").startSpan();
+        Span span = tracer.spanBuilder("WireProtocol Handle Simple Query").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             CompletableFuture<?> result = new CompletableFuture<>();

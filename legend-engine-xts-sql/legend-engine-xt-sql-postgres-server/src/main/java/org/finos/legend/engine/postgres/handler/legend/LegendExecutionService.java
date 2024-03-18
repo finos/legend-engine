@@ -52,7 +52,7 @@ public class LegendExecutionService
     public List<LegendColumn> getSchema(String query)
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("LegendExecutionService.getSchema").startSpan();
+        Span span = tracer.spanBuilder("Legend ExecutionService Get Schema").startSpan();
         try (Scope scope = span.makeCurrent(); InputStream inputStream = executionClient.executeSchemaApi(query);)
         {
             span.setAttribute("query", query);
@@ -80,7 +80,7 @@ public class LegendExecutionService
     public LegendExecutionResult executeQuery(String query)
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("LegendExecutionService.executeQuery").startSpan();
+        Span span = tracer.spanBuilder("LegendExecutionService ExecuteQuery").startSpan();
         try (Scope scope = span.makeCurrent();)
         {
             span.setAttribute("query", query);

@@ -63,16 +63,6 @@ public class PostgresServerLauncher
 
         logger.info("Starting server in port: " + serverConfig.getPort());
 
-
-
-
-//     /*   JvmMetrics.builder().register();
-//
-//        HTTPServer server = HTTPServer.builder().port(serverConfig.getMetricsPort()).buildAndStart();
-//
-//        System.out.println("HTTPServer listening on port http://localhost:" + server.getPort() + "/metrics");*/
-
-
         new PostgresServer(serverConfig, sessionFactory, (user, connectionProperties) -> authenticationMethod).run();
     }
 

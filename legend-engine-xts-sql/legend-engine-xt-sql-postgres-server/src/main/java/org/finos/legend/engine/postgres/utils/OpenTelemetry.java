@@ -27,7 +27,7 @@ import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
 public class OpenTelemetry
 {
-    private static final String LEGEND_ENGINE_XTS_SQL = "legend-engine-xts-sql";
+    private static final String LEGEND_ENGINE_XTS_SQL = "alloy-sql-server";
     private static final OpenTelemetrySdk OPEN_TELEMETRY = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
 
 

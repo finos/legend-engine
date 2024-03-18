@@ -96,7 +96,7 @@ public class LegendHttpClient implements LegendClient
         req.setEntity(stringEntity);
 
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("LegendHttpClient.executeQuery").startSpan();
+        Span span = tracer.spanBuilder("LegendHttpClient Execute Query").startSpan();
         try (Scope scope = span.makeCurrent();)
         {
             OpenTelemetry.getPropagators().inject(Context.current(), req, TEXT_MAP_SETTER);
