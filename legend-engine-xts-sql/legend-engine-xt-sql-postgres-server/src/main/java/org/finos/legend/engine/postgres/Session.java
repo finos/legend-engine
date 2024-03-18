@@ -195,10 +195,10 @@ public class Session implements AutoCloseable
             LOGGER.debug("method=describe type={} portalOrStatement={}", type, portalOrStatement);
         }
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("Session.describe").startSpan();
+        Span span = tracer.spanBuilder("Session Describe").startSpan();
         try (Scope scope = span.makeCurrent())
         {
-            span.setAttribute("type", type);
+            span.setAttribute("type", String.valueOf(type));
             span.setAttribute("name", portalOrStatement);
             switch (type)
             {
@@ -349,7 +349,7 @@ public class Session implements AutoCloseable
     public CompletableFuture<?> execute(String portalName, int maxRows, ResultSetReceiver resultSetReceiver)
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("Session.execute").startSpan();
+        Span span = tracer.spanBuilder("Session Execute").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             Portal portal = getSafePortal(portalName);
@@ -367,7 +367,7 @@ public class Session implements AutoCloseable
             }
 
             preparedStatement.setMaxRows(maxRows);
-            executorService.submit(new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver));
+            Context.taskWrapping(executorService).submit(new PreparedStatementExecutionTask(preparedStatement, resultSetReceiver));
 
             if (activeExecution == null)
             {
@@ -400,7 +400,7 @@ public class Session implements AutoCloseable
             LOGGER.debug("Executing simple {} ", query);
         }
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("Session.executeSimple").startSpan();
+        Span span = tracer.spanBuilder("Session Execute Simple").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             PostgresStatement statement = getSessionHandler(query).createStatement();
@@ -545,7 +545,7 @@ public class Session implements AutoCloseable
             long startTime = System.currentTimeMillis();
 
             Tracer tracer = OpenTelemetry.getTracer();
-            Span span = tracer.spanBuilder("StatementExecutionTask.call").startSpan();
+            Span span = tracer.spanBuilder("Statement ExecutionTask Execute").startSpan();
             try (Scope scope = span.makeCurrent())
             {
                 boolean results = statement.execute(query);
@@ -597,7 +597,7 @@ public class Session implements AutoCloseable
             long startTime = System.currentTimeMillis();
 
             Tracer tracer = OpenTelemetry.getTracer();
-            Span span = tracer.spanBuilder("PreparedStatementExecutionTask.call").startSpan();
+            Span span = tracer.spanBuilder("PreparedStatement ExecutionTask Execute").startSpan();
             try (Scope scope = span.makeCurrent())
             {
                 boolean results = preparedStatement.execute();

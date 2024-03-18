@@ -70,7 +70,7 @@ class ResultSetReceiver
     public void sendResultSet(PostgresResultSet rs) throws Exception
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("ResultSetReceiver.sendResultSet").startSpan();
+        Span span = tracer.spanBuilder("ResultSet Receiver Send ResultSet").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             long rowCount = 0;
@@ -95,7 +95,7 @@ class ResultSetReceiver
                 {
                     rowCount++;
                     Messages.sendDataRow(directChannel, rs, columnTypes, null);
-                    if (rowCount % 1000 == 0)
+                    if (rowCount % 10000 == 0)
                     {   //TODO REMOVE FLASH FROM Messages.sendDataRow
                         directChannel.flush();
                         span.addEvent("sentRows", Attributes.of(AttributeKey.longKey("numberOfRows"), rowCount));
@@ -114,7 +114,7 @@ class ResultSetReceiver
     public void allFinished()
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("ResultSetReceiver.allFinished").startSpan();
+        Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             ChannelFuture sendCommandComplete = Messages.sendCommandComplete(directChannel, query, rowCount);
@@ -132,7 +132,7 @@ class ResultSetReceiver
     public void fail(Throwable throwable)
     {
         Tracer tracer = OpenTelemetry.getTracer();
-        Span span = tracer.spanBuilder("ResultSetReceiver.fail").startSpan();
+        Span span = tracer.spanBuilder("ResultSet Receiver Failure").startSpan();
         try (Scope scope = span.makeCurrent())
         {
             ChannelFuture sendErrorResponse = Messages.sendErrorResponse(directChannel, throwable);
