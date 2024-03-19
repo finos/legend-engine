@@ -32,7 +32,6 @@ public class ToArrayFunctionVisitor implements LogicalPlanVisitor<ToArrayFunctio
     {
         org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.values.ToArrayFunction function =
             new org.finos.legend.engine.persistence.components.relational.bigquery.sqldom.schemaops.values.ToArrayFunction(
-                new ArrayList<>(),
                 current.alias().orElse(null),
                 context.quoteIdentifier()
             );

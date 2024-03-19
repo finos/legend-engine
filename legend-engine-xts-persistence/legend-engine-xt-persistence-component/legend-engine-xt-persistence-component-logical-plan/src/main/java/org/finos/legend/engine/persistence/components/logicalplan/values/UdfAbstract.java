@@ -29,5 +29,5 @@ public interface UdfAbstract extends Value
 
     String udfName();
 
-    List<Value> values();
+    List<Value> parameters();
 }

@@ -43,6 +43,7 @@ import org.finos.legend.engine.persistence.components.logicalplan.values.FieldVa
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataFileNameField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.MetadataRowNumberField;
 import org.finos.legend.engine.persistence.components.logicalplan.values.StagedFilesFieldValue;
+import org.finos.legend.engine.persistence.components.logicalplan.values.ToArrayFunction;
 import org.finos.legend.engine.persistence.components.logicalplan.values.TryCastFunction;
 import org.finos.legend.engine.persistence.components.optimizer.Optimizer;
 import org.finos.legend.engine.persistence.components.relational.CaseConversion;
@@ -80,6 +81,7 @@ import org.finos.legend.engine.persistence.components.relational.snowflake.sql.v
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesFieldValueVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.DigestUdfVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.StagedFilesSelectionVisitor;
+import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.ToArrayFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.snowflake.sql.visitor.TryCastFunctionVisitor;
 import org.finos.legend.engine.persistence.components.relational.sql.TabularData;
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlGen;
@@ -178,6 +180,7 @@ public class SnowflakeSink extends AnsiSqlSink
         logicalPlanVisitorByClass.put(TryCastFunction.class, new TryCastFunctionVisitor());
         logicalPlanVisitorByClass.put(MetadataFileNameField.class, new MetadataFileNameFieldVisitor());
         logicalPlanVisitorByClass.put(MetadataRowNumberField.class, new MetadataRowNumberFieldVisitor());
+        logicalPlanVisitorByClass.put(ToArrayFunction.class, new ToArrayFunctionVisitor());
 
         LOGICAL_PLAN_VISITOR_BY_CLASS = Collections.unmodifiableMap(logicalPlanVisitorByClass);
 

@@ -239,29 +239,25 @@ public abstract class Planner
 
     protected Pair<List<Value>, List<DataType>> getDataFieldsWithTypes()
     {
-        List<Value> allDataFields = new ArrayList<>(stagingDataset().schemaReference().fieldValues());
-        List<DataType> allFieldTypes = new ArrayList<>(stagingDataset().schema().fields().stream().map(field -> field.type().dataType()).collect(Collectors.toList()));
-
-        List<Value> desiredDataFields = new ArrayList<>();
-        List<DataType> desiredFieldTypes = new ArrayList<>();
+        List<Value> dataFields = new ArrayList<>();
+        List<DataType> fieldTypes = new ArrayList<>();
 
         Optional<String> dedupField = ingestMode.deduplicationStrategy().accept(DeduplicationVisitors.EXTRACT_DEDUP_FIELD);
         Optional<String> dataSplitField = ingestMode.dataSplitField();
 
-        for (int i = 0; i < allDataFields.size(); i++)
+        for (int i = 0; i < stagingDataset().schemaReference().fieldValues().size(); i++)
         {
-            FieldValue fieldValue = (FieldValue) allDataFields.get(i);
-            DataType datatype = allFieldTypes.get(i);
+            FieldValue fieldValue = (FieldValue) stagingDataset().schemaReference().fieldValues().get(i);
             if ((dedupField.isPresent() && dedupField.get().equalsIgnoreCase(fieldValue.fieldName())) ||
                 (dataSplitField.isPresent() && dataSplitField.get().equalsIgnoreCase(fieldValue.fieldName())))
             {
                 continue;
             }
-            desiredDataFields.add(fieldValue);
-            desiredFieldTypes.add(datatype);
+            dataFields.add(fieldValue);
+            fieldTypes.add(stagingDataset().schema().fields().get(i).type().dataType());
         }
 
-        return Tuples.pair(desiredDataFields, desiredFieldTypes);
+        return Tuples.pair(dataFields, fieldTypes);
     }
 
     protected List<Value> getDataFields()

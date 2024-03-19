@@ -17,6 +17,7 @@ package org.finos.legend.engine.persistence.components.relational.bigquery.sqldo
 import org.finos.legend.engine.persistence.components.relational.sqldom.SqlDomException;
 import org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Value;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.finos.legend.engine.persistence.components.relational.sqldom.utils.SqlGenUtils.CLOSING_SQUARE_BRACKET;
@@ -30,18 +31,13 @@ public class ToArrayFunction extends Value
     public ToArrayFunction(String quoteIdentifier)
     {
         super(quoteIdentifier);
+        this.values = new ArrayList<>();
     }
 
-    public ToArrayFunction(List<Value> values, String quoteIdentifier)
-    {
-        super(quoteIdentifier);
-        this.values = values;
-    }
-
-    public ToArrayFunction(List<Value> values, String alias, String quoteIdentifier)
+    public ToArrayFunction(String alias, String quoteIdentifier)
     {
         super(alias, quoteIdentifier);
-        this.values = values;
+        this.values = new ArrayList<>();
     }
 
     @Override

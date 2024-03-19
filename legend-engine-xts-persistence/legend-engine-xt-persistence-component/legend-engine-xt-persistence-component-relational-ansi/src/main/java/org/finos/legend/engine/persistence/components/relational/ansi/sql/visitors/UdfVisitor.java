@@ -33,9 +33,9 @@ public class UdfVisitor implements LogicalPlanVisitor<Udf>
             new org.finos.legend.engine.persistence.components.relational.sqldom.schemaops.values.Udf(context.quoteIdentifier(), current.udfName());
         prev.push(udf);
 
-        if (current.values() != null && !current.values().isEmpty())
+        if (current.parameters() != null && !current.parameters().isEmpty())
         {
-            List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>(current.values());
+            List<LogicalPlanNode> logicalPlanNodeList = new ArrayList<>(current.parameters());
             return new VisitorResult(udf, logicalPlanNodeList);
         }
 
