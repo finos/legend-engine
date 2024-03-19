@@ -23,7 +23,7 @@ public class DigestUdfVisitor extends org.finos.legend.engine.persistence.compon
 {
 
     @Override
-    protected Value getTypeConversionUdf(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
+    protected Value getColumnValueAsStringType(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
     {
         if (typeConversionUdfNames.containsKey(dataType))
         {

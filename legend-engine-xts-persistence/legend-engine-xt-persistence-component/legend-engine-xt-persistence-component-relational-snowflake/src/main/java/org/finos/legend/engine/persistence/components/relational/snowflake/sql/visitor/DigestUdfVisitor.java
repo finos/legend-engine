@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class DigestUdfVisitor extends org.finos.legend.engine.persistence.components.relational.ansi.sql.visitors.DigestUdfVisitor
 {
-    protected Value getTypeConversionUdf(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
+    protected Value getColumnValueAsStringType(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
     {
         if (typeConversionUdfNames.containsKey(dataType))
         {

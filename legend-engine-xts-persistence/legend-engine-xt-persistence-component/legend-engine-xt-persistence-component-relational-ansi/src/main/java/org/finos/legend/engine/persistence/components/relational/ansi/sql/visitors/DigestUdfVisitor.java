@@ -42,7 +42,7 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
         for (int i = 0; i < current.values().size(); i++)
         {
             columnNameList.add(StringValue.of(current.fieldNames().get(i)));
-            columnValueList.add(getTypeConversionUdf(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames()));
+            columnValueList.add(getColumnValueAsStringType(current.values().get(i), current.fieldTypes().get(i), current.typeConversionUdfNames()));
         }
 
         ToArrayFunction toArrayColumnNames = ToArrayFunction.builder().addAllValues(columnNameList).build();
@@ -51,7 +51,7 @@ public class DigestUdfVisitor implements LogicalPlanVisitor<DigestUdf>
         return new VisitorResult(udf, Arrays.asList(toArrayColumnNames, toArrayColumnValues));
     }
 
-    protected Value getTypeConversionUdf(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
+    protected Value getColumnValueAsStringType(Value value, DataType dataType, Map<DataType, String> typeConversionUdfNames)
     {
         throw new IllegalStateException("UDF is unsupported in ANSI sink");
     }
