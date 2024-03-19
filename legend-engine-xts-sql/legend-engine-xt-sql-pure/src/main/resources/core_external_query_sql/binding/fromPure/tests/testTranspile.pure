@@ -25,6 +25,7 @@ import meta::pure::functions::meta::*;
 import meta::pure::mapping::*;
 import meta::pure::metamodel::serialization::grammar::*;
 import meta::external::query::sql::transformation::compile::utils::*;
+import meta::external::format::shared::functions::*;
 
 //SELECT
 function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testSelectStar():Boolean[1]
@@ -2427,6 +2428,19 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         ->filter(row:TDSRow[1] | $row.getInteger('Integer') == $_1 && $row.getString('String') == $_2)
       }
   )
+}
+
+function <<test.Test>> meta::external::query::sql::transformation::queryToPure::tests::testExternalize():Boolean[1]
+{
+  test(
+    'SELECT Boolean, Integer FROM service."/service/service1"',
+
+    {| FlatInput.all()->project(
+        [ x | $x.booleanIn, x | $x.integerIn, x | $x.floatIn, x | $x.decimalIn, x | $x.strictDateIn, x | $x.dateTimeIn, x | $x.stringIn ],
+        [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
+      ->restrict(['Boolean', 'Integer'])
+      ->externalize('application/x.arrow')
+      }, testSources(), false, true, true, true)
 }
 
 

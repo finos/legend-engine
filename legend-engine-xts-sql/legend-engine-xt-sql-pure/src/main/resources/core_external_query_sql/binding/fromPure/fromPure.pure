@@ -20,6 +20,7 @@ import meta::legend::service::metamodel::*;
 import meta::pure::executionPlan::*;
 import meta::external::query::sql::transformation::utils::*;
 import meta::external::query::sql::transformation::compile::utils::*;
+import meta::external::format::shared::functions::*;
 
 
 Class meta::external::query::sql::transformation::queryToPure::SQLSourceArgument
@@ -210,7 +211,7 @@ function meta::external::query::sql::transformation::queryToPure::processRootQue
   )->cast(@PositionalParameterExpression);
 
   trace({|
-    let processed = wrapWithFrom($query->cast(@Query)->processQuery($context));
+    let processed = externalizeToArrow(wrapWithFrom($query->processQuery($context)));
     let variables = $processed.lambda->extractPositionals($positionals.index->map(i | positionalName($i)));
 
     ^$processed(positionals = $processed.positionals->concatenate($variables)->removeDuplicatesBy(v | $v.name));
@@ -1280,7 +1281,17 @@ let executionContext = if ($source.executionOptions->isNotEmpty(),
   );
 }
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::externalizeToArrow(context:SqlTransformContext[1]):SqlTransformContext[1]
+{
+  if ($context.externalizeToArrow, | externalizeToArrow($context.expression->toOne(), $context), | $context);
+}
 
+function <<access.private>> meta::external::query::sql::transformation::queryToPure::externalizeToArrow(expression:FunctionExpression[1], context:SqlTransformContext[1]):SqlTransformContext[1]
+{
+  let format = 'application/x.arrow';
+  let newExp = appendTdsFunc($context.expression->toOne(), externalize_TabularDataSet_1__String_1__String_1_, list($format));
+  ^$context(expression = $newExp);
+}
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::processSelectItems(selectItems: SelectItem[*], context: SqlTransformContext[1], useContextForNameResolve:Boolean[1]): Pair<LambdaFunction<Any>, String>[*]
 {
@@ -3302,7 +3313,13 @@ function meta::external::query::sql::transformation::queryToPure::rootContext(so
 function meta::external::query::sql::transformation::queryToPure::context(id:Integer[1], root:Boolean[1], sources: SQLSource[*],
   extensions: meta::pure::extension::Extension[*], scopeWithFrom:Boolean[0..1], debug:DebugContext[1]):SqlTransformContext[1]
 {
-  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions, scopeWithFrom = $scopeWithFrom, debug = $debug);
+  context($id, $root, $sources, $extensions, $scopeWithFrom, $debug, false);
+}
+
+function meta::external::query::sql::transformation::queryToPure::context(id:Integer[1], root:Boolean[1], sources: SQLSource[*],
+  extensions: meta::pure::extension::Extension[*], scopeWithFrom:Boolean[0..1], debug:DebugContext[1], externalizeToArrow: Boolean[1]):SqlTransformContext[1]
+{
+  ^SqlTransformContext(id = $id, root = $root, sources = $sources, extensions = $extensions, scopeWithFrom = $scopeWithFrom, debug = $debug, externalizeToArrow = $externalizeToArrow);
 }
 
 function <<access.private>> meta::external::query::sql::transformation::queryToPure::positionalName(i:Integer[1]):String[1]
@@ -3325,7 +3342,9 @@ Class meta::external::query::sql::transformation::queryToPure::SqlTransformConte
   aliases:SQLColumnAlias[*];
   name: String[0..1];
   scopeWithFrom: Boolean[0..1];
+  externalizeToArrow: Boolean[1];
   debug: DebugContext[1];
+
 
   //failOnUnknown is only set to false when trying to calculate type
   positional(p:PositionalParameterExpression[1], type:Type[0..1], failOnUnknown:Boolean[1]){

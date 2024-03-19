@@ -29,8 +29,13 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
 
 function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1]):Boolean[1]
 {
+  test($sqls, $expected, $sources, $scopeWithFrom, $assertLambda, $assertJSON, false);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1], externalizeToArrow:Boolean[1]):Boolean[1]
+{
   $sqls->forAll(sql |
-    let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom);
+    let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom, $externalizeToArrow);
     let actual = $sqlTransformContext.lambda();
 
     if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
@@ -55,10 +60,15 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
+  processQuery($sql, $sources, $scopeWithFrom, false);
+}
+
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], externalizeToArrow:Boolean[1]): SqlTransformContext[1]
+{
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
 
   let extensions = relationalExtensions();
   let context = rootContext($sources, $extensions);
 
-  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom));
+  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom, externalizeToArrow = $externalizeToArrow));
 }
