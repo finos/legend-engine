@@ -36,7 +36,7 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
-import org.finos.legend.engine.postgres.utils.OpenTelemetry;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.slf4j.Logger;
 
 class ResultSetReceiver
@@ -69,7 +69,7 @@ class ResultSetReceiver
 
     public void sendResultSet(PostgresResultSet rs) throws Exception
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Send ResultSet").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -113,7 +113,7 @@ class ResultSetReceiver
 
     public void allFinished()
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Finish Handling").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -131,7 +131,7 @@ class ResultSetReceiver
 
     public void fail(Throwable throwable)
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("ResultSet Receiver Failure").startSpan();
         try (Scope scope = span.makeCurrent())
         {

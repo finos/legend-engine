@@ -32,6 +32,7 @@ public class ServerConfig
     private AuthenticationMethodType authenticationMethod;
     private IdentityType identityType;
     private GSSConfig gss;
+    private OpenTelemetryConfig otelConfig;
 
     public Integer getMetricsPort()
     {
@@ -70,6 +71,11 @@ public class ServerConfig
     public GSSConfig getGss()
     {
         return gss;
+    }
+
+    public OpenTelemetryConfig getOtelConfig()
+    {
+        return otelConfig;
     }
 
     public ServerConfig()

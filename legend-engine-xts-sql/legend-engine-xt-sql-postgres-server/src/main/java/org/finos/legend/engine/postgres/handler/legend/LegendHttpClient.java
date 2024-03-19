@@ -25,6 +25,7 @@ import java.io.InputStream;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
@@ -39,7 +40,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.message.BasicHeader;
-import org.finos.legend.engine.postgres.utils.OpenTelemetry;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.finos.legend.engine.shared.core.kerberos.HttpClientBuilder;
 import org.finos.legend.engine.shared.core.operational.errorManagement.ExceptionError;
@@ -51,14 +52,7 @@ public class LegendHttpClient implements LegendClient
     private static final Logger LOGGER = LoggerFactory.getLogger(LegendHttpClient.class);
     private static final ObjectMapper mapper = ObjectMapperFactory.getNewStandardObjectMapperWithPureProtocolExtensionSupports();
 
-    private static final TextMapSetter<HttpRequest> TEXT_MAP_SETTER = new TextMapSetter<HttpRequest>()
-    {
-        @Override
-        public void set(@Nullable HttpRequest httpRequest, String key, String value)
-        {
-            httpRequest.addHeader(new BasicHeader(key, value));
-        }
-    };
+    private static final TextMapSetter<HttpRequest> TEXT_MAP_SETTER = (httpRequest, key, value) -> Objects.requireNonNull(httpRequest).addHeader(new BasicHeader(key, value));
 
     private final String protocol;
     private final String host;
@@ -95,11 +89,11 @@ public class LegendHttpClient implements LegendClient
         stringEntity.setContentType(TEXT_PLAIN);
         req.setEntity(stringEntity);
 
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("LegendHttpClient Execute Query").startSpan();
         try (Scope scope = span.makeCurrent();)
         {
-            OpenTelemetry.getPropagators().inject(Context.current(), req, TEXT_MAP_SETTER);
+            OpenTelemetryUtil.getPropagators().inject(Context.current(), req, TEXT_MAP_SETTER);
             HttpClient client = HttpClientBuilder.getHttpClient(new BasicCookieStore());
             HttpResponse res = client.execute(req);
             return handleResponse(query, () -> res.getEntity().getContent(), () -> res.getStatusLine().getStatusCode());

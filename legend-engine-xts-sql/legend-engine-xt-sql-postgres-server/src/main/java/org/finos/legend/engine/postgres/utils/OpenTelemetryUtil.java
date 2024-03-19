@@ -15,21 +15,18 @@
 
 package org.finos.legend.engine.postgres.utils;
 
-
 import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.DoubleHistogram;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.autoconfigure.AutoConfiguredOpenTelemetrySdk;
 
-public class OpenTelemetry
+public class OpenTelemetryUtil
 {
     private static final String LEGEND_ENGINE_XTS_SQL = "alloy-sql-server";
-    private static final OpenTelemetrySdk OPEN_TELEMETRY = AutoConfiguredOpenTelemetrySdk.initialize().getOpenTelemetrySdk();
-
+    private static final OpenTelemetry OPEN_TELEMETRY = GlobalOpenTelemetry.get();
 
     public static final LongUpDownCounter
             ACTIVE_SESSIONS = OPEN_TELEMETRY
@@ -106,6 +103,10 @@ public class OpenTelemetry
             .histogramBuilder("metadata_requests_duration")
             .setDescription(("Execute duration"))
             .build();
+
+    private OpenTelemetryUtil()
+    {
+    }
 
     public static Tracer getTracer()
     {

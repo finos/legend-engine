@@ -41,7 +41,7 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSetMetaData;
 import org.finos.legend.engine.postgres.types.PGType;
 import org.finos.legend.engine.postgres.types.PGTypes;
 import org.finos.legend.engine.postgres.utils.ExceptionUtil;
-import org.finos.legend.engine.postgres.utils.OpenTelemetry;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.finos.legend.engine.shared.core.kerberos.SubjectTools;
 import org.ietf.jgss.GSSContext;
@@ -810,11 +810,11 @@ public class PostgresWireProtocol
      */
     private void handleDescribeMessage(ByteBuf buffer, Channel channel) throws Exception
     {
-        OpenTelemetry.TOTAL_METADATA.add(1);
-        OpenTelemetry.ACTIVE_METADATA.add(1);
+        OpenTelemetryUtil.TOTAL_METADATA.add(1);
+        OpenTelemetryUtil.ACTIVE_METADATA.add(1);
         long startTime = System.currentTimeMillis();
 
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Describe Message").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -837,18 +837,18 @@ public class PostgresWireProtocol
                         type == 'P' ? session.getResultFormatCodes(portalOrStatement) : null;
                 Messages.sendRowDescription(channel, fields, resultFormatCodes);
             }
-            OpenTelemetry.TOTAL_SUCCESS_METADATA.add(1);
-            OpenTelemetry.METADATA_DURATION.record(System.currentTimeMillis() - startTime);
+            OpenTelemetryUtil.TOTAL_SUCCESS_METADATA.add(1);
+            OpenTelemetryUtil.METADATA_DURATION.record(System.currentTimeMillis() - startTime);
         }
         catch (Exception e)
         {
             span.recordException(e);
-            OpenTelemetry.TOTAL_FAILURE_METADATA.add(1);
+            OpenTelemetryUtil.TOTAL_FAILURE_METADATA.add(1);
             throw e;
         }
         finally
         {
-            OpenTelemetry.ACTIVE_METADATA.add(-1);
+            OpenTelemetryUtil.ACTIVE_METADATA.add(-1);
             span.end();
         }
     }
@@ -860,7 +860,7 @@ public class PostgresWireProtocol
      */
     private void handleExecute(ByteBuf buffer, DelayableWriteChannel channel)
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Execute").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -1008,7 +1008,7 @@ public class PostgresWireProtocol
         }*/
     void handleSimpleQuery(ByteBuf buffer, final DelayableWriteChannel channel)
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Simple Query").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -1046,7 +1046,7 @@ public class PostgresWireProtocol
     private CompletableFuture<?> handleSingleQuery(String query, DelayableWriteChannel channel)
     {
 
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("WireProtocol Handle Simple Query").startSpan();
         try (Scope scope = span.makeCurrent())
         {

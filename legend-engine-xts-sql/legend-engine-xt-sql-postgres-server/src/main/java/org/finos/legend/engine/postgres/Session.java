@@ -39,7 +39,7 @@ import org.finos.legend.engine.postgres.handler.PostgresResultSet;
 import org.finos.legend.engine.postgres.handler.PostgresStatement;
 import org.finos.legend.engine.postgres.handler.SessionHandler;
 import org.finos.legend.engine.postgres.utils.ExceptionUtil;
-import org.finos.legend.engine.postgres.utils.OpenTelemetry;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.identity.Identity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,8 +62,8 @@ public class Session implements AutoCloseable
         this.executorService = executorService;
         this.dispatcher = new ExecutionDispatcher(dataSessionHandler, metaDataSessionHandler);
         this.identity = identity;
-        OpenTelemetry.ACTIVE_SESSIONS.add(1);
-        OpenTelemetry.TOTAL_SESSIONS.add(1);
+        OpenTelemetryUtil.ACTIVE_SESSIONS.add(1);
+        OpenTelemetryUtil.TOTAL_SESSIONS.add(1);
     }
 
     public Identity getIdentity()
@@ -194,7 +194,7 @@ public class Session implements AutoCloseable
         {
             LOGGER.debug("method=describe type={} portalOrStatement={}", type, portalOrStatement);
         }
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Describe").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -275,7 +275,7 @@ public class Session implements AutoCloseable
     public void close()
     {
         clearState();
-        OpenTelemetry.ACTIVE_SESSIONS.add(-1);
+        OpenTelemetryUtil.ACTIVE_SESSIONS.add(-1);
     }
 
     public void close(char type, String name)
@@ -348,7 +348,7 @@ public class Session implements AutoCloseable
 
     public CompletableFuture<?> execute(String portalName, int maxRows, ResultSetReceiver resultSetReceiver)
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Execute").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -399,7 +399,7 @@ public class Session implements AutoCloseable
         {
             LOGGER.debug("Executing simple {} ", query);
         }
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Session Execute Simple").startSpan();
         try (Scope scope = span.makeCurrent())
         {
@@ -540,11 +540,11 @@ public class Session implements AutoCloseable
         @Override
         public Boolean call() throws Exception
         {
-            OpenTelemetry.TOTAL_EXECUTE.add(1);
-            OpenTelemetry.ACTIVE_EXECUTE.add(1);
+            OpenTelemetryUtil.TOTAL_EXECUTE.add(1);
+            OpenTelemetryUtil.ACTIVE_EXECUTE.add(1);
             long startTime = System.currentTimeMillis();
 
-            Tracer tracer = OpenTelemetry.getTracer();
+            Tracer tracer = OpenTelemetryUtil.getTracer();
             Span span = tracer.spanBuilder("Statement ExecutionTask Execute").startSpan();
             try (Scope scope = span.makeCurrent())
             {
@@ -560,19 +560,19 @@ public class Session implements AutoCloseable
                     resultSetReceiver.sendResultSet(rs);
                     resultSetReceiver.allFinished();
                 }
-                OpenTelemetry.TOTAL_SUCCESS_EXECUTE.add(1);
-                OpenTelemetry.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
+                OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
+                OpenTelemetryUtil.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
             }
             catch (Exception e)
             {
                 span.recordException(e);
                 resultSetReceiver.fail(e);
-                OpenTelemetry.TOTAL_FAILURE_EXECUTE.add(1);
+                OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);
             }
             finally
             {
                 span.end();
-                OpenTelemetry.ACTIVE_EXECUTE.add(-1);
+                OpenTelemetryUtil.ACTIVE_EXECUTE.add(-1);
             }
             return true;
         }
@@ -592,11 +592,11 @@ public class Session implements AutoCloseable
         @Override
         public Boolean call() throws Exception
         {
-            OpenTelemetry.TOTAL_EXECUTE.add(1);
-            OpenTelemetry.ACTIVE_EXECUTE.add(1);
+            OpenTelemetryUtil.TOTAL_EXECUTE.add(1);
+            OpenTelemetryUtil.ACTIVE_EXECUTE.add(1);
             long startTime = System.currentTimeMillis();
 
-            Tracer tracer = OpenTelemetry.getTracer();
+            Tracer tracer = OpenTelemetryUtil.getTracer();
             Span span = tracer.spanBuilder("PreparedStatement ExecutionTask Execute").startSpan();
             try (Scope scope = span.makeCurrent())
             {
@@ -612,20 +612,20 @@ public class Session implements AutoCloseable
                     resultSetReceiver.sendResultSet(rs);
                     resultSetReceiver.allFinished();
                 }
-                OpenTelemetry.TOTAL_SUCCESS_EXECUTE.add(1);
+                OpenTelemetryUtil.TOTAL_SUCCESS_EXECUTE.add(1);
             }
             catch (Exception e)
             {
                 span.recordException(e);
                 resultSetReceiver.fail(e);
-                OpenTelemetry.TOTAL_FAILURE_EXECUTE.add(1);
-                OpenTelemetry.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
+                OpenTelemetryUtil.TOTAL_FAILURE_EXECUTE.add(1);
+                OpenTelemetryUtil.EXECUTE_DURATION.record(System.currentTimeMillis() - startTime);
 
             }
             finally
             {
                 span.end();
-                OpenTelemetry.ACTIVE_EXECUTE.add(-1);
+                OpenTelemetryUtil.ACTIVE_EXECUTE.add(-1);
             }
             return true;
         }

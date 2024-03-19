@@ -25,13 +25,12 @@ import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.eclipse.collections.api.list.MutableList;
+
 import org.eclipse.collections.impl.utility.internal.IterableIterate;
-import org.finos.legend.engine.postgres.utils.OpenTelemetry;
+import org.finos.legend.engine.postgres.utils.OpenTelemetryUtil;
 import org.finos.legend.engine.shared.core.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +50,7 @@ public class LegendExecutionService
 
     public List<LegendColumn> getSchema(String query)
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("Legend ExecutionService Get Schema").startSpan();
         try (Scope scope = span.makeCurrent(); InputStream inputStream = executionClient.executeSchemaApi(query);)
         {
@@ -79,7 +78,7 @@ public class LegendExecutionService
 
     public LegendExecutionResult executeQuery(String query)
     {
-        Tracer tracer = OpenTelemetry.getTracer();
+        Tracer tracer = OpenTelemetryUtil.getTracer();
         Span span = tracer.spanBuilder("LegendExecutionService ExecuteQuery").startSpan();
         try (Scope scope = span.makeCurrent();)
         {
