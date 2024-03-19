@@ -247,7 +247,7 @@ public abstract class Planner
 
         for (int i = 0; i < stagingDataset().schemaReference().fieldValues().size(); i++)
         {
-            FieldValue fieldValue = (FieldValue) stagingDataset().schemaReference().fieldValues().get(i);
+            FieldValue fieldValue = stagingDataset().schemaReference().fieldValues().get(i);
             if ((dedupField.isPresent() && dedupField.get().equalsIgnoreCase(fieldValue.fieldName())) ||
                 (dataSplitField.isPresent() && dataSplitField.get().equalsIgnoreCase(fieldValue.fieldName())))
             {
