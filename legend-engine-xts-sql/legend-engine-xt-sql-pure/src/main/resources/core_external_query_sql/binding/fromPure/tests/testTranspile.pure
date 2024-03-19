@@ -2440,7 +2440,7 @@ function <<test.Test>> meta::external::query::sql::transformation::queryToPure::
         [ 'Boolean', 'Integer', 'Float', 'Decimal', 'StrictDate', 'DateTime', 'String' ])
       ->restrict(['Boolean', 'Integer'])
       ->externalize('application/x.arrow')
-      }, testSources(), false, true, true, true)
+      }, testSources(), false, true, true, 'application/x.arrow')
 }
 
 

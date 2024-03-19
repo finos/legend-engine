@@ -29,13 +29,13 @@ function meta::external::query::sql::transformation::queryToPure::tests::test(sq
 
 function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1]):Boolean[1]
 {
-  test($sqls, $expected, $sources, $scopeWithFrom, $assertLambda, $assertJSON, false);
+  test($sqls, $expected, $sources, $scopeWithFrom, $assertLambda, $assertJSON, []);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1], externalizeToArrow:Boolean[1]):Boolean[1]
+function meta::external::query::sql::transformation::queryToPure::tests::test(sqls:String[*], expected:FunctionDefinition<Any>[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], assertLambda:Boolean[1], assertJSON:Boolean[1], externalizeContentType: String[0..1]):Boolean[1]
 {
   $sqls->forAll(sql |
-    let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom, $externalizeToArrow);
+    let sqlTransformContext = $sql->processQuery($sources, $scopeWithFrom, $externalizeContentType);
     let actual = $sqlTransformContext.lambda();
 
     if ($assertLambda, | assertLambdaEquals($expected, $actual), | true);
@@ -60,15 +60,15 @@ function meta::external::query::sql::transformation::queryToPure::tests::process
 
 function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1]): SqlTransformContext[1]
 {
-  processQuery($sql, $sources, $scopeWithFrom, false);
+  processQuery($sql, $sources, $scopeWithFrom, []);
 }
 
-function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], externalizeToArrow:Boolean[1]): SqlTransformContext[1]
+function meta::external::query::sql::transformation::queryToPure::tests::processQuery(sql: String[1], sources:SQLSource[*], scopeWithFrom:Boolean[1], externalizeContentType: String[0..1]): SqlTransformContext[1]
 {
   let query = meta::legend::compileVS('#SQL{' + $sql + '}#')->cast(@Query);
 
   let extensions = relationalExtensions();
   let context = rootContext($sources, $extensions);
 
-  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom, externalizeToArrow = $externalizeToArrow));
+  $query->processRootQuery(^$context(scopeWithFrom = $scopeWithFrom, externalizeContentType = $externalizeContentType));
 }
