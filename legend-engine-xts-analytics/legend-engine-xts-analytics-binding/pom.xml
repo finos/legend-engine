@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xts-analytics-binding</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - Analytics</name>
+    <name>Legend Engine - XTS - Analytics - Binding</name>
 
     <modules>
         <module>legend-engine-xt-analytics-binding-pure</module>

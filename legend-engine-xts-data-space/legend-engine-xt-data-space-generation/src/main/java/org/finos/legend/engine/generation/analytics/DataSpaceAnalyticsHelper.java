@@ -23,7 +23,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.entitlement.services.EntitlementModelObjectMapperFactory;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtension;
 import org.finos.legend.engine.entitlement.services.EntitlementServiceExtensionLoader;
-import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
+import org.finos.legend.engine.language.pure.compiler.fromPureGraph.PureModelContextDataGenerator;
 import org.finos.legend.engine.generation.analytics.model.*;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperValueSpecificationBuilder;

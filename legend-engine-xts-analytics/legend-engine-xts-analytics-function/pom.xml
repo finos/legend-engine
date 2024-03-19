@@ -24,7 +24,7 @@
 
     <artifactId>legend-engine-xts-analytics-function</artifactId>
     <packaging>pom</packaging>
-    <name>Legend Engine - XTS - Analytics</name>
+    <name>Legend Engine - XTS - Analytics - Function</name>
 
     <modules>
         <module>legend-engine-xt-analytics-function-pure</module>

@@ -26,7 +26,7 @@ import org.eclipse.collections.impl.utility.ListIterate;
 import org.finos.legend.engine.api.analytics.model.MappingModelCoverageAnalysisInput;
 import org.finos.legend.engine.api.analytics.model.MappingRuntimeCompatibilityAnalysisInput;
 import org.finos.legend.engine.api.analytics.model.MappingRuntimeCompatibilityAnalysisResult;
-import org.finos.legend.engine.external.shared.format.imports.PureModelContextDataGenerator;
+import org.finos.legend.engine.language.pure.compiler.fromPureGraph.PureModelContextDataGenerator;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperModelBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.HelperRuntimeBuilder;
 import org.finos.legend.engine.language.pure.compiler.toPureGraph.PureModel;
